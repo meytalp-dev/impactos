@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>נכון / לא נכון · Impact SO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&family=Rubik:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+.tf-buttons { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px; }
+.tf-btn {
+  padding:24px 16px; border-radius:14px; border:2px solid var(--border);
+  background:white; cursor:pointer; font-family:'Heebo',sans-serif;
+  font-size:18px; font-weight:800; color:var(--text);
+  transition:all .15s; display:flex; flex-direction:column; align-items:center; gap:6px;
+}
+.tf-btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow:var(--shadow-md); }
+.tf-btn .tf-icon { font-size:28px; }
+.tf-btn.true:hover { border-color:var(--green); background:var(--green-l); color:var(--green); }
+.tf-btn.false:hover { border-color:var(--red); background:var(--red-l); color:var(--red); }
+.tf-btn.correct { background:var(--green-l); border-color:var(--green); color:var(--green); }
+.tf-btn.incorrect { background:var(--red-l); border-color:var(--red); color:var(--red); }
+.tf-btn.dimmed { opacity:.45; }
+.tf-btn:disabled { cursor:not-allowed; }
+</style>
+</head>
+<body>
+
+<div id="topbar"></div>
+<div class="game-shell"><div id="root" class="loading"><div class="spinner"></div><div>טוען...</div></div></div>
+
+<script src="shared.js?v=2026-05-16"></script>
+<script>
+(function(){
+  const CONTENT = IGS.getParam('content', 'content.json');
+  const KIT_TITLE = IGS.getParam('kit', '');
+  const BACK = IGS.getParam('back', '../index.html');
+
+  let cfg, items, current=0, correct=0, studentName='', studentClass='';
+
+  document.getElementById('topbar').innerHTML = IGS.topbarHtml({
+    gameType:'truefalse', title:'נכון / לא נכון', kitTitle:KIT_TITLE, backHref:BACK
+  });
+
+  IGS.loadContent(CONTENT).then(data => {
+    cfg = data;
+    document.getElementById('root').innerHTML = IGS.welcomeHtml({
+      gameType:'truefalse',
+      title: cfg.title || 'נכון / לא נכון',
+      subtitle: cfg.subtitle,
+      classes: cfg.classes, kitTitle: KIT_TITLE,
+    });
+    IGS.wireWelcomeForm(s => { studentName=s.studentName; studentClass=s.studentClass; startGame(); });
+  }).catch(err => {
+    document.getElementById('root').innerHTML = '<div class="card"><h2 style="color:var(--red)">שגיאה</h2><p>'+IGS.escapeHtml(err.message)+'</p></div>';
+  });
+
+  function startGame(){
+    items = cfg.settings && cfg.settings.shuffleItems !== false ? IGS.shuffle(cfg.items) : cfg.items.slice();
+    current=0; correct=0;
+    renderQuestion();
+  }
+
+  function renderQuestion(){
+    const q = items[current];
+    document.getElementById('root').innerHTML =
+      IGS.progressHtml(current+1, items.length, 'משפט') +
+      '<div class="card">' +
+        '<div class="q-text">' + IGS.escapeHtml(q.text) + '</div>' +
+        '<div class="tf-buttons">' +
+          '<button class="tf-btn true" data-v="true"><span class="tf-icon">✓</span><span>נכון</span></button>' +
+          '<button class="tf-btn false" data-v="false"><span class="tf-icon">✗</span><span>לא נכון</span></button>' +
+        '</div>' +
+        '<div class="q-feedback" id="fb"></div>' +
+        '<div class="q-next-wrap"><button class="q-next" id="next">הבא ←</button></div>' +
+      '</div>';
+
+    document.querySelectorAll('.tf-btn').forEach(btn => {
+      btn.addEventListener('click', () => answer(btn.dataset.v === 'true'));
+    });
+    document.getElementById('next').addEventListener('click', nextQuestion);
+  }
+
+  function answer(val){
+    const q = items[current];
+    const btns = document.querySelectorAll('.tf-btn');
+    btns.forEach(b => b.disabled = true);
+    const isRight = val === !!q.correct;
+    if (isRight) correct++;
+    btns.forEach(b => {
+      const v = b.dataset.v === 'true';
+      if (v === !!q.correct) b.classList.add('correct');
+      else if (v === val) b.classList.add('incorrect');
+      else b.classList.add('dimmed');
+    });
+    const fb = document.getElementById('fb');
+    fb.className = 'q-feedback show ' + (isRight ? 'ok' : 'bad');
+    fb.innerHTML = (isRight ? '<strong>✓ נכון!</strong> ' : '<strong>✗ לא נכון.</strong> ') +
+      (q.explanation ? IGS.escapeHtml(q.explanation) : '');
+    document.getElementById('next').classList.add('show');
+    document.getElementById('next').textContent = current === items.length - 1 ? 'סיום ←' : 'הבא ←';
+  }
+
+  function nextQuestion(){
+    current++;
+    if (current >= items.length) finish();
+    else renderQuestion();
+  }
+
+  function finish(){
+    IGS.showResult({
+      gameType:'truefalse',
+      gameTitle: cfg.title || 'נכון / לא נכון',
+      studentName, studentClass,
+      correctItems: correct, totalItems: items.length,
+      percentage: IGS.pct(correct, items.length),
+      teacherEmail: cfg.teacherEmail,
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

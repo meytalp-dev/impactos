@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ImpactOS · למידה דיפרנציאלית — איפיון המוצר</title>
+<meta name="description" content="ImpactOS למידה דיפרנציאלית — מנוע אחד לכל המקצועות. איפיון מקצועי של המוצר: מסגרות תיאורטיות (DI, UDL 3.0, MTSS, ZPD), 5 מודולים, ארכיטקטורת מנוע + חבילות תוכן.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --teal: #2E7D8C;
+  --teal-light: #3A9BAD;
+  --teal-dark: #1E5A66;
+  --sand: #E8A849;
+  --sand-dark: #C88A2E;
+  --burgundy: #8B3A4A;
+  --burgundy-light: #A94D60;
+  --leaf: #4A9B7F;
+  --leaf-light: #5FB896;
+  --cream: #F5F0E8;
+  --cream-dark: #E8DFD0;
+  --white: #FDFCFA;
+  --deep: #1E3D47;
+  --shadow-sm: 0 2px 8px rgba(30, 61, 71, 0.06);
+  --shadow-md: 0 8px 24px rgba(30, 61, 71, 0.10);
+  --shadow-lg: 0 16px 48px rgba(30, 61, 71, 0.16);
+  --radius: 20px;
+  --radius-lg: 28px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Heebo', sans-serif;
+  background: var(--cream);
+  color: var(--deep);
+  line-height: 1.75;
+  font-size: 17px;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; line-height: 1.25; color: var(--deep); }
+h2 { font-size: clamp(28px, 4vw, 44px); font-weight: 900; margin-bottom: 12px; }
+h3 { font-size: clamp(20px, 2.5vw, 26px); font-weight: 800; margin-bottom: 12px; }
+h4 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+p { margin-bottom: 14px; }
+
+.container { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+.section { padding: 90px 24px; position: relative; }
+.section-eyebrow {
+  display: inline-block;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  color: var(--teal);
+  text-transform: uppercase;
+  padding: 6px 16px;
+  border: 1.5px solid var(--teal);
+  border-radius: 999px;
+  margin-bottom: 18px;
+}
+.section-eyebrow.sand { color: var(--sand-dark); border-color: var(--sand-dark); }
+.section-eyebrow.burgundy { color: var(--burgundy); border-color: var(--burgundy); }
+.section-lede { font-size: 19px; max-width: 780px; margin-bottom: 50px; color: var(--deep); opacity: 0.85; }
+
+/* ---------- HERO ---------- */
+.hero {
+  min-height: 92vh;
+  background: linear-gradient(135deg, var(--cream) 0%, var(--white) 50%, var(--cream-dark) 100%);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  padding: 100px 24px 80px;
+}
+.hero::before {
+  content: ''; position: absolute; top: -200px; right: -200px;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(46, 125, 140, 0.18), transparent 70%);
+  filter: blur(40px); z-index: 0;
+}
+.hero::after {
+  content: ''; position: absolute; bottom: -150px; left: -150px;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(232, 168, 73, 0.20), transparent 70%);
+  filter: blur(40px); z-index: 0;
+}
+.hero-inner { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; width: 100%; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 10px 20px;
+  background: rgba(255,255,255,0.65);
+  backdrop-filter: blur(16px);
+  border: 1.5px solid rgba(46, 125, 140, 0.25);
+  border-radius: 999px;
+  font-family: 'Rubik', sans-serif; font-weight: 600; font-size: 14px;
+  color: var(--teal-dark);
+  margin-bottom: 30px;
+}
+.hero-badge .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--leaf); box-shadow: 0 0 12px var(--leaf);
+}
+.hero h1 {
+  font-family: 'Rubik', sans-serif; font-weight: 900;
+  font-size: clamp(40px, 6.5vw, 76px);
+  line-height: 1.1;
+  margin-bottom: 24px;
+  letter-spacing: -0.02em;
+}
+.hero h1 .accent { color: var(--teal); }
+.hero h1 .accent2 { color: var(--burgundy); }
+.hero-sub {
+  font-size: clamp(18px, 2vw, 22px);
+  max-width: 720px;
+  color: var(--deep); opacity: 0.8;
+  margin-bottom: 50px;
+  font-weight: 400;
+}
+.hero-meta {
+  display: flex; flex-wrap: wrap; gap: 24px;
+  padding: 24px 32px;
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.7);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  max-width: 900px;
+}
+.hero-meta-item { flex: 1; min-width: 160px; }
+.hero-meta-label {
+  font-size: 12px; font-weight: 700; letter-spacing: 1px;
+  color: var(--teal); text-transform: uppercase; margin-bottom: 6px;
+}
+.hero-meta-value { font-family: 'Rubik', sans-serif; font-weight: 800; font-size: 18px; color: var(--deep); }
+
+/* ---------- BENTO STATS ---------- */
+.bento {
+  display: grid;
+  grid-template-columns: 7fr 5fr;
+  gap: 20px;
+  margin-top: 40px;
+}
+.bento-card {
+  position: relative;
+  border-radius: var(--radius-lg);
+  padding: 36px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.bento-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+.bento-card.teal { background: var(--teal); color: white; }
+.bento-card.sand { background: var(--sand); color: var(--deep); }
+.bento-card.burgundy { background: var(--burgundy); color: white; }
+.bento-card.cream { background: var(--white); color: var(--deep); border: 1px solid var(--cream-dark); }
+.bento-watermark {
+  position: absolute; top: -30px; left: -10px;
+  font-family: 'Rubik', sans-serif; font-weight: 900;
+  font-size: 220px; line-height: 1;
+  opacity: 0.12; pointer-events: none;
+}
+.bento-label { font-size: 13px; font-weight: 700; opacity: 0.85; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; position: relative; }
+.bento-value { font-family: 'Rubik', sans-serif; font-weight: 900; font-size: clamp(38px, 5vw, 56px); line-height: 1; margin-bottom: 8px; position: relative; }
+.bento-desc { font-size: 15px; opacity: 0.9; position: relative; }
+.bento-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 768px) { .bento, .bento-row { grid-template-columns: 1fr; } }
+
+/* ---------- NUMBERED CIRCLES ---------- */
+.num-circle {
+  width: 56px; height: 56px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Rubik', sans-serif; font-weight: 800; font-size: 22px;
+  color: white;
+  flex-shrink: 0;
+}
+.num-circle.teal { background: var(--teal); }
+.num-circle.sand { background: var(--sand); color: var(--deep); }
+.num-circle.burgundy { background: var(--burgundy); }
+.num-circle.leaf { background: var(--leaf); }
+
+/* ---------- GLASSMORPHISM CARDS ---------- */
+.glass-card {
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.7);
+  border-radius: var(--radius);
+  padding: 32px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.glass-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: var(--teal);
+}
+.glass-card.sand::before { background: var(--sand); }
+.glass-card.burgundy::before { background: var(--burgundy); }
+.glass-card.leaf::before { background: var(--leaf); }
+.glass-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+.cards-grid.cols-2 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+
+/* ---------- FRAMEWORK CARD ---------- */
+.framework-card { display: flex; flex-direction: column; gap: 16px; }
+.framework-head { display: flex; align-items: flex-start; gap: 18px; }
+.framework-icon {
+  width: 56px; height: 56px; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  background: var(--teal); color: white;
+}
+.framework-card.sand .framework-icon { background: var(--sand); color: var(--deep); }
+.framework-card.burgundy .framework-icon { background: var(--burgundy); color: white; }
+.framework-card.leaf .framework-icon { background: var(--leaf); color: white; }
+.framework-icon svg { width: 28px; height: 28px; stroke-width: 2; fill: none; stroke: currentColor; }
+.framework-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 1px; color: var(--teal); text-transform: uppercase; margin-bottom: 4px; }
+.framework-card.sand .framework-eyebrow { color: var(--sand-dark); }
+.framework-card.burgundy .framework-eyebrow { color: var(--burgundy); }
+.framework-card.leaf .framework-eyebrow { color: var(--leaf); }
+.framework-quote {
+  margin-top: 14px;
+  padding: 14px 18px;
+  background: rgba(46, 125, 140, 0.08);
+  border-right: 3px solid var(--teal);
+  border-radius: 12px;
+  font-size: 14px; line-height: 1.6; font-style: italic;
+  color: var(--deep);
+}
+.framework-card.sand .framework-quote { background: rgba(232, 168, 73, 0.12); border-right-color: var(--sand); }
+.framework-card.burgundy .framework-quote { background: rgba(139, 58, 74, 0.08); border-right-color: var(--burgundy); }
+.framework-card.leaf .framework-quote { background: rgba(74, 155, 127, 0.10); border-right-color: var(--leaf); }
+.framework-list { list-style: none; padding: 0; margin: 8px 0; }
+.framework-list li {
+  position: relative; padding-right: 22px; margin-bottom: 8px;
+  font-size: 15px; color: var(--deep);
+}
+.framework-list li::before {
+  content: ''; position: absolute; right: 0; top: 9px;
+  width: 8px; height: 8px; border-radius: 50%; background: var(--teal);
+}
+.framework-card.sand .framework-list li::before { background: var(--sand); }
+.framework-card.burgundy .framework-list li::before { background: var(--burgundy); }
+.framework-card.leaf .framework-list li::before { background: var(--leaf); }
+
+/* ---------- DARK SECTION ---------- */
+.section-dark {
+  background: var(--deep);
+  color: var(--cream);
+  padding: 100px 24px;
+  position: relative;
+  overflow: hidden;
+}
+.section-dark::before {
+  content: ''; position: absolute; top: -100px; right: -100px;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(232, 168, 73, 0.2), transparent 70%);
+  filter: blur(60px);
+}
+.section-dark h2, .section-dark h3, .section-dark h4 { color: var(--cream); }
+.section-dark .section-eyebrow {
+  background: rgba(232, 168, 73, 0.12);
+  color: var(--sand);
+  border-color: rgba(232, 168, 73, 0.4);
+}
+.section-dark .section-lede { color: rgba(245, 240, 232, 0.85); }
+
+/* ---------- EVIDENCE STATS ---------- */
+.evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+  margin-bottom: 48px;
+}
+.evidence-stat {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius);
+  padding: 32px 24px;
+  position: relative;
+  overflow: hidden;
+}
+.evidence-stat .num {
+  font-family: 'Rubik', sans-serif; font-weight: 900;
+  font-size: clamp(48px, 6vw, 72px); line-height: 1;
+  background: linear-gradient(135deg, var(--sand), var(--leaf-light));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+}
+.evidence-stat .label { font-size: 14px; color: rgba(245, 240, 232, 0.85); margin-bottom: 4px; }
+.evidence-stat .source { font-size: 12px; color: rgba(232, 168, 73, 0.85); font-weight: 600; }
+
+/* ---------- QUOTE CARD ---------- */
+.quote-card {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  margin-bottom: 16px;
+  position: relative;
+}
+.quote-card::before {
+  content: '"'; position: absolute; top: -10px; right: 20px;
+  font-family: 'Rubik', sans-serif; font-weight: 900; font-size: 80px;
+  color: var(--sand); opacity: 0.5; line-height: 1;
+}
+.quote-text { font-size: 16px; line-height: 1.7; margin-bottom: 12px; color: var(--cream); font-style: italic; }
+.quote-attr { font-size: 13px; color: var(--sand); font-weight: 600; }
+
+/* ---------- PRINCIPLES (timeline-like) ---------- */
+.principles { position: relative; }
+.principle-item {
+  display: flex; gap: 24px; align-items: flex-start;
+  margin-bottom: 28px;
+  padding: 24px 28px;
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: blur(12px);
+  border-radius: var(--radius);
+  border: 1px solid rgba(255,255,255,0.7);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.principle-item:hover { transform: translateX(-6px); box-shadow: var(--shadow-md); }
+.principle-content { flex: 1; }
+.principle-title { font-family: 'Rubik', sans-serif; font-weight: 800; font-size: 19px; margin-bottom: 6px; color: var(--deep); }
+.principle-desc { font-size: 15px; color: var(--deep); opacity: 0.85; line-height: 1.65; }
+
+/* ---------- ARCHITECTURE ---------- */
+.module-card {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 24px;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 36px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--cream-dark);
+  position: relative;
+  overflow: hidden;
+}
+.module-card::before {
+  content: ''; position: absolute; top: 0; right: 0; bottom: 0;
+  width: 6px; background: var(--teal);
+}
+.module-card.sand::before { background: var(--sand); }
+.module-card.burgundy::before { background: var(--burgundy); }
+.module-card.leaf::before { background: var(--leaf); }
+.module-num {
+  width: 72px; height: 72px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Rubik', sans-serif; font-weight: 900; font-size: 28px;
+  color: white;
+  background: var(--teal);
+}
+.module-card.sand .module-num { background: var(--sand); color: var(--deep); }
+.module-card.burgundy .module-num { background: var(--burgundy); }
+.module-card.leaf .module-num { background: var(--leaf); }
+.module-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 1px; color: var(--teal); text-transform: uppercase; margin-bottom: 4px; }
+.module-card.sand .module-eyebrow { color: var(--sand-dark); }
+.module-card.burgundy .module-eyebrow { color: var(--burgundy); }
+.module-card.leaf .module-eyebrow { color: var(--leaf); }
+.module-title { font-family: 'Rubik', sans-serif; font-weight: 900; font-size: 24px; margin-bottom: 12px; }
+.module-desc { font-size: 16px; line-height: 1.7; color: var(--deep); opacity: 0.88; margin-bottom: 16px; }
+.module-features { list-style: none; padding: 0; }
+.module-features li {
+  display: flex; gap: 12px; align-items: flex-start;
+  margin-bottom: 10px;
+  font-size: 15px; line-height: 1.6;
+}
+.module-features li svg { flex-shrink: 0; margin-top: 4px; width: 18px; height: 18px; stroke: var(--teal); fill: none; stroke-width: 2.5; }
+.module-card.sand .module-features li svg { stroke: var(--sand-dark); }
+.module-card.burgundy .module-features li svg { stroke: var(--burgundy); }
+.module-card.leaf .module-features li svg { stroke: var(--leaf); }
+@media (max-width: 640px) { .module-card { grid-template-columns: 1fr; padding: 24px; } }
+
+/* ---------- LEVELS TABLE ---------- */
+.levels-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin: 30px 0;
+}
+.level-card {
+  border-radius: var(--radius);
+  padding: 24px 20px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+/* Levels — neutral color names, no traffic-light implication */
+.level-card.l-blue   { background: linear-gradient(135deg, #4A8AB5, #6FAACD); color: white; }
+.level-card.l-green  { background: linear-gradient(135deg, var(--leaf), var(--leaf-light)); color: white; }
+.level-card.l-purple { background: linear-gradient(135deg, #8C7AAC, #A593C5); color: white; }
+.level-card.l-orange { background: linear-gradient(135deg, #D89653, #E8B077); color: var(--deep); }
+.level-num { font-family: 'Rubik', sans-serif; font-weight: 900; font-size: 48px; line-height: 1; opacity: 0.85; }
+.level-name { font-family: 'Rubik', sans-serif; font-weight: 800; font-size: 20px; margin: 8px 0; }
+.level-desc { font-size: 13px; opacity: 0.92; line-height: 1.5; }
+@media (max-width: 768px) { .levels-grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* ---------- USER JOURNEY ---------- */
+.journey-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  border: 1px solid var(--cream-dark);
+  box-shadow: var(--shadow-sm);
+  height: 100%;
+  display: flex; flex-direction: column;
+}
+.journey-head { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--cream-dark); }
+.journey-icon {
+  width: 56px; height: 56px; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--teal); color: white;
+  flex-shrink: 0;
+}
+.journey-icon svg { width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 2; }
+.journey-card.sand .journey-icon { background: var(--sand); color: var(--deep); }
+.journey-card.burgundy .journey-icon { background: var(--burgundy); }
+.journey-card.leaf .journey-icon { background: var(--leaf); }
+.journey-role { font-family: 'Rubik', sans-serif; font-weight: 900; font-size: 20px; margin-bottom: 2px; }
+.journey-sub { font-size: 13px; color: var(--deep); opacity: 0.7; }
+.journey-flow { list-style: none; padding: 0; }
+.journey-flow li {
+  position: relative; padding-right: 30px; padding-bottom: 14px;
+  font-size: 15px; line-height: 1.55;
+}
+.journey-flow li::before {
+  content: ''; position: absolute; right: 8px; top: 7px;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--teal);
+  box-shadow: 0 0 0 4px rgba(46, 125, 140, 0.18);
+}
+.journey-flow li::after {
+  content: ''; position: absolute; right: 12px; top: 22px; bottom: 0;
+  width: 2px; background: rgba(46, 125, 140, 0.2);
+}
+.journey-flow li:last-child::after { display: none; }
+.journey-card.sand .journey-flow li::before { background: var(--sand); box-shadow: 0 0 0 4px rgba(232, 168, 73, 0.18); }
+.journey-card.sand .journey-flow li::after { background: rgba(232, 168, 73, 0.25); }
+.journey-card.burgundy .journey-flow li::before { background: var(--burgundy); box-shadow: 0 0 0 4px rgba(139, 58, 74, 0.18); }
+.journey-card.burgundy .journey-flow li::after { background: rgba(139, 58, 74, 0.2); }
+.journey-card.leaf .journey-flow li::before { background: var(--leaf); box-shadow: 0 0 0 4px rgba(74, 155, 127, 0.18); }
+.journey-card.leaf .journey-flow li::after { background: rgba(74, 155, 127, 0.22); }
+
+/* ---------- KPI TABLE ---------- */
+.kpi-section { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+@media (max-width: 900px) { .kpi-section { grid-template-columns: 1fr; } }
+.kpi-column { background: var(--white); border-radius: var(--radius); padding: 28px; border: 1px solid var(--cream-dark); }
+.kpi-column h4 { font-family: 'Rubik', sans-serif; font-weight: 900; font-size: 18px; margin-bottom: 4px; }
+.kpi-column .kpi-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--teal); text-transform: uppercase; margin-bottom: 8px; }
+.kpi-column.sand .kpi-eyebrow { color: var(--sand-dark); }
+.kpi-column.burgundy .kpi-eyebrow { color: var(--burgundy); }
+.kpi-list { list-style: none; padding: 0; margin-top: 14px; }
+.kpi-list li {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--cream-dark);
+  font-size: 14px; line-height: 1.6;
+}
+.kpi-list li:last-child { border-bottom: none; }
+.kpi-list .check {
+  flex-shrink: 0;
+  width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--teal); color: white;
+  font-size: 13px; font-weight: 800;
+  margin-top: 2px;
+}
+.kpi-column.sand .kpi-list .check { background: var(--sand); color: var(--deep); }
+.kpi-column.burgundy .kpi-list .check { background: var(--burgundy); }
+
+/* ---------- IMPLEMENTATION TIMELINE ---------- */
+.timeline {
+  position: relative;
+  padding: 0;
+}
+.timeline-row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 32px;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+.timeline-row:last-child { border-bottom: none; }
+.timeline-year {
+  font-family: 'Rubik', sans-serif; font-weight: 900;
+  font-size: 36px;
+  color: var(--sand);
+  line-height: 1;
+}
+.timeline-phase { font-size: 13px; color: rgba(245, 240, 232, 0.75); margin-top: 4px; font-weight: 600; }
+.timeline-content h4 { font-family: 'Rubik', sans-serif; font-weight: 800; font-size: 22px; margin-bottom: 8px; color: var(--cream); }
+.timeline-content ul { list-style: none; padding: 0; margin-top: 10px; }
+.timeline-content ul li { padding: 6px 0; padding-right: 18px; position: relative; font-size: 15px; color: rgba(245, 240, 232, 0.92); }
+.timeline-content ul li::before {
+  content: ''; position: absolute; right: 0; top: 13px;
+  width: 8px; height: 8px; border-radius: 50%; background: var(--leaf-light);
+}
+@media (max-width: 768px) { .timeline-row { grid-template-columns: 1fr; gap: 12px; } }
+
+/* ---------- CHALLENGES ---------- */
+.challenge-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 28px;
+  border: 1px solid var(--cream-dark);
+  margin-bottom: 18px;
+  box-shadow: var(--shadow-sm);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.challenge-side h4 { display: flex; align-items: center; gap: 10px; font-size: 17px; margin-bottom: 10px; }
+.challenge-side .icon-pill {
+  width: 32px; height: 32px; border-radius: 10px;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.challenge-side.problem .icon-pill { background: rgba(139, 58, 74, 0.12); color: var(--burgundy); }
+.challenge-side.solution .icon-pill { background: rgba(74, 155, 127, 0.14); color: var(--leaf); }
+.challenge-side.problem h4 { color: var(--burgundy); }
+.challenge-side.solution h4 { color: var(--leaf); }
+.challenge-side p { font-size: 14px; line-height: 1.65; color: var(--deep); }
+@media (max-width: 768px) { .challenge-card { grid-template-columns: 1fr; } }
+
+/* ---------- AUDIENCE BAR ---------- */
+.audience-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin-top: 32px;
+}
+.audience-card {
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.7);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+.audience-card .icon {
+  width: 48px; height: 48px; border-radius: 14px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--teal); color: white;
+  margin-bottom: 14px;
+}
+.audience-card .icon svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; }
+.audience-card.sand .icon { background: var(--sand); color: var(--deep); }
+.audience-card.burgundy .icon { background: var(--burgundy); }
+.audience-card.leaf .icon { background: var(--leaf); }
+.audience-card h4 { font-family: 'Rubik', sans-serif; font-weight: 800; font-size: 17px; margin-bottom: 6px; }
+.audience-card p { font-size: 14px; line-height: 1.6; opacity: 0.85; margin: 0; }
+
+/* ---------- BIBLIOGRAPHY ---------- */
+.bib-list { list-style: none; padding: 0; }
+.bib-list li {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--cream-dark);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.bib-list li:last-child { border-bottom: none; }
+.bib-list .bib-num {
+  display: inline-block;
+  font-family: 'Rubik', sans-serif; font-weight: 700;
+  color: var(--teal); margin-left: 8px;
+}
+.bib-list a { color: var(--burgundy); text-decoration: none; border-bottom: 1px dashed var(--burgundy); }
+.bib-list a:hover { background: rgba(139, 58, 74, 0.08); }
+
+/* ---------- FOOTER ---------- */
+.spec-footer {
+  background: var(--deep);
+  color: rgba(245, 240, 232, 0.7);
+  padding: 50px 24px 30px;
+  text-align: center;
+  font-size: 13px;
+}
+.spec-footer .signature { font-family: 'Rubik', sans-serif; font-weight: 700; color: var(--cream); margin-bottom: 8px; font-size: 15px; }
+
+/* ---------- REVEAL ANIMATION ---------- */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+@media print {
+  .hero { min-height: auto; page-break-after: always; }
+  .section { page-break-inside: avoid; padding: 40px 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============== HERO ============== -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      ImpactOS · מוצר · איפיון המנוע — Product Specification
+    </div>
+    <h1>
+      ImpactOS <span class="accent">למידה דיפרנציאלית</span><br>
+      מנוע אחד · <span class="accent2">כל המקצועות</span>
+    </h1>
+    <p class="hero-sub">
+      מוצר עצמאי במשפחת ImpactOS — מנוע גנרי שמאפשר למורה ללמד באותו השיעור ארבע רמות מוכנות שונות,
+      בכל מקצוע. לשון, אזרחות, מתמטיקה, היסטוריה, אנגלית — אותו מנוע, חבילות תוכן מתחלפות.
+    </p>
+
+    <div class="hero-meta">
+      <div class="hero-meta-item">
+        <div class="hero-meta-label">סוג מסמך</div>
+        <div class="hero-meta-value">איפיון מוצר — Product Spec</div>
+      </div>
+      <div class="hero-meta-item">
+        <div class="hero-meta-label">ארכיטקטורה</div>
+        <div class="hero-meta-value">מנוע + חבילות תוכן</div>
+      </div>
+      <div class="hero-meta-item">
+        <div class="hero-meta-label">בסיס תיאורטי</div>
+        <div class="hero-meta-value">DI · UDL 3.0 · MTSS · ZPD</div>
+      </div>
+      <div class="hero-meta-item">
+        <div class="hero-meta-label">קהל יעד</div>
+        <div class="hero-meta-value">בתי ספר · רשתות · רשויות · ארגונים</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== EXECUTIVE SUMMARY ============== -->
+<section class="section">
+  <div class="container">
+    <span class="section-eyebrow">תקציר מנהלים</span>
+    <h2>השינוי הפרדיגמטי דורש כלי שמשתנה איתו</h2>
+    <p class="section-lede">
+      רפורמות הכלה ברחבי הארץ והעולם מבקשות ממורות לעבור מהוראה מסורתית לסביבה הטרוגנית עם מסלולים מותאמים. זהו אתגר מקצועי כבד ולא תיתכן הצלחה בלי תשתית טכנולוגית שמורידה את עלות התכנון, מנגישה את הנתונים, ותופסת את המורה ב־co-pilot ולא במקומה. ImpactOS למידה דיפרנציאלית הוא המוצר שעונה על הצורך הזה — מנוע אחד שמריץ כל תוכן.
+    </p>
+
+    <div class="bento">
+      <div class="bento-card teal">
+        <span class="bento-watermark">DI</span>
+        <div class="bento-label">Differentiated Instruction</div>
+        <div class="bento-value">d = 0.51 – 0.74</div>
+        <div class="bento-desc">גודל אפקט על הישגים בכיתות הטרוגניות (Smale-Jacobse et al., 2019, Frontiers in Psychology).</div>
+      </div>
+      <div class="bento-card cream">
+        <span class="bento-watermark" style="color: var(--teal)">+</span>
+        <div class="bento-label" style="color: var(--teal-dark)">תוצאת RAND</div>
+        <div class="bento-value" style="color: var(--teal)">+3 pp</div>
+        <div class="bento-desc">תלמידי למידה מותאמת אישית התקדמו 3 percentile points מעל קבוצת בקרה — והרווח הגדול ביותר נצפה אצל החלשים (Pane et al., 2017).</div>
+      </div>
+    </div>
+
+    <div class="bento-row" style="margin-top: 20px;">
+      <div class="bento-card sand">
+        <div class="bento-label">השינוי הנדרש</div>
+        <div class="bento-value">4 רמות בכיתה</div>
+        <div class="bento-desc">עצמאי · חלקית · התאמות · תמיכה מוגברת — בו זמנית, באותו השיעור, באותו הנושא.</div>
+      </div>
+      <div class="bento-card burgundy">
+        <div class="bento-label">העיקרון המנחה</div>
+        <div class="bento-value">Co-pilot, לא Replacement</div>
+        <div class="bento-desc">המערכת מציעה — המורה מאשרת. מחקר 2025 ב־Cogent Education מזהיר מ־over-reliance על AI במחיר חשיבה ביקורתית.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== הצורך ============== -->
+<section class="section" style="background: var(--white);">
+  <div class="container">
+    <span class="section-eyebrow burgundy">הצורך</span>
+    <h2>מה קורה בכיתה היום</h2>
+    <p class="section-lede">
+      כיתה הטרוגנית טיפוסית כוללת תלמידים בארבע רמות מוכנות שונות, חלקם לאחר ביטול כיתה מקדמת נפרדת. המורה מתבקשת להכין שיעור אחד שיעבוד לכולם — בלי כלי, בלי זמן, ובלי נתונים בזמן אמת על מי במה.
+    </p>
+
+    <div class="cards-grid cols-2">
+      <div class="glass-card burgundy">
+        <h3>הפער בכיתה</h3>
+        <p>מורה אחת. שיעור אחד. 4 רמות בו־זמנית. הוראת ״ממוצע״ מפסידה גם את החזקים וגם את החלשים — והפער מתרחב במקום להצטמצם.</p>
+      </div>
+      <div class="glass-card burgundy">
+        <h3>עומס תכנון</h3>
+        <p>מורה שמיישמת DI ידנית מדווחת על שעות נוספות של הכנה ושחיקה גבוהה (Smale-Jacobse, 2022). בלי כלי, התוכנית הופכת לעוד דרישה.</p>
+      </div>
+      <div class="glass-card burgundy">
+        <h3>פרגמנטציה של נתונים</h3>
+        <p>המורה רואה את ההישגים במשו״ב, את האבחונים ב-PDF, את ההמלצות בתיק הוועדה, ואת ההורים ב-WhatsApp. אין מקור אחד לאמת לכל תלמיד.</p>
+      </div>
+      <div class="glass-card burgundy">
+        <h3>תוכן ״מימי״</h3>
+        <p>הסכנה הקלאסית של הכלה: כדי להנגיש לחלשים, מנמיכים את התוכן לכולם. UDL 3.0 מנסחת זאת בפירוש: ״ציפיות גבוהות לכולם״.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== מסגרת תיאורטית ============== -->
+<section class="section">
+  <div class="container">
+    <span class="section-eyebrow">מסגרת תיאורטית</span>
+    <h2>ארבע אבני יסוד מחקריות</h2>
+    <p class="section-lede">
+      המערכת אינה מומצאת מאפס. היא מתרגמת לארכיטקטורה תוכנתית ארבע מסגרות מבוססות ראיות שעיצבו את שדה ההכלה במאה הזו.
+    </p>
+
+    <div class="cards-grid cols-2">
+      <!-- DI -->
+      <div class="glass-card framework-card">
+        <div class="framework-head">
+          <div class="framework-icon">
+            <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h12M3 18h6"/></svg>
+          </div>
+          <div>
+            <div class="framework-eyebrow">Tomlinson · 1999, 2014</div>
+            <h3>Differentiated Instruction</h3>
+          </div>
+        </div>
+        <p>גישת הוראה שיטתית בה המורה מתאימה את ההוראה לשונות הכיתה — אותו יעד, דרכים שונות. ארבעת הממדים שניתן לדפרנציאציה:</p>
+        <ul class="framework-list">
+          <li><strong>Content</strong> — מה התלמיד לומד, רמת הטקסט, חומרי קלט</li>
+          <li><strong>Process</strong> — איך הוא מעבד (קבוצות, מארגנים גרפיים, חקר)</li>
+          <li><strong>Product</strong> — איך הוא מדגים שלמד (כתוב, מדובר, ויזואלי)</li>
+          <li><strong>Environment</strong> — תנאים פיזיים ורגשיים</li>
+        </ul>
+        <div class="framework-quote">
+          ״Differentiated instruction is responsive teaching rather than one-size-fits-all teaching״ — Tomlinson, 2017
+          <div style="margin-top: 8px; font-style: normal; opacity: 0.85;">״הוראה דיפרנציאלית היא הוראה מגיבה — לא הוראה של ׳מידה אחת מתאימה לכולם׳.״</div>
+        </div>
+      </div>
+
+      <!-- UDL -->
+      <div class="glass-card sand framework-card sand">
+        <div class="framework-head">
+          <div class="framework-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>
+          </div>
+          <div>
+            <div class="framework-eyebrow">CAST · גרסה 3.0, יולי 2024</div>
+            <h3>Universal Design for Learning</h3>
+          </div>
+        </div>
+        <p>תכנון תוכנית לימודים גמישה <em>מראש</em> כך שתעבוד למרבית הלומדים בלי התאמות בדיעבד. הגרסה החדשה מעמיקה את ההתייחסות לזהות הלומד ולתחושת השייכות.</p>
+        <ul class="framework-list">
+          <li><strong>Engagement</strong> — מוטיבציה, שייכות, סוכנות לומד</li>
+          <li><strong>Representation</strong> — הצגות מרובות (טקסט/אודיו/ויזואל)</li>
+          <li><strong>Action & Expression</strong> — דרכי תוצר מגוונות</li>
+        </ul>
+        <div class="framework-quote">
+          ״UDL 3.0 represents a shift toward learner agency: purposeful, resourceful, strategic״ — CAST, 2024
+          <div style="margin-top: 8px; font-style: normal; opacity: 0.85;">״UDL 3.0 מייצגת תזוזה לעבר סוכנות הלומד: מכוון, מתושיין, אסטרטגי.״</div>
+        </div>
+      </div>
+
+      <!-- MTSS -->
+      <div class="glass-card burgundy framework-card burgundy">
+        <div class="framework-head">
+          <div class="framework-icon">
+            <svg viewBox="0 0 24 24"><path d="M3 21h18M6 21V11M12 21V6M18 21v-7"/></svg>
+          </div>
+          <div>
+            <div class="framework-eyebrow">RTI / MTSS · המסגרת המערכתית</div>
+            <h3>Multi-Tiered System of Supports</h3>
+          </div>
+        </div>
+        <p>שלוש שכבות תמיכה שמזהות מוקדם תלמידים בסיכון ומגדילות הדרגתית את עוצמת המענה — בלי הפניה אוטומטית לוועדת זכאות. השלד המערכתי שמאפשר לבטל כיתות מקדמות נפרדות.</p>
+        <ul class="framework-list">
+          <li><strong>Tier 1</strong> — הוראה איכותית בכיתה הרגילה (≈80%)</li>
+          <li><strong>Tier 2</strong> — קבוצות קטנות ממוקדות (≈15%)</li>
+          <li><strong>Tier 3</strong> — התערבות אינטנסיבית, פעמים רבות פרטנית (≈5%)</li>
+        </ul>
+        <div class="framework-quote">
+          תלמיד יכול לקבל Tier 2/3 <em>בתוך</em> הכיתה הרגילה — זה הבסיס המערכתי לשילוב מלא.
+        </div>
+      </div>
+
+      <!-- ZPD -->
+      <div class="glass-card leaf framework-card leaf">
+        <div class="framework-head">
+          <div class="framework-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="11"/></svg>
+          </div>
+          <div>
+            <div class="framework-eyebrow">Vygotsky · Wood, Bruner & Ross</div>
+            <h3>Zone of Proximal Development</h3>
+          </div>
+        </div>
+        <p>למידה מתרחשת באזור שבין מה שהתלמיד יודע לבדו לבין מה שיוכל להשיג עם תיווך. פיגום (Scaffolding) הוא <em>contingent, graduated, reversible</em>. זהו הבסיס לאלגוריתם ההתאמה האישית.</p>
+        <ul class="framework-list">
+          <li>לא קל מדי (משעמם) — לא קשה מדי (מתסכל)</li>
+          <li>אזור היעד: 75–85% הצלחה</li>
+          <li>פיגום שנסוג בהדרגה ככל שהלומד מתקדם</li>
+        </ul>
+        <div class="framework-quote">
+          כשל בכיוון אזור ה-ZPD = או ״תוכן מימי״ או נשירה. שניהם רעים באותה מידה.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== EVIDENCE / DARK SECTION ============== -->
+<section class="section section-dark">
+  <div class="container">
+    <span class="section-eyebrow">בסיס ראיות אמפירי</span>
+    <h2>המספרים מאחורי המסגרות</h2>
+    <p class="section-lede">
+      ההחלטה לבנות מערכת למידה דיפרנציאלית אינה אינטואיטיבית — היא מבוססת על מטא-אנליזות בעשורים האחרונים. גודלי האפקט מצדיקים השקעה רשותית.
+    </p>
+
+    <div class="evidence-grid">
+      <div class="evidence-stat">
+        <div class="num">d=0.74</div>
+        <div class="label">גודל אפקט מקסימלי של DI</div>
+        <div class="source">Smale-Jacobse et al., 2019</div>
+      </div>
+      <div class="evidence-stat">
+        <div class="num">d=0.66</div>
+        <div class="label">גודל אפקט של פידבק איכותי</div>
+        <div class="source">Hattie · Visible Learning</div>
+      </div>
+      <div class="evidence-stat">
+        <div class="num">×3.5</div>
+        <div class="label">קצב צמיחה בקריאה (Lexile)</div>
+        <div class="source">Achieve3000 — תלמידים פעילים</div>
+      </div>
+      <div class="evidence-stat">
+        <div class="num">+18%</div>
+        <div class="label">השלמת פערים — תלמידים חלשים</div>
+        <div class="source">RAND Personalized Learning</div>
+      </div>
+    </div>
+
+    <h3 style="margin-top: 60px; margin-bottom: 24px;">חמישה ציטוטים שמובילים את האיפיון</h3>
+
+    <div class="quote-card">
+      <p class="quote-text">״Within-class differentiation produces summarized effect sizes ranging from d = +0.51 to d = +0.74 on student achievement.״</p>
+      <p class="quote-text" style="opacity: 0.85; font-style: normal; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 12px; margin-top: 4px;">״דיפרנציאציה בתוך הכיתה יוצרת גודלי אפקט מסוכמים בטווח של d = +0.51 עד d = +0.74 על הישגי התלמידים.״</p>
+      <p class="quote-attr">Smale-Jacobse, Meijer, Helms-Lorenz & Maulana (2019), Frontiers in Psychology</p>
+    </div>
+
+    <div class="quote-card">
+      <p class="quote-text">״Computerized systems used as a differentiation tool had small to moderate positive effects on students' performance — for the first time documented in a meta-analysis of differentiation interventions.״</p>
+      <p class="quote-text" style="opacity: 0.85; font-style: normal; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 12px; margin-top: 4px;">״מערכות ממוחשבות ככלי לדיפרנציאציה הראו אפקטים חיוביים קטנים עד בינוניים על ביצועי התלמידים — בפעם הראשונה שהדבר תועד במטא-אנליזה של התערבויות דיפרנציאציה.״</p>
+      <p class="quote-attr">Deunk et al. (2018), Educational Research Review — מטא-אנליזה של 21 מחקרים, 78 effect sizes</p>
+    </div>
+
+    <div class="quote-card">
+      <p class="quote-text">״Students in schools using personalized learning practices made greater progress over the past two years than the average across schools nationally — and the lowest-performing students made substantial gains relative to their peers.״</p>
+      <p class="quote-text" style="opacity: 0.85; font-style: normal; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 12px; margin-top: 4px;">״תלמידים בבתי ספר המיישמים פרקטיקות של למידה מותאמת אישית התקדמו בשנתיים האחרונות מעל הממוצע הארצי — והתלמידים החלשים ביותר השיגו רווחים משמעותיים ביחס לעמיתיהם.״</p>
+      <p class="quote-attr">Pane et al. (2017), RAND Research Report — 62 בתי ספר, ארה״ב</p>
+    </div>
+
+    <div class="quote-card">
+      <p class="quote-text">״UDL 3.0 represents a shift toward learner agency: purposeful & reflective, resourceful & authentic, strategic & action-oriented — and explicitly addresses barriers rooted in biases and systems of exclusion.״</p>
+      <p class="quote-text" style="opacity: 0.85; font-style: normal; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 12px; margin-top: 4px;">״UDL 3.0 מייצגת תזוזה לעבר סוכנות הלומד: מכוון ורפלקטיבי, מתושיין ואותנטי, אסטרטגי ופועל — ומתייחסת במפורש לחסמים שמקורם בהטיות ובמערכות של הדרה.״</p>
+      <p class="quote-attr">CAST (2024), Universal Design for Learning Guidelines 3.0</p>
+    </div>
+
+    <div class="quote-card">
+      <p class="quote-text">״Differentiation is responsive teaching rather than one-size-fits-all teaching — and it does not mean a different lesson plan for each student, but a thoughtful response to predictable patterns of variance.״</p>
+      <p class="quote-text" style="opacity: 0.85; font-style: normal; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 12px; margin-top: 4px;">״דיפרנציאציה היא הוראה מגיבה ולא הוראת ׳מידה אחת מתאימה לכולם׳ — והיא אינה אומרת מערך שיעור שונה לכל תלמיד, אלא מענה מתחשב לדפוסי שונות צפויים.״</p>
+      <p class="quote-attr">Tomlinson, C. A. (2017), How to Differentiate Instruction in Academically Diverse Classrooms — ASCD</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============== INSPIRATION ============== -->
+<section class="section">
+  <div class="container">
+    <span class="section-eyebrow sand">השראה מהשטח</span>
+    <h2>מודלים בעולם שעובדים — מה ללמוד מהם</h2>
+    <p class="section-lede">
+      המוצר לא מתחיל דף ריק. ארבעה מודלים לאומיים וארבע פלטפורמות תוכנה יצרו ידע מצטבר על איך הכלה ולמידה דיפרנציאלית עובדות בקנה מידה — וכל אחד מהם תרם עיקרון אחד שמובנה בארכיטקטורה.
+    </p>
+
+    <h3 style="margin-top: 30px; margin-bottom: 20px;">מודלים לאומיים / עירוניים</h3>
+    <div class="cards-grid">
+      <div class="glass-card">
+        <h4>פינלנד · שלוש שכבות תמיכה (מ־2010)</h4>
+        <p style="font-size: 15px;">General → Intensified → Special Support, כשהמטרה היא להישאר בכיתה הרגילה. ״מורת שילוב חלקית״ נכנסת לכיתה במקום להוציא תלמיד החוצה. <strong>מעל 95%</strong> מתלמידי תמיכה מוגברת לומדים בכיתה רגילה.</p>
+      </div>
+      <div class="glass-card sand">
+        <h4>איטליה · שילוב מלא (מ־1977)</h4>
+        <p style="font-size: 15px;">חוק 517/1977 ביטל את כל בתי הספר וכיתות החינוך המיוחד. כיום פחות מ־1% מהתלמידים בעלי מוגבלויות לומדים במסגרות נפרדות. מודל היסטורי לרפורמות הכלה במאה ה-21.</p>
+      </div>
+      <div class="glass-card burgundy">
+        <h4>ניו יורק · ASD Nest / Horizon</h4>
+        <p style="font-size: 15px;">מודל co-teaching: שני מורים בכיתה — רגיל + מומחה — לתלמידים על הרצף בכיתות רגילות. מדדי הצלחה: הישגים, נוכחות, תחושת שייכות.</p>
+      </div>
+      <div class="glass-card leaf">
+        <h4>אונטריו · DI Educator's Package</h4>
+        <p style="font-size: 15px;">משרד החינוך באונטריו פיתח חבילת DI מקיפה: Educator's Guide, <strong>Class Profile Tool</strong>, Student Profile Tool — מקור השראה ישיר לדשבורד מורה דיפרנציאלי.</p>
+      </div>
+    </div>
+
+    <h3 style="margin-top: 60px; margin-bottom: 20px;">פלטפורמות תוכנה — מה ללמוד מכל אחת</h3>
+    <div class="cards-grid">
+      <div class="glass-card">
+        <h4>i-Ready (Curriculum Associates)</h4>
+        <p style="font-size: 14px;"><strong>מה ללמוד:</strong> הפרדה בין רכיב <em>אבחוני</em> תקופתי (3 פעמים בשנה) לרכיב <em>יומיומי</em> (מסלול אישי). דשבורד ״פרופיל כיתה״ עם המלצות לקבוצות.</p>
+      </div>
+      <div class="glass-card sand">
+        <h4>DreamBox Learning</h4>
+        <p style="font-size: 14px;"><strong>מה ללמוד:</strong> אדפטיביות לא רק לפי תשובה נכונה/שגויה אלא לפי <em>תהליך הפתרון</em> של התלמיד. מודל CRA — Concrete → Representational → Abstract.</p>
+      </div>
+      <div class="glass-card burgundy">
+        <h4>Khan Academy · Mastery Learning</h4>
+        <p style="font-size: 14px;"><strong>מה ללמוד:</strong> דרישת שליטה (״Familiar → Proficient → Mastered״) לפני התקדמות. אי-מעבר עד שליטה אמיתית — עוגן פדגוגי.</p>
+      </div>
+      <div class="glass-card leaf">
+        <h4>Newsela / Achieve3000</h4>
+        <p style="font-size: 14px;"><strong>מה ללמוד:</strong> ״אותו תוכן, רמות שונות״. תלמיד חלש ומצטיין קוראים את אותה כתבה ברמת Lexile שונה — ומשוחחים יחד עליה. קריטי לתחושת שייכות.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== עקרונות ============== -->
+<section class="section" style="background: var(--white);">
+  <div class="container">
+    <span class="section-eyebrow">עקרונות עיצוב</span>
+    <h2>שבעה עקרונות שמנחים את כל החלטות המוצר</h2>
+    <p class="section-lede">
+      הפיצ׳רים יכולים להשתנות. העקרונות נשארים. כל החלטת עיצוב במערכת נבחנת מול הרשימה הזו.
+    </p>
+
+    <div class="principles">
+      <div class="principle-item">
+        <div class="num-circle teal">1</div>
+        <div class="principle-content">
+          <div class="principle-title">Teacher Co-pilot — לעולם לא Teacher Replacement</div>
+          <div class="principle-desc">המערכת <em>מציעה</em>, המורה <em>מאשרת</em>. כל המלצת AI מסומנת כ״הצעה״, ניתן לראות את הסיבה (״התלמידה ענתה נכון על 4 שאלות ברמה ב׳ ברצף״), והמורה תמיד יכולה להתערב. זה גם פדגוגי וגם בטוח משפטית.</div>
+        </div>
+      </div>
+
+      <div class="principle-item">
+        <div class="num-circle sand">2</div>
+        <div class="principle-content">
+          <div class="principle-title">אותו תוכן, רמות שונות — לא ״תוכן מימי״</div>
+          <div class="principle-desc">לא להנמיך את היעד הקוגניטיבי, רק את הפיגום. תלמיד ברמת תמיכה מוגברת לומד את אותו מושג כמו עצמאי — אבל עם הסבר נוסף, דוגמה קונקרטית, ושאלה מנחה. UDL 3.0: ״ציפיות גבוהות לכולם״.</div>
+        </div>
+      </div>
+
+      <div class="principle-item">
+        <div class="num-circle burgundy">3</div>
+        <div class="principle-content">
+          <div class="principle-title">תכנון בדקות, לא בשעות</div>
+          <div class="principle-desc">העלות הנפשית של DI היא הסיבה המרכזית שמורים מוותרים. יעד מדיד: שיעור דיפרנציאלי ל־4 רמות בפחות מ־15 דקות תכנון. כל מסך נמדד מול הקריטריון הזה.</div>
+        </div>
+      </div>
+
+      <div class="principle-item">
+        <div class="num-circle leaf">4</div>
+        <div class="principle-content">
+          <div class="principle-title">שייכות לפני אינדיבידואליזציה</div>
+          <div class="principle-desc">הכלה היא חברתית-רגשית לפני שהיא קוגניטיבית. התלמיד צריך להרגיש ״אני חלק מהכיתה הזו״ גם כשהמסלול שלו אישי. לכן: דיון משותף על אותו טקסט (גם אם בנוסחים שונים), פעילויות קבוצתיות גמישות, מוטיבים חזותיים אחידים.</div>
+        </div>
+      </div>
+
+      <div class="principle-item">
+        <div class="num-circle teal">5</div>
+        <div class="principle-content">
+          <div class="principle-title">מקור אחד לאמת לכל תלמיד</div>
+          <div class="principle-desc">פרופיל תלמיד מאוחד שמושך אבחונים, הישגים, החלטות ועדה, סל מענים, יעדי קייס מנג׳ר. סוף לפיצול בין משו״ב ל־PDF ל־WhatsApp. רכזת ההכלה, המחנכת והמורה רואות אותו תלמיד.</div>
+        </div>
+      </div>
+
+      <div class="principle-item">
+        <div class="num-circle sand">6</div>
+        <div class="principle-content">
+          <div class="principle-title">ZPD מנחה את האלגוריתם</div>
+          <div class="principle-desc">כל המלצת קושי במערכת מכוונת לאזור 75-85% הצלחה. שלוש נכונות רצופות → המערכת מציעה אתגר. שתי שגיאות רצופות → יורדת רמה עם פידבק מעודד. לעולם לא ״טעית״ — תמיד ״בוא ננסה ככה״.</div>
+        </div>
+      </div>
+
+      <div class="principle-item">
+        <div class="num-circle burgundy">7</div>
+        <div class="principle-content">
+          <div class="principle-title">פרטיות וריבונות נתונים</div>
+          <div class="principle-desc">הנתונים בבעלות הלקוח — לא בענן של ספק SaaS חיצוני. התשתית: Google Workspace של בית הספר/רשת/רשות + Apps Script + HTML. ללא העברת נתוני קטינים לצדדים שלישיים. תאימות מלאה לחוזר מנכ״ל ולהוראות הגנת הפרטיות.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== ARCHITECTURE ============== -->
+<section class="section">
+  <div class="container">
+    <span class="section-eyebrow burgundy">ארכיטקטורה</span>
+    <h2>חמישה מודולים — מערכת אחת</h2>
+    <p class="section-lede">
+      המערכת בנויה כחמישה מודולים שעובדים זה עם זה דרך פרופיל תלמיד מרכזי. כל מודול עומד בפני עצמו — אבל הערך האמיתי נחשף כשהם מחוברים.
+    </p>
+
+    <!-- Module 1 -->
+    <div class="module-card">
+      <div class="module-num">1</div>
+      <div>
+        <div class="module-eyebrow">Class Profile + Flexible Grouping · תומך ב-Action #2</div>
+        <h3 class="module-title">פרופיל כיתה דינמי + הצעת קיבוץ</h3>
+        <p class="module-desc">המסך הראשי של המורה. הכיתה כמפה ויזואלית עם כל תלמיד בצבע הרמה (כחול / ירוק / סגול / כתום). <strong>הפעולה הקונקרטית:</strong> לפני כל יחידה, המערכת מציעה 2–3 קבוצות גמישות לפי שליטה בתקני prerequisite — לא קבועות, ולא חשופות לתלמידים. המורה מאשרת, עורכת או דוחה.</p>
+        <ul class="module-features">
+          <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>תצוגת רמות בשמות צבעוניים — בלי תיוג גלוי לתלמיד</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Heatmap תקנים × תלמידים — קליק מציע קיבוץ אוטומטי</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>קיבוץ skill-based ולא "רמה כללית" — תלמיד יכול להיות כחול בקריאה וסגול בכתיבה</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>״בליק קריטי״ — תלמידים שירדו רמה בחודש האחרון מסומנים למורה בלבד</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>אינטגרציה עם סל המענים של רכזת ההכלה ו-Tier (MTSS)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Module 2 -->
+    <div class="module-card sand">
+      <div class="module-num">2</div>
+      <div>
+        <div class="module-eyebrow">Re-teach + Do Now Generator · תומך ב-Actions #1 + #3</div>
+        <h3 class="module-title">מחולל Re-teach ו-Do Now אוטומטי</h3>
+        <p class="module-desc">לא עוד "מחולל שיעור כללי". <strong>שתי פעולות יומיות קונקרטיות:</strong> (א) כשטעות מערכתית מזוהית (&gt;40% מהכיתה שגתה אותו דבר), המערכת מפיקה טיוטת re-teach: 5 דק' פתיחה + 10 דק' תרגול ממוקד + exit ticket חדש. (ב) בכל בוקר, המורה מקבלת "Do Now של 5 דקות" שמטפל בטעויות של אתמול. המורה עורכת ומאשרת — לא מחליפים אותה, חוסכים לה 30–45 דק' שבועיות.</p>
+        <ul class="module-features">
+          <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>זיהוי טעות מערכתית — clustering אוטומטי של תשובות שגויות</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>טמפלייט DDI (Bambrick) — Re-teach plan ב-3 חלקים</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Reteach Strategy Bank — לכל טעות נפוצה, אסטרטגיות שעבדו בעבר</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>״המורה ב־loop״ — עריכה, החלפה או דחייה לכל הצעה</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>4 פיגומים (כחול/ירוק/סגול/כתום) — UDL Multiple Means of Representation</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Module 3 -->
+    <div class="module-card burgundy">
+      <div class="module-num">3</div>
+      <div>
+        <div class="module-eyebrow">Adaptive Engine · ZPD + Level Transition Rule · Phase 2</div>
+        <h3 class="module-title">מנוע תרגול אדפטיבי + כללי מעבר רמה</h3>
+        <p class="module-desc">הליבה הטכנית. תלמיד מתרגל ומקבל פריט הבא ב-<strong>ZPD</strong> (~50% הצלחה לפי IRT). מעבר רמה אינו "5 נכון ברצף" — אלא <code>BKT P(L) ≥ 0.95</code> + <em>spaced review</em> (4/8/32 ימים) שמאמת retention. wheel-spinning detector עוצר תלמיד תקוע אחרי 5 ניסיונות ושולח למורה.</p>
+        <ul class="module-features">
+          <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>BKT-style mastery decision — לא heuristic של "k נכון ברצף"</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Spaced Review בסגנון Khan Academy — doubling intervals</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Wheel-spinning detector — escape hatch לתלמיד תקוע (החלפת modality)</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Gaming detection — זמן בין תשובות, abuse של hints</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>בנק 200+ פריטים מתויגים — חבילת תוכן ראשונה (לשון או תנופה)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Module 4 -->
+    <div class="module-card leaf">
+      <div class="module-num">4</div>
+      <div>
+        <div class="module-eyebrow">Exit Ticket + Adaptive Assessment · תומך ב-Action #1</div>
+        <h3 class="module-title">Exit Ticket יומי + הערכה אדפטיבית</h3>
+        <p class="module-desc"><strong>הפעולה היומית הקריטית.</strong> בסוף כל שיעור — 3–5 שאלות exit ticket. ה-clustering האוטומטי של תשובות שגויות הופך ל-Do Now של מחר (מודול 2). הערכות אדפטיביות ארוכות יותר נשארות גם הן — עם פידבק מילולי-חיובי, מנגנון הסתעפות, וסיכום שמכבד את התלמיד: <em>״באיזו רמה התחלת, באיזו סיימת, מה למדת״</em>.</p>
+        <ul class="module-features">
+          <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Exit Ticket — 3–5 שאלות, &lt;3 דקות, בכל שיעור</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Misconception Clustering — קיבוץ אוטומטי של דפוסי שגיאה</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Live Misconception Alert בכיתה — ״5 תלמידים שגו אותו דבר״</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>פידבק מילולי-חיובי אחרי כל תשובה (Growth Mindset)</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>הצעה אוטומטית למעבר רמה לאחר 3 הערכות עקביות + spaced review</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Module 5 -->
+    <div class="module-card">
+      <div class="module-num">5</div>
+      <div>
+        <div class="module-eyebrow">Action Dashboard · תומך ב-Actions #4 + #5</div>
+        <h3 class="module-title">דשבורד פעולות — Conference Queue + Family Note</h3>
+        <p class="module-desc">לא רק תצוגת נתונים — <strong>תור פעולות שבועי</strong>. <em>(א) Conference Triage Queue:</em> 5 תלמידים השבוע שזקוקים לשיחה אישית 5–7 דק', מסודרים לפי דחיפות; כל שיחה — תיעוד מהיר R-C-T (Research-Compliment-Teach, 30 שניות). <em>(ב) Weekly Family Note:</em> סיכום אוטומטי להורים — הצלחה אחת, אתגר אחד, פעולה אחת לבית. המורה מאשרת חתימה אחת על כל הכיתה.</p>
+        <ul class="module-features">
+          <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Conference Queue — תור 5 שיחות שבועי, R-C-T notes ב-30 שניות</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Family Note אוטומטי — Gmail/WhatsApp, סיכום שבועי חיובי-ראשון</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>שלוש שכבות: מורה / רכזת בית ספר / מנהל רשת — כל אחת רואה רק את שלה</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Early Warning — היעדרויות + ציונים + Belonging Pulse</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Action Take-up Rate — האם המורה באמת מבצעת את ההצעות (יעד &gt;60%)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== MVP MUST-HAVE ACTIONS ============== -->
+<section class="section" style="background: linear-gradient(180deg, var(--cream) 0%, var(--white) 100%);">
+  <div class="container">
+    <span class="section-eyebrow">MVP Scope</span>
+    <h2>חמש פעולות Must-Have — לפי פארטו, 80% מהערך</h2>
+    <p class="section-lede">
+      לא להתחיל ב-engine. להתחיל ב-Action Layer. אלו 5 הפעולות הקונקרטיות שמתפצלות בין 5 המודולים — וכל אחת מהן <em>לולאה סגורה</em> של data → action → outcome. אישור 5 הפעולות האלו הוא תנאי לתחילת פיתוח.
+    </p>
+
+    <div class="cards-grid cols-2" style="margin-top: 30px;">
+      <div class="glass-card" style="border-top-color: var(--teal);">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
+          <div style="background: var(--teal); color: white; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-family: 'Rubik'; font-weight: 900; font-size: 20px;">01</div>
+          <h4 style="margin:0;">Exit Ticket → Do Now</h4>
+        </div>
+        <p style="font-size:15px; margin:0;">בסוף שיעור — 3–5 שאלות. בבוקר המחרת — המורה מקבלת "Do Now של 5 דקות" שמטפל בטעויות. מחקר Black &amp; Wiliam: +20–30 percentile points. <strong>הפעולה היחידה שמייצרת לולאת data-action יומית.</strong></p>
+        <div style="margin-top:14px; font-size:13px; color: var(--teal-dark); font-weight:700;">מודול תומך: 4 → 2</div>
+      </div>
+
+      <div class="glass-card sand" style="border-top-color: var(--sand);">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
+          <div style="background: var(--sand); color: var(--deep); width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-family: 'Rubik'; font-weight: 900; font-size: 20px;">02</div>
+          <h4 style="margin:0;">Flexible Grouping (Skill-based)</h4>
+        </div>
+        <p style="font-size:15px; margin:0;">לפני יחידה — המערכת מציעה 2–3 קבוצות לא קבועות לפי שליטה ב-prerequisite. המורה מאשרת/עורכת. <strong>פרטיות רמות:</strong> תלמיד לא רואה רמות של חבריו — קבוצות בשמות צבעוניים, לא Tier 1/2/3.</p>
+        <div style="margin-top:14px; font-size:13px; color: var(--sand-dark); font-weight:700;">מודול תומך: 1</div>
+      </div>
+
+      <div class="glass-card burgundy" style="border-top-color: var(--burgundy);">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
+          <div style="background: var(--burgundy); color: white; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-family: 'Rubik'; font-weight: 900; font-size: 20px;">03</div>
+          <h4 style="margin:0;">Re-teach Plan Auto-Draft</h4>
+        </div>
+        <p style="font-size:15px; margin:0;">כשטעות מערכתית זוהית (&gt;40% מהכיתה) — המערכת מפיקה טיוטה: 5 דק' פתיחה + 10 דק' תרגול + exit ticket חדש. המורה עורכת ומאשרת. <strong>חוסך 30–45 דק' שבועיות.</strong> לא להחליף את המורה — לחסוך לה זמן.</p>
+        <div style="margin-top:14px; font-size:13px; color: var(--burgundy); font-weight:700;">מודול תומך: 2</div>
+      </div>
+
+      <div class="glass-card leaf" style="border-top-color: var(--leaf);">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
+          <div style="background: var(--leaf); color: white; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-family: 'Rubik'; font-weight: 900; font-size: 20px;">04</div>
+          <h4 style="margin:0;">Weekly Family Note (אוטומטי)</h4>
+        </div>
+        <p style="font-size:15px; margin:0;">סוף שבוע — מייל/WhatsApp להורים: הצלחה אחת + אתגר אחד + פעולה אחת לבית. טון חיובי-ראשון. <strong>multiplier ידוע ב-SES נמוך.</strong> מורה מאשרת חתימה אחת על כל הכיתה.</p>
+        <div style="margin-top:14px; font-size:13px; color: var(--leaf); font-weight:700;">מודול תומך: 5 · חדש</div>
+      </div>
+    </div>
+
+    <div class="cards-grid" style="margin-top: 20px; grid-template-columns: 1fr;">
+      <div class="glass-card" style="border-top-color: var(--deep);">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
+          <div style="background: var(--deep); color: white; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-family: 'Rubik'; font-weight: 900; font-size: 20px;">05</div>
+          <h4 style="margin:0;">Conference Triage Queue</h4>
+        </div>
+        <p style="font-size:15px; margin:0;">המורה לא יודעת <em>עם מי</em> לדבר <em>מתי</em> — המערכת פותרת. תור של 5 תלמידים השבוע לקונפרינג 5–7 דק', מסודרים לפי דחיפות. כל שיחה — תיעוד מהיר R-C-T (Research-Compliment-Teach), 3 שדות, 30 שניות. <strong>זה ה-action עם הראיות הכי חזקות מ-Hattie וSerravallo.</strong></p>
+        <div style="margin-top:14px; font-size:13px; color: var(--deep); font-weight:700;">מודול תומך: 5 · חדש</div>
+      </div>
+    </div>
+
+    <div style="margin-top: 50px; padding: 28px 32px; background: rgba(46,125,140,0.08); border-right: 4px solid var(--teal); border-radius: 16px;">
+      <div style="font-family: 'Rubik'; font-weight: 800; font-size: 13px; letter-spacing: 1.5px; color: var(--teal-dark); text-transform: uppercase; margin-bottom: 10px;">4 המסכים של המורה</div>
+      <p style="margin: 0; font-size: 16px;">
+        <strong>1. ״מחר בבוקר״</strong> (7:30 בבוקר — משימה אחת, קבוצה אחת, 3 שיחות) ·
+        <strong>2. ״השבוע שלי״</strong> (Re-teach plans + PLC + Family Notes) ·
+        <strong>3. ״מסע התלמיד״</strong> (גרף mastery + שיחות + הורים) ·
+        <strong>4. ״הכיתה שלי״</strong> (Heatmap תקנים × תלמידים)
+      </p>
+    </div>
+
+    <div style="margin-top: 20px; padding: 24px 32px; background: rgba(139,58,74,0.06); border-right: 4px solid var(--burgundy); border-radius: 16px;">
+      <div style="font-family: 'Rubik'; font-weight: 800; font-size: 13px; letter-spacing: 1.5px; color: var(--burgundy); text-transform: uppercase; margin-bottom: 10px;">מטריקות הצלחה — לא רק על תלמידים, גם על המערכת עצמה</div>
+      <p style="margin: 0; font-size: 15px;">
+        <strong>Action Take-up Rate</strong> (&gt;60%) · <strong>Re-teach Success Rate</strong> (&gt;65%) · <strong>Family Note Engagement</strong> (&gt;40%) · <strong>Time-Saved Index</strong> (&gt;20 דק'/יום) · <strong>Teacher Cognitive Load</strong> (חייב לרדת, לא לעלות)
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============== LEVELS ============== -->
+<section class="section" style="background: var(--white);">
+  <div class="container">
+    <span class="section-eyebrow leaf">מבנה נתונים</span>
+    <h2>ארבע רמות — שני צירים, שתי שפות</h2>
+    <p class="section-lede">
+      ארבע הרמות הן שפת הליבה של המוצר — מתואמות לשפת תוכניות הכלה ארציות. <strong>פנימית (למורה ולמטה):</strong> עצמאי / חלקית / התאמות / תמיכה מוגברת. <strong>חיצונית (לתלמיד ולהורים):</strong> שמות צבעוניים נטולי-היררכיה — כחול / ירוק / סגול / כתום. בכוונה תחילה: לא צבעי רמזור, לא תיוג גלוי, לא Tier 1/2/3 שתלמיד רואה.
+    </p>
+
+    <div class="levels-grid">
+      <div class="level-card l-blue">
+        <div class="level-num">1</div>
+        <div class="level-name">כחול · עצמאי</div>
+        <div class="level-desc">מסתדר לבד, מתקדם בקצב העצמאי, מחפש אתגר נוסף</div>
+      </div>
+      <div class="level-card l-green">
+        <div class="level-num">2</div>
+        <div class="level-name">ירוק · חלקית</div>
+        <div class="level-desc">דורש סיוע נקודתי — שאלה מנחה, דוגמה נוספת</div>
+      </div>
+      <div class="level-card l-purple">
+        <div class="level-num">3</div>
+        <div class="level-name">סגול · התאמות</div>
+        <div class="level-desc">דורש התאמות משמעותיות — הקראה, זמן נוסף, פיגום מובנה</div>
+      </div>
+      <div class="level-card l-orange">
+        <div class="level-num">4</div>
+        <div class="level-name">כתום · תמיכה מוגברת</div>
+        <div class="level-desc">דורש ליווי אינטנסיבי — סיוע אישי, מטרה צרה, פיגום צפוף</div>
+      </div>
+    </div>
+
+    <div class="cards-grid cols-2" style="margin-top: 30px;">
+      <div class="glass-card">
+        <h4>Readiness — מוכנות</h4>
+        <p style="font-size: 15px; margin: 0;">מרחק התלמיד מיעד הלמידה הנוכחי. נמדד דרך הערכות מקדימות, תצפיות מורה, וביצוע במשימות תרגול במערכת. זהו הציר העיקרי לקביעת רמה.</p>
+      </div>
+      <div class="glass-card sand">
+        <h4>Interest — עניין</h4>
+        <p style="font-size: 15px; margin: 0;">מה מעורר סקרנות אצל התלמיד. נאסף דרך בחירות התלמיד בבנק הפעילויות (חוזר על אותם נושאים? בוחר תמיד טקסט? תמיד וידאו?). משמש להמלצות תוכן.</p>
+      </div>
+      <div class="glass-card burgundy">
+        <h4>Learning Profile — פרופיל למידה</h4>
+        <p style="font-size: 15px; margin: 0;">העדפות עיבוד מידע. נאסף משאלון קצר בתחילת שנה + מנתוני שימוש (זמן ממוצע, סוג ערוץ, מבנה מועדף). משמש להתאמת ערוצי הצגה.</p>
+      </div>
+      <div class="glass-card leaf">
+        <h4>Tier (MTSS) — שכבת תמיכה</h4>
+        <p style="font-size: 15px; margin: 0;">שכבה 1/2/3 — איזו עוצמה של מענה התלמיד מקבל. תלמיד יכול להיות ברמה 4 בשפה ובשכבה 1 בחשבון. הצירים אינם זהים.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== JOURNEYS ============== -->
+<section class="section">
+  <div class="container">
+    <span class="section-eyebrow">מסעות שימוש</span>
+    <h2>איך כל בעלת תפקיד עובדת עם המערכת</h2>
+    <p class="section-lede">
+      התוכנית מוגדרת בשלושה מעגלים — בית ספר, ליווי, מטה. המערכת משרתת ארבעה תפקידים מרכזיים בכל אחד.
+    </p>
+
+    <div class="cards-grid cols-2">
+      <!-- Teacher -->
+      <div class="journey-card">
+        <div class="journey-head">
+          <div class="journey-icon">
+            <svg viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          </div>
+          <div>
+            <div class="journey-role">מורה / מחנכת</div>
+            <div class="journey-sub">השימוש היומיומי</div>
+          </div>
+        </div>
+        <ul class="journey-flow">
+          <li>בוקר — פותחת ״פרופיל הכיתה״, רואה תלמידים שירדו רמה השבוע</li>
+          <li>תכנון שיעור — בוחרת נושא, ה־AI מציע 4 רמות, היא עורכת ומאשרת</li>
+          <li>בכיתה — מקרינה את הגרסה הרגילה, שולחת לתלמידי תמיכה גרסה אישית</li>
+          <li>סוף שיעור — מסמנת התקדמות (״רוני התקדמה״) או הערה רגשית-חברתית</li>
+          <li>שבועי — סוקרת התקדמות, מתעדכנת בהמלצות אוטומטיות לסל המענים</li>
+        </ul>
+      </div>
+
+      <!-- Inclusion Coordinator -->
+      <div class="journey-card sand">
+        <div class="journey-head">
+          <div class="journey-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/></svg>
+          </div>
+          <div>
+            <div class="journey-role">רכזת הכלה</div>
+            <div class="journey-sub">תפקיד חדש — ריכוז המענים בבית הספר</div>
+          </div>
+        </div>
+        <ul class="journey-flow">
+          <li>שבועי — סוקרת תלמידים בקריטיים (ירדו רמה / Tier-3 / מעוכבי הערכה)</li>
+          <li>מאשרת בקשות מענה ממורות (״תגבור פרטני״ / ״הקראת מבחנים״)</li>
+          <li>מקיימת שיחות 1:1 עם מחנכות שמובילות מקרים מורכבים</li>
+          <li>מעדכנת סל מענים — המערכת מתעדת אוטומטית בכרטיס תלמיד</li>
+          <li>מציגה בישיבת הצוות נתונים — איפה מתקדמים, איפה תקועים</li>
+        </ul>
+      </div>
+
+      <!-- Mentor / Liaison -->
+      <div class="journey-card burgundy">
+        <div class="journey-head">
+          <div class="journey-icon">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg>
+          </div>
+          <div>
+            <div class="journey-role">מלווה</div>
+            <div class="journey-sub">איש מקצוע, יום שבועי בכל בית ספר</div>
+          </div>
+        </div>
+        <ul class="journey-flow">
+          <li>לפני הביקור — קורא בדשבורד הבית-ספרי מה זז מאז הפעם הקודמת</li>
+          <li>בביקור — נכנס לכיתות, רואה את ה־״פרופיל הכיתה״ עם המורה</li>
+          <li>שיחה עם רכזת ההכלה — ממוקדת בנתונים, לא בהתרשמות בלבד</li>
+          <li>בסוף היום — מסמן ב־״דוחות ביקור מלווים״ ממצאים והמלצות</li>
+          <li>דיווח לרשת/רשות — אגרגציה אוטומטית למטה, חוסכת מסכי דיווח כפולים</li>
+        </ul>
+      </div>
+
+      <!-- Program Director -->
+      <div class="journey-card leaf">
+        <div class="journey-head">
+          <div class="journey-icon">
+            <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M8 14l3-6 4 4 5-9"/></svg>
+          </div>
+          <div>
+            <div class="journey-role">מנהל/ת רשת או רשות</div>
+            <div class="journey-sub">מטה התוכנית — מדידה רוחבית על עשרות מוסדות</div>
+          </div>
+        </div>
+        <ul class="journey-flow">
+          <li>מבט-על שבועי — תמונת מצב על 60+ מוסדות בעמוד אחד</li>
+          <li>זיהוי דפוסים — באילו בתי ספר ה־DI ״עובד״, איפה לא, ולמה</li>
+          <li>החלטות הקצאה — לאן לשלוח עוד מלווה / משאב תוספתי / הכשרה</li>
+          <li>דוחות חיצוניים — לרשת, מטה, רשות, משרד החינוך — בלחיצה</li>
+          <li>ראייה רב-שנתית — ההתקדמות לעבר יעד תשפ״ט: ביטול כיתות מקדמות</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== KPIs ============== -->
+<section class="section" style="background: var(--white);">
+  <div class="container">
+    <span class="section-eyebrow burgundy">מדדי הצלחה</span>
+    <h2>שתים-עשרה מטריקות בשלוש שכבות</h2>
+    <p class="section-lede">
+      ״מה שנמדד מנוהל״. המערכת אוספת אוטומטית את כל המדדים האלו — ללא הקלדה כפולה — ומציגה אותם לרכזת ההכלה ולמטה התוכנית.
+    </p>
+
+    <div class="kpi-section">
+      <!-- Output -->
+      <div class="kpi-column">
+        <div class="kpi-eyebrow">Output</div>
+        <h4>מה המורה עושה</h4>
+        <ul class="kpi-list">
+          <li><span class="check">1</span><div><strong>שיעור התאמת שיעורים</strong> — % שיעורים מתועדים עם דיפרנציאציה</div></li>
+          <li><span class="check">2</span><div><strong>גיוון פעילויות</strong> — ממוצע פעילויות שונות לכיתה הטרוגנית בשבוע</div></li>
+          <li><span class="check">3</span><div><strong>שימוש בנתוני אבחון</strong> — % מורות שעדכנו פרופיל כיתה החודש</div></li>
+          <li><span class="check">4</span><div><strong>שעות co-teaching</strong> — שעות בהן שתי מורות נכחו בכיתה</div></li>
+        </ul>
+      </div>
+
+      <!-- Outcome -->
+      <div class="kpi-column sand">
+        <div class="kpi-eyebrow">Outcome</div>
+        <h4>מה התלמידים משיגים</h4>
+        <ul class="kpi-list">
+          <li><span class="check">5</span><div><strong>רווחי הישגים</strong> — Δ ציונים מ-baseline, מפולח ל־4 רמות</div></li>
+          <li><span class="check">6</span><div><strong>צמצום פער הישגים</strong> — פער רביעון עליון/תחתון בכיתה</div></li>
+          <li><span class="check">7</span><div><strong>שביעות רצון מורות</strong> — סקר טרימסטריאלי על עומס ומסוגלות</div></li>
+          <li><span class="check">8</span><div><strong>שביעות רצון הורים</strong> — דגש על הורי תלמידים עם צרכים מיוחדים</div></li>
+          <li><span class="check">9</span><div><strong>תחושת שייכות תלמיד</strong> — סקר חודשי קצר (UDL 3.0)</div></li>
+        </ul>
+      </div>
+
+      <!-- System -->
+      <div class="kpi-column burgundy">
+        <div class="kpi-eyebrow">System</div>
+        <h4>שילוב מערכתי</h4>
+        <ul class="kpi-list">
+          <li><span class="check">10</span><div><strong>% תלמידים בכיתות מקדמות</strong> — יעד תשפ״ט: 0%</div></li>
+          <li><span class="check">11</span><div><strong>שיעור הפניות לוועדת זכאות</strong> — צפי ירידה כש־DI עובד</div></li>
+          <li><span class="check">12</span><div><strong>שיעור נשירה</strong> — דגש על ״נשירה סמויה״ (נוכח אבל מנותק)</div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== IMPLEMENTATION ============== -->
+<section class="section section-dark">
+  <div class="container">
+    <span class="section-eyebrow">שלבי הטמעה</span>
+    <h2>מהפיילוט לפריסה מלאה — שלוש שנים</h2>
+    <p class="section-lede">
+      המוצר נפרס בשלוש פאזות. כל פאזה מוסיפה שכבה — אבל המודל מוכח כבר בפיילוט הראשון. הפריסה מתואמת לקדנציה השנתית של בית הספר ולשנת תקציב של הרשת/רשות.
+    </p>
+
+    <div class="timeline">
+      <div class="timeline-row">
+        <div>
+          <div class="timeline-year">שנה 1</div>
+          <div class="timeline-phase">פיילוט · Validation</div>
+        </div>
+        <div class="timeline-content">
+          <h4>פיילוט ב־3-5 מוסדות · חבילת תוכן אחת</h4>
+          <p style="color: rgba(245, 240, 232, 0.85);">בחירת מוסדות מובילים. הטמעת מודולים 1+3+4 (פרופיל כיתה + בנק פעילויות + הערכה אדפטיבית) בכ־15 כיתות. חבילת תוכן ראשונה (למשל לשון או מתמטיקה). הכשרת מורות והדרכה של רכזות הכלה. איסוף נתוני baseline.</p>
+          <ul>
+            <li>מנגנון משוב שבועי מהמורות — שיפור הכלי בקדנציה מהירה</li>
+            <li>חבילת תוכן ראשונה — 200+ פריטים מתויגים ב-4 רמות</li>
+            <li>אינטגרציה אופציונלית עם תיק תלמיד וסל מענים בית-ספריים</li>
+            <li>מדידת KPI 1-9 — מדדי כיתה ובית ספר</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="timeline-row">
+        <div>
+          <div class="timeline-year">שנה 2</div>
+          <div class="timeline-phase">הרחבה · Scale</div>
+        </div>
+        <div class="timeline-content">
+          <h4>הרחבת מוסדות + הוספת מודולים 2+5 + חבילות תוכן נוספות</h4>
+          <p style="color: rgba(245, 240, 232, 0.85);">פתיחת בנק הפעילויות לשיתוף בין-מוסדי (לימודי עמיתים). הוספת מחולל שיעור AI ודשבורד המעקב. הוספת 2-3 חבילות תוכן נוספות (מתמטיקה, אזרחות, היסטוריה). תחילת מדידת השפעה על הפניות לוועדות זכאות.</p>
+          <ul>
+            <li>״ספריית כיתה״ — מורות מאמצות שיעורים מאחיות מבית ספר אחר</li>
+            <li>הערכה אדפטיבית מחליפה מבחני מצב סטנדרטיים</li>
+            <li>דשבורד רשת/רשות — תמונה מלאה על כל המוסדות</li>
+            <li>מדידת KPI 10-12 — שילוב מערכתי</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="timeline-row">
+        <div>
+          <div class="timeline-year">שנה 3</div>
+          <div class="timeline-phase">בגרות · Platform</div>
+        </div>
+        <div class="timeline-content">
+          <h4>פלטפורמה בוגרת + שווקים חדשים</h4>
+          <p style="color: rgba(245, 240, 232, 0.85);">המערכת מוכחת. רישיון לרשתות נוספות, אדפטציה לגיל הרך (גנים), ולמדיומים מחוץ לחינוך (הכשרות עובדים, אונבורדינג). מחקר אקדמי על האפקט עם אוניברסיטה שותפה.</p>
+          <ul>
+            <li>אדפטציה לגנים — ממשק מותאם לגננות ולגיל הרך</li>
+            <li>הוצאת ״Playbook״ — מסמך הטמעה לרשויות חדשות</li>
+            <li>מחקר אקדמי על האפקט — שותפות עם מנהל מחקר אקדמי</li>
+            <li>הצעת ערך מחוץ לחינוך — הכשרות, אונבורדינג, שיווק, יזמות</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== CHALLENGES ============== -->
+<section class="section">
+  <div class="container">
+    <span class="section-eyebrow burgundy">אתגרים מוכרים</span>
+    <h2>חמש מלכודות שמערכות אחרות נפלו בהן — ואיך נימנע</h2>
+    <p class="section-lede">
+      הספרות מתעדת בדיוק היכן מערכות דיפרנציאציה נכשלות. אנחנו מודעים לכל אחת ובונים את המערכת מהיום הראשון כדי להימנע מהן.
+    </p>
+
+    <div class="challenge-card">
+      <div class="challenge-side problem">
+        <h4><span class="icon-pill"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg></span>Differentiation Burnout</h4>
+        <p>מורות שמיישמות DI ידנית מדווחות על שעות נוספות של תכנון ורמת שחיקה גבוהה (Smale-Jacobse, 2022, Teaching and Teacher Education).</p>
+      </div>
+      <div class="challenge-side solution">
+        <h4><span class="icon-pill"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>הפתרון שלנו</h4>
+        <p>יעד מדיד: שיעור דיפרנציאלי ל־4 רמות בפחות מ־15 דקות. מחולל ה־AI נותן טיוטה מוכנה — המורה רק עורכת. כל מסך נמדד מול הקריטריון הזה.</p>
+      </div>
+    </div>
+
+    <div class="challenge-card">
+      <div class="challenge-side problem">
+        <h4><span class="icon-pill"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg></span>Watered-Down Content</h4>
+        <p>בכוונה להנגיש, התוכן מצטמצם עד שהתלמיד החלש לומד ״פחות״. זה הטיעון המרכזי של מתנגדי השילוב.</p>
+      </div>
+      <div class="challenge-side solution">
+        <h4><span class="icon-pill"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>הפתרון שלנו</h4>
+        <p>עיקרון Newsela — אותו תוכן ברמות מורכבות שונות. לא משנים את היעד הקוגניטיבי, רק את הפיגום. UDL 3.0: ״ציפיות גבוהות לכולם״.</p>
+      </div>
+    </div>
+
+    <div class="challenge-card">
+      <div class="challenge-side problem">
+        <h4><span class="icon-pill"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg></span>AI Replacing the Teacher</h4>
+        <p>מחקרי 2025 ב־Cogent Education ו־Frontiers מתעדים over-reliance על AI במחיר חשיבה ביקורתית של תלמידים — ואובדן שיקול דעת מקצועי של מורים.</p>
+      </div>
+      <div class="challenge-side solution">
+        <h4><span class="icon-pill"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>הפתרון שלנו</h4>
+        <p>״המערכת מציעה — המורה מאשרת״. כל המלצת AI ניתנת לעריכה, מסומנת כהצעה, ומגיעה עם הסבר ״למה״. מורה ב־loop בכל החלטה משמעותית.</p>
+      </div>
+    </div>
+
+    <div class="challenge-card">
+      <div class="challenge-side problem">
+        <h4><span class="icon-pill"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg></span>Fragmentation</h4>
+        <p>מורה צריכה לעבוד מול 5 מערכות נפרדות — משו״ב, מבחנים, חינוך מיוחד, הורים, אוצר תכנים. כל אחת עם login נפרד.</p>
+      </div>
+      <div class="challenge-side solution">
+        <h4><span class="icon-pill"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>הפתרון שלנו</h4>
+        <p>Single Source of Truth — פרופיל תלמיד מאוחד שמושך נתונים מ־Google Sheet אחד. אינטגרציה בקצוות — לא תחליף למערכות הקיימות אלא שכבת תזמורת מעליהן.</p>
+      </div>
+    </div>
+
+    <div class="challenge-card">
+      <div class="challenge-side problem">
+        <h4><span class="icon-pill"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg></span>Inconsistent Implementation</h4>
+        <p>Deunk et al. (2018): אפקטים נצפו רק כשה־DI הוטמע באופן עקבי במסגרת רחבה. יישום ספורדי = אפס אפקט.</p>
+      </div>
+      <div class="challenge-side solution">
+        <h4><span class="icon-pill"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>הפתרון שלנו</h4>
+        <p>תבנית בית-ספרית אחידה, הדרכה מתמשכת של רכזות ההכלה כ־״DI Coaches״, וליווי הטמעה צמוד מצד צוות המוצר בחודשי הפיילוט (יום שבועי במוסד) כמסגרת תמיכה.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== AUDIENCE BAR ============== -->
+<section class="section" style="background: var(--white);">
+  <div class="container">
+    <span class="section-eyebrow leaf">רלוונטיות רחבה</span>
+    <h2>למה זה לא רק חינוך</h2>
+    <p class="section-lede">
+      העקרונות של למידה דיפרנציאלית — Co-pilot, אותו תוכן ברמות, ZPD, מקור אחד לאמת — חלים על כל הקשר שבו אנשים שונים נדרשים להגיע ליעד משותף בדרכים מותאמות.
+    </p>
+
+    <div class="audience-grid">
+      <div class="audience-card">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg>
+        </div>
+        <h4>חינוך</h4>
+        <p>הכלה אמיתית בכיתה הטרוגנית — היעד המרכזי של התוכנית.</p>
+      </div>
+      <div class="audience-card sand">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>
+        </div>
+        <h4>ניהול</h4>
+        <p>הכשרה מותאמת לרמת ניסיון של מנהלים. אותו תוכן (פיתוח מנהיגות) — מסלולים שונים לפי seniority.</p>
+      </div>
+      <div class="audience-card burgundy">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+        </div>
+        <h4>יזמות</h4>
+        <p>אקסלרטור שמתאים לשלב היזם — Pre-seed, Seed, Series A. אותם עקרונות ניהוליים — פיגום שונה.</p>
+      </div>
+      <div class="audience-card leaf">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 11-5.8-1.6"/></svg>
+        </div>
+        <h4>שיווק</h4>
+        <p>אישיות תוכן (personas) ברמות מודעות שונות. אותו מסר — נוסחים שונים לרמת המעורבות. UDL 3.0 בקנייה.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== BIBLIOGRAPHY ============== -->
+<section class="section section-dark">
+  <div class="container">
+    <span class="section-eyebrow">ביבליוגרפיה ומקורות</span>
+    <h2>על מה האיפיון הזה מתבסס</h2>
+    <p class="section-lede">כל טענה במסמך זה ניתנת לאימות במקור אקדמי או דוח ראיות. רשימת המקורות המרכזית:</p>
+
+    <ul class="bib-list">
+      <li><span class="bib-num">1.</span> Tomlinson, C. A. (2017). <em>How to Differentiate Instruction in Academically Diverse Classrooms</em> (3rd ed.). ASCD.</li>
+      <li><span class="bib-num">2.</span> CAST (2024). <a href="https://udlguidelines.cast.org/more/about-guidelines-3-0/" target="_blank" rel="noopener">Universal Design for Learning Guidelines version 3.0</a>.</li>
+      <li><span class="bib-num">3.</span> Smale-Jacobse, A. E., Meijer, A., Helms-Lorenz, M., & Maulana, R. (2019). <a href="https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2019.02366/full" target="_blank" rel="noopener">Differentiated Instruction in Secondary Education: A Systematic Review</a>. <em>Frontiers in Psychology, 10</em>.</li>
+      <li><span class="bib-num">4.</span> Deunk, M. I., Smale-Jacobse, A. E., de Boer, H., Doolaard, S., & Bosker, R. J. (2018). <a href="https://www.sciencedirect.com/science/article/abs/pii/S1747938X18301039" target="_blank" rel="noopener">Effective Differentiation Practices: A Systematic Review and Meta-analysis</a>. <em>Educational Research Review, 24</em>.</li>
+      <li><span class="bib-num">5.</span> Ziernwald, L., Hillmayr, D., & Holzberger, D. (2022). Promoting High-Achieving Students Through Differentiated Instruction in Mixed-Ability Classrooms — A Systematic Review. <em>Journal of Advanced Academics, 33</em>(4).</li>
+      <li><span class="bib-num">6.</span> Hattie, J. <a href="https://visible-learning.org/hattie-ranking-influences-effect-sizes-learning-achievement/" target="_blank" rel="noopener">Visible Learning — 256+ Influences on Student Achievement</a>.</li>
+      <li><span class="bib-num">7.</span> Pane, J. F., Steiner, E. D., Baird, M. D., Hamilton, L. S., & Pane, J. D. (2017). <a href="https://www.rand.org/pubs/research_reports/RR2042.html" target="_blank" rel="noopener">Informing Progress: Insights on Personalized Learning</a>. RAND Research Report.</li>
+      <li><span class="bib-num">8.</span> Vygotsky, L. S. (1978). <em>Mind in Society: The Development of Higher Psychological Processes</em>. Harvard University Press.</li>
+      <li><span class="bib-num">9.</span> Wood, D., Bruner, J. S., & Ross, G. (1976). The role of tutoring in problem solving. <em>Journal of Child Psychology and Psychiatry, 17</em>(2).</li>
+      <li><span class="bib-num">10.</span> Ontario Ministry of Education (2010, 2016). <a href="http://www.edugains.ca/resourcesDI/EducatorsPackages/DIEducatorsPackage_2016/DI_EducatorsGuide_AODA.pdf" target="_blank" rel="noopener">Differentiated Instruction Educator's Package</a>.</li>
+      <li><span class="bib-num">11.</span> Björn, P. M., et al. (2024). The Finnish three-tiered support system: A review. <em>European Journal of Special Needs Education</em>.</li>
+      <li><span class="bib-num">12.</span> D'Alessio, S. (2020). <a href="https://link.springer.com/article/10.1007/s11125-020-09509-7" target="_blank" rel="noopener">Inclusive education in Italy: Historical steps</a>. <em>PROSPECTS</em>.</li>
+      <li><span class="bib-num">13.</span> Curriculum Associates (2024). <a href="https://www.curriculumassociates.com/research-and-efficacy/impact-i-ready-personalized-instruction-reading-math-achievement" target="_blank" rel="noopener">Impact of i-Ready Personalized Instruction</a>.</li>
+      <li><span class="bib-num">14.</span> משרד החינוך, מדינת ישראל. <a href="https://pop.education.gov.il/hahala-hishtalvot/" target="_blank" rel="noopener">תוכנית הכלה והשתלבות</a>.</li>
+      <li><span class="bib-num">15.</span> US Department of Education (2023). <a href="https://www.ed.gov/sites/ed/files/documents/ai-report/ai-report.pdf" target="_blank" rel="noopener">Artificial Intelligence and the Future of Teaching and Learning</a>.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============== FOOTER ============== -->
+<footer class="spec-footer">
+  <div class="container">
+    <div class="signature">ImpactOS · למידה דיפרנציאלית — איפיון המוצר</div>
+    <div>מנוע גנרי + חבילות תוכן · משפחת ImpactOS</div>
+    <div style="margin-top: 14px;">
+      <a href="index.html" style="color: var(--sand); text-decoration: none; border-bottom: 1px dashed var(--sand);">← דף הבית של המוצר</a>
+      &nbsp;·&nbsp;
+      <a href="demo.html" style="color: var(--sand); text-decoration: none; border-bottom: 1px dashed var(--sand);">דמו חי</a>
+    </div>
+    <div style="margin-top: 18px; opacity: 0.5; font-size: 11px;">הוכן ע״י Learni · Meytal Peleg · meytalp@bethaarava.ort.org.il</div>
+  </div>
+</footer>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.section, .glass-card, .module-card, .principle-item, .journey-card, .bento-card').forEach(el => {
+    el.classList.add('reveal');
+    observer.observe(el);
+  });
+</script>
+
+</body>
+</html>

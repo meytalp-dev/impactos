@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>נחשו את המילה · Impact SO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+.hng-face { text-align:center; font-size:64px; line-height:1; margin-bottom:8px; transition:transform .3s; }
+.hng-lives { display:flex; gap:5px; justify-content:center; margin-bottom:14px; }
+.hng-life { width:10px; height:10px; border-radius:50%; background:var(--green); transition:all .3s; }
+.hng-life.lost { background:var(--red); transform:scale(.6); }
+.hng-hint {
+  background:var(--blue-l); color:#1E40AF;
+  padding:10px 14px; border-radius:10px;
+  font-size:13px; font-weight:600; line-height:1.5;
+  margin-bottom:14px; text-align:center;
+}
+.hng-hint::before { content:"💡 רמז: "; font-weight:700; }
+.hng-word {
+  display:flex; gap:8px; justify-content:center;
+  flex-wrap:wrap; margin-bottom:20px;
+}
+.hng-letter {
+  width:40px; height:48px; border-bottom:3px solid var(--text2);
+  display:grid; place-items:center;
+  font-family:'Heebo',sans-serif;
+  font-size:24px; font-weight:800; color:var(--text);
+}
+.hng-letter.space { border:none; width:14px; }
+.hng-keyboard {
+  display:grid; grid-template-columns:repeat(11,1fr); gap:5px;
+}
+.hng-key {
+  aspect-ratio:1; border:1px solid var(--border); background:white;
+  border-radius:8px; cursor:pointer;
+  font-family:'Heebo',sans-serif;
+  font-size:15px; font-weight:700; color:var(--text);
+  transition:all .15s;
+  display:grid; place-items:center;
+  min-height:38px;
+}
+.hng-key:hover:not(:disabled) { background:var(--primary-bg); border-color:var(--primary); color:var(--primary); }
+.hng-key.found { background:var(--green-l); border-color:var(--green); color:var(--green); cursor:not-allowed; }
+.hng-key.miss { background:var(--red-l); border-color:var(--red); color:var(--red); opacity:.55; cursor:not-allowed; }
+.hng-key:disabled { cursor:not-allowed; }
+.hng-actions { margin-top:14px; text-align:center; }
+@media (max-width:600px) {
+  .hng-keyboard { grid-template-columns:repeat(8,1fr); }
+  .hng-key { font-size:13px; min-height:34px; }
+  .hng-letter { width:30px; height:38px; font-size:20px; }
+}
+</style>
+</head>
+<body>
+
+<div id="topbar"></div>
+<div class="game-shell"><div id="root" class="loading"><div class="spinner"></div><div>טוען...</div></div></div>
+
+<script src="shared.js"></script>
+<script>
+(function(){
+  const CONTENT = IGS.getParam('content', 'content.json');
+  const KIT_TITLE = IGS.getParam('kit', '');
+  const BACK = IGS.getParam('back', '../index.html');
+
+  const ALPHABET = 'אבגדהוזחטיכלמנסעפצקרשת'.split('');
+  const FACES = ['🙂','😐','😟','😰','😱','💀'];
+  const MAX_MISSES = 6;
+
+  let cfg, items, current=0, won=0;
+  let word='', hint='', revealed=[], misses=[], finished=false;
+  let studentName='', studentClass='';
+
+  document.getElementById('topbar').innerHTML = IGS.topbarHtml({
+    gameType:'hangman', title:'נחשו את המילה', kitTitle:KIT_TITLE, backHref:BACK
+  });
+
+  IGS.loadContent(CONTENT).then(data => {
+    cfg = data;
+    document.getElementById('root').innerHTML = IGS.welcomeHtml({
+      gameType:'hangman', title: cfg.title || 'נחשו את המילה',
+      subtitle: cfg.subtitle, classes: cfg.classes, kitTitle: KIT_TITLE,
+    });
+    IGS.wireWelcomeForm(s => { studentName=s.studentName; studentClass=s.studentClass; startGame(); });
+  }).catch(err => {
+    document.getElementById('root').innerHTML = '<div class="card"><h2 style="color:var(--red)">שגיאה</h2><p>'+IGS.escapeHtml(err.message)+'</p></div>';
+  });
+
+  function startGame(){
+    items = cfg.settings && cfg.settings.shuffleItems !== false ? IGS.shuffle(cfg.items) : cfg.items.slice();
+    current=0; won=0;
+    setupWord();
+  }
+
+  function setupWord(){
+    const w = items[current];
+    word = String(w.word || '').replace(/[׳״'״]/g, ''); // strip geresh/gershayim
+    hint = w.hint || '';
+    revealed = word.split('').map(ch => ch === ' ' || !/[א-ת]/.test(ch));
+    misses = [];
+    finished = false;
+    render();
+  }
+
+  function render(){
+    const faceIdx = Math.min(misses.length, FACES.length-1);
+    document.getElementById('root').innerHTML =
+      IGS.progressHtml(current+1, items.length, 'מילה') +
+      '<div class="card">' +
+        '<div class="hng-face">'+FACES[faceIdx]+'</div>' +
+        '<div class="hng-lives">' +
+          [0,1,2,3,4,5].map(i => '<div class="hng-life '+(i < misses.length ? 'lost' : '')+'"></div>').join('') +
+        '</div>' +
+        (hint ? '<div class="hng-hint">'+IGS.escapeHtml(hint)+'</div>' : '') +
+        '<div class="hng-word">' +
+          word.split('').map((ch,i) => {
+            if (ch === ' ') return '<div class="hng-letter space"></div>';
+            return '<div class="hng-letter">'+(revealed[i] ? IGS.escapeHtml(ch) : '')+'</div>';
+          }).join('') +
+        '</div>' +
+        (finished ? '' :
+        '<div class="hng-keyboard">' +
+          ALPHABET.map(letter => {
+            let cls = 'hng-key';
+            let dis = '';
+            if (word.includes(letter)) {
+              if (revealed.some((r,i) => r && word[i] === letter)) { cls += ' found'; dis = 'disabled'; }
+            }
+            if (misses.includes(letter)) { cls += ' miss'; dis = 'disabled'; }
+            return '<button class="'+cls+'" data-l="'+letter+'" '+dis+'>'+letter+'</button>';
+          }).join('') +
+        '</div>') +
+        (finished ? '<div class="hng-actions"><button class="btn-primary" id="nextBtn">'+(current === items.length-1 ? 'סיום ←' : 'המילה הבאה ←')+'</button></div>' : '') +
+      '</div>';
+
+    if (!finished) {
+      document.querySelectorAll('.hng-key').forEach(b => b.addEventListener('click', () => guess(b.dataset.l)));
+    } else {
+      document.getElementById('nextBtn').addEventListener('click', nextWord);
+    }
+  }
+
+  function guess(letter){
+    if (finished) return;
+    if (word.includes(letter)) {
+      word.split('').forEach((ch,i) => { if (ch === letter) revealed[i] = true; });
+      if (revealed.every(Boolean)) {
+        won++; finished = true;
+      }
+    } else {
+      misses.push(letter);
+      if (misses.length >= MAX_MISSES) {
+        // reveal all
+        revealed = word.split('').map(() => true);
+        finished = true;
+      }
+    }
+    render();
+  }
+
+  function nextWord(){
+    current++;
+    if (current >= items.length) finish();
+    else setupWord();
+  }
+
+  function finish(){
+    IGS.showResult({
+      gameType:'hangman',
+      gameTitle: cfg.title || 'נחשו את המילה',
+      studentName, studentClass,
+      correctItems: won, totalItems: items.length,
+      percentage: IGS.pct(won, items.length),
+      teacherEmail: cfg.teacherEmail,
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>גלגל המזל · Impact SO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+.wheel-wrap {
+  display:flex; flex-direction:column; align-items:center;
+  position:relative; padding:20px 0;
+}
+.wheel-canvas-wrap {
+  position:relative; width:340px; height:340px;
+  margin:0 auto;
+}
+.wheel-canvas {
+  width:100%; height:100%;
+  transition:transform 3s cubic-bezier(.17,.67,.4,1.01);
+}
+.wheel-pointer {
+  position:absolute; top:-2px; left:50%;
+  transform:translateX(-50%);
+  width:0; height:0;
+  border-left:18px solid transparent;
+  border-right:18px solid transparent;
+  border-top:30px solid var(--primary);
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.2));
+  z-index:5;
+}
+.wheel-spin {
+  margin-top:24px;
+  background:linear-gradient(135deg, var(--primary), var(--primary-d));
+  color:white; border:none;
+  padding:14px 36px; border-radius:14px;
+  font-family:'Heebo',sans-serif;
+  font-weight:800; font-size:15px;
+  cursor:pointer;
+  box-shadow:0 8px 24px rgba(236,72,153,.3);
+  transition:transform .15s;
+}
+.wheel-spin:hover:not(:disabled) { transform:translateY(-1px); }
+.wheel-spin:disabled { opacity:.5; cursor:not-allowed; }
+.wheel-popup {
+  margin-top:20px;
+  animation:fadeUp .35s var(--ease);
+}
+@media (max-width:600px) {
+  .wheel-canvas-wrap { width:280px; height:280px; }
+}
+</style>
+</head>
+<body>
+
+<div id="topbar"></div>
+<div class="game-shell"><div id="root" class="loading"><div class="spinner"></div><div>טוען...</div></div></div>
+
+<script src="shared.js"></script>
+<script>
+(function(){
+  const CONTENT = IGS.getParam('content', 'content.json');
+  const KIT_TITLE = IGS.getParam('kit', '');
+  const BACK = IGS.getParam('back', '../index.html');
+
+  const COLORS = ['#EC4899','#F472B6','#A78BFA','#60A5FA','#34D399','#FBBF24','#FB923C','#F87171','#22D3EE','#8B5CF6','#10B981','#F59E0B'];
+
+  let cfg, items, answered=[], correct=0;
+  let studentName='', studentClass='';
+  let rotation = 0;
+  let spinning = false;
+
+  document.getElementById('topbar').innerHTML = IGS.topbarHtml({
+    gameType:'wheel', title:'גלגל המזל', kitTitle:KIT_TITLE, backHref:BACK
+  });
+
+  IGS.loadContent(CONTENT).then(data => {
+    cfg = data;
+    document.getElementById('root').innerHTML = IGS.welcomeHtml({
+      gameType:'wheel', title: cfg.title || 'גלגל המזל',
+      subtitle: cfg.subtitle || 'סובבו את הגלגל וענו על השאלה',
+      classes: cfg.classes,
+    });
+    IGS.wireWelcomeForm(s => { studentName=s.studentName; studentClass=s.studentClass; startGame(); });
+  }).catch(err => {
+    document.getElementById('root').innerHTML = '<div class="card"><h2 style="color:var(--red)">שגיאה</h2><p>'+IGS.escapeHtml(err.message)+'</p></div>';
+  });
+
+  function startGame(){
+    items = cfg.items.slice();
+    answered = items.map(() => false);
+    correct = 0;
+    render();
+  }
+
+  function render(){
+    const remaining = answered.filter(a => !a).length;
+    document.getElementById('root').innerHTML =
+      IGS.progressHtml(items.length - remaining, items.length, 'שאלות') +
+      '<div class="card">' +
+        '<div class="wheel-wrap">' +
+          '<div class="wheel-canvas-wrap">' +
+            '<div class="wheel-pointer"></div>' +
+            '<canvas class="wheel-canvas" id="wheel" width="340" height="340"></canvas>' +
+          '</div>' +
+          '<button class="wheel-spin" id="spinBtn">🎡 סובבו!</button>' +
+        '</div>' +
+        '<div class="wheel-popup" id="popup"></div>' +
+      '</div>';
+
+    drawWheel();
+    document.getElementById('spinBtn').addEventListener('click', spin);
+  }
+
+  function drawWheel(){
+    const canvas = document.getElementById('wheel');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+    const cx = w/2, cy = h/2, r = w/2 - 4;
+    const n = items.length;
+    const slice = (Math.PI * 2) / n;
+    ctx.clearRect(0,0,w,h);
+
+    for (let i = 0; i < n; i++) {
+      const start = i * slice - Math.PI/2;
+      const end = start + slice;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, r, start, end);
+      ctx.closePath();
+      ctx.fillStyle = answered[i] ? '#CBD5E1' : COLORS[i % COLORS.length];
+      ctx.fill();
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      // number
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(start + slice/2);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = 'white';
+      ctx.font = 'bold 22px "Space Grotesk", sans-serif';
+      ctx.fillText(String(i+1), 0, -r * 0.65);
+      ctx.restore();
+    }
+
+    // center circle
+    ctx.beginPath();
+    ctx.arc(cx, cy, 32, 0, Math.PI*2);
+    ctx.fillStyle = 'white';
+    ctx.fill();
+    ctx.strokeStyle = '#EC4899';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+  }
+
+  function spin(){
+    if (spinning) return;
+    const remaining = items.map((_,i) => i).filter(i => !answered[i]);
+    if (remaining.length === 0) return finish();
+
+    const target = remaining[Math.floor(Math.random() * remaining.length)];
+    const n = items.length;
+    const slicePer = 360 / n;
+    // angle from canvas top to slice center
+    const sliceCenter = target * slicePer + slicePer/2;
+    // target rotation: 4-6 full rotations + (360 - sliceCenter)
+    const rounds = 4 + Math.floor(Math.random() * 3);
+    const final = rounds * 360 + (360 - sliceCenter);
+    rotation = final;
+
+    spinning = true;
+    const canvas = document.getElementById('wheel');
+    canvas.style.transform = 'rotate(' + rotation + 'deg)';
+    document.getElementById('spinBtn').disabled = true;
+
+    setTimeout(() => {
+      spinning = false;
+      askQuestion(target);
+    }, 3100);
+  }
+
+  function askQuestion(idx){
+    const q = items[idx];
+    const popup = document.getElementById('popup');
+    popup.innerHTML =
+      '<div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:18px;">' +
+        '<div style="font-size:11px;font-weight:700;color:var(--primary);margin-bottom:8px">שאלה ' + (idx+1) + '</div>' +
+        '<div class="q-text" style="font-size:18px">'+IGS.escapeHtml(q.text)+'</div>' +
+        '<div class="q-options" id="opts">' +
+          q.options.map((opt,i) =>
+            '<button class="q-opt" data-i="'+i+'">' +
+              '<span class="q-opt-letter">'+['א','ב','ג','ד'][i]+'</span>' +
+              '<span>'+IGS.escapeHtml(opt)+'</span>' +
+            '</button>'
+          ).join('') +
+        '</div>' +
+      '</div>';
+
+    document.querySelectorAll('.q-opt').forEach(btn => {
+      btn.addEventListener('click', () => answer(idx, parseInt(btn.dataset.i,10)));
+    });
+  }
+
+  function answer(idx, choice){
+    const q = items[idx];
+    const opts = document.querySelectorAll('.q-opt');
+    opts.forEach(b => b.disabled = true);
+    const isRight = choice === q.correct;
+    if (isRight) correct++;
+    opts.forEach((b,i) => {
+      if (i === q.correct) b.classList.add('correct');
+      else if (i === choice) b.classList.add('incorrect');
+      else b.classList.add('dimmed');
+    });
+    answered[idx] = true;
+    setTimeout(() => {
+      const remaining = answered.filter(a => !a).length;
+      if (remaining === 0) finish();
+      else render();
+    }, 1500);
+  }
+
+  function finish(){
+    IGS.showResult({
+      gameType:'wheel',
+      gameTitle: cfg.title || 'גלגל המזל',
+      studentName, studentClass,
+      correctItems: correct, totalItems: items.length,
+      percentage: IGS.pct(correct, items.length),
+      teacherEmail: cfg.teacherEmail,
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

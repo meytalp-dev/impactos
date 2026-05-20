@@ -1,0 +1,1885 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>אבני יסוד · מערכת דיפרנציאלית לקריאה וכתיבה — כיתות א'-ב'</title>
+<meta name="description" content="ImpactOS Literacy — מנוע דיפרנציאלי לקריאה וכתיבה. 9 מיומנויות, 4 רמות, BKT אדפטיבי, Spaced Review.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  /* === Brand (מהמצגת המוניציפלית) === */
+  --indigo: #4F46E5;
+  --indigo-light: #818CF8;
+  --indigo-deep: #3730A3;
+  --violet: #8B5CF6;
+  --violet-light: #A78BFA;
+  --violet-deep: #6D28D9;
+  --lavender: #C7D2FE;
+  --lavender-light: #DDD6FE;
+  --gold: #F59E0B;
+  --gold-light: #FBBF24;
+  --pink: #EC4899;
+  --pink-light: #F472B6;
+  --green: #10B981;
+  --green-light: #34D399;
+
+  /* === BG === */
+  --bg-deepest: #FAFAFF;
+  --bg-deep: #F5F3FF;
+  --bg-mid: #FFFFFF;
+  --bg-card: #FFFFFF;
+
+  /* === Text === */
+  --text: #1E1B4B;
+  --text-2: #475569;
+  --text-3: #64748B;
+  --text-soft: #94A3B8;
+  --line: #E5E7EB;
+  --line-soft: #F3F4F6;
+
+  /* === Level colors — שרירותיים, לא הירארכיים === */
+  --lvl-1: #4F46E5;   /* עצמאי — כחול */
+  --lvl-2: #10B981;   /* חלקית — ירוק */
+  --lvl-3: #8B5CF6;   /* התאמות — סגול */
+  --lvl-4: #F59E0B;   /* תמיכה מוגברת — כתום */
+
+  --shadow-sm: 0 2px 8px rgba(79, 70, 229, 0.06);
+  --shadow-md: 0 8px 24px rgba(79, 70, 229, 0.10);
+  --shadow-lg: 0 16px 48px rgba(79, 70, 229, 0.14);
+  --radius: 18px;
+  --radius-lg: 26px;
+  --radius-sm: 12px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Heebo', sans-serif;
+  background: linear-gradient(135deg, var(--bg-deepest) 0%, var(--bg-deep) 100%);
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; line-height: 1.2; }
+.num { font-family: 'Inter', sans-serif; font-feature-settings: "tnum" 1; }
+button { font-family: inherit; cursor: pointer; }
+
+/* ============ TOP NAV ============ */
+.topbar {
+  background: var(--bg-mid);
+  border-bottom: 1px solid var(--line);
+  padding: 14px 24px;
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+}
+.brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text); }
+.brand-mark {
+  width: 42px; height: 42px;
+  background: linear-gradient(135deg, var(--indigo) 0%, var(--violet) 50%, var(--pink) 100%);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-family: 'Rubik', sans-serif; font-weight: 900; font-size: 20px;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+}
+.brand-name { font-family: 'Rubik', sans-serif; font-weight: 800; font-size: 17px; line-height: 1.1; }
+.brand-sub { font-size: 12px; color: var(--violet-deep); opacity: 0.8; margin-top: 2px; }
+.topbar-actions { display: flex; align-items: center; gap: 14px; }
+.demo-tag {
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+  color: #fff;
+  font-family: 'Rubik', sans-serif; font-weight: 800;
+  font-size: 11px; letter-spacing: 1.5px;
+  padding: 5px 14px; border-radius: 999px;
+}
+.btn-ghost {
+  background: transparent; border: 1px solid var(--line);
+  color: var(--text-2); font-size: 13px; font-weight: 600;
+  padding: 8px 16px; border-radius: 999px;
+  transition: all 0.2s;
+}
+.btn-ghost:hover { border-color: var(--violet); color: var(--violet); }
+
+/* ============ TABS ============ */
+.tabs {
+  display: flex; gap: 4px;
+  padding: 14px 24px 0;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-mid);
+  overflow-x: auto;
+}
+.tab {
+  background: transparent; border: none;
+  font-family: 'Rubik', sans-serif; font-weight: 700;
+  font-size: 14px; color: var(--text-2);
+  padding: 12px 20px; position: relative; transition: all 0.2s;
+  white-space: nowrap;
+  border-radius: 12px 12px 0 0;
+}
+.tab:hover { color: var(--violet); background: var(--bg-deep); }
+.tab.active { color: var(--indigo); background: var(--bg-deep); }
+.tab.active::after {
+  content: ''; position: absolute; bottom: -1px; left: 12px; right: 12px;
+  height: 3px; background: linear-gradient(90deg, var(--indigo), var(--violet)); border-radius: 3px 3px 0 0;
+}
+
+/* ============ CONTEXT BAR ============ */
+.context-bar {
+  background: linear-gradient(90deg, var(--bg-deep) 0%, var(--bg-mid) 100%);
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--line);
+  display: flex; gap: 24px; align-items: center; flex-wrap: wrap;
+}
+.context-item { display: flex; flex-direction: column; gap: 2px; }
+.context-item-label { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.context-item-value { font-family: 'Rubik', sans-serif; font-size: 15px; font-weight: 700; color: var(--text); }
+
+/* ============ PAGE LAYOUT ============ */
+.page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 28px 24px 80px;
+}
+.page-header { margin-bottom: 24px; }
+.page-title { font-size: 28px; font-weight: 800; margin-bottom: 6px; }
+.page-sub { color: var(--text-2); font-size: 15px; }
+
+.view { display: none; }
+.view.active { display: block; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ============ CLASS MAP ============ */
+.class-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+.student-card {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+  transition: all 0.2s;
+  cursor: pointer;
+  position: relative;
+}
+.student-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--violet-light);
+}
+.student-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.student-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--indigo-light), var(--violet-light));
+  color: #fff; font-family: 'Rubik', sans-serif; font-weight: 800; font-size: 15px;
+  display: flex; align-items: center; justify-content: center;
+}
+.student-name { font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 15px; }
+.student-grade { font-size: 11px; color: var(--text-3); }
+.skill-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; }
+.skill-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: #fff;
+}
+.skill-chip[data-lvl="1"] { background: var(--lvl-1); }
+.skill-chip[data-lvl="2"] { background: var(--lvl-2); }
+.skill-chip[data-lvl="3"] { background: var(--lvl-3); }
+.skill-chip[data-lvl="4"] { background: var(--lvl-4); }
+.sparkline { width: 100%; height: 30px; margin-top: 4px; }
+.student-flags { position: absolute; top: 12px; left: 12px; display: flex; gap: 4px; }
+.flag {
+  width: 8px; height: 8px; border-radius: 50%;
+}
+.flag.tier2 { background: var(--gold); box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2); }
+.flag.tier3 { background: var(--pink); box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.2); }
+.flag.struggle { background: var(--violet); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2); }
+
+/* ============ PRACTICE ============ */
+.practice-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+}
+.practice-header {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+  margin-bottom: 18px;
+  display: flex; justify-content: space-between; align-items: center;
+  border: 1px solid var(--line);
+}
+.practice-student {
+  display: flex; align-items: center; gap: 12px;
+}
+.practice-student select {
+  background: var(--bg-deep);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-family: 'Heebo', sans-serif;
+  font-size: 14px; font-weight: 600;
+  color: var(--text);
+}
+.practice-skill-label {
+  font-size: 12px; color: var(--text-3);
+  letter-spacing: 0.05em;
+}
+.practice-skill-name {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700; font-size: 17px;
+  color: var(--violet-deep);
+}
+.practice-progress {
+  display: flex; gap: 4px; align-items: center;
+}
+.progress-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--line);
+  transition: all 0.3s;
+}
+.progress-dot.done { background: var(--green); }
+.progress-dot.current { background: var(--indigo); transform: scale(1.5); }
+
+.practice-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 36px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--line);
+  min-height: 400px;
+  display: flex; flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+.practice-card::before {
+  content: '';
+  position: absolute;
+  top: -100px; right: -100px;
+  width: 280px; height: 280px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.12), transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.practice-stimulus {
+  text-align: center;
+  margin-bottom: 32px;
+  position: relative;
+  z-index: 1;
+}
+.practice-prompt {
+  font-size: 17px;
+  color: var(--text-2);
+  margin-bottom: 18px;
+  font-weight: 500;
+}
+.practice-letter-big {
+  font-family: 'Rubik', sans-serif;
+  font-size: 120px;
+  font-weight: 900;
+  color: var(--indigo-deep);
+  line-height: 1;
+  margin: 12px 0;
+}
+.practice-word-big {
+  font-family: 'Rubik', sans-serif;
+  font-size: 64px;
+  font-weight: 800;
+  color: var(--indigo-deep);
+  margin: 12px 0;
+}
+.practice-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 14px;
+  position: relative;
+  z-index: 1;
+}
+.option-btn {
+  background: var(--bg-deep);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 16px;
+  font-family: 'Rubik', sans-serif;
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--text);
+  transition: all 0.2s;
+  min-height: 96px;
+  display: flex; align-items: center; justify-content: center;
+}
+.option-btn:hover {
+  border-color: var(--indigo);
+  background: var(--lavender-light);
+  transform: translateY(-2px);
+}
+.option-btn.correct {
+  background: var(--green);
+  border-color: var(--green);
+  color: #fff;
+  animation: pulse-success 0.4s ease;
+}
+.option-btn.wrong {
+  background: #FEE2E2;
+  border-color: #EF4444;
+  color: #B91C1C;
+  animation: shake 0.4s ease;
+}
+.option-btn:disabled { cursor: default; opacity: 0.7; }
+@keyframes pulse-success {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+.audio-btn {
+  background: linear-gradient(135deg, var(--indigo) 0%, var(--violet) 100%);
+  color: #fff; border: none;
+  width: 96px; height: 96px;
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 40px;
+  box-shadow: 0 6px 18px rgba(139, 92, 246, 0.4);
+  transition: all 0.2s;
+}
+.audio-btn:hover { transform: scale(1.05); box-shadow: 0 10px 26px rgba(139, 92, 246, 0.5); }
+.audio-btn:active { transform: scale(0.95); }
+
+.practice-feedback {
+  text-align: center;
+  margin-top: 24px;
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  display: none;
+  position: relative;
+  z-index: 1;
+}
+.practice-feedback.show { display: block; }
+.practice-feedback.success {
+  background: rgba(16, 185, 129, 0.1);
+  color: #065F46;
+}
+.practice-feedback.fail {
+  background: rgba(239, 68, 68, 0.08);
+  color: #991B1B;
+}
+
+.hint-btn {
+  background: transparent;
+  border: 1px dashed var(--violet);
+  color: var(--violet-deep);
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 12px;
+}
+.hint-btn:hover { background: var(--lavender-light); }
+
+/* ============ RESULTS (HEATMAP) ============ */
+.heatmap-wrap {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 22px;
+  border: 1px solid var(--line);
+  overflow-x: auto;
+}
+.heatmap {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.heatmap th, .heatmap td {
+  padding: 10px 8px;
+  text-align: center;
+  border-bottom: 1px solid var(--line-soft);
+}
+.heatmap th {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--text-2);
+  background: var(--bg-deep);
+  position: sticky; top: 0;
+}
+.heatmap th:first-child, .heatmap td:first-child {
+  text-align: right;
+  position: sticky; right: 0;
+  background: var(--bg-card);
+  z-index: 2;
+  font-weight: 700;
+  border-left: 1px solid var(--line);
+}
+.heatmap th:first-child { background: var(--bg-deep); }
+.heat-cell {
+  display: inline-block;
+  min-width: 56px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  color: #fff;
+}
+
+/* ============ TEACHER ACTIONS ============ */
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+}
+.action-card {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px;
+  position: relative;
+  overflow: hidden;
+}
+.action-card::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 80px; height: 80px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.08), transparent 70%);
+}
+.action-cadence {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--lavender-light);
+  color: var(--violet-deep);
+  margin-bottom: 10px;
+}
+.action-title {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 800;
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+.action-desc {
+  color: var(--text-2);
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+.action-body {
+  background: var(--bg-deep);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.action-list {
+  list-style: none;
+  font-size: 13px;
+}
+.action-list li {
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line-soft);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.action-list li:last-child { border-bottom: none; }
+.urgency-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-left: 6px;
+}
+.urgency-dot.high { background: var(--pink); }
+.urgency-dot.med { background: var(--gold); }
+.urgency-dot.low { background: var(--green); }
+
+/* ============ LESSON GENERATOR ============ */
+.lesson-controls {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 22px;
+  display: flex; gap: 16px; flex-wrap: wrap; align-items: center;
+}
+.lesson-controls label {
+  display: flex; flex-direction: column; gap: 4px;
+  font-size: 12px; color: var(--text-3); font-weight: 600;
+}
+.lesson-controls select, .lesson-controls input {
+  background: var(--bg-deep);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-family: 'Heebo', sans-serif;
+  font-size: 14px; font-weight: 600;
+  color: var(--text);
+}
+.tracks {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.track-card {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  position: relative;
+}
+.track-card.support { border-top: 4px solid var(--gold); }
+.track-card.core { border-top: 4px solid var(--indigo); }
+.track-card.challenge { border-top: 4px solid var(--violet); }
+.track-label {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 800; font-size: 14px;
+  margin-bottom: 4px;
+}
+.track-sub { font-size: 12px; color: var(--text-3); margin-bottom: 14px; }
+.track-step {
+  background: var(--bg-deep);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.track-step strong { display: block; font-family: 'Rubik', sans-serif; color: var(--text); margin-bottom: 2px; }
+
+/* ============ PARENT REPORT ============ */
+.report-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-md);
+  max-width: 600px;
+  margin: 0 auto;
+}
+.report-section {
+  margin-bottom: 22px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.report-section:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+.report-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.report-value {
+  font-size: 16px;
+  color: var(--text);
+  line-height: 1.6;
+}
+.copy-btn {
+  background: var(--green);
+  color: #fff; border: none;
+  border-radius: 999px;
+  padding: 10px 22px;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  margin-top: 12px;
+}
+.copy-btn:hover { background: var(--green-light); }
+
+/* ============ EMPTY STATE ============ */
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-3);
+}
+.empty h3 { color: var(--text-2); margin-bottom: 8px; font-size: 18px; }
+
+/* ============ MOBILE ============ */
+@media (max-width: 768px) {
+  .class-grid { grid-template-columns: 1fr; }
+  .tracks { grid-template-columns: 1fr; }
+  .practice-card { padding: 20px; min-height: 320px; }
+  .practice-letter-big { font-size: 88px; }
+  .practice-word-big { font-size: 44px; }
+  .option-btn { font-size: 28px; min-height: 76px; }
+  .topbar { padding: 12px 16px; }
+  .page { padding: 18px 14px 60px; }
+  .tabs { padding: 10px 14px 0; }
+  .tab { padding: 10px 14px; font-size: 13px; }
+  .practice-header { flex-direction: column; gap: 12px; align-items: flex-start; padding: 14px 18px; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ===== TOP BAR ===== -->
+<header class="topbar">
+  <a class="brand" href="#">
+    <div class="brand-mark">א</div>
+    <div>
+      <div class="brand-name">אבני יסוד</div>
+      <div class="brand-sub">ImpactOS Literacy · קריאה וכתיבה לכיתות א'-ב'</div>
+    </div>
+  </a>
+  <div class="topbar-actions">
+    <span class="demo-tag">DEMO</span>
+    <button class="btn-ghost" onclick="resetAllProgress()">איפוס דמו</button>
+  </div>
+</header>
+
+<!-- ===== TABS ===== -->
+<nav class="tabs">
+  <button class="tab active" data-view="class">מפת כיתה</button>
+  <button class="tab" data-view="practice">תרגול</button>
+  <button class="tab" data-view="results">תוצאות</button>
+  <button class="tab" data-view="actions">פעולות מורה</button>
+  <button class="tab" data-view="lesson">מחולל שיעור</button>
+  <button class="tab" data-view="parent">דוח להורים</button>
+</nav>
+
+<!-- ===== CONTEXT BAR ===== -->
+<div class="context-bar">
+  <div class="context-item">
+    <span class="context-item-label">מקצוע</span>
+    <span class="context-item-value">קריאה וכתיבה — עברית</span>
+  </div>
+  <div class="context-item">
+    <span class="context-item-label">כיתה</span>
+    <span class="context-item-value">א'2 · 22 תלמידים</span>
+  </div>
+  <div class="context-item">
+    <span class="context-item-label">מסגרת פדגוגית</span>
+    <span class="context-item-value">SOR · MTSS · UDL 3.0 · ZPD</span>
+  </div>
+  <div class="context-item">
+    <span class="context-item-label">מנוע</span>
+    <span class="context-item-value">BKT היררכי · 5 סיגנלים · Leitner</span>
+  </div>
+</div>
+
+<main class="page">
+
+  <!-- ============ VIEW: CLASS MAP ============ -->
+  <section class="view active" id="view-class">
+    <header class="page-header">
+      <h1 class="page-title">מפת כיתה — 22 תלמידים</h1>
+      <p class="page-sub">כל תלמיד · 9 מיומנויות · רמה נפרדת לכל מיומנות. צבעים שרירותיים — לא היררכיה.</p>
+    </header>
+    <div class="class-grid" id="classGrid"></div>
+  </section>
+
+  <!-- ============ VIEW: PRACTICE ============ -->
+  <section class="view" id="view-practice">
+    <header class="page-header">
+      <h1 class="page-title">תרגול אדפטיבי</h1>
+      <p class="page-sub">המערכת בוחרת מיומנות לפי ה-P(L) הנמוך ביותר ומיומנויות-קדם שהושגו.</p>
+    </header>
+    <div class="practice-wrap">
+      <div class="practice-header">
+        <div class="practice-student">
+          <label class="practice-skill-label">תלמיד:</label>
+          <select id="practiceStudent" onchange="startPractice()"></select>
+        </div>
+        <div>
+          <div class="practice-skill-label">מיומנות נוכחית</div>
+          <div class="practice-skill-name" id="practiceSkillName">—</div>
+        </div>
+        <div class="practice-progress" id="practiceProgress"></div>
+      </div>
+      <div class="practice-card" id="practiceCard">
+        <div class="empty">
+          <h3>בחר תלמיד והתחל תרגול</h3>
+          <p>המנוע יזהה את המיומנות הנדרשת ויציג שאלה ב-ZPD.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ VIEW: RESULTS ============ -->
+  <section class="view" id="view-results">
+    <header class="page-header">
+      <h1 class="page-title">תוצאות — heatmap כיתה</h1>
+      <p class="page-sub">צבע = P(L) של המיומנות. אדום = מתחת ל-0.4 (Tier 2/3). ירוק = mastery (≥0.85).</p>
+    </header>
+    <div class="heatmap-wrap">
+      <table class="heatmap" id="heatmap"></table>
+    </div>
+  </section>
+
+  <!-- ============ VIEW: TEACHER ACTIONS ============ -->
+  <section class="view" id="view-actions">
+    <header class="page-header">
+      <h1 class="page-title">5 פעולות מורה — השבוע</h1>
+      <p class="page-sub">לולאות Data → Action. המורה מאשרת, המערכת מכינה.</p>
+    </header>
+    <div class="action-grid" id="actionGrid"></div>
+  </section>
+
+  <!-- ============ VIEW: LESSON GENERATOR ============ -->
+  <section class="view" id="view-lesson">
+    <header class="page-header">
+      <h1 class="page-title">מחולל שיעור — 3 מסלולים</h1>
+      <p class="page-sub">אותה מיומנות, 3 פיגומים — תמיכה, בסיס, אתגר.</p>
+    </header>
+    <div class="lesson-controls">
+      <label>
+        מיומנות
+        <select id="lessonSkill"></select>
+      </label>
+      <label>
+        משך
+        <select id="lessonMinutes">
+          <option value="20">20 דקות</option>
+          <option value="30" selected>30 דקות</option>
+          <option value="45">45 דקות</option>
+        </select>
+      </label>
+      <button class="btn-ghost" onclick="generateLesson()" style="border-color: var(--violet); color: var(--violet); margin-top: 18px;">צור שיעור</button>
+    </div>
+    <div class="tracks" id="lessonTracks"></div>
+  </section>
+
+  <!-- ============ VIEW: PARENT REPORT ============ -->
+  <section class="view" id="view-parent">
+    <header class="page-header">
+      <h1 class="page-title">דוח שבועי להורים</h1>
+      <p class="page-sub">הצלחה אחת · אתגר אחד · פעולה אחת לבית. מתאים ל-WhatsApp.</p>
+    </header>
+    <div class="lesson-controls" style="max-width: 600px; margin: 0 auto 18px;">
+      <label style="flex: 1;">
+        תלמיד
+        <select id="parentStudent" onchange="renderParentReport()"></select>
+      </label>
+    </div>
+    <div class="report-card" id="reportCard"></div>
+  </section>
+
+</main>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   אבני יסוד · ImpactOS Literacy
+   Engine: Hierarchical BKT + Leitner Spaced Review
+   ═══════════════════════════════════════════════════════════ */
+
+const SVG_AUDIO = '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>';
+const SVG_STAR = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15 8.5 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 9 8.5 12 2"/></svg>';
+const SVG_TARGET = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>';
+const SVG_HOME = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12 L12 3 L21 12 M5 10v10h14V10"/></svg>';
+const SVG_BULB = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.4 1 1 1 1.6V18h6v-1.7c0-.6.4-1.2 1-1.6A7 7 0 0 0 12 2z"/></svg>';
+const SVG_COPY = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+const SVG_CHECK = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 16 9"/></svg>';
+
+// ──────────────────────────────────────────────────────────
+// 1. SKILLS — 9 המיומנויות + Prerequisite Graph
+// ──────────────────────────────────────────────────────────
+const SKILLS = [
+  { id: 'phonemic',     name: 'מודעות צלילית',  short: 'פונמיקה',  prereq: [] },
+  { id: 'letter_id',    name: 'זיהוי אותיות',    short: 'אותיות',   prereq: [] },
+  { id: 'letter_sound', name: 'אות-צליל',        short: 'אות-צליל', prereq: ['phonemic', 'letter_id'] },
+  { id: 'decoding',     name: 'פענוח הברות',     short: 'פענוח',    prereq: ['letter_sound'] },
+  { id: 'word_reading', name: 'קריאת מילים',     short: 'מילים',    prereq: ['decoding'] },
+  { id: 'fluency',      name: 'שטף קריאה',       short: 'שטף',      prereq: ['word_reading'] },
+  { id: 'vocabulary',   name: 'אוצר מילים',      short: 'אוצר',     prereq: ['word_reading'] },
+  { id: 'comprehension',name: 'הבנת הנקרא',      short: 'הבנה',     prereq: ['fluency', 'vocabulary'] },
+  { id: 'writing',      name: 'כתיבה ואיות',     short: 'כתיבה',    prereq: ['letter_id', 'letter_sound'] }
+];
+
+// BKT params (per-skill calibration)
+const BKT_PARAMS = {
+  phonemic:      { pInit: 0.30, pTransit: 0.20, pSlip: 0.10, pGuess: 0.25 },
+  letter_id:     { pInit: 0.40, pTransit: 0.25, pSlip: 0.08, pGuess: 0.25 },
+  letter_sound:  { pInit: 0.25, pTransit: 0.18, pSlip: 0.10, pGuess: 0.25 },
+  decoding:      { pInit: 0.15, pTransit: 0.15, pSlip: 0.10, pGuess: 0.20 },
+  word_reading:  { pInit: 0.10, pTransit: 0.12, pSlip: 0.10, pGuess: 0.15 },
+  fluency:       { pInit: 0.10, pTransit: 0.10, pSlip: 0.05, pGuess: 0.05 },
+  vocabulary:    { pInit: 0.20, pTransit: 0.15, pSlip: 0.10, pGuess: 0.25 },
+  comprehension: { pInit: 0.15, pTransit: 0.12, pSlip: 0.12, pGuess: 0.25 },
+  writing:       { pInit: 0.10, pTransit: 0.10, pSlip: 0.10, pGuess: 0.10 }
+};
+
+const MASTERY_THRESHOLD = 0.85;
+const PREREQ_THRESHOLD = 0.70;
+
+// ──────────────────────────────────────────────────────────
+// 2. STUDENTS — 22 generic students
+// ──────────────────────────────────────────────────────────
+const STUDENT_NAMES = [
+  'נועה', 'אורי', 'יעל', 'איתי', 'מאיה', 'דניאל', 'תמר', 'יובל',
+  'רוני', 'שירה', 'אלון', 'נטע', 'עומר', 'הילה', 'גיא', 'ליבי',
+  'אריאל', 'אגם', 'יוני', 'מיכל', 'אדם', 'טליה'
+];
+
+function initStudents() {
+  const stored = localStorage.getItem('literacy_students');
+  if (stored) return JSON.parse(stored);
+
+  const students = STUDENT_NAMES.map((name, i) => {
+    const profile = {
+      id: 's' + (i + 1).toString().padStart(2, '0'),
+      name,
+      grade: i < 11 ? 'א2' : 'א2',
+      avatar: name.charAt(0),
+      flags: []
+    };
+    // Random diagnostic profile — 30% strong, 50% mid, 20% needs support
+    const tier = i < 4 ? 'tier2' : (i < 5 ? 'tier3' : 'tier1');
+    if (tier !== 'tier1') profile.flags.push(tier);
+    profile.tier = tier;
+    return profile;
+  });
+  localStorage.setItem('literacy_students', JSON.stringify(students));
+  return students;
+}
+
+function initProgress(students) {
+  const stored = localStorage.getItem('literacy_progress');
+  if (stored) return JSON.parse(stored);
+
+  const progress = {};
+  students.forEach(s => {
+    progress[s.id] = {};
+    SKILLS.forEach(skill => {
+      let pL = BKT_PARAMS[skill.id].pInit;
+      // adjust by tier (cold-start simulation)
+      if (s.tier === 'tier3') pL = Math.max(0.05, pL - 0.15);
+      else if (s.tier === 'tier1') pL = Math.min(0.95, pL + 0.20);
+
+      progress[s.id][skill.id] = {
+        pL,
+        level: pLToLevel(pL),
+        streakUp: 0,
+        streakDown: 0,
+        attempts: 0,
+        correctCount: 0,
+        wrongCount: 0,
+        history: Array(14).fill(null).map((_, di) => pLToLevel(pL + (Math.random() - 0.5) * 0.1)),
+        confusions: {}, // letter → wrong-letter → count
+        leitnerBox: 1,
+        lastSeen: null
+      };
+    });
+  });
+  localStorage.setItem('literacy_progress', JSON.stringify(progress));
+  return progress;
+}
+
+function pLToLevel(pL) {
+  if (pL >= 0.85) return 1;  // עצמאי
+  if (pL >= 0.60) return 2;  // חלקית
+  if (pL >= 0.35) return 3;  // התאמות
+  return 4;                  // תמיכה מוגברת
+}
+
+function levelName(level) {
+  return ['', 'עצמאי', 'חלקית', 'התאמות', 'תמיכה מוגברת'][level];
+}
+
+// ──────────────────────────────────────────────────────────
+// 3. BKT update — Bayes
+// ──────────────────────────────────────────────────────────
+function bktUpdate(pL_prior, correct, params) {
+  const { pSlip, pGuess, pTransit } = params;
+  const pCorrectNum = correct
+    ? pL_prior * (1 - pSlip) + (1 - pL_prior) * pGuess
+    : pL_prior * pSlip + (1 - pL_prior) * (1 - pGuess);
+  const pL_observed = correct
+    ? (pL_prior * (1 - pSlip)) / pCorrectNum
+    : (pL_prior * pSlip) / pCorrectNum;
+  return pL_observed + (1 - pL_observed) * pTransit;
+}
+
+function recordAnswer(studentId, skillId, correct, itemDifficulty) {
+  const p = progress[studentId][skillId];
+  const params = BKT_PARAMS[skillId];
+  p.pL = bktUpdate(p.pL, correct, params);
+  p.attempts++;
+  if (correct) {
+    p.correctCount++;
+    p.streakUp++;
+    p.streakDown = 0;
+  } else {
+    p.wrongCount++;
+    p.streakDown++;
+    p.streakUp = 0;
+  }
+  // Update level
+  const newLevel = pLToLevel(p.pL);
+  if (newLevel !== p.level) p.level = newLevel;
+  // Update history (shift)
+  p.history.push(p.level);
+  if (p.history.length > 14) p.history.shift();
+  p.lastSeen = Date.now();
+
+  // Leitner update
+  if (correct) {
+    p.leitnerBox = Math.min(5, p.leitnerBox + 1);
+  } else {
+    p.leitnerBox = p.leitnerBox === 5 ? 2 : 1;
+  }
+
+  localStorage.setItem('literacy_progress', JSON.stringify(progress));
+  return { pL: p.pL, level: p.level, struggle: p.streakDown >= 3 };
+}
+
+// ──────────────────────────────────────────────────────────
+// 4. Adaptive selection — pick skill + level for next item
+// ──────────────────────────────────────────────────────────
+function selectNextSkill(studentId) {
+  const p = progress[studentId];
+  // Find skill with lowest P(L) where prereqs met
+  let candidates = SKILLS.filter(skill => {
+    return skill.prereq.every(pq => p[pq].pL >= PREREQ_THRESHOLD);
+  });
+  if (candidates.length === 0) candidates = SKILLS.filter(s => s.prereq.length === 0);
+  candidates.sort((a, b) => p[a.id].pL - p[b.id].pL);
+  return candidates[0];
+}
+
+// ──────────────────────────────────────────────────────────
+// 5. CONTENT — letters, words, questions
+// ──────────────────────────────────────────────────────────
+const HEBREW_LETTERS = [
+  { l: 'א', sound: 'א', name: 'אלף', wave: 2 },
+  { l: 'ב', sound: 'ב', name: 'בית', wave: 1, confusedWith: ['כ'] },
+  { l: 'ג', sound: 'ג', name: 'גימל', wave: 5 },
+  { l: 'ד', sound: 'ד', name: 'דלת', wave: 3, confusedWith: ['ר'] },
+  { l: 'ה', sound: 'ה', name: 'הא', wave: 2 },
+  { l: 'ו', sound: 'ו', name: 'וו', wave: 6 },
+  { l: 'ז', sound: 'ז', name: 'זיין', wave: 4 },
+  { l: 'ח', sound: 'ח', name: 'חית', wave: 5 },
+  { l: 'ט', sound: 'ט', name: 'טית', wave: 5 },
+  { l: 'י', sound: 'י', name: 'יוד', wave: 6 },
+  { l: 'כ', sound: 'כ', name: 'כף', wave: 5, confusedWith: ['ב'] },
+  { l: 'ל', sound: 'ל', name: 'למד', wave: 1 },
+  { l: 'מ', sound: 'מ', name: 'מם', wave: 1 },
+  { l: 'נ', sound: 'נ', name: 'נון', wave: 3 },
+  { l: 'ס', sound: 'ס', name: 'סמך', wave: 4 },
+  { l: 'ע', sound: 'ע', name: 'עין', wave: 2, confusedWith: ['א'] },
+  { l: 'פ', sound: 'פ', name: 'פא', wave: 4 },
+  { l: 'צ', sound: 'צ', name: 'צדי', wave: 4 },
+  { l: 'ק', sound: 'ק', name: 'קוף', wave: 3 },
+  { l: 'ר', sound: 'ר', name: 'ריש', wave: 3, confusedWith: ['ד'] },
+  { l: 'ש', sound: 'ש', name: 'שין', wave: 1 },
+  { l: 'ת', sound: 'ת', name: 'תו', wave: 2 }
+];
+
+const SIMPLE_WORDS = [
+  { w: 'אִמָּא', img: '👩', level: 1 },
+  { w: 'אַבָּא', img: '👨', level: 1 },
+  { w: 'בַּיִת', img: '🏠', level: 1 },
+  { w: 'יֶלֶד', img: '👦', level: 1 },
+  { w: 'יַלְדָּה', img: '👧', level: 2 },
+  { w: 'כֶּלֶב', img: '🐕', level: 1 },
+  { w: 'חָתוּל', img: '🐈', level: 2 },
+  { w: 'דָּג', img: '🐟', level: 1 },
+  { w: 'שֶׁמֶשׁ', img: '☀️', level: 2 },
+  { w: 'יָרֵחַ', img: '🌙', level: 2 },
+  { w: 'סֵפֶר', img: '📖', level: 2 },
+  { w: 'יָד', img: '✋', level: 1 },
+  { w: 'רֶגֶל', img: '🦵', level: 2 },
+  { w: 'עִיר', img: '🏙️', level: 2 },
+  { w: 'גַּן', img: '🌳', level: 1 },
+  { w: 'פֶּרַח', img: '🌸', level: 2 },
+  { w: 'אֹכֶל', img: '🍎', level: 2 },
+  { w: 'מַיִם', img: '💧', level: 2 },
+  { w: 'תַּפּוּחַ', img: '🍎', level: 3 },
+  { w: 'מְכוֹנִית', img: '🚗', level: 3 }
+];
+
+// ──────────────────────────────────────────────────────────
+// 6. WEB SPEECH API — TTS
+// ──────────────────────────────────────────────────────────
+function speak(text) {
+  try {
+    if (!window.speechSynthesis) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'he-IL';
+    u.rate = 0.8;
+    u.pitch = 1.05;
+    speechSynthesis.speak(u);
+  } catch (e) { console.warn('TTS failed:', e); }
+}
+
+// ──────────────────────────────────────────────────────────
+// 7. SPARKLINE
+// ──────────────────────────────────────────────────────────
+function renderSparkline(history) {
+  const w = 200, h = 30, pad = 2;
+  const points = history.map((lvl, i) => {
+    const x = pad + (i / (history.length - 1)) * (w - pad * 2);
+    const y = h - pad - ((5 - lvl) / 4) * (h - pad * 2);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  return `<svg class="sparkline" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <polyline points="${points}" fill="none" stroke="url(#sparkGrad)" stroke-width="2"/>
+    <defs><linearGradient id="sparkGrad" x1="0" x2="1"><stop offset="0" stop-color="#4F46E5"/><stop offset="1" stop-color="#EC4899"/></linearGradient></defs>
+  </svg>`;
+}
+
+// ──────────────────────────────────────────────────────────
+// 8. RENDER: CLASS MAP
+// ──────────────────────────────────────────────────────────
+function renderClassMap() {
+  const grid = document.getElementById('classGrid');
+  grid.innerHTML = students.map(s => {
+    const p = progress[s.id];
+    // Average history across skills for sparkline
+    const histAvg = Array(14).fill(0).map((_, i) => {
+      let sum = 0, count = 0;
+      SKILLS.forEach(sk => {
+        const v = p[sk.id].history[i];
+        if (v !== null && v !== undefined) { sum += v; count++; }
+      });
+      return count ? sum / count : 2.5;
+    });
+
+    const chips = SKILLS.map(sk => {
+      const lvl = p[sk.id].level;
+      return `<span class="skill-chip" data-lvl="${lvl}" title="${sk.name}: ${levelName(lvl)}">${sk.short}</span>`;
+    }).join('');
+
+    const flagsHtml = s.flags.map(f => `<span class="flag ${f}" title="${f === 'tier2' ? 'Tier 2' : 'Tier 3'}"></span>`).join('');
+
+    return `<div class="student-card" onclick="openStudent('${s.id}')">
+      <div class="student-flags">${flagsHtml}</div>
+      <div class="student-head">
+        <div class="student-avatar">${s.avatar}</div>
+        <div>
+          <div class="student-name">${s.name}</div>
+          <div class="student-grade">כיתה ${s.grade}</div>
+        </div>
+      </div>
+      <div class="skill-chips">${chips}</div>
+      ${renderSparkline(histAvg)}
+    </div>`;
+  }).join('');
+}
+
+function openStudent(id) {
+  document.getElementById('practiceStudent').value = id;
+  switchView('practice');
+  startPractice();
+}
+
+// ──────────────────────────────────────────────────────────
+// 9. PRACTICE — adaptive session
+// ──────────────────────────────────────────────────────────
+let currentSession = null;
+
+function startPractice() {
+  const sid = document.getElementById('practiceStudent').value;
+  const skill = selectNextSkill(sid);
+  currentSession = {
+    studentId: sid,
+    skillId: skill.id,
+    skillName: skill.name,
+    itemCount: 0,
+    maxItems: 8,
+    correctInRow: 0
+  };
+  document.getElementById('practiceSkillName').textContent = skill.name;
+  renderProgress();
+  renderNextItem();
+}
+
+function renderProgress() {
+  const dots = Array(currentSession.maxItems).fill(0).map((_, i) => {
+    if (i < currentSession.itemCount) return '<span class="progress-dot done"></span>';
+    if (i === currentSession.itemCount) return '<span class="progress-dot current"></span>';
+    return '<span class="progress-dot"></span>';
+  }).join('');
+  document.getElementById('practiceProgress').innerHTML = dots;
+}
+
+function renderNextItem() {
+  if (currentSession.itemCount >= currentSession.maxItems) {
+    return renderSessionComplete();
+  }
+
+  const skillId = currentSession.skillId;
+  const sid = currentSession.studentId;
+  const level = progress[sid][skillId].level;
+
+  const card = document.getElementById('practiceCard');
+
+  if (skillId === 'letter_id') {
+    return renderLetterIdItem(card, level);
+  } else if (skillId === 'phonemic') {
+    return renderPhonemicItem(card, level);
+  } else if (skillId === 'letter_sound') {
+    return renderLetterSoundItem(card, level);
+  } else if (skillId === 'word_reading') {
+    return renderWordReadingItem(card, level);
+  } else if (skillId === 'decoding') {
+    return renderDecodingItem(card, level);
+  } else {
+    return renderGenericItem(card, skillId, level);
+  }
+}
+
+function renderLetterIdItem(card, level) {
+  // Target letter — choose by wave depending on level
+  const targetWave = Math.min(6, level + 1);
+  const targetLetter = HEBREW_LETTERS.filter(l => l.wave <= targetWave)[Math.floor(Math.random() * HEBREW_LETTERS.filter(l => l.wave <= targetWave).length)];
+
+  // Distractors: prefer confused ones at higher levels
+  let distractors = [];
+  if (level >= 3 && targetLetter.confusedWith) {
+    distractors = targetLetter.confusedWith.slice(0, 1).map(l => HEBREW_LETTERS.find(x => x.l === l));
+  }
+  while (distractors.length < 3) {
+    const r = HEBREW_LETTERS[Math.floor(Math.random() * HEBREW_LETTERS.length)];
+    if (r.l !== targetLetter.l && !distractors.find(d => d.l === r.l)) distractors.push(r);
+  }
+  const options = [targetLetter, ...distractors].sort(() => Math.random() - 0.5);
+
+  card.innerHTML = `
+    <div class="practice-stimulus">
+      <div class="practice-prompt">איזו אות שמעת?</div>
+      <button class="audio-btn" onclick="speak('${targetLetter.name}')" id="playBtn">${SVG_AUDIO}</button>
+      <button class="hint-btn" onclick="showHint('האות נקראת ${targetLetter.name}')">רמז</button>
+    </div>
+    <div class="practice-options">
+      ${options.map(o => `<button class="option-btn" onclick="checkLetterAnswer('${o.l}', '${targetLetter.l}', this)">${o.l}</button>`).join('')}
+    </div>
+    <div class="practice-feedback" id="feedback"></div>
+  `;
+  setTimeout(() => speak(targetLetter.name), 400);
+}
+
+function renderPhonemicItem(card, level) {
+  // Level 1-2: rhyme identification, Level 3-4: first sound
+  if (level <= 2) {
+    // Rhyme
+    const rhymePairs = [
+      { target: 'דג', rhymes: 'חג', distract1: 'בית', distract2: 'יד' },
+      { target: 'בית', rhymes: 'זית', distract1: 'דג', distract2: 'גן' },
+      { target: 'גן', rhymes: 'דן', distract1: 'בית', distract2: 'יד' },
+      { target: 'יד', rhymes: 'גד', distract1: 'בית', distract2: 'גן' }
+    ];
+    const q = rhymePairs[Math.floor(Math.random() * rhymePairs.length)];
+    const options = [q.rhymes, q.distract1, q.distract2].sort(() => Math.random() - 0.5);
+    card.innerHTML = `
+      <div class="practice-stimulus">
+        <div class="practice-prompt">איזו מילה מתחרזת עם:</div>
+        <div class="practice-word-big">${q.target}</div>
+        <button class="audio-btn" onclick="speak('${q.target}')">${SVG_AUDIO}</button>
+      </div>
+      <div class="practice-options">
+        ${options.map(o => `<button class="option-btn" onclick="checkPhonemicAnswer('${o}', '${q.rhymes}', this)">${o}</button>`).join('')}
+      </div>
+      <div class="practice-feedback" id="feedback"></div>
+    `;
+  } else {
+    // First sound
+    const words = ['שמש', 'בית', 'דג', 'מים', 'יד', 'גן'];
+    const target = words[Math.floor(Math.random() * words.length)];
+    const correctSound = target.charAt(0);
+    const distractors = HEBREW_LETTERS.filter(l => l.l !== correctSound).slice(0, 3).map(l => l.l);
+    const options = [correctSound, ...distractors].sort(() => Math.random() - 0.5);
+    card.innerHTML = `
+      <div class="practice-stimulus">
+        <div class="practice-prompt">איזה צליל פותח את המילה:</div>
+        <div class="practice-word-big">${target}</div>
+        <button class="audio-btn" onclick="speak('${target}')">${SVG_AUDIO}</button>
+      </div>
+      <div class="practice-options">
+        ${options.map(o => `<button class="option-btn" onclick="checkPhonemicAnswer('${o}', '${correctSound}', this)">${o}</button>`).join('')}
+      </div>
+      <div class="practice-feedback" id="feedback"></div>
+    `;
+  }
+}
+
+function renderLetterSoundItem(card, level) {
+  // Match letter → sound (audio plays sound, choose letter)
+  const targetWave = Math.min(6, level + 2);
+  const pool = HEBREW_LETTERS.filter(l => l.wave <= targetWave);
+  const target = pool[Math.floor(Math.random() * pool.length)];
+
+  let distractors = pool.filter(l => l.l !== target.l).sort(() => Math.random() - 0.5).slice(0, 3);
+  const options = [target, ...distractors].sort(() => Math.random() - 0.5);
+
+  card.innerHTML = `
+    <div class="practice-stimulus">
+      <div class="practice-prompt">לחצו על האות שמשמיעה את הצליל</div>
+      <button class="audio-btn" onclick="speak('${target.sound}')">${SVG_AUDIO}</button>
+    </div>
+    <div class="practice-options">
+      ${options.map(o => `<button class="option-btn" onclick="checkLetterAnswer('${o.l}', '${target.l}', this)">${o.l}</button>`).join('')}
+    </div>
+    <div class="practice-feedback" id="feedback"></div>
+  `;
+  setTimeout(() => speak(target.sound), 400);
+}
+
+function renderDecodingItem(card, level) {
+  // Build syllable from letter + nikud
+  const consonants = ['ב', 'מ', 'ל', 'ש', 'ד', 'ר'];
+  const vowels = [
+    { nik: 'ָ', name: 'קמץ', sound: 'a' },
+    { nik: 'ִ', name: 'חיריק', sound: 'i' },
+    { nik: 'וֹ', name: 'חולם', sound: 'o', combined: true }
+  ];
+  const c = consonants[Math.floor(Math.random() * consonants.length)];
+  const v = vowels[Math.floor(Math.random() * vowels.length)];
+  const syllable = c + v.nik;
+  const pron = c + ' + ' + v.sound;
+
+  // Generate distractors
+  const distractors = [];
+  while (distractors.length < 3) {
+    const cd = consonants[Math.floor(Math.random() * consonants.length)];
+    const vd = vowels[Math.floor(Math.random() * vowels.length)];
+    const s = cd + vd.nik;
+    if (s !== syllable && !distractors.includes(s)) distractors.push(s);
+  }
+  const options = [syllable, ...distractors].sort(() => Math.random() - 0.5);
+
+  card.innerHTML = `
+    <div class="practice-stimulus">
+      <div class="practice-prompt">איזו הברה זאת?</div>
+      <button class="audio-btn" onclick="speak('${pron}')">${SVG_AUDIO}</button>
+    </div>
+    <div class="practice-options">
+      ${options.map(o => `<button class="option-btn" onclick="checkLetterAnswer('${o}', '${syllable}', this)">${o}</button>`).join('')}
+    </div>
+    <div class="practice-feedback" id="feedback"></div>
+  `;
+  setTimeout(() => speak(pron), 400);
+}
+
+function renderWordReadingItem(card, level) {
+  // Pool by level
+  const pool = SIMPLE_WORDS.filter(w => w.level <= Math.min(3, level + 1));
+  const target = pool[Math.floor(Math.random() * pool.length)];
+  let distractors = pool.filter(w => w.w !== target.w).sort(() => Math.random() - 0.5).slice(0, 3);
+  const options = [target, ...distractors].sort(() => Math.random() - 0.5);
+
+  card.innerHTML = `
+    <div class="practice-stimulus">
+      <div class="practice-prompt">איזו מילה מתאימה לתמונה?</div>
+      <div style="font-size: 96px; margin: 16px 0;">${target.img}</div>
+      <button class="audio-btn" onclick="speak('${target.w}')">${SVG_AUDIO}</button>
+    </div>
+    <div class="practice-options">
+      ${options.map(o => `<button class="option-btn" onclick="checkLetterAnswer('${o.w}', '${target.w}', this)" style="font-size: 22px;">${o.w}</button>`).join('')}
+    </div>
+    <div class="practice-feedback" id="feedback"></div>
+  `;
+}
+
+function renderGenericItem(card, skillId, level) {
+  if (skillId === 'fluency') return renderFluencyItem(card, level);
+  if (skillId === 'vocabulary') return renderVocabularyItem(card, level);
+  if (skillId === 'comprehension') return renderComprehensionItem(card, level);
+  if (skillId === 'writing') return renderWritingItem(card, level);
+  // Fallback
+  card.innerHTML = `
+    <div class="empty">
+      <h3>מיומנות "${SKILLS.find(s => s.id === skillId).name}"</h3>
+      <p>בחירה אדפטיבית — לוחצים להמשך.</p>
+      <button class="copy-btn" onclick="skipItem()" style="margin-top: 16px;">המשך</button>
+    </div>
+  `;
+}
+
+// ─── Fluency: timed read of 3-10 words in 30 sec ───
+function renderFluencyItem(card, level) {
+  const targetCount = Math.min(10, 3 + level);
+  const pool = SIMPLE_WORDS.filter(w => w.level <= Math.min(3, level + 1));
+  const words = Array(targetCount).fill(0).map(() => pool[Math.floor(Math.random() * pool.length)].w);
+
+  card.innerHTML = `
+    <div class="practice-stimulus">
+      <div class="practice-prompt">קרא בקול ${targetCount} מילים. סיימת? לחץ "סיימתי!"</div>
+      <div id="fluencyTimer" class="num" style="font-size: 36px; font-weight: 800; color: var(--violet-deep); margin: 8px 0;">30</div>
+      <div style="background: var(--bg-deep); padding: 24px; border-radius: var(--radius); margin: 16px 0;">
+        <div style="font-family: 'Rubik', sans-serif; font-size: 32px; font-weight: 700; line-height: 1.8;">${words.join(' · ')}</div>
+      </div>
+    </div>
+    <div style="display: flex; gap: 12px; justify-content: center;">
+      <button class="copy-btn" onclick="fluencyDone(true, ${targetCount})">סיימתי!</button>
+      <button class="btn-ghost" onclick="fluencyDone(false, ${targetCount})" style="border-color: var(--text-3); color: var(--text-3);">קשה מדי</button>
+    </div>
+    <div class="practice-feedback" id="feedback"></div>
+  `;
+
+  // Start timer
+  let seconds = 30;
+  const timerEl = document.getElementById('fluencyTimer');
+  const timerInterval = setInterval(() => {
+    seconds--;
+    if (timerEl) timerEl.textContent = seconds;
+    if (seconds <= 0) {
+      clearInterval(timerInterval);
+      fluencyDone(false, targetCount);
+    }
+  }, 1000);
+  window._fluencyInterval = timerInterval;
+}
+
+function fluencyDone(success, count) {
+  if (window._fluencyInterval) clearInterval(window._fluencyInterval);
+  recordAnswer(currentSession.studentId, 'fluency', success, 1);
+  const fb = document.getElementById('feedback');
+  if (fb) {
+    fb.classList.add('show', success ? 'success' : 'fail');
+    fb.textContent = success ? `מצוין! קראת ${count} מילים בזמן.` : 'נסה שוב בסשן הבא — הזמן יהיה ארוך יותר.';
+  }
+  setTimeout(() => {
+    currentSession.itemCount++;
+    if (success) currentSession.correctInRow++; else currentSession.correctInRow = 0;
+    const newSkill = selectNextSkill(currentSession.studentId);
+    if (newSkill.id !== currentSession.skillId) {
+      currentSession.skillId = newSkill.id;
+      document.getElementById('practiceSkillName').textContent = newSkill.name;
+    }
+    renderProgress();
+    renderNextItem();
+  }, 1400);
+}
+
+// ─── Vocabulary: odd-one-out ───
+function renderVocabularyItem(card, level) {
+  const groups = [
+    { theme: 'בעלי חיים', members: ['כלב', 'חתול', 'דג', 'ציפור'], odd: 'שולחן' },
+    { theme: 'אוכל', members: ['תפוח', 'לחם', 'גזר', 'עוגה'], odd: 'אופניים' },
+    { theme: 'גוף', members: ['יד', 'רגל', 'עין', 'אוזן'], odd: 'בית' },
+    { theme: 'בגדים', members: ['חולצה', 'מכנס', 'נעל', 'כובע'], odd: 'ספר' },
+    { theme: 'בית', members: ['ספה', 'מיטה', 'שולחן', 'כיסא'], odd: 'דג' },
+  ];
+  const g = groups[Math.floor(Math.random() * groups.length)];
+  // 3 from group + 1 odd
+  const fromGroup = [...g.members].sort(() => Math.random() - 0.5).slice(0, 3);
+  const options = [...fromGroup, g.odd].sort(() => Math.random() - 0.5);
+
+  card.innerHTML = `
+    <div class="practice-stimulus">
+      <div class="practice-prompt">איזו מילה לא שייכת לקבוצה?</div>
+      <div style="color: var(--text-3); margin-top: 6px; font-size: 14px;">הקבוצה: ${g.theme}</div>
+    </div>
+    <div class="practice-options">
+      ${options.map(o => `<button class="option-btn" onclick="checkLetterAnswer('${o}', '${g.odd}', this)" style="font-size: 22px;">${o}</button>`).join('')}
+    </div>
+    <div class="practice-feedback" id="feedback"></div>
+  `;
+}
+
+// ─── Comprehension: read short text + answer ───
+function renderComprehensionItem(card, level) {
+  const texts = [
+    {
+      text: 'דָּן רָץ לַגַּן. בַּגַּן יֵשׁ עֵץ גָּדוֹל. דָּן יוֹשֵׁב מִתַּחַת לָעֵץ.',
+      q: 'איפה דן יושב?',
+      options: ['ליד הבית', 'מתחת לעץ', 'על המיטה', 'בכיתה'],
+      answer: 'מתחת לעץ'
+    },
+    {
+      text: 'מַיָּה אוֹהֶבֶת חָתוּלִים. יֵשׁ לָהּ חָתוּל לָבָן. הַחָתוּל יָשֵׁן עַל הַסַּפָּה.',
+      q: 'איזה חתול יש למיה?',
+      options: ['שחור', 'לבן', 'צהוב', 'אדום'],
+      answer: 'לבן'
+    },
+    {
+      text: 'הַיֶּלֶד אָכַל תַּפּוּחַ. אַחַר כָּךְ שָׁתָה מַיִם. הוּא הָיָה רָעֵב.',
+      q: 'למה הילד אכל?',
+      options: ['היה עייף', 'היה רעב', 'היה שמח', 'היה כועס'],
+      answer: 'היה רעב'
+    }
+  ];
+  const t = texts[Math.floor(Math.random() * texts.length)];
+  const options = [...t.options].sort(() => Math.random() - 0.5);
+
+  card.innerHTML = `
+    <div class="practice-stimulus">
+      <div class="practice-prompt">קרא את הטקסט ובחר תשובה:</div>
+      <div style="background: var(--bg-deep); padding: 20px; border-radius: var(--radius); margin: 14px 0; font-family: 'Rubik', sans-serif; font-size: 22px; line-height: 1.9; text-align: right;">${t.text}</div>
+      <button class="audio-btn" onclick="speak('${t.text.replace(/[ִֵֶַָֹֻּ]/g, '')}')">${SVG_AUDIO}</button>
+      <div style="font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 19px; margin-top: 18px;">${t.q}</div>
+    </div>
+    <div class="practice-options">
+      ${options.map(o => `<button class="option-btn" onclick="checkLetterAnswer('${o}', '${t.answer}', this)" style="font-size: 18px; padding: 16px;">${o}</button>`).join('')}
+    </div>
+    <div class="practice-feedback" id="feedback"></div>
+  `;
+}
+
+// ─── Writing: letter-trace (Canvas) ───
+function renderWritingItem(card, level) {
+  // Pick a letter to trace by wave (level-appropriate)
+  const targetWave = Math.min(6, level + 1);
+  const pool = HEBREW_LETTERS.filter(l => l.wave <= targetWave);
+  const target = pool[Math.floor(Math.random() * pool.length)];
+
+  card.innerHTML = `
+    <div class="practice-stimulus">
+      <div class="practice-prompt">תרגול כתיבה — עקוב אחרי האות:</div>
+      <div style="position: relative; display: inline-block; margin: 14px auto;">
+        <div style="font-family: 'Rubik', sans-serif; font-size: 200px; color: var(--lavender-light); line-height: 1; user-select: none;">${target.l}</div>
+        <canvas id="traceCanvas" width="260" height="260" style="position: absolute; top: 0; right: 0; touch-action: none; cursor: crosshair;"></canvas>
+      </div>
+      <button class="audio-btn" onclick="speak('${target.name}')">${SVG_AUDIO}</button>
+    </div>
+    <div style="display: flex; gap: 12px; justify-content: center; margin-top: 16px;">
+      <button class="copy-btn" onclick="checkTrace(true, '${target.l}')">סיימתי!</button>
+      <button class="btn-ghost" onclick="clearTrace()" style="border-color: var(--text-3); color: var(--text-3);">נקה</button>
+      <button class="btn-ghost" onclick="checkTrace(false, '${target.l}')" style="border-color: var(--text-3); color: var(--text-3);">קשה מדי</button>
+    </div>
+    <div class="practice-feedback" id="feedback"></div>
+  `;
+  initCanvas();
+}
+
+function initCanvas() {
+  const canvas = document.getElementById('traceCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.strokeStyle = '#4F46E5';
+  ctx.lineWidth = 6;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  let drawing = false;
+  let lastX = 0, lastY = 0;
+  let strokeCount = 0;
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const ev = e.touches ? e.touches[0] : e;
+    return {
+      x: ev.clientX - rect.left,
+      y: ev.clientY - rect.top
+    };
+  }
+
+  function start(e) {
+    e.preventDefault();
+    drawing = true;
+    const p = getPos(e);
+    lastX = p.x; lastY = p.y;
+    strokeCount++;
+  }
+  function move(e) {
+    if (!drawing) return;
+    e.preventDefault();
+    const p = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    lastX = p.x; lastY = p.y;
+  }
+  function end() { drawing = false; }
+
+  canvas.addEventListener('mousedown', start);
+  canvas.addEventListener('mousemove', move);
+  canvas.addEventListener('mouseup', end);
+  canvas.addEventListener('mouseleave', end);
+  canvas.addEventListener('touchstart', start);
+  canvas.addEventListener('touchmove', move);
+  canvas.addEventListener('touchend', end);
+
+  window._traceState = { ctx, canvas, strokeCount: () => strokeCount };
+}
+
+function clearTrace() {
+  const canvas = document.getElementById('traceCanvas');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+}
+
+function checkTrace(success, letter) {
+  // Naive check: count drawn pixels (success = enough ink + user said done)
+  const canvas = document.getElementById('traceCanvas');
+  let hasInk = false;
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    let inkCount = 0;
+    for (let i = 3; i < data.length; i += 4) if (data[i] > 0) inkCount++;
+    hasInk = inkCount > 300; // some minimum
+  }
+  const ok = success && hasInk;
+  recordAnswer(currentSession.studentId, 'writing', ok, 1);
+  const fb = document.getElementById('feedback');
+  if (fb) {
+    fb.classList.add('show', ok ? 'success' : 'fail');
+    fb.textContent = ok ? `יפה מאוד! האות "${letter}".` : 'בוא ננסה שוב בסשן הבא.';
+  }
+  setTimeout(() => {
+    currentSession.itemCount++;
+    if (ok) currentSession.correctInRow++; else currentSession.correctInRow = 0;
+    const newSkill = selectNextSkill(currentSession.studentId);
+    if (newSkill.id !== currentSession.skillId) {
+      currentSession.skillId = newSkill.id;
+      document.getElementById('practiceSkillName').textContent = newSkill.name;
+    }
+    renderProgress();
+    renderNextItem();
+  }, 1400);
+}
+
+function skipItem() {
+  // Treat as neutral — don't update P(L), just move on
+  currentSession.itemCount++;
+  // Re-select skill (likely different next time as we don't update)
+  const skill = selectNextSkill(currentSession.studentId);
+  if (skill.id !== currentSession.skillId) {
+    currentSession.skillId = skill.id;
+    document.getElementById('practiceSkillName').textContent = skill.name;
+  }
+  renderProgress();
+  renderNextItem();
+}
+
+function checkLetterAnswer(chosen, correct, btn) {
+  const isCorrect = chosen === correct;
+  btn.classList.add(isCorrect ? 'correct' : 'wrong');
+  document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+  const fb = document.getElementById('feedback');
+  fb.classList.add('show', isCorrect ? 'success' : 'fail');
+  fb.textContent = isCorrect ? 'מצוין!' : `התשובה הנכונה: ${correct}`;
+  recordAnswer(currentSession.studentId, currentSession.skillId, isCorrect, 1);
+  setTimeout(() => {
+    currentSession.itemCount++;
+    if (isCorrect) currentSession.correctInRow++; else currentSession.correctInRow = 0;
+    // Re-check skill (adaptive — might switch if pre-req now met or current mastered)
+    const newSkill = selectNextSkill(currentSession.studentId);
+    if (newSkill.id !== currentSession.skillId) {
+      currentSession.skillId = newSkill.id;
+      document.getElementById('practiceSkillName').textContent = newSkill.name;
+    }
+    renderProgress();
+    renderNextItem();
+  }, isCorrect ? 900 : 1600);
+}
+
+function checkPhonemicAnswer(chosen, correct, btn) {
+  return checkLetterAnswer(chosen, correct, btn);
+}
+
+function showHint(text) {
+  speak(text);
+  const fb = document.getElementById('feedback');
+  if (fb) {
+    fb.classList.add('show', 'success');
+    fb.innerHTML = `<span style="color: var(--gold); margin-left: 6px;">${SVG_BULB}</span> ${text}`;
+  }
+}
+
+function renderSessionComplete() {
+  const card = document.getElementById('practiceCard');
+  const p = progress[currentSession.studentId][currentSession.skillId];
+  card.innerHTML = `
+    <div class="empty">
+      <div style="color: var(--green); margin-bottom: 12px;">${SVG_CHECK}</div>
+      <h3 style="font-size: 32px; color: var(--green);">סיימת!</h3>
+      <p style="font-size: 18px; margin: 14px 0;">הצלחת ב-${currentSession.correctInRow} פריטים ברצף.</p>
+      <p style="color: var(--text-3);">רמה נוכחית במיומנות "${SKILLS.find(s => s.id === currentSession.skillId).name}": <b style="color: var(--violet);">${levelName(p.level)}</b></p>
+      <button class="copy-btn" onclick="startPractice()" style="margin-top: 18px;">סשן נוסף</button>
+    </div>
+  `;
+  renderClassMap();
+}
+
+// ──────────────────────────────────────────────────────────
+// 10. RESULTS — Heatmap
+// ──────────────────────────────────────────────────────────
+function renderHeatmap() {
+  const heatmap = document.getElementById('heatmap');
+  const head = `<thead><tr><th>תלמיד</th>${SKILLS.map(s => `<th>${s.short}</th>`).join('')}</tr></thead>`;
+  const body = '<tbody>' + students.map(s => {
+    return `<tr><td>${s.name}</td>${SKILLS.map(sk => {
+      const pL = progress[s.id][sk.id].pL;
+      const color = pLToColor(pL);
+      return `<td><span class="heat-cell" style="background: ${color};">${(pL * 100).toFixed(0)}%</span></td>`;
+    }).join('')}</tr>`;
+  }).join('') + '</tbody>';
+  heatmap.innerHTML = head + body;
+}
+
+function pLToColor(pL) {
+  if (pL >= 0.85) return '#10B981';
+  if (pL >= 0.65) return '#34D399';
+  if (pL >= 0.45) return '#FBBF24';
+  if (pL >= 0.25) return '#F59E0B';
+  return '#EC4899';
+}
+
+// ──────────────────────────────────────────────────────────
+// 11. TEACHER ACTIONS
+// ──────────────────────────────────────────────────────────
+function renderActions() {
+  // Build action data from progress
+  const today = new Date();
+  const tomorrow = new Date(today.getTime() + 86400000);
+  const dateStr = tomorrow.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  // 1. Do Now — most common errors from yesterday (mocked here)
+  const lowSkills = SKILLS.map(s => {
+    const avgPL = students.reduce((sum, st) => sum + progress[st.id][s.id].pL, 0) / students.length;
+    return { skill: s, avgPL };
+  }).sort((a, b) => a.avgPL - b.avgPL).slice(0, 3);
+
+  // 2. Re-teach — find systemic weakness (>40% under threshold)
+  const reteach = SKILLS.find(s => {
+    const below = students.filter(st => progress[st.id][s.id].pL < 0.5).length / students.length;
+    return below >= 0.4;
+  });
+
+  // 3. Conference queue — bottom 5 by min skill
+  const queue = [...students].map(s => {
+    const minPL = Math.min(...SKILLS.map(sk => progress[s.id][sk.id].pL));
+    const struggle = SKILLS.filter(sk => progress[s.id][sk.id].streakDown >= 3).length;
+    return { student: s, minPL, urgency: struggle > 0 ? 'high' : (minPL < 0.3 ? 'med' : 'low') };
+  }).sort((a, b) => a.minPL - b.minPL).slice(0, 5);
+
+  // 4. Family notes — pick 3 students with notable change
+  const notes = [...students].slice(0, 3);
+
+  // 5. Tier escalation candidates
+  const tierCandidates = students.filter(s => {
+    const avgPL = SKILLS.reduce((sum, sk) => sum + progress[s.id][sk.id].pL, 0) / SKILLS.length;
+    return avgPL < 0.4;
+  }).slice(0, 3);
+
+  const grid = document.getElementById('actionGrid');
+  grid.innerHTML = `
+    <div class="action-card">
+      <span class="action-cadence">יומי · ${dateStr}</span>
+      <div class="action-title">Do Now — פתיחת הבוקר</div>
+      <div class="action-desc">5 דקות פתיחה שמטפלות בטעויות אתמול. Black & William: +20-30 percentile.</div>
+      <div class="action-body">
+        <strong style="display: block; margin-bottom: 8px;">המיומנויות הכי חלשות בכיתה:</strong>
+        ${lowSkills.map(ls => `<div style="padding: 6px 0; display: flex; justify-content: space-between;"><span>${ls.skill.name}</span><span class="num" style="color: ${pLToColor(ls.avgPL)}; font-weight: 700;">${(ls.avgPL * 100).toFixed(0)}%</span></div>`).join('')}
+      </div>
+    </div>
+
+    <div class="action-card">
+      <span class="action-cadence">שבועי · Re-teach</span>
+      <div class="action-title">תוכנית הוראה חוזרת</div>
+      <div class="action-desc">${reteach ? `מעל 40% מהכיתה מתחת ל-mastery ב-${reteach.name}.` : 'אין טעות מערכתית השבוע — להמשיך כרגיל.'}</div>
+      ${reteach ? `
+        <div class="action-body">
+          <strong>תוכנית 20 דקות:</strong><br>
+          • 5 דק' פתיחה — דוגמה חזותית למיומנות "${reteach.name}"<br>
+          • 10 דק' תרגול בזוגות — 6 פריטים מודרגים<br>
+          • 5 דק' Exit Ticket — 3 שאלות אבחון
+        </div>
+      ` : ''}
+    </div>
+
+    <div class="action-card">
+      <span class="action-cadence">שבועי · Conference Queue</span>
+      <div class="action-title">5 שיחות 5-7 דקות</div>
+      <div class="action-desc">סדר דחיפות: struggle indicator > רמה נמוכה. כל שיחה 30 שנ' תיעוד.</div>
+      <ul class="action-list">
+        ${queue.map(q => `<li><span>${q.student.name}</span><span class="urgency-dot ${q.urgency}"></span></li>`).join('')}
+      </ul>
+    </div>
+
+    <div class="action-card">
+      <span class="action-cadence">שבועי · Family Note</span>
+      <div class="action-title">הודעות להורים</div>
+      <div class="action-desc">הצלחה אחת + אתגר אחד + פעולה אחת לבית. מתאים ל-WhatsApp.</div>
+      <ul class="action-list">
+        ${notes.map(n => `<li><span>${n.name}</span><button class="btn-ghost" style="padding: 4px 12px; font-size: 12px;" onclick="goToParentReport('${n.id}')">צפה</button></li>`).join('')}
+      </ul>
+    </div>
+
+    <div class="action-card">
+      <span class="action-cadence">חודשי · MTSS Tier</span>
+      <div class="action-title">החלטות Tier (כל 6-8 שבועות)</div>
+      <div class="action-desc">Exit / Sustain / Escalate. ${tierCandidates.length} תלמידים מועמדים לבדיקת Tier 2/3.</div>
+      <ul class="action-list">
+        ${tierCandidates.length > 0 ? tierCandidates.map(s => {
+          const avgPL = SKILLS.reduce((sum, sk) => sum + progress[s.id][sk.id].pL, 0) / SKILLS.length;
+          return `<li><span>${s.name}</span><span class="num" style="color: var(--pink); font-weight: 700;">${(avgPL * 100).toFixed(0)}%</span></li>`;
+        }).join('') : '<li>אין מועמדים — כל הכיתה ב-Tier 1</li>'}
+      </ul>
+    </div>
+  `;
+}
+
+function goToParentReport(sid) {
+  document.getElementById('parentStudent').value = sid;
+  switchView('parent');
+  renderParentReport();
+}
+
+// ──────────────────────────────────────────────────────────
+// 12. LESSON GENERATOR — 3 tracks
+// ──────────────────────────────────────────────────────────
+function populateLessonControls() {
+  const select = document.getElementById('lessonSkill');
+  select.innerHTML = SKILLS.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+}
+
+function generateLesson() {
+  const skillId = document.getElementById('lessonSkill').value;
+  const minutes = parseInt(document.getElementById('lessonMinutes').value);
+  const skill = SKILLS.find(s => s.id === skillId);
+
+  const tracksDiv = document.getElementById('lessonTracks');
+  const m = Math.floor(minutes / 3);
+
+  tracksDiv.innerHTML = `
+    <div class="track-card support">
+      <div class="track-label"><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--gold); margin-left: 6px; vertical-align: middle;"></span>תמיכה מוגברת</div>
+      <div class="track-sub">~5 תלמידים · ${m} דקות</div>
+      <div class="track-step"><strong>פתיחה (3 דק')</strong>שיר/סיפור על "${skill.name}"</div>
+      <div class="track-step"><strong>מודל ישיר (5 דק')</strong>המורה מדגימה 3 דוגמאות עם חפצים מוחשיים (CRA — concrete)</div>
+      <div class="track-step"><strong>תרגול מודרך (${m - 8} דק')</strong>בזוג עם המורה. עזרי תמונה. רמזים חזותיים. ${skill.short} ברמה 1-2 בלבד.</div>
+    </div>
+
+    <div class="track-card core">
+      <div class="track-label"><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--indigo); margin-left: 6px; vertical-align: middle;"></span>בסיס — מרכז הכיתה</div>
+      <div class="track-sub">~12 תלמידים · ${m} דקות</div>
+      <div class="track-step"><strong>פתיחה (3 דק')</strong>סקירה של הנלמד</div>
+      <div class="track-step"><strong>הוראה (8 דק')</strong>${skill.name} — דוגמה + הסבר + 2 דוגמאות נוספות</div>
+      <div class="track-step"><strong>תרגול עצמאי (${m - 11} דק')</strong>סשן באבני יסוד · ZPD 75-85% · BKT מתעדכן</div>
+    </div>
+
+    <div class="track-card challenge">
+      <div class="track-label"><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--violet); margin-left: 6px; vertical-align: middle;"></span>אתגר — קוד שלם</div>
+      <div class="track-sub">~5 תלמידים · ${m} דקות</div>
+      <div class="track-step"><strong>אתגר פתוח (5 דק')</strong>קוד שלם: ${skill.name} עם רמת קושי גבוהה</div>
+      <div class="track-step"><strong>חקירה (${m - 8} דק')</strong>בזוגות — הסבירו אחד לשני "למה?", מטא-קוגניציה</div>
+      <div class="track-step"><strong>תוצר (3 דק')</strong>כתיבת/יצירת משהו חדש שמדגים את העיקרון</div>
+    </div>
+  `;
+}
+
+// ──────────────────────────────────────────────────────────
+// 13. PARENT REPORT
+// ──────────────────────────────────────────────────────────
+function populateParentSelect() {
+  const sel = document.getElementById('parentStudent');
+  sel.innerHTML = students.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+}
+
+function renderParentReport() {
+  const sid = document.getElementById('parentStudent').value;
+  const s = students.find(x => x.id === sid);
+  const p = progress[sid];
+
+  // Best skill (highest P(L))
+  const bestSkill = SKILLS.map(sk => ({ sk, pL: p[sk.id].pL })).sort((a, b) => b.pL - a.pL)[0];
+  // Weakest skill
+  const weakSkill = SKILLS.map(sk => ({ sk, pL: p[sk.id].pL })).sort((a, b) => a.pL - b.pL)[0];
+
+  const successText = `${s.name} מתקדמ${s.name.endsWith('ה') ? 'ת' : ''} יפה במיומנות "${bestSkill.sk.name}"! ${bestSkill.pL >= 0.85 ? 'כבר שולט/ת בנושא.' : 'כבר ברמה ' + levelName(p[bestSkill.sk.id].level) + '.'}`;
+  const challengeText = `המיומנות שמאתגרת השבוע: "${weakSkill.sk.name}". ${weakSkill.pL < 0.4 ? 'נשמח לתרגל את זה ביחד.' : 'ב-2 השבועות הקרובים נחזק שם.'}`;
+  const homeAction = getHomeAction(weakSkill.sk.id);
+
+  const fullMessage = `שלום,\n\n${successText}\n\n${challengeText}\n\nפעולה אחת לבית: ${homeAction}\n\nשבוע נעים!`;
+
+  document.getElementById('reportCard').innerHTML = `
+    <div class="report-section">
+      <div class="report-label">לתלמיד.ה</div>
+      <div class="report-value" style="font-size: 22px; font-weight: 800; color: var(--indigo-deep);">${s.name}</div>
+    </div>
+    <div class="report-section">
+      <div class="report-label" style="display: flex; align-items: center; gap: 6px;"><span style="color: var(--gold);">${SVG_STAR}</span> הצלחה השבוע</div>
+      <div class="report-value">${successText}</div>
+    </div>
+    <div class="report-section">
+      <div class="report-label" style="display: flex; align-items: center; gap: 6px;"><span style="color: var(--pink);">${SVG_TARGET}</span> אתגר השבוע</div>
+      <div class="report-value">${challengeText}</div>
+    </div>
+    <div class="report-section">
+      <div class="report-label" style="display: flex; align-items: center; gap: 6px;"><span style="color: var(--violet);">${SVG_HOME}</span> פעולה אחת לבית</div>
+      <div class="report-value">${homeAction}</div>
+    </div>
+    <div style="text-align: center;">
+      <button class="copy-btn" onclick="copyParentMessage(${JSON.stringify(fullMessage).replace(/"/g, '&quot;')})" style="display: inline-flex; align-items: center; gap: 8px;">${SVG_COPY} העתק להודעת WhatsApp</button>
+    </div>
+  `;
+}
+
+function getHomeAction(skillId) {
+  const actions = {
+    phonemic: 'משחקי חריזה בדרך הביתה — "מה מתחרז עם דג?"',
+    letter_id: 'חפשו את האות ש' + ' בשלט/בעיתון. כמה מצאתם?',
+    letter_sound: 'אמרו מילה — שאלו את הילד.ה איזה אות פותחת אותה.',
+    decoding: 'קראו ביחד הברה בכל פעם — לא מילה שלמה.',
+    word_reading: 'הקריאו ספר ילדים מנוקד 10 דקות לפני השינה.',
+    fluency: 'בקשו לקרוא את אותו הקטע 3 פעמים — מהר יותר בכל פעם.',
+    vocabulary: 'הסבירו 2 מילים חדשות מסיפור או מהטלוויזיה.',
+    comprehension: 'אחרי סיפור — שאלו: "מי? איפה? מה הרגיש?"',
+    writing: 'בקשו לכתוב שם של חבר/חברה. בלי לחץ — רק תרגול.'
+  };
+  return actions[skillId] || 'עודדו אותו.ה לתרגל את המיומנות בקלילות.';
+}
+
+function copyParentMessage(msg) {
+  navigator.clipboard.writeText(msg).then(() => {
+    alert('הועתק. ניתן להדביק ב-WhatsApp.');
+  });
+}
+
+// ──────────────────────────────────────────────────────────
+// 14. NAV — switch view
+// ──────────────────────────────────────────────────────────
+function switchView(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.view === name));
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
+  // Re-render dynamic views
+  if (name === 'class') renderClassMap();
+  if (name === 'results') renderHeatmap();
+  if (name === 'actions') renderActions();
+  if (name === 'parent') renderParentReport();
+  if (name === 'practice' && !currentSession) startPractice();
+}
+
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => switchView(t.dataset.view));
+});
+
+// ──────────────────────────────────────────────────────────
+// 15. RESET
+// ──────────────────────────────────────────────────────────
+function resetAllProgress() {
+  if (!confirm('לאפס את כל ההתקדמות של 22 התלמידים?')) return;
+  localStorage.removeItem('literacy_students');
+  localStorage.removeItem('literacy_progress');
+  location.reload();
+}
+
+// ──────────────────────────────────────────────────────────
+// 16. INIT
+// ──────────────────────────────────────────────────────────
+const students = initStudents();
+const progress = initProgress(students);
+
+document.getElementById('practiceStudent').innerHTML = students.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+populateParentSelect();
+populateLessonControls();
+renderClassMap();
+generateLesson();
+</script>
+
+</body>
+</html>

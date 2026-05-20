@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ImpactOS · למידה דיפרנציאלית — על מה המערכת מושתתת</title>
+<meta name="description" content="הצגה לשותפים וקובעי מדיניות: העקרונות, ההבדל ממערכות תרגול אדפטיביות (Edventure, Capish), מה למדנו על אדפטיביות אמיתית, וסקייל למקצועות ושכבות.">
+
+<meta property="og:title" content="ImpactOS · למידה דיפרנציאלית — איך בנינו מערכת שמעבירה תלמידים רמה">
+<meta property="og:description" content="מערכת אחת, כל המקצועות. לא עוד תרגול אדפטיבי — שכבת פעולה למורה. מבוססת על מחקר של 10 מערכות גלובליות ו-7 מתודולוגיות אקדמיות.">
+<meta property="og:type" content="website">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --teal: #2E7D8C;
+  --teal-light: #3A9BAD;
+  --teal-dark: #1E5A66;
+  --sand: #E8A849;
+  --sand-dark: #C88A2E;
+  --burgundy: #8B3A4A;
+  --burgundy-light: #A94D60;
+  --leaf: #4A9B7F;
+  --leaf-light: #5FB896;
+  --cream: #F5F0E8;
+  --cream-dark: #E8DFD0;
+  --white: #FDFCFA;
+  --deep: #1E3D47;
+  --ink: #2A4A56;
+  --muted: #6B7F87;
+  --shadow-sm: 0 2px 8px rgba(30, 61, 71, 0.06);
+  --shadow-md: 0 8px 24px rgba(30, 61, 71, 0.10);
+  --shadow-lg: 0 16px 48px rgba(30, 61, 71, 0.16);
+  --radius: 18px;
+  --radius-lg: 28px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Heebo', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  line-height: 1.8;
+  font-size: 17px;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; line-height: 1.25; color: var(--deep); }
+h2 { font-size: clamp(28px, 4.2vw, 44px); font-weight: 900; margin-bottom: 14px; letter-spacing: -0.01em; }
+h3 { font-size: clamp(20px, 2.6vw, 26px); font-weight: 800; margin: 28px 0 12px; }
+h4 { font-size: 18px; font-weight: 700; margin: 18px 0 8px; color: var(--teal-dark); }
+p { margin-bottom: 14px; }
+strong { font-weight: 700; color: var(--deep); }
+em { font-style: normal; background: linear-gradient(180deg, transparent 60%, rgba(232,168,73,0.35) 60%); padding: 0 2px; }
+
+.container { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+.narrow { max-width: 800px; }
+
+ul, ol { margin: 0 0 18px 22px; }
+li { margin-bottom: 8px; }
+ul.clean { list-style: none; margin-right: 0; }
+ul.clean li { position: relative; padding-right: 22px; }
+ul.clean li::before { content: '◆'; color: var(--teal); position: absolute; right: 0; top: 0; font-size: 12px; }
+
+/* HERO */
+.hero {
+  background: linear-gradient(135deg, var(--cream) 0%, var(--white) 50%, var(--cream-dark) 100%);
+  padding: 90px 24px 70px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: ''; position: absolute; top: -180px; right: -150px;
+  width: 520px; height: 520px;
+  background: radial-gradient(circle, rgba(46,125,140,0.16), transparent 70%);
+  filter: blur(50px);
+}
+.hero::after {
+  content: ''; position: absolute; bottom: -120px; left: -120px;
+  width: 460px; height: 460px;
+  background: radial-gradient(circle, rgba(139,58,74,0.13), transparent 70%);
+  filter: blur(50px);
+}
+.hero-inner { position: relative; z-index: 1; }
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 8px 20px;
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(46,125,140,0.22);
+  border-radius: 999px;
+  font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 13px;
+  color: var(--teal-dark); letter-spacing: 0.5px;
+  margin-bottom: 26px;
+}
+.hero-eyebrow .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--leaf); box-shadow: 0 0 14px var(--leaf); }
+.hero h1 {
+  font-family: 'Rubik', sans-serif; font-weight: 900;
+  font-size: clamp(34px, 5.5vw, 60px);
+  line-height: 1.08;
+  margin-bottom: 24px;
+  letter-spacing: -0.02em;
+  color: var(--deep);
+  max-width: 900px;
+}
+.hero h1 .accent { color: var(--teal); }
+.hero h1 .accent2 { color: var(--burgundy); }
+.hero-sub {
+  font-size: clamp(17px, 1.8vw, 21px);
+  max-width: 760px;
+  color: var(--ink); opacity: 0.85;
+  margin-bottom: 28px;
+  line-height: 1.55;
+}
+.hero-meta {
+  display: flex; flex-wrap: wrap; gap: 14px;
+  font-size: 13.5px;
+}
+.hero-meta .chip {
+  background: rgba(255,255,255,0.8); border: 1px solid var(--cream-dark);
+  padding: 7px 14px; border-radius: 999px; color: var(--deep);
+  font-weight: 600;
+}
+
+/* SECTIONS */
+section.chapter { padding: 70px 24px; }
+section.chapter.alt { background: var(--white); }
+section.chapter.dark { background: var(--deep); color: var(--cream); }
+section.chapter.dark h2, section.chapter.dark h3, section.chapter.dark h4 { color: var(--white); }
+section.chapter.dark strong { color: var(--white); }
+section.chapter.dark p { color: rgba(245,240,232,0.9); }
+
+.chapter-eyebrow {
+  display: inline-block;
+  font-family: 'Rubik', sans-serif; font-weight: 700;
+  font-size: 12px; letter-spacing: 1.6px;
+  color: var(--teal);
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border: 1.5px solid var(--teal);
+  border-radius: 999px;
+  margin-bottom: 18px;
+}
+.chapter-eyebrow.sand { color: var(--sand-dark); border-color: var(--sand-dark); }
+.chapter-eyebrow.burgundy { color: var(--burgundy); border-color: var(--burgundy); }
+.chapter-eyebrow.leaf { color: var(--leaf); border-color: var(--leaf); }
+section.chapter.dark .chapter-eyebrow { background: rgba(232,168,73,0.15); border-color: var(--sand); color: var(--sand); }
+
+.lede { font-size: 19px; max-width: 780px; margin-bottom: 36px; opacity: 0.88; line-height: 1.6; }
+
+/* PROBLEM CARDS */
+.problem-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px; margin-top: 30px;
+}
+.problem-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 24px 26px;
+  box-shadow: var(--shadow-sm);
+  border-right: 4px solid var(--burgundy);
+}
+.problem-card .num {
+  font-family: 'Rubik'; font-weight: 900;
+  font-size: 28px; color: var(--burgundy);
+  line-height: 1; margin-bottom: 10px;
+}
+.problem-card h4 { margin: 0 0 8px; color: var(--deep); }
+.problem-card p { font-size: 15px; margin: 0; opacity: 0.85; }
+
+/* KEY INSIGHT */
+.key-insight {
+  background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
+  color: white;
+  border-radius: var(--radius-lg);
+  padding: 36px 40px;
+  margin: 40px 0 20px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+.key-insight::before {
+  content: ''; position: absolute; top: -50px; left: -50px;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(232,168,73,0.3), transparent 70%);
+  filter: blur(30px);
+}
+.key-insight .label {
+  font-family: 'Rubik'; font-weight: 800; font-size: 12px;
+  letter-spacing: 2px; opacity: 0.9; margin-bottom: 12px;
+}
+.key-insight h3 {
+  color: white; font-size: clamp(22px, 3vw, 30px);
+  margin: 0 0 10px; line-height: 1.3;
+}
+.key-insight p {
+  font-size: 17px; opacity: 0.95; margin: 0;
+  line-height: 1.6; position: relative; z-index: 1;
+}
+.key-insight em {
+  background: linear-gradient(180deg, transparent 65%, rgba(232,168,73,0.6) 65%);
+}
+
+/* PRINCIPLES */
+.principles {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px; margin-top: 30px;
+}
+.principle {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 26px 28px;
+  box-shadow: var(--shadow-sm);
+  border-top: 4px solid var(--teal);
+  display: flex; gap: 16px; align-items: flex-start;
+}
+.principle.sand { border-top-color: var(--sand); }
+.principle.burgundy { border-top-color: var(--burgundy); }
+.principle.leaf { border-top-color: var(--leaf); }
+.principle .num-circle {
+  flex-shrink: 0;
+  width: 42px; height: 42px; border-radius: 12px;
+  background: var(--teal); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Rubik'; font-weight: 900; font-size: 18px;
+}
+.principle.sand .num-circle { background: var(--sand); color: var(--deep); }
+.principle.burgundy .num-circle { background: var(--burgundy); }
+.principle.leaf .num-circle { background: var(--leaf); }
+.principle h4 { margin: 0 0 6px; font-size: 17px; }
+.principle p { font-size: 15px; margin: 0; line-height: 1.55; opacity: 0.88; }
+
+/* COMPARISON TABLE */
+.comparison-wrap {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 8px;
+  box-shadow: var(--shadow-md);
+  margin: 30px 0 20px;
+  overflow-x: auto;
+}
+.comparison {
+  width: 100%; border-collapse: collapse;
+  font-size: 15px;
+  min-width: 700px;
+}
+.comparison th {
+  text-align: right;
+  padding: 18px 20px;
+  font-family: 'Rubik'; font-weight: 800;
+  font-size: 14.5px; letter-spacing: 0.3px;
+}
+.comparison th.col-other {
+  background: rgba(139,58,74,0.08);
+  color: var(--burgundy);
+  border-radius: 12px 12px 0 0;
+}
+.comparison th.col-ours {
+  background: rgba(74,155,127,0.10);
+  color: var(--leaf);
+  border-radius: 12px 12px 0 0;
+}
+.comparison th.col-axis { color: var(--muted); font-size: 12.5px; text-transform: uppercase; letter-spacing: 1.2px; }
+.comparison td {
+  padding: 18px 20px;
+  vertical-align: top;
+  border-bottom: 1px solid var(--cream-dark);
+  font-size: 15px;
+  line-height: 1.55;
+}
+.comparison tr:last-child td { border-bottom: none; }
+.comparison td.col-axis {
+  font-family: 'Rubik'; font-weight: 700;
+  color: var(--deep);
+  width: 180px;
+  font-size: 14.5px;
+}
+.comparison td.col-other {
+  background: rgba(139,58,74,0.04);
+  color: var(--ink);
+}
+.comparison td.col-ours {
+  background: rgba(74,155,127,0.06);
+  color: var(--deep);
+  font-weight: 500;
+}
+
+/* SIGNAL BLOCKS */
+.signals-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px; margin: 24px 0;
+}
+.signal-block {
+  background: rgba(255,255,255,0.06);
+  padding: 22px 24px;
+  border-radius: var(--radius);
+  border-top: 3px solid var(--sand);
+  backdrop-filter: blur(10px);
+}
+.signal-block .signal-num {
+  font-family: 'Rubik'; font-weight: 900; font-size: 22px;
+  color: var(--sand); margin-bottom: 8px; line-height: 1;
+}
+.signal-block h4 { color: white; margin: 0 0 6px; font-size: 15.5px; }
+.signal-block p { font-size: 13.5px; margin: 0; opacity: 0.85; line-height: 1.5; }
+
+/* LOOP DIAGRAM */
+.loop-diagram {
+  background: rgba(255,255,255,0.05);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px;
+  margin-top: 30px;
+  border: 1px solid rgba(245,240,232,0.15);
+}
+.loop-diagram h4 { color: var(--sand); margin: 0 0 14px; font-size: 15px; text-transform: uppercase; letter-spacing: 1.5px; }
+.loop-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 18px;
+  padding: 12px 0;
+  border-bottom: 1px dashed rgba(245,240,232,0.15);
+  align-items: baseline;
+}
+.loop-row:last-child { border-bottom: none; }
+.loop-cadence {
+  font-family: 'Rubik'; font-weight: 700;
+  color: var(--sand); font-size: 14px;
+  letter-spacing: 0.5px;
+}
+.loop-desc { font-size: 15px; line-height: 1.55; }
+.loop-desc strong { color: white; }
+@media (max-width: 600px) {
+  .loop-row { grid-template-columns: 1fr; gap: 4px; }
+}
+
+/* SCALE — content packs */
+.scale-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 24px; margin: 30px 0;
+}
+@media (max-width: 760px) { .scale-grid { grid-template-columns: 1fr; } }
+.scale-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 30px 32px;
+  box-shadow: var(--shadow-sm);
+  border-right: 4px solid var(--leaf);
+}
+.scale-card.alt { border-right-color: var(--teal); }
+.scale-card h4 { font-size: 19px; margin: 0 0 12px; }
+.scale-card p { margin-bottom: 14px; font-size: 15.5px; line-height: 1.6; }
+
+.pack-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px; margin-top: 18px;
+}
+.pack-pill {
+  background: linear-gradient(135deg, rgba(46,125,140,0.08), rgba(74,155,127,0.08));
+  padding: 14px 16px;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid rgba(46,125,140,0.15);
+}
+.pack-pill .pack-subject {
+  font-family: 'Rubik'; font-weight: 800;
+  font-size: 16px; color: var(--deep);
+  margin-bottom: 2px;
+}
+.pack-pill .pack-grade {
+  font-size: 13px; color: var(--teal-dark); opacity: 0.85;
+}
+.pack-pill.future {
+  background: rgba(255,255,255,0.5);
+  border-style: dashed;
+  opacity: 0.7;
+}
+
+/* CLOSING */
+.closing-card {
+  background: linear-gradient(135deg, var(--white) 0%, var(--cream) 100%);
+  border-radius: var(--radius-lg);
+  padding: 44px 48px;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+  margin-top: 20px;
+  border: 1px solid var(--cream-dark);
+}
+.closing-card h3 { margin: 0 0 14px; }
+.closing-card p { font-size: 17px; max-width: 640px; margin: 0 auto 8px; opacity: 0.85; }
+
+/* FOOTER */
+footer {
+  background: var(--deep);
+  color: rgba(245,240,232,0.7);
+  padding: 50px 24px 30px;
+  text-align: center;
+  font-size: 14.5px;
+}
+footer .footer-title {
+  font-family: 'Rubik'; font-weight: 800;
+  color: var(--white); font-size: 18px;
+  margin-bottom: 10px;
+}
+footer a { color: var(--sand); text-decoration: none; border-bottom: 1px solid rgba(232,168,73,0.35); }
+footer a:hover { border-bottom-color: var(--sand); }
+footer .links { margin-top: 18px; display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+
+@media (max-width:600px) {
+  section.chapter { padding: 50px 18px; }
+  .hero { padding: 60px 18px 50px; }
+  .key-insight { padding: 28px 24px; }
+  .closing-card { padding: 32px 24px; }
+  .principle { padding: 22px 22px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="container hero-inner">
+    <div class="hero-eyebrow"><span class="dot"></span>ImpactOS · למידה דיפרנציאלית · הצגה לשותפים</div>
+    <h1>איך בנינו מערכת ש<span class="accent">מעבירה תלמידים רמה</span> — <span class="accent2">ולא רק נותנת להם תרגול מותאם</span></h1>
+    <p class="hero-sub">בעמוד הזה — העקרונות שמובילים אותנו, ההבדל בין המערכת שלנו לבין מערכות תרגול אדפטיביות (Edventure, Capish), מה למדנו ממחקר עומק של 10 מערכות גלובליות ו-7 מתודולוגיות אקדמיות, ולמה המערכת מתאימה לכל מקצוע ולכל שכבת גיל.</p>
+    <div class="hero-meta">
+      <span class="chip">מבוסס על מחקר עומק של 10,500 מילים ו-40+ מקורות</span>
+      <span class="chip">תואם DI · UDL 3.0 · MTSS · ZPD</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PART 1 — THE PROBLEM ============ -->
+<section class="chapter" id="problem">
+  <div class="container narrow">
+    <span class="chapter-eyebrow burgundy">הבעיה</span>
+    <h2>למה כיתות בישראל צריכות פתרון חדש</h2>
+    <p class="lede">בכל כיתה ישראלית יש לפחות 4 רמות תלמידים שלומדים יחד. מורה מצפים ממנה להגיע לכל אחד מהם — אבל הכלים שניתנו לה לא תוכננו לזה.</p>
+
+    <div class="problem-grid">
+      <div class="problem-card">
+        <div class="num">01</div>
+        <h4>4 רמות, מורה אחת</h4>
+        <p>בכיתה ממוצעת בישראל: תלמידים עצמאיים, תלמידים עם פערים קלים, תלמידים עם פערים משמעותיים, ותלמידים בתמיכה מוגברת — כולם באותו חדר.</p>
+      </div>
+      <div class="problem-card">
+        <div class="num">02</div>
+        <h4>תכנון בשעות, לא בדקות</h4>
+        <p>שיעור דיפרנציאלי איכותי לוקח שעות תכנון. הסיבה המרכזית שמורים מוותרים על דיפרנציאציה — זה לא חוסר רצון, זה עומס.</p>
+      </div>
+      <div class="problem-card">
+        <div class="num">03</div>
+        <h4>נתונים בלי פעולה</h4>
+        <p>מורה רואה דשבורד עם ציונים, אחוזי הצלחה, גרפים. אבל מה בדיוק לעשות מחר בבוקר, עם איזה תלמיד, באיזו אסטרטגיה? זה נשאר בידיה.</p>
+      </div>
+      <div class="problem-card">
+        <div class="num">04</div>
+        <h4>תוכן ״מימי״</h4>
+        <p>הפתרון השכיח: להוריד את היעד הקוגניטיבי לתלמידים מתקשים. התוצאה: פערים נשמרים והתלמיד יודע שמצפים ממנו פחות.</p>
+      </div>
+    </div>
+
+    <div class="key-insight">
+      <div class="label">המסקנה מהמחקר</div>
+      <h3>תרגול אדפטיבי לבדו לא יעביר תלמידים רמה.</h3>
+      <p>הקונצנזוס המחקרי שיצא מסקירה של 10 מערכות מסחריות מובילות בעולם: <em>מנוע התרגול האדפטיבי הוא 30% מהאפקטיביות. 70% הם שכבת הפעולה של המורה</em> — מה היא עושה עם הנתונים, איך היא מתאמת קבוצות, מתי היא יושבת לשיחה אישית, איך היא מתקשרת עם ההורים.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PART 2 — PRINCIPLES ============ -->
+<section class="chapter alt" id="principles">
+  <div class="container">
+    <span class="chapter-eyebrow">העקרונות</span>
+    <h2>7 העקרונות שעיצבו את כל החלטה במערכת</h2>
+    <p class="lede">הפיצ׳רים יכולים להשתנות. העקרונות נשארים. כל מסך במערכת נבחן מול הרשימה הזו.</p>
+
+    <div class="principles">
+      <div class="principle">
+        <div class="num-circle">1</div>
+        <div>
+          <h4>המורה מאשרת — המערכת מציעה</h4>
+          <p>כל המלצה מסומנת כ"הצעה" עם הסבר ("התלמידה ענתה נכון על 4 שאלות ברצף"). המורה רואה את הסיבה, יכולה לערוך או לדחות. לעולם לא Teacher Replacement.</p>
+        </div>
+      </div>
+
+      <div class="principle sand">
+        <div class="num-circle">2</div>
+        <div>
+          <h4>אותו תוכן, רמות שונות</h4>
+          <p>לא להנמיך את היעד הקוגניטיבי — רק את הפיגום. תלמיד בתמיכה מוגברת לומד את אותו מושג כמו עצמאי, עם הסבר נוסף, דוגמה קונקרטית ושאלה מנחה. UDL 3.0: ציפיות גבוהות לכולם.</p>
+        </div>
+      </div>
+
+      <div class="principle burgundy">
+        <div class="num-circle">3</div>
+        <div>
+          <h4>תכנון בדקות, לא בשעות</h4>
+          <p>יעד מדיד: שיעור דיפרנציאלי ל-4 רמות בפחות מ-15 דקות תכנון. אם מסך לא עומד בקריטריון הזה — הוא לא נכנס למערכת.</p>
+        </div>
+      </div>
+
+      <div class="principle leaf">
+        <div class="num-circle">4</div>
+        <div>
+          <h4>שייכות לפני אינדיבידואליזציה</h4>
+          <p>הכלה היא חברתית-רגשית לפני שהיא קוגניטיבית. אותו טקסט-עוגן לכל הכיתה (גם אם בנוסחים שונים), פעילויות קבוצתיות גמישות, מוטיבים חזותיים אחידים. התלמיד מרגיש "אני חלק מהכיתה הזו".</p>
+        </div>
+      </div>
+
+      <div class="principle">
+        <div class="num-circle">5</div>
+        <div>
+          <h4>מקור אחד לאמת על כל תלמיד</h4>
+          <p>פרופיל אחד שמאחד אבחונים, הישגים, החלטות ועדה, סל מענים, יעדי קייס מנג׳ר. סוף לפיצול בין משו"ב ל-PDF ל-WhatsApp. רכזת ההכלה, המחנכת והמורה רואות את אותו תלמיד.</p>
+        </div>
+      </div>
+
+      <div class="principle sand">
+        <div class="num-circle">6</div>
+        <div>
+          <h4>ZPD מנחה את האלגוריתם</h4>
+          <p>כל המלצת קושי מכוונת לאזור 75–85% הצלחה (Zone of Proximal Development). לא קל מדי, לא קשה מדי. שלוש נכונות רצופות → אתגר. שתי שגיאות → רמה למטה עם פידבק מעודד.</p>
+        </div>
+      </div>
+
+      <div class="principle burgundy">
+        <div class="num-circle">7</div>
+        <div>
+          <h4>פרטיות וריבונות נתונים</h4>
+          <p>הנתונים בבעלות בית הספר — לא בענן של ספק SaaS חיצוני. תשתית: Google Workspace של הרשת + Apps Script. ללא העברת נתוני קטינים לצדדים שלישיים. תאימות מלאה לחוזר מנכ״ל ולהוראות הגנת הפרטיות.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PART 3 — VS OTHER SYSTEMS ============ -->
+<section class="chapter" id="comparison">
+  <div class="container">
+    <span class="chapter-eyebrow sand">השוואה</span>
+    <h2>איפה אנחנו שונים ממערכות תרגול אדפטיביות</h2>
+    <p class="lede">Edventure, Capish, Khan Academy, IXL, DreamBox — כולן מצוינות במה שהן עושות: תרגול עצמאי אדפטיבי לתלמיד. אנחנו לא מתחרים בהן באותו מגרש. אנחנו פותרים בעיה שונה: <em>מה המורה עושה עם הנתונים</em>.</p>
+
+    <div class="comparison-wrap">
+      <table class="comparison">
+        <thead>
+          <tr>
+            <th class="col-axis">צירי השוואה</th>
+            <th class="col-other">מערכות תרגול אדפטיביות<br><span style="font-weight:500; font-size:13px; opacity:0.75;">(Edventure · Capish · Khan · IXL)</span></th>
+            <th class="col-ours">ImpactOS למידה דיפרנציאלית</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="col-axis">מי המשתמש הראשי</td>
+            <td class="col-other">התלמיד מתרגל לבד</td>
+            <td class="col-ours">המורה מנהלת את השבוע שלה</td>
+          </tr>
+          <tr>
+            <td class="col-axis">מה מותאם</td>
+            <td class="col-other">קושי השאלה הבאה לתלמיד</td>
+            <td class="col-ours">הפעולה הבאה של המורה: re-teach, שיחה, קיבוץ, הודעה להורים</td>
+          </tr>
+          <tr>
+            <td class="col-axis">מה הצלחה</td>
+            <td class="col-other">התלמיד השלים את התרגול / השיג ציון mastery</td>
+            <td class="col-ours">התלמיד עבר רמה — באמת. מאומת ע"י: ZPD + spaced review + אישור מורה</td>
+          </tr>
+          <tr>
+            <td class="col-axis">תפקיד המורה</td>
+            <td class="col-other">רואה דשבורד, מסיקה מסקנות בעצמה</td>
+            <td class="col-ours">מקבלת תור פעולות שבועי: 5 שיחות, 1–2 reteach plans, family notes חתימה אחת</td>
+          </tr>
+          <tr>
+            <td class="col-axis">ביסוס מחקרי</td>
+            <td class="col-other">IRT + heuristic mastery (כמה נכונות ברצף)</td>
+            <td class="col-ours">DI + UDL 3.0 + MTSS + ZPD + DDI (Bambrick-Santoyo) + PLC (DuFour)</td>
+          </tr>
+          <tr>
+            <td class="col-axis">מתי משתמשים</td>
+            <td class="col-other">בעיקר בבית או בזמן תרגול עצמאי בכיתה</td>
+            <td class="col-ours">כל בוקר, כל שיעור, כל סוף שבוע — לולאה רציפה של תכנון-הוראה-מעקב</td>
+          </tr>
+          <tr>
+            <td class="col-axis">פרטיות רמות</td>
+            <td class="col-other">תלמידים רואים את הציון/הרמה שלהם, ולעיתים של חבריהם</td>
+            <td class="col-ours">תלמיד רואה רק את עצמו. קבוצות בשמות צבעוניים, לא "רמה 1/2/3"</td>
+          </tr>
+          <tr>
+            <td class="col-axis">פרטיות נתונים</td>
+            <td class="col-other">ענן של חברה זרה</td>
+            <td class="col-ours">בעלות מלאה של בית הספר/רשת — Google Workspace + Apps Script</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="key-insight" style="background: linear-gradient(135deg, var(--leaf) 0%, #2F7355 100%);">
+      <div class="label">הניסוח המדויק</div>
+      <h3>אנחנו לא מתחליפים. אנחנו מתקיימים זה לצד זה.</h3>
+      <p>תרגול אדפטיבי טוב (Edventure, Capish, Khan) מייצר <em>נתון איכותי</em>. ImpactOS לוקחת את הנתון הזה והופכת אותו ל<em>פעולה</em>. בית ספר יכול להפעיל את שניהם במקביל — האחד משלים את השני. השאלה היא לא "האם להחליף את Capish?" אלא "מה המורה עושה עם הנתון של Capish ביום שני בבוקר?".</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PART 4 — WHAT WE LEARNED ============ -->
+<section class="chapter dark" id="learnings">
+  <div class="container">
+    <span class="chapter-eyebrow">מה למדנו</span>
+    <h2>חמישה דברים שלמדנו על אדפטיביות אמיתית</h2>
+    <p class="lede">סקירה של 10 מערכות גלובליות מובילות, 7 מתודולוגיות אקדמיות וקטלוג של 32 פעולות מורה מאומתות — חשפה עקרונות שחוזרים בכל מערכת מצליחה, וכשלים שחוזרים בכל מערכת כושלת.</p>
+
+    <h3>חמשת הסיגנלים שכל מערכת מובילה משתמשת בהם</h3>
+    <div class="signals-grid">
+      <div class="signal-block">
+        <div class="signal-num">01</div>
+        <h4>דיוק</h4>
+        <p>נכון או לא נכון. בסיסי, חיוני — אבל לעולם לא מספיק לבדו.</p>
+      </div>
+      <div class="signal-block">
+        <div class="signal-num">02</div>
+        <h4>קושי הפריט</h4>
+        <p>תשובה נכונה לשאלה קלה איננה תשובה נכונה לשאלה קשה. ביסוס: IRT.</p>
+      </div>
+      <div class="signal-block">
+        <div class="signal-num">03</div>
+        <h4>עקביות</h4>
+        <p>הצלחה אחת לא מספיקה. דרושות מספר הצלחות יציבות לפני אישור מעבר רמה.</p>
+      </div>
+      <div class="signal-block">
+        <div class="signal-num">04</div>
+        <h4>שכחה — Recency</h4>
+        <p>תשובה היום איננה תשובה לפני שבועיים. ביקורות חוזרות בלוח זמני doubling (4/8/32 ימים).</p>
+      </div>
+      <div class="signal-block">
+        <div class="signal-num">05</div>
+        <h4>התנהגות</h4>
+        <p>זמן בין תשובות, שימוש ברמזים, ניחוש שיטתי, wheel-spinning — סיגנלים שמשלימים את התמונה.</p>
+      </div>
+    </div>
+
+    <div class="loop-diagram">
+      <h4>לולאות data → action שמייצרות שינוי</h4>
+      <p style="font-size:14.5px; margin-bottom:18px; opacity:0.8;">המחקר הראה: מערכת שמייצרת רק נתון נכשלת. מערכת שהופכת את הנתון לפעולה ספציפית עם קצב קבוע — מצליחה. אלו ארבע הלולאות הקריטיות שבנינו לתוך המערכת:</p>
+
+      <div class="loop-row">
+        <div class="loop-cadence">יומי</div>
+        <div class="loop-desc"><strong>Exit Ticket → Do Now של מחר.</strong> 3–5 שאלות בסוף שיעור. בבוקר המחרת — המורה מקבלת פתיחה של 5 דקות שמטפלת בטעויות של אתמול. מחקר Black & Wiliam: +20–30 percentile points.</div>
+      </div>
+      <div class="loop-row">
+        <div class="loop-cadence">שבועי</div>
+        <div class="loop-desc"><strong>Re-teach Plan אוטומטי.</strong> כשטעות מערכתית מזוהית (יותר מ-40% מהכיתה שגו אותו דבר) — המערכת מפיקה טיוטה: 5 דק' פתיחה + 10 דק' תרגול + exit ticket חדש. המורה עורכת. חוסך 30–45 דק' תכנון שבועיות.</div>
+      </div>
+      <div class="loop-row">
+        <div class="loop-cadence">שבועי</div>
+        <div class="loop-desc"><strong>Conference Queue.</strong> 5 תלמידים בשבוע שזקוקים לשיחה אישית 5–7 דקות, מסודרים לפי דחיפות. תיעוד מהיר Research-Compliment-Teach ב-30 שניות. הפעולה עם evidence הכי חזק במחקר Hattie.</div>
+      </div>
+      <div class="loop-row">
+        <div class="loop-cadence">שבועי</div>
+        <div class="loop-desc"><strong>Family Note אוטומטי.</strong> סוף שבוע — מייל/WhatsApp להורים: הצלחה אחת, אתגר אחד, פעולה אחת לבית. המורה מאשרת חתימה אחת על כל הכיתה. multiplier מחקרי מאומת, במיוחד לתלמידים מרקעים פחות מבוססים.</div>
+      </div>
+      <div class="loop-row">
+        <div class="loop-cadence">חודשי</div>
+        <div class="loop-desc"><strong>Tier Escalation Decision.</strong> כל 6–8 שבועות — החלטה פורמלית לכל תלמיד בתמיכה: Exit (יצא מהתערבות), Sustain (נשאר), או Escalate (התעצמות). לא "wait-and-see".</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PART 5 — SCALE ============ -->
+<section class="chapter alt" id="scale">
+  <div class="container">
+    <span class="chapter-eyebrow leaf">סקייל</span>
+    <h2>האם ניתן לשכפל את המערכת למקצועות ושכבות נוספות?</h2>
+    <p class="lede">התשובה הקצרה: כן, וזה תוכנן ככה מההתחלה. הארכיטקטורה היא <strong>מנוע גנרי + חבילות תוכן מתחלפות</strong>. עיקרון פשוט: מה שאוניברסלי בנוי פעם אחת. מה שספציפי למקצוע — מתחלף.</p>
+
+    <div class="scale-grid">
+      <div class="scale-card">
+        <h4>המנוע — נבנה פעם אחת</h4>
+        <p>פרופיל כיתה דינמי, אלגוריתם ZPD, גלאי טעויות מערכתיות, Conference Queue, Family Note generator, Spaced Review scheduler, ולוח השליטה של המורה — כל אלה אגנוסטיים למקצוע. הם עובדים על תווית פריט תוכן, לא על תוכן עצמו.</p>
+        <ul class="clean">
+          <li>5 המסכים של המורה — אחידים</li>
+          <li>5 הפעולות Must-Have — אחידות</li>
+          <li>7 העקרונות — אחידים</li>
+          <li>חמשת הסיגנלים — אחידים</li>
+        </ul>
+      </div>
+
+      <div class="scale-card alt">
+        <h4>חבילת תוכן — מתחלפת לפי מקצוע</h4>
+        <p>לכל מקצוע ושכבה נבנית חבילה: 200+ פריטי תרגול מתויגים לרמה ולתקן, 4 פיגומים (אותו מושג ב-4 דרכי גישה), bank of re-teach strategies, ומיפוי לקריקולום הרשמי של משרד החינוך.</p>
+        <ul class="clean">
+          <li>פריטי תרגול מתויגים</li>
+          <li>פיגומים מילוליים וויזואליים</li>
+          <li>טמפלייטים של re-teach</li>
+          <li>תוכניות שנתיות מודולריות</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 style="margin-top: 36px;">חבילות תוכן — מה כבר נבנה ומה בתכנון</h3>
+    <p>כבר היום חבילות תוכן בשלבים שונים נבנו תחת ImpactOS, וכל אחת מהן משתמשת באותו המנוע:</p>
+
+    <div class="pack-grid">
+      <div class="pack-pill">
+        <div class="pack-subject">לשון</div>
+        <div class="pack-grade">בגרות י"א–י"ב · בפיתוח</div>
+      </div>
+      <div class="pack-pill">
+        <div class="pack-subject">תנ"ך</div>
+        <div class="pack-grade">פיילוט ט' · פעיל</div>
+      </div>
+      <div class="pack-pill">
+        <div class="pack-subject">אנגלית</div>
+        <div class="pack-grade">תנופה ט' · ב-live</div>
+      </div>
+      <div class="pack-pill">
+        <div class="pack-subject">עברית</div>
+        <div class="pack-grade">תוכנית ד' · באימות</div>
+      </div>
+      <div class="pack-pill future">
+        <div class="pack-subject">מתמטיקה</div>
+        <div class="pack-grade">תכנון</div>
+      </div>
+      <div class="pack-pill future">
+        <div class="pack-subject">אזרחות</div>
+        <div class="pack-grade">תכנון</div>
+      </div>
+      <div class="pack-pill future">
+        <div class="pack-subject">היסטוריה</div>
+        <div class="pack-grade">תכנון</div>
+      </div>
+      <div class="pack-pill future">
+        <div class="pack-subject">מדעים</div>
+        <div class="pack-grade">תכנון</div>
+      </div>
+    </div>
+
+    <h3 style="margin-top: 40px;">למה הסקייל הזה אפשרי</h3>
+    <ul class="clean" style="font-size: 16px;">
+      <li><strong>הפעולות אוניברסליות.</strong> כל מורה — לכל מקצוע ולכל גיל — צריכה לתכנן re-teach, לקבץ תלמידים, לקיים שיחות אישיות, לעדכן הורים. המנוע נבנה סביב הפעולות, לא סביב התוכן.</li>
+      <li><strong>הסיגנלים אוניברסליים.</strong> דיוק, קושי, עקביות, שכחה, התנהגות — אותם 5 סיגנלים תקפים בלשון, במתמטיקה, במדעים ובכל מקצוע אחר.</li>
+      <li><strong>שפת הרמות אחידה.</strong> 4 הרמות (עצמאי / שליטה חלקית / התאמות / תמיכה מוגברת) הן הסטנדרט הרשמי של תוכנית "מסע — הכלה והשתלבות" של משרד החינוך, וזהה לכל המקצועות.</li>
+      <li><strong>חבילת תוכן ראשונה — 200 פריטים.</strong> ניתן לבנות עם מורת מקצוע בליווי AI תוך 4–6 שבועות. אחרי החבילה הראשונה — כל חבילה נוספת אפשרית.</li>
+      <li><strong>מעבר לחינוך הפורמלי.</strong> אותו מנוע יכול לשרת הכשרה מקצועית, קורסים למבוגרים, הכשרת מורים — בכל מקום שבו יש קבוצת לומדים ברמות שונות שצריכה להגיע לאותו יעד.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ CLOSING ============ -->
+<section class="chapter" id="closing">
+  <div class="container narrow">
+    <div class="closing-card">
+      <span class="chapter-eyebrow leaf" style="margin-bottom:18px;">סיכום בשורה אחת</span>
+      <h3>מערכת אחת שמשנה את היום-יום של המורה.</h3>
+      <p>לא עוד דשבורד שדורש מהמורה להסיק מסקנות. לא עוד תרגול שמייצר ציון אבל לא מעביר רמה. שכבת פעולה ברורה, מבוססת מחקר, שמייצרת לולאות data → action יומיות, שבועיות וחודשיות — בכל מקצוע ובכל שכבת גיל.</p>
+      <p style="margin-top:18px;"><strong>המערכת בנויה למורה אחת בכיתה אחת. הארכיטקטורה בנויה לרשת שלמה.</strong></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="container narrow">
+    <div class="footer-title">ImpactOS · למידה דיפרנציאלית</div>
+    <p>הצגה לשותפים וקובעי מדיניות · מאי 2026</p>
+    <div class="links">
+      <a href="spec.html">איפיון מלא</a>
+      <a href="research/">מחקר עומק</a>
+      <a href="demo.html">דמו אינטראקטיבי</a>
+      <a href="index.html">דף הבית</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

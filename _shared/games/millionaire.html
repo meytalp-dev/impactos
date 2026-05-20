@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>מיליונר · Impact SO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+.mil-layout {
+  display:grid; grid-template-columns:1fr 220px; gap:20px;
+}
+.mil-question { /* uses .card */ }
+.mil-ladder {
+  background:linear-gradient(180deg, #0F172A, #1E293B);
+  border-radius:16px; padding:14px 12px;
+  display:flex; flex-direction:column-reverse; gap:3px;
+  position:sticky; top:20px;
+  height:fit-content;
+}
+.mil-step {
+  font-family:'Space Grotesk',sans-serif;
+  display:flex; justify-content:space-between; align-items:center;
+  padding:7px 12px; border-radius:6px;
+  font-size:12px; font-weight:700;
+  color:rgba(255,255,255,.45);
+  transition:all .25s;
+}
+.mil-step .num { font-weight:800; }
+.mil-step .amount { font-size:11px; }
+.mil-step.safe .amount::after { content:" 🔒"; opacity:.6; }
+.mil-step.current {
+  background:linear-gradient(135deg, var(--primary), var(--secondary));
+  color:white; transform:scale(1.05);
+  box-shadow:0 4px 12px rgba(236,72,153,.3);
+}
+.mil-step.passed { color:#FBBF24; }
+.mil-fifty {
+  background:white; border:2px solid var(--primary);
+  color:var(--primary); padding:10px 16px;
+  border-radius:10px; font-weight:700; font-size:13px;
+  cursor:pointer; transition:all .15s;
+}
+.mil-fifty:hover:not(:disabled) { background:var(--primary-bg); }
+.mil-fifty:disabled { opacity:.4; cursor:not-allowed; }
+.mil-result-money {
+  font-family:'Space Grotesk',sans-serif;
+  font-size:36px; font-weight:800; color:var(--primary);
+  line-height:1; margin-bottom:6px;
+}
+@media (max-width:700px) {
+  .mil-layout { grid-template-columns:1fr; }
+  .mil-ladder { position:static; flex-direction:row; flex-wrap:wrap; }
+  .mil-step { flex:1 1 calc(33% - 4px); padding:5px 8px; font-size:10px; }
+  .mil-step .num { display:none; }
+}
+</style>
+</head>
+<body>
+
+<div id="topbar"></div>
+<div class="game-shell"><div id="root" class="loading"><div class="spinner"></div><div>טוען...</div></div></div>
+
+<script src="shared.js"></script>
+<script>
+(function(){
+  const CONTENT = IGS.getParam('content', 'content.json');
+  const KIT_TITLE = IGS.getParam('kit', '');
+  const BACK = IGS.getParam('back', '../index.html');
+
+  // Money ladder (shown bottom→top, but we use index 0 = ₪100)
+  const LADDER = [
+    100, 200, 300, 500, 1000,
+    2000, 4000, 8000, 16000, 32000,
+    64000, 125000, 250000, 500000, 1000000
+  ];
+  const SAFE_STEPS = [4, 9]; // step indexes (₪1,000 and ₪32,000) — 0-based
+
+  let cfg, items, current=0, fiftyUsed=false, removed=[], finalAmount=0;
+  let studentName='', studentClass='';
+
+  document.getElementById('topbar').innerHTML = IGS.topbarHtml({
+    gameType:'millionaire', title:'מיליונר', kitTitle:KIT_TITLE, backHref:BACK
+  });
+
+  IGS.loadContent(CONTENT).then(data => {
+    cfg = data;
+    document.getElementById('root').innerHTML = IGS.welcomeHtml({
+      gameType:'millionaire', title: cfg.title || 'מי רוצה להיות מיליונר',
+      subtitle: cfg.subtitle || '15 שאלות בסדר קושי עולה — האם תגיעו למיליון?',
+      classes: cfg.classes,
+    });
+    IGS.wireWelcomeForm(s => { studentName=s.studentName; studentClass=s.studentClass; startGame(); });
+  }).catch(err => {
+    document.getElementById('root').innerHTML = '<div class="card"><h2 style="color:var(--red)">שגיאה</h2><p>'+IGS.escapeHtml(err.message)+'</p></div>';
+  });
+
+  function startGame(){
+    items = cfg.items.slice(0, LADDER.length); // up to 15
+    current=0; fiftyUsed=false; removed=[]; finalAmount=0;
+    renderQuestion();
+  }
+
+  function renderQuestion(){
+    const q = items[current];
+    document.getElementById('root').innerHTML =
+      '<div class="mil-layout">' +
+        '<div class="card mil-question">' +
+          '<div style="font-size:11px;font-weight:700;color:var(--primary);margin-bottom:6px">שאלה ' + (current+1) + ' / ' + items.length + '</div>' +
+          '<div class="q-text">' + IGS.escapeHtml(q.text) + '</div>' +
+          '<div class="q-options" id="opts">' +
+            q.options.map((opt,i) =>
+              '<button class="q-opt" data-i="'+i+'" '+(removed.includes(i)?'style="display:none"':'')+'>' +
+                '<span class="q-opt-letter">'+['א','ב','ג','ד'][i]+'</span>' +
+                '<span>'+IGS.escapeHtml(opt)+'</span>' +
+              '</button>'
+            ).join('') +
+          '</div>' +
+          '<div style="margin-top:18px">' +
+            '<button class="mil-fifty" id="fiftyBtn" '+(fiftyUsed?'disabled':'')+'>50:50 — הסר 2 שגויות</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="mil-ladder">' +
+          LADDER.map((amount, i) => {
+            let cls = 'mil-step';
+            if (SAFE_STEPS.includes(i)) cls += ' safe';
+            if (i < current) cls += ' passed';
+            if (i === current) cls += ' current';
+            return '<div class="'+cls+'"><span class="num">'+(i+1)+'</span><span class="amount">₪'+amount.toLocaleString('he-IL')+'</span></div>';
+          }).join('') +
+        '</div>' +
+      '</div>';
+
+    document.querySelectorAll('.q-opt').forEach(btn => {
+      btn.addEventListener('click', () => answer(parseInt(btn.dataset.i,10)));
+    });
+    document.getElementById('fiftyBtn').addEventListener('click', useFifty);
+  }
+
+  function useFifty(){
+    if (fiftyUsed) return;
+    fiftyUsed = true;
+    const q = items[current];
+    const wrong = q.options.map((_,i)=>i).filter(i => i !== q.correct);
+    // remove 2 random wrong
+    const toRemove = IGS.shuffle(wrong).slice(0,2);
+    removed = toRemove;
+    document.getElementById('fiftyBtn').disabled = true;
+    toRemove.forEach(i => {
+      const b = document.querySelector('.q-opt[data-i="'+i+'"]');
+      if (b) b.style.display = 'none';
+    });
+  }
+
+  function answer(idx){
+    const q = items[current];
+    const opts = document.querySelectorAll('.q-opt');
+    opts.forEach(b => b.disabled = true);
+    const isRight = idx === q.correct;
+    opts.forEach((b,i) => {
+      if (i === q.correct) b.classList.add('correct');
+      else if (i === idx) b.classList.add('incorrect');
+    });
+
+    if (isRight) {
+      finalAmount = LADDER[current];
+      setTimeout(() => {
+        if (current === items.length - 1) finish(true);
+        else { current++; removed=[]; renderQuestion(); }
+      }, 1300);
+    } else {
+      // fall back to last safe step
+      let safe = 0;
+      for (let i = SAFE_STEPS.length - 1; i >= 0; i--) {
+        if (SAFE_STEPS[i] < current) { safe = LADDER[SAFE_STEPS[i]]; break; }
+      }
+      finalAmount = safe;
+      setTimeout(() => finish(false), 1500);
+    }
+  }
+
+  function finish(won){
+    const root = document.getElementById('root');
+    const tier = finalAmount >= 1000000 ? { emoji:'👑', msg:'מיליונר! ענקי!' } :
+                 finalAmount >= 32000 ? { emoji:'💰', msg:'כל הכבוד! הרווחתם יפה!' } :
+                 finalAmount >= 1000 ? { emoji:'💵', msg:'לא רע! אפשר לשפר!' } :
+                 { emoji:'📖', msg:'כדאי לחזור על החומר' };
+    const correctCount = current + (won ? 1 : 0);
+    const percentage = IGS.pct(correctCount, items.length);
+
+    root.innerHTML =
+      '<div class="card result">' +
+        '<div class="result-emoji">'+tier.emoji+'</div>' +
+        '<div class="mil-result-money">₪'+finalAmount.toLocaleString('he-IL')+'</div>' +
+        '<div class="result-of">סה"כ זכייה</div>' +
+        '<div class="result-msg tier-'+(percentage>=70?'good':percentage>=50?'ok':'low')+'">'+tier.msg+'</div>' +
+        '<div class="result-stats">' +
+          '<div class="stat-tile"><div class="stat-tile-num">'+correctCount+'</div><div class="stat-tile-label">נכונות</div></div>' +
+          '<div class="stat-tile"><div class="stat-tile-num">'+(items.length-correctCount)+'</div><div class="stat-tile-label">שגויות</div></div>' +
+          '<div class="stat-tile"><div class="stat-tile-num">'+items.length+'</div><div class="stat-tile-label">סה"כ</div></div>' +
+        '</div>' +
+        '<div id="sendStatus"></div>' +
+        '<div class="result-actions"><button class="btn-primary" id="playAgainBtn">🔄 שחקו שוב</button></div>' +
+      '</div>';
+
+    document.getElementById('playAgainBtn').addEventListener('click', () => location.reload());
+
+    IGS.sendResults({
+      quizName: (cfg.title || 'מיליונר') + ' — מיליונר',
+      studentName, classroom: studentClass,
+      percentage, totalItems: items.length, correctItems: correctCount,
+      teacherEmail: cfg.teacherEmail,
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

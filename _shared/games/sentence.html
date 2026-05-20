@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>סדר את המשפט · Impact SO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+.snt-target {
+  min-height:80px; padding:14px;
+  background:var(--bg);
+  border:2px dashed var(--border); border-radius:12px;
+  display:flex; flex-wrap:wrap; gap:8px;
+  margin-bottom:14px; transition:border-color .2s;
+  align-items:flex-start; align-content:flex-start;
+}
+.snt-target.full { border-color:var(--primary); border-style:solid; background:var(--primary-bg); }
+.snt-target.correct { border-color:var(--green); background:var(--green-l); }
+.snt-target.wrong { border-color:var(--red); background:var(--red-l); }
+.snt-bank-label {
+  font-size:11px; font-weight:700; color:var(--text3);
+  margin-bottom:6px; letter-spacing:.5px; text-transform:uppercase;
+}
+.snt-bank {
+  display:flex; flex-wrap:wrap; gap:8px;
+  min-height:60px; padding:14px;
+  background:white; border:1px solid var(--border); border-radius:12px;
+  margin-bottom:14px;
+}
+.snt-word {
+  background:white; border:2px solid var(--border);
+  border-radius:10px;
+  padding:10px 16px;
+  font-family:'Heebo',sans-serif;
+  font-size:15px; font-weight:600;
+  color:var(--text); cursor:pointer;
+  transition:all .15s;
+}
+.snt-word:hover { border-color:var(--primary); transform:translateY(-1px); }
+.snt-target .snt-word {
+  background:var(--primary-bg); border-color:var(--primary); color:var(--primary);
+}
+.snt-target.correct .snt-word { background:var(--green-l); border-color:var(--green); color:var(--green); }
+.snt-target.wrong .snt-word { background:var(--red-l); border-color:var(--red); color:var(--red); }
+.snt-correct-display {
+  margin-top:12px; padding:12px;
+  background:var(--green-l); border-radius:10px;
+  font-size:14px; color:var(--green); font-weight:600;
+  display:none;
+}
+.snt-correct-display.show { display:block; }
+.snt-actions { display:flex; gap:8px; }
+</style>
+</head>
+<body>
+
+<div id="topbar"></div>
+<div class="game-shell"><div id="root" class="loading"><div class="spinner"></div><div>טוען...</div></div></div>
+
+<script src="shared.js"></script>
+<script>
+(function(){
+  const CONTENT = IGS.getParam('content', 'content.json');
+  const KIT_TITLE = IGS.getParam('kit', '');
+  const BACK = IGS.getParam('back', '../index.html');
+
+  let cfg, items, current=0, correct=0;
+  let target=[], bank=[], words=[];
+  let studentName='', studentClass='';
+
+  document.getElementById('topbar').innerHTML = IGS.topbarHtml({
+    gameType:'sentence', title:'סדר את המשפט', kitTitle:KIT_TITLE, backHref:BACK
+  });
+
+  IGS.loadContent(CONTENT).then(data => {
+    cfg = data;
+    document.getElementById('root').innerHTML = IGS.welcomeHtml({
+      gameType:'sentence', title: cfg.title || 'סדר את המשפט',
+      subtitle: cfg.subtitle || 'הזיזו את המילים לסדר הנכון',
+      classes: cfg.classes,
+    });
+    IGS.wireWelcomeForm(s => { studentName=s.studentName; studentClass=s.studentClass; startGame(); });
+  }).catch(err => {
+    document.getElementById('root').innerHTML = '<div class="card"><h2 style="color:var(--red)">שגיאה</h2><p>'+IGS.escapeHtml(err.message)+'</p></div>';
+  });
+
+  function startGame(){
+    items = cfg.settings && cfg.settings.shuffleItems !== false ? IGS.shuffle(cfg.items) : cfg.items.slice();
+    current=0; correct=0;
+    renderSentence();
+  }
+
+  function renderSentence(){
+    const sentence = items[current].text;
+    words = sentence.split(/\s+/).map((w,i) => ({ id:i, text:w }));
+    bank = IGS.shuffle(words.slice());
+    target = [];
+    render();
+  }
+
+  function render(){
+    const checked = document.getElementById('targetEl') && document.getElementById('targetEl').classList.contains('correct');
+    document.getElementById('root').innerHTML =
+      IGS.progressHtml(current+1, items.length, 'משפט') +
+      '<div class="card">' +
+        '<div class="snt-bank-label">המשפט הנכון:</div>' +
+        '<div class="snt-target ' + (target.length===words.length ? 'full' : '') + '" id="targetEl">' +
+          target.map(w => '<button class="snt-word" data-pos="t" data-id="'+w.id+'">'+IGS.escapeHtml(w.text)+'</button>').join('') +
+        '</div>' +
+        '<div class="snt-bank-label">בנק מילים:</div>' +
+        '<div class="snt-bank">' +
+          bank.map(w => '<button class="snt-word" data-pos="b" data-id="'+w.id+'">'+IGS.escapeHtml(w.text)+'</button>').join('') +
+        '</div>' +
+        '<div class="snt-actions">' +
+          '<button class="btn-primary" id="checkBtn" '+(target.length === words.length ? '' : 'disabled')+'>בדקו</button>' +
+          '<button class="btn-secondary" id="resetBtn">נקה</button>' +
+        '</div>' +
+        '<div class="snt-correct-display" id="correctDisplay"></div>' +
+        '<div class="q-next-wrap"><button class="q-next" id="next">הבא ←</button></div>' +
+      '</div>';
+
+    document.querySelectorAll('.snt-word').forEach(el => {
+      el.addEventListener('click', () => moveWord(el.dataset.pos, parseInt(el.dataset.id,10)));
+    });
+    document.getElementById('checkBtn').addEventListener('click', check);
+    document.getElementById('resetBtn').addEventListener('click', () => { bank = IGS.shuffle(words.slice()); target = []; render(); });
+    document.getElementById('next').addEventListener('click', nextQuestion);
+  }
+
+  function moveWord(pos, id){
+    if (pos === 'b') {
+      const idx = bank.findIndex(w => w.id === id);
+      if (idx >= 0) {
+        target.push(bank[idx]);
+        bank.splice(idx,1);
+      }
+    } else {
+      const idx = target.findIndex(w => w.id === id);
+      if (idx >= 0) {
+        bank.push(target[idx]);
+        target.splice(idx,1);
+      }
+    }
+    render();
+  }
+
+  function check(){
+    const isRight = target.every((w,i) => w.id === i);
+    const targetEl = document.getElementById('targetEl');
+    targetEl.classList.add(isRight ? 'correct' : 'wrong');
+    if (isRight) correct++;
+    if (!isRight) {
+      const cd = document.getElementById('correctDisplay');
+      cd.textContent = '✓ המשפט הנכון: ' + items[current].text;
+      cd.classList.add('show');
+    }
+    document.getElementById('checkBtn').disabled = true;
+    document.getElementById('resetBtn').disabled = true;
+    document.querySelectorAll('.snt-word').forEach(b => b.style.pointerEvents = 'none');
+    document.getElementById('next').classList.add('show');
+    document.getElementById('next').textContent = current === items.length - 1 ? 'סיום ←' : 'הבא ←';
+  }
+
+  function nextQuestion(){
+    current++;
+    if (current >= items.length) finish();
+    else renderSentence();
+  }
+
+  function finish(){
+    IGS.showResult({
+      gameType:'sentence',
+      gameTitle: cfg.title || 'סדר את המשפט',
+      studentName, studentClass,
+      correctItems: correct, totalItems: items.length,
+      percentage: IGS.pct(correct, items.length),
+      teacherEmail: cfg.teacherEmail,
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

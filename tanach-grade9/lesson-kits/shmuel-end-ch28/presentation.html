@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>שיעור הקנייה · שמואל א' פרק כ"ח · בעלת האוב</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --teal:#2E7D8C; --teal-light:#3A9BAD; --teal-dark:#1E5A66;
+  --sand:#E8A849; --sand-dark:#C88A2E;
+  --burgundy:#8B3A4A; --leaf:#4A9B7F;
+  --cream:#F5F0E8; --cream-dark:#E8DFD0;
+  --white:#FDFCFA; --deep:#1E3D47;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Heebo',sans-serif;background:var(--deep);color:var(--cream);display:flex;flex-direction:column}
+h1,h2,h3{font-family:'Rubik',sans-serif;line-height:1.2}
+.deck{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 60px;position:relative;overflow:hidden}
+.slide{
+  width:100%;max-width:1100px;background:var(--white);color:var(--deep);
+  border-radius:24px;padding:48px 60px;
+  box-shadow:0 20px 60px rgba(0,0,0,.3);
+  display:none;
+  min-height:520px;
+}
+.slide.active{display:block;animation:fade-in .4s}
+@keyframes fade-in{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.slide-eyebrow{
+  display:inline-block;font-family:'Rubik',sans-serif;font-weight:700;font-size:13px;
+  letter-spacing:1.5px;color:var(--teal);border:1.5px solid var(--teal);
+  padding:6px 16px;border-radius:999px;margin-bottom:18px;text-transform:uppercase;
+}
+.slide h1{font-size:clamp(32px,4vw,52px);color:var(--deep);margin-bottom:18px;line-height:1.1}
+.slide h2{font-size:clamp(26px,3vw,38px);color:var(--teal-dark);margin-bottom:16px}
+.slide p{font-size:18px;line-height:1.7;color:var(--deep);margin-bottom:14px;opacity:.9}
+.slide .lead{font-size:22px;font-weight:500;color:var(--deep);background:linear-gradient(135deg,rgba(46,125,140,.06),rgba(74,155,127,.06));border-right:4px solid var(--teal);padding:18px 22px;border-radius:14px;margin-bottom:22px}
+.slide .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:center}
+.slide .img-wrap{border-radius:14px;overflow:hidden;background:var(--cream-dark)}
+.slide .img-wrap img{width:100%;height:340px;object-fit:cover;display:block}
+.slide .caption{font-size:12px;color:var(--deep);opacity:.65;margin-top:6px;text-align:center}
+.slide ul{padding-right:24px;margin:14px 0}
+.slide li{font-size:17px;line-height:1.8;margin-bottom:6px}
+.slide .quote-box{background:var(--cream);border-radius:14px;padding:18px 22px;font-family:'Rubik',sans-serif;font-size:20px;color:var(--deep);line-height:1.6;margin:16px 0;border-right:4px solid var(--sand-dark)}
+.slide .discussion{background:rgba(232,168,73,.1);border:1.5px dashed var(--sand-dark);border-radius:14px;padding:18px 22px;margin-top:18px}
+.slide .discussion-label{font-family:'Rubik',sans-serif;font-weight:700;color:var(--sand-dark);font-size:13px;letter-spacing:1px;margin-bottom:6px;text-transform:uppercase}
+.slide .warn{background:rgba(139,58,74,.08);border-right:3px solid var(--burgundy);padding:12px 16px;border-radius:10px;margin-top:14px;font-size:14px;color:var(--burgundy)}
+
+/* === Controls === */
+.controls{
+  flex-shrink:0;background:var(--deep);padding:14px 28px;
+  display:flex;align-items:center;gap:14px;
+  border-top:1px solid rgba(255,255,255,.1);
+}
+.ctrl-btn{
+  background:var(--teal);color:var(--white);border:none;
+  padding:10px 22px;border-radius:999px;font-family:'Rubik',sans-serif;
+  font-weight:700;font-size:14px;cursor:pointer;transition:all .15s;
+}
+.ctrl-btn:hover{background:var(--teal-light);transform:translateY(-1px)}
+.ctrl-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.ctrl-btn.ghost{background:transparent;border:1.5px solid var(--cream);color:var(--cream)}
+.ctrl-btn.ai{background:var(--sand-dark);color:var(--deep)}
+.ctrl-btn.ai:hover{background:var(--sand)}
+.ctrl-counter{font-family:'Rubik',sans-serif;font-weight:700;color:var(--cream);opacity:.7;margin:0 auto;font-size:14px}
+.ctrl-progress{height:4px;background:rgba(255,255,255,.15);border-radius:2px;flex:0 0 200px;overflow:hidden}
+.ctrl-progress span{display:block;height:100%;background:var(--leaf);transition:width .3s}
+
+/* === AI Helper === */
+.ai-panel{
+  position:fixed;top:0;left:-440px;width:440px;height:100vh;background:var(--white);
+  color:var(--deep);box-shadow:8px 0 32px rgba(0,0,0,.2);z-index:9999;
+  transition:left .3s;padding:24px;overflow-y:auto;
+}
+.ai-panel.open{left:0}
+.ai-head{display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--cream-dark);padding-bottom:12px;margin-bottom:18px}
+.ai-head-title{font-family:'Rubik',sans-serif;font-weight:800;font-size:18px;color:var(--teal-dark);flex:1}
+.ai-close{background:transparent;border:none;font-size:24px;cursor:pointer;color:var(--deep);opacity:.5}
+.ai-close:hover{opacity:1}
+.ai-greeting{background:var(--cream);padding:14px 16px;border-radius:12px;font-size:14px;margin-bottom:14px;line-height:1.6}
+.ai-suggestions{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.ai-suggestion{background:rgba(46,125,140,.06);border:1px solid rgba(46,125,140,.2);padding:11px 14px;border-radius:10px;text-align:right;font-size:14px;cursor:pointer;color:var(--teal-dark);font-family:'Heebo',sans-serif;transition:all .15s}
+.ai-suggestion:hover{background:rgba(46,125,140,.12);border-color:var(--teal)}
+.ai-response{background:rgba(74,155,127,.05);border-right:3px solid var(--leaf);padding:14px 16px;border-radius:10px;font-size:14px;line-height:1.7;margin-bottom:14px;display:none}
+.ai-response.show{display:block;animation:fade-in .25s}
+.ai-input{width:100%;padding:12px 14px;border:1.5px solid var(--cream-dark);border-radius:12px;font-family:'Heebo',sans-serif;font-size:14px;resize:vertical;margin-bottom:8px}
+.ai-input:focus{outline:none;border-color:var(--teal)}
+.ai-send{padding:10px 18px;background:var(--teal);color:white;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:13px}
+
+/* Final summary slide */
+.slide.summary{background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:var(--white)}
+.slide.summary h1,.slide.summary h2{color:var(--white)}
+.slide.summary .lead{background:rgba(255,255,255,.1);color:var(--white);border-color:var(--white)}
+.slide.summary p{color:rgba(255,255,255,.92)}
+.slide.summary li{color:var(--white)}
+
+@media (max-width:780px){
+  .deck{padding:14px 16px}
+  .slide{padding:30px 26px;min-height:auto}
+  .slide .grid-2{grid-template-columns:1fr;gap:18px}
+  .slide .img-wrap img{height:240px}
+  .controls{padding:10px 14px;flex-wrap:wrap}
+  .ctrl-progress{flex-basis:100%;order:99}
+}
+@media (max-width:480px){
+  .ai-panel{width:100vw;left:-100vw;padding:18px}
+  .slide{padding:22px 18px;font-size:15px}
+  .slide h1{font-size:24px}
+  .slide h2{font-size:20px}
+  .ctrl-btn{min-height:44px;font-size:14px}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ AI HELPER PANEL ============ -->
+<div class="ai-panel" id="ai-panel">
+  <div class="ai-head">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--teal)"><path d="M12 8V4H8M16 4h-4v4M2 8v8a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H2zM2 8h20"/></svg>
+    <div class="ai-head-title">עוזר AI למורה</div>
+    <button class="ai-close" onclick="document.getElementById('ai-panel').classList.remove('open')">×</button>
+  </div>
+  <div class="ai-greeting">
+    <strong>שלום משה,</strong>
+    אני כאן לעזור בזמן השיעור. שאל אותי שאלות על הפרק, בקש הצעות לדיון, או רעיונות איך להציג מושג קשה. הצעות בהמשך — או כתוב שאלה משלך.
+  </div>
+  <div class="ai-suggestions" id="ai-suggestions"></div>
+  <div class="ai-response" id="ai-response"></div>
+  <textarea class="ai-input" id="ai-input" rows="3" placeholder="שאל שאלה משלך... (לדוגמה: 'איך להציג את 3 דרכי הפנייה בלי לאבד תלמידים?')"></textarea>
+  <button class="ai-send" onclick="aiAsk(document.getElementById('ai-input').value)">שלח שאלה</button>
+</div>
+
+<!-- ============ DECK ============ -->
+<div class="deck" id="deck">
+
+  <!-- Slide 1: Title -->
+  <div class="slide active" data-slide="1">
+    <div class="slide-eyebrow">שיעור הקנייה · יחידת העשרה · תנ"ך כיתה ט'</div>
+    <h1>בעלת האוב בעין דור</h1>
+    <h2 style="color:var(--sand-dark)">שמואל א' · פרק כ"ח</h2>
+    <p style="display:inline-block; background:rgba(232,168,73,0.15); border:1.5px solid var(--sand-dark); color:var(--sand-dark); padding:6px 18px; border-radius:999px; font-size:14px; font-weight:600; margin-top:8px;">יחידת העשרה — לא חומר מבחן</p>
+    <div class="grid-2" style="margin-top:30px">
+      <div>
+        <p class="lead">סיפור של מלך במצוקה — וחמלה ממקום בלתי-צפוי.</p>
+        <p><strong>מה נלמד היום:</strong></p>
+        <ul>
+          <li>מה קורה ערב הקרב האחרון של שאול</li>
+          <li>למה ה' לא עונה — ואיך זה דוחף אותו</li>
+          <li>הניגוד בין הנביא הקשה לאישה החומלת</li>
+        </ul>
+      </div>
+      <div class="img-wrap">
+        <img src="https://en.wikipedia.org/wiki/Special:FilePath/Witch_of_Endor._Dore_1866.jpg?width=800" alt="גוסטב דורה — בעלת האוב">
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 2: Hook (חיבור) -->
+  <div class="slide" data-slide="2">
+    <div class="slide-eyebrow">חיבור · 5 דקות</div>
+    <h1>שאלה לפתיחה</h1>
+    <div class="quote-box">
+      "מתי הרגשתם שכל הדלתות נסגרו עליכם? למי פניתם?"
+    </div>
+    <p>אין כאן תשובה נכונה. בואו נקשיב לכמה תגובות מהכיתה לפני שניכנס לסיפור של שאול.</p>
+    <div class="discussion">
+      <div class="discussion-label">שאלה לכיתה</div>
+      <p style="margin:0">מי רוצה לשתף? אין תשובה נכונה. כל אחד מהתחושה שלו — אנחנו רק מקשיבים. אחר כך נראה שגם שאול המלך היה בדיוק שם.</p>
+    </div>
+  </div>
+
+  <!-- Slide 3: Context -->
+  <div class="slide" data-slide="3">
+    <div class="slide-eyebrow">רקע · 3 דקות</div>
+    <h1>איפה אנחנו בסיפור?</h1>
+    <ul>
+      <li>שאול הוא <strong>המלך הראשון של ישראל</strong></li>
+      <li>שמואל הנביא — מי שמשח אותו למלך — <strong>נפטר</strong></li>
+      <li>שאול <strong>בעצמו אסר</strong> על אוב וידעוני בארץ — וגזר עליהם מוות</li>
+      <li>דוד הצעיר ברח מפני שאול ונמצא <strong>אצל הפלשתים</strong></li>
+      <li>הפלשתים <strong>מתקבצים למלחמה גדולה</strong> נגד ישראל</li>
+      <li>שאול <strong>לבד</strong> — בלי נביא, בלי דוד, מול אויב גדול</li>
+    </ul>
+    <div class="warn">
+      <strong>חשוב לדעת:</strong> זוהי יחידת העשרה — לא חומר חובה ולא חומר מבחן. למדנו כי הסיפור חשוב, לא כי יבחנו עליו.
+    </div>
+  </div>
+
+  <!-- Slide 4: Text-Anchor -->
+  <div class="slide" data-slide="4">
+    <div class="slide-eyebrow">טקסט-עוגן · 7 דקות</div>
+    <h1>הפסוקים שעלינו לקרוא יחד</h1>
+    <div class="quote-box">
+      <strong>פס' ה-ו:</strong> "וירא שאול את מחנה פלשתים, ויירא ויחרד לבו מאד.<br>
+      וישאל שאול בה', ולא ענהו ה' — גם בחלמות, גם באורים, גם בנביאם."
+    </div>
+    <p><strong>הנקודה:</strong> שאול ניסה את <strong>שלוש הדרכים המקובלות</strong> לפנות לה' — וכולן נסגרו.</p>
+    <ul>
+      <li><strong>חלום</strong> — דרך נבואית פרטית</li>
+      <li><strong>אורים</strong> — כלי כוהני בחושן</li>
+      <li><strong>נביא</strong> — אדם שמדבר ישירות עם ה'</li>
+    </ul>
+  </div>
+
+  <!-- Slide 5: The encounter -->
+  <div class="slide" data-slide="5">
+    <div class="slide-eyebrow">עיון · 10 דקות</div>
+    <h1>שאול הולך לעין דור</h1>
+    <div class="grid-2">
+      <div class="img-wrap">
+        <img src="https://en.wikipedia.org/wiki/Special:FilePath/Saul_and_the_Witch_of_Endor_by_Jacob_Cornelisz_van_Oostsanen.jpg?width=800" alt="יעקב קורנליסז ון אוסטסאנן — שאול ובעלת האוב">
+        <div class="caption" style="background:white;padding:6px">יעקב קורנליסז (המאה 16) — המפגש המלא</div>
+      </div>
+      <div>
+        <p>שאול עושה משהו <strong>שהוא בעצמו אסר:</strong> פונה לבעלת אוב.</p>
+        <p>הוא מתחפש — כי אם תזהה אותו, היא תפחד.</p>
+        <p>היא מבקשת בקשה ברורה: "תישבע לי בה' שלא יקרה לי כלום".</p>
+        <p>היא מעלה את שמואל — ופתאום <strong>מבינה שזה שאול עצמו</strong> ומתחילה לצרוח.</p>
+      </div>
+    </div>
+    <div class="discussion">
+      <div class="discussion-label">לדיון</div>
+      <p style="margin:0">מה זה אומר עליה — שהיא ממשיכה לעזור לו גם אחרי שגילתה מי הוא?</p>
+    </div>
+  </div>
+
+  <!-- Slide 6: Samuel's message -->
+  <div class="slide" data-slide="6">
+    <div class="slide-eyebrow">המסר הקשה · 6 דקות</div>
+    <h1>שמואל לא מרחם</h1>
+    <div class="grid-2">
+      <div class="img-wrap">
+        <img src="https://en.wikipedia.org/wiki/Special:FilePath/The_Witch_of_Endor_%28William_Blake%29_2.jpg?width=800" alt="וויליאם בלייק — רוח שמואל מופיעה לשאול">
+        <div class="caption" style="background:white;padding:6px">וויליאם בלייק (1783) — רוח שמואל מופיעה</div>
+      </div>
+      <div>
+        <p>שמואל לא בא בנחמה. הוא <strong>חוזר על תוכחתו מפרק ט"ו</strong> — קריעת המלוכה.</p>
+        <p>ואז הבשורה הכי קשה:</p>
+        <div class="quote-box" style="font-size:18px;margin:14px 0">
+          "ויתן ה' גם את ישראל עמך ביד פלשתים, ו<strong>מחר אתה ובניך עמי</strong>."
+        </div>
+        <p>שאול נופל ארצה — <strong>מלוא קומתו</strong> (כל אורך גופו, מהראש ועד הרגליים). גוף ונפש נשברים יחד.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 7: Compassion -->
+  <div class="slide" data-slide="7">
+    <div class="slide-eyebrow">הניגוד הגדול · 6 דקות</div>
+    <h1>בעלת האוב מציעה אוכל</h1>
+    <p class="lead">דווקא היא — שאסור עליה לעסוק — מטפלת בו.</p>
+    <ul>
+      <li>שמואל הנביא — איש האל — דובר בקור, מבשר מוות</li>
+      <li>בעלת האוב — האישה האסורה — חומלת, מכינה אוכל, מפצירה שיאכל</li>
+    </ul>
+    <div class="quote-box">
+      פרופ' אוריאל סימון: "<em>הסיפור המקראי אינו מהסס להכיר באיכויותיה המוסריות של בעלת האוב.</em>"
+    </div>
+    <div class="discussion">
+      <div class="discussion-label">השאלה הגדולה</div>
+      <p style="margin:0">מי "האדם הטוב" בפרק הזה? למה הסיפור בנוי כך שדווקא <strong>היא</strong> תהיה הקול האנושי?</p>
+    </div>
+  </div>
+
+  <!-- Slide 8: Sensitive topic frame -->
+  <div class="slide" data-slide="8">
+    <div class="slide-eyebrow">פיסקה רגישה · קראו לפני</div>
+    <h1>מה עוד יקרה (פרק ל"א)</h1>
+    <div class="warn" style="font-size:16px">
+      <strong>תוכן רגיש:</strong> בפרק הבא (ל"א) שאול ייפול בקרב הגלבוע ויסיים את חייו בעצמו. זה נושא קשה. <strong>זה בסדר גמור להגיב לסיפור הזה. אם משהו מתעורר אצלך — זה לא חולשה, זה שאתה אדם.</strong> אם זה מציף — אתם רשאים לצאת מהכיתה ולפנות אלי או ליועצת. קווים זמינים: <a href="tel:1201" style="color:inherit;font-weight:700;">ער"ן 1201</a>, <a href="https://sahar.org.il" target="_blank" rel="noopener" style="color:inherit;font-weight:700;">סה"ר (צ'אט) sahar.org.il</a>.
+    </div>
+    <p style="font-size:16px;background:rgba(46,125,140,0.08);padding:12px 16px;border-radius:10px;border-right:3px solid var(--teal);margin-top:14px">
+      <strong>במסורת היהודית — שלוש קריאות לתגובה של שאול:</strong>
+      <strong>(1)</strong> איסור מוחלט — אסור היה לו לסיים את חייו בעצמו.
+      <strong>(2)</strong> היתר חלקי — בנסיבות קיצוניות, כדי למנוע התעללות וחילול השם.
+      <strong>(3)</strong> קבלת דין כגבורה — חז"ל ורד"ק נטו לכאן. מעשה שאינו רק חולשה.
+      <em>(אין קריאה אחת "נכונה" — כל הקריאות לגיטימיות בעולם הפרשני.)</em>
+    </p>
+    <p style="margin-top:14px">שתי תגובות אנושיות יבואו בעקבות:</p>
+    <ul>
+      <li><strong>הפלשתים</strong> ייקחו את הגופה ויתלו אותה על חומת בית-שן</li>
+      <li><strong>אנשי יבש גלעד</strong> (שאול הציל אותם בתחילת מלכותו!) יסכנו את חייהם, יורידו את הגופה בלילה, ויקברו אותה בכבוד</li>
+    </ul>
+    <p>חסד מעגלי. שאול הציל אותם — הם משיבים לו חסד בסוף.</p>
+  </div>
+
+  <!-- Slide 9: Reflection -->
+  <div class="slide" data-slide="9">
+    <div class="slide-eyebrow">רפלקציה · 5 דקות</div>
+    <h1>מה לקחנו מהשיעור?</h1>
+    <ul>
+      <li><strong>מנהיג במשבר</strong> פונה למקומות שלא הכין את עצמו לפנות אליהם</li>
+      <li><strong>חמלה</strong> יכולה לבוא ממקור בלתי-צפוי לחלוטין</li>
+      <li><strong>דמויות מורכבות</strong> — לא "טוב" ו"רע" שטוחים. גם הנביא קשה, גם ה"רעה" יכולה להיות טובה</li>
+    </ul>
+    <div class="discussion">
+      <div class="discussion-label">לכתיבה אישית</div>
+      <p style="margin:0"><strong>מי הדמות הכי "אנושית" בפרק לדעתך — שאול, שמואל, או בעלת האוב? למה?</strong> (3-5 משפטים, שאלת תרגול מספר 16)</p>
+    </div>
+  </div>
+
+  <!-- Slide 10: Transition to practice -->
+  <div class="slide summary" data-slide="10">
+    <div class="slide-eyebrow" style="color:white;border-color:white">מעבר לתרגול</div>
+    <h1>עכשיו — תרגול אדפטיבי</h1>
+    <p class="lead" style="background:rgba(255,255,255,.15);color:white">כל תלמיד יקבל שאלות מותאמות לרמה שלו. 17 שאלות במגוון פורמטים: בחירה, תיבת תשובה, סידור אירועים, השוואה, וחיבור פתוח.</p>
+    <ul>
+      <li>4 שאלות בסיסיות (זיהוי דמויות וסיפור)</li>
+      <li>4 שאלות בינוניות (סיבה ותוצאה)</li>
+      <li>4 שאלות מתקדמות (ניתוח ספרותי)</li>
+      <li>5 שאלות העמקה (פרשנות + שאלה פתוחה לחיבור)</li>
+    </ul>
+    <p style="margin-top:20px;font-size:20px;"><strong>מתכוננים — בעוד רגע נעבור לתרגול אישי.</strong></p>
+  </div>
+
+</div>
+
+<!-- ============ CONTROLS ============ -->
+<div class="controls">
+  <button class="ctrl-btn ghost" onclick="prevSlide()" id="prev-btn">← הקודם</button>
+  <button class="ctrl-btn ai" onclick="document.getElementById('ai-panel').classList.add('open')">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-left:6px;"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41M12 6a6 6 0 0 0-6 6c0 1.74.84 3.29 2.14 4.27V19a1 1 0 0 0 1 1h5.72a1 1 0 0 0 1-1v-2.73A6 6 0 0 0 18 12a6 6 0 0 0-6-6z"/></svg>
+    שאל AI
+  </button>
+  <span class="ctrl-counter"><span id="cur">1</span> / <span id="total">10</span></span>
+  <div class="ctrl-progress"><span id="progress" style="width:10%"></span></div>
+  <button class="ctrl-btn" onclick="nextSlide()" id="next-btn">הבא →</button>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+let cur = 0;
+document.getElementById('total').textContent = slides.length;
+
+function showSlide(i){
+  slides.forEach(s => s.classList.remove('active'));
+  slides[i].classList.add('active');
+  document.getElementById('cur').textContent = i + 1;
+  document.getElementById('progress').style.width = ((i + 1) / slides.length * 100) + '%';
+  document.getElementById('prev-btn').disabled = i === 0;
+  document.getElementById('next-btn').disabled = i === slides.length - 1;
+  // update AI suggestions for current slide
+  renderAiSuggestions(i);
+}
+function nextSlide(){ if(cur < slides.length - 1){ cur++; showSlide(cur); } }
+function prevSlide(){ if(cur > 0){ cur--; showSlide(cur); } }
+document.addEventListener('keydown', e => {
+  if(e.key === 'ArrowLeft') nextSlide();
+  if(e.key === 'ArrowRight') prevSlide();
+  if(e.key === 'Escape') document.getElementById('ai-panel').classList.remove('open');
+});
+
+// ============ AI Helper ============
+const aiSuggestions = {
+  1: ['איך לפתוח את השיעור בכיתה רועשת?', 'מי ראוי לפנות אליו ראשון?'],
+  2: ['מה לעשות אם אף תלמיד לא מתנדב לשתף?', 'דוגמאות לרגעי משבר רלוונטיים לבני 14-15'],
+  3: ['איך להציג שלוש הדמויות בלי לבלבל?', 'איך לגרום לתלמידים להבין שיחידת העשרה ≠ פחות חשוב?'],
+  4: ['איך להסביר "אורים ותומים" בלי להאריך?', 'דוגמה למה זה דומה בחיים שלהם'],
+  5: ['איך להציג את בעלת האוב בלי לתייגה כ"מכשפה רעה"?', 'מה לעשות אם תלמיד שואל "האם זה אמיתי?"'],
+  6: ['איך להציג בשורת המוות בלי לטראוטיזציה?', 'מה לעשות אם תלמיד מגיב אישית?'],
+  7: ['איך להוביל את הדיון בלי לחתוך לכיוון אחד?', 'דוגמאות מודרניות ל"חמלה ממקום בלתי-צפוי"'],
+  8: ['פרוטוקול אם תלמיד מגיב לחומר ההתאבדות', 'איך לסיים את החלק הזה בנימה חיובית'],
+  9: ['איך להוביל רפלקציה כתובה שלא תהיה שטחית?', 'דוגמאות לתשובות אפשריות לשאלה הפתוחה'],
+  10: ['איך להציג את המעבר לתרגול?', 'מה לעשות עם תלמיד שמסיים מוקדם?'],
+};
+
+const aiResponses = {
+  'איך לפתוח את השיעור בכיתה רועשת?': 'התחילו עם <strong>שאלה פתוחה לא קשורה</strong>: "מי ראה משהו מעניין בדרך לבית הספר היום?" 30 שניות של דיבור על משהו ניטרלי מרגיע את הכיתה. ואז עברו לשקף 2 — השאלה הגדולה.',
+  'איך להציג את בעלת האוב בלי לתייגה כ"מכשפה רעה"?': 'הציגו אותה כ<strong>"אישה במקצוע אסור על-ידי המלך"</strong>. הדגישו שהיא <strong>סיכנה את עצמה</strong> כדי לעזור. הציעו לתלמידים שיחשבו: "מה הייתי עושה במקומה?" — זה הופך אותה לדמות עם בחירה מוסרית.',
+  'מה לעשות אם תלמיד מגיב אישית?': '<strong>1.</strong> הקשיבו. אל תסיטו. <strong>2.</strong> הציעו לדבר אחרי השיעור (לא במהלך). <strong>3.</strong> זמינו את היועצת באותו יום. <strong>4.</strong> תיעוד בכתב להוצאה ליועצת. <strong>5.</strong> אם עולה מצוקה גלויה — קו לחיים: ער"ן 1201, סה"ר sahar.org.il.',
+  'איך להסביר "אורים ותומים" בלי להאריך?': 'משפט אחד: "<strong>זה היה כלי של הכוהן הגדול לקבל תשובות מאלוהים — כמו טלפון פעם.</strong>" אל תיכנסו לפרטים אלא אם תלמיד שואל. הפסוק עצמו נותן את ההקשר.',
+  'איך להוביל רפלקציה כתובה שלא תהיה שטחית?': 'תנו <strong>דוגמת תשובה אפשרית אחת</strong> בקול לפני שהם מתחילים — לא כדי לחקות, אלא כדי להראות איך תשובה טובה נראית: "אני חושב שבעלת האוב היא הכי אנושית כי..." — ועיצור. שיתעמקו לבד.',
+};
+
+function renderAiSuggestions(slideIdx){
+  const sugs = aiSuggestions[slideIdx + 1] || [];
+  document.getElementById('ai-suggestions').innerHTML = sugs.map(s =>
+    `<button class="ai-suggestion" onclick="aiAsk('${s.replace(/'/g, "\\'")}')">${s}</button>`
+  ).join('');
+  document.getElementById('ai-response').classList.remove('show');
+}
+
+function aiAsk(question){
+  const r = document.getElementById('ai-response');
+  const known = aiResponses[question];
+  if (known) {
+    r.innerHTML = `<strong>שאלת:</strong> ${question}<br><br>${known}`;
+  } else {
+    r.innerHTML = `<strong>שאלת:</strong> ${question}<br><br><em>זוהי הדגמה. בגרסה החיה — שאלות פתוחות יענו על-ידי Claude API עם הקשר השיעור הנוכחי.</em>`;
+  }
+  r.classList.add('show');
+}
+
+renderAiSuggestions(0);
+</script>
+
+</body>
+</html>

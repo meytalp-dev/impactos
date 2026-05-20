@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>סדר נכון · Impact SO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+.ord-instr {
+  background:var(--primary-bg); color:var(--primary);
+  padding:12px 16px; border-radius:10px;
+  font-size:13px; font-weight:600; line-height:1.5;
+  margin-bottom:18px; text-align:center;
+}
+.ord-list { display:flex; flex-direction:column; gap:8px; }
+.ord-item {
+  display:flex; align-items:center; gap:10px;
+  background:white; border:2px solid var(--border);
+  border-radius:12px; padding:12px 14px;
+  font-size:14px; font-weight:600; color:var(--text);
+  transition:all .2s;
+}
+.ord-item.correct { background:var(--green-l); border-color:var(--green); }
+.ord-item.incorrect { background:var(--red-l); border-color:var(--red); }
+.ord-num {
+  font-family:'Space Grotesk',sans-serif;
+  width:32px; height:32px; border-radius:8px;
+  background:var(--bg); color:var(--text2);
+  display:grid; place-items:center;
+  font-weight:800; font-size:14px; flex-shrink:0;
+}
+.ord-text { flex:1; line-height:1.5; }
+.ord-arrows { display:flex; flex-direction:column; gap:4px; flex-shrink:0; }
+.ord-arrow {
+  width:30px; height:24px; border-radius:6px;
+  background:var(--bg); border:1px solid var(--border);
+  cursor:pointer; display:grid; place-items:center;
+  font-size:12px; color:var(--text2); transition:all .15s;
+}
+.ord-arrow:hover:not(:disabled) { background:var(--primary-bg); color:var(--primary); }
+.ord-arrow:disabled { opacity:.3; cursor:not-allowed; }
+.ord-actions { margin-top:18px; display:flex; gap:10px; justify-content:flex-start; }
+</style>
+</head>
+<body>
+
+<div id="topbar"></div>
+<div class="game-shell"><div id="root" class="loading"><div class="spinner"></div><div>טוען...</div></div></div>
+
+<script src="shared.js?v=2026-05-16"></script>
+<script>
+(function(){
+  const CONTENT = IGS.getParam('content', 'content.json');
+  const KIT_TITLE = IGS.getParam('kit', '');
+  const BACK = IGS.getParam('back', '../index.html');
+
+  let cfg, list=[], correct=0, checked=false;
+  let studentName='', studentClass='';
+
+  document.getElementById('topbar').innerHTML = IGS.topbarHtml({
+    gameType:'ordering', title:'סדר נכון', kitTitle:KIT_TITLE, backHref:BACK
+  });
+
+  IGS.loadContent(CONTENT).then(data => {
+    cfg = data;
+    document.getElementById('root').innerHTML = IGS.welcomeHtml({
+      gameType:'ordering', title: cfg.title || 'סדר נכון',
+      subtitle: cfg.subtitle, classes: cfg.classes, kitTitle: KIT_TITLE,
+    });
+    IGS.wireWelcomeForm(s => { studentName=s.studentName; studentClass=s.studentClass; startGame(); });
+  }).catch(err => {
+    document.getElementById('root').innerHTML = '<div class="card"><h2 style="color:var(--red)">שגיאה</h2><p>'+IGS.escapeHtml(err.message)+'</p></div>';
+  });
+
+  function startGame(){
+    list = IGS.shuffle(cfg.items);
+    // Ensure not in correct order to start
+    if (list.every((it,i) => it.position === i+1)) {
+      list = IGS.shuffle(cfg.items);
+    }
+    correct = 0; checked = false;
+    render();
+  }
+
+  function render(){
+    document.getElementById('root').innerHTML =
+      '<div class="card">' +
+        (cfg.instruction ? '<div class="ord-instr">'+IGS.escapeHtml(cfg.instruction)+'</div>' : '') +
+        '<div class="ord-list" id="list">' +
+          list.map((it,i) =>
+            '<div class="ord-item" data-i="'+i+'">' +
+              '<div class="ord-num">'+(i+1)+'</div>' +
+              '<div class="ord-text">'+IGS.escapeHtml(it.text)+'</div>' +
+              '<div class="ord-arrows">' +
+                '<button class="ord-arrow up" '+(i===0?'disabled':'')+' aria-label="מעלה">▲</button>' +
+                '<button class="ord-arrow down" '+(i===list.length-1?'disabled':'')+' aria-label="מטה">▼</button>' +
+              '</div>' +
+            '</div>'
+          ).join('') +
+        '</div>' +
+        '<div class="ord-actions">' +
+          '<button class="btn-primary" id="checkBtn">בדקו סדר</button>' +
+        '</div>' +
+      '</div>';
+
+    document.querySelectorAll('.ord-arrow.up').forEach((b,i) => b.addEventListener('click', () => move(i,-1)));
+    document.querySelectorAll('.ord-arrow.down').forEach((b,i) => b.addEventListener('click', () => move(i,1)));
+    document.getElementById('checkBtn').addEventListener('click', check);
+  }
+
+  function move(idx, dir){
+    if (checked) return;
+    const j = idx + dir;
+    if (j < 0 || j >= list.length) return;
+    [list[idx], list[j]] = [list[j], list[idx]];
+    render();
+  }
+
+  function check(){
+    checked = true;
+    correct = 0;
+    list.forEach((it,i) => {
+      const el = document.querySelector('.ord-item[data-i="'+i+'"]');
+      if (it.position === i+1) { el.classList.add('correct'); correct++; }
+      else el.classList.add('incorrect');
+      // disable arrows
+      el.querySelectorAll('.ord-arrow').forEach(a => a.disabled = true);
+    });
+    document.getElementById('checkBtn').textContent = 'סיום ←';
+    document.getElementById('checkBtn').onclick = finish;
+  }
+
+  function finish(){
+    IGS.showResult({
+      gameType:'ordering',
+      gameTitle: cfg.title || 'סדר נכון',
+      studentName, studentClass,
+      correctItems: correct, totalItems: list.length,
+      percentage: IGS.pct(correct, list.length),
+      teacherEmail: cfg.teacherEmail,
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

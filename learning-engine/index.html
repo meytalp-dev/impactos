@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ImpactOS · למידה דיפרנציאלית — מנוע אחד, כל המקצועות</title>
+<meta name="description" content="ImpactOS למידה דיפרנציאלית — מוצר עצמאי במשפחת ImpactOS. מנוע גנרי שמאפשר ללמד 4 רמות בו-זמנית, בכל מקצוע, באותו שיעור. לשון, אזרחות, מתמטיקה, היסטוריה — אותו מנוע, חבילות תוכן מתחלפות.">
+
+<meta property="og:title" content="ImpactOS · למידה דיפרנציאלית — מנוע אחד, כל המקצועות">
+<meta property="og:description" content="מוצר עצמאי במשפחת ImpactOS. מנוע גנרי שמאפשר ללמד 4 רמות בו-זמנית בכל מקצוע. מבוסס DI · UDL 3.0 · MTSS · ZPD.">
+<meta property="og:type" content="website">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --teal: #2E7D8C;
+  --teal-light: #3A9BAD;
+  --teal-dark: #1E5A66;
+  --sand: #E8A849;
+  --sand-dark: #C88A2E;
+  --burgundy: #8B3A4A;
+  --burgundy-light: #A94D60;
+  --leaf: #4A9B7F;
+  --leaf-light: #5FB896;
+  --cream: #F5F0E8;
+  --cream-dark: #E8DFD0;
+  --white: #FDFCFA;
+  --deep: #1E3D47;
+  --shadow-sm: 0 2px 8px rgba(30, 61, 71, 0.06);
+  --shadow-md: 0 8px 24px rgba(30, 61, 71, 0.10);
+  --shadow-lg: 0 16px 48px rgba(30, 61, 71, 0.16);
+  --radius: 20px;
+  --radius-lg: 28px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Heebo', sans-serif;
+  background: var(--cream);
+  color: var(--deep);
+  line-height: 1.75;
+  font-size: 17px;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; line-height: 1.2; color: var(--deep); }
+h1 { font-weight: 900; }
+h2 { font-size: clamp(28px, 4vw, 44px); font-weight: 900; margin-bottom: 14px; }
+h3 { font-size: clamp(20px, 2.5vw, 26px); font-weight: 800; margin-bottom: 10px; }
+h4 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+p { margin-bottom: 14px; }
+a { color: var(--burgundy); }
+
+.container { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+.section { padding: 90px 24px; position: relative; }
+.section-eyebrow {
+  display: inline-block;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  color: var(--teal);
+  text-transform: uppercase;
+  padding: 6px 16px;
+  border: 1.5px solid var(--teal);
+  border-radius: 999px;
+  margin-bottom: 18px;
+}
+.section-eyebrow.sand { color: var(--sand-dark); border-color: var(--sand-dark); }
+.section-eyebrow.burgundy { color: var(--burgundy); border-color: var(--burgundy); }
+.section-eyebrow.leaf { color: var(--leaf); border-color: var(--leaf); }
+.section-lede { font-size: 19px; max-width: 780px; margin-bottom: 50px; color: var(--deep); opacity: 0.85; }
+
+/* ---------- NAV ---------- */
+.nav {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(245, 240, 232, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(30, 61, 71, 0.08);
+}
+.nav-inner {
+  max-width: 1180px; margin: 0 auto; padding: 18px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-brand {
+  display: flex; align-items: center; gap: 12px;
+  font-family: 'Rubik', sans-serif; font-weight: 800; color: var(--deep);
+  text-decoration: none; font-size: 17px;
+}
+.nav-mark {
+  width: 38px; height: 38px;
+  background: linear-gradient(135deg, var(--teal) 0%, var(--burgundy) 100%);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--cream); font-weight: 900; font-size: 18px;
+}
+.nav-brand-sub { font-size: 12px; font-weight: 500; color: var(--teal-dark); opacity: 0.8; }
+.nav-links { display: flex; gap: 26px; align-items: center; }
+.nav-links a {
+  font-size: 14px; font-weight: 600; color: var(--deep);
+  text-decoration: none; transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--teal); }
+.nav-cta {
+  background: var(--burgundy); color: var(--cream) !important;
+  padding: 10px 20px; border-radius: 999px; font-size: 14px !important;
+  transition: background 0.2s;
+}
+.nav-cta:hover { background: var(--burgundy-light); color: var(--cream) !important; }
+@media (max-width: 760px) {
+  .nav-links a:not(.nav-cta) { display: none; }
+}
+
+/* ---------- HERO ---------- */
+.hero {
+  min-height: 88vh;
+  background: linear-gradient(135deg, var(--cream) 0%, var(--white) 50%, var(--cream-dark) 100%);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  padding: 80px 24px 60px;
+}
+.hero::before {
+  content: ''; position: absolute; top: -200px; right: -200px;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(46, 125, 140, 0.18) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.hero::after {
+  content: ''; position: absolute; bottom: -250px; left: -150px;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(139, 58, 74, 0.12) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.hero-inner { position: relative; z-index: 2; max-width: 1180px; margin: 0 auto; width: 100%; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: rgba(255, 255, 255, 0.6); border: 1.5px solid var(--teal);
+  border-radius: 999px; padding: 8px 18px; font-size: 13px; font-weight: 700;
+  color: var(--teal-dark); margin-bottom: 28px; letter-spacing: 0.5px;
+}
+.hero-badge .dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--leaf);
+  box-shadow: 0 0 0 4px rgba(74, 155, 127, 0.25);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(74, 155, 127, 0.25); }
+  50% { box-shadow: 0 0 0 8px rgba(74, 155, 127, 0.10); }
+}
+.hero h1 {
+  font-size: clamp(36px, 6vw, 72px);
+  line-height: 1.05;
+  margin-bottom: 24px;
+  max-width: 920px;
+}
+.hero h1 .accent { color: var(--teal); }
+.hero h1 .accent2 { color: var(--burgundy); }
+.hero-sub {
+  font-size: clamp(17px, 2vw, 22px);
+  max-width: 720px;
+  color: var(--deep); opacity: 0.82;
+  margin-bottom: 36px;
+}
+.hero-cta { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 50px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 14px 28px; border-radius: 999px;
+  font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 15px;
+  text-decoration: none; transition: all 0.25s;
+  border: 2px solid transparent;
+}
+.btn-primary { background: var(--burgundy); color: var(--cream); }
+.btn-primary:hover { background: var(--burgundy-light); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.btn-secondary { background: transparent; border-color: var(--teal); color: var(--teal-dark); }
+.btn-secondary:hover { background: var(--teal); color: var(--cream); }
+.btn svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2.2; fill: none; }
+
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 18px;
+  margin-top: 40px;
+  max-width: 880px;
+}
+.hero-stat {
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(30, 61, 71, 0.08);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+  backdrop-filter: blur(8px);
+}
+.hero-stat-value {
+  font-family: 'Rubik', sans-serif; font-weight: 900;
+  font-size: 28px; color: var(--teal); line-height: 1.1;
+}
+.hero-stat-label {
+  font-size: 13px; color: var(--deep); opacity: 0.7;
+  margin-top: 4px;
+}
+
+/* ---------- HOW IT WORKS DIAGRAM ---------- */
+.diagram {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 40px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--cream-dark);
+}
+.diagram-row {
+  display: grid;
+  grid-template-columns: 1fr 60px 1fr;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+.diagram-box {
+  background: var(--cream);
+  border: 2px solid var(--cream-dark);
+  border-radius: 16px;
+  padding: 18px 20px;
+  text-align: center;
+}
+.diagram-box.engine {
+  background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
+  color: var(--cream); border-color: var(--teal-dark);
+}
+.diagram-box.pack {
+  background: linear-gradient(135deg, var(--sand) 0%, var(--sand-dark) 100%);
+  color: var(--cream); border-color: var(--sand-dark);
+}
+.diagram-box-label {
+  font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 13px;
+  letter-spacing: 1px; opacity: 0.8; margin-bottom: 4px;
+}
+.diagram-box-name {
+  font-family: 'Rubik', sans-serif; font-weight: 800; font-size: 18px;
+}
+.diagram-arrow {
+  display: flex; align-items: center; justify-content: center;
+  color: var(--teal); font-size: 24px; font-weight: 900;
+}
+.diagram-pipe {
+  background: var(--cream);
+  border-radius: 10px;
+  padding: 14px 18px;
+  text-align: center;
+  border: 1.5px dashed var(--teal);
+  font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 14px;
+  color: var(--teal-dark);
+  margin: 12px auto;
+  max-width: 360px;
+}
+
+@media (max-width: 720px) {
+  .diagram-row { grid-template-columns: 1fr; gap: 12px; }
+  .diagram-arrow { transform: rotate(90deg); }
+}
+
+/* ---------- MODULES GRID ---------- */
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 22px;
+}
+.module-card {
+  background: var(--white);
+  border: 1px solid var(--cream-dark);
+  border-radius: var(--radius);
+  padding: 28px 26px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+.module-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+.module-num {
+  font-family: 'Rubik', sans-serif; font-weight: 900;
+  font-size: 38px; color: var(--teal); line-height: 1;
+  margin-bottom: 12px;
+}
+.module-card h3 { font-size: 19px; margin-bottom: 10px; }
+.module-card p { font-size: 14.5px; line-height: 1.7; opacity: 0.85; margin: 0; }
+.module-card .mvp-tag {
+  display: inline-block;
+  background: var(--leaf-light);
+  color: var(--cream);
+  font-size: 11px; font-weight: 700;
+  padding: 3px 10px; border-radius: 999px;
+  margin-bottom: 10px; letter-spacing: 0.5px;
+}
+
+/* ---------- CONTENT PACKS ---------- */
+.packs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+.pack-chip {
+  background: var(--white);
+  border: 1.5px solid var(--cream-dark);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  transition: all 0.25s;
+}
+.pack-chip.ready { border-color: var(--leaf); background: linear-gradient(135deg, rgba(74, 155, 127, 0.06) 0%, var(--white) 100%); }
+.pack-chip.planned { opacity: 0.78; border-style: dashed; }
+.pack-status {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 3px 10px; border-radius: 999px;
+  display: inline-block; margin-bottom: 10px;
+}
+.pack-status.ready { background: var(--leaf); color: var(--cream); }
+.pack-status.planned { background: var(--cream-dark); color: var(--deep); opacity: 0.7; }
+.pack-name {
+  font-family: 'Rubik', sans-serif; font-weight: 800;
+  font-size: 18px; margin-bottom: 6px;
+}
+.pack-meta {
+  font-size: 13px; color: var(--deep); opacity: 0.7;
+}
+
+/* ---------- AUDIENCE CARDS ---------- */
+.audience-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+}
+.audience-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 24px;
+  border-top: 4px solid var(--teal);
+  box-shadow: var(--shadow-sm);
+}
+.audience-card.sand { border-top-color: var(--sand); }
+.audience-card.burgundy { border-top-color: var(--burgundy); }
+.audience-card.leaf { border-top-color: var(--leaf); }
+.audience-card h4 {
+  font-family: 'Rubik', sans-serif; font-weight: 800;
+  font-size: 17px; margin-bottom: 8px;
+}
+.audience-card p {
+  font-size: 14px; line-height: 1.7; opacity: 0.85; margin: 0;
+}
+
+/* ---------- WHY DARK CTA ---------- */
+.section-dark {
+  background: linear-gradient(135deg, var(--deep) 0%, var(--teal-dark) 100%);
+  color: var(--cream);
+}
+.section-dark h2 { color: var(--cream); }
+.section-dark .section-eyebrow { color: var(--sand); border-color: var(--sand); }
+.section-dark .section-lede { color: rgba(245, 240, 232, 0.85); }
+
+.cta-card {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(245, 240, 232, 0.15);
+  border-radius: var(--radius-lg);
+  padding: 40px;
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.cta-card h3 {
+  color: var(--cream); font-size: 26px; margin-bottom: 14px;
+}
+.cta-card p {
+  color: rgba(245, 240, 232, 0.85);
+  font-size: 16px; margin-bottom: 26px;
+}
+.cta-card .btn-primary { background: var(--sand); color: var(--deep); }
+.cta-card .btn-primary:hover { background: var(--sand-dark); }
+
+/* ---------- FOOTER ---------- */
+footer {
+  background: var(--deep);
+  color: rgba(245, 240, 232, 0.7);
+  padding: 50px 24px 30px;
+  text-align: center;
+  font-size: 13px;
+}
+footer .signature {
+  font-family: 'Rubik', sans-serif; font-weight: 700;
+  color: var(--cream); margin-bottom: 8px; font-size: 15px;
+}
+footer a { color: var(--sand); text-decoration: none; border-bottom: 1px dashed var(--sand); }
+
+/* ---------- REVEAL ---------- */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ============== NAV ============== -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand">
+      <span class="nav-mark">I</span>
+      <span>
+        ImpactOS
+        <div class="nav-brand-sub">למידה דיפרנציאלית</div>
+      </span>
+    </a>
+    <div class="nav-links">
+      <a href="#how">איך זה עובד</a>
+      <a href="#modules">מודולים</a>
+      <a href="#packs">חבילות תוכן</a>
+      <a href="spec.html">איפיון מלא</a>
+      <a href="demo.html" class="nav-cta">דמו חי ←</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============== HERO ============== -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      מוצר במשפחת ImpactOS · בשלב פיתוח
+    </div>
+    <h1>
+      <span class="accent">מנוע אחד</span> ללמידה דיפרנציאלית.<br>
+      <span class="accent2">כל המקצועות</span>, באותו השיעור.
+    </h1>
+    <p class="hero-sub">
+      פלטפורמה גנרית שמאפשרת למורה ללמד באותה הכיתה ארבע רמות מוכנות שונות — בלשון, אזרחות, מתמטיקה, היסטוריה ואנגלית.
+      המנוע אחד, חבילות התוכן מתחלפות. מבוססת DI · UDL 3.0 · MTSS · ZPD.
+    </p>
+    <div class="hero-cta">
+      <a href="demo.html" class="btn btn-primary">
+        כניסה לדמו חי
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </a>
+      <a href="spec.html" class="btn btn-secondary">
+        איפיון מקצועי מלא
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </a>
+    </div>
+
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-value">4</div>
+        <div class="hero-stat-label">רמות מוכנות במקביל בכיתה</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value">5</div>
+        <div class="hero-stat-label">מודולים בליבת המנוע</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value">∞</div>
+        <div class="hero-stat-label">חבילות תוכן (כל מקצוע)</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value">d=0.51</div>
+        <div class="hero-stat-label">גודל אפקט מחקרי DI</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== הצורך ============== -->
+<section class="section">
+  <div class="container">
+    <span class="section-eyebrow burgundy">הצורך</span>
+    <h2>הוראה אחידה כבר לא עובדת — והמורה זקוקה לכלי</h2>
+    <p class="section-lede">
+      רפורמות הכלה ברחבי הארץ והעולם מבקשות ממורות לעבור מהוראה מסורתית לסביבה הטרוגנית. כיתה אחת, מורה אחת, ארבע רמות שונות באותו השיעור. בלי כלי — זה לא ריאלי.
+    </p>
+
+    <div class="audience-grid">
+      <div class="audience-card burgundy">
+        <h4>פער בכיתה</h4>
+        <p>הוראת ״ממוצע״ מפסידה גם את החזקים וגם את החלשים — והפער מתרחב במקום להצטמצם.</p>
+      </div>
+      <div class="audience-card burgundy">
+        <h4>עומס תכנון</h4>
+        <p>מורה שמיישמת דיפרנציאציה ידנית מדווחת על שעות הכנה נוספות ושחיקה גבוהה.</p>
+      </div>
+      <div class="audience-card burgundy">
+        <h4>פיצול נתונים</h4>
+        <p>הישגים במשו״ב, אבחונים ב-PDF, המלצות בתיק ועדה, הורים ב-WhatsApp — אין מקור אחד לאמת.</p>
+      </div>
+      <div class="audience-card burgundy">
+        <h4>תוכן ״מימי״</h4>
+        <p>כשמנגישים לחלשים, מנמיכים לכולם. UDL 3.0 דורש ״ציפיות גבוהות לכולם״ — בלי לוותר.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== HOW IT WORKS ============== -->
+<section class="section" id="how" style="background: var(--white);">
+  <div class="container">
+    <span class="section-eyebrow">איך זה עובד</span>
+    <h2>מנוע אחד · חבילות תוכן · אותה חוויה דיפרנציאלית בכל מקצוע</h2>
+    <p class="section-lede">
+      ImpactOS למידה דיפרנציאלית מפריד בין המנוע (subject-agnostic) לבין התוכן (subject pack). המורה בוחרת מקצוע — המנוע טוען את החבילה — אותה חוויה דיפרנציאלית עוטפת את כולן.
+    </p>
+
+    <div class="diagram">
+      <div class="diagram-row">
+        <div class="diagram-box engine">
+          <div class="diagram-box-label">המנוע · Engine</div>
+          <div class="diagram-box-name">5 מודולים · 4 רמות · 2 צירים</div>
+        </div>
+        <div class="diagram-arrow">←</div>
+        <div class="diagram-box pack">
+          <div class="diagram-box-label">חבילת תוכן · Pack</div>
+          <div class="diagram-box-name">לשון · אזרחות · מתמטיקה ...</div>
+        </div>
+      </div>
+
+      <div class="diagram-pipe">צורך סכמת תוכן אחידה · content-schema.json</div>
+
+      <p style="text-align: center; max-width: 680px; margin: 18px auto 0; font-size: 15px; opacity: 0.8;">
+        כל מקצוע עומד בחוזה אחיד: topics, levels, items, anchor_texts, activities.
+        המנוע לא יודע איזה מקצוע הוא מריץ — והמורה מקבלת כלי אחד שעובד בכל מקום.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============== MODULES ============== -->
+<section class="section" id="modules">
+  <div class="container">
+    <span class="section-eyebrow">חמישה מודולים</span>
+    <h2>מערכת אחת — חמישה רכיבים שעובדים יחד</h2>
+    <p class="section-lede">
+      פרופיל כיתה, מחולל שיעור, בנק פעילויות, הערכה אדפטיבית, דשבורד. שלושה מהם הם ה-MVP — האחרים נוספים בפאזה ב'.
+    </p>
+
+    <div class="modules-grid">
+      <div class="module-card">
+        <div class="module-num">01</div>
+        <span class="mvp-tag">MVP · פיילוט</span>
+        <h3>פרופיל כיתה דינמי</h3>
+        <p>רמת מוכנות לכל תלמיד × נושא × ציר (Readiness/Interest/Learning Profile). מתעדכן אוטומטית אחרי כל הערכה.</p>
+      </div>
+      <div class="module-card">
+        <div class="module-num">02</div>
+        <h3>מחולל שיעור 3-מסלולי</h3>
+        <p>המורה בוחרת נושא — המערכת מציעה מבנה בשלוש רמות (בסיסי / בינוני / מקדם). מחולל AI עם co-pilot, לא Replacement.</p>
+      </div>
+      <div class="module-card">
+        <div class="module-num">03</div>
+        <span class="mvp-tag">MVP · פיילוט</span>
+        <h3>בנק פעילויות + מסלולי תרגול</h3>
+        <p>אוסף פעילויות מתויגות לפי נושא, רמה וסוג. חיפוש "פעילות לרמה 2 בקריאה" — תוצאה בשנייה.</p>
+      </div>
+      <div class="module-card">
+        <div class="module-num">04</div>
+        <span class="mvp-tag">MVP · פיילוט</span>
+        <h3>הערכה אדפטיבית + פידבק חי</h3>
+        <p>2 שאלות אבחון → רמת התחלה. 3 נכון רצוף → עולה רמה. 2 שגוי → יורד עם עידוד. בלי "טעית", רק "בוא ננסה אחרת".</p>
+      </div>
+      <div class="module-card">
+        <div class="module-num">05</div>
+        <h3>דשבורד מעקב 3-שכבתי</h3>
+        <p>מורה (הכיתה שלי) · רכז/ת בית ספר (תמונת המוסד) · מנהל/ת רשת/רשות (עשרות מוסדות). כל שכבה רואה רק את הרלוונטי.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== CONTENT PACKS ============== -->
+<section class="section" id="packs" style="background: var(--white);">
+  <div class="container">
+    <span class="section-eyebrow sand">חבילות תוכן</span>
+    <h2>אותו מנוע — תוכן שמתחלף לפי מקצוע</h2>
+    <p class="section-lede">
+      להוסיף מקצוע חדש = לבנות JSON שעומד בחוזה. בלי שורה אחת של קוד חדש במנוע.
+    </p>
+
+    <div class="packs-grid">
+      <div class="pack-chip ready">
+        <span class="pack-status ready">בפיתוח · MVP</span>
+        <div class="pack-name">לשון — מערכת הצורות</div>
+        <div class="pack-meta">181 תרגולים · 704 שאלות · בנק קיים</div>
+      </div>
+      <div class="pack-chip ready">
+        <span class="pack-status ready">דאטה מוכנה</span>
+        <div class="pack-name">בגרות לשון 011281</div>
+        <div class="pack-meta">341 שאלות · 24 מועדי בגרות</div>
+      </div>
+      <div class="pack-chip planned">
+        <span class="pack-status planned">מתוכנן</span>
+        <div class="pack-name">אזרחות</div>
+        <div class="pack-meta">פאזה ב' · שווקים רחבים</div>
+      </div>
+      <div class="pack-chip planned">
+        <span class="pack-status planned">מתוכנן</span>
+        <div class="pack-name">מתמטיקה</div>
+        <div class="pack-meta">פאזה ב'</div>
+      </div>
+      <div class="pack-chip planned">
+        <span class="pack-status planned">מתוכנן</span>
+        <div class="pack-name">היסטוריה</div>
+        <div class="pack-meta">פאזה ב'</div>
+      </div>
+      <div class="pack-chip planned">
+        <span class="pack-status planned">מתוכנן</span>
+        <div class="pack-name">תנ"ך</div>
+        <div class="pack-meta">פאזה ג'</div>
+      </div>
+      <div class="pack-chip active">
+        <span class="pack-status active">פעיל</span>
+        <div class="pack-name">אנגלית · תנופה ט'</div>
+        <div class="pack-meta">חבילת תוכן שנייה · CEFR A1→A2 · משולב עם ImpactOS תנופה</div>
+      </div>
+      <div class="pack-chip planned">
+        <span class="pack-status planned">חוץ-חינוך</span>
+        <div class="pack-name">הכשרות עובדים</div>
+        <div class="pack-meta">L&D · אונבורדינג · שיווק</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== AUDIENCE ============== -->
+<section class="section" id="audience">
+  <div class="container">
+    <span class="section-eyebrow leaf">למי זה</span>
+    <h2>מי הלקוחות — ומה כל אחד מקבל</h2>
+    <p class="section-lede">
+      המוצר עומד עצמאי במשפחת ImpactOS. אותו מנוע נמכר לארבעה שווקים שונים — וגם מחוץ לחינוך.
+    </p>
+
+    <div class="audience-grid">
+      <div class="audience-card">
+        <h4>בית ספר בודד</h4>
+        <p>רישיון בית-ספרי. צוות החינוך המיוחד מקבל כלי תכנון, בנק פעילויות, והערכה אדפטיבית. מתחילים מחבילת תוכן אחת.</p>
+      </div>
+      <div class="audience-card sand">
+        <h4>רשתות חינוך</h4>
+        <p>רישיון רב-בית-ספרי לאורט, עמל, אמית, דרכא. ניהול מרכזי, דשבורד רשת, מדידת אפקטיביות חוצת-מוסדות.</p>
+      </div>
+      <div class="audience-card burgundy">
+        <h4>רשויות / מטות הכלה</h4>
+        <p>בנדל למחוזות ולתוכניות חומש — כמו תוכנית ההכלה של מנח"י (ירושלים). כלי הטמעה למנהלי רשת ולרכזות הכלה.</p>
+      </div>
+      <div class="audience-card leaf">
+        <h4>מחוץ לחינוך</h4>
+        <p>הכשרות עובדים, אונבורדינג שותפים, הכשרת sales reps, ליווי יזמים — כל מקום שיש "חומר ברמות".</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== THEORETICAL BASIS ============== -->
+<section class="section" style="background: var(--white);">
+  <div class="container">
+    <span class="section-eyebrow">בסיס תיאורטי</span>
+    <h2>לא ממציאים מאפס — מתרגמים מחקר לארכיטקטורה</h2>
+    <p class="section-lede">
+      ארבע מסגרות מחקריות שעיצבו את שדה ההכלה במאה ה-21 — מובנות לתוך הקוד.
+    </p>
+
+    <div class="audience-grid">
+      <div class="audience-card">
+        <h4>DI · Differentiated Instruction</h4>
+        <p>Tomlinson, 2014. גישת הוראה שיטתית: Content · Process · Product · Environment. מתרגם ישירות לארכיטקטורת המוצר.</p>
+      </div>
+      <div class="audience-card sand">
+        <h4>UDL 3.0 · Universal Design for Learning</h4>
+        <p>CAST, 2024. שלוש רשתות במוח → שלוש עקרונות (Engagement · Representation · Action). תכנון מראש לכולם.</p>
+      </div>
+      <div class="audience-card burgundy">
+        <h4>MTSS · Multi-Tiered System of Supports</h4>
+        <p>שלוש רמות תמיכה (Tier 1/2/3). תלמיד עובר בין הרמות לפי נתונים — אותה לוגיקה בקוד.</p>
+      </div>
+      <div class="audience-card leaf">
+        <h4>ZPD · Zone of Proximal Development</h4>
+        <p>Vygotsky. למידה מתרחשת בקצה היכולת הנוכחית. המערכת מאתרת ה-ZPD לכל תלמיד אוטומטית.</p>
+      </div>
+    </div>
+
+    <p style="margin-top: 30px; font-size: 15px; opacity: 0.75; max-width: 720px;">
+      <a href="spec.html">לקרוא את האיפיון המקצועי המלא →</a> כולל ביבליוגרפיה, גודלי אפקט, ושבעה עקרונות עיצוב.
+    </p>
+  </div>
+</section>
+
+<!-- ============== ROADMAP ============== -->
+<section class="section">
+  <div class="container">
+    <span class="section-eyebrow">פאזות הטמעה</span>
+    <h2>שלוש שנים מפיילוט לפלטפורמה</h2>
+
+    <div class="modules-grid" style="margin-top: 30px;">
+      <div class="module-card">
+        <div class="module-num">1</div>
+        <h3>שנה 1 · פיילוט</h3>
+        <p>3-5 מוסדות · 15 כיתות · חבילת תוכן ראשונה (לשון). מודולים 1+3+4 בלבד. איסוף baseline. משוב שבועי.</p>
+      </div>
+      <div class="module-card">
+        <div class="module-num">2</div>
+        <h3>שנה 2 · הרחבה</h3>
+        <p>20 מוסדות · 2-3 חבילות תוכן (מתמטיקה, אזרחות, היסטוריה). הוספת מחולל שיעור AI ודשבורד. ספריית כיתה לשיתוף.</p>
+      </div>
+      <div class="module-card">
+        <div class="module-num">3</div>
+        <h3>שנה 3 · בגרות</h3>
+        <p>פלטפורמה בוגרת. רשתות נוספות. אדפטציה לגנים. שווקים חדשים (הכשרות, L&D). מחקר אקדמי על האפקט.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== CTA ============== -->
+<section class="section section-dark" id="contact">
+  <div class="container">
+    <div class="cta-card">
+      <span class="section-eyebrow sand">צור קשר</span>
+      <h3>רוצים לראות איך זה ייראה בבית הספר שלכם?</h3>
+      <p>ניצור יחד דמו עם חבילת תוכן רלוונטית למקצוע שלכם. בית ספר, רשת, רשות, או ארגון מחוץ לחינוך — כולנו מדברים.</p>
+      <a href="mailto:meytalp@bethaarava.ort.org.il?subject=ImpactOS%20%D7%9C%D7%9E%D7%99%D7%93%D7%94%20%D7%93%D7%99%D7%A4%D7%A8%D7%A0%D7%A6%D7%99%D7%90%D7%9C%D7%99%D7%AA%20%D7%93%D7%9E%D7%95" class="btn btn-primary">
+        כתבו למיטל
+        <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FOOTER ============== -->
+<footer>
+  <div class="container">
+    <div class="signature">ImpactOS · למידה דיפרנציאלית</div>
+    <div>מוצר עצמאי במשפחת ImpactOS · מנוע + חבילות תוכן</div>
+    <div style="margin-top: 14px;">
+      <a href="spec.html">איפיון מקצועי מלא</a>
+      &nbsp;·&nbsp;
+      <a href="mailto:meytalp@bethaarava.ort.org.il">meytalp@bethaarava.ort.org.il</a>
+    </div>
+    <div style="margin-top: 18px; opacity: 0.5; font-size: 11px;">Learni · Meytal Peleg</div>
+  </div>
+</footer>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.section, .module-card, .audience-card, .pack-chip, .hero-stat').forEach(el => {
+    el.classList.add('reveal');
+    observer.observe(el);
+  });
+</script>
+
+</body>
+</html>

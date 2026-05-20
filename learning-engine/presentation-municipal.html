@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מערכות למידה דיפרנציאליות · תוכנית החומש להכלה · אימפקט.OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Impact OS — Light theme */
+  --bg-deepest: #FAFAFF;
+  --bg-deep: #F5F3FF;
+  --bg-mid: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-strong: #FFFFFF;
+
+  /* Brand primaries */
+  --indigo: #4F46E5;
+  --indigo-light: #818CF8;
+  --indigo-deep: #3730A3;
+  --violet: #8B5CF6;
+  --violet-light: #A78BFA;
+  --violet-deep: #6D28D9;
+  --lavender: #C7D2FE;
+  --lavender-light: #DDD6FE;
+
+  /* Accent (warm) */
+  --gold: #F59E0B;
+  --gold-light: #FBBF24;
+  --pink: #EC4899;
+
+  /* Legacy aliases */
+  --teal: var(--indigo);
+  --teal-mid: var(--violet);
+  --teal-dark: var(--violet-deep);
+  --sand: var(--gold);
+  --sand-light: var(--gold-light);
+  --burgundy: var(--pink);
+  --leaf: var(--violet);
+
+  /* Text on light */
+  --text: #1E1B4B;
+  --text-2: #475569;
+  --text-3: #64748B;
+  --text-soft: #94A3B8;
+  --line: #E5E7EB;
+  --line-soft: #F3F4F6;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+body {
+  font-family: 'Heebo', sans-serif;
+  background: var(--bg-page, #F5F3FF);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4 { font-family: 'Rubik', 'Heebo', sans-serif; letter-spacing: -0.01em; line-height: 1.15; }
+.num { font-family: 'Inter', sans-serif; font-feature-settings: "tnum" 1; }
+
+/* ═══════════ DECK ═══════════ */
+.deck {
+  width: 100vw; height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.slide {
+  width: 100%; height: 100%;
+  position: absolute;
+  top: 0; right: 0;
+  display: none;
+  background: linear-gradient(135deg, #FFFFFF 0%, #FAFAFF 60%, #F5F3FF 100%);
+  padding: 56px 72px 48px;
+  overflow: hidden;
+}
+.slide.active { display: flex; flex-direction: column; animation: fadeIn 0.4s ease; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════ DECORATIONS ═══════════ */
+.slide-bg {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+}
+.blob-1 {
+  width: 480px; height: 480px;
+  background: radial-gradient(circle, rgba(139,92,246,0.22), transparent 70%);
+  top: -120px; right: -120px;
+}
+.blob-2 {
+  width: 380px; height: 380px;
+  background: radial-gradient(circle, rgba(79,70,229,0.18), transparent 70%);
+  bottom: -120px; left: -120px;
+}
+.blob-3 {
+  width: 240px; height: 240px;
+  background: radial-gradient(circle, rgba(236,72,153,0.15), transparent 70%);
+  top: 40%; left: 40%;
+}
+.deco-circle-lg {
+  position: absolute;
+  width: 480px; height: 480px;
+  border-radius: 50%;
+  background: rgba(167,139,250,0.08);
+  top: -200px; right: 30%;
+}
+.deco-circle-sm {
+  position: absolute;
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  background: rgba(79,70,229,0.04);
+  bottom: 80px; left: 60px;
+}
+
+.slide-badge {
+  position: absolute;
+  top: 48px; left: 72px;
+  width: 80px; height: 28px;
+  background: linear-gradient(135deg, var(--indigo) 0%, var(--violet) 100%);
+  border-radius: 999px;
+  opacity: 0.96;
+  z-index: 1;
+}
+
+.slide-counter {
+  position: absolute;
+  bottom: 28px; right: 72px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-soft);
+  z-index: 1;
+  letter-spacing: 0.02em;
+}
+.slide-footer {
+  position: absolute;
+  bottom: 28px; left: 72px;
+  font-size: 13px;
+  color: var(--text-soft);
+  z-index: 1;
+}
+
+/* ═══════════ CONTENT ═══════════ */
+.slide-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  max-width: 100%;
+}
+
+.slide-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--violet-deep);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+.slide-eyebrow .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--violet);
+  box-shadow: 0 0 0 4px rgba(139,92,246,0.22);
+}
+
+.slide-title {
+  font-size: 56px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.05;
+  margin-bottom: 14px;
+  max-width: 1100px;
+}
+.slide-title .accent {
+  background: linear-gradient(135deg, var(--indigo) 0%, var(--violet) 50%, var(--pink) 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.slide-sub {
+  font-size: 22px;
+  color: var(--text-2);
+  margin-bottom: 32px;
+  max-width: 900px;
+  line-height: 1.45;
+}
+
+.slide-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.slide-highlight {
+  background: #FFFFFF;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 22px 28px;
+  margin-top: auto;
+  margin-bottom: 12px;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
+  font-size: 21px;
+  color: var(--text);
+  line-height: 1.4;
+  position: relative;
+  box-shadow: 0 4px 16px rgba(79,70,229,0.08);
+}
+.slide-highlight.teal {
+  background: linear-gradient(135deg, rgba(79,70,229,0.10) 0%, rgba(139,92,246,0.08) 100%);
+  border-color: rgba(139,92,246,0.30);
+  color: var(--violet-deep);
+}
+
+/* ═══════════ CARDS GRID ═══════════ */
+.cards-grid {
+  display: grid;
+  gap: 16px;
+}
+.cards-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.cards-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.cards-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+.cards-grid.cols-5 { grid-template-columns: repeat(5, 1fr); }
+.cards-grid.cols-6 { grid-template-columns: repeat(6, 1fr); }
+.cards-grid.cols-3-2 {
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 1fr 1fr;
+}
+
+.card {
+  background: #FFFFFF;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 22px 24px;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(79,70,229,0.04);
+}
+.card-num {
+  position: absolute;
+  top: -10px; right: 18px;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--indigo) 0%, var(--violet) 100%);
+  color: white;
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 12px rgba(79,70,229,0.35);
+}
+.card h4 {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.card p {
+  font-size: 15px;
+  color: var(--text-2);
+  line-height: 1.55;
+}
+.card.compact h4 { font-size: 16px; }
+.card.compact p { font-size: 13.5px; }
+
+.card-tag {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 10.5px;
+  color: var(--violet);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+/* ═══════════ SKILL CHIPS ═══════════ */
+.chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.chip {
+  background: #FFFFFF;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(79,70,229,0.05);
+}
+.chip.teal {
+  background: linear-gradient(135deg, var(--indigo) 0%, var(--violet) 100%);
+  border-color: var(--violet);
+  color: white;
+  box-shadow: 0 4px 12px rgba(79,70,229,0.30);
+}
+
+/* ═══════════ TWO COLUMN ═══════════ */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.two-col .col {
+  background: #FFFFFF;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 28px 30px;
+  box-shadow: 0 2px 8px rgba(79,70,229,0.04);
+}
+.col h3 {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+.col ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.col li {
+  font-size: 15.5px;
+  color: var(--text-2);
+  padding-right: 18px;
+  position: relative;
+  line-height: 1.5;
+}
+.col li::before {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 9px;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--violet);
+}
+.col.teal-tint {
+  background: linear-gradient(180deg, #FAFAFF 0%, #F5F3FF 100%);
+  border-color: rgba(139,92,246,0.25);
+}
+
+/* ═══════════ DATA EXAMPLES ═══════════ */
+.examples {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.example {
+  background: #FFFFFF;
+  border: 1px solid var(--line);
+  border-right: 4px solid var(--violet);
+  border-radius: 12px;
+  padding: 16px 20px;
+  font-size: 16px;
+  color: var(--text);
+  line-height: 1.45;
+  box-shadow: 0 2px 6px rgba(79,70,229,0.04);
+}
+.example b { color: var(--violet-deep); font-weight: 700; }
+
+/* ═══════════ ANTI-PATTERNS ═══════════ */
+.anti-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+.anti {
+  background: rgba(217,122,139,0.10);
+  border: 1px solid rgba(217,122,139,0.30);
+  border-radius: 14px;
+  padding: 20px 22px;
+}
+.anti-x {
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  background: rgba(217,122,139,0.20);
+  color: var(--burgundy);
+  font-family: 'Inter', sans-serif; font-weight: 800; font-size: 16px;
+  margin-bottom: 10px;
+}
+.anti h4 {
+  font-size: 17px;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 4px;
+}
+.anti p { font-size: 14px; color: var(--text-2); line-height: 1.5; }
+
+/* ═══════════ STANDARDS GRID ═══════════ */
+.std-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.std {
+  background: #FFFFFF;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--violet);
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 6px rgba(79,70,229,0.04);
+}
+.std-tag {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  color: var(--violet);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.std h4 {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.std p {
+  font-size: 13.5px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+/* ═══════════ PRICING SLIDE ═══════════ */
+.pricing-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.pcard {
+  background: #FFFFFF;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 22px 24px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 16px rgba(79,70,229,0.06);
+}
+.pcard::before {
+  content:'';
+  position: absolute;
+  top: 0; right: 0; left: 0;
+  height: 3px;
+}
+.pcard-a::before { background: linear-gradient(90deg, var(--indigo) 0%, var(--violet) 100%); }
+.pcard-b::before { background: linear-gradient(90deg, var(--violet) 0%, var(--pink) 100%); }
+.pcard-c::before { background: linear-gradient(90deg, var(--violet-light) 0%, var(--gold) 100%); }
+
+.pcard-tag {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 10.5px;
+  color: var(--violet);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.pcard-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 18px;
+  line-height: 1.2;
+}
+.pcard-prices {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.pprice {
+  display: flex;
+  flex-direction: column;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-soft);
+}
+.pprice:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+.plabel {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
+  font-size: 10.5px;
+  color: var(--violet);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+.pamount {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 30px;
+  line-height: 1;
+  margin-bottom: 5px;
+  background: linear-gradient(135deg, var(--indigo) 0%, var(--violet) 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.pamount .cur {
+  font-size: 18px;
+  margin-left: 2px;
+}
+.pamount .unit {
+  font-family: 'Rubik', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  -webkit-text-fill-color: var(--text-3);
+  background: none;
+  color: var(--text-3);
+}
+.pvat {
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+.pvat b { color: var(--text); font-weight: 700; }
+
+/* ═══════════ FINAL SLIDE ═══════════ */
+.next-step-box {
+  background: linear-gradient(135deg, var(--indigo) 0%, var(--violet) 100%);
+  border: 1px solid var(--violet);
+  border-radius: 16px;
+  padding: 30px 32px;
+  margin-top: 16px;
+  box-shadow: 0 12px 32px rgba(79,70,229,0.25);
+}
+.next-step-box h3 {
+  font-size: 22px;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 12px;
+}
+.next-step-box p {
+  font-size: 17px;
+  color: rgba(255,255,255,0.94);
+  line-height: 1.5;
+}
+
+.bullet-list {
+  list-style: none;
+  display: flex; flex-direction: column;
+  gap: 10px;
+}
+.bullet-list li {
+  position: relative;
+  padding-right: 24px;
+  font-size: 17px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+.bullet-list li b { color: var(--text); }
+.bullet-list li::before {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 10px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--violet);
+}
+
+/* ═══════════ NAV CONTROLS ═══════════ */
+.controls {
+  position: fixed;
+  bottom: 20px;
+  right: 50%;
+  transform: translateX(50%);
+  z-index: 100;
+  display: flex;
+  gap: 8px;
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 10px;
+  box-shadow: 0 8px 24px rgba(79,70,229,0.16);
+}
+.ctrl-btn {
+  background: transparent;
+  color: var(--violet-deep);
+  border: none;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  transition: background 0.2s;
+}
+.ctrl-btn:hover { background: rgba(79,70,229,0.08); }
+.ctrl-counter {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-2);
+  padding: 0 12px;
+  display: flex; align-items: center;
+  min-width: 60px;
+  justify-content: center;
+}
+.ctrl-fs, .ctrl-print {
+  background: transparent;
+  color: var(--text-2);
+  border: none;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.ctrl-fs:hover, .ctrl-print:hover { background: rgba(79,70,229,0.08); color: var(--violet); }
+
+/* ═══════════ TITLE SLIDE ═══════════ */
+.title-slide {
+  justify-content: center;
+  text-align: center;
+}
+.title-slide .slide-content {
+  align-items: center;
+  justify-content: center;
+}
+.title-eyebrow {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--violet-deep);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+.title-h1 {
+  font-size: 72px;
+  font-weight: 900;
+  color: var(--text);
+  line-height: 1.05;
+  margin-bottom: 18px;
+  letter-spacing: -0.02em;
+}
+.title-h1 .accent {
+  background: linear-gradient(135deg, var(--indigo) 0%, var(--violet) 50%, var(--pink) 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.title-sub {
+  font-size: 22px;
+  color: var(--text-2);
+  max-width: 800px;
+  margin-bottom: 60px;
+  line-height: 1.5;
+}
+.title-brands {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 20px 32px;
+  background: #FFFFFF;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(79,70,229,0.10);
+}
+.title-brand-block {
+  display: flex; align-items: center; gap: 12px;
+}
+.title-brand-mark {
+  width: 46px; height: 46px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+}
+.title-brand-mark.io {
+  background: linear-gradient(135deg, #4F46E5 0%, #8B5CF6 100%);
+}
+.title-brand-mark.client {
+  background: linear-gradient(135deg, var(--violet) 0%, var(--pink) 100%);
+}
+.title-brand-text {
+  text-align: right;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--text);
+  line-height: 1.1;
+}
+.title-brand-sub {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 4px;
+}
+.title-divider {
+  width: 1px; height: 36px;
+  background: var(--line);
+}
+
+/* ═══════════ RESPONSIVE / SCALING ═══════════ */
+@media (max-aspect-ratio: 16/9) {
+  /* Letterbox handled by overflow */
+}
+
+/* For fitting content - use vw/vh scaling at breakpoints */
+@media (max-width: 1400px) {
+  .slide { padding: 40px 56px 36px; }
+  .slide-title { font-size: 44px; }
+  .slide-sub { font-size: 18px; margin-bottom: 24px; }
+  .slide-eyebrow { font-size: 12px; }
+  .title-h1 { font-size: 56px; }
+  .title-sub { font-size: 18px; }
+  .card h4 { font-size: 16px; }
+  .card p { font-size: 13.5px; }
+  .col h3 { font-size: 18px; }
+  .col li { font-size: 14px; }
+  .chip { font-size: 14px; padding: 8px 14px; }
+  .std h4 { font-size: 14px; }
+  .std p { font-size: 12px; }
+  .example { font-size: 14px; }
+  .anti h4 { font-size: 15px; }
+  .anti p { font-size: 13px; }
+  .slide-highlight { font-size: 18px; padding: 18px 22px; }
+}
+
+@media (max-width: 1024px) {
+  .slide { padding: 32px 36px 28px; }
+  .slide-title { font-size: 32px; }
+  .slide-sub { font-size: 15px; }
+  .cards-grid.cols-3, .cards-grid.cols-4, .cards-grid.cols-5, .cards-grid.cols-3-2 { grid-template-columns: repeat(2, 1fr); }
+  .cards-grid.cols-6 { grid-template-columns: repeat(3, 1fr); }
+  .std-grid { grid-template-columns: repeat(2, 1fr); }
+  .examples { grid-template-columns: 1fr; }
+  .title-h1 { font-size: 38px; }
+  .slide-badge { top: 24px; left: 36px; }
+  .slide-counter, .slide-footer { bottom: 18px; }
+  .slide-counter { right: 36px; }
+  .slide-footer { left: 36px; font-size: 11px; }
+}
+
+/* ═══════════ PRINT (PDF EXPORT) ═══════════ */
+@media print {
+  @page {
+    size: 297mm 167mm;
+    margin: 0;
+  }
+  html, body {
+    width: 297mm !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    background: #FFFFFF !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .deck {
+    width: 297mm !important;
+    height: auto !important;
+    overflow: visible !important;
+    position: static !important;
+    display: block !important;
+  }
+  .slide {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    left: auto !important;
+    bottom: auto !important;
+    width: 297mm !important;
+    height: 167mm !important;
+    display: flex !important;
+    flex-direction: column !important;
+    page-break-after: always !important;
+    page-break-inside: avoid !important;
+    break-after: page !important;
+    break-inside: avoid !important;
+    overflow: hidden !important;
+    animation: none !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .slide:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+  .controls { display: none !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+  <!-- ═══════════ SLIDE 1 — TITLE ═══════════ -->
+  <section class="slide title-slide active" data-slide="1">
+    <div class="slide-bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+    </div>
+    <div class="slide-content">
+      <div class="title-eyebrow">תוכנית החומש להכלה · מנח"י ירושלים · תשפ"ז</div>
+      <h1 class="title-h1">מערכות למידה <span class="accent">דיפרנציאליות</span></h1>
+      <p class="title-sub">תשתית טכנולוגית להכלה אמיתית בכיתה ההטרוגנית — קריאה וכתיבה בא-ב, לשון ואנגלית בחט"ב, ואקלים בית-ספרי. אותו תוכן, פיגומים שונים: כל תלמיד במסלול שלו, כל מורָה עם תמונת מצב וכלי פעולה.</p>
+      <div class="title-brands">
+        <div class="title-brand-block">
+          <div class="title-brand-mark io">
+            <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="11" stroke="white" stroke-width="2" opacity=".4"/>
+              <circle cx="16" cy="5" r="2.2" fill="white"/>
+              <circle cx="16" cy="27" r="2.2" fill="white"/>
+              <circle cx="5" cy="16" r="2.2" fill="white"/>
+              <circle cx="27" cy="16" r="2.2" fill="white"/>
+              <ellipse cx="16" cy="16" rx="6" ry="3" stroke="white" stroke-width="1.6" fill="none"/>
+              <ellipse cx="16" cy="16" rx="3" ry="6" stroke="white" stroke-width="1.6" fill="none"/>
+            </svg>
+          </div>
+          <div>
+            <div class="title-brand-text">Impact OS</div>
+            <div class="title-brand-sub">טכנולוגיה יוצרת אימפקט</div>
+          </div>
+        </div>
+        <div class="title-divider"></div>
+        <div class="title-brand-block">
+          <div class="title-brand-mark client">
+            <svg width="26" height="26" viewBox="0 0 120 120" fill="none">
+              <g opacity="0.95">
+                <circle cx="60" cy="26" r="20" fill="white"/>
+                <circle cx="30" cy="78" r="20" fill="white" opacity=".82"/>
+                <circle cx="90" cy="78" r="20" fill="white" opacity=".82"/>
+              </g>
+            </svg>
+          </div>
+          <div>
+            <div class="title-brand-text">תוכנית החומש להכלה</div>
+            <div class="title-brand-sub">מנח"י · עמותת אינקלו</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">19.5.2026 · גרסה ראשונית</div>
+    <div class="slide-counter num">01/15</div>
+  </section>
+
+  <!-- ═══════════ SLIDE 2 — CHALLENGE ═══════════ -->
+  <section class="slide" data-slide="2">
+    <div class="slide-bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="deco-circle-sm"></div>
+    </div>
+    <div class="slide-badge"></div>
+    <div class="slide-content">
+      <div class="slide-eyebrow"><span class="dot"></span>01 · האתגר והחזון</div>
+      <h1 class="slide-title">האתגר והחזון</h1>
+      <p class="slide-sub">מערכת עירונית להתערבות מוקדמת בקריאה וכתיבה בכיתות א-ב</p>
+      <div class="slide-body">
+        <p style="font-size:18px; color:var(--text-2); line-height:1.6; max-width: 900px; margin-bottom: 14px;">רכישת הקריאה והכתיבה בכיתות א-ב היא נקודת יסוד קריטית להמשך דרכו הלימודית של התלמיד.</p>
+        <p style="font-size:18px; color:var(--text-2); line-height:1.6; max-width: 900px;">בכיתה אחת יש פערי קצב, פערי שליטה ופערי צורך בתיווך. המורָה נדרשת לזהות בזמן אמת מי מתקשה, במה בדיוק, ואיזו התערבות נדרשת.</p>
+      </div>
+      <div class="slide-highlight teal">
+        החזון: לכל תלמיד תרגול מותאם, ולכל מורָה תמונת מצב וכלי פעולה מדויקים.
+      </div>
+    </div>
+    <div class="slide-footer">מערכת למידה דיפרנציאלית לקריאה וכתיבה</div>
+    <div class="slide-counter num">02/15</div>
+  </section>
+
+  <!-- ═══════════ SLIDE 3 — SOLUTION ═══════════ -->
+  <section class="slide" data-slide="3">
+    <div class="slide-bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+    </div>
+    <div class="slide-badge"></div>
+    <div class="slide-content">
+      <div class="slide-eyebrow"><span class="dot"></span>02 · הגדרת הפתרון</div>
+      <h1 class="slide-title">הגדרת הפתרון</h1>
+      <p class="slide-sub">לא עוד אפליקציית תרגול — מערכת עירונית ללמידה מותאמת</p>
+
+      <div class="slide-body">
+        <div class="cards-grid cols-3-2" style="margin-top: 8px;">
+          <div class="card compact">
+            <h4>תוכן מאושר</h4>
+            <p>מבוסס על תכנית פדגוגית קיימת ומאושרת</p>
+          </div>
+          <div class="card compact">
+            <h4>מסלול אישי</h4>
+            <p>תרגול מותאם לרמת התלמיד בפועל</p>
+          </div>
+          <div class="card compact">
+            <h4>אבחון שוטף</h4>
+            <p>זיהוי פערי מיומנויות תוך כדי למידה</p>
+          </div>
+          <div class="card compact">
+            <h4>כלי מורָה</h4>
+            <p>ניהול, שליטה, המלצות ודוחות פעולה</p>
+          </div>
+          <div class="card compact">
+            <h4>ראייה מערכתית</h4>
+            <p>תמונת מצב לבית הספר ולתוכנית החומש</p>
+          </div>
+          <div class="card compact">
+            <h4>3 שכבות נתונים</h4>
+            <p>מורָה · רכזת הכלה · מנהלת התוכנית</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">מערכת למידה דיפרנציאלית לקריאה וכתיבה</div>
+    <div class="slide-counter num">03/15</div>
+  </section>
+
+  <!-- ═══════════ SLIDE 4 — CORE PRINCIPLE ═══════════ -->
+  <section class="slide" data-slide="4">
+    <div class="slide-bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+    </div>
+    <div class="slide-badge"></div>
+    <div class="slide-content">
+      <div class="slide-eyebrow"><span class="dot"></span>03 · עקרון הליבה</div>
+      <h1 class="slide-title">עקרון הליבה</h1>
+      <p class="slide-sub">המערכת אינה בנק שאלות — היא מערכת מבוססת מיומנויות</p>
+
+      <div class="slide-body">
+        <p style="font-size:17px; color:var(--text-2); line-height:1.55; max-width:1000px; margin-bottom: 28px;">
+          כל תרגיל משויך למיומנות קריאה או כתיבה מוגדרת. המערכת לא מסתפקת בזיהוי "נכון/לא נכון" — אלא מנסה להבין מה מקור הקושי.
+        </p>
+
+        <div class="chips-row" style="margin-bottom: 20px;">
+          <span class="chip">זיהוי אותיות</span>
+          <span class="chip">אות-צליל</span>
+          <span class="chip">ניקוד ותנועות</span>
+          <span class="chip">פענוח הברות</span>
+          <span class="chip">קריאת מילים</span>
+          <span class="chip">השלמת מילה</span>
+          <span class="chip">אותיות/צלילים דומים</span>
+          <span class="chip">הבנת משפט</span>
+          <span class="chip teal">קריאה אוראלית</span>
+        </div>
+      </div>
+
+      <div class="slide-highlight">
+        ל-9 מיומנויות יסוד אנחנו ממפים את כל בנק התרגילים, ההמלצות וההתראות.
+      </div>
+    </div>
+    <div class="slide-footer">מערכת למידה דיפרנציאלית לקריאה וכתיבה</div>
+    <div class="slide-counter num">04/15</div>
+  </section>
+
+  <!-- ═══════════ SLIDE 5 — INTERNATIONAL STANDARDS (NEW) ═══════════ -->
+  <section class="slide" data-slide="5">
+    <div class="slide-bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-3"></div>
+    </div>
+    <div class="slide-badge"></div>
+    <div class="slide-content">
+      <div class="slide-eyebrow"><span class="dot"></span>04 · על מה אנחנו בנויים</div>
+      <h1 class="slide-title">סטנדרטים <span class="accent">בינלאומיים</span></h1>
+      <p class="slide-sub">לא ניסוי. יישום מבוסס ראיות של מסגרות שכבר הוכיחו את עצמן.</p>
+
+      <div class="slide-body">
+        <div class="std-grid">
+          <div class="std">
+            <div class="std-tag">METHODOLOGY · SOR</div>
+            <h4>Science of Reading</h4>
+            <p>פונמיקה ← פענוח ← שטף ← אוצר מילים ← הבנה. לימוד מפורש ושיטתי לפי הסדר המחקרי.</p>
+          </div>
+          <div class="std">
+            <div class="std-tag">FRAMEWORK · MTSS/RTI</div>
+            <h4>3 שכבות תמיכה</h4>
+            <p>במקום "חזק/חלש" — מיקום ב-Tier 1/2/3 לפי נתונים. שינוי שכבה מבוסס אבחון.</p>
+          </div>
+          <div class="std">
+            <div class="std-tag">ENGINE · BKT</div>
+            <h4>Bayesian Knowledge Tracing</h4>
+            <p>הערכת סיכוי לשליטה. מעבר ליחידה הבאה לפי mastery threshold — לא לפי תרגיל בודד.</p>
+          </div>
+          <div class="std">
+            <div class="std-tag">ASSESSMENT</div>
+            <h4>סקרינר אוניברסלי 3×בשנה</h4>
+            <p>BOY · MOY · EOY — סטנדרט מקצועי לזיהוי מוקדם של תלמידים בסיכון.</p>
+          </div>
+          <div class="std">
+            <div class="std-tag">CONTENT · DECODABLE</div>
+            <h4>טקסט שניתן לפענח</h4>
+            <p>טקסטים בנויים מאותיות וצלילים שנלמדו — מנצח את Leveled Text המסורתי.</p>
+          </div>
+          <div class="std">
+            <div class="std-tag">TECH · ASR</div>
+            <h4>זיהוי קולי לילדים</h4>
+            <p>קריאה אוראלית = המנבא החזק להבנת הנקרא. כפי שעושות Amira / Reading Coach / Ello.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">מערכת למידה דיפרנציאלית לקריאה וכתיבה</div>
+    <div class="slide-counter num">05/15</div>
+  </section>
+
+  <!-- ═══════════ SLIDE 6 — HOW IT WORKS ═══════════ -->
+  <section class="slide" data-slide="6">
+    <div class="slide-bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+    </div>
+    <div class="slide-badge"></div>
+    <div class="slide-content">
+      <div class="slide-eyebrow"><span class="dot"></span>05 · איך המערכת עובדת</div>
+      <h1 class="slide-title">איך המערכת עובדת</h1>
+      <p class="slide-sub">מתוכן פדגוגי מאושר למסלול למידה אישי</p>
+
+      <div class="slide-body">
+        <div class="cards-grid cols-3-2">
+          <div class="card compact">
+            <span class="card-num">1</span>
+            <h4>תכנית פדגוגית מאושרת</h4>
+            <p>תכנית הלימוד הקיימת של מנח"י</p>
+          </div>
+          <div class="card compact">
+            <span class="card-num">2</span>
+            <h4>פירוק לפרקים, נושאים ומיומנויות</h4>
+            <p>המרה למבנה דיגיטלי מפורט</p>
+          </div>
+          <div class="card compact">
+            <span class="card-num">3</span>
+            <h4>בנק תרגילים מתויג</h4>
+            <p>כל תרגיל משויך למיומנות וקושי</p>
+          </div>
+          <div class="card compact">
+            <span class="card-num">4</span>
+            <h4>פרופיל תלמיד דינמי</h4>
+            <p>נבנה לאורך זמן מנתוני שימוש</p>
+          </div>
+          <div class="card compact">
+            <span class="card-num">5</span>
+            <h4>תרגול מותאם אישי</h4>
+            <p>סשנים קצרים ברמה הנכונה</p>
+          </div>
+          <div class="card compact">
+            <span class="card-num">6</span>
+            <h4>תובנות והמלצות למורָה</h4>
+            <p>חזרה לפעולה ברורה בכיתה</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-highlight teal" style="margin-top:auto;">
+        המערכת יוצרת חיבור רציף בין התוכן, התלמיד והמורָה.
+      </div>
+    </div>
+    <div class="slide-footer">מערכת למידה דיפרנציאלית לקריאה וכתיבה</div>
+    <div class="slide-counter num">06/15</div>
+  </section>
+
+  <!-- ═══════════ SLIDE 7 — LEARNING ENGINE ═══════════ -->
+  <section class="slide" data-slide="7">
+    <div class="slide-bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+    </div>
+    <div class="slide-badge"></div>
+    <div class="slide-content">
+      <div class="slide-eyebrow"><span class="dot"></span>06 · מנוע הלמידה</div>
+      <h1 class="slide-title">מנוע הלמידה</h1>
+      <p class="slide-sub">מה הופך את המערכת לחכמה</p>
+
+      <div class="slide-body">
+        <div class="two-col">
+          <div class="col teal-tint">
+            <h3>המערכת מחליטה</h3>
+            <ul>
+              <li>להמשיך באותה מיומנות</li>
+              <li>להעלות / להוריד קושי</li>
+              <li>לחזור למיומנויות קדם</li>
+              <li>לתת רמז או הסבר</li>
+              <li>להמליץ למורָה להתערב</li>
+            </ul>
+          </div>
+          <div class="col">
+            <h3>המערכת מנתחת</h3>
+            <ul>
+              <li>מיומנויות נבדקות</li>
+              <li>רמת קושי</li>
+              <li>נכון / שגוי</li>
+              <li>סוג טעות</li>
+              <li>זמן תגובה</li>
+              <li>שימוש ברמזים</li>
+              <li>עקביות לאורך זמן</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">מערכת למידה דיפרנציאלית לקריאה וכתיבה</div>
+    <div class="slide-counter num">07/15</div>
+  </section>
+
+  <!-- ═══════════ SLIDE 8 — STUDENT EXPERIENCE ═══════════ -->
+  <section class="slide" data-slide="8">
+    <div class="slide-bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+    </div>
+    <div class="slide-badge"></div>
+    <div class="slide-content">
+      <div class="slide-eyebrow"><span class="dot"></span>07 · חוויית התלמיד</div>
+      <h1 class="slide-title">חוויית התלמיד</h1>
+      <p class="slide-sub">למידה מותאמת, קצרה וחווייתית</p>
+
+      <div class="slide-body">
+        <p style="font-size:17px; color:var(--text-2); line-height:1.55; max-width:1000px; margin-bottom: 24px;">
+          התלמיד מקבל סשנים קצרים של 10-15 דקות, ברמת קושי שמותאמת לשליטה בפועל. המטרה היא לשמור אותו באזור הלמידה המיטבי (ZPD): לא קל מדי, לא קשה מדי.
+        </p>
+
+        <div class="cards-grid cols-4">
+          <div class="card">
+            <h4>פשטות</h4>
+            <p>ממשק מותאם לגיל א-ב, הוראות קוליות</p>
+          </div>
+          <div class="card">
+            <h4>תיווך</h4>
+            <p>רמזים מדורגים ופירוק משימה לפני שגיאה</p>
+          </div>
+          <div class="card">
+            <h4>התמדה</h4>
+            <p>משוב מיידי ואלמנטים משחקיים מתונים</p>
+          </div>
+          <div class="card">
+            <h4>הצלחה</h4>
+            <p>חיזוק תחושת מסוגלות והתקדמות</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">מערכת למידה דיפרנציאלית לקריאה וכתיבה</div>
+    <div class="slide-counter num">08/15</div>
+  </section>
+
+  <!-- ═══════════ SLIDE 9 — TEACHER EXPERIENCE ═══════════ -->
+  <section class="slide" data-slide="9">
+    <div class="slide-bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+    </div>
+    <div class="slide-badge"></div>
+    <div class="slide-content">
+      <div class="slide-eyebrow"><span class="dot"></span>08 · חוויית המורָה</div>
+      <h1 class="slide-title">חוויית המורָה</h1>
+      <p class="slide-sub">שליטה מלאה, תובנות מבוססות נתונים וכלי פעולה ברורים</p>
+
+      <div class="slide-body">
+        <div class="two-col">
+          <div class="col">
+            <h3>כלי עבודה מרכזיים</h3>
+            <ul>
+              <li>דשבורד כיתתי</li>
+              <li>פרופיל תלמיד מפורט</li>
+              <li>זיהוי תלמידים שזקוקים לחיזוק</li>
+              <li>המלצות לפי תלמיד, מיומנות וקבוצה</li>
+              <li>הקצאת תרגול וחלוקה לקבוצות</li>
+              <li>התראות על קושי מתמשך</li>
+            </ul>
+          </div>
+          <div class="col teal-tint">
+            <h3>המורָה נשארת במרכז</h3>
+            <ul>
+              <li>המערכת לא מחליפה את שיקול הדעת</li>
+              <li>תמונת מצב ברורה + כלים</li>
+              <li>פחות ניחוש, יותר החלטות מבוססות נתונים</li>
+              <li>אישור, שינוי והקצאה לפי שיקול דעת</li>
+              <li>פירות ניהוליים לרכזת ההכלה</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">מערכת למידה דיפרנציאלית לקריאה וכתיבה</div>
+    <div class="slide-counter num">09/15</div>
+  </section>
+
+  <!-- ═══════════ SLIDE 10 — DATA TO ACTION ═══════════ -->
+  <section class="slide" data-slide="10">
+    <div class="slide-bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+    </div>
+    <div class="slide-badge"></div>
+    <div class="slide-content">
+      <div class="slide-eyebrow"><span class="dot"></span>09 · מדאטה לפעולה בכיתה</div>
+      <h1 class="slide-title">מדאטה לפעולה בכיתה</h1>
+      <p class="slide-sub">המערכת לא רק מציגה נתונים — היא עוזרת למורָה להחליט מה לעשות</p>
+
+      <div class="slide-body">
+        <div class="examples">
+          <div class="example">"<b>5 תלמידים</b> מתקשים בזיהוי צליל פותח — מומלץ תרגול קבוצתי קצר של 8 דקות"</div>
+          <div class="example">"<b>התלמיד מצליח רק עם רמזים</b> — מומלץ לא להעביר לשלב הבא"</div>
+          <div class="example">"התלמיד מתקדם בזיהוי אותיות, <b>אך מתקשה בפענוח הברות</b>"</div>
+          <div class="example">"יש ירידה בביצועים בשבוע האחרון — <b>מומלץ מעקב מורָה</b>"</div>
+          <div class="example">"<b>הכיתה מתקדמת היטב</b>, אך יש קושי רוחבי בניקוד"</div>
+        </div>
+      </div>
+
+      <div class="slide-highlight teal" style="margin-top:auto;">
+        המטרה: להפוך דיפרנציאציה מכלי מורכב לכלי עבודה יומיומי.
+      </div>
+    </div>
+    <div class="slide-footer">מערכת למידה דיפרנציאלית לקריאה וכתיבה</div>
+    <div class="slide-counter num">10/15</div>
+  </section>
+
+  <!-- ═══════════ SLIDE 11 — VALUE / CENTER ═══════════ -->
+  <section class="slide" data-slide="11">
+    <div class="slide-bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+    </div>
+    <div class="slide-badge"></div>
+    <div class="slide-content">
+      <div class="slide-eyebrow"><span class="dot"></span>10 · התלמיד והמורה במרכז</div>
+      <h1 class="slide-title">התלמיד והמורָה במרכז</h1>
+      <p class="slide-sub">הערך המרכזי נוצר בעבודה היומיומית בכיתה: למידה מותאמת לתלמיד וכלי שליטה למורָה</p>
+
+      <div class="slide-body">
+        <div class="two-col">
+          <div class="col teal-tint">
+            <h3>לתלמיד</h3>
+            <ul>
+              <li>למידה מותאמת לרמת השליטה בפועל</li>
+              <li>חיזוק מיומנויות יסוד בקריאה וכתיבה</li>
+              <li>תיווך בזמן טעות ורמזים מדורגים</li>
+              <li>התקדמות בקצב אישי וחוויית הצלחה</li>
+            </ul>
+          </div>
+          <div class="col">
+            <h3>למורָה</h3>
+            <ul>
+              <li>שליטה ובקרה בלמידה דיפרנציאלית</li>
+              <li>מעקב מול מערך שיעורים ותכנית פדגוגית</li>
+              <li>המלצות לפי תלמיד, מיומנות וקבוצה</li>
+              <li>הקצאת תרגול וחלוקה לקבוצות</li>
+              <li>פחות ניחוש, יותר החלטות מבוססות נתונים</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-highlight teal" style="margin-top:auto;">
+        הערך העירוני נוצר כתוצאה מעבודה איכותית בכיתה — לא במקומה.
+      </div>
+    </div>
+    <div class="slide-footer">מערכת למידה דיפרנציאלית לקריאה וכתיבה</div>
+    <div class="slide-counter num">11/15</div>
+  </section>
+
+  <!-- ═══════════ SLIDE 12 — EXPANSION: MIDDLE SCHOOL ═══════════ -->
+  <section class="slide" data-slide="12">
+    <div class="slide-bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+    </div>
+    <div class="slide-badge"></div>
+    <div class="slide-content">
+      <div class="slide-eyebrow"><span class="dot"></span>11 · הרחבה — חטיבת ביניים</div>
+      <h1 class="slide-title">דיפרנציאלית <span class="accent">לחט"ב</span> — לשון + אנגלית</h1>
+      <p class="slide-sub">אותה ארכיטקטורה. מקצועות חדשים. מנגנון אדפטיבי שכבר הוכיח את עצמו בא-ב.</p>
+
+      <div class="slide-body">
+        <div class="two-col">
+          <div class="col">
+            <h3>לשון — כיתות ז-ט</h3>
+            <ul>
+              <li>הבנת הנקרא — טקסטים מסוגים שונים</li>
+              <li>דקדוק — שורש, בניין, גזרה</li>
+              <li>תחביר — משפט פשוט ומורכב</li>
+              <li>אוצר מילים — הקשר וסמנטיקה</li>
+              <li>הבעה בכתב — פסקה ומאמר</li>
+              <li>ניתוח טקסט — מטרה, רטוריקה, סגנון</li>
+            </ul>
+          </div>
+          <div class="col teal-tint">
+            <h3>אנגלית — CEFR A2-B1</h3>
+            <ul>
+              <li>Reading — comprehension & inference</li>
+              <li>Listening — short conversations & audio</li>
+              <li>Writing — sentences → paragraphs</li>
+              <li>Speaking — pronunciation drills + ASR</li>
+              <li>Vocabulary — high-frequency words</li>
+              <li>Grammar — present/past, modals, conditionals</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-highlight teal" style="margin-top: 16px;">
+        מודל מודולרי — מקצוע ראשון בונה ארכיטקטורה, מקצוע נוסף נשען עליה.
+      </div>
+    </div>
+    <div class="slide-footer">מערכת למידה דיפרנציאלית · הרחבה לחט"ב</div>
+    <div class="slide-counter num">12/15</div>
+  </section>
+
+  <!-- ═══════════ SLIDE 13 — EXPANSION: PULSE ═══════════ -->
+  <section class="slide" data-slide="13">
+    <div class="slide-bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+    </div>
+    <div class="slide-badge"></div>
+    <div class="slide-content">
+      <div class="slide-eyebrow"><span class="dot"></span>12 · הרחבה — Impact.OS Pulse</div>
+      <h1 class="slide-title">Pulse — <span class="accent">דופק האקלים</span> הבית-ספרי</h1>
+      <p class="slide-sub">שאלון אקלים קצר, תדיר ומדויק — חוויית משתמש מותאמת לנוער שמעלה את ההיענות. מבוסס כלי ולידציה מחקריים, השלמה טבעית למערכת הדיפרנציאלית.</p>
+
+      <div class="slide-body">
+        <div class="cards-grid cols-5" style="margin-bottom: 16px;">
+          <div class="card compact">
+            <h4>תחושת שייכות</h4>
+            <p>"אני חלק מהכיתה הזו"</p>
+          </div>
+          <div class="card compact">
+            <h4>ביטחון רגשי</h4>
+            <p>בטוח לטעות, בטוח לשאול</p>
+          </div>
+          <div class="card compact">
+            <h4>יחסי מורה-תלמיד</h4>
+            <p>אמון, קרבה והוגנות</p>
+          </div>
+          <div class="card compact">
+            <h4>סביבת לימוד</h4>
+            <p>מסוגלות, הנעה ומעורבות</p>
+          </div>
+          <div class="card compact">
+            <h4>מעורבות הורים</h4>
+            <p>שותפות בית-בית ספר</p>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="col">
+            <h3>איך זה עובד</h3>
+            <ul>
+              <li><b style="color:white;">UX מותאם לנוער</b> — מעלה היענות משמעותית</li>
+              <li>פולסים של 2-5 דקות, שבועי או חודשי</li>
+              <li>תלמידים · מורות · הורים</li>
+              <li>בנק שאלות מולידציה מחקרית</li>
+              <li>ניתוח טקסט פתוח באמצעות AI</li>
+              <li>התראות על דפוסים מטרידים</li>
+            </ul>
+          </div>
+          <div class="col teal-tint">
+            <h3>שלוש שכבות נתונים</h3>
+            <ul>
+              <li>יועצת בית ספר — רואה כיתה</li>
+              <li>מנהל/ת — רואה בית ספר</li>
+              <li>מטה עירוני — רואה את המועדון כולו</li>
+              <li>זיהוי מוקדם של תלמידים בסיכון</li>
+              <li>מדידה אובייקטיבית של אקלים בית-ספרי</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">Impact.OS Pulse · אקלים בית-ספרי</div>
+    <div class="slide-counter num">13/15</div>
+  </section>
+
+  <!-- ═══════════ SLIDE 14 — PRICING ═══════════ -->
+  <section class="slide" data-slide="14">
+    <div class="slide-bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+    </div>
+    <div class="slide-badge"></div>
+    <div class="slide-content">
+      <div class="slide-eyebrow"><span class="dot"></span>13 · מודל הפעלה ועלויות</div>
+      <h1 class="slide-title">מודל הפעלה <span class="accent">ועלויות</span></h1>
+      <p class="slide-sub">מודל פשוט וברור: הקמה והתאמה חד-פעמית + רישיון שנתי לפי תלמיד.</p>
+
+      <div class="slide-body">
+        <div class="pricing-grid-3">
+
+          <div class="pcard pcard-a">
+            <div class="pcard-tag">דיפרנציאלית · א-ב</div>
+            <h3 class="pcard-title">קריאה וכתיבה</h3>
+            <div class="pcard-prices">
+              <div class="pprice">
+                <span class="plabel">הקמה והתאמה</span>
+                <span class="pamount num"><span class="cur">₪</span>280,000</span>
+                <span class="pvat">+ <b>מע"מ</b> · חד-פעמי</span>
+              </div>
+              <div class="pprice">
+                <span class="plabel">רישיון שנתי</span>
+                <span class="pamount num"><span class="cur">₪</span>160 <span class="unit">/ תלמיד</span></span>
+                <span class="pvat">+ <b>מע"מ</b> · מינ' 1,500 תלמידים</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pcard pcard-b">
+            <div class="pcard-tag">דיפרנציאלית · חט"ב</div>
+            <h3 class="pcard-title">לשון + אנגלית</h3>
+            <div class="pcard-prices">
+              <div class="pprice">
+                <span class="plabel">הקמה והתאמה לשני המקצועות</span>
+                <span class="pamount num"><span class="cur">₪</span>300,000</span>
+                <span class="pvat">+ <b>מע"מ</b> · חד-פעמי</span>
+              </div>
+              <div class="pprice">
+                <span class="plabel">רישיון שנתי</span>
+                <span class="pamount num"><span class="cur">₪</span>200 <span class="unit">/ תלמיד</span></span>
+                <span class="pvat">+ <b>מע"מ</b> · מינ' 1,500 תלמידים</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pcard pcard-c">
+            <div class="pcard-tag">Pulse · אקלים</div>
+            <h3 class="pcard-title">דופק בית-ספרי</h3>
+            <div class="pcard-prices">
+              <div class="pprice">
+                <span class="plabel">הקמה והתאמה</span>
+                <span class="pamount num"><span class="cur">₪</span>110,000</span>
+                <span class="pvat">+ <b>מע"מ</b> · חד-פעמי</span>
+              </div>
+              <div class="pprice">
+                <span class="plabel">רישיון שנתי</span>
+                <span class="pamount num"><span class="cur">₪</span>40 <span class="unit">/ תלמיד</span></span>
+                <span class="pvat">+ <b>מע"מ</b> · מינ' 1,500 תלמידים</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+    <div class="slide-footer">מודל הפעלה ועלויות · אימפקט.OS</div>
+    <div class="slide-counter num">14/15</div>
+  </section>
+
+  <!-- ═══════════ SLIDE 15 — NEXT STEPS ═══════════ -->
+  <section class="slide" data-slide="15">
+    <div class="slide-bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-3"></div>
+    </div>
+    <div class="slide-badge"></div>
+    <div class="slide-content">
+      <div class="slide-eyebrow"><span class="dot"></span>14 · מודל פעולה והצעה להמשך</div>
+      <h1 class="slide-title">מודל פעולה והצעה <span class="accent">להמשך</span></h1>
+      <p class="slide-sub">פיילוט עירוני ממוקד ובר הרחבה</p>
+
+      <div class="slide-body">
+        <ul class="bullet-list" style="margin-bottom: 16px;">
+          <li>הפעלה בכ-<b style="color:white;">15 בתי ספר</b> ממועדון ההכלה הירושלמי</li>
+          <li>מיקוד בכיתות א-ב</li>
+          <li>שימוש בתכנית פדגוגית מאושרת של מנח"י</li>
+          <li>בניית מפת מיומנויות ובנק תרגילים</li>
+          <li>סביבת תלמיד ומורָה להפעלה שוטפת</li>
+          <li>דוחות תקופתיים למורָה, רכזת הכלה ומנהלת התוכנית</li>
+          <li>שיפור לפי נתוני שימוש ומשוב מהשטח</li>
+        </ul>
+
+        <div class="next-step-box">
+          <h3>הצעד הבא</h3>
+          <p>הגדרת תכולת פיילוט, היקף תלמידים, מודל עבודה, תקציב ולוחות זמנים — בשיתוף הצוות הפדגוגי של תוכנית החומש.</p>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">מערכות למידה דיפרנציאליות · אימפקט.OS</div>
+    <div class="slide-counter num">15/15</div>
+  </section>
+
+</div>
+
+<!-- CONTROLS -->
+<div class="controls">
+  <button class="ctrl-btn" id="prev" aria-label="קודם">‹</button>
+  <div class="ctrl-counter num"><span id="cur">1</span> / <span id="total">13</span></div>
+  <button class="ctrl-btn" id="next" aria-label="הבא">›</button>
+  <button class="ctrl-print" onclick="window.print()" aria-label="הדפסה / PDF" title="הדפסה / PDF">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>
+  </button>
+  <button class="ctrl-fs" id="fs" aria-label="מסך מלא" title="מסך מלא">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V3h4M21 7V3h-4M3 17v4h4M21 17v4h-4"/></svg>
+  </button>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 1;
+
+document.getElementById('total').textContent = total;
+
+function showSlide(n) {
+  if (n < 1) n = 1;
+  if (n > total) n = total;
+  slides.forEach(s => s.classList.remove('active'));
+  slides[n - 1].classList.add('active');
+  current = n;
+  document.getElementById('cur').textContent = n;
+  history.replaceState(null, '', '#' + n);
+}
+
+document.getElementById('next').onclick = () => showSlide(current + 1);
+document.getElementById('prev').onclick = () => showSlide(current - 1);
+document.getElementById('fs').onclick = () => {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+};
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowDown' || e.key === ' ' || e.key === 'PageDown') {
+    showSlide(current + 1);
+  } else if (e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'PageUp') {
+    showSlide(current - 1);
+  } else if (e.key === 'Home') {
+    showSlide(1);
+  } else if (e.key === 'End') {
+    showSlide(total);
+  } else if (e.key === 'f' || e.key === 'F') {
+    document.getElementById('fs').click();
+  } else if (e.key === 'p' || e.key === 'P') {
+    window.print();
+  } else if (/^[0-9]$/.test(e.key)) {
+    const n = parseInt(e.key);
+    if (n >= 1 && n <= total) showSlide(n);
+  }
+});
+
+// Load from URL hash
+if (location.hash) {
+  const n = parseInt(location.hash.slice(1));
+  if (n >= 1 && n <= total) showSlide(n);
+}
+
+// Swipe support
+let touchStartX = 0;
+document.addEventListener('touchstart', e => touchStartX = e.touches[0].clientX);
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(dx) > 50) {
+    // RTL: swipe right = next, swipe left = prev
+    if (dx > 0) showSlide(current + 1);
+    else showSlide(current - 1);
+  }
+});
+
+// Before print — show all slides
+window.addEventListener('beforeprint', () => {
+  slides.forEach(s => s.classList.add('active'));
+});
+window.addEventListener('afterprint', () => {
+  slides.forEach((s, i) => {
+    if (i === current - 1) s.classList.add('active');
+    else s.classList.remove('active');
+  });
+});
+</script>
+
+</body>
+</html>

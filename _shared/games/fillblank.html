@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>השלמת חסר · Impact SO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+.fb-sentence {
+  font-size:20px; line-height:1.7; font-weight:600;
+  color:var(--text); margin-bottom:18px;
+}
+.fb-blank {
+  display:inline-block; min-width:80px;
+  padding:2px 10px;
+  background:var(--primary-bg);
+  color:var(--primary);
+  border-bottom:2px dashed var(--primary);
+  border-radius:4px;
+  font-weight:800;
+}
+.fb-blank.filled { background:var(--green-l); color:var(--green); border-color:var(--green); }
+.fb-blank.wrong { background:var(--red-l); color:var(--red); border-color:var(--red); }
+.fb-input-row { display:flex; gap:8px; margin-bottom:10px; }
+.fb-input {
+  flex:1; padding:14px 16px;
+  border:2px solid var(--border); border-radius:12px;
+  font-family:'Heebo',sans-serif; font-size:15px;
+  direction:rtl; background:white;
+}
+.fb-input:focus { outline:none; border-color:var(--primary); }
+.fb-input.shake { animation:shake .35s; border-color:var(--red); }
+.fb-hint {
+  background:var(--blue-l); color:#1E40AF;
+  padding:10px 14px; border-radius:10px;
+  font-size:13px; line-height:1.5; margin-top:10px;
+  display:none;
+}
+.fb-hint.show { display:block; }
+.fb-hint::before { content:"💡 "; font-weight:700; }
+.fb-actions { display:flex; gap:8px; }
+</style>
+</head>
+<body>
+
+<div id="topbar"></div>
+<div class="game-shell"><div id="root" class="loading"><div class="spinner"></div><div>טוען...</div></div></div>
+
+<script src="shared.js"></script>
+<script>
+(function(){
+  const CONTENT = IGS.getParam('content', 'content.json');
+  const KIT_TITLE = IGS.getParam('kit', '');
+  const BACK = IGS.getParam('back', '../index.html');
+
+  let cfg, items, current=0, correct=0;
+  let studentName='', studentClass='';
+
+  document.getElementById('topbar').innerHTML = IGS.topbarHtml({
+    gameType:'fillblank', title:'השלמת חסר', kitTitle:KIT_TITLE, backHref:BACK
+  });
+
+  IGS.loadContent(CONTENT).then(data => {
+    cfg = data;
+    document.getElementById('root').innerHTML = IGS.welcomeHtml({
+      gameType:'fillblank', title: cfg.title || 'השלמת חסר',
+      subtitle: cfg.subtitle, classes: cfg.classes, kitTitle: KIT_TITLE,
+    });
+    IGS.wireWelcomeForm(s => { studentName=s.studentName; studentClass=s.studentClass; startGame(); });
+  }).catch(err => {
+    document.getElementById('root').innerHTML = '<div class="card"><h2 style="color:var(--red)">שגיאה</h2><p>'+IGS.escapeHtml(err.message)+'</p></div>';
+  });
+
+  function startGame(){
+    items = cfg.settings && cfg.settings.shuffleItems !== false ? IGS.shuffle(cfg.items) : cfg.items.slice();
+    current=0; correct=0;
+    renderQuestion();
+  }
+
+  function renderQuestion(){
+    const q = items[current];
+    const sentenceHtml = IGS.escapeHtml(q.text).replace(/___+/g, '<span class="fb-blank" id="blank">______</span>');
+    document.getElementById('root').innerHTML =
+      IGS.progressHtml(current+1, items.length, 'משפט') +
+      '<div class="card">' +
+        '<div class="fb-sentence">' + sentenceHtml + '</div>' +
+        '<div class="fb-input-row">' +
+          '<input type="text" class="fb-input" id="ans" placeholder="הקלידו את המילה החסרה" autocomplete="off">' +
+          '<button class="btn-primary" id="checkBtn">בדקו</button>' +
+        '</div>' +
+        '<div class="fb-actions">' +
+          (q.hint ? '<button class="btn-secondary" id="hintBtn">💡 רמז</button>' : '') +
+        '</div>' +
+        (q.hint ? '<div class="fb-hint" id="hintBox">'+IGS.escapeHtml(q.hint)+'</div>' : '') +
+        '<div class="q-feedback" id="fb"></div>' +
+        '<div class="q-next-wrap"><button class="q-next" id="next">הבא ←</button></div>' +
+      '</div>';
+
+    const ans = document.getElementById('ans');
+    ans.focus();
+    ans.addEventListener('keydown', e => { if (e.key === 'Enter') check(); });
+    document.getElementById('checkBtn').addEventListener('click', check);
+    if (q.hint) {
+      document.getElementById('hintBtn').addEventListener('click', () => {
+        document.getElementById('hintBox').classList.add('show');
+        document.getElementById('hintBtn').disabled = true;
+      });
+    }
+    document.getElementById('next').addEventListener('click', nextQuestion);
+  }
+
+  function check(){
+    const q = items[current];
+    const ans = document.getElementById('ans');
+    const val = ans.value.trim();
+    const expected = String(q.answer || '').trim();
+    if (!val) return;
+    const isRight = val === expected || val.toLowerCase() === expected.toLowerCase();
+    const blank = document.getElementById('blank');
+    ans.disabled = true;
+    document.getElementById('checkBtn').disabled = true;
+    if (isRight) {
+      correct++;
+      if (blank) { blank.textContent = expected; blank.classList.add('filled'); }
+      const fb = document.getElementById('fb');
+      fb.className = 'q-feedback show ok';
+      fb.innerHTML = '<strong>✓ נכון!</strong>';
+    } else {
+      ans.classList.add('shake');
+      if (blank) { blank.textContent = expected; blank.classList.add('wrong'); }
+      const fb = document.getElementById('fb');
+      fb.className = 'q-feedback show bad';
+      fb.innerHTML = '<strong>✗ לא נכון.</strong> התשובה: <strong>' + IGS.escapeHtml(expected) + '</strong>';
+    }
+    document.getElementById('next').classList.add('show');
+    document.getElementById('next').textContent = current === items.length - 1 ? 'סיום ←' : 'הבא ←';
+  }
+
+  function nextQuestion(){
+    current++;
+    if (current >= items.length) finish();
+    else renderQuestion();
+  }
+
+  function finish(){
+    IGS.showResult({
+      gameType:'fillblank',
+      gameTitle: cfg.title || 'השלמת חסר',
+      studentName, studentClass,
+      correctItems: correct, totalItems: items.length,
+      percentage: IGS.pct(correct, items.length),
+      teacherEmail: cfg.teacherEmail,
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

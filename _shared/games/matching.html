@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>התאמה · Impact SO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+.match-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:20px;
+}
+.match-col-title {
+  font-size:13px; font-weight:700; color:var(--text2);
+  text-align:center; margin-bottom:10px;
+  padding:8px; background:var(--bg); border-radius:8px;
+}
+.match-list { display:flex; flex-direction:column; gap:8px; }
+.match-item {
+  background:white; border:2px solid var(--border); border-radius:12px;
+  padding:14px 16px; cursor:pointer; font-family:'Heebo',sans-serif;
+  font-size:14px; font-weight:600; color:var(--text);
+  transition:all .15s; text-align:right; line-height:1.4;
+}
+.match-item:hover:not(.matched):not(.selected) { border-color:var(--primary); background:var(--primary-bg); }
+.match-item.selected { background:var(--primary-bg); border-color:var(--primary); color:var(--primary); }
+.match-item.matched { background:var(--green-l); border-color:var(--green); color:var(--green); cursor:not-allowed; opacity:.85; }
+.match-item.shake { animation:shake .35s; }
+@media (max-width:600px) {
+  .match-grid { grid-template-columns:1fr; gap:16px; }
+}
+</style>
+</head>
+<body>
+
+<div id="topbar"></div>
+<div class="game-shell"><div id="root" class="loading"><div class="spinner"></div><div>טוען...</div></div></div>
+
+<script src="shared.js?v=2026-05-16"></script>
+<script>
+(function(){
+  const CONTENT = IGS.getParam('content', 'content.json');
+  const KIT_TITLE = IGS.getParam('kit', '');
+  const BACK = IGS.getParam('back', '../index.html');
+
+  let cfg, items=[], rights=[], lefts=[], selRight=null, matches=0;
+  let studentName='', studentClass='';
+
+  document.getElementById('topbar').innerHTML = IGS.topbarHtml({
+    gameType:'matching', title:'התאמה', kitTitle:KIT_TITLE, backHref:BACK
+  });
+
+  IGS.loadContent(CONTENT).then(data => {
+    cfg = data;
+    document.getElementById('root').innerHTML = IGS.welcomeHtml({
+      gameType:'matching', title: cfg.title || 'התאמה',
+      subtitle: cfg.subtitle, classes: cfg.classes, kitTitle: KIT_TITLE,
+    });
+    IGS.wireWelcomeForm(s => { studentName=s.studentName; studentClass=s.studentClass; startGame(); });
+  }).catch(err => {
+    document.getElementById('root').innerHTML = '<div class="card"><h2 style="color:var(--red)">שגיאה</h2><p>'+IGS.escapeHtml(err.message)+'</p></div>';
+  });
+
+  function startGame(){
+    items = cfg.items.map((it,i) => ({ ...it, id:i }));
+    rights = IGS.shuffle(items);
+    lefts = IGS.shuffle(items);
+    selRight = null; matches = 0;
+    render();
+  }
+
+  function render(){
+    document.getElementById('root').innerHTML =
+      IGS.progressHtml(matches, items.length, 'התאמות') +
+      '<div class="card">' +
+        '<div class="match-grid">' +
+          '<div>' +
+            '<div class="match-col-title">'+IGS.escapeHtml(cfg.columnRightTitle || 'מושג')+'</div>' +
+            '<div class="match-list">' +
+              rights.map(it => '<div class="match-item" data-side="r" data-id="'+it.id+'">'+IGS.escapeHtml(it.right)+'</div>').join('') +
+            '</div>' +
+          '</div>' +
+          '<div>' +
+            '<div class="match-col-title">'+IGS.escapeHtml(cfg.columnLeftTitle || 'הגדרה')+'</div>' +
+            '<div class="match-list">' +
+              lefts.map(it => '<div class="match-item" data-side="l" data-id="'+it.id+'">'+IGS.escapeHtml(it.left)+'</div>').join('') +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    document.querySelectorAll('.match-item').forEach(el => {
+      el.addEventListener('click', () => onClick(el));
+    });
+  }
+
+  function onClick(el){
+    if (el.classList.contains('matched')) return;
+    const side = el.dataset.side, id = parseInt(el.dataset.id,10);
+    if (side === 'r') {
+      document.querySelectorAll('.match-item[data-side="r"]').forEach(e => e.classList.remove('selected'));
+      el.classList.add('selected');
+      selRight = id;
+    } else {
+      if (selRight === null) return;
+      if (id === selRight) {
+        // match!
+        document.querySelectorAll('.match-item[data-id="'+id+'"]').forEach(e => {
+          e.classList.add('matched');
+          e.classList.remove('selected');
+        });
+        matches++;
+        selRight = null;
+        if (matches >= items.length) {
+          setTimeout(finish, 700);
+        } else {
+          // update progress
+          const pf = document.querySelector('.progress-fill');
+          const pm = document.querySelector('.progress-meta span:last-child');
+          if (pf) pf.style.width = Math.round(matches/items.length*100)+'%';
+          if (pm) pm.textContent = matches+' / '+items.length;
+        }
+      } else {
+        // wrong
+        const right = document.querySelector('.match-item[data-side="r"][data-id="'+selRight+'"]');
+        el.classList.add('shake');
+        if (right) right.classList.add('shake');
+        setTimeout(() => {
+          el.classList.remove('shake');
+          if (right) { right.classList.remove('shake','selected'); }
+          selRight = null;
+        }, 400);
+      }
+    }
+  }
+
+  function finish(){
+    IGS.showResult({
+      gameType:'matching',
+      gameTitle: cfg.title || 'התאמה',
+      studentName, studentClass,
+      correctItems: matches, totalItems: items.length,
+      percentage: IGS.pct(matches, items.length),
+      teacherEmail: cfg.teacherEmail,
+    });
+  }
+})();
+</script>
+
+</body>
+</html>
