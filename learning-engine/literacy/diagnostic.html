@@ -501,12 +501,46 @@ function renderStimulus(item) {
   return `<div class="test-stimulus">${stim}</div>${body}`;
 }
 
-function speak(text) {
+let _heVoice = null;
+let _ttsWarned = false;
+function loadVoices() {
   if (!window.speechSynthesis) return;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'he-IL'; u.rate = 0.8; u.pitch = 1.05;
-  speechSynthesis.speak(u);
+  const voices = speechSynthesis.getVoices();
+  if (voices.length === 0) return;
+  _heVoice = voices.find(v => v.lang === 'he-IL')
+          || voices.find(v => v.lang && v.lang.toLowerCase().startsWith('he'))
+          || voices.find(v => v.name && /hebrew|asaf|carmit/i.test(v.name))
+          || null;
+}
+if (window.speechSynthesis) {
+  loadVoices();
+  speechSynthesis.addEventListener('voiceschanged', loadVoices);
+}
+function showNoVoiceHelp() {
+  if (_ttsWarned) return;
+  _ttsWarned = true;
+  const isWindows = navigator.platform.indexOf('Win') >= 0;
+  const isMac = navigator.platform.indexOf('Mac') >= 0;
+  let msg = 'הדפדפן לא מצא קול עברי מותקן במכשיר.\n\n';
+  if (isWindows) msg += 'ב-Windows:\n1. הגדרות → שעה ושפה → שפה ואזור\n2. הוסיפי "עברית" כשפה\n3. לחצי על השפה → אפשרויות → הורידי "Text-to-speech"\n4. רענני את הדף.';
+  else if (isMac) msg += 'ב-Mac:\n1. System Settings → Accessibility → Spoken Content\n2. בחרי System Voice → Manage Voices\n3. הורידי "Carmit" (עברית)\n4. רענני את הדף.';
+  else msg += 'נסי לרענן את הדף או להחליף דפדפן ל-Chrome / Safari.';
+  alert(msg);
+}
+function speak(text) {
+  try {
+    if (!window.speechSynthesis) { showNoVoiceHelp(); return; }
+    if (!_heVoice) loadVoices();
+    if (!_heVoice) { showNoVoiceHelp(); return; }
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'he-IL'; u.rate = 0.8; u.pitch = 1.05; u.voice = _heVoice;
+    u.onerror = (e) => console.warn('TTS error:', e);
+    setTimeout(() => {
+      speechSynthesis.speak(u);
+      setTimeout(() => { if (speechSynthesis.paused) speechSynthesis.resume(); }, 100);
+    }, 50);
+  } catch (e) { console.warn('TTS failed:', e); showNoVoiceHelp(); }
 }
 
 function checkOption(btn, chosen, correct) {
