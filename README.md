@@ -2,7 +2,7 @@
 
 > מערכת ההפעלה של בית הספר. שכבת ניהול אופרטיבי + AI מעל המערכות הקיימות. לא מתחרה — משלימה.
 
-האתר: [impactos.app](https://impactos.app)
+האתר: [impact-os.app](https://impact-os.app)
 
 ---
 
@@ -38,7 +38,7 @@ npx serve .
 
 ## פריסה
 
-האתר מתפרס אוטומטית ל-GitHub Pages בכל push ל-`main`. הדומיין `impactos.app` מחובר דרך CNAME.
+האתר מתפרס אוטומטית ל-GitHub Pages בכל push ל-`main`. הדומיין `impact-os.app` מחובר דרך CNAME.
 
 ## מוצרים אחרים במשפחת אימפקט.OS
 
