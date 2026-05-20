@@ -1009,8 +1009,84 @@ const SIMPLE_WORDS = [
 ];
 
 // ──────────────────────────────────────────────────────────
-// 6. WEB SPEECH API — TTS (with Hebrew voice loading)
+// 6. AUDIO — MP3 files (Edge TTS "Hila") + Web Speech fallback
 // ──────────────────────────────────────────────────────────
+const AUDIO_BASE = 'audio/he/';
+const AUDIO_MAP = {
+  // letter names (without nikud — that's how they're spoken)
+  'אלף': 'alef', 'בית': 'bet', 'גימל': 'gimel', 'דלת': 'dalet',
+  'הא': 'hey', 'וו': 'vav', 'זין': 'zayin', 'חית': 'het',
+  'טית': 'tet', 'יוד': 'yud', 'כף': 'kaf', 'למד': 'lamed',
+  'מם': 'mem', 'נון': 'nun', 'סמך': 'samekh', 'עין': 'ayin',
+  'פא': 'pey', 'צדי': 'tzadi', 'קוף': 'qof', 'ריש': 'resh',
+  'שין': 'shin', 'תו': 'tav',
+  // letter sounds (single nikud — for phonemic practice)
+  'אַ': 'sound-alef', 'בַּ': 'sound-bet', 'גַּ': 'sound-gimel', 'דַּ': 'sound-dalet',
+  'הַ': 'sound-hey', 'וַ': 'sound-vav', 'זַ': 'sound-zayin', 'חַ': 'sound-het',
+  'טַ': 'sound-tet', 'יַ': 'sound-yud', 'כַּ': 'sound-kaf', 'לַ': 'sound-lamed',
+  'מַ': 'sound-mem', 'נַ': 'sound-nun', 'סַ': 'sound-samekh', 'עַ': 'sound-ayin',
+  'פַּ': 'sound-pey', 'צַ': 'sound-tzadi', 'קַ': 'sound-qof', 'רַ': 'sound-resh',
+  'שַׁ': 'sound-shin', 'תַּ': 'sound-tav',
+  // nikud names
+  'קמץ': 'kamatz', 'פתח': 'patah', 'חיריק': 'hirik',
+  'חולם': 'holam', 'שורוק': 'shuruk', 'צירי': 'tzere', 'סגול': 'segol',
+  // common words (with nikud + without)
+  'אִמָּא': 'ima', 'אמא': 'ima',
+  'אַבָּא': 'aba', 'אבא': 'aba',
+  'יֶלֶד': 'yeled', 'ילד': 'yeled',
+  'יַלְדָּה': 'yalda', 'ילדה': 'yalda',
+  'בַּיִת': 'bayit', // 'בית' (without nikud) reserved for letter name
+  'גַּן': 'gan', 'גן': 'gan',
+  'יָד': 'yad', 'יד': 'yad',
+  'רֶגֶל': 'regel', 'רגל': 'regel',
+  'אֹזֶן': 'ozen', 'אוזן': 'ozen', 'אזן': 'ozen',
+  'שֶׁמֶשׁ': 'shemesh', 'שמש': 'shemesh',
+  'יָרֵחַ': 'yareach', 'ירח': 'yareach',
+  'מַיִם': 'mayim', 'מים': 'mayim',
+  'אֹכֶל': 'ochel', 'אוכל': 'ochel',
+  'סֵפֶר': 'sefer', 'ספר': 'sefer',
+  'עֵט': 'et',
+  'דַּף': 'daf', 'דף': 'daf',
+  'כִּסֵּא': 'kise', 'כסא': 'kise',
+  'שֻׁלְחָן': 'shulchan', 'שולחן': 'shulchan',
+  'דֶּלֶת': 'delet', 'דלת': 'delet',
+  'דָּג': 'dag', 'דג': 'dag',
+  'כֶּלֶב': 'kelev', 'כלב': 'kelev',
+  'חָתוּל': 'chatul', 'חתול': 'chatul',
+  'עִיר': 'ir',
+  'פֶּרַח': 'perach', 'פרח': 'perach',
+  'תַּפּוּחַ': 'tapuach', 'תפוח': 'tapuach',
+  'מְכוֹנִית': 'mechonit', 'מכונית': 'mechonit',
+  'עֵץ': 'etz', 'עץ': 'etz',
+  'חַג': 'chag', 'חג': 'chag',
+  'זַיִת': 'zait', 'זית': 'zait',
+  'דִּין': 'din', 'דין': 'din',
+  // phrases
+  'כל הכבוד!': 'good', 'כל הכבוד': 'good',
+  'בואי ננסה שוב': 'try-again',
+  'מצוין!': 'excellent', 'מצוין': 'excellent',
+  'איזו אות?': 'what-letter',
+  'איזה צליל?': 'what-sound',
+};
+
+function stripNikud(text) {
+  return text.replace(/[֑-ׇ]/g, '');
+}
+
+function lookupAudio(text) {
+  if (!text) return null;
+  // 1) exact match (with nikud)
+  if (AUDIO_MAP[text]) return AUDIO_MAP[text];
+  // 2) stripped match
+  const stripped = stripNikud(text);
+  if (AUDIO_MAP[stripped]) return AUDIO_MAP[stripped];
+  // 3) trim and try again
+  const trimmed = stripped.trim();
+  if (AUDIO_MAP[trimmed]) return AUDIO_MAP[trimmed];
+  return null;
+}
+
+let _currentAudio = null;
 let _heVoice = null;
 let _ttsWarned = false;
 
@@ -1046,6 +1122,22 @@ function showNoVoiceHelp() {
 }
 
 function speak(text) {
+  // 1) Try MP3 first — pre-recorded Hebrew audio
+  const slug = lookupAudio(text);
+  if (slug) {
+    if (_currentAudio) { try { _currentAudio.pause(); } catch (e) {} }
+    _currentAudio = new Audio(AUDIO_BASE + slug + '.mp3');
+    _currentAudio.play().catch(e => {
+      console.warn('MP3 play failed:', e);
+      ttsSpeak(text);
+    });
+    return;
+  }
+  // 2) Fallback to TTS
+  ttsSpeak(text);
+}
+
+function ttsSpeak(text) {
   try {
     if (!window.speechSynthesis) { showNoVoiceHelp(); return; }
     if (!_heVoice) loadVoices();

@@ -500,8 +500,25 @@ function renderStimulus(item) {
   return `<div class="test-stimulus">${stim}</div>${body}`;
 }
 
+// ─── AUDIO: MP3 (Edge TTS Hila) + TTS fallback ───
+const AUDIO_BASE = 'audio/he/';
+const AUDIO_MAP = {
+  'אלף':'alef','בית':'bet','גימל':'gimel','דלת':'dalet','הא':'hey','וו':'vav','זין':'zayin','חית':'het','טית':'tet','יוד':'yud','כף':'kaf','למד':'lamed','מם':'mem','נון':'nun','סמך':'samekh','עין':'ayin','פא':'pey','צדי':'tzadi','קוף':'qof','ריש':'resh','שין':'shin','תו':'tav',
+  'אַ':'sound-alef','בַּ':'sound-bet','גַּ':'sound-gimel','דַּ':'sound-dalet','הַ':'sound-hey','וַ':'sound-vav','זַ':'sound-zayin','חַ':'sound-het','טַ':'sound-tet','יַ':'sound-yud','כַּ':'sound-kaf','לַ':'sound-lamed','מַ':'sound-mem','נַ':'sound-nun','סַ':'sound-samekh','עַ':'sound-ayin','פַּ':'sound-pey','צַ':'sound-tzadi','קַ':'sound-qof','רַ':'sound-resh','שַׁ':'sound-shin','תַּ':'sound-tav',
+  'אִמָּא':'ima','אמא':'ima','אַבָּא':'aba','אבא':'aba','יֶלֶד':'yeled','ילד':'yeled','יַלְדָּה':'yalda','ילדה':'yalda','בַּיִת':'bayit','גַּן':'gan','גן':'gan','יָד':'yad','יד':'yad','רֶגֶל':'regel','רגל':'regel','שֶׁמֶשׁ':'shemesh','שמש':'shemesh','יָרֵחַ':'yareach','ירח':'yareach','מַיִם':'mayim','מים':'mayim','אֹכֶל':'ochel','אוכל':'ochel','סֵפֶר':'sefer','ספר':'sefer','דַּף':'daf','דף':'daf','דֶּלֶת':'delet','דלת':'delet','דָּג':'dag','דג':'dag','כֶּלֶב':'kelev','כלב':'kelev','חָתוּל':'chatul','חתול':'chatul','עִיר':'ir','פֶּרַח':'perach','פרח':'perach','תַּפּוּחַ':'tapuach','תפוח':'tapuach','מְכוֹנִית':'mechonit','מכונית':'mechonit','עֵץ':'etz','עץ':'etz','חַג':'chag','חג':'chag','זַיִת':'zait','זית':'zait','דִּין':'din','דין':'din'
+};
+function lookupAudio(t) {
+  if (!t) return null;
+  if (AUDIO_MAP[t]) return AUDIO_MAP[t];
+  const s = t.replace(/[֑-ׇ]/g, '');
+  if (AUDIO_MAP[s]) return AUDIO_MAP[s];
+  const tr = s.trim();
+  return AUDIO_MAP[tr] || null;
+}
+
 let _heVoice = null;
 let _ttsWarned = false;
+let _currentAudio = null;
 function loadVoices() {
   if (!window.speechSynthesis) return;
   const voices = speechSynthesis.getVoices();
@@ -527,6 +544,16 @@ function showNoVoiceHelp() {
   alert(msg);
 }
 function speak(text) {
+  const slug = lookupAudio(text);
+  if (slug) {
+    if (_currentAudio) { try { _currentAudio.pause(); } catch (e) {} }
+    _currentAudio = new Audio(AUDIO_BASE + slug + '.mp3');
+    _currentAudio.play().catch(e => { console.warn('MP3 failed:', e); ttsSpeak(text); });
+    return;
+  }
+  ttsSpeak(text);
+}
+function ttsSpeak(text) {
   try {
     if (!window.speechSynthesis) { showNoVoiceHelp(); return; }
     if (!_heVoice) loadVoices();
