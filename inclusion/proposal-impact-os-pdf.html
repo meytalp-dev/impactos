@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>הצעת מחיר · אימפקט.OS · תוכנית החומש להכלה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@500;600;700;800;900&family=Inter:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --indigo: #4F46E5;
+  --violet: #7C3AED;
+  --magenta: #A21CAF;
+  --sky: #2563EB;
+  --ink: #0F172A;
+  --slate: #334155;
+  --muted: #64748B;
+  --paper: #FFFFFF;
+  --line: #E2E8F0;
+  --line-soft: #EEF1F7;
+  --grad: linear-gradient(135deg, #2563EB 0%, #4F46E5 35%, #7C3AED 65%, #A21CAF 100%);
+  --grad-soft: linear-gradient(135deg, rgba(37,99,235,0.06), rgba(124,58,237,0.06) 60%, rgba(162,28,175,0.05));
+}
+
+@page { size: A4; margin: 0; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: #F4F4F7; color: var(--ink); font-family: 'Heebo', sans-serif; -webkit-font-smoothing: antialiased; }
+body { padding: 32px 16px; line-height: 1.5; font-size: 12px; }
+
+h1, h2, h3 { font-family: 'Rubik', sans-serif; line-height: 1.2; letter-spacing: -0.01em; color: var(--ink); }
+
+.page {
+  width: 210mm;
+  height: 297mm;
+  margin: 0 auto 24px;
+  background: var(--paper);
+  padding: 16mm 16mm 14mm;
+  box-shadow: 0 10px 40px rgba(15,23,42,0.10);
+  position: relative;
+  overflow: hidden;
+  page-break-after: always;
+  display: flex;
+  flex-direction: column;
+}
+.page:last-child { page-break-after: auto; margin-bottom: 0; }
+.page-body { flex: 1; }
+
+@media print {
+  body { background: #fff; padding: 0; font-size: 10.5pt; }
+  .page { margin: 0; box-shadow: none; height: 297mm; }
+  .no-print { display: none !important; }
+}
+
+/* Toolbar */
+.toolbar {
+  max-width: 210mm; margin: 0 auto 24px;
+  display: flex; justify-content: space-between; align-items: center;
+  background: white; padding: 12px 18px; border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(15,23,42,0.06);
+}
+.toolbar-text { font-size: 13px; color: var(--slate); font-weight: 600; }
+.btn-print {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px;
+  background: var(--grad);
+  color: white;
+  border-radius: 999px;
+  text-decoration: none;
+  font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 13.5px;
+  border: none; cursor: pointer;
+  box-shadow: 0 6px 18px rgba(79,70,229,0.25);
+}
+.btn-print:hover { transform: translateY(-1px); }
+
+/* Header */
+.head {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--ink);
+  margin-bottom: 14px;
+}
+.head-brand { display: flex; align-items: center; gap: 12px; }
+.head-brand .logo-svg { width: 44px; height: 44px; }
+.head-brand-name {
+  font-family: 'Inter', 'Rubik', sans-serif;
+  font-weight: 800; font-size: 22px;
+  background: var(--grad);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+.head-brand-tag {
+  font-family: 'Heebo', sans-serif;
+  font-size: 10.5px; color: var(--slate);
+  font-weight: 500; margin-top: 4px;
+}
+.head-meta {
+  text-align: left;
+  font-size: 10.5px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.head-meta strong { color: var(--ink); font-weight: 700; font-size: 11.5px; }
+
+/* Title */
+.title {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 900;
+  font-size: 24px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+.title .accent {
+  background: var(--grad);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.subtitle {
+  font-size: 12.5px;
+  color: var(--slate);
+  line-height: 1.55;
+  margin-bottom: 16px;
+  max-width: 95%;
+}
+
+/* Info row */
+.info-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 11px 14px;
+  background: var(--grad-soft);
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+.info-item .info-label {
+  font-family: 'Rubik', sans-serif;
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--violet);
+  margin-bottom: 2px;
+}
+.info-item .info-value {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700; font-size: 12px;
+  color: var(--ink);
+}
+
+/* Section */
+.section { margin-bottom: 14px; }
+.section.tight { margin-bottom: 10px; }
+.section-head {
+  display: flex; align-items: baseline; gap: 10px;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1.5px solid var(--line);
+}
+.section-num {
+  font-family: 'Inter', 'Rubik', sans-serif;
+  font-weight: 700; font-size: 10.5px;
+  color: var(--violet);
+  letter-spacing: 1.5px;
+}
+.section-title {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 800; font-size: 16px;
+  color: var(--ink);
+}
+
+/* PRINCIPLES */
+.principles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.principle {
+  padding: 13px 14px;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  position: relative;
+  padding-right: 38px;
+}
+.principle .p-num {
+  position: absolute;
+  right: 12px; top: 13px;
+  width: 22px; height: 22px;
+  border-radius: 7px;
+  background: var(--grad);
+  color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 800; font-size: 11px;
+}
+.principle .p-title {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 800; font-size: 13px;
+  color: var(--ink);
+  margin-bottom: 3px;
+  line-height: 1.3;
+}
+.principle .p-desc {
+  font-size: 11.5px;
+  color: var(--slate);
+  line-height: 1.5;
+}
+
+/* Highlight banner */
+.banner {
+  padding: 14px 18px;
+  background: var(--grad);
+  border-radius: 12px;
+  color: white;
+  display: flex; align-items: center; gap: 16px;
+  margin-bottom: 14px;
+}
+.banner-icon {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.18);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.banner-icon svg { width: 20px; height: 20px; fill: none; stroke: white; stroke-width: 2.3; }
+.banner-text {
+  font-size: 12.5px;
+  line-height: 1.5;
+  opacity: 0.97;
+}
+.banner-text strong { font-weight: 800; }
+
+/* Deliverables list */
+.deliv-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px 18px;
+  list-style: none;
+}
+.deliv-list li {
+  display: flex; gap: 8px; align-items: flex-start;
+  padding: 3px 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--slate);
+}
+.deliv-list li strong { color: var(--ink); font-weight: 700; }
+.deliv-list li::before {
+  content: ''; flex-shrink: 0; margin-top: 6px;
+  width: 6px; height: 6px;
+  background: var(--grad);
+  border-radius: 50%;
+}
+
+/* Features (annual) */
+.feat-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px 18px;
+  list-style: none;
+}
+.feat-list li {
+  display: flex; gap: 8px; align-items: center;
+  padding: 3px 0;
+  font-size: 12px;
+  color: var(--slate);
+}
+.feat-list li svg {
+  flex-shrink: 0; width: 14px; height: 14px;
+  stroke: var(--violet); fill: none; stroke-width: 2.5;
+}
+.feat-list li strong { color: var(--ink); font-weight: 700; }
+
+/* Price deck */
+.price-deck {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.price-card {
+  border-radius: 14px;
+  padding: 20px 20px;
+  position: relative;
+  overflow: hidden;
+}
+.price-card.primary {
+  background: var(--grad);
+  color: white;
+}
+.price-card.secondary {
+  background: white;
+  border: 1.5px solid var(--line);
+  color: var(--ink);
+}
+.price-card .pc-label {
+  font-family: 'Rubik', sans-serif;
+  font-size: 9.5px; font-weight: 700;
+  letter-spacing: 1.2px; text-transform: uppercase;
+  opacity: 0.9;
+  margin-bottom: 5px;
+}
+.price-card.secondary .pc-label { color: var(--violet); opacity: 1; }
+.price-card .pc-title {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 800; font-size: 14px;
+  margin-bottom: 10px;
+}
+.price-card .pc-value {
+  font-family: 'Rubik', sans-serif; font-weight: 900;
+  font-size: 32px; line-height: 1;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+.price-card .pc-value .cur { font-size: 0.55em; opacity: 0.75; font-weight: 700; }
+.price-card.secondary .pc-value { color: var(--violet); }
+.price-card .pc-unit { font-size: 11.5px; opacity: 0.9; margin-bottom: 4px; }
+.price-card .pc-vat { font-size: 10px; opacity: 0.78; font-weight: 600; }
+
+/* Pricing table */
+.pricing {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.pricing-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line-soft);
+  align-items: center;
+  font-size: 12px;
+}
+.pricing-row:last-child { border-bottom: none; }
+.pricing-row.head-row {
+  background: #F4F4F7;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700; font-size: 10px;
+  color: var(--muted); text-transform: uppercase; letter-spacing: 1px;
+}
+.pricing-row.total {
+  background: var(--grad-soft);
+  font-weight: 700;
+}
+.pricing-label {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
+  color: var(--ink);
+  font-size: 12px;
+}
+.pricing-sub {
+  display: block;
+  font-family: 'Heebo', sans-serif;
+  font-size: 10px; font-weight: 500;
+  color: var(--muted); margin-top: 2px;
+}
+.pricing-detail { color: var(--slate); font-size: 11px; }
+.pricing-value {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 800; font-size: 13px;
+  color: var(--ink); text-align: left;
+}
+.pricing-value .cur { font-size: 11px; font-weight: 700; opacity: 0.7; }
+.pricing-row.total .pricing-value {
+  font-size: 16px;
+  background: var(--grad);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Notes / terms */
+.terms {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.term {
+  padding: 10px 12px;
+  background: #F8F9FC;
+  border-radius: 8px;
+  border-right: 3px solid var(--violet);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--slate);
+}
+.term strong {
+  display: block;
+  color: var(--ink); font-weight: 700;
+  font-family: 'Rubik', sans-serif;
+  font-size: 11.5px;
+  margin-bottom: 2px;
+}
+
+/* Signature */
+.sig {
+  margin-top: 24px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+.sig-block .sig-label {
+  font-family: 'Rubik', sans-serif;
+  font-size: 10px; font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 1px; text-transform: uppercase;
+  margin-bottom: 28px;
+}
+.sig-block .sig-line {
+  height: 1.5px;
+  background: var(--ink);
+  margin-bottom: 5px;
+}
+.sig-block .sig-name {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700; font-size: 12.5px;
+  color: var(--ink);
+}
+.sig-block .sig-meta {
+  font-size: 10.5px; color: var(--muted);
+  margin-top: 2px;
+}
+
+/* Footer line */
+.foot {
+  text-align: center;
+  font-size: 9.5px;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+  padding-top: 6px;
+  margin-top: 10px;
+}
+
+.alignment-card {
+  padding: 12px 14px;
+  background: var(--grad-soft);
+  border-radius: 10px;
+  margin-bottom: 12px;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--slate);
+}
+.alignment-card strong { color: var(--ink); font-weight: 700; }
+
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.kpi {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 11px 12px;
+  text-align: center;
+}
+.kpi-num {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 900;
+  font-size: 22px;
+  line-height: 1;
+  background: var(--grad);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 3px;
+}
+.kpi-label {
+  font-size: 10.5px;
+  color: var(--slate);
+  font-weight: 600;
+  line-height: 1.3;
+}
+</style>
+</head>
+<body>
+
+<!-- Print toolbar -->
+<div class="toolbar no-print">
+  <div class="toolbar-text">הצעת מחיר תמציתית · 3 עמודי A4 · עקרונות → היקף → תמחור</div>
+  <button class="btn-print" onclick="window.print()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>
+    הדפסה / שמירה כ-PDF
+  </button>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- PAGE 1 · PRINCIPLES -->
+<!-- ════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-body">
+
+  <!-- HEADER -->
+  <div class="head">
+    <div class="head-brand">
+      <svg class="logo-svg" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="pdf-ios-grad-1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#2563EB"/>
+            <stop offset="50%" stop-color="#7C3AED"/>
+            <stop offset="100%" stop-color="#A21CAF"/>
+          </linearGradient>
+        </defs>
+        <circle cx="32" cy="32" r="26" stroke="url(#pdf-ios-grad-1)" stroke-width="2.5" fill="none"/>
+        <ellipse cx="32" cy="32" rx="18" ry="9" stroke="url(#pdf-ios-grad-1)" stroke-width="2.2" fill="none" transform="rotate(45 32 32)"/>
+        <ellipse cx="32" cy="32" rx="18" ry="9" stroke="url(#pdf-ios-grad-1)" stroke-width="2.2" fill="none" transform="rotate(-45 32 32)"/>
+        <circle cx="32" cy="32" r="4.5" fill="url(#pdf-ios-grad-1)"/>
+        <circle cx="32" cy="6" r="3" fill="#2563EB"/>
+        <circle cx="58" cy="32" r="3" fill="#7C3AED"/>
+        <circle cx="32" cy="58" r="3" fill="#A21CAF"/>
+        <circle cx="6" cy="32" r="3" fill="#2563EB"/>
+      </svg>
+      <div>
+        <div class="head-brand-name">Impact OS</div>
+        <div class="head-brand-tag">טכנולוגיה יוצרת אימפקט</div>
+      </div>
+    </div>
+    <div class="head-meta">
+      <strong>הצעת מחיר רשמית</strong>
+      <div>19 במאי 2026</div>
+      <div>תוקף: 60 ימים</div>
+    </div>
+  </div>
+
+  <!-- TITLE -->
+  <h1 class="title">מערך תרגול <span class="accent">דיפרנציאלי מלא</span><br>על בסיס תוכנית הלימוד העירונית</h1>
+  <p class="subtitle">
+    הקמת מערכת למידה דיפרנציאלית לארבע רמות בכיתה הטרוגנית — במסגרת תוכנית החומש להכלה בחינוך הירושלמי.
+  </p>
+
+  <!-- INFO ROW -->
+  <div class="info-row">
+    <div class="info-item">
+      <div class="info-label">הוכן עבור</div>
+      <div class="info-value">תוכנית החומש להכלה</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">מאת</div>
+      <div class="info-value">אימפקט.OS</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">תאריך</div>
+      <div class="info-value">19.5.2026</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">תוקף</div>
+      <div class="info-value">60 ימים</div>
+    </div>
+  </div>
+
+  <!-- BANNER -->
+  <div class="banner">
+    <div class="banner-icon">
+      <svg viewBox="0 0 24 24"><path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c2.39 0 4.68.94 6.36 2.64"/><path d="M22 4L12 14.01l-3-3"/></svg>
+    </div>
+    <div class="banner-text">
+      מורה אחת. שיעור אחד. <strong>4 רמות בו-זמנית.</strong> המערכת בנויה על בסיס מסגרות תיאורטיות מוכחות — <strong>DI · UDL 3.0 · MTSS · ZPD</strong> — ומתורגמת לכלי עבודה יומיומי שמורה משתמשת בו בלי תוספת זמן.
+    </div>
+  </div>
+
+  <!-- PRINCIPLES -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-num">01</div>
+      <div class="section-title">העקרונות המנחים</div>
+    </div>
+
+    <div class="principles">
+
+      <div class="principle">
+        <div class="p-num">1</div>
+        <div class="p-title">תרגול מותאם — לא הוראת ממוצע</div>
+        <div class="p-desc">כל תלמיד מקבל מסלול תרגול אישי. הוראת ״ממוצע״ מפסידה גם את החזקים וגם את החלשים — והפער מתרחב במקום להצטמצם.</div>
+      </div>
+
+      <div class="principle">
+        <div class="p-num">2</div>
+        <div class="p-title">אוטונומיה למורה — AI כעוזר</div>
+        <div class="p-desc">המורה מחליטה. ה-AI מציע. ה-AI נותן טיוטה — המורה רק עורכת ומאשרת. שיעור דיפרנציאלי ל-4 רמות בפחות מ-15 דקות תכנון.</div>
+      </div>
+
+      <div class="principle">
+        <div class="p-num">3</div>
+        <div class="p-title">שקיפות לתלמיד</div>
+        <div class="p-desc">לא ציון מספרי, אלא: ״באיזו רמה התחלת, באיזו סיימת, מה למדת״. תחושת מסוגלות וקידום שקוף.</div>
+      </div>
+
+      <div class="principle">
+        <div class="p-num">4</div>
+        <div class="p-title">נתונים פעולתיים — לא דוחות</div>
+        <div class="p-desc">לכל תפקיד תצוגה ייעודית: מורה, רכזת הכלה, מחנכת קייס-מנג׳ר, מטה. נתונים שמובילים לפעולה, לא שמצטברים.</div>
+      </div>
+
+      <div class="principle">
+        <div class="p-num">5</div>
+        <div class="p-title">חיבוריות — בלי כפל הזנה</div>
+        <div class="p-desc">הנתונים זורמים אוטומטית בין השכבות התפעוליות של התוכנית. בלי גוגל-שיטס, בלי העתק-הדבק.</div>
+      </div>
+
+      <div class="principle">
+        <div class="p-num">6</div>
+        <div class="p-title">מבוסס מחקר ומדידה</div>
+        <div class="p-desc">12 KPIs פדגוגיים — שיעור שימוש בנתוני אבחון, רווחי הישגים מ-baseline, אחוז מורות שמשתמשות. הצלחה מדידה.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- KPI ROW -->
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-num">4</div>
+      <div class="kpi-label">רמות בכיתה<br>הטרוגנית</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-num">5</div>
+      <div class="kpi-label">מודולים<br>מחוברים</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-num">12</div>
+      <div class="kpi-label">KPIs<br>פדגוגיים</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-num">15</div>
+      <div class="kpi-label">דקות<br>תכנון שיעור</div>
+    </div>
+  </div>
+
+  </div>
+  <div class="foot">אימפקט.OS · הצעת מחיר · עמוד 1 מתוך 3 · עקרונות</div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- PAGE 2 · SCOPE -->
+<!-- ════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-body">
+
+  <!-- HEADER -->
+  <div class="head">
+    <div class="head-brand">
+      <svg class="logo-svg" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="pdf-ios-grad-2" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#2563EB"/>
+            <stop offset="50%" stop-color="#7C3AED"/>
+            <stop offset="100%" stop-color="#A21CAF"/>
+          </linearGradient>
+        </defs>
+        <circle cx="32" cy="32" r="26" stroke="url(#pdf-ios-grad-2)" stroke-width="2.5" fill="none"/>
+        <ellipse cx="32" cy="32" rx="18" ry="9" stroke="url(#pdf-ios-grad-2)" stroke-width="2.2" fill="none" transform="rotate(45 32 32)"/>
+        <ellipse cx="32" cy="32" rx="18" ry="9" stroke="url(#pdf-ios-grad-2)" stroke-width="2.2" fill="none" transform="rotate(-45 32 32)"/>
+        <circle cx="32" cy="32" r="4.5" fill="url(#pdf-ios-grad-2)"/>
+      </svg>
+      <div>
+        <div class="head-brand-name">Impact OS</div>
+        <div class="head-brand-tag">היקף ההקמה והתפעול</div>
+      </div>
+    </div>
+    <div class="head-meta">
+      <strong>היקף השירות</strong>
+      <div>הקמה + תפעול שוטף</div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: SETUP -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-num">02</div>
+      <div class="section-title">מה כולל שלב ההקמה והתאמה ראשונית</div>
+    </div>
+    <ul class="deliv-list">
+      <li><span><strong>מיפוי מיומנויות עירוני</strong> — מבנה היררכי לפי תוכנית הלימוד</span></li>
+      <li><span><strong>התאמת והרחבת מאגר התרגילים</strong> — קיים + AI לרמות חסרות</span></li>
+      <li><span><strong>הגדרת רמות קושי</strong> — ארבע רמות לכל תרגיל, מבוסס ZPD</span></li>
+      <li><span><strong>מדדי ניווט פדגוגיים</strong> — כללי מעבר, קפיצה והעשרה אוטומטיים</span></li>
+      <li><span><strong>מנגנוני רמזים</strong> — שכבת רמזים מדורגת (חלש → חזק)</span></li>
+      <li><span><strong>משוב חי מותאם רמה</strong> — פידבק שמסביר, לא רק מתקן</span></li>
+      <li><span><strong>התאמת דוחות</strong> — למורה, רכזת, מנהל, מלווים, מטה</span></li>
+      <li><span><strong>הקמת סביבת עבודה</strong> — מוסדות, כיתות, מורים, הרשאות</span></li>
+      <li><span><strong>הכשרת צוותי הפעלה</strong> — רכזות הכלה, מחנכות, מלווים</span></li>
+      <li><span><strong>בקרת איכות פדגוגית</strong> — אישור מומחים לפני יציאה רחבה</span></li>
+    </ul>
+  </div>
+
+  <!-- SECTION 3: ANNUAL -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-num">03</div>
+      <div class="section-title">מה כולל התפעול השוטף השנתי</div>
+    </div>
+    <ul class="feat-list">
+      <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg><span><strong>שימוש שוטף</strong> במערכת לאורך כל שנת הלימודים</span></li>
+      <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg><span><strong>תרגול מותאם</strong> אישית לכל תלמיד</span></li>
+      <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg><span><strong>סביבת מורה</strong> מקיפה — תכנון, ניהול, מעקב</span></li>
+      <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg><span><strong>בקרה ודוחות</strong> ניהוליים לכל הרמות</span></li>
+      <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg><span><strong>תחזוקה</strong> שוטפת — תוכנה ותשתית</span></li>
+      <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg><span><strong>אבטחת מידע</strong> ופרטיות קטינים</span></li>
+      <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg><span><strong>תמיכה טכנית</strong> בעברית</span></li>
+      <li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg><span><strong>עלויות AI</strong> במסגרת שימוש סביר</span></li>
+    </ul>
+  </div>
+
+  <!-- ALIGNMENT -->
+  <div class="section tight">
+    <div class="section-head">
+      <div class="section-num">04</div>
+      <div class="section-title">חמשת המודולים — מערכת אחת</div>
+    </div>
+    <div class="alignment-card">
+      <strong>פרופיל כיתה דינמי</strong> · <strong>מחולל שיעור דיפרנציאלי</strong> · <strong>בנק פעילויות ומסלולי תרגול אדפטיביים</strong> · <strong>הערכה אדפטיבית ופידבק חי</strong> · <strong>דשבורד מעקב ומדידת אפקטיביות</strong>. חמשת המודולים פועלים יחד דרך פרופיל תלמיד מרכזי — כל אחד עומד בפני עצמו, והערך האמיתי נחשף כשהם מחוברים.
+    </div>
+  </div>
+
+  </div>
+  <div class="foot">אימפקט.OS · הצעת מחיר · עמוד 2 מתוך 3 · היקף השירות</div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- PAGE 3 · PRICING -->
+<!-- ════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-body">
+
+  <!-- HEADER -->
+  <div class="head">
+    <div class="head-brand">
+      <svg class="logo-svg" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="pdf-ios-grad-3" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#2563EB"/>
+            <stop offset="50%" stop-color="#7C3AED"/>
+            <stop offset="100%" stop-color="#A21CAF"/>
+          </linearGradient>
+        </defs>
+        <circle cx="32" cy="32" r="26" stroke="url(#pdf-ios-grad-3)" stroke-width="2.5" fill="none"/>
+        <ellipse cx="32" cy="32" rx="18" ry="9" stroke="url(#pdf-ios-grad-3)" stroke-width="2.2" fill="none" transform="rotate(45 32 32)"/>
+        <ellipse cx="32" cy="32" rx="18" ry="9" stroke="url(#pdf-ios-grad-3)" stroke-width="2.2" fill="none" transform="rotate(-45 32 32)"/>
+        <circle cx="32" cy="32" r="4.5" fill="url(#pdf-ios-grad-3)"/>
+      </svg>
+      <div>
+        <div class="head-brand-name">Impact OS</div>
+        <div class="head-brand-tag">סיכום תמחור · תוכנית החומש להכלה</div>
+      </div>
+    </div>
+    <div class="head-meta">
+      <strong>הצעת מחיר</strong>
+      <div>19.5.2026</div>
+    </div>
+  </div>
+
+  <!-- PRICE DECK -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-num">05</div>
+      <div class="section-title">הצעת המחיר</div>
+    </div>
+
+    <div class="price-deck">
+
+      <div class="price-card primary">
+        <div class="pc-label">שלב א׳ · חד-פעמי</div>
+        <div class="pc-title">הקמה והתאמה ראשונית</div>
+        <div class="pc-value"><span class="cur">₪</span>280,000</div>
+        <div class="pc-unit">סה״כ הקמה</div>
+        <div class="pc-vat">+ מע״מ כחוק</div>
+      </div>
+
+      <div class="price-card secondary">
+        <div class="pc-label">שלב ב׳ · שנתי מתחדש</div>
+        <div class="pc-title">רישיון והפעלה שנתית</div>
+        <div class="pc-value"><span class="cur">₪</span>160</div>
+        <div class="pc-unit">לתלמיד / לשנת לימודים</div>
+        <div class="pc-vat">+ מע״מ · מינימום: 1,500 תלמידים</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PRICING TABLE -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-num">06</div>
+      <div class="section-title">סיכום מחיר ודוגמאות חישוב</div>
+    </div>
+
+    <div class="pricing">
+
+      <div class="pricing-row head-row">
+        <div>סעיף</div>
+        <div>בסיס חישוב</div>
+        <div style="text-align: left;">לפני מע״מ</div>
+      </div>
+
+      <div class="pricing-row">
+        <div class="pricing-label">
+          שלב א׳ · הקמה והתאמה ראשונית
+          <span class="pricing-sub">חד-פעמי</span>
+        </div>
+        <div class="pricing-detail">תשלום אחד · עם חתימה</div>
+        <div class="pricing-value"><span class="cur">₪</span>280,000</div>
+      </div>
+
+      <div class="pricing-row">
+        <div class="pricing-label">
+          שלב ב׳ · רישיון שנתי
+          <span class="pricing-sub">מינימום 1,500 תלמידים</span>
+        </div>
+        <div class="pricing-detail">₪160 × מספר תלמידים</div>
+        <div class="pricing-value"><span class="cur">₪</span>160 / תלמיד</div>
+      </div>
+
+      <div class="pricing-row">
+        <div class="pricing-label">
+          רישיון שנתי · 1,500 תלמידים
+          <span class="pricing-sub">דוגמה במינימום</span>
+        </div>
+        <div class="pricing-detail">160 × 1,500</div>
+        <div class="pricing-value"><span class="cur">₪</span>240,000</div>
+      </div>
+
+      <div class="pricing-row">
+        <div class="pricing-label">
+          רישיון שנתי · 3,000 תלמידים
+          <span class="pricing-sub">דוגמה להרחבה</span>
+        </div>
+        <div class="pricing-detail">160 × 3,000</div>
+        <div class="pricing-value"><span class="cur">₪</span>480,000</div>
+      </div>
+
+      <div class="pricing-row total">
+        <div class="pricing-label">
+          סה״כ שנה ראשונה · 1,500 תלמידים
+          <span class="pricing-sub">הקמה + רישיון · לפני מע״מ</span>
+        </div>
+        <div class="pricing-detail">280,000 + 240,000</div>
+        <div class="pricing-value"><span class="cur">₪</span>520,000</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TERMS -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-num">07</div>
+      <div class="section-title">תנאים</div>
+    </div>
+    <div class="terms">
+      <div class="term">
+        <strong>מינימום להפעלה</strong>
+        ההצעה תקפה החל מ-1,500 תלמידים פעילים במערכת בשנת לימודים.
+      </div>
+      <div class="term">
+        <strong>תנאי תשלום</strong>
+        שלב א׳ — שוטף+30 מחתימה. שלב ב׳ — בתחילת כל שנת לימודים.
+      </div>
+      <div class="term">
+        <strong>"שימוש סביר" ב-AI</strong>
+        הרישיון מכסה שימוש פדגוגי שגרתי. שימוש חריג ייבדק בנפרד.
+      </div>
+      <div class="term">
+        <strong>תוקף ההצעה</strong>
+        60 יום ממועד שליחת ההצעה. לאחר מכן — התאמה בהתאם לעלויות תפעול.
+      </div>
+    </div>
+  </div>
+
+  <!-- SIGNATURES -->
+  <div class="sig">
+    <div class="sig-block">
+      <div class="sig-label">מאת · אימפקט.OS</div>
+      <div class="sig-line"></div>
+      <div class="sig-name">מיטל פלג</div>
+      <div class="sig-meta">meytalp@bethaarava.ort.org.il</div>
+    </div>
+    <div class="sig-block">
+      <div class="sig-label">אישור הלקוח</div>
+      <div class="sig-line"></div>
+      <div class="sig-name">חתימה ותאריך</div>
+      <div class="sig-meta">תוכנית החומש להכלה · ירושלים</div>
+    </div>
+  </div>
+
+  </div>
+  <div class="foot">אימפקט.OS · meytalp@bethaarava.ort.org.il · עמוד 3 מתוך 3 · תמחור וחתימה</div>
+</div>
+
+</body>
+</html>
