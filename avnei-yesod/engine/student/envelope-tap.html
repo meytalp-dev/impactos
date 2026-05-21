@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>להתאים מילים · אי שמות עצם</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&family=Playpen+Sans+Hebrew:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --ink-soft: #4a5070;
+    --bg-top: #fef9ee;
+    --bg-bottom: #fde7d4;
+    --card: #ffffff;
+    --accent: #6b5cff;
+    --accent-soft: #ece8ff;
+    --pink: #e84a8a;
+    --pink-soft: #fde0eb;
+    --green: #2e8b6e;
+    --green-soft: #d8f0e5;
+    --gold: #d4a341;
+    --gold-soft: #fbf2dc;
+    --red-soft: #fde5e0;
+    --border: rgba(26,26,46,0.08);
+    --shadow: 0 4px 24px rgba(26,26,46,0.06);
+    --shadow-lg: 0 12px 40px rgba(26,26,46,0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Heebo', sans-serif;
+    background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+    color: var(--ink); line-height: 1.5; min-height: 100vh;
+  }
+
+  /* Top progress bar */
+  .topbar {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 18px; background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(10px); border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .topbar a { color: var(--ink-soft); text-decoration: none; font-size: 18px; }
+  .progress-bar {
+    flex: 1; height: 12px; background: #f0e6d4; border-radius: 999px;
+    overflow: hidden; position: relative;
+  }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, var(--pink), #ff7eac);
+    border-radius: 999px; width: 0%; transition: width 0.4s cubic-bezier(.2,.9,.3,1);
+  }
+  .progress-text {
+    font-family: 'Playpen Sans Hebrew', sans-serif;
+    font-size: 14px; font-weight: 700; color: var(--ink-soft);
+    min-width: 36px; text-align: center;
+  }
+
+  .wrap { max-width: 540px; margin: 0 auto; padding: 28px 20px 40px; }
+
+  /* Companion + audio area */
+  .play-area {
+    text-align: center; margin-bottom: 28px;
+    position: relative;
+  }
+  .companion-small {
+    width: 120px; height: 132px; margin: 0 auto 16px; display: block;
+  }
+
+  .play-btn {
+    appearance: none; border: none; background: var(--card);
+    width: 96px; height: 96px; border-radius: 50%;
+    box-shadow: var(--shadow-lg);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto; cursor: pointer;
+    transition: all 0.2s ease-out;
+    -webkit-tap-highlight-color: transparent;
+    color: var(--pink);
+    position: relative;
+  }
+  .play-btn:hover, .play-btn:focus-visible {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 8px rgba(232,74,138,0.12), var(--shadow-lg);
+    outline: none;
+  }
+  .play-btn:active { transform: scale(0.96); }
+  .play-btn svg { width: 36px; height: 36px; margin-right: -4px; }
+  .play-btn.playing {
+    animation: play-pulse 0.6s ease-in-out infinite;
+  }
+  @keyframes play-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(232,74,138,0.35), var(--shadow-lg); }
+    50%      { box-shadow: 0 0 0 14px rgba(232,74,138,0), var(--shadow-lg); }
+  }
+
+  .play-hint {
+    margin-top: 14px; font-size: 14px; color: var(--ink-soft);
+  }
+
+  /* 4 word cards */
+  .cards {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 14px; margin-top: 24px;
+  }
+  .card {
+    appearance: none; border: 3px solid var(--border);
+    background: var(--card); border-radius: 20px;
+    padding: 22px 12px; cursor: pointer;
+    font-family: 'Heebo', 'David Libre', serif;
+    font-size: 30px; font-weight: 700;
+    color: var(--ink); min-height: 92px;
+    transition: all 0.22s ease-out;
+    box-shadow: var(--shadow);
+    -webkit-tap-highlight-color: transparent;
+    direction: rtl;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1.1;
+  }
+  .card:hover, .card:focus-visible {
+    transform: translateY(-2px); border-color: var(--accent);
+    outline: none;
+  }
+  .card:active { transform: scale(0.96); }
+  .card.correct {
+    background: var(--green-soft); border-color: var(--green); color: var(--green);
+    animation: card-correct 0.5s ease-out;
+  }
+  .card.wrong {
+    background: var(--red-soft); border-color: #d4715a;
+    animation: card-wrong 0.5s ease-out;
+  }
+  .card.disabled { pointer-events: none; opacity: 0.5; }
+
+  @keyframes card-correct {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.08); }
+    100% { transform: scale(1); }
+  }
+  @keyframes card-wrong {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+
+  /* Feedback line */
+  .feedback {
+    text-align: center; margin-top: 20px; min-height: 28px;
+    font-family: 'Playpen Sans Hebrew', sans-serif;
+    font-size: 18px; font-weight: 700;
+    transition: all 0.3s;
+    opacity: 0;
+  }
+  .feedback.show { opacity: 1; }
+  .feedback.good { color: var(--green); }
+  .feedback.gentle { color: var(--ink-soft); }
+
+  /* Completion screen */
+  .complete-screen {
+    position: fixed; inset: 0;
+    background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    padding: 40px 20px; z-index: 50;
+    animation: fade-in 0.5s;
+  }
+  .complete-screen.show { display: flex; }
+  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+  .complete-stones {
+    display: flex; gap: 12px; margin-bottom: 24px;
+    align-items: flex-end;
+  }
+  .complete-stones > * { width: 90px; height: 99px; }
+  .complete-stones > *:nth-child(2) { width: 130px; height: 143px; }
+
+  .complete-title {
+    font-family: 'Playpen Sans Hebrew', sans-serif;
+    font-size: 36px; font-weight: 800; color: var(--ink);
+    text-align: center; margin-bottom: 12px;
+  }
+  .complete-sub {
+    font-size: 18px; color: var(--ink-soft); margin-bottom: 36px;
+    text-align: center;
+  }
+  .complete-actions {
+    display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 280px;
+  }
+  .btn-primary, .btn-secondary {
+    padding: 16px 24px; border-radius: 999px;
+    font-family: 'Playpen Sans Hebrew', sans-serif;
+    font-size: 17px; font-weight: 700; text-decoration: none;
+    text-align: center; border: none; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary {
+    background: var(--pink); color: #fff;
+    box-shadow: 0 6px 18px rgba(232,74,138,0.35);
+  }
+  .btn-primary:hover { transform: translateY(-2px); }
+  .btn-secondary {
+    background: transparent; color: var(--ink-soft);
+    border: 2px solid var(--border);
+  }
+
+  .stars-row {
+    display: flex; gap: 8px; margin-bottom: 24px;
+  }
+  .stars-row .star {
+    width: 36px; height: 36px;
+    color: var(--gold); font-size: 36px; line-height: 1;
+    animation: star-pop 0.5s backwards;
+  }
+  .stars-row .star:nth-child(1) { animation-delay: 0.2s; }
+  .stars-row .star:nth-child(2) { animation-delay: 0.4s; }
+  .stars-row .star:nth-child(3) { animation-delay: 0.6s; }
+  @keyframes star-pop {
+    from { transform: scale(0) rotate(-60deg); opacity: 0; }
+    to   { transform: scale(1) rotate(0); opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="island.html?cat=nouns" aria-label="חזרה לאי">←</a>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-text" id="progressText">0/10</div>
+</div>
+
+<div class="wrap" id="gameWrap">
+
+  <div class="play-area">
+    <div class="companion-small" id="companion"></div>
+    <button class="play-btn" id="playBtn" aria-label="לשמוע את המילה">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+    </button>
+    <p class="play-hint">לחצי כדי לשמוע, ואז בחרי את הכרטיס הנכון</p>
+  </div>
+
+  <div class="cards" id="cards"></div>
+
+  <div class="feedback" id="feedback"></div>
+
+</div>
+
+<div class="complete-screen" id="completeScreen">
+  <div class="complete-stones">
+    <div id="cmFriend1"></div>
+    <div id="cmFriendMain"></div>
+    <div id="cmFriend2"></div>
+  </div>
+  <h2 class="complete-title">כל הכבוד!</h2>
+  <p class="complete-sub">סיימת 10 מילים באי שמות עצם</p>
+  <div class="stars-row">
+    <span class="star">★</span>
+    <span class="star">★</span>
+    <span class="star">★</span>
+  </div>
+  <div class="complete-actions">
+    <a href="island.html?cat=nouns" class="btn-primary">חזרה לאי</a>
+    <a href="envelope-tap.html?cat=nouns" class="btn-secondary">לתרגל שוב</a>
+  </div>
+</div>
+
+<audio id="audioEl" preload="auto"></audio>
+
+<script src="data/islands.js"></script>
+<script src="data/companion.js"></script>
+<script>
+  // === Setup ===
+  const TOTAL_QUESTIONS = 10;
+  const OPTIONS_PER_QUESTION = 4;
+
+  const companion = Companion.mount(document.getElementById('companion'), { size: 120 });
+
+  const audioEl = document.getElementById('audioEl');
+  const playBtn = document.getElementById('playBtn');
+  const cardsEl = document.getElementById('cards');
+  const feedbackEl = document.getElementById('feedback');
+  const progressFill = document.getElementById('progressFill');
+  const progressText = document.getElementById('progressText');
+
+  // Build 10 questions — each is { target, options }
+  function buildQuestions() {
+    const bank = window.AVNEI_NOUNS_BANK;
+    const shuffled = window.shuffle(bank).slice(0, TOTAL_QUESTIONS);
+    return shuffled.map(target => {
+      const distractors = window.pickDistractors(target, OPTIONS_PER_QUESTION - 1);
+      const options = window.shuffle([target, ...distractors]);
+      return { target, options };
+    });
+  }
+
+  let questions = buildQuestions();
+  let qIndex = 0;
+  let attempts = 0;  // attempts in current question
+
+  function updateProgress() {
+    const pct = (qIndex / TOTAL_QUESTIONS) * 100;
+    progressFill.style.width = pct + '%';
+    progressText.textContent = qIndex + '/' + TOTAL_QUESTIONS;
+  }
+
+  function renderQuestion() {
+    if (qIndex >= TOTAL_QUESTIONS) { showComplete(); return; }
+    const q = questions[qIndex];
+    attempts = 0;
+    cardsEl.innerHTML = '';
+    feedbackEl.classList.remove('show', 'good', 'gentle');
+    feedbackEl.textContent = '';
+
+    q.options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'card';
+      btn.textContent = opt.he;
+      btn.setAttribute('aria-label', 'מילה: ' + opt.he);
+      btn.addEventListener('click', () => handleChoice(btn, opt, q.target));
+      cardsEl.appendChild(btn);
+    });
+
+    updateProgress();
+    // Auto-play after a tiny delay
+    setTimeout(() => playAudio(), 350);
+  }
+
+  function playAudio() {
+    const q = questions[qIndex];
+    audioEl.src = '../audio/he/' + q.target.audio;
+    playBtn.classList.add('playing');
+    audioEl.play().catch(() => {
+      // Autoplay may be blocked first time — user will click playBtn manually
+    });
+  }
+  audioEl.addEventListener('ended', () => playBtn.classList.remove('playing'));
+  playBtn.addEventListener('click', playAudio);
+
+  function handleChoice(btn, opt, target) {
+    if (btn.classList.contains('disabled')) return;
+
+    if (opt.he === target.he) {
+      // Correct
+      btn.classList.add('correct');
+      Array.from(cardsEl.children).forEach(c => c.classList.add('disabled'));
+      Companion.setState(companion.el, 'cheer');
+      feedbackEl.textContent = pickPraise();
+      feedbackEl.classList.add('show', 'good');
+      setTimeout(() => { qIndex++; renderQuestion(); }, 1500);
+    } else {
+      // Wrong — Stairstep Recovery, no penalty
+      attempts++;
+      btn.classList.add('wrong');
+      Companion.setState(companion.el, 'blink');
+      feedbackEl.textContent = pickGentle(attempts);
+      feedbackEl.classList.add('show', 'gentle');
+      setTimeout(() => {
+        btn.classList.remove('wrong');
+        feedbackEl.classList.remove('show', 'gentle');
+      }, 1300);
+      // After 2 wrong attempts — gently highlight the correct card
+      if (attempts >= 2) {
+        const correctBtn = Array.from(cardsEl.children).find(c => c.textContent === target.he);
+        if (correctBtn) correctBtn.style.boxShadow = '0 0 0 4px rgba(46,139,110,0.35), var(--shadow)';
+      }
+      // Replay audio to help
+      setTimeout(playAudio, 400);
+    }
+  }
+
+  function pickPraise() {
+    const arr = ['יופי!', 'מצוין!', 'בדיוק!', 'יפה מאוד!', 'מעולה!', 'כל הכבוד!'];
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+  function pickGentle(attempt) {
+    const arr = attempt === 1
+      ? ['ננסה יחד', 'שמעי שוב', 'כמעט!']
+      : ['בואי ננסה את זה', 'תנסי שוב'];
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  // === Completion screen ===
+  function showComplete() {
+    document.getElementById('gameWrap').style.display = 'none';
+    const screen = document.getElementById('completeScreen');
+    screen.classList.add('show');
+    // 3 stones — two small friends + the main one
+    Companion.mount(document.getElementById('cmFriend1'), { size: 90 });
+    const main = Companion.mount(document.getElementById('cmFriendMain'), { size: 130 });
+    Companion.mount(document.getElementById('cmFriend2'), { size: 90 });
+    setTimeout(() => Companion.setState(main.el, 'cheer'), 200);
+    setTimeout(() => Companion.setState(document.getElementById('cmFriend1'), 'cheer'), 400);
+    setTimeout(() => Companion.setState(document.getElementById('cmFriend2'), 'cheer'), 600);
+    // Loop cheering
+    setInterval(() => {
+      [main.el, document.getElementById('cmFriend1'), document.getElementById('cmFriend2')].forEach((el, i) => {
+        setTimeout(() => Companion.setState(el, 'cheer'), i * 200);
+      });
+    }, 3500);
+  }
+
+  // Start
+  renderQuestion();
+</script>
+</body>
+</html>

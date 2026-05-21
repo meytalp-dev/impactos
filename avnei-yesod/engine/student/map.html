@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>אבני יסוד · המסע שלי</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&family=Playpen+Sans+Hebrew:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --ink-soft: #4a5070;
+    --bg-top: #fef9ee;
+    --bg-bottom: #fde7d4;
+    --water: #cce8f0;
+    --water-dark: #a8d4e0;
+    --card: #ffffff;
+    --accent: #6b5cff;
+    --accent-soft: #ece8ff;
+    --pink: #e84a8a;
+    --green: #2e8b6e;
+    --gold: #d4a341;
+    --border: rgba(26,26,46,0.08);
+    --shadow: 0 4px 24px rgba(26,26,46,0.06);
+    --shadow-lg: 0 12px 40px rgba(26,26,46,0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { overscroll-behavior: contain; }
+  body {
+    font-family: 'Heebo', sans-serif;
+    background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+    color: var(--ink);
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* Top bar */
+  .topbar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px; background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(10px); border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .topbar a { color: var(--ink-soft); text-decoration: none; font-size: 14px; font-weight: 600; }
+  .topbar h1 { font-family: 'Playpen Sans Hebrew', sans-serif; font-size: 18px; font-weight: 800; }
+  .companion-mini { width: 44px; height: 48px; }
+
+  /* Stage — vertical river of islands */
+  .stage {
+    max-width: 540px; margin: 0 auto; padding: 24px 16px 80px;
+    position: relative;
+  }
+
+  /* Dashed path connecting islands */
+  .path-svg {
+    position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
+    z-index: 0; pointer-events: none; width: 4px; height: calc(100% - 120px);
+  }
+  .path-svg line {
+    stroke: var(--water-dark); stroke-width: 3; stroke-dasharray: 6 8;
+    stroke-linecap: round; opacity: 0.6;
+  }
+
+  /* Island row */
+  .island-row {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 28px; position: relative; z-index: 1;
+  }
+  .island-row:nth-child(odd)  { flex-direction: row; padding-right: 0; padding-left: 20%; }
+  .island-row:nth-child(even) { flex-direction: row-reverse; padding-left: 0; padding-right: 20%; }
+
+  .island {
+    position: relative; cursor: pointer; flex-shrink: 0;
+    transition: transform 0.25s ease-out;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .island:active { transform: scale(0.94); }
+  .island:focus-visible { outline: 3px solid var(--accent); outline-offset: 6px; border-radius: 50%; }
+
+  .island-shape {
+    width: 88px; height: 88px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--shadow-lg);
+    background: radial-gradient(circle at 35% 30%, #fff7eb 0%, #f0dcc4 60%, #d4b89a 100%);
+    border: 3px solid #fff;
+    position: relative; overflow: hidden;
+  }
+  .island-shape::after {
+    content: ""; position: absolute; bottom: -8px; left: -8px; right: -8px; height: 28px;
+    background: radial-gradient(ellipse at center top, #94c4d1 0%, transparent 70%);
+    opacity: 0.6;
+  }
+  .island-num {
+    font-family: 'Playpen Sans Hebrew', sans-serif;
+    font-size: 28px; font-weight: 800; color: var(--ink); z-index: 1;
+  }
+
+  /* Active state — pulsing + colored */
+  .island.active .island-shape {
+    background: radial-gradient(circle at 35% 30%, #fff 0%, #ffd2e3 50%, #e84a8a 100%);
+    border-color: #fff;
+    box-shadow: 0 0 0 0 rgba(232,74,138,0.5), var(--shadow-lg);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .island.active .island-num { color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(232,74,138,0.5), var(--shadow-lg); }
+    50%      { box-shadow: 0 0 0 18px rgba(232,74,138,0), var(--shadow-lg); }
+  }
+
+  /* Locked state — muted */
+  .island.locked .island-shape {
+    background: radial-gradient(circle at 35% 30%, #f4ede0 0%, #ddd2c1 60%, #b4a48e 100%);
+    opacity: 0.55;
+    filter: saturate(0.4);
+  }
+  .island.locked .island-num { color: #5d5345; opacity: 0.6; }
+  .island.locked .lock-icon {
+    position: absolute; top: -4px; left: -4px;
+    width: 24px; height: 24px;
+    background: rgba(26,26,46,0.6);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 12px;
+  }
+
+  /* Completed state — placeholder for future */
+  .island.done .island-shape {
+    background: radial-gradient(circle at 35% 30%, #fff 0%, #c8f0db 50%, #2e8b6e 100%);
+  }
+  .island.done .island-num { color: #fff; }
+
+  /* Star marker (root island — unique morphology gameplay) */
+  .island.star::before {
+    content: "★"; position: absolute; top: -10px; right: -10px;
+    width: 28px; height: 28px;
+    background: #d4a341; color: #fff;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 800; box-shadow: var(--shadow);
+    z-index: 2;
+  }
+
+  /* Label */
+  .island-label {
+    flex: 1; padding: 0 4px;
+  }
+  .island-label .name {
+    font-family: 'Playpen Sans Hebrew', sans-serif;
+    font-size: 18px; font-weight: 700; color: var(--ink); margin-bottom: 2px;
+  }
+  .island-label .short { font-size: 13px; color: var(--ink-soft); }
+  .island.locked + .island-label .name,
+  .locked .island-label .name { opacity: 0.55; }
+
+  /* Companion next to active island */
+  .companion-marker {
+    position: absolute; right: -54px; top: 10px;
+    width: 60px; height: 66px;
+    z-index: 2; pointer-events: none;
+  }
+  .island-row:nth-child(even) .companion-marker {
+    right: auto; left: -54px;
+  }
+
+  /* Toast for locked taps */
+  .toast {
+    position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(120%);
+    background: var(--ink); color: #fff;
+    padding: 12px 22px; border-radius: 999px; font-weight: 600; font-size: 14px;
+    box-shadow: var(--shadow-lg); z-index: 100;
+    transition: transform 0.35s cubic-bezier(.2,.9,.3,1.2);
+    pointer-events: none;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* Hero header */
+  .hero {
+    text-align: center; padding: 24px 16px 32px;
+    position: relative; z-index: 1;
+  }
+  .hero h2 {
+    font-family: 'Playpen Sans Hebrew', sans-serif;
+    font-size: 28px; font-weight: 800; color: var(--ink); margin-bottom: 6px;
+  }
+  .hero p { color: var(--ink-soft); font-size: 15px; }
+
+  @media (min-width: 700px) {
+    .island-shape { width: 100px; height: 100px; }
+    .island-num   { font-size: 32px; }
+    .stage { max-width: 620px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="../../index.html">← אבני יסוד</a>
+  <h1>המסע שלי</h1>
+  <div class="companion-mini" id="cmTop"></div>
+</div>
+
+<div class="hero">
+  <h2>22 איים מחכים לי</h2>
+  <p>אני מתחילה באי שמות עצם</p>
+</div>
+
+<div class="stage" id="stage">
+  <svg class="path-svg" id="pathSvg" preserveAspectRatio="none"></svg>
+  <!-- islands rendered by JS -->
+</div>
+
+<div class="toast" id="toast">האי הזה ימתין לך</div>
+
+<script src="data/islands.js"></script>
+<script src="data/companion.js"></script>
+<script>
+  // Mount mini companion in topbar
+  const cmTop = Companion.mount(document.getElementById('cmTop'), { size: 44 });
+
+  // Render islands
+  const stage = document.getElementById('stage');
+  const islands = window.AVNEI_ISLANDS;
+
+  islands.forEach((isl, idx) => {
+    const row = document.createElement('div');
+    row.className = 'island-row';
+
+    const btn = document.createElement('button');
+    btn.className = 'island ' + isl.status + (isl.star ? ' star' : '');
+    btn.setAttribute('aria-label', `אי ${isl.n}: ${isl.name}${isl.status === 'locked' ? ' — נעול' : ''}`);
+
+    btn.innerHTML = `
+      <div class="island-shape">
+        <span class="island-num">${isl.n}</span>
+        ${isl.status === 'locked' ? '<span class="lock-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 1a5 5 0 0 0-5 5v4H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5zm-3 9V6a3 3 0 0 1 6 0v4H9z"/></svg></span>' : ''}
+      </div>
+      ${isl.status === 'active' ? '<div class="companion-marker" id="cmActive"></div>' : ''}
+    `;
+
+    const label = document.createElement('div');
+    label.className = 'island-label';
+    label.innerHTML = `
+      <div class="name">${isl.name}</div>
+      <div class="short">${isl.short}</div>
+    `;
+
+    btn.addEventListener('click', () => {
+      if (isl.status === 'active') {
+        window.location.href = `island.html?cat=${isl.id}`;
+      } else if (isl.status === 'locked') {
+        showToast();
+        Companion.setState(cmTop.el, 'blink');
+      }
+    });
+
+    row.appendChild(btn);
+    row.appendChild(label);
+    stage.appendChild(row);
+  });
+
+  // Mount the active-island companion (after DOM exists)
+  const cmActiveEl = document.getElementById('cmActive');
+  if (cmActiveEl) {
+    Companion.mount(cmActiveEl, { size: 60 });
+  }
+
+  // Toast
+  const toast = document.getElementById('toast');
+  let toastTimer;
+  function showToast() {
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  // Path SVG — draw a line behind the islands once we know the height
+  function drawPath() {
+    const svg = document.getElementById('pathSvg');
+    const stageRect = stage.getBoundingClientRect();
+    svg.setAttribute('viewBox', `0 0 4 ${stageRect.height - 120}`);
+    svg.innerHTML = `<line x1="2" y1="0" x2="2" y2="${stageRect.height - 120}"/>`;
+  }
+  drawPath();
+  window.addEventListener('resize', drawPath);
+</script>
+</body>
+</html>
