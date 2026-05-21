@@ -1,0 +1,2693 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>אבני יסוד · מערכת דיפרנציאלית לקריאה וכתיבה — כיתות א'-ב'</title>
+<meta name="description" content="ImpactOS Literacy — מנוע דיפרנציאלי לקריאה וכתיבה. 9 מיומנויות, 4 רמות, BKT אדפטיבי, Spaced Review.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  /* === Brand (מהמצגת המוניציפלית) === */
+  --indigo: #4F46E5;
+  --indigo-light: #818CF8;
+  --indigo-deep: #3730A3;
+  --violet: #8B5CF6;
+  --violet-light: #A78BFA;
+  --violet-deep: #6D28D9;
+  --lavender: #C7D2FE;
+  --lavender-light: #DDD6FE;
+  --gold: #F59E0B;
+  --gold-light: #FBBF24;
+  --pink: #EC4899;
+  --pink-light: #F472B6;
+  --green: #10B981;
+  --green-light: #34D399;
+
+  /* === BG === */
+  --bg-deepest: #FAFAFF;
+  --bg-deep: #F5F3FF;
+  --bg-mid: #FFFFFF;
+  --bg-card: #FFFFFF;
+
+  /* === Text === */
+  --text: #1E1B4B;
+  --text-2: #475569;
+  --text-3: #64748B;
+  --text-soft: #94A3B8;
+  --line: #E5E7EB;
+  --line-soft: #F3F4F6;
+
+  /* === Level colors — שרירותיים, לא הירארכיים === */
+  --lvl-1: #4F46E5;   /* עצמאי — כחול */
+  --lvl-2: #10B981;   /* חלקית — ירוק */
+  --lvl-3: #8B5CF6;   /* התאמות — סגול */
+  --lvl-4: #F59E0B;   /* תמיכה מוגברת — כתום */
+
+  --shadow-sm: 0 2px 8px rgba(79, 70, 229, 0.06);
+  --shadow-md: 0 8px 24px rgba(79, 70, 229, 0.10);
+  --shadow-lg: 0 16px 48px rgba(79, 70, 229, 0.14);
+  --radius: 18px;
+  --radius-lg: 26px;
+  --radius-sm: 12px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Heebo', sans-serif;
+  background: linear-gradient(135deg, var(--bg-deepest) 0%, var(--bg-deep) 100%);
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; line-height: 1.2; }
+.num { font-family: 'Inter', sans-serif; font-feature-settings: "tnum" 1; }
+button { font-family: inherit; cursor: pointer; }
+
+/* ============ TOP NAV ============ */
+.topbar {
+  background: var(--bg-mid);
+  border-bottom: 1px solid var(--line);
+  padding: 14px 24px;
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+}
+.brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text); }
+.brand-mark {
+  width: 42px; height: 42px;
+  background: linear-gradient(135deg, var(--indigo) 0%, var(--violet) 50%, var(--pink) 100%);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-family: 'Rubik', sans-serif; font-weight: 900; font-size: 20px;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+}
+.brand-name { font-family: 'Rubik', sans-serif; font-weight: 800; font-size: 17px; line-height: 1.1; }
+.brand-sub { font-size: 12px; color: var(--violet-deep); opacity: 0.8; margin-top: 2px; }
+.topbar-actions { display: flex; align-items: center; gap: 14px; }
+.demo-tag {
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+  color: #fff;
+  font-family: 'Rubik', sans-serif; font-weight: 800;
+  font-size: 11px; letter-spacing: 1.5px;
+  padding: 5px 14px; border-radius: 999px;
+}
+.btn-ghost {
+  background: transparent; border: 1px solid var(--line);
+  color: var(--text-2); font-size: 13px; font-weight: 600;
+  padding: 8px 16px; border-radius: 999px;
+  transition: all 0.2s;
+}
+.btn-ghost:hover { border-color: var(--violet); color: var(--violet); }
+
+/* ============ TABS ============ */
+.tabs {
+  display: flex; gap: 4px;
+  padding: 14px 24px 0;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-mid);
+  overflow-x: auto;
+}
+.tab {
+  background: transparent; border: none;
+  font-family: 'Rubik', sans-serif; font-weight: 700;
+  font-size: 14px; color: var(--text-2);
+  padding: 12px 20px; position: relative; transition: all 0.2s;
+  white-space: nowrap;
+  border-radius: 12px 12px 0 0;
+}
+.tab:hover { color: var(--violet); background: var(--bg-deep); }
+.tab.active { color: var(--indigo); background: var(--bg-deep); }
+.tab.active::after {
+  content: ''; position: absolute; bottom: -1px; left: 12px; right: 12px;
+  height: 3px; background: linear-gradient(90deg, var(--indigo), var(--violet)); border-radius: 3px 3px 0 0;
+}
+
+/* ============ CONTEXT BAR ============ */
+.context-bar {
+  background: linear-gradient(90deg, var(--bg-deep) 0%, var(--bg-mid) 100%);
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--line);
+  display: flex; gap: 24px; align-items: center; flex-wrap: wrap;
+}
+.context-item { display: flex; flex-direction: column; gap: 2px; }
+.context-item-label { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.context-item-value { font-family: 'Rubik', sans-serif; font-size: 15px; font-weight: 700; color: var(--text); }
+
+/* ============ PAGE LAYOUT ============ */
+.page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 28px 24px 80px;
+}
+.page-header { margin-bottom: 24px; }
+.page-title { font-size: 28px; font-weight: 800; margin-bottom: 6px; }
+.page-sub { color: var(--text-2); font-size: 15px; }
+
+.view { display: none; }
+.view.active { display: block; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ============ CLASS MAP ============ */
+.class-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+.student-card {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+  transition: all 0.2s;
+  cursor: pointer;
+  position: relative;
+}
+.student-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--violet-light);
+}
+.student-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.student-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--indigo-light), var(--violet-light));
+  color: #fff; font-family: 'Rubik', sans-serif; font-weight: 800; font-size: 15px;
+  display: flex; align-items: center; justify-content: center;
+}
+.student-name { font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 15px; }
+.student-grade { font-size: 11px; color: var(--text-3); }
+.skill-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; }
+.skill-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: #fff;
+}
+.skill-chip[data-lvl="1"] { background: var(--lvl-1); }
+.skill-chip[data-lvl="2"] { background: var(--lvl-2); }
+.skill-chip[data-lvl="3"] { background: var(--lvl-3); }
+.skill-chip[data-lvl="4"] { background: var(--lvl-4); }
+.sparkline { width: 100%; height: 30px; margin-top: 4px; }
+.student-flags { position: absolute; top: 12px; left: 12px; display: flex; gap: 4px; }
+.flag {
+  width: 8px; height: 8px; border-radius: 50%;
+}
+.flag.tier2 { background: var(--gold); box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2); }
+.flag.tier3 { background: var(--pink); box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.2); }
+.flag.struggle { background: var(--violet); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2); }
+
+/* ============ PRACTICE ============ */
+.practice-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+}
+.practice-header {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+  margin-bottom: 18px;
+  display: flex; justify-content: space-between; align-items: center;
+  border: 1px solid var(--line);
+}
+.practice-student {
+  display: flex; align-items: center; gap: 12px;
+}
+.practice-student select {
+  background: var(--bg-deep);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-family: 'Heebo', sans-serif;
+  font-size: 14px; font-weight: 600;
+  color: var(--text);
+}
+.practice-skill-label {
+  font-size: 12px; color: var(--text-3);
+  letter-spacing: 0.05em;
+}
+.practice-skill-name {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700; font-size: 17px;
+  color: var(--violet-deep);
+}
+.practice-progress {
+  display: flex; gap: 4px; align-items: center;
+}
+.progress-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--line);
+  transition: all 0.3s;
+}
+.progress-dot.done { background: var(--green); }
+.progress-dot.current { background: var(--indigo); transform: scale(1.5); }
+
+.practice-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 36px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--line);
+  min-height: 400px;
+  display: flex; flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+.practice-card::before {
+  content: '';
+  position: absolute;
+  top: -100px; right: -100px;
+  width: 280px; height: 280px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.12), transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.practice-stimulus {
+  text-align: center;
+  margin-bottom: 32px;
+  position: relative;
+  z-index: 1;
+}
+.practice-prompt {
+  font-size: 17px;
+  color: var(--text-2);
+  margin-bottom: 18px;
+  font-weight: 500;
+}
+.practice-letter-big {
+  font-family: 'Rubik', sans-serif;
+  font-size: 120px;
+  font-weight: 900;
+  color: var(--indigo-deep);
+  line-height: 1;
+  margin: 12px 0;
+}
+.practice-word-big {
+  font-family: 'Rubik', sans-serif;
+  font-size: 64px;
+  font-weight: 800;
+  color: var(--indigo-deep);
+  margin: 12px 0;
+}
+.practice-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 14px;
+  position: relative;
+  z-index: 1;
+}
+.option-btn {
+  background: var(--bg-deep);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 16px;
+  font-family: 'Rubik', sans-serif;
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--text);
+  transition: all 0.2s;
+  min-height: 96px;
+  display: flex; align-items: center; justify-content: center;
+}
+.option-btn:hover {
+  border-color: var(--indigo);
+  background: var(--lavender-light);
+  transform: translateY(-2px);
+}
+.option-btn.correct {
+  background: var(--green);
+  border-color: var(--green);
+  color: #fff;
+  animation: pulse-success 0.4s ease;
+}
+.option-btn.wrong {
+  background: #FEE2E2;
+  border-color: #EF4444;
+  color: #B91C1C;
+  animation: shake 0.4s ease;
+}
+.option-btn:disabled { cursor: default; opacity: 0.7; }
+@keyframes pulse-success {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+.audio-btn {
+  background: linear-gradient(135deg, var(--indigo) 0%, var(--violet) 100%);
+  color: #fff; border: none;
+  width: 96px; height: 96px;
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 40px;
+  box-shadow: 0 6px 18px rgba(139, 92, 246, 0.4);
+  transition: all 0.2s;
+}
+.audio-btn:hover { transform: scale(1.05); box-shadow: 0 10px 26px rgba(139, 92, 246, 0.5); }
+.audio-btn:active { transform: scale(0.95); }
+
+.practice-feedback {
+  text-align: center;
+  margin-top: 24px;
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  display: none;
+  position: relative;
+  z-index: 1;
+}
+.practice-feedback.show { display: block; }
+.practice-feedback.success {
+  background: rgba(16, 185, 129, 0.1);
+  color: #065F46;
+}
+.practice-feedback.fail {
+  background: rgba(239, 68, 68, 0.08);
+  color: #991B1B;
+}
+
+.hint-btn {
+  background: transparent;
+  border: 1px dashed var(--violet);
+  color: var(--violet-deep);
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 12px;
+}
+.hint-btn:hover { background: var(--lavender-light); }
+
+/* ============ RESULTS (HEATMAP) ============ */
+.heatmap-wrap {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 22px;
+  border: 1px solid var(--line);
+  overflow-x: auto;
+}
+.heatmap {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.heatmap th, .heatmap td {
+  padding: 10px 8px;
+  text-align: center;
+  border-bottom: 1px solid var(--line-soft);
+}
+.heatmap th {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--text-2);
+  background: var(--bg-deep);
+  position: sticky; top: 0;
+}
+.heatmap th:first-child, .heatmap td:first-child {
+  text-align: right;
+  position: sticky; right: 0;
+  background: var(--bg-card);
+  z-index: 2;
+  font-weight: 700;
+  border-left: 1px solid var(--line);
+}
+.heatmap th:first-child { background: var(--bg-deep); }
+.heat-cell {
+  display: inline-block;
+  min-width: 56px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  color: #fff;
+}
+
+/* ============ TEACHER ACTIONS ============ */
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+}
+.action-card {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px;
+  position: relative;
+  overflow: hidden;
+}
+.action-card::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 80px; height: 80px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.08), transparent 70%);
+}
+.action-cadence {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--lavender-light);
+  color: var(--violet-deep);
+  margin-bottom: 10px;
+}
+.action-title {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 800;
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+.action-desc {
+  color: var(--text-2);
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+.action-body {
+  background: var(--bg-deep);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.action-list {
+  list-style: none;
+  font-size: 13px;
+}
+.action-list li {
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line-soft);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.action-list li:last-child { border-bottom: none; }
+.urgency-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-left: 6px;
+}
+.urgency-dot.high { background: var(--pink); }
+.urgency-dot.med { background: var(--gold); }
+.urgency-dot.low { background: var(--green); }
+
+/* ============ TODAY DASHBOARD — 4 QUESTIONS ============ */
+.today-hero {
+  background: linear-gradient(135deg, var(--indigo) 0%, var(--violet) 50%, var(--pink) 100%);
+  color: #fff;
+  border-radius: var(--radius-lg);
+  padding: 26px 32px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-lg);
+  display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+.today-hero-title { font-family: 'Rubik', sans-serif; font-weight: 900; font-size: 26px; margin-bottom: 4px; }
+.today-hero-sub { opacity: 0.92; font-size: 14px; }
+.today-hero-date { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 1px; padding: 8px 14px; background: rgba(255,255,255,0.18); border-radius: 999px; backdrop-filter: blur(8px); }
+
+.today-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+@media (max-width: 900px) { .today-grid { grid-template-columns: 1fr; } }
+
+.q-card {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.q-card::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 5px;
+}
+.q-card.q-help::before { background: linear-gradient(180deg, #EF4444, #F87171); }
+.q-card.q-time::before { background: linear-gradient(180deg, var(--gold), var(--gold-light)); }
+.q-card.q-progress::before { background: linear-gradient(180deg, var(--green), var(--green-light)); }
+.q-card.q-celebrate::before { background: linear-gradient(180deg, var(--violet), var(--pink)); }
+
+.q-head { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+.q-icon {
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+.q-card.q-help .q-icon { background: rgba(239, 68, 68, 0.12); }
+.q-card.q-time .q-icon { background: rgba(245, 158, 11, 0.14); }
+.q-card.q-progress .q-icon { background: rgba(16, 185, 129, 0.14); }
+.q-card.q-celebrate .q-icon { background: rgba(139, 92, 246, 0.14); }
+.q-question { font-family: 'Rubik', sans-serif; font-weight: 800; font-size: 18px; color: var(--text); line-height: 1.2; }
+.q-count {
+  font-family: 'Inter', sans-serif; font-weight: 800; font-size: 13px;
+  padding: 3px 10px; border-radius: 999px;
+  margin-right: auto;
+}
+.q-card.q-help .q-count { background: rgba(239, 68, 68, 0.12); color: #DC2626; }
+.q-card.q-time .q-count { background: rgba(245, 158, 11, 0.16); color: #B45309; }
+.q-card.q-progress .q-count { background: rgba(16, 185, 129, 0.16); color: #047857; }
+.q-card.q-celebrate .q-count { background: rgba(139, 92, 246, 0.14); color: var(--violet-deep); }
+.q-desc { font-size: 13.5px; color: var(--text-2); margin-bottom: 14px; }
+
+.q-list { list-style: none; padding: 0; margin: 0; }
+.q-item {
+  padding: 11px 12px;
+  border-radius: 10px;
+  margin-bottom: 6px;
+  background: var(--bg-deep);
+  display: flex; align-items: center; gap: 10px;
+  font-size: 14px;
+}
+.q-item:last-child { margin-bottom: 0; }
+.q-item-name { font-weight: 600; color: var(--text); }
+.q-item-detail { font-size: 12px; color: var(--text-3); margin-right: auto; }
+.q-item-pill {
+  font-family: 'Inter', sans-serif; font-weight: 700; font-size: 11px;
+  padding: 2px 8px; border-radius: 999px;
+  background: rgba(139, 92, 246, 0.12); color: var(--violet-deep);
+}
+
+.q-action-bar {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.q-btn {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: none;
+  font-family: inherit; font-weight: 700; font-size: 13px;
+  cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.q-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.q-btn.primary { background: var(--indigo); color: #fff; }
+.q-btn.secondary { background: var(--bg-deep); color: var(--text); border: 1px solid var(--line); }
+.q-btn.success { background: var(--green); color: #fff; }
+.q-btn.warn { background: var(--gold); color: #fff; }
+
+.q-empty { padding: 20px; text-align: center; color: var(--text-3); font-size: 13px; font-style: italic; }
+
+/* ============ AUTO-GROUPS (Lexia Lesson clusters) ============ */
+.group-card {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.06) 0%, rgba(245, 158, 11, 0.04) 100%);
+  border: 1.5px solid rgba(239, 68, 68, 0.2);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+.group-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.group-skill { font-family: 'Rubik', sans-serif; font-weight: 800; font-size: 14px; color: #B91C1C; }
+.group-students { font-size: 12.5px; color: var(--text-2); margin-bottom: 8px; }
+.group-actions { display: flex; gap: 6px; }
+.group-actions .q-btn { padding: 5px 10px; font-size: 12px; }
+
+/* ============ RISK TRAFFIC LIGHTS ============ */
+.risk-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  vertical-align: middle;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(0,0,0,0.08);
+}
+.risk-dot.green { background: #10B981; }
+.risk-dot.yellow { background: #F59E0B; }
+.risk-dot.red { background: #EF4444; box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(239,68,68,0.3), 0 0 0 6px rgba(239,68,68,0.12); animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(239,68,68,0.3), 0 0 0 6px rgba(239,68,68,0.12); }
+  50% { box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(239,68,68,0.4), 0 0 0 10px rgba(239,68,68,0.05); }
+}
+.student-card .risk-dot {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+}
+
+/* ============ LEXIA LESSON PRINT MODAL ============ */
+.lesson-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  align-items: center; justify-content: center;
+  padding: 20px;
+}
+.lesson-overlay.active { display: flex; }
+.lesson-modal {
+  background: #fff;
+  border-radius: var(--radius);
+  max-width: 720px; width: 100%;
+  max-height: 90vh; overflow-y: auto;
+  padding: 32px 36px;
+  position: relative;
+  box-shadow: var(--shadow-lg);
+}
+.lesson-modal-close {
+  position: absolute; top: 16px; left: 16px;
+  background: var(--bg-deep); border: none;
+  width: 36px; height: 36px; border-radius: 50%;
+  cursor: pointer; font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+}
+.lesson-modal-head { border-bottom: 2px solid var(--line); padding-bottom: 14px; margin-bottom: 18px; }
+.lesson-modal-tag { display: inline-block; padding: 3px 10px; background: var(--lavender-light); color: var(--violet-deep); border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 8px; }
+.lesson-modal-title { font-family: 'Rubik', sans-serif; font-weight: 900; font-size: 22px; margin-bottom: 4px; }
+.lesson-modal-sub { font-size: 13px; color: var(--text-3); }
+.lesson-section { margin-bottom: 18px; }
+.lesson-section h4 { font-family: 'Rubik', sans-serif; font-weight: 800; font-size: 14px; letter-spacing: 0.5px; text-transform: uppercase; color: var(--violet-deep); margin-bottom: 8px; }
+.lesson-section ul, .lesson-section ol { padding-right: 22px; font-size: 14px; line-height: 1.7; }
+.lesson-section li { margin-bottom: 4px; }
+.lesson-script { background: var(--bg-deep); border-right: 3px solid var(--indigo); border-radius: 10px; padding: 12px 16px; font-size: 14px; line-height: 1.65; margin-bottom: 8px; }
+.lesson-script strong { color: var(--indigo); }
+.lesson-modal-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line); display: flex; gap: 10px; justify-content: flex-end; }
+@media print {
+  body * { visibility: hidden; }
+  .lesson-modal, .lesson-modal * { visibility: visible; }
+  .lesson-modal { position: absolute; left: 0; top: 0; box-shadow: none; max-width: 100%; max-height: none; }
+  .lesson-modal-close, .lesson-modal-footer { display: none; }
+}
+
+/* ============ LESSON GENERATOR ============ */
+.lesson-controls {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 22px;
+  display: flex; gap: 16px; flex-wrap: wrap; align-items: center;
+}
+.lesson-controls label {
+  display: flex; flex-direction: column; gap: 4px;
+  font-size: 12px; color: var(--text-3); font-weight: 600;
+}
+.lesson-controls select, .lesson-controls input {
+  background: var(--bg-deep);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-family: 'Heebo', sans-serif;
+  font-size: 14px; font-weight: 600;
+  color: var(--text);
+}
+.tracks {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.track-card {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  position: relative;
+}
+.track-card.support { border-top: 4px solid var(--gold); }
+.track-card.core { border-top: 4px solid var(--indigo); }
+.track-card.challenge { border-top: 4px solid var(--violet); }
+.track-label {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 800; font-size: 14px;
+  margin-bottom: 4px;
+}
+.track-sub { font-size: 12px; color: var(--text-3); margin-bottom: 14px; }
+.track-step {
+  background: var(--bg-deep);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.track-step strong { display: block; font-family: 'Rubik', sans-serif; color: var(--text); margin-bottom: 2px; }
+
+/* ============ PARENT REPORT ============ */
+.report-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-md);
+  max-width: 600px;
+  margin: 0 auto;
+}
+.report-section {
+  margin-bottom: 22px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.report-section:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+.report-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.report-value {
+  font-size: 16px;
+  color: var(--text);
+  line-height: 1.6;
+}
+.copy-btn {
+  background: var(--green);
+  color: #fff; border: none;
+  border-radius: 999px;
+  padding: 10px 22px;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  margin-top: 12px;
+}
+.copy-btn:hover { background: var(--green-light); }
+
+/* ============ EMPTY STATE ============ */
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-3);
+}
+.empty h3 { color: var(--text-2); margin-bottom: 8px; font-size: 18px; }
+
+/* ============ MOBILE ============ */
+@media (max-width: 768px) {
+  .class-grid { grid-template-columns: 1fr; }
+  .tracks { grid-template-columns: 1fr; }
+  .practice-card { padding: 20px; min-height: 320px; }
+  .practice-letter-big { font-size: 88px; }
+  .practice-word-big { font-size: 44px; }
+  .option-btn { font-size: 28px; min-height: 76px; }
+  .topbar { padding: 12px 16px; }
+  .page { padding: 18px 14px 60px; }
+  .tabs { padding: 10px 14px 0; }
+  .tab { padding: 10px 14px; font-size: 13px; }
+  .practice-header { flex-direction: column; gap: 12px; align-items: flex-start; padding: 14px 18px; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ===== TOP BAR ===== -->
+<header class="topbar">
+  <a class="brand" href="#">
+    <div class="brand-mark">א</div>
+    <div>
+      <div class="brand-name">אבני יסוד</div>
+      <div class="brand-sub">ImpactOS Literacy · קריאה וכתיבה לכיתות א'-ב'</div>
+    </div>
+  </a>
+  <div class="topbar-actions">
+    <a class="btn-ghost" href="./pedagogy-grade1.html" style="text-decoration: none;">מדריך פדגוגי</a>
+    <a class="btn-ghost" href="./diagnostic.html" style="text-decoration: none;">מאבחן</a>
+    <a class="btn-ghost" href="./screener.html" style="text-decoration: none;">סקרינר</a>
+    <span class="demo-tag">DEMO</span>
+    <button class="btn-ghost" onclick="resetAllProgress()">איפוס</button>
+  </div>
+</header>
+
+<!-- ===== TABS ===== -->
+<nav class="tabs">
+  <button class="tab active" data-view="today">היום</button>
+  <button class="tab" data-view="class">מפת כיתה</button>
+  <button class="tab" data-view="practice">תרגול</button>
+  <button class="tab" data-view="results">תוצאות</button>
+  <button class="tab" data-view="actions">פעולות מורה</button>
+  <button class="tab" data-view="lesson">מחולל שיעור</button>
+  <button class="tab" data-view="parent">דוח להורים</button>
+</nav>
+
+<!-- ===== CONTEXT BAR ===== -->
+<div class="context-bar">
+  <div class="context-item">
+    <span class="context-item-label">מקצוע</span>
+    <span class="context-item-value">קריאה וכתיבה — עברית</span>
+  </div>
+  <div class="context-item">
+    <span class="context-item-label">כיתה</span>
+    <span class="context-item-value">א'2 · 22 תלמידים</span>
+  </div>
+  <div class="context-item">
+    <span class="context-item-label">מסגרת פדגוגית</span>
+    <span class="context-item-value">SOR · MTSS · UDL 3.0 · ZPD</span>
+  </div>
+  <div class="context-item">
+    <span class="context-item-label">מנוע</span>
+    <span class="context-item-value">BKT היררכי · 5 סיגנלים · Leitner</span>
+  </div>
+</div>
+
+<main class="page">
+
+  <!-- ============ VIEW: TODAY — 4 QUESTIONS DASHBOARD ============ -->
+  <section class="view active" id="view-today">
+    <div class="today-hero">
+      <div>
+        <div class="today-hero-title">בוקר טוב — היום בכיתה</div>
+        <div class="today-hero-sub">ארבע שאלות פדגוגיות · המערכת ענתה לך עליהן · בוחרת פעולה ומסתיימת</div>
+      </div>
+      <div class="today-hero-date" id="todayDate">—</div>
+    </div>
+
+    <div class="today-grid">
+      <!-- Q1: Who needs me? (Lexia Lessons) -->
+      <div class="q-card q-help">
+        <div class="q-head">
+          <div class="q-icon">🆘</div>
+          <div style="flex: 1;">
+            <div class="q-question">מי צריך.ה אותי?</div>
+            <div class="q-desc">תלמידים שתקועים במיומנות. המערכת הכינה לך שיעור התערבות מודפס.</div>
+          </div>
+          <span class="q-count" id="qHelpCount">—</span>
+        </div>
+        <div id="qHelpBody"></div>
+      </div>
+
+      <!-- Q2: Who needs time? -->
+      <div class="q-card q-time">
+        <div class="q-head">
+          <div class="q-icon">🕐</div>
+          <div style="flex: 1;">
+            <div class="q-question">מי צריך.ה זמן?</div>
+            <div class="q-desc">לא נכנסו השבוע 2+ פעמים. הפתרון: שיחה עם ההורים — לא התערבות פדגוגית.</div>
+          </div>
+          <span class="q-count" id="qTimeCount">—</span>
+        </div>
+        <div id="qTimeBody"></div>
+      </div>
+
+      <!-- Q3: Who's progressing? -->
+      <div class="q-card q-progress">
+        <div class="q-head">
+          <div class="q-icon">📈</div>
+          <div style="flex: 1;">
+            <div class="q-question">מי מתקדמ.ת?</div>
+            <div class="q-desc">תלמידים שעלו רמה במיומנות השבוע. רק לאשר, אולי לחזק.</div>
+          </div>
+          <span class="q-count" id="qProgressCount">—</span>
+        </div>
+        <div id="qProgressBody"></div>
+      </div>
+
+      <!-- Q4: Who's ready to celebrate? -->
+      <div class="q-card q-celebrate">
+        <div class="q-head">
+          <div class="q-icon">🎉</div>
+          <div style="flex: 1;">
+            <div class="q-question">מי מוכנ.ה לחגוג?</div>
+            <div class="q-desc">השלימו מיומנות במלואה (mastery). תעודה אוטומטית להדפסה/שליחה להורים.</div>
+          </div>
+          <span class="q-count" id="qCelebrateCount">—</span>
+        </div>
+        <div id="qCelebrateBody"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ VIEW: CLASS MAP ============ -->
+  <section class="view" id="view-class">
+    <header class="page-header">
+      <h1 class="page-title">מפת כיתה — 22 תלמידים</h1>
+      <p class="page-sub">כל תלמיד · 9 מיומנויות · רמה נפרדת לכל מיומנות. נקודה צבעונית = רמת סיכון (🟢/🟡/🔴).</p>
+    </header>
+    <div class="class-grid" id="classGrid"></div>
+  </section>
+
+  <!-- ============ VIEW: PRACTICE ============ -->
+  <section class="view" id="view-practice">
+    <header class="page-header">
+      <h1 class="page-title">תרגול אדפטיבי</h1>
+      <p class="page-sub">המערכת בוחרת מיומנות לפי ה-P(L) הנמוך ביותר ומיומנויות-קדם שהושגו.</p>
+    </header>
+    <div class="practice-wrap">
+      <div class="practice-header">
+        <div class="practice-student">
+          <label class="practice-skill-label">תלמיד:</label>
+          <select id="practiceStudent" onchange="startPractice()"></select>
+        </div>
+        <div>
+          <div class="practice-skill-label">מיומנות נוכחית</div>
+          <div class="practice-skill-name" id="practiceSkillName">—</div>
+        </div>
+        <div class="practice-progress" id="practiceProgress"></div>
+      </div>
+      <div class="practice-card" id="practiceCard">
+        <div class="empty">
+          <h3>בחר תלמיד והתחל תרגול</h3>
+          <p>המנוע יזהה את המיומנות הנדרשת ויציג שאלה ב-ZPD.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ VIEW: RESULTS ============ -->
+  <section class="view" id="view-results">
+    <header class="page-header">
+      <h1 class="page-title">תוצאות — heatmap כיתה</h1>
+      <p class="page-sub">צבע = P(L) של המיומנות. אדום = מתחת ל-0.4 (Tier 2/3). ירוק = mastery (≥0.85).</p>
+    </header>
+    <div class="heatmap-wrap">
+      <table class="heatmap" id="heatmap"></table>
+    </div>
+  </section>
+
+  <!-- ============ VIEW: TEACHER ACTIONS ============ -->
+  <section class="view" id="view-actions">
+    <header class="page-header">
+      <h1 class="page-title">5 פעולות מורה — השבוע</h1>
+      <p class="page-sub">לולאות Data → Action. המורה מאשרת, המערכת מכינה.</p>
+    </header>
+    <div class="action-grid" id="actionGrid"></div>
+  </section>
+
+  <!-- ============ VIEW: LESSON GENERATOR ============ -->
+  <section class="view" id="view-lesson">
+    <header class="page-header">
+      <h1 class="page-title">מחולל שיעור — 3 מסלולים</h1>
+      <p class="page-sub">אותה מיומנות, 3 פיגומים — תמיכה, בסיס, אתגר.</p>
+    </header>
+    <div class="lesson-controls">
+      <label>
+        מיומנות
+        <select id="lessonSkill"></select>
+      </label>
+      <label>
+        משך
+        <select id="lessonMinutes">
+          <option value="20">20 דקות</option>
+          <option value="30" selected>30 דקות</option>
+          <option value="45">45 דקות</option>
+        </select>
+      </label>
+      <button class="btn-ghost" onclick="generateLesson()" style="border-color: var(--violet); color: var(--violet); margin-top: 18px;">צור שיעור</button>
+    </div>
+    <div class="tracks" id="lessonTracks"></div>
+  </section>
+
+  <!-- ============ LEXIA LESSON MODAL ============ -->
+  <div class="lesson-overlay" id="lessonOverlay" onclick="if(event.target===this) closeLexiaLesson()">
+    <div class="lesson-modal" id="lessonModal">
+      <button class="lesson-modal-close" onclick="closeLexiaLesson()" title="סגירה">✕</button>
+      <div id="lessonModalContent"></div>
+    </div>
+  </div>
+
+  <!-- ============ VIEW: PARENT REPORT ============ -->
+  <section class="view" id="view-parent">
+    <header class="page-header">
+      <h1 class="page-title">דוח שבועי להורים</h1>
+      <p class="page-sub">הצלחה אחת · אתגר אחד · פעולה אחת לבית. מתאים ל-WhatsApp.</p>
+    </header>
+    <div class="lesson-controls" style="max-width: 600px; margin: 0 auto 18px;">
+      <label style="flex: 1;">
+        תלמיד
+        <select id="parentStudent" onchange="renderParentReport()"></select>
+      </label>
+    </div>
+    <div class="report-card" id="reportCard"></div>
+  </section>
+
+</main>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   אבני יסוד · ImpactOS Literacy
+   Engine: Hierarchical BKT + Leitner Spaced Review
+   ═══════════════════════════════════════════════════════════ */
+
+const SVG_AUDIO = '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>';
+const SVG_STAR = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15 8.5 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 9 8.5 12 2"/></svg>';
+const SVG_TARGET = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>';
+const SVG_HOME = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12 L12 3 L21 12 M5 10v10h14V10"/></svg>';
+const SVG_BULB = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.4 1 1 1 1.6V18h6v-1.7c0-.6.4-1.2 1-1.6A7 7 0 0 0 12 2z"/></svg>';
+const SVG_COPY = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+const SVG_CHECK = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 16 9"/></svg>';
+
+// ──────────────────────────────────────────────────────────
+// 1. SKILLS — 9 המיומנויות + Prerequisite Graph
+// ──────────────────────────────────────────────────────────
+const SKILLS = [
+  { id: 'phonemic',     name: 'מודעות צלילית',  short: 'פונמיקה',  prereq: [] },
+  { id: 'letter_id',    name: 'זיהוי אותיות',    short: 'אותיות',   prereq: [] },
+  { id: 'letter_sound', name: 'אות-צליל',        short: 'אות-צליל', prereq: ['phonemic', 'letter_id'] },
+  { id: 'decoding',     name: 'פענוח הברות',     short: 'פענוח',    prereq: ['letter_sound'] },
+  { id: 'word_reading', name: 'קריאת מילים',     short: 'מילים',    prereq: ['decoding'] },
+  { id: 'fluency',      name: 'שטף קריאה',       short: 'שטף',      prereq: ['word_reading'] },
+  { id: 'vocabulary',   name: 'אוצר מילים',      short: 'אוצר',     prereq: ['word_reading'] },
+  { id: 'comprehension',name: 'הבנת הנקרא',      short: 'הבנה',     prereq: ['fluency', 'vocabulary'] },
+  { id: 'writing',      name: 'כתיבה ואיות',     short: 'כתיבה',    prereq: ['letter_id', 'letter_sound'] }
+];
+
+// BKT params (per-skill calibration)
+const BKT_PARAMS = {
+  phonemic:      { pInit: 0.30, pTransit: 0.20, pSlip: 0.10, pGuess: 0.25 },
+  letter_id:     { pInit: 0.40, pTransit: 0.25, pSlip: 0.08, pGuess: 0.25 },
+  letter_sound:  { pInit: 0.25, pTransit: 0.18, pSlip: 0.10, pGuess: 0.25 },
+  decoding:      { pInit: 0.15, pTransit: 0.15, pSlip: 0.10, pGuess: 0.20 },
+  word_reading:  { pInit: 0.10, pTransit: 0.12, pSlip: 0.10, pGuess: 0.15 },
+  fluency:       { pInit: 0.10, pTransit: 0.10, pSlip: 0.05, pGuess: 0.05 },
+  vocabulary:    { pInit: 0.20, pTransit: 0.15, pSlip: 0.10, pGuess: 0.25 },
+  comprehension: { pInit: 0.15, pTransit: 0.12, pSlip: 0.12, pGuess: 0.25 },
+  writing:       { pInit: 0.10, pTransit: 0.10, pSlip: 0.10, pGuess: 0.10 }
+};
+
+const MASTERY_THRESHOLD = 0.85;
+const PREREQ_THRESHOLD = 0.70;
+
+// ──────────────────────────────────────────────────────────
+// 2. STUDENTS — 22 generic students
+// ──────────────────────────────────────────────────────────
+const STUDENT_NAMES = [
+  'נועה', 'אורי', 'יעל', 'איתי', 'מאיה', 'דניאל', 'תמר', 'יובל',
+  'רוני', 'שירה', 'אלון', 'נטע', 'עומר', 'הילה', 'גיא', 'ליבי',
+  'אריאל', 'אגם', 'יוני', 'מיכל', 'אדם', 'טליה'
+];
+
+function initStudents() {
+  const stored = localStorage.getItem('literacy_students');
+  if (stored) return JSON.parse(stored);
+
+  const students = STUDENT_NAMES.map((name, i) => {
+    const profile = {
+      id: 's' + (i + 1).toString().padStart(2, '0'),
+      name,
+      grade: i < 11 ? 'א2' : 'א2',
+      avatar: name.charAt(0),
+      flags: []
+    };
+    // Random diagnostic profile — 30% strong, 50% mid, 20% needs support
+    const tier = i < 4 ? 'tier2' : (i < 5 ? 'tier3' : 'tier1');
+    if (tier !== 'tier1') profile.flags.push(tier);
+    profile.tier = tier;
+    return profile;
+  });
+  localStorage.setItem('literacy_students', JSON.stringify(students));
+  return students;
+}
+
+function initProgress(students) {
+  const stored = localStorage.getItem('literacy_progress');
+  if (stored) return JSON.parse(stored);
+
+  const progress = {};
+  students.forEach(s => {
+    progress[s.id] = {};
+    SKILLS.forEach(skill => {
+      let pL = BKT_PARAMS[skill.id].pInit;
+      // adjust by tier (cold-start simulation)
+      if (s.tier === 'tier3') pL = Math.max(0.05, pL - 0.15);
+      else if (s.tier === 'tier1') pL = Math.min(0.95, pL + 0.20);
+
+      progress[s.id][skill.id] = {
+        pL,
+        level: pLToLevel(pL),
+        streakUp: 0,
+        streakDown: 0,
+        attempts: 0,
+        correctCount: 0,
+        wrongCount: 0,
+        history: Array(14).fill(null).map((_, di) => pLToLevel(pL + (Math.random() - 0.5) * 0.1)),
+        confusions: {}, // letter → wrong-letter → count
+        leitnerBox: 1,
+        lastSeen: null
+      };
+    });
+  });
+  localStorage.setItem('literacy_progress', JSON.stringify(progress));
+  return progress;
+}
+
+function pLToLevel(pL) {
+  if (pL >= 0.85) return 1;  // עצמאי
+  if (pL >= 0.60) return 2;  // חלקית
+  if (pL >= 0.35) return 3;  // התאמות
+  return 4;                  // תמיכה מוגברת
+}
+
+function levelName(level) {
+  return ['', 'עצמאי', 'חלקית', 'התאמות', 'תמיכה מוגברת'][level];
+}
+
+// ──────────────────────────────────────────────────────────
+// 3. BKT update — Bayes
+// ──────────────────────────────────────────────────────────
+function bktUpdate(pL_prior, correct, params) {
+  const { pSlip, pGuess, pTransit } = params;
+  const pCorrectNum = correct
+    ? pL_prior * (1 - pSlip) + (1 - pL_prior) * pGuess
+    : pL_prior * pSlip + (1 - pL_prior) * (1 - pGuess);
+  const pL_observed = correct
+    ? (pL_prior * (1 - pSlip)) / pCorrectNum
+    : (pL_prior * pSlip) / pCorrectNum;
+  return pL_observed + (1 - pL_observed) * pTransit;
+}
+
+function recordAnswer(studentId, skillId, correct, itemDifficulty) {
+  const p = progress[studentId][skillId];
+  const params = BKT_PARAMS[skillId];
+  p.pL = bktUpdate(p.pL, correct, params);
+  p.attempts++;
+  if (correct) {
+    p.correctCount++;
+    p.streakUp++;
+    p.streakDown = 0;
+  } else {
+    p.wrongCount++;
+    p.streakDown++;
+    p.streakUp = 0;
+  }
+  // Update level
+  const newLevel = pLToLevel(p.pL);
+  if (newLevel !== p.level) p.level = newLevel;
+  // Update history (shift)
+  p.history.push(p.level);
+  if (p.history.length > 14) p.history.shift();
+  p.lastSeen = Date.now();
+
+  // Leitner update
+  if (correct) {
+    p.leitnerBox = Math.min(5, p.leitnerBox + 1);
+  } else {
+    p.leitnerBox = p.leitnerBox === 5 ? 2 : 1;
+  }
+
+  localStorage.setItem('literacy_progress', JSON.stringify(progress));
+  return { pL: p.pL, level: p.level, struggle: p.streakDown >= 3 };
+}
+
+// ──────────────────────────────────────────────────────────
+// 4. Adaptive selection — pick skill + level for next item
+// ──────────────────────────────────────────────────────────
+function selectNextSkill(studentId) {
+  const p = progress[studentId];
+  // Find skill with lowest P(L) where prereqs met
+  let candidates = SKILLS.filter(skill => {
+    return skill.prereq.every(pq => p[pq].pL >= PREREQ_THRESHOLD);
+  });
+  if (candidates.length === 0) candidates = SKILLS.filter(s => s.prereq.length === 0);
+  candidates.sort((a, b) => p[a.id].pL - p[b.id].pL);
+  return candidates[0];
+}
+
+// ──────────────────────────────────────────────────────────
+// 5. CONTENT — letters, words, questions
+// ──────────────────────────────────────────────────────────
+const HEBREW_LETTERS = [
+  { l: 'א', sound: 'א', name: 'אלף', wave: 2 },
+  { l: 'ב', sound: 'ב', name: 'בית', wave: 1, confusedWith: ['כ'] },
+  { l: 'ג', sound: 'ג', name: 'גימל', wave: 5 },
+  { l: 'ד', sound: 'ד', name: 'דלת', wave: 3, confusedWith: ['ר'] },
+  { l: 'ה', sound: 'ה', name: 'הא', wave: 2 },
+  { l: 'ו', sound: 'ו', name: 'וו', wave: 6 },
+  { l: 'ז', sound: 'ז', name: 'זיין', wave: 4 },
+  { l: 'ח', sound: 'ח', name: 'חית', wave: 5 },
+  { l: 'ט', sound: 'ט', name: 'טית', wave: 5 },
+  { l: 'י', sound: 'י', name: 'יוד', wave: 6 },
+  { l: 'כ', sound: 'כ', name: 'כף', wave: 5, confusedWith: ['ב'] },
+  { l: 'ל', sound: 'ל', name: 'למד', wave: 1 },
+  { l: 'מ', sound: 'מ', name: 'מם', wave: 1 },
+  { l: 'נ', sound: 'נ', name: 'נון', wave: 3 },
+  { l: 'ס', sound: 'ס', name: 'סמך', wave: 4 },
+  { l: 'ע', sound: 'ע', name: 'עין', wave: 2, confusedWith: ['א'] },
+  { l: 'פ', sound: 'פ', name: 'פא', wave: 4 },
+  { l: 'צ', sound: 'צ', name: 'צדי', wave: 4 },
+  { l: 'ק', sound: 'ק', name: 'קוף', wave: 3 },
+  { l: 'ר', sound: 'ר', name: 'ריש', wave: 3, confusedWith: ['ד'] },
+  { l: 'ש', sound: 'ש', name: 'שין', wave: 1 },
+  { l: 'ת', sound: 'ת', name: 'תו', wave: 2 }
+];
+
+const SIMPLE_WORDS = [
+  { w: 'אִמָּא', img: '👩', level: 1 },
+  { w: 'אַבָּא', img: '👨', level: 1 },
+  { w: 'בַּיִת', img: '🏠', level: 1 },
+  { w: 'יֶלֶד', img: '👦', level: 1 },
+  { w: 'יַלְדָּה', img: '👧', level: 2 },
+  { w: 'כֶּלֶב', img: '🐕', level: 1 },
+  { w: 'חָתוּל', img: '🐈', level: 2 },
+  { w: 'דָּג', img: '🐟', level: 1 },
+  { w: 'שֶׁמֶשׁ', img: '☀️', level: 2 },
+  { w: 'יָרֵחַ', img: '🌙', level: 2 },
+  { w: 'סֵפֶר', img: '📖', level: 2 },
+  { w: 'יָד', img: '✋', level: 1 },
+  { w: 'רֶגֶל', img: '🦵', level: 2 },
+  { w: 'עִיר', img: '🏙️', level: 2 },
+  { w: 'גַּן', img: '🌳', level: 1 },
+  { w: 'פֶּרַח', img: '🌸', level: 2 },
+  { w: 'אֹכֶל', img: '🍎', level: 2 },
+  { w: 'מַיִם', img: '💧', level: 2 },
+  { w: 'תַּפּוּחַ', img: '🍎', level: 3 },
+  { w: 'מְכוֹנִית', img: '🚗', level: 3 }
+];
+
+// ──────────────────────────────────────────────────────────
+// 6. AUDIO — MP3 files (Edge TTS "Hila") + Web Speech fallback
+// ──────────────────────────────────────────────────────────
+const AUDIO_BASE = 'audio/he/';
+const AUDIO_MAP = {
+  // letter names (without nikud — that's how they're spoken)
+  'אלף': 'alef', 'בית': 'bet', 'גימל': 'gimel', 'דלת': 'dalet',
+  'הא': 'hey', 'וו': 'vav', 'זין': 'zayin', 'חית': 'het',
+  'טית': 'tet', 'יוד': 'yud', 'כף': 'kaf', 'למד': 'lamed',
+  'מם': 'mem', 'נון': 'nun', 'סמך': 'samekh', 'עין': 'ayin',
+  'פא': 'pey', 'צדי': 'tzadi', 'קוף': 'qof', 'ריש': 'resh',
+  'שין': 'shin', 'תו': 'tav',
+  // letter sounds (single nikud — for phonemic practice)
+  'אַ': 'sound-alef', 'בַּ': 'sound-bet', 'גַּ': 'sound-gimel', 'דַּ': 'sound-dalet',
+  'הַ': 'sound-hey', 'וַ': 'sound-vav', 'זַ': 'sound-zayin', 'חַ': 'sound-het',
+  'טַ': 'sound-tet', 'יַ': 'sound-yud', 'כַּ': 'sound-kaf', 'לַ': 'sound-lamed',
+  'מַ': 'sound-mem', 'נַ': 'sound-nun', 'סַ': 'sound-samekh', 'עַ': 'sound-ayin',
+  'פַּ': 'sound-pey', 'צַ': 'sound-tzadi', 'קַ': 'sound-qof', 'רַ': 'sound-resh',
+  'שַׁ': 'sound-shin', 'תַּ': 'sound-tav',
+  // nikud names
+  'קמץ': 'kamatz', 'פתח': 'patah', 'חיריק': 'hirik',
+  'חולם': 'holam', 'שורוק': 'shuruk', 'צירי': 'tzere', 'סגול': 'segol',
+  // common words (with nikud + without)
+  'אִמָּא': 'ima', 'אמא': 'ima',
+  'אַבָּא': 'aba', 'אבא': 'aba',
+  'יֶלֶד': 'yeled', 'ילד': 'yeled',
+  'יַלְדָּה': 'yalda', 'ילדה': 'yalda',
+  'בַּיִת': 'bayit', // 'בית' (without nikud) reserved for letter name
+  'גַּן': 'gan', 'גן': 'gan',
+  'יָד': 'yad', 'יד': 'yad',
+  'רֶגֶל': 'regel', 'רגל': 'regel',
+  'אֹזֶן': 'ozen', 'אוזן': 'ozen', 'אזן': 'ozen',
+  'שֶׁמֶשׁ': 'shemesh', 'שמש': 'shemesh',
+  'יָרֵחַ': 'yareach', 'ירח': 'yareach',
+  'מַיִם': 'mayim', 'מים': 'mayim',
+  'אֹכֶל': 'ochel', 'אוכל': 'ochel',
+  'סֵפֶר': 'sefer', 'ספר': 'sefer',
+  'עֵט': 'et',
+  'דַּף': 'daf', 'דף': 'daf',
+  'כִּסֵּא': 'kise', 'כסא': 'kise',
+  'שֻׁלְחָן': 'shulchan', 'שולחן': 'shulchan',
+  'דֶּלֶת': 'delet', 'דלת': 'delet',
+  'דָּג': 'dag', 'דג': 'dag',
+  'כֶּלֶב': 'kelev', 'כלב': 'kelev',
+  'חָתוּל': 'chatul', 'חתול': 'chatul',
+  'עִיר': 'ir',
+  'פֶּרַח': 'perach', 'פרח': 'perach',
+  'תַּפּוּחַ': 'tapuach', 'תפוח': 'tapuach',
+  'מְכוֹנִית': 'mechonit', 'מכונית': 'mechonit',
+  'עֵץ': 'etz', 'עץ': 'etz',
+  'חַג': 'chag', 'חג': 'chag',
+  'זַיִת': 'zait', 'זית': 'zait',
+  'דִּין': 'din', 'דין': 'din',
+  // phrases
+  'כל הכבוד!': 'good', 'כל הכבוד': 'good',
+  'בואי ננסה שוב': 'try-again',
+  'מצוין!': 'excellent', 'מצוין': 'excellent',
+  'איזו אות?': 'what-letter',
+  'איזה צליל?': 'what-sound',
+};
+
+function stripNikud(text) {
+  return text.replace(/[֑-ׇ]/g, '');
+}
+
+function lookupAudio(text) {
+  if (!text) return null;
+  // 1) exact match (with nikud)
+  if (AUDIO_MAP[text]) return AUDIO_MAP[text];
+  // 2) stripped match
+  const stripped = stripNikud(text);
+  if (AUDIO_MAP[stripped]) return AUDIO_MAP[stripped];
+  // 3) trim and try again
+  const trimmed = stripped.trim();
+  if (AUDIO_MAP[trimmed]) return AUDIO_MAP[trimmed];
+  return null;
+}
+
+let _currentAudio = null;
+let _heVoice = null;
+let _ttsWarned = false;
+
+function loadVoices() {
+  if (!window.speechSynthesis) return;
+  const voices = speechSynthesis.getVoices();
+  if (voices.length === 0) return;
+  _heVoice = voices.find(v => v.lang === 'he-IL')
+          || voices.find(v => v.lang && v.lang.toLowerCase().startsWith('he'))
+          || voices.find(v => v.name && /hebrew|asaf|carmit/i.test(v.name))
+          || null;
+}
+
+if (window.speechSynthesis) {
+  loadVoices();
+  speechSynthesis.addEventListener('voiceschanged', loadVoices);
+}
+
+function showNoVoiceHelp() {
+  if (_ttsWarned) return;
+  _ttsWarned = true;
+  const isWindows = navigator.platform.indexOf('Win') >= 0;
+  const isMac = navigator.platform.indexOf('Mac') >= 0;
+  let msg = 'הדפדפן לא מצא קול עברי מותקן במכשיר.\n\n';
+  if (isWindows) {
+    msg += 'ב-Windows:\n1. הגדרות → שעה ושפה → שפה ואזור\n2. הוסיפי "עברית" כשפה\n3. לחצי על השפה → אפשרויות → הורידי "Text-to-speech"\n4. רענני את הדף.';
+  } else if (isMac) {
+    msg += 'ב-Mac:\n1. System Settings → Accessibility → Spoken Content\n2. בחרי System Voice → Manage Voices\n3. הורידי "Carmit" (עברית)\n4. רענני את הדף.';
+  } else {
+    msg += 'במכשיר נייד: בדרך כלל יש קול עברי מובנה. נסי לרענן את הדף, או להחליף דפדפן ל-Chrome / Safari.';
+  }
+  alert(msg);
+}
+
+function speak(text) {
+  // 1) Try MP3 first — pre-recorded Hebrew audio
+  const slug = lookupAudio(text);
+  if (slug) {
+    if (_currentAudio) { try { _currentAudio.pause(); } catch (e) {} }
+    _currentAudio = new Audio(AUDIO_BASE + slug + '.mp3');
+    _currentAudio.play().catch(e => {
+      console.warn('MP3 play failed:', e);
+      ttsSpeak(text);
+    });
+    return;
+  }
+  // 2) Fallback to TTS
+  ttsSpeak(text);
+}
+
+function ttsSpeak(text) {
+  try {
+    if (!window.speechSynthesis) { showNoVoiceHelp(); return; }
+    if (!_heVoice) loadVoices();
+    if (!_heVoice) { showNoVoiceHelp(); return; }
+
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'he-IL';
+    u.rate = 0.8;
+    u.pitch = 1.05;
+    u.voice = _heVoice;
+    u.onerror = (e) => console.warn('TTS error:', e);
+    setTimeout(() => {
+      speechSynthesis.speak(u);
+      setTimeout(() => { if (speechSynthesis.paused) speechSynthesis.resume(); }, 100);
+    }, 50);
+  } catch (e) {
+    console.warn('TTS failed:', e);
+    showNoVoiceHelp();
+  }
+}
+
+// ──────────────────────────────────────────────────────────
+// 7. SPARKLINE
+// ──────────────────────────────────────────────────────────
+function renderSparkline(history) {
+  const w = 200, h = 30, pad = 2;
+  const points = history.map((lvl, i) => {
+    const x = pad + (i / (history.length - 1)) * (w - pad * 2);
+    const y = h - pad - ((5 - lvl) / 4) * (h - pad * 2);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  return `<svg class="sparkline" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <polyline points="${points}" fill="none" stroke="url(#sparkGrad)" stroke-width="2"/>
+    <defs><linearGradient id="sparkGrad" x1="0" x2="1"><stop offset="0" stop-color="#4F46E5"/><stop offset="1" stop-color="#EC4899"/></linearGradient></defs>
+  </svg>`;
+}
+
+// ──────────────────────────────────────────────────────────
+// 8. RENDER: CLASS MAP
+// ──────────────────────────────────────────────────────────
+function renderClassMap() {
+  const grid = document.getElementById('classGrid');
+  grid.innerHTML = students.map(s => {
+    const p = progress[s.id];
+    // Average history across skills for sparkline
+    const histAvg = Array(14).fill(0).map((_, i) => {
+      let sum = 0, count = 0;
+      SKILLS.forEach(sk => {
+        const v = p[sk.id].history[i];
+        if (v !== null && v !== undefined) { sum += v; count++; }
+      });
+      return count ? sum / count : 2.5;
+    });
+
+    const chips = SKILLS.map(sk => {
+      const lvl = p[sk.id].level;
+      return `<span class="skill-chip" data-lvl="${lvl}" title="${sk.name}: ${levelName(lvl)}">${sk.short}</span>`;
+    }).join('');
+
+    const flagsHtml = s.flags.map(f => `<span class="flag ${f}" title="${f === 'tier2' ? 'Tier 2' : 'Tier 3'}"></span>`).join('');
+    const risk = computeStudentRisk(s.id);
+
+    return `<div class="student-card" onclick="openStudent('${s.id}')" style="position: relative;">
+      <span class="risk-dot ${risk.level}" title="${risk.label} · ממוצע ${(risk.avgPL * 100).toFixed(0)}%"></span>
+      <div class="student-flags">${flagsHtml}</div>
+      <div class="student-head">
+        <div class="student-avatar">${s.avatar}</div>
+        <div>
+          <div class="student-name">${s.name}</div>
+          <div class="student-grade">כיתה ${s.grade}</div>
+        </div>
+      </div>
+      <div class="skill-chips">${chips}</div>
+      ${renderSparkline(histAvg)}
+    </div>`;
+  }).join('');
+}
+
+function openStudent(id) {
+  document.getElementById('practiceStudent').value = id;
+  switchView('practice');
+  startPractice();
+}
+
+// ──────────────────────────────────────────────────────────
+// 9. PRACTICE — adaptive session
+// ──────────────────────────────────────────────────────────
+let currentSession = null;
+
+function startPractice() {
+  const sid = document.getElementById('practiceStudent').value;
+  const skill = selectNextSkill(sid);
+  currentSession = {
+    studentId: sid,
+    skillId: skill.id,
+    skillName: skill.name,
+    itemCount: 0,
+    maxItems: 8,
+    correctInRow: 0
+  };
+  document.getElementById('practiceSkillName').textContent = skill.name;
+  renderProgress();
+  renderNextItem();
+}
+
+function renderProgress() {
+  const dots = Array(currentSession.maxItems).fill(0).map((_, i) => {
+    if (i < currentSession.itemCount) return '<span class="progress-dot done"></span>';
+    if (i === currentSession.itemCount) return '<span class="progress-dot current"></span>';
+    return '<span class="progress-dot"></span>';
+  }).join('');
+  document.getElementById('practiceProgress').innerHTML = dots;
+}
+
+function renderNextItem() {
+  if (currentSession.itemCount >= currentSession.maxItems) {
+    return renderSessionComplete();
+  }
+
+  const skillId = currentSession.skillId;
+  const sid = currentSession.studentId;
+  const level = progress[sid][skillId].level;
+
+  const card = document.getElementById('practiceCard');
+
+  if (skillId === 'letter_id') {
+    return renderLetterIdItem(card, level);
+  } else if (skillId === 'phonemic') {
+    return renderPhonemicItem(card, level);
+  } else if (skillId === 'letter_sound') {
+    return renderLetterSoundItem(card, level);
+  } else if (skillId === 'word_reading') {
+    return renderWordReadingItem(card, level);
+  } else if (skillId === 'decoding') {
+    return renderDecodingItem(card, level);
+  } else {
+    return renderGenericItem(card, skillId, level);
+  }
+}
+
+function renderLetterIdItem(card, level) {
+  // Target letter — choose by wave depending on level
+  const targetWave = Math.min(6, level + 1);
+  const targetLetter = HEBREW_LETTERS.filter(l => l.wave <= targetWave)[Math.floor(Math.random() * HEBREW_LETTERS.filter(l => l.wave <= targetWave).length)];
+
+  // Distractors: prefer confused ones at higher levels
+  let distractors = [];
+  if (level >= 3 && targetLetter.confusedWith) {
+    distractors = targetLetter.confusedWith.slice(0, 1).map(l => HEBREW_LETTERS.find(x => x.l === l));
+  }
+  while (distractors.length < 3) {
+    const r = HEBREW_LETTERS[Math.floor(Math.random() * HEBREW_LETTERS.length)];
+    if (r.l !== targetLetter.l && !distractors.find(d => d.l === r.l)) distractors.push(r);
+  }
+  const options = [targetLetter, ...distractors].sort(() => Math.random() - 0.5);
+
+  card.innerHTML = `
+    <div class="practice-stimulus">
+      <div class="practice-prompt">איזו אות שמעת?</div>
+      <button class="audio-btn" onclick="speak('${targetLetter.name}')" id="playBtn">${SVG_AUDIO}</button>
+      <button class="hint-btn" onclick="showHint('האות נקראת ${targetLetter.name}')">רמז</button>
+    </div>
+    <div class="practice-options">
+      ${options.map(o => `<button class="option-btn" onclick="checkLetterAnswer('${o.l}', '${targetLetter.l}', this)">${o.l}</button>`).join('')}
+    </div>
+    <div class="practice-feedback" id="feedback"></div>
+  `;
+  setTimeout(() => speak(targetLetter.name), 400);
+}
+
+function renderPhonemicItem(card, level) {
+  // Level 1-2: rhyme identification, Level 3-4: first sound
+  if (level <= 2) {
+    // Rhyme
+    const rhymePairs = [
+      { target: 'דג', rhymes: 'חג', distract1: 'בית', distract2: 'יד' },
+      { target: 'בית', rhymes: 'זית', distract1: 'דג', distract2: 'גן' },
+      { target: 'גן', rhymes: 'דן', distract1: 'בית', distract2: 'יד' },
+      { target: 'יד', rhymes: 'גד', distract1: 'בית', distract2: 'גן' }
+    ];
+    const q = rhymePairs[Math.floor(Math.random() * rhymePairs.length)];
+    const options = [q.rhymes, q.distract1, q.distract2].sort(() => Math.random() - 0.5);
+    card.innerHTML = `
+      <div class="practice-stimulus">
+        <div class="practice-prompt">איזו מילה מתחרזת עם:</div>
+        <div class="practice-word-big">${q.target}</div>
+        <button class="audio-btn" onclick="speak('${q.target}')">${SVG_AUDIO}</button>
+      </div>
+      <div class="practice-options">
+        ${options.map(o => `<button class="option-btn" onclick="checkPhonemicAnswer('${o}', '${q.rhymes}', this)">${o}</button>`).join('')}
+      </div>
+      <div class="practice-feedback" id="feedback"></div>
+    `;
+  } else {
+    // First sound
+    const words = ['שמש', 'בית', 'דג', 'מים', 'יד', 'גן'];
+    const target = words[Math.floor(Math.random() * words.length)];
+    const correctSound = target.charAt(0);
+    const distractors = HEBREW_LETTERS.filter(l => l.l !== correctSound).slice(0, 3).map(l => l.l);
+    const options = [correctSound, ...distractors].sort(() => Math.random() - 0.5);
+    card.innerHTML = `
+      <div class="practice-stimulus">
+        <div class="practice-prompt">איזה צליל פותח את המילה:</div>
+        <div class="practice-word-big">${target}</div>
+        <button class="audio-btn" onclick="speak('${target}')">${SVG_AUDIO}</button>
+      </div>
+      <div class="practice-options">
+        ${options.map(o => `<button class="option-btn" onclick="checkPhonemicAnswer('${o}', '${correctSound}', this)">${o}</button>`).join('')}
+      </div>
+      <div class="practice-feedback" id="feedback"></div>
+    `;
+  }
+}
+
+function renderLetterSoundItem(card, level) {
+  // Match letter → sound (audio plays sound, choose letter)
+  const targetWave = Math.min(6, level + 2);
+  const pool = HEBREW_LETTERS.filter(l => l.wave <= targetWave);
+  const target = pool[Math.floor(Math.random() * pool.length)];
+
+  let distractors = pool.filter(l => l.l !== target.l).sort(() => Math.random() - 0.5).slice(0, 3);
+  const options = [target, ...distractors].sort(() => Math.random() - 0.5);
+
+  card.innerHTML = `
+    <div class="practice-stimulus">
+      <div class="practice-prompt">לחצו על האות שמשמיעה את הצליל</div>
+      <button class="audio-btn" onclick="speak('${target.sound}')">${SVG_AUDIO}</button>
+    </div>
+    <div class="practice-options">
+      ${options.map(o => `<button class="option-btn" onclick="checkLetterAnswer('${o.l}', '${target.l}', this)">${o.l}</button>`).join('')}
+    </div>
+    <div class="practice-feedback" id="feedback"></div>
+  `;
+  setTimeout(() => speak(target.sound), 400);
+}
+
+function renderDecodingItem(card, level) {
+  // Build syllable from letter + nikud
+  const consonants = ['ב', 'מ', 'ל', 'ש', 'ד', 'ר'];
+  const vowels = [
+    { nik: 'ָ', name: 'קמץ', sound: 'a' },
+    { nik: 'ִ', name: 'חיריק', sound: 'i' },
+    { nik: 'וֹ', name: 'חולם', sound: 'o', combined: true }
+  ];
+  const c = consonants[Math.floor(Math.random() * consonants.length)];
+  const v = vowels[Math.floor(Math.random() * vowels.length)];
+  const syllable = c + v.nik;
+  const pron = c + ' + ' + v.sound;
+
+  // Generate distractors
+  const distractors = [];
+  while (distractors.length < 3) {
+    const cd = consonants[Math.floor(Math.random() * consonants.length)];
+    const vd = vowels[Math.floor(Math.random() * vowels.length)];
+    const s = cd + vd.nik;
+    if (s !== syllable && !distractors.includes(s)) distractors.push(s);
+  }
+  const options = [syllable, ...distractors].sort(() => Math.random() - 0.5);
+
+  card.innerHTML = `
+    <div class="practice-stimulus">
+      <div class="practice-prompt">איזו הברה זאת?</div>
+      <button class="audio-btn" onclick="speak('${pron}')">${SVG_AUDIO}</button>
+    </div>
+    <div class="practice-options">
+      ${options.map(o => `<button class="option-btn" onclick="checkLetterAnswer('${o}', '${syllable}', this)">${o}</button>`).join('')}
+    </div>
+    <div class="practice-feedback" id="feedback"></div>
+  `;
+  setTimeout(() => speak(pron), 400);
+}
+
+function renderWordReadingItem(card, level) {
+  // Pool by level
+  const pool = SIMPLE_WORDS.filter(w => w.level <= Math.min(3, level + 1));
+  const target = pool[Math.floor(Math.random() * pool.length)];
+  let distractors = pool.filter(w => w.w !== target.w).sort(() => Math.random() - 0.5).slice(0, 3);
+  const options = [target, ...distractors].sort(() => Math.random() - 0.5);
+
+  card.innerHTML = `
+    <div class="practice-stimulus">
+      <div class="practice-prompt">איזו מילה מתאימה לתמונה?</div>
+      <div style="font-size: 96px; margin: 16px 0;">${target.img}</div>
+      <button class="audio-btn" onclick="speak('${target.w}')">${SVG_AUDIO}</button>
+    </div>
+    <div class="practice-options">
+      ${options.map(o => `<button class="option-btn" onclick="checkLetterAnswer('${o.w}', '${target.w}', this)" style="font-size: 22px;">${o.w}</button>`).join('')}
+    </div>
+    <div class="practice-feedback" id="feedback"></div>
+  `;
+}
+
+function renderGenericItem(card, skillId, level) {
+  if (skillId === 'fluency') return renderFluencyItem(card, level);
+  if (skillId === 'vocabulary') return renderVocabularyItem(card, level);
+  if (skillId === 'comprehension') return renderComprehensionItem(card, level);
+  if (skillId === 'writing') return renderWritingItem(card, level);
+  // Fallback
+  card.innerHTML = `
+    <div class="empty">
+      <h3>מיומנות "${SKILLS.find(s => s.id === skillId).name}"</h3>
+      <p>בחירה אדפטיבית — לוחצים להמשך.</p>
+      <button class="copy-btn" onclick="skipItem()" style="margin-top: 16px;">המשך</button>
+    </div>
+  `;
+}
+
+// ─── Fluency: timed read of 3-10 words in 30 sec ───
+function renderFluencyItem(card, level) {
+  const targetCount = Math.min(10, 3 + level);
+  const pool = SIMPLE_WORDS.filter(w => w.level <= Math.min(3, level + 1));
+  const words = Array(targetCount).fill(0).map(() => pool[Math.floor(Math.random() * pool.length)].w);
+
+  card.innerHTML = `
+    <div class="practice-stimulus">
+      <div class="practice-prompt">קרא בקול ${targetCount} מילים. סיימת? לחץ "סיימתי!"</div>
+      <div id="fluencyTimer" class="num" style="font-size: 36px; font-weight: 800; color: var(--violet-deep); margin: 8px 0;">30</div>
+      <div style="background: var(--bg-deep); padding: 24px; border-radius: var(--radius); margin: 16px 0;">
+        <div style="font-family: 'Rubik', sans-serif; font-size: 32px; font-weight: 700; line-height: 1.8;">${words.join(' · ')}</div>
+      </div>
+    </div>
+    <div style="display: flex; gap: 12px; justify-content: center;">
+      <button class="copy-btn" onclick="fluencyDone(true, ${targetCount})">סיימתי!</button>
+      <button class="btn-ghost" onclick="fluencyDone(false, ${targetCount})" style="border-color: var(--text-3); color: var(--text-3);">קשה מדי</button>
+    </div>
+    <div class="practice-feedback" id="feedback"></div>
+  `;
+
+  // Start timer
+  let seconds = 30;
+  const timerEl = document.getElementById('fluencyTimer');
+  const timerInterval = setInterval(() => {
+    seconds--;
+    if (timerEl) timerEl.textContent = seconds;
+    if (seconds <= 0) {
+      clearInterval(timerInterval);
+      fluencyDone(false, targetCount);
+    }
+  }, 1000);
+  window._fluencyInterval = timerInterval;
+}
+
+function fluencyDone(success, count) {
+  if (window._fluencyInterval) clearInterval(window._fluencyInterval);
+  recordAnswer(currentSession.studentId, 'fluency', success, 1);
+  const fb = document.getElementById('feedback');
+  if (fb) {
+    fb.classList.add('show', success ? 'success' : 'fail');
+    fb.textContent = success ? `מצוין! קראת ${count} מילים בזמן.` : 'נסה שוב בסשן הבא — הזמן יהיה ארוך יותר.';
+  }
+  setTimeout(() => {
+    currentSession.itemCount++;
+    if (success) currentSession.correctInRow++; else currentSession.correctInRow = 0;
+    const newSkill = selectNextSkill(currentSession.studentId);
+    if (newSkill.id !== currentSession.skillId) {
+      currentSession.skillId = newSkill.id;
+      document.getElementById('practiceSkillName').textContent = newSkill.name;
+    }
+    renderProgress();
+    renderNextItem();
+  }, 1400);
+}
+
+// ─── Vocabulary: odd-one-out ───
+function renderVocabularyItem(card, level) {
+  const groups = [
+    { theme: 'בעלי חיים', members: ['כלב', 'חתול', 'דג', 'ציפור'], odd: 'שולחן' },
+    { theme: 'אוכל', members: ['תפוח', 'לחם', 'גזר', 'עוגה'], odd: 'אופניים' },
+    { theme: 'גוף', members: ['יד', 'רגל', 'עין', 'אוזן'], odd: 'בית' },
+    { theme: 'בגדים', members: ['חולצה', 'מכנס', 'נעל', 'כובע'], odd: 'ספר' },
+    { theme: 'בית', members: ['ספה', 'מיטה', 'שולחן', 'כיסא'], odd: 'דג' },
+  ];
+  const g = groups[Math.floor(Math.random() * groups.length)];
+  // 3 from group + 1 odd
+  const fromGroup = [...g.members].sort(() => Math.random() - 0.5).slice(0, 3);
+  const options = [...fromGroup, g.odd].sort(() => Math.random() - 0.5);
+
+  card.innerHTML = `
+    <div class="practice-stimulus">
+      <div class="practice-prompt">איזו מילה לא שייכת לקבוצה?</div>
+      <div style="color: var(--text-3); margin-top: 6px; font-size: 14px;">הקבוצה: ${g.theme}</div>
+    </div>
+    <div class="practice-options">
+      ${options.map(o => `<button class="option-btn" onclick="checkLetterAnswer('${o}', '${g.odd}', this)" style="font-size: 22px;">${o}</button>`).join('')}
+    </div>
+    <div class="practice-feedback" id="feedback"></div>
+  `;
+}
+
+// ─── Comprehension: read short text + answer ───
+function renderComprehensionItem(card, level) {
+  const texts = [
+    {
+      text: 'דָּן רָץ לַגַּן. בַּגַּן יֵשׁ עֵץ גָּדוֹל. דָּן יוֹשֵׁב מִתַּחַת לָעֵץ.',
+      q: 'איפה דן יושב?',
+      options: ['ליד הבית', 'מתחת לעץ', 'על המיטה', 'בכיתה'],
+      answer: 'מתחת לעץ'
+    },
+    {
+      text: 'מַיָּה אוֹהֶבֶת חָתוּלִים. יֵשׁ לָהּ חָתוּל לָבָן. הַחָתוּל יָשֵׁן עַל הַסַּפָּה.',
+      q: 'איזה חתול יש למיה?',
+      options: ['שחור', 'לבן', 'צהוב', 'אדום'],
+      answer: 'לבן'
+    },
+    {
+      text: 'הַיֶּלֶד אָכַל תַּפּוּחַ. אַחַר כָּךְ שָׁתָה מַיִם. הוּא הָיָה רָעֵב.',
+      q: 'למה הילד אכל?',
+      options: ['היה עייף', 'היה רעב', 'היה שמח', 'היה כועס'],
+      answer: 'היה רעב'
+    }
+  ];
+  const t = texts[Math.floor(Math.random() * texts.length)];
+  const options = [...t.options].sort(() => Math.random() - 0.5);
+
+  card.innerHTML = `
+    <div class="practice-stimulus">
+      <div class="practice-prompt">קרא את הטקסט ובחר תשובה:</div>
+      <div style="background: var(--bg-deep); padding: 20px; border-radius: var(--radius); margin: 14px 0; font-family: 'Rubik', sans-serif; font-size: 22px; line-height: 1.9; text-align: right;">${t.text}</div>
+      <button class="audio-btn" onclick="speak('${t.text.replace(/[ִֵֶַָֹֻּ]/g, '')}')">${SVG_AUDIO}</button>
+      <div style="font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 19px; margin-top: 18px;">${t.q}</div>
+    </div>
+    <div class="practice-options">
+      ${options.map(o => `<button class="option-btn" onclick="checkLetterAnswer('${o}', '${t.answer}', this)" style="font-size: 18px; padding: 16px;">${o}</button>`).join('')}
+    </div>
+    <div class="practice-feedback" id="feedback"></div>
+  `;
+}
+
+// ─── Writing: letter-trace (Canvas) ───
+function renderWritingItem(card, level) {
+  // Pick a letter to trace by wave (level-appropriate)
+  const targetWave = Math.min(6, level + 1);
+  const pool = HEBREW_LETTERS.filter(l => l.wave <= targetWave);
+  const target = pool[Math.floor(Math.random() * pool.length)];
+
+  card.innerHTML = `
+    <div class="practice-stimulus">
+      <div class="practice-prompt">תרגול כתיבה — עקוב אחרי האות:</div>
+      <div style="position: relative; display: inline-block; margin: 14px auto;">
+        <div style="font-family: 'Rubik', sans-serif; font-size: 200px; color: var(--lavender-light); line-height: 1; user-select: none;">${target.l}</div>
+        <canvas id="traceCanvas" width="260" height="260" style="position: absolute; top: 0; right: 0; touch-action: none; cursor: crosshair;"></canvas>
+      </div>
+      <button class="audio-btn" onclick="speak('${target.name}')">${SVG_AUDIO}</button>
+    </div>
+    <div style="display: flex; gap: 12px; justify-content: center; margin-top: 16px;">
+      <button class="copy-btn" onclick="checkTrace(true, '${target.l}')">סיימתי!</button>
+      <button class="btn-ghost" onclick="clearTrace()" style="border-color: var(--text-3); color: var(--text-3);">נקה</button>
+      <button class="btn-ghost" onclick="checkTrace(false, '${target.l}')" style="border-color: var(--text-3); color: var(--text-3);">קשה מדי</button>
+    </div>
+    <div class="practice-feedback" id="feedback"></div>
+  `;
+  initCanvas();
+}
+
+function initCanvas() {
+  const canvas = document.getElementById('traceCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.strokeStyle = '#4F46E5';
+  ctx.lineWidth = 6;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  let drawing = false;
+  let lastX = 0, lastY = 0;
+  let strokeCount = 0;
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const ev = e.touches ? e.touches[0] : e;
+    return {
+      x: ev.clientX - rect.left,
+      y: ev.clientY - rect.top
+    };
+  }
+
+  function start(e) {
+    e.preventDefault();
+    drawing = true;
+    const p = getPos(e);
+    lastX = p.x; lastY = p.y;
+    strokeCount++;
+  }
+  function move(e) {
+    if (!drawing) return;
+    e.preventDefault();
+    const p = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    lastX = p.x; lastY = p.y;
+  }
+  function end() { drawing = false; }
+
+  canvas.addEventListener('mousedown', start);
+  canvas.addEventListener('mousemove', move);
+  canvas.addEventListener('mouseup', end);
+  canvas.addEventListener('mouseleave', end);
+  canvas.addEventListener('touchstart', start);
+  canvas.addEventListener('touchmove', move);
+  canvas.addEventListener('touchend', end);
+
+  window._traceState = { ctx, canvas, strokeCount: () => strokeCount };
+}
+
+function clearTrace() {
+  const canvas = document.getElementById('traceCanvas');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+}
+
+function checkTrace(success, letter) {
+  // Naive check: count drawn pixels (success = enough ink + user said done)
+  const canvas = document.getElementById('traceCanvas');
+  let hasInk = false;
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    let inkCount = 0;
+    for (let i = 3; i < data.length; i += 4) if (data[i] > 0) inkCount++;
+    hasInk = inkCount > 300; // some minimum
+  }
+  const ok = success && hasInk;
+  recordAnswer(currentSession.studentId, 'writing', ok, 1);
+  const fb = document.getElementById('feedback');
+  if (fb) {
+    fb.classList.add('show', ok ? 'success' : 'fail');
+    fb.textContent = ok ? `יפה מאוד! האות "${letter}".` : 'בוא ננסה שוב בסשן הבא.';
+  }
+  setTimeout(() => {
+    currentSession.itemCount++;
+    if (ok) currentSession.correctInRow++; else currentSession.correctInRow = 0;
+    const newSkill = selectNextSkill(currentSession.studentId);
+    if (newSkill.id !== currentSession.skillId) {
+      currentSession.skillId = newSkill.id;
+      document.getElementById('practiceSkillName').textContent = newSkill.name;
+    }
+    renderProgress();
+    renderNextItem();
+  }, 1400);
+}
+
+function skipItem() {
+  // Treat as neutral — don't update P(L), just move on
+  currentSession.itemCount++;
+  // Re-select skill (likely different next time as we don't update)
+  const skill = selectNextSkill(currentSession.studentId);
+  if (skill.id !== currentSession.skillId) {
+    currentSession.skillId = skill.id;
+    document.getElementById('practiceSkillName').textContent = skill.name;
+  }
+  renderProgress();
+  renderNextItem();
+}
+
+function checkLetterAnswer(chosen, correct, btn) {
+  const isCorrect = chosen === correct;
+  btn.classList.add(isCorrect ? 'correct' : 'wrong');
+  document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+  const fb = document.getElementById('feedback');
+  fb.classList.add('show', isCorrect ? 'success' : 'fail');
+  fb.textContent = isCorrect ? 'מצוין!' : `התשובה הנכונה: ${correct}`;
+  recordAnswer(currentSession.studentId, currentSession.skillId, isCorrect, 1);
+  setTimeout(() => {
+    currentSession.itemCount++;
+    if (isCorrect) currentSession.correctInRow++; else currentSession.correctInRow = 0;
+    // Re-check skill (adaptive — might switch if pre-req now met or current mastered)
+    const newSkill = selectNextSkill(currentSession.studentId);
+    if (newSkill.id !== currentSession.skillId) {
+      currentSession.skillId = newSkill.id;
+      document.getElementById('practiceSkillName').textContent = newSkill.name;
+    }
+    renderProgress();
+    renderNextItem();
+  }, isCorrect ? 900 : 1600);
+}
+
+function checkPhonemicAnswer(chosen, correct, btn) {
+  return checkLetterAnswer(chosen, correct, btn);
+}
+
+function showHint(text) {
+  speak(text);
+  const fb = document.getElementById('feedback');
+  if (fb) {
+    fb.classList.add('show', 'success');
+    fb.innerHTML = `<span style="color: var(--gold); margin-left: 6px;">${SVG_BULB}</span> ${text}`;
+  }
+}
+
+function renderSessionComplete() {
+  const card = document.getElementById('practiceCard');
+  const p = progress[currentSession.studentId][currentSession.skillId];
+  card.innerHTML = `
+    <div class="empty">
+      <div style="color: var(--green); margin-bottom: 12px;">${SVG_CHECK}</div>
+      <h3 style="font-size: 32px; color: var(--green);">סיימת!</h3>
+      <p style="font-size: 18px; margin: 14px 0;">הצלחת ב-${currentSession.correctInRow} פריטים ברצף.</p>
+      <p style="color: var(--text-3);">רמה נוכחית במיומנות "${SKILLS.find(s => s.id === currentSession.skillId).name}": <b style="color: var(--violet);">${levelName(p.level)}</b></p>
+      <button class="copy-btn" onclick="startPractice()" style="margin-top: 18px;">סשן נוסף</button>
+    </div>
+  `;
+  renderClassMap();
+}
+
+// ──────────────────────────────────────────────────────────
+// 10. RESULTS — Heatmap
+// ──────────────────────────────────────────────────────────
+function renderHeatmap() {
+  const heatmap = document.getElementById('heatmap');
+  const head = `<thead><tr><th>תלמיד</th>${SKILLS.map(s => `<th>${s.short}</th>`).join('')}</tr></thead>`;
+  const body = '<tbody>' + students.map(s => {
+    return `<tr><td>${s.name}</td>${SKILLS.map(sk => {
+      const pL = progress[s.id][sk.id].pL;
+      const color = pLToColor(pL);
+      return `<td><span class="heat-cell" style="background: ${color};">${(pL * 100).toFixed(0)}%</span></td>`;
+    }).join('')}</tr>`;
+  }).join('') + '</tbody>';
+  heatmap.innerHTML = head + body;
+}
+
+function pLToColor(pL) {
+  if (pL >= 0.85) return '#10B981';
+  if (pL >= 0.65) return '#34D399';
+  if (pL >= 0.45) return '#FBBF24';
+  if (pL >= 0.25) return '#F59E0B';
+  return '#EC4899';
+}
+
+// ──────────────────────────────────────────────────────────
+// 10.5 TODAY DASHBOARD — 4 QUESTIONS + AUTO LEXIA LESSONS
+// ──────────────────────────────────────────────────────────
+
+/**
+ * חישוב רמת סיכון לתלמיד.ה (Lexia-style):
+ * נשען על 3 גורמים — Tier (אבחון פתיחה) + מגמת streakDown (תקיעה דינמית) + צמיחה.
+ * 🟢 On Target  | 🟡 Some Risk | 🔴 High Risk
+ *
+ * הגיון פדגוגי: בתחילת כיתה א' כולם נמוכים. הסיכון צריך להיות יחסי לציפייה —
+ * האם התלמיד.ה בקצב להגיע ליעדי סוף שנה, על בסיס Tier (אבחון פתיחה) ו-trajectory.
+ */
+function computeStudentRisk(studentId) {
+  const s = students.find(st => st.id === studentId);
+  const p = progress[studentId];
+  const skillPLs = SKILLS.map(sk => p[sk.id].pL);
+  const avgPL = skillPLs.reduce((a, b) => a + b, 0) / skillPLs.length;
+  const minPL = Math.min(...skillPLs);
+  const stuckCount = SKILLS.filter(sk => p[sk.id].streakDown >= 3).length;
+  const upCount = SKILLS.filter(sk => p[sk.id].streakUp >= 3).length;
+
+  // High Risk: Tier 3 (אבחון פתיחה חמור), או נתקעים ב-2+ מיומנויות, או צניחה ב-avg
+  if (s && s.tier === 'tier3') return { level: 'red', label: 'סיכון גבוה', avgPL, minPL, stuckCount };
+  if (stuckCount >= 2) return { level: 'red', label: 'סיכון גבוה', avgPL, minPL, stuckCount };
+  // Some Risk: Tier 2 (אבחון פתיחה — קושי בינוני), או נתקע ב-1 מיומנות
+  if (s && s.tier === 'tier2') return { level: 'yellow', label: 'תשומת לב', avgPL, minPL, stuckCount };
+  if (stuckCount >= 1) return { level: 'yellow', label: 'תשומת לב', avgPL, minPL, stuckCount };
+  // On Target: Tier 1 ללא תקיעות
+  return { level: 'green', label: 'בקצב', avgPL, minPL, stuckCount };
+}
+
+/**
+ * מזהה תלמיד שתקוע במיומנות:
+ * (1) pL נמוך משמעותית (≤ 0.25) — חולשה ברורה, גם בלי היסטוריית ניסיונות
+ * (2) pL נמוך + מגמת streakDown — תקיעה דינמית
+ * (3) קדם-מיומנות לא מושגת + ניסיונות מרובים — fence-sitter
+ */
+function identifyStuckForStudent(studentId) {
+  const p = progress[studentId];
+  const stuck = [];
+  SKILLS.forEach(s => {
+    const sp = p[s.id];
+    // (1) חולשה ברורה — אבחון פתיחה הראה pL מאוד נמוך
+    if (sp.pL <= 0.25) {
+      stuck.push({ skill: s, pL: sp.pL, attempts: sp.attempts, reason: 'baseline_low' });
+    }
+    // (2) תקיעה דינמית — נסיונות עם רצף שגיאות
+    else if (sp.pL < 0.45 && sp.attempts >= 3 && sp.streakDown >= 2) {
+      stuck.push({ skill: s, pL: sp.pL, attempts: sp.attempts, reason: 'stuck_dynamic' });
+    }
+    // (3) קושי משמעותי גם בלי streakDown
+    else if (sp.pL < 0.35 && sp.attempts >= 2) {
+      stuck.push({ skill: s, pL: sp.pL, attempts: sp.attempts, reason: 'persistent_low' });
+    }
+  });
+  return stuck;
+}
+
+/**
+ * קיבוץ אוטומטי לפי מיומנות תקועה משותפת.
+ * מחזיר Map: skillId → [students]
+ */
+function buildAutoGroups() {
+  const groups = {};
+  students.forEach(s => {
+    const stuck = identifyStuckForStudent(s.id);
+    stuck.forEach(item => {
+      if (!groups[item.skill.id]) groups[item.skill.id] = { skill: item.skill, students: [] };
+      groups[item.skill.id].students.push({ student: s, pL: item.pL });
+    });
+  });
+  return Object.values(groups).sort((a, b) => b.students.length - a.students.length);
+}
+
+/**
+ * תלמידים שלא נכנסו השבוע (סימולציה: מבוסס על attempts)
+ */
+function studentsNeedingTime() {
+  // סימולציה — תלמידים עם total attempts נמוך מהאחרים
+  const totals = students.map(s => {
+    const p = progress[s.id];
+    const totalAttempts = SKILLS.reduce((sum, sk) => sum + p[sk.id].attempts, 0);
+    return { student: s, totalAttempts };
+  });
+  const avg = totals.reduce((a, b) => a + b.totalAttempts, 0) / totals.length;
+  // מתחת ל-50% מהממוצע = "צריך זמן"
+  return totals.filter(t => t.totalAttempts < avg * 0.5).map(t => t.student);
+}
+
+/**
+ * תלמידים שעלו רמה במיומנות בשבוע האחרון
+ */
+function studentsProgressing() {
+  return students.filter(s => {
+    const p = progress[s.id];
+    return SKILLS.some(sk => p[sk.id].streakUp >= 3);
+  });
+}
+
+/**
+ * תלמידים שהשלימו mastery (pL ≥ 0.85) במיומנות חדשה
+ */
+function studentsReadyToCelebrate() {
+  return students.filter(s => {
+    const p = progress[s.id];
+    return SKILLS.some(sk => p[sk.id].pL >= MASTERY_THRESHOLD);
+  }).map(s => {
+    const p = progress[s.id];
+    const masteredSkills = SKILLS.filter(sk => p[sk.id].pL >= MASTERY_THRESHOLD);
+    return { student: s, masteredSkills };
+  });
+}
+
+// ──────────────────────────────────────────────────────────
+// LEXIA LESSON GENERATOR — סקריפט הוראה PDF למורה
+// ──────────────────────────────────────────────────────────
+
+/**
+ * תוכן השיעור — מאגר סקריפטים פדגוגיים לכל מיומנות.
+ * הסקריפטים מבוססים על Lexia Lessons template + Direct Instruction (Engelmann).
+ */
+const LEXIA_LESSON_TEMPLATES = {
+  phonemic: {
+    materials: ['כרטיסי תמונות: דג, חג, רץ, מץ', 'לוח מחיק קטן', 'טוש'],
+    objective: 'לזהות ולהפיק חרוז במילים בנות הברה אחת',
+    steps: [
+      { say: 'אני אגיד שתי מילים — תקשיב/י אם הן מתחרזות.', do: 'הצג כרטיס דג, אחר כך כרטיס חג.' },
+      { say: '"דג, חג". האם הן מתחרזות?', do: 'חכה לתשובה. אם כן — חזק. אם לא — הסבר: "שתיהן מסתיימות בצליל -ג. זה חרוז."' },
+      { say: 'עכשיו תורך/ך. אני אגיד מילה, ואת/ה תגיד/י מילה שמתחרזת.', do: 'אמור "רץ" — חכה לחרוז (מץ, פץ, חץ).' },
+      { say: '6 חזרות עם מילים שונות מתוך הכרטיסים.', do: 'עברו על כל הכרטיסים.' }
+    ],
+    correction: 'אם הילד.ה נתקע — חזור על שתי מילים מתחרזות והדגש את הסיומת בקול. "ר-ץ ... ח-ץ. שמע/י את הסוף."',
+    extension: 'בחר 2 מילים מתחרזות והכתב את שתיהן על הלוח. הדגש בצבע את הסיומת המשותפת.'
+  },
+  letter_id: {
+    materials: ['קוביות אותיות (לפחות 5)', 'דפי מעקב — אות בודדת בכל דף', 'טוש'],
+    objective: 'לזהות אותיות דומות בצורה: ב/כ, ד/ר, ו/ז',
+    steps: [
+      { say: 'אני אגיד שם של אות, ואת/ה תצביע/י עליה.', do: 'הצג את כל הקוביות.' },
+      { say: 'איפה ב\'?', do: 'חכה לבחירה. אם בחר/ה כ\' — אל תאמר "טעית". במקום זה: "כמעט. בוא נסתכל יחד."' },
+      { say: 'תראה/י: ל-ב יש קו תחתון, ל-כ אין. ב = קופסה סגורה.', do: 'צייר את שתי האותיות זו לצד זו, הצבע על ההבדל.' },
+      { say: 'עכשיו שוב — איפה ב\'?', do: 'אחרי שהתלמיד.ה הצליח/ה, עברו ל-ד/ר ואז ו/ז.' }
+    ],
+    correction: 'תמיד הראה את האות הנכונה ליד השגויה. תן רמז ויזואלי (קו, סוגרים) — לא מילים מורכבות.',
+    extension: 'תן לתלמיד.ה לקחת קובייה ולכתוב את האות בדף לפניו. תרגול מוטורי = חיזוק זיכרון.'
+  },
+  letter_sound: {
+    materials: ['כרטיסי אות-תמונה (10 כרטיסים): א-אבא, ב-בית, ג-גן וכו\'', 'מראה קטנה'],
+    objective: 'לקשר אות לצליל ולתת דוגמה ראשונה (acrophonic mapping)',
+    steps: [
+      { say: 'אני אראה/י לך אות. תגיד/י את הצליל שלה.', do: 'הצג כרטיס "ב" — חכה לתשובה.' },
+      { say: 'אם הצליח — "מצוין! בית מתחיל ב-ב\'."', do: 'אם לא — אמור את הצליל: "ב — בית". בקש מהילד.ה לחזור.' },
+      { say: 'תסתכל/י במראה. תאמר/י /ב/ — תראה/י איך השפתיים נסגרות.', do: 'הדגש את החוויה הפיזית של ההפקה.' },
+      { say: 'עכשיו אני אגיד צליל, ואת/ה תצביע/י על האות.', do: 'הפוך — מצליל לאות. 5 חזרות.' }
+    ],
+    correction: 'אם בלבול בין צלילים דומים (ב/פ, ת/ט) — הפעל את המראה. הראה לתלמיד.ה את הפה שלך, אחרי כן את שלו.',
+    extension: 'בקש מהתלמיד.ה לחפש את האות הזו בספר/בכיתה. ציד אותיות = למידה מבוססת תנועה.'
+  },
+  decoding: {
+    materials: ['אריחי אותיות (10+ אותיות מוכרות)', 'דפי הברות CVC: מַל, גָּל, רַף, חַל', 'טוש'],
+    objective: 'לחבר עיצור-תנועה-עיצור להברה אחת (Blending)',
+    steps: [
+      { say: 'אני אגיד את הצלילים אחד-אחד, ואת/ה תחבר/י אותם.', do: 'הצבע על "מ" ואמור /מ/. הצבע על "ַ" ואמור /a/. הצבע על "ל" ואמור /ל/.' },
+      { say: 'עכשיו תגיד/י את כולם ביחד — מהר.', do: 'התלמיד.ה אומר/ת /מ-a-ל/ → "מל".' },
+      { say: '"מל!" יפה. עכשיו אנחנו נכתוב עוד הברה ביחד.', do: 'בנו "גָּל" אריח אחר אריח, בלנדינג מחדש.' },
+      { say: '4 הברות נוספות — תלמיד.ה בונה ומקריא.', do: 'אם נכשל/ה, חזור על הצלילים לאט.' }
+    ],
+    correction: 'אם הילד.ה אומר/ת את הצלילים אבל לא מצליח/ה לחבר — האט/י אותם בעצמך עד שהם נשמעים כמילה אחת.',
+    extension: 'בנו 3 הברות והכתיב/ו אותן בדף. כתיבת מה שנקרא = חיזוק העיגון.'
+  },
+  word_reading: {
+    materials: ['רשימת מילים בנות 2-3 הברות: דָּ-גָּ-לִי, סַ-בָּא, חַ-לוֹם'],
+    objective: 'לקרוא מילה שלמה בעקבות בלנדינג של 2-3 הברות',
+    steps: [
+      { say: 'נקרא את המילה הזו ביחד, הברה אחר הברה.', do: 'הצג "סבא". הצבע על "סַ" — חכה לקריאה. הצבע על "בָּא" — חכה לקריאה.' },
+      { say: 'יפה. עכשיו ביחד — מהר.', do: 'תלמיד.ה אומר/ת "סבא" ברציפות.' },
+      { say: 'אני אגיד את המילה במשפט, את/ה תגיד/י אותה אחריי.', do: 'משפט קצר: "סבא בא הביתה".' },
+      { say: 'תורך/ך — קרא/י את כל המילה בלי הברה.', do: 'תרגול חזרתי על 5 מילים מודרגות.' }
+    ],
+    correction: 'מילה ארוכה מדי? כסה הברה אחת. תרגלו רק את הראשונה, אחר כך השנייה, אחר כך חברו.',
+    extension: 'תלמיד.ה כותב/ת את 3 המילים המוצלחות בדף — חיבור קריאה-כתיבה.'
+  },
+  fluency: {
+    materials: ['קטע קצר (4-5 שורות, רמת קריאה מתאימה)', 'שעון/טיימר'],
+    objective: 'לקרוא רצף משפטים בקצב טבעי + דיוק + פרוסודיה',
+    steps: [
+      { say: 'אני אקרא קודם, את/ה תקשיב/י לקצב ולנגינה.', do: 'קרא את הקטע בקול, באינטונציה. הדגש פסיקים, סימני שאלה.' },
+      { say: 'עכשיו תורך/ך. קרא/י לאט, בלי למהר. רק לדייק.', do: 'תלמיד.ה קורא/ת. אל תפסיק לתקן כל מילה.' },
+      { say: 'אם פסחת על מילה — נחזור עליה אחרי שתסיים/י.', do: 'סמן/י מילים שנפלו, חזרו עליהן בסוף.' },
+      { say: 'קריאה שנייה — קצת יותר מהר.', do: 'אותו קטע. השוואה: דיוק + מהירות. שיפור = הצלחה.' }
+    ],
+    correction: 'אל תתקן/י באמצע. תן/י לתלמיד.ה לסיים, אחר כך חזרו על מילים שנפלו. תיקון תוך-כדי שובר את הקצב.',
+    extension: 'תלמיד.ה מקריא/ה הביתה לאמא או לאחות — קריאה ב"קהל" = מוטיבציה.'
+  },
+  vocabulary: {
+    materials: ['3 מילים חדשות בהקשר — לדוגמה: "סקרן", "מתעקש", "מתפעל"', 'כרטיסים עם תמונות מתאימות'],
+    objective: 'לחבר מילה חדשה למשמעות, להקשר, ולחיים הפרטיים',
+    steps: [
+      { say: '"סקרן" — מישהו שרוצה לדעת. תראה/י תמונה.', do: 'הצג ילד שמסתכל במשהו עם עיניים גדולות.' },
+      { say: 'תן/י דוגמה — מתי את/ה סקרן/ית?', do: 'חכה לסיפור אישי. הצלחה = חיבור אישי.' },
+      { say: 'עכשיו בוא/י נמצא מילים אחרות שמרגישות דומה.', do: 'הצע: "סקרן... אולי קצת כמו תאוותן? מתעניין? תייר?"' },
+      { say: 'משפט שלם — "אני סקרן לגבי..."', do: 'תלמיד.ה משלים/ה משפט. כתבו על דף.' }
+    ],
+    correction: 'אם לא מבין/ה — אל תסביר במילים. הראה דוגמה הפיזית, פנטומימה, תמונה. הקשר ראשון, מילים שניות.',
+    extension: 'תלמיד.ה מצייר/ת את המילה — אוצר מילים ויזואלי = זיכרון ארוך טווח.'
+  },
+  comprehension: {
+    materials: ['סיפור קצר (1 עמוד, 6-8 משפטים)', '4 שאלות הבנה במגוון רמות'],
+    objective: 'לענות על שאלות "מה?", "למה?", "מה היה לפני?" בעקבות סיפור',
+    steps: [
+      { say: 'נקרא את הסיפור ביחד. את/ה תקשיב/י, אני אקרא.', do: 'קריאה איטית, מודגשת. הצביעו על דמויות כשעוברים עליהן.' },
+      { say: 'שאלה ראשונה — מה: "מה דני אכל לארוחת בוקר?"', do: 'תשובה ישירה מהסיפור. חזק.' },
+      { say: 'שאלה שנייה — למה: "למה דני שמח?"', do: 'דורש מסיק. אם תלמיד.ה תקוע/ה — חזור על המשפט הרלוונטי.' },
+      { say: 'שאלה שלישית — רצף: "מה דני עשה לפני שאכל?"', do: 'אם בלבול — נחזור לקטע ונבדוק את הסדר.' }
+    ],
+    correction: 'תשובה שגויה? אל תיתן/י את הנכונה. במקום זה: "תראה לי איפה בסיפור." חזרה לטקסט = אסטרטגיה מטא-קוגניטיבית.',
+    extension: 'תלמיד.ה מציין/ת מה היה הקטע הכי מעניין — בחירה אישית מחזקת מעורבות.'
+  },
+  writing: {
+    materials: ['דף משבצות עם 4 שורות', 'עיפרון', 'דף הדגמה: האות "ב" בכיוונים נכונים'],
+    objective: 'כתיבת אות "ב" עם כיוון משיכה נכון + סדר',
+    steps: [
+      { say: 'תסתכל/י על האות "ב". אני אצייר אותה לאט.', do: 'בדף הדגמה — צייר ב\' בקו אחד, מתחיל מהקצה השמאלי העליון. הדגש איפה מתחילים.' },
+      { say: 'תראה/י — מתחילים פה (סמן/י בקצה), הקו יורד למטה ומסתובב.', do: 'חזור על הציור. תלמיד.ה עוקב/ת בעיניים.' },
+      { say: 'תורך/ך. תתחיל/י באותו מקום שאני התחלתי.', do: 'בדף משבצות — תלמיד.ה כותב/ת ב\'. אל תיתן/י לכתוב במהירות.' },
+      { say: '4 פעמים נוספות. כל פעם מתחיל מהמקום הנכון.', do: 'אחרי 5 חזרות מוצלחות — מילה אחת קצרה: "בית".' }
+    ],
+    correction: 'התלמיד.ה מתחיל/ה מצד שמאל? אל תגיד/י "לא". במקום זה — סמן/י את נקודת ההתחלה הנכונה בעיגול אדום על הדף לפניו.',
+    extension: 'תלמיד.ה כותב/ת בדף משבצות גדול ב\' ב-3 גדלים — קטן, בינוני, גדול. שליטה מוטורית מצריכה גיוון גדלים.'
+  }
+};
+
+function generateLexiaLessonContent(skillId, stuckStudents) {
+  const skill = SKILLS.find(s => s.id === skillId);
+  const template = LEXIA_LESSON_TEMPLATES[skillId] || LEXIA_LESSON_TEMPLATES.phonemic;
+  const studentList = stuckStudents.map(s => s.student?.name || s.name).join(', ');
+  const today = new Date().toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+  return `
+    <div class="lesson-modal-head">
+      <span class="lesson-modal-tag">Lexia Lesson · ${skill.name}</span>
+      <div class="lesson-modal-title">שיעור התערבות — קבוצה קטנה · 15 דקות</div>
+      <div class="lesson-modal-sub">${today} · תלמידים: ${studentList || '—'} · יעד: ${template.objective}</div>
+    </div>
+
+    <div class="lesson-section">
+      <h4>📦 חומרים</h4>
+      <ul>
+        ${template.materials.map(m => `<li>${m}</li>`).join('')}
+      </ul>
+    </div>
+
+    <div class="lesson-section">
+      <h4>🎯 שלבי השיעור</h4>
+      ${template.steps.map((step, i) => `
+        <div class="lesson-script">
+          <strong>שלב ${i + 1}.</strong><br>
+          <strong>אמרי:</strong> "${step.say}"<br>
+          <strong>עשי:</strong> ${step.do}
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="lesson-section">
+      <h4>🔁 תיקון אם תלמיד.ה נתקע.ה</h4>
+      <p>${template.correction}</p>
+    </div>
+
+    <div class="lesson-section">
+      <h4>🌱 הרחבה אם הקבוצה הצליחה מהר</h4>
+      <p>${template.extension}</p>
+    </div>
+
+    <div class="lesson-modal-footer">
+      <button class="q-btn secondary" onclick="closeLexiaLesson()">סגירה</button>
+      <button class="q-btn primary" onclick="window.print()">🖨️ הדפסה</button>
+    </div>
+  `;
+}
+
+function openLexiaLesson(skillId, studentIds) {
+  const stuckStudents = studentIds.map(id => students.find(s => s.id === id)).filter(Boolean);
+  document.getElementById('lessonModalContent').innerHTML = generateLexiaLessonContent(skillId, stuckStudents);
+  document.getElementById('lessonOverlay').classList.add('active');
+}
+
+function closeLexiaLesson() {
+  document.getElementById('lessonOverlay').classList.remove('active');
+}
+
+// ──────────────────────────────────────────────────────────
+// RENDER TODAY
+// ──────────────────────────────────────────────────────────
+function renderToday() {
+  // Date
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' });
+  document.getElementById('todayDate').textContent = dateStr;
+
+  // Q1: Who needs me? (auto-groups by skill)
+  const groups = buildAutoGroups();
+  const qHelpCount = document.getElementById('qHelpCount');
+  const qHelpBody = document.getElementById('qHelpBody');
+  const totalStuck = new Set(groups.flatMap(g => g.students.map(s => s.student.id))).size;
+  qHelpCount.textContent = totalStuck === 0 ? '0' : `${totalStuck} תלמידים · ${groups.length} קבוצות`;
+
+  if (groups.length === 0) {
+    qHelpBody.innerHTML = '<div class="q-empty">אין תלמידים תקועים השבוע — להמשיך כרגיל ✨</div>';
+  } else {
+    qHelpBody.innerHTML = groups.slice(0, 4).map(g => {
+      const studentNames = g.students.map(s => s.student.name).join(', ');
+      const studentIds = g.students.map(s => s.student.id);
+      return `
+        <div class="group-card">
+          <div class="group-head">
+            <span class="risk-dot red"></span>
+            <span class="group-skill">${g.skill.name}</span>
+          </div>
+          <div class="group-students">${g.students.length} תלמידים: ${studentNames}</div>
+          <div class="group-actions">
+            <button class="q-btn primary" onclick="openLexiaLesson('${g.skill.id}', ${JSON.stringify(studentIds).replace(/"/g, '&quot;')})">📄 שיעור התערבות</button>
+            <button class="q-btn secondary" onclick="switchView('practice')">→ תרגול</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Q2: Who needs time?
+  const needTime = studentsNeedingTime();
+  document.getElementById('qTimeCount').textContent = `${needTime.length} תלמידים`;
+  const qTimeBody = document.getElementById('qTimeBody');
+  if (needTime.length === 0) {
+    qTimeBody.innerHTML = '<div class="q-empty">כולם בקצב טוב של שימוש 🎯</div>';
+  } else {
+    qTimeBody.innerHTML = `
+      <ul class="q-list">
+        ${needTime.slice(0, 6).map(s => `
+          <li class="q-item">
+            <span class="risk-dot yellow"></span>
+            <span class="q-item-name">${s.name}</span>
+            <span class="q-item-detail">פחות מ-50% מהממוצע</span>
+            <button class="q-btn secondary" style="padding: 4px 10px; font-size: 12px;" onclick="goToParentReport('${s.id}')">→ להורים</button>
+          </li>
+        `).join('')}
+      </ul>
+    `;
+  }
+
+  // Q3: Who's progressing?
+  const progressing = studentsProgressing();
+  document.getElementById('qProgressCount').textContent = `${progressing.length} תלמידים`;
+  const qProgressBody = document.getElementById('qProgressBody');
+  if (progressing.length === 0) {
+    qProgressBody.innerHTML = '<div class="q-empty">השבוע — קצב יציב. אין עליות מסוף השבוע שעבר.</div>';
+  } else {
+    qProgressBody.innerHTML = `
+      <ul class="q-list">
+        ${progressing.slice(0, 6).map(s => {
+          const p = progress[s.id];
+          const upSkill = SKILLS.find(sk => p[sk.id].streakUp >= 3);
+          return `
+            <li class="q-item">
+              <span class="risk-dot green"></span>
+              <span class="q-item-name">${s.name}</span>
+              <span class="q-item-detail">↑ ${upSkill ? upSkill.short : ''}</span>
+              <span class="q-item-pill">3+ ברצף</span>
+            </li>
+          `;
+        }).join('')}
+      </ul>
+    `;
+  }
+
+  // Q4: Who's ready to celebrate?
+  const celebrate = studentsReadyToCelebrate();
+  document.getElementById('qCelebrateCount').textContent = `${celebrate.length} תלמידים`;
+  const qCelebrateBody = document.getElementById('qCelebrateBody');
+  if (celebrate.length === 0) {
+    qCelebrateBody.innerHTML = '<div class="q-empty">עוד מעט — תלמידים קרובים ל-mastery.</div>';
+  } else {
+    qCelebrateBody.innerHTML = `
+      <ul class="q-list">
+        ${celebrate.slice(0, 6).map(c => `
+          <li class="q-item">
+            <span style="font-size: 18px;">🏆</span>
+            <span class="q-item-name">${c.student.name}</span>
+            <span class="q-item-detail">${c.masteredSkills.length} מיומנויות במאסטרי</span>
+            <button class="q-btn success" style="padding: 4px 10px; font-size: 12px;" onclick="celebrateStudent('${c.student.id}')">תעודה →</button>
+          </li>
+        `).join('')}
+      </ul>
+    `;
+  }
+}
+
+function celebrateStudent(studentId) {
+  const s = students.find(st => st.id === studentId);
+  const p = progress[studentId];
+  const mastered = SKILLS.filter(sk => p[sk.id].pL >= MASTERY_THRESHOLD);
+  alert(`🎉 כל הכבוד ל${s.name}!\n\nמיומנויות שהושלמו:\n${mastered.map(m => '✓ ' + m.name).join('\n')}\n\n(תעודה להדפסה — Phase 2)`);
+}
+
+// ──────────────────────────────────────────────────────────
+// 11. TEACHER ACTIONS
+// ──────────────────────────────────────────────────────────
+function renderActions() {
+  // Build action data from progress
+  const today = new Date();
+  const tomorrow = new Date(today.getTime() + 86400000);
+  const dateStr = tomorrow.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  // 1. Do Now — most common errors from yesterday (mocked here)
+  const lowSkills = SKILLS.map(s => {
+    const avgPL = students.reduce((sum, st) => sum + progress[st.id][s.id].pL, 0) / students.length;
+    return { skill: s, avgPL };
+  }).sort((a, b) => a.avgPL - b.avgPL).slice(0, 3);
+
+  // 2. Re-teach — find systemic weakness (>40% under threshold)
+  const reteach = SKILLS.find(s => {
+    const below = students.filter(st => progress[st.id][s.id].pL < 0.5).length / students.length;
+    return below >= 0.4;
+  });
+
+  // 3. Conference queue — bottom 5 by min skill
+  const queue = [...students].map(s => {
+    const minPL = Math.min(...SKILLS.map(sk => progress[s.id][sk.id].pL));
+    const struggle = SKILLS.filter(sk => progress[s.id][sk.id].streakDown >= 3).length;
+    return { student: s, minPL, urgency: struggle > 0 ? 'high' : (minPL < 0.3 ? 'med' : 'low') };
+  }).sort((a, b) => a.minPL - b.minPL).slice(0, 5);
+
+  // 4. Family notes — pick 3 students with notable change
+  const notes = [...students].slice(0, 3);
+
+  // 5. Tier escalation candidates
+  const tierCandidates = students.filter(s => {
+    const avgPL = SKILLS.reduce((sum, sk) => sum + progress[s.id][sk.id].pL, 0) / SKILLS.length;
+    return avgPL < 0.4;
+  }).slice(0, 3);
+
+  const grid = document.getElementById('actionGrid');
+  grid.innerHTML = `
+    <div class="action-card">
+      <span class="action-cadence">יומי · ${dateStr}</span>
+      <div class="action-title">Do Now — פתיחת הבוקר</div>
+      <div class="action-desc">5 דקות פתיחה שמטפלות בטעויות אתמול. Black & William: +20-30 percentile.</div>
+      <div class="action-body">
+        <strong style="display: block; margin-bottom: 8px;">המיומנויות הכי חלשות בכיתה:</strong>
+        ${lowSkills.map(ls => `<div style="padding: 6px 0; display: flex; justify-content: space-between;"><span>${ls.skill.name}</span><span class="num" style="color: ${pLToColor(ls.avgPL)}; font-weight: 700;">${(ls.avgPL * 100).toFixed(0)}%</span></div>`).join('')}
+      </div>
+    </div>
+
+    <div class="action-card">
+      <span class="action-cadence">שבועי · Re-teach</span>
+      <div class="action-title">תוכנית הוראה חוזרת</div>
+      <div class="action-desc">${reteach ? `מעל 40% מהכיתה מתחת ל-mastery ב-${reteach.name}.` : 'אין טעות מערכתית השבוע — להמשיך כרגיל.'}</div>
+      ${reteach ? `
+        <div class="action-body">
+          <strong>תוכנית 20 דקות:</strong><br>
+          • 5 דק' פתיחה — דוגמה חזותית למיומנות "${reteach.name}"<br>
+          • 10 דק' תרגול בזוגות — 6 פריטים מודרגים<br>
+          • 5 דק' Exit Ticket — 3 שאלות אבחון
+        </div>
+      ` : ''}
+    </div>
+
+    <div class="action-card">
+      <span class="action-cadence">שבועי · Conference Queue</span>
+      <div class="action-title">5 שיחות 5-7 דקות</div>
+      <div class="action-desc">סדר דחיפות: struggle indicator > רמה נמוכה. כל שיחה 30 שנ' תיעוד.</div>
+      <ul class="action-list">
+        ${queue.map(q => `<li><span>${q.student.name}</span><span class="urgency-dot ${q.urgency}"></span></li>`).join('')}
+      </ul>
+    </div>
+
+    <div class="action-card">
+      <span class="action-cadence">שבועי · Family Note</span>
+      <div class="action-title">הודעות להורים</div>
+      <div class="action-desc">הצלחה אחת + אתגר אחד + פעולה אחת לבית. מתאים ל-WhatsApp.</div>
+      <ul class="action-list">
+        ${notes.map(n => `<li><span>${n.name}</span><button class="btn-ghost" style="padding: 4px 12px; font-size: 12px;" onclick="goToParentReport('${n.id}')">צפה</button></li>`).join('')}
+      </ul>
+    </div>
+
+    <div class="action-card">
+      <span class="action-cadence">חודשי · MTSS Tier</span>
+      <div class="action-title">החלטות Tier (כל 6-8 שבועות)</div>
+      <div class="action-desc">Exit / Sustain / Escalate. ${tierCandidates.length} תלמידים מועמדים לבדיקת Tier 2/3.</div>
+      <ul class="action-list">
+        ${tierCandidates.length > 0 ? tierCandidates.map(s => {
+          const avgPL = SKILLS.reduce((sum, sk) => sum + progress[s.id][sk.id].pL, 0) / SKILLS.length;
+          return `<li><span>${s.name}</span><span class="num" style="color: var(--pink); font-weight: 700;">${(avgPL * 100).toFixed(0)}%</span></li>`;
+        }).join('') : '<li>אין מועמדים — כל הכיתה ב-Tier 1</li>'}
+      </ul>
+    </div>
+  `;
+}
+
+function goToParentReport(sid) {
+  document.getElementById('parentStudent').value = sid;
+  switchView('parent');
+  renderParentReport();
+}
+
+// ──────────────────────────────────────────────────────────
+// 12. LESSON GENERATOR — 3 tracks
+// ──────────────────────────────────────────────────────────
+function populateLessonControls() {
+  const select = document.getElementById('lessonSkill');
+  select.innerHTML = SKILLS.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+}
+
+function generateLesson() {
+  const skillId = document.getElementById('lessonSkill').value;
+  const minutes = parseInt(document.getElementById('lessonMinutes').value);
+  const skill = SKILLS.find(s => s.id === skillId);
+
+  const tracksDiv = document.getElementById('lessonTracks');
+  const m = Math.floor(minutes / 3);
+
+  tracksDiv.innerHTML = `
+    <div class="track-card support">
+      <div class="track-label"><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--gold); margin-left: 6px; vertical-align: middle;"></span>תמיכה מוגברת</div>
+      <div class="track-sub">~5 תלמידים · ${m} דקות</div>
+      <div class="track-step"><strong>פתיחה (3 דק')</strong>שיר/סיפור על "${skill.name}"</div>
+      <div class="track-step"><strong>מודל ישיר (5 דק')</strong>המורה מדגימה 3 דוגמאות עם חפצים מוחשיים (CRA — concrete)</div>
+      <div class="track-step"><strong>תרגול מודרך (${m - 8} דק')</strong>בזוג עם המורה. עזרי תמונה. רמזים חזותיים. ${skill.short} ברמה 1-2 בלבד.</div>
+    </div>
+
+    <div class="track-card core">
+      <div class="track-label"><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--indigo); margin-left: 6px; vertical-align: middle;"></span>בסיס — מרכז הכיתה</div>
+      <div class="track-sub">~12 תלמידים · ${m} דקות</div>
+      <div class="track-step"><strong>פתיחה (3 דק')</strong>סקירה של הנלמד</div>
+      <div class="track-step"><strong>הוראה (8 דק')</strong>${skill.name} — דוגמה + הסבר + 2 דוגמאות נוספות</div>
+      <div class="track-step"><strong>תרגול עצמאי (${m - 11} דק')</strong>סשן באבני יסוד · ZPD 75-85% · BKT מתעדכן</div>
+    </div>
+
+    <div class="track-card challenge">
+      <div class="track-label"><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--violet); margin-left: 6px; vertical-align: middle;"></span>אתגר — קוד שלם</div>
+      <div class="track-sub">~5 תלמידים · ${m} דקות</div>
+      <div class="track-step"><strong>אתגר פתוח (5 דק')</strong>קוד שלם: ${skill.name} עם רמת קושי גבוהה</div>
+      <div class="track-step"><strong>חקירה (${m - 8} דק')</strong>בזוגות — הסבירו אחד לשני "למה?", מטא-קוגניציה</div>
+      <div class="track-step"><strong>תוצר (3 דק')</strong>כתיבת/יצירת משהו חדש שמדגים את העיקרון</div>
+    </div>
+  `;
+}
+
+// ──────────────────────────────────────────────────────────
+// 13. PARENT REPORT
+// ──────────────────────────────────────────────────────────
+function populateParentSelect() {
+  const sel = document.getElementById('parentStudent');
+  sel.innerHTML = students.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+}
+
+function renderParentReport() {
+  const sid = document.getElementById('parentStudent').value;
+  const s = students.find(x => x.id === sid);
+  const p = progress[sid];
+
+  // Best skill (highest P(L))
+  const bestSkill = SKILLS.map(sk => ({ sk, pL: p[sk.id].pL })).sort((a, b) => b.pL - a.pL)[0];
+  // Weakest skill
+  const weakSkill = SKILLS.map(sk => ({ sk, pL: p[sk.id].pL })).sort((a, b) => a.pL - b.pL)[0];
+
+  const successText = `${s.name} מתקדמ${s.name.endsWith('ה') ? 'ת' : ''} יפה במיומנות "${bestSkill.sk.name}"! ${bestSkill.pL >= 0.85 ? 'כבר שולט/ת בנושא.' : 'כבר ברמה ' + levelName(p[bestSkill.sk.id].level) + '.'}`;
+  const challengeText = `המיומנות שמאתגרת השבוע: "${weakSkill.sk.name}". ${weakSkill.pL < 0.4 ? 'נשמח לתרגל את זה ביחד.' : 'ב-2 השבועות הקרובים נחזק שם.'}`;
+  const homeAction = getHomeAction(weakSkill.sk.id);
+
+  const fullMessage = `שלום,\n\n${successText}\n\n${challengeText}\n\nפעולה אחת לבית: ${homeAction}\n\nשבוע נעים!`;
+
+  document.getElementById('reportCard').innerHTML = `
+    <div class="report-section">
+      <div class="report-label">לתלמיד.ה</div>
+      <div class="report-value" style="font-size: 22px; font-weight: 800; color: var(--indigo-deep);">${s.name}</div>
+    </div>
+    <div class="report-section">
+      <div class="report-label" style="display: flex; align-items: center; gap: 6px;"><span style="color: var(--gold);">${SVG_STAR}</span> הצלחה השבוע</div>
+      <div class="report-value">${successText}</div>
+    </div>
+    <div class="report-section">
+      <div class="report-label" style="display: flex; align-items: center; gap: 6px;"><span style="color: var(--pink);">${SVG_TARGET}</span> אתגר השבוע</div>
+      <div class="report-value">${challengeText}</div>
+    </div>
+    <div class="report-section">
+      <div class="report-label" style="display: flex; align-items: center; gap: 6px;"><span style="color: var(--violet);">${SVG_HOME}</span> פעולה אחת לבית</div>
+      <div class="report-value">${homeAction}</div>
+    </div>
+    <div style="text-align: center;">
+      <button class="copy-btn" onclick="copyParentMessage(${JSON.stringify(fullMessage).replace(/"/g, '&quot;')})" style="display: inline-flex; align-items: center; gap: 8px;">${SVG_COPY} העתק להודעת WhatsApp</button>
+    </div>
+  `;
+}
+
+function getHomeAction(skillId) {
+  const actions = {
+    phonemic: 'משחקי חריזה בדרך הביתה — "מה מתחרז עם דג?"',
+    letter_id: 'חפשו את האות ש' + ' בשלט/בעיתון. כמה מצאתם?',
+    letter_sound: 'אמרו מילה — שאלו את הילד.ה איזה אות פותחת אותה.',
+    decoding: 'קראו ביחד הברה בכל פעם — לא מילה שלמה.',
+    word_reading: 'הקריאו ספר ילדים מנוקד 10 דקות לפני השינה.',
+    fluency: 'בקשו לקרוא את אותו הקטע 3 פעמים — מהר יותר בכל פעם.',
+    vocabulary: 'הסבירו 2 מילים חדשות מסיפור או מהטלוויזיה.',
+    comprehension: 'אחרי סיפור — שאלו: "מי? איפה? מה הרגיש?"',
+    writing: 'בקשו לכתוב שם של חבר/חברה. בלי לחץ — רק תרגול.'
+  };
+  return actions[skillId] || 'עודדו אותו.ה לתרגל את המיומנות בקלילות.';
+}
+
+function copyParentMessage(msg) {
+  navigator.clipboard.writeText(msg).then(() => {
+    alert('הועתק. ניתן להדביק ב-WhatsApp.');
+  });
+}
+
+// ──────────────────────────────────────────────────────────
+// 14. NAV — switch view
+// ──────────────────────────────────────────────────────────
+function switchView(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.view === name));
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
+  // Re-render dynamic views
+  if (name === 'today') renderToday();
+  if (name === 'class') renderClassMap();
+  if (name === 'results') renderHeatmap();
+  if (name === 'actions') renderActions();
+  if (name === 'parent') renderParentReport();
+  if (name === 'practice' && !currentSession) startPractice();
+}
+
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => switchView(t.dataset.view));
+});
+
+// ──────────────────────────────────────────────────────────
+// 15. RESET
+// ──────────────────────────────────────────────────────────
+function resetAllProgress() {
+  if (!confirm('לאפס את כל ההתקדמות של 22 התלמידים?')) return;
+  localStorage.removeItem('literacy_students');
+  localStorage.removeItem('literacy_progress');
+  location.reload();
+}
+
+// ──────────────────────────────────────────────────────────
+// 16. INIT
+// ──────────────────────────────────────────────────────────
+const students = initStudents();
+const progress = initProgress(students);
+
+document.getElementById('practiceStudent').innerHTML = students.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+populateParentSelect();
+populateLessonControls();
+renderToday();      // ← v2.0: התצוגה הראשית היא דשבורד היום (4 שאלות + Lexia Lessons)
+renderClassMap();   // מכין את מפת הכיתה מראש (כולל נקודות סיכון)
+generateLesson();
+</script>
+
+</body>
+</html>

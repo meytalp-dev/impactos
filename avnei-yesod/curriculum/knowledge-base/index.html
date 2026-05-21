@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ידע פדגוגי — אבני יסוד · ImpactOS Learning Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&family=Assistant:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fafaff;
+    --surface:#ffffff;
+    --surface-2:#f4f3ff;
+    --ink:#1a1a2e;
+    --ink-muted:#5b5b7a;
+    --lavender:#a78bfa;
+    --lavender-soft:#ddd6fe;
+    --lavender-deep:#7c3aed;
+    --mint:#86efac;
+    --mint-soft:#d1fae5;
+    --rose:#fda4af;
+    --rose-soft:#fecdd3;
+    --amber:#fcd34d;
+    --amber-soft:#fef3c7;
+    --sky:#7dd3fc;
+    --sky-soft:#e0f2fe;
+    --border:#e8e6f5;
+    --shadow-sm: 0 2px 8px rgba(124, 58, 237, 0.06);
+    --shadow-md: 0 8px 24px rgba(124, 58, 237, 0.10);
+    --radius:18px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:'Heebo','Assistant',system-ui,sans-serif;
+    background:
+      radial-gradient(circle at 10% 0%, #f3eaff 0%, transparent 40%),
+      radial-gradient(circle at 90% 100%, #e0f2fe 0%, transparent 40%),
+      var(--bg);
+    color:var(--ink);
+    line-height:1.55;
+    min-height:100vh;
+  }
+
+  /* ===== Header ===== */
+  .topbar{
+    background:rgba(255,255,255,0.85);
+    backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border);
+    padding:18px 32px;
+    position:sticky;top:0;z-index:50;
+    display:flex;align-items:center;justify-content:space-between;
+    gap:24px;flex-wrap:wrap;
+  }
+  .brand{display:flex;align-items:center;gap:14px}
+  .brand-mark{
+    width:42px;height:42px;border-radius:12px;
+    background:linear-gradient(135deg, var(--lavender) 0%, var(--lavender-deep) 100%);
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:900;font-size:20px;
+    box-shadow:var(--shadow-sm);
+  }
+  .brand-text{display:flex;flex-direction:column}
+  .brand-title{font-weight:900;font-size:18px;color:var(--ink);letter-spacing:-0.3px}
+  .brand-sub{font-size:12px;color:var(--ink-muted);font-weight:500}
+  .topbar-meta{display:flex;align-items:center;gap:18px;font-size:13px;color:var(--ink-muted)}
+  .topbar-meta a{color:var(--lavender-deep);text-decoration:none;font-weight:600}
+  .topbar-meta a:hover{text-decoration:underline}
+
+  /* ===== Hero ===== */
+  .hero{
+    max-width:1280px;margin:0 auto;padding:48px 32px 24px;
+  }
+  .hero-eyebrow{
+    display:inline-block;
+    padding:6px 14px;
+    background:var(--lavender-soft);
+    color:var(--lavender-deep);
+    border-radius:999px;
+    font-size:13px;font-weight:700;
+    margin-bottom:18px;
+  }
+  .hero h1{
+    font-size:clamp(28px,4vw,44px);
+    font-weight:900;
+    letter-spacing:-0.8px;
+    margin:0 0 14px;
+    line-height:1.15;
+    background:linear-gradient(120deg,var(--ink) 0%, var(--lavender-deep) 60%, var(--ink) 100%);
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;
+  }
+  .hero p{
+    font-size:17px;color:var(--ink-muted);
+    max-width:780px;margin:0;
+  }
+
+  /* ===== Stats strip ===== */
+  .stats{
+    max-width:1280px;margin:32px auto 0;
+    padding:0 32px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:14px;
+  }
+  .stat-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:20px 22px;
+    box-shadow:var(--shadow-sm);
+    position:relative;overflow:hidden;
+  }
+  .stat-card::before{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(135deg, transparent 0%, var(--surface-2) 100%);
+    opacity:0.5;z-index:0;
+  }
+  .stat-card > *{position:relative;z-index:1}
+  .stat-num{font-size:32px;font-weight:900;color:var(--ink);letter-spacing:-1px;line-height:1}
+  .stat-label{font-size:13px;color:var(--ink-muted);font-weight:600;margin-top:8px}
+  .stat-card.v-lav{border-top:3px solid var(--lavender)}
+  .stat-card.v-mint{border-top:3px solid var(--mint)}
+  .stat-card.v-rose{border-top:3px solid var(--rose)}
+  .stat-card.v-amber{border-top:3px solid var(--amber)}
+  .stat-card.v-sky{border-top:3px solid var(--sky)}
+
+  /* ===== Sources section ===== */
+  .container{max-width:1280px;margin:0 auto;padding:48px 32px}
+  .section-title{
+    font-size:24px;font-weight:900;letter-spacing:-0.4px;
+    margin:0 0 6px;color:var(--ink);
+  }
+  .section-sub{font-size:15px;color:var(--ink-muted);margin:0 0 24px}
+
+  /* ===== Source cards grid ===== */
+  .sources-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+    gap:18px;
+    margin-bottom:36px;
+  }
+  .source-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:24px;
+    box-shadow:var(--shadow-sm);
+    transition:transform 0.2s ease, box-shadow 0.2s ease;
+    position:relative;
+    cursor:pointer;
+  }
+  .source-card:hover{
+    transform:translateY(-3px);
+    box-shadow:var(--shadow-md);
+    border-color:var(--lavender-soft);
+  }
+  .source-card.is-active{
+    border:2px solid var(--lavender-deep);
+    box-shadow:0 10px 28px rgba(124,58,237,0.18);
+  }
+  .source-card.is-placeholder{
+    background:transparent;
+    border:2px dashed var(--border);
+    color:var(--ink-muted);
+    box-shadow:none;
+  }
+  .source-card.is-placeholder:hover{transform:none;box-shadow:none;border-color:var(--lavender-soft)}
+  .source-tag{
+    display:inline-block;
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:11px;font-weight:700;
+    margin-bottom:12px;
+    text-transform:uppercase;letter-spacing:0.5px;
+  }
+  .tag-grade1{background:var(--mint-soft);color:#065f46}
+  .tag-grade2{background:var(--sky-soft);color:#075985}
+  .tag-pending{background:#f1f1f7;color:#7a7a9a}
+  .source-card h3{
+    font-size:18px;font-weight:800;
+    margin:0 0 8px;color:var(--ink);
+    letter-spacing:-0.2px;
+  }
+  .source-card p{font-size:14px;color:var(--ink-muted);margin:0 0 14px;line-height:1.5}
+  .source-meta{
+    display:flex;gap:16px;font-size:12px;color:var(--ink-muted);
+    padding-top:14px;border-top:1px solid var(--border);
+  }
+  .source-meta b{color:var(--ink);font-weight:700;display:block}
+
+  /* ===== Active source viewer ===== */
+  .viewer{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:24px;
+    box-shadow:var(--shadow-md);
+    overflow:hidden;
+    margin-bottom:48px;
+  }
+  .viewer-head{
+    padding:28px 32px;
+    background:linear-gradient(135deg, var(--lavender-soft) 0%, #fff 100%);
+    border-bottom:1px solid var(--border);
+  }
+  .viewer-head h2{margin:0 0 6px;font-size:22px;font-weight:900;letter-spacing:-0.4px}
+  .viewer-head .src-meta{font-size:13px;color:var(--ink-muted)}
+  .viewer-head .src-meta a{color:var(--lavender-deep);font-weight:600}
+
+  .viewer-body{padding:24px 32px}
+
+  /* ===== Filters ===== */
+  .filters{
+    display:flex;flex-wrap:wrap;gap:8px;
+    margin-bottom:20px;
+    padding-bottom:18px;border-bottom:1px solid var(--border);
+  }
+  .filter-btn{
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--ink);
+    padding:7px 14px;
+    border-radius:999px;
+    font-size:13px;font-weight:600;
+    cursor:pointer;
+    font-family:inherit;
+    transition:all 0.15s ease;
+  }
+  .filter-btn:hover{background:#fff;border-color:var(--lavender)}
+  .filter-btn.is-on{
+    background:var(--lavender-deep);
+    color:#fff;
+    border-color:var(--lavender-deep);
+  }
+  .filter-count{
+    opacity:0.7;font-size:11px;margin-inline-start:4px;
+  }
+  .search-wrap{margin-inline-start:auto;display:flex;align-items:center;gap:8px}
+  .search-wrap input{
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:999px;
+    padding:8px 14px;
+    font-family:inherit;font-size:13px;
+    width:200px;
+    color:var(--ink);
+  }
+  .search-wrap input:focus{outline:none;border-color:var(--lavender);background:#fff}
+
+  /* ===== Worksheets table ===== */
+  .ws-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+    gap:10px;
+  }
+  .ws-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:14px 16px;
+    display:flex;align-items:center;gap:12px;
+    transition:all 0.15s ease;
+    text-decoration:none;color:inherit;
+  }
+  .ws-card:hover{
+    border-color:var(--lavender);
+    box-shadow:var(--shadow-sm);
+    transform:translateY(-1px);
+  }
+  .ws-num{
+    flex-shrink:0;
+    width:36px;height:36px;
+    background:var(--surface-2);
+    border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:13px;color:var(--lavender-deep);
+  }
+  .ws-body{flex:1;min-width:0}
+  .ws-title{
+    font-weight:600;font-size:14px;color:var(--ink);
+    margin:0 0 3px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .ws-meta{display:flex;gap:6px;align-items:center;font-size:11px;color:var(--ink-muted)}
+  .cat-dot{display:inline-block;width:7px;height:7px;border-radius:50%}
+  .cat-reading_writing{background:var(--lavender)}
+  .cat-phonological_awareness{background:var(--sky)}
+  .cat-reading_comprehension{background:var(--rose)}
+  .cat-vocabulary{background:var(--amber)}
+  .cat-language_structure{background:var(--mint)}
+
+  /* ===== Legend ===== */
+  .legend{
+    display:flex;flex-wrap:wrap;gap:14px;
+    background:var(--surface-2);
+    border-radius:14px;
+    padding:14px 18px;
+    margin-bottom:18px;
+    font-size:12px;
+  }
+  .legend-item{display:flex;align-items:center;gap:7px;color:var(--ink-muted);font-weight:600}
+
+  /* ===== Empty state ===== */
+  .empty-state{
+    text-align:center;padding:48px 24px;color:var(--ink-muted);
+  }
+  .empty-state strong{color:var(--ink);display:block;margin-bottom:6px}
+
+  /* ===== Roadmap section ===== */
+  .roadmap{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:24px;
+    padding:32px;
+    margin-top:32px;
+    box-shadow:var(--shadow-sm);
+  }
+  .roadmap h2{margin:0 0 20px;font-size:22px;font-weight:900;letter-spacing:-0.4px}
+  .stage-list{display:grid;gap:14px}
+  .stage{
+    display:flex;gap:18px;
+    padding:18px 20px;
+    background:var(--surface-2);
+    border-radius:14px;
+    border-inline-start:4px solid var(--lavender);
+  }
+  .stage-num{
+    flex-shrink:0;
+    width:42px;height:42px;
+    background:var(--lavender-deep);color:#fff;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:900;font-size:16px;
+  }
+  .stage h4{margin:0 0 5px;font-size:16px;font-weight:800}
+  .stage p{margin:0;font-size:14px;color:var(--ink-muted);line-height:1.55}
+  .stage-tag{
+    display:inline-block;padding:2px 8px;border-radius:6px;
+    background:#fff;border:1px solid var(--border);
+    font-size:11px;font-weight:700;color:var(--ink-muted);
+    margin-inline-start:8px;
+  }
+
+  /* ===== Footer ===== */
+  .foot{
+    text-align:center;padding:36px 24px;
+    color:var(--ink-muted);font-size:13px;
+    border-top:1px solid var(--border);
+    background:var(--surface);
+    margin-top:48px;
+  }
+  .foot a{color:var(--lavender-deep);text-decoration:none;font-weight:600}
+
+  @media (max-width:768px){
+    .topbar{padding:14px 18px}
+    .hero{padding:32px 18px 16px}
+    .container{padding:32px 18px}
+    .stats{padding:0 18px}
+    .viewer-head{padding:20px}
+    .viewer-body{padding:18px}
+    .search-wrap input{width:140px}
+    .search-wrap{margin-inline-start:0;width:100%}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark">י</div>
+    <div class="brand-text">
+      <div class="brand-title">ידע פדגוגי — אבני יסוד</div>
+      <div class="brand-sub">ImpactOS · Learning Engine · מאגר מקורות לפיתוח פאקים דיפרנציאליים</div>
+    </div>
+  </div>
+  <div class="topbar-meta">
+    <span>עודכן: 20.5.2026</span>
+    <a href="../literacy-grade1-2-yearly.html">חזרה לתוכנית השנתית</a>
+  </div>
+</header>
+
+<style>
+  /* ===== Framework viewer (תוכנית-מסגרת, להבדיל מדפי עבודה) ===== */
+  .framework-section{margin-bottom:32px}
+  .framework-section h3{
+    font-size:18px;font-weight:900;letter-spacing:-0.3px;
+    margin:0 0 4px;color:var(--lavender-deep);
+    display:flex;align-items:center;gap:10px;
+  }
+  .framework-section h3 .pill{
+    background:var(--lavender-soft);color:var(--lavender-deep);
+    font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;
+    letter-spacing:0.3px;
+  }
+  .framework-section .sec-intro{
+    font-size:13px;color:var(--ink-muted);margin:0 0 14px;
+  }
+  .concept-grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;
+  }
+  .concept-card{
+    background:var(--surface-2);border:1px solid var(--border);
+    border-radius:14px;padding:16px 18px;
+    transition:all 0.15s ease;
+  }
+  .concept-card:hover{border-color:var(--lavender);background:#fff}
+  .concept-card .num{
+    display:inline-block;width:26px;height:26px;
+    background:var(--lavender-deep);color:#fff;
+    border-radius:50%;text-align:center;line-height:26px;
+    font-weight:900;font-size:12px;margin-bottom:8px;
+  }
+  .concept-card h4{
+    margin:0 0 6px;font-size:15px;font-weight:800;color:var(--ink);
+  }
+  .concept-card .age{
+    display:inline-block;font-size:11px;font-weight:700;
+    background:var(--mint-soft);color:#065f46;
+    padding:2px 8px;border-radius:6px;margin-bottom:8px;
+  }
+  .concept-card p{margin:0;font-size:13px;color:var(--ink-muted);line-height:1.5}
+  .concept-card ul{margin:6px 0 0;padding-inline-start:18px;font-size:13px;color:var(--ink-muted)}
+  .concept-card .engine-note{
+    margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);
+    font-size:12px;color:var(--lavender-deep);font-weight:600;
+  }
+
+  .difficulty-table{width:100%;border-collapse:collapse;font-size:13px;background:#fff;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+  .difficulty-table th{
+    background:var(--lavender-soft);color:var(--lavender-deep);
+    padding:10px 14px;text-align:right;font-weight:800;font-size:12px;
+  }
+  .difficulty-table td{padding:10px 14px;border-top:1px solid var(--border);color:var(--ink-muted)}
+  .difficulty-table td:first-child{font-weight:700;color:var(--ink)}
+
+  .rti-pyramid{
+    display:flex;flex-direction:column;align-items:center;gap:6px;margin:14px 0;
+  }
+  .rti-tier{
+    border-radius:14px;padding:14px 22px;color:#fff;font-weight:700;
+    display:flex;align-items:center;justify-content:space-between;gap:18px;
+    box-shadow:var(--shadow-sm);
+  }
+  .rti-tier.t1{background:linear-gradient(135deg,#86efac,#10b981);width:100%}
+  .rti-tier.t2{background:linear-gradient(135deg,#fcd34d,#f59e0b);width:75%}
+  .rti-tier.t3{background:linear-gradient(135deg,#fda4af,#ef4444);width:45%}
+  .rti-tier .pct{font-size:18px;font-weight:900}
+  .rti-tier .name{font-size:14px}
+
+  .compat-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:10px}
+  @media(max-width:720px){.compat-grid{grid-template-columns:1fr}}
+  .compat-col{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px}
+  .compat-col h4{margin:0 0 10px;font-size:14px;font-weight:800}
+  .compat-col.ok h4{color:#10b981}
+  .compat-col.gap h4{color:#f59e0b}
+  .compat-col ul{margin:0;padding-inline-start:18px;font-size:13px;color:var(--ink-muted);line-height:1.7}
+  .compat-col li{margin-bottom:4px}
+
+  .researcher-list{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;
+    font-size:13px;
+  }
+  .researcher-item{
+    background:#fff;border:1px solid var(--border);border-radius:10px;
+    padding:10px 14px;color:var(--ink-muted);
+  }
+  .researcher-item b{color:var(--ink);font-weight:700;display:block;font-size:13px}
+
+  /* ===== Lessons-books viewer (קסם וחברים — חוברות+שיעורים) ===== */
+  .book-block{
+    background:#fff;border:1px solid var(--border);border-radius:18px;
+    padding:22px 26px;margin-bottom:18px;
+    border-inline-start:6px solid var(--lavender);
+    box-shadow:var(--shadow-sm);
+  }
+  .book-block.book-1{border-inline-start-color:#6366F1}
+  .book-block.book-2{border-inline-start-color:#EC4899}
+  .book-block.book-3{border-inline-start-color:#14B8A6}
+  .book-block.book-4{border-inline-start-color:#F59E0B}
+  .book-block.book-5{border-inline-start-color:#8B5CF6}
+  .book-head{display:flex;align-items:center;gap:14px;margin-bottom:6px;flex-wrap:wrap}
+  .book-pill{
+    width:46px;height:46px;border-radius:13px;color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:900;font-size:22px;flex-shrink:0;
+  }
+  .book-block.book-1 .book-pill{background:#6366F1}
+  .book-block.book-2 .book-pill{background:#EC4899}
+  .book-block.book-3 .book-pill{background:#14B8A6}
+  .book-block.book-4 .book-pill{background:#F59E0B}
+  .book-block.book-5 .book-pill{background:#8B5CF6}
+  .book-head h4{margin:0;font-size:17px;font-weight:800;color:var(--ink);letter-spacing:-0.2px}
+  .book-head .book-meta{font-size:12px;color:var(--ink-muted);font-weight:600}
+  .book-rationale{font-size:13px;color:var(--ink-muted);margin:8px 0 14px;line-height:1.55}
+
+  .lesson-pills{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;
+    margin-top:10px;
+  }
+  .lesson-pill{
+    background:var(--surface-2);border:1px solid var(--border);
+    border-radius:12px;padding:12px;text-align:center;
+    transition:all 0.15s ease;
+  }
+  .lesson-pill:hover{background:#fff;border-color:var(--lavender);transform:translateY(-1px)}
+  .lesson-pill .l-num{font-size:11px;color:var(--ink-muted);font-weight:600;margin-bottom:4px}
+  .lesson-pill .l-letters{font-size:24px;font-weight:900;color:var(--ink);letter-spacing:1px;line-height:1.1;margin:4px 0}
+  .lesson-pill .l-cumul{font-size:11px;color:var(--lavender-deep);font-weight:700;margin-top:4px}
+  .lesson-pill .l-note{font-size:10.5px;color:var(--ink-muted);margin-top:4px;line-height:1.4}
+
+  .sub-unit-row{
+    background:var(--surface-2);border-radius:12px;padding:14px 16px;
+    margin-top:10px;border:1px solid var(--border);
+  }
+  .sub-unit-top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+  .sub-unit-top .name{font-weight:800;font-size:15px;color:var(--ink)}
+  .sub-unit-top .range{font-size:12px;background:#fff;padding:2px 8px;border-radius:6px;color:var(--ink-muted);font-weight:700;border:1px solid var(--border)}
+  .sub-unit-top .phoneme{font-family:'Inter',monospace;font-size:13px;color:var(--lavender-deep);font-weight:700;background:var(--lavender-soft);padding:2px 10px;border-radius:6px}
+  .sub-unit-top .niqqud{font-size:18px;color:var(--ink);font-weight:700}
+  .sub-unit-why{font-size:12.5px;color:var(--ink-muted);line-height:1.55}
+
+  .niqqud-tbl{width:100%;border-collapse:collapse;font-size:13px;background:#fff;border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-top:8px}
+  .niqqud-tbl th{background:var(--lavender-soft);color:var(--lavender-deep);padding:10px 12px;font-weight:800;font-size:12px;text-align:center}
+  .niqqud-tbl td{padding:10px 12px;border-top:1px solid var(--border);color:var(--ink);text-align:center}
+  .niqqud-tbl td:nth-child(2){font-size:20px;font-weight:700}
+  .niqqud-tbl td:nth-child(3){font-family:'Inter',monospace;color:var(--lavender-deep);font-weight:700}
+
+  .calendar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:10px}
+  .cal-cell{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+  .cal-cell .cal-month{font-weight:800;color:var(--lavender-deep);font-size:14px;margin-bottom:6px}
+  .cal-cell .cal-body{font-size:12.5px;color:var(--ink-muted);line-height:1.55}
+  .cal-cell .cal-body b{color:var(--ink);font-weight:700}
+
+  .compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+  @media(max-width:720px){.compare-grid{grid-template-columns:1fr}}
+  .compare-cell{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 16px;font-size:13px;line-height:1.55}
+  .compare-cell.was{border-inline-start:4px solid var(--rose);color:var(--ink-muted)}
+  .compare-cell.is{border-inline-start:4px solid var(--mint);color:var(--ink)}
+  .compare-cell .tag{display:inline-block;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:6px;margin-bottom:6px;letter-spacing:0.3px}
+  .compare-cell.was .tag{background:var(--rose-soft);color:#9f1239}
+  .compare-cell.is .tag{background:var(--mint-soft);color:#065f46}
+
+  .insights-list{margin:8px 0 0;padding-inline-start:20px;font-size:13.5px;color:var(--ink);line-height:1.8}
+  .insights-list li{margin-bottom:4px}
+  .questions-box{background:#fffbeb;border:1px solid #fcd34d;border-radius:12px;padding:14px 18px;margin-top:6px}
+  .questions-box h5{margin:0 0 8px;font-size:13px;font-weight:800;color:#92400e}
+  .questions-box ul{margin:0;padding-inline-start:20px;font-size:13px;color:#78350f;line-height:1.7}
+  .ok-box{background:#ecfdf5;border:1px solid #6ee7b7;border-radius:12px;padding:14px 18px;margin-top:10px}
+  .ok-box h5{margin:0 0 8px;font-size:13px;font-weight:800;color:#047857}
+  .ok-box ul{margin:0;padding-inline-start:20px;font-size:13px;color:#065f46;line-height:1.7}
+</header>
+
+<section class="hero">
+  <span class="hero-eyebrow">בסיס ידע פתוח · רב-מקורי · נבנה בהדרגה</span>
+  <h1>הבסיס הפדגוגי שעליו נשענת מערכת אבני יסוד</h1>
+  <p>
+    כאן נאסף, נמיין ונסמן את כל החומר הפדגוגי שאנחנו אוספים ממקורות מאומתים —
+    תוכניות לימודים, חוברות עבודה, מחקרים ושיטות הוראה — שמשמש לפיתוח פאקים
+    דיפרנציאליים עבור Learning Engine. כל מקור נשמר כ-JSON בנפרד, ניתן להחליפו או לעדכן אותו,
+    ואפשר לקשר ממנו ישירות לתרגול לבית או להעשרה בכיתה.
+  </p>
+</section>
+
+<section class="stats" id="stats">
+  <div class="stat-card v-lav"><div class="stat-num" id="stat-total">—</div><div class="stat-label">דפי עבודה במאגר</div></div>
+  <div class="stat-card v-mint"><div class="stat-num" id="stat-sources">4</div><div class="stat-label">מקורות פעילים</div></div>
+  <div class="stat-card v-sky"><div class="stat-num" id="stat-rw">—</div><div class="stat-label">קריאה וכתיבה</div></div>
+  <div class="stat-card v-rose"><div class="stat-num" id="stat-rc">—</div><div class="stat-label">הבנת הנקרא</div></div>
+  <div class="stat-card v-amber"><div class="stat-num" id="stat-pa">—</div><div class="stat-label">מודעות פונולוגית</div></div>
+</section>
+
+<section class="container">
+  <h2 class="section-title">מקורות במאגר</h2>
+  <p class="section-sub">לחצי על מקור כדי לעיין בכל הפריטים שלו, לסנן לפי קטגוריה ולקבל קישור ישיר ל-PDF</p>
+
+  <div class="sources-grid" id="sources-grid">
+    <article class="source-card" data-source="negba-grade1" data-type="worksheets">
+      <span class="source-tag tag-grade1">כיתה א'</span>
+      <h3>נגבה — דפי עבודה בעברית</h3>
+      <p>145 דפי PDF מובנים לפי רצף רכישת קריאה — אות, עיצור, הברה, מילה, משפט, סיפור. תואם תוכנית משרד החינוך.</p>
+      <div class="source-meta">
+        <div><b>145</b>פריטים</div>
+        <div><b>5</b>קטגוריות</div>
+        <div><b>22</b>אותיות</div>
+      </div>
+    </article>
+
+    <article class="source-card is-active" data-source="moe-curriculum-tashpav-2026" data-type="framework">
+      <span class="source-tag" style="background:#ede9fe;color:#5b21b6">תכנית-מסגרת · גן-א-ב</span>
+      <h3>משה"ח — תוכנית חדשה תשפ"ו (2026)</h3>
+      <p>המסמך הסמכותי הרשמי לרצף שפה ואוריינות בעברית מהגן לכיתה ב'. בראשות פרופ' מיכל שני, עם פרופ' עמליה בר־און, פרופ' דורית ארם. תשתית-על לכל פאק.</p>
+      <div class="source-meta">
+        <div><b>3</b>רכיבים</div>
+        <div><b>6</b>שלבי רכישה</div>
+        <div><b>6</b>כלי הערכה</div>
+      </div>
+    </article>
+
+    <article class="source-card" data-source="kesem-vehaverim-grade1" data-type="lessons_books">
+      <span class="source-tag" style="background:#fef3c7;color:#92400e">ספר לימוד · כיתה א'</span>
+      <h3>קסם וחברים — מטח</h3>
+      <p>הסדר הקנוני של מטח: 22 אותיות בחוברת 1 (לא אלפביתי!), ניקוד בחוברות 2-5. סריקה ישירה של 60 שיעורים מהפלטפורמה הדיגיטלית.</p>
+      <div class="source-meta">
+        <div><b>60</b>שיעורים</div>
+        <div><b>5</b>חוברות</div>
+        <div><b>17/60</b>נסרק</div>
+      </div>
+    </article>
+
+    <article class="source-card" data-source="ofek-grade1" data-type="lomda_catalog">
+      <span class="source-tag" style="background:#fce7f3;color:#9d174d">לומדות תרגול · כיתה א'</span>
+      <h3>אופק — מטח (לומדות תרגול)</h3>
+      <p>79 לומדות אינטראקטיביות של מטח, 10-20 דק' כל אחת. 11 משפחות פדגוגיות. השלמה תרגולית לקסם וחברים, עם שכבת מודעות פונולוגית מקדימה ופידבק עדין.</p>
+      <div class="source-meta">
+        <div><b>79</b>לומדות</div>
+        <div><b>11</b>משפחות</div>
+        <div><b>9</b>נסרקו</div>
+      </div>
+    </article>
+
+    <article class="source-card" data-source="world-systems-comparison" data-type="framework">
+      <span class="source-tag" style="background:#dcfce7;color:#166534">מטה-מחקר · עולמי</span>
+      <h3>מערכות אוריינות בעולם — השוואה</h3>
+      <p>10 מערכות מובילות (Lexia · Lalilo · Heggerty · Amira · DIBELS · עת הדעת · מטח) מול מסגרת משה"ח תשפ"ו. מה לאמץ, מה לא, ומה לבנות חדש.</p>
+      <div class="source-meta">
+        <div><b>10</b>מערכות</div>
+        <div><b>6</b>הבדלים</div>
+        <div><b>9</b>פעולות</div>
+      </div>
+    </article>
+
+    <a href="../vocab-bank.html" style="text-decoration:none;color:inherit">
+      <article class="source-card" style="border:2px solid #6366F1;background:linear-gradient(135deg,#FAFAFF,#F5F3FF);cursor:pointer">
+        <span class="source-tag" style="background:#6366F1;color:white">⭐ מאגר חי · v2.1</span>
+        <h3>אוצר מילים מאומת — כיתה א'</h3>
+        <p>~200 מילים אמיתיות שנסרקו ידנית מ-16 תחנות של "קסם וחברים". מאורגן ב-3 רבדים: לפי תחנה (16), לפי 9 מיומנויות יסוד, ולפי קטגוריה לשונית (פעלים זכר/נקבה, שמות, מילות פונקציה, תחיליות). תואם 100% לאפיון אבני יסוד.</p>
+        <div class="source-meta">
+          <div><b>~200</b>מילים מאומתות</div>
+          <div><b>9</b>מיומנויות</div>
+          <div><b>3</b>רבדי ארגון</div>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:#6366F1;font-weight:700">לחצי לצפייה ב-viewer ←</div>
+      </article>
+    </a>
+
+    <article class="source-card is-placeholder">
+      <span class="source-tag tag-grade1">כיתה א'-ב'</span>
+      <h3>Heggerty — מודעות פונולוגית</h3>
+      <p>תוכנית יומית בת 12 שבועות. רעיון להמרה לפעילויות דיגיטליות במנוע הדיפרנציאלי.</p>
+      <div class="source-meta"><div><b>בתכנון</b>הוספה</div></div>
+    </article>
+
+    <article class="source-card is-placeholder">
+      <span class="source-tag tag-grade1">כיתה א'-ב'</span>
+      <h3>ליט"ף — אוריינות לשונית</h3>
+      <p>חומרי הלמידה של תוכנית ליט"ף — בסיס לחלק מהפעילויות בפאקים.</p>
+      <div class="source-meta"><div><b>בתכנון</b>הוספה</div></div>
+    </article>
+
+    <article class="source-card is-placeholder">
+      <span class="source-tag tag-pending">כללי</span>
+      <h3>ראמ"ה — הפרופיל האורייני (2025)</h3>
+      <p>הכלי הרשמי החדש של משה"ח לאבחון אורייני בכניסה לכיתה א'. להוריד ולשלב במסך הפתיחה של המנוע.</p>
+      <div class="source-meta"><div><b>בתכנון</b>הוספה</div></div>
+    </article>
+  </div>
+
+  <div class="viewer">
+    <div class="viewer-head" id="viewer-head"></div>
+    <div class="viewer-body">
+
+      <div class="legend">
+        <div class="legend-item"><span class="cat-dot cat-reading_writing"></span>קריאה וכתיבה</div>
+        <div class="legend-item"><span class="cat-dot cat-phonological_awareness"></span>מודעות פונולוגית</div>
+        <div class="legend-item"><span class="cat-dot cat-reading_comprehension"></span>הבנת הנקרא</div>
+        <div class="legend-item"><span class="cat-dot cat-vocabulary"></span>אוצר מילים</div>
+        <div class="legend-item"><span class="cat-dot cat-language_structure"></span>מבנה הלשון</div>
+      </div>
+
+      <div class="filters" id="filters">
+        <button class="filter-btn is-on" data-cat="all">הכל <span class="filter-count" id="cnt-all"></span></button>
+        <button class="filter-btn" data-cat="reading_writing">קריאה וכתיבה <span class="filter-count" id="cnt-reading_writing"></span></button>
+        <button class="filter-btn" data-cat="phonological_awareness">מודעות פונולוגית <span class="filter-count" id="cnt-phonological_awareness"></span></button>
+        <button class="filter-btn" data-cat="reading_comprehension">הבנת הנקרא <span class="filter-count" id="cnt-reading_comprehension"></span></button>
+        <button class="filter-btn" data-cat="vocabulary">אוצר מילים <span class="filter-count" id="cnt-vocabulary"></span></button>
+        <button class="filter-btn" data-cat="language_structure">מבנה הלשון <span class="filter-count" id="cnt-language_structure"></span></button>
+        <div class="search-wrap">
+          <input type="text" id="search-input" placeholder="חיפוש (כותרת / אות / תנועה)">
+        </div>
+      </div>
+
+      <div class="ws-grid" id="ws-grid"></div>
+      <div class="empty-state" id="empty-state" style="display:none">
+        <strong>אין תוצאות לסינון הזה</strong>
+        נסי לבחור קטגוריה אחרת או לנקות את החיפוש
+      </div>
+    </div>
+  </div>
+
+  <div class="roadmap">
+    <h2>רצף ההוראה במקור נגבה — סקירה לפי שלבים</h2>
+    <div class="stage-list">
+      <div class="stage">
+        <div class="stage-num">1</div>
+        <div>
+          <h4>רכישת אותיות וצלילים<span class="stage-tag">דפים 1–100</span></h4>
+          <p>כל אות מקבלת 3–5 דפים ברצף קבוע: מודעות פונולוגית → האות עצמה → הברה → קריאה וכתיבה → משפטים. סדר האותיות: א, ב, ג, ד, ה, ו, ז, ח, ט, י, כ, ל, מ, נ, ס, ע, פ, צ, ק, ר, ש, ת.</p>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-num">2</div>
+        <div>
+          <h4>שווא נח ומילים גלובליות<span class="stage-tag">דפים 101–104</span></h4>
+          <p>כניסה ראשונה לשווא, מילים גלובליות (אַתְּ, שֶׁל) וקריאת סיפור הראשון.</p>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-num">3</div>
+        <div>
+          <h4>תנועות מתקדמות<span class="stage-tag">דפים 105–145</span></h4>
+          <p>חיריק, סגול, צירי, שווא נע, חולם, שורוק, קובוץ, חטפים, פתח גנובה — כל תנועה עם דפי מודעות, הברות ושילובים בין תנועות. מסיים בסיפור מסכם "הקרקס".</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<footer class="foot">
+  ImpactOS · אבני יסוד · ידע פדגוגי פתוח · המאגר מתעדכן בעת הוספת מקורות חדשים<br>
+  לפתיחת פאק קיים: <a href="../packs/grade1-december-cvc-preview.html">דצמבר א' — CVC</a> ·
+  לתוכנית שנתית: <a href="../literacy-grade1-2-yearly.html">אוריינות א'-ב'</a>
+</footer>
+
+<script>
+const SOURCES = {
+  'negba-grade1':                 {file:'sources/negba-grade1.json',                 type:'worksheets'},
+  'moe-curriculum-tashpav-2026':  {file:'sources/moe-curriculum-tashpav-2026.json',  type:'framework'},
+  'kesem-vehaverim-grade1':       {file:'sources/kesem-vehaverim-grade1.json',       type:'lessons_books'},
+  'ofek-grade1':                  {file:'sources/ofek-grade1.json',                  type:'lomda_catalog'},
+  'world-systems-comparison':     {file:'sources/world-systems-comparison.json',     type:'framework'}
+};
+const CAT_LABELS = {
+  reading_writing: 'קריאה וכתיבה',
+  phonological_awareness: 'מודעות פונולוגית',
+  reading_comprehension: 'הבנת הנקרא',
+  vocabulary: 'אוצר מילים',
+  language_structure: 'מבנה הלשון'
+};
+
+let DATA = null;
+let DATA_TYPE = null;
+let activeSource = 'moe-curriculum-tashpav-2026';
+let activeCat = 'all';
+let searchQ = '';
+
+async function loadSource(id){
+  const cfg = SOURCES[id];
+  if(!cfg) return;
+  activeSource = id;
+  DATA_TYPE = cfg.type;
+  try{
+    const r = await fetch(cfg.file);
+    if(!r.ok) throw new Error('failed to load JSON');
+    DATA = await r.json();
+    render();
+  } catch(e){
+    document.querySelector('.viewer-body').innerHTML =
+      '<div class="empty-state">' +
+      '<strong>שגיאה בטעינה</strong>לא הצלחנו לטעון את הקובץ ' + cfg.file + '<br>' +
+      '<small style="opacity:0.6">' + e.message + '</small></div>';
+  }
+}
+
+function render(){
+  if(!DATA) return;
+  document.querySelectorAll('.source-card').forEach(c => c.classList.remove('is-active'));
+  const activeEl = document.querySelector('[data-source="' + activeSource + '"]');
+  if(activeEl) activeEl.classList.add('is-active');
+
+  if(DATA_TYPE === 'worksheets') renderWorksheets();
+  else if(DATA_TYPE === 'framework') renderFramework();
+  else if(DATA_TYPE === 'lessons_books') renderLessonsBooks();
+  else if(DATA_TYPE === 'lomda_catalog') renderLomdaCatalog();
+}
+
+function renderWorksheets(){
+  const ws = DATA.worksheets || [];
+  const counts = {all: ws.length};
+  Object.keys(CAT_LABELS).forEach(k => counts[k] = ws.filter(w => w.category === k).length);
+
+  document.getElementById('stat-total').textContent = ws.length;
+  document.getElementById('stat-rw').textContent = counts.reading_writing;
+  document.getElementById('stat-rc').textContent = counts.reading_comprehension;
+  document.getElementById('stat-pa').textContent = counts.phonological_awareness;
+
+  Object.entries(counts).forEach(([k,v]) => {
+    const el = document.getElementById('cnt-' + k);
+    if(el) el.textContent = '(' + v + ')';
+  });
+
+  document.getElementById('viewer-head').innerHTML =
+    '<h2>' + DATA.source.name + '</h2>' +
+    '<div class="src-meta">' +
+    DATA.source.publisher + ' · ' +
+    'כיתה ' + DATA.source.grade + ' · ' +
+    DATA.source.total_items + ' פריטים · ' +
+    'נסרק: ' + DATA.source.fetched_at + ' · ' +
+    '<a href="' + DATA.source.url + '" target="_blank" rel="noopener">דף המקור באינטרנט</a>' +
+    '</div>';
+
+  document.querySelector('.viewer-body').innerHTML = WORKSHEETS_BODY_HTML;
+  document.getElementById('filters').addEventListener('click', filterClick);
+  document.getElementById('search-input').addEventListener('input', searchInput);
+  renderList();
+}
+
+function renderFramework(){
+  const d = DATA;
+  document.getElementById('stat-total').textContent = '—';
+  document.getElementById('stat-rw').textContent = d.core_model.components.length;
+  document.getElementById('stat-rc').textContent = d.developmental_stages.stages.length;
+  document.getElementById('stat-pa').textContent = d.phonological_awareness_difficulty_dimensions.dimensions.length;
+  document.getElementById('stat-sources').textContent = '2';
+  document.querySelector('.stat-card.v-lav .stat-label').textContent = 'מסמך-מסגרת';
+  document.querySelector('.stat-card.v-sky .stat-label').textContent = 'רכיבי המודל';
+  document.querySelector('.stat-card.v-rose .stat-label').textContent = 'שלבי רכישה';
+  document.querySelector('.stat-card.v-amber .stat-label').textContent = 'גורמי קושי PA';
+
+  document.getElementById('viewer-head').innerHTML =
+    '<h2>' + d.source.name + '</h2>' +
+    '<div class="src-meta">' +
+    d.source.publisher + ' · ' +
+    d.source.publication_year + ' · ' +
+    'נסרק: ' + d.source.fetched_at + ' · ' +
+    '<a href="' + d.source.url + '" target="_blank" rel="noopener">PDF מקורי</a> · ' +
+    '<a href="' + d.source.portal_url + '" target="_blank" rel="noopener">פורטל פופ</a>' +
+    '</div>';
+
+  let html = '';
+
+  html += sectionWrap('1', 'המודל האינטגרטיבי',
+    '<p class="sec-intro"><b>' + d.core_model.name + '</b> · מטאפורת ה' + d.core_model.metaphor + '</p>' +
+    '<div class="concept-grid">' +
+      d.core_model.components.map((c,i) => '' +
+        '<div class="concept-card">' +
+          '<div class="num">' + (i+1) + '</div>' +
+          '<h4>' + c.name + '</h4>' +
+          '<ul>' + c.sub.map(s => '<li>' + s + '</li>').join('') + '</ul>' +
+          (c.note ? '<div class="engine-note">' + c.note + '</div>' : '') +
+        '</div>'
+      ).join('') +
+    '</div>' +
+    '<p style="margin-top:14px;font-size:13px;color:var(--ink-muted)"><b style="color:var(--ink)">עיקרון:</b> ' + d.core_model.key_principle + '</p>'
+  );
+
+  html += sectionWrap('2', '6 שלבי רכישת הקריאה והכתיבה',
+    '<p class="sec-intro">מבוסס על: ' + d.developmental_stages.model_source + '</p>' +
+    '<div class="concept-grid">' +
+      d.developmental_stages.stages.map(s => '' +
+        '<div class="concept-card">' +
+          '<div class="num">' + s.num + '</div>' +
+          '<span class="age">' + s.age + '</span>' +
+          '<h4>' + s.name + '</h4>' +
+          '<ul>' + s.characteristics.map(c => '<li>' + c + '</li>').join('') + '</ul>' +
+          (s.engine_relevance ? '<div class="engine-note">⚙ למנוע: ' + s.engine_relevance + '</div>' : '') +
+        '</div>'
+      ).join('') +
+    '</div>'
+  );
+
+  const pa = d.phonological_awareness_difficulty_dimensions;
+  html += sectionWrap('3', '6 גורמי קושי במודעות פונולוגית',
+    '<p class="sec-intro">' + pa.intro + '</p>' +
+    '<table class="difficulty-table">' +
+      '<tr><th>גורם</th><th>קל ← קשה</th></tr>' +
+      pa.dimensions.map(dim => '' +
+        '<tr><td>' + dim.name + '</td><td>' + dim.easy_to_hard.join('  →  ') + '</td></tr>'
+      ).join('') +
+    '</table>' +
+    '<div class="engine-note" style="margin-top:14px;padding:14px;background:var(--surface-2);border-radius:12px;color:var(--ink)">⚙ <b>למנוע:</b> ' + pa.engine_application + '</div>'
+  );
+
+  const rti = d.rti_model;
+  html += sectionWrap('4', 'מודל RTI — תגובה להתערבות',
+    '<p class="sec-intro">' + rti.name + ' · מקור: ' + rti.source + '</p>' +
+    '<div class="rti-pyramid">' +
+      rti.tiers.slice().reverse().map(t => '' +
+        '<div class="rti-tier t' + t.tier + '">' +
+          '<span class="name">Tier ' + t.tier + ' · ' + t.name + '</span>' +
+          '<span class="pct">' + t.percent + '</span>' +
+        '</div>'
+      ).join('') +
+    '</div>' +
+    '<div class="engine-note" style="margin-top:14px;padding:14px;background:var(--surface-2);border-radius:12px;color:var(--ink)">⚙ <b>למנוע:</b> ' + rti.engine_application + '</div>'
+  );
+
+  html += sectionWrap('5', 'מודל IDL — אינטראקטיבי-דינמי (Kim 2022)',
+    '<p class="sec-intro">המודל הרב-רכיבי שעומד בבסיס התשתית התיאורטית של תוכנית משה"ח</p>' +
+    '<div class="concept-grid">' +
+      d.interactive_dynamic_literacy_model.structure_by_linguistic_grain.map(g => '' +
+        '<div class="concept-card">' +
+          '<h4>רמת ' + g.level + '</h4>' +
+          '<ul>' + g.skills.map(s => '<li>' + s + '</li>').join('') + '</ul>' +
+        '</div>'
+      ).join('') +
+    '</div>' +
+    '<div style="margin-top:14px;padding:14px;background:var(--surface-2);border-radius:12px;font-size:13px">' +
+      '<b style="color:var(--ink)">בבסיס הכל:</b> ' + d.interactive_dynamic_literacy_model.foundation.join(', ') + '<br>' +
+      '<b style="color:var(--ink)">מעל הכל:</b> ' + d.interactive_dynamic_literacy_model.above_all_levels.join(' · ') +
+    '</div>' +
+    '<div class="engine-note" style="margin-top:10px;padding:14px;background:#fff;border:1px solid var(--border);border-radius:12px;color:var(--ink)">⚙ <b>למנוע:</b> ' + d.interactive_dynamic_literacy_model.engine_relevance + '</div>'
+  );
+
+  html += sectionWrap('6', 'כלי הערכה רשמיים',
+    '<div class="concept-grid">' +
+      d.official_assessment_tools.map(t => '' +
+        '<div class="concept-card">' +
+          '<h4>' + t.name + '</h4>' +
+          '<p style="font-size:12px;color:var(--ink-muted);margin-bottom:4px">' + t.publisher + ' · ' + t.year + '</p>' +
+          (t.purpose ? '<p>' + t.purpose + '</p>' : '') +
+          (t.benchmark ? '<div class="engine-note">' + t.benchmark + '</div>' : '') +
+          (t.engine_use ? '<div class="engine-note">⚙ ' + t.engine_use + '</div>' : '') +
+        '</div>'
+      ).join('') +
+    '</div>'
+  );
+
+  html += sectionWrap('7', 'עקרונות פדגוגיים מרכזיים',
+    '<div class="concept-grid">' +
+      d.pedagogical_principles.map(p => '' +
+        '<div class="concept-card">' +
+          '<h4>' + p.title + '</h4>' +
+          (p.quote_from_doc ? '<p>"' + p.quote_from_doc + '"</p>' : '') +
+          (p.rationale ? '<p>' + p.rationale + '</p>' : '') +
+        '</div>'
+      ).join('') +
+    '</div>'
+  );
+
+  const cc = d.cross_check_with_engine_v01;
+  html += sectionWrap('8', 'התאמה למחקרים שכבר במנוע',
+    '<p class="sec-intro" style="color:#10b981;font-weight:600">✓ ' + cc.no_contradictions + '</p>' +
+    '<div class="compat-grid">' +
+      '<div class="compat-col ok">' +
+        '<h4>✓ תואם למה שכבר היה</h4>' +
+        '<ul>' + cc.compatible.map(c => '<li>' + c + '</li>').join('') + '</ul>' +
+      '</div>' +
+      '<div class="compat-col gap">' +
+        '<h4>⊕ הרחבות שצריך להוסיף</h4>' +
+        '<ul>' + cc.gaps_to_fill.map(g => '<li>' + g + '</li>').join('') + '</ul>' +
+      '</div>' +
+    '</div>'
+  );
+
+  const ai = d.engine_action_items;
+  html += sectionWrap('9', 'מה לשנות במנוע אבני יסוד',
+    '<p class="sec-intro">' + ai.intro + '</p>' +
+    '<ul style="font-size:14px;color:var(--ink);line-height:1.9;padding-inline-start:22px">' +
+      ai.items.map(i => '<li>' + i + '</li>').join('') +
+    '</ul>'
+  );
+
+  html += sectionWrap('10', 'הוועדה',
+    '<p class="sec-intro"><b>יו"ר:</b> ' + d.committee.chair + '<br><b>מפמ"רית:</b> ' + d.committee.mafmar + '</p>' +
+    '<div class="researcher-list">' +
+      d.committee.key_researchers.map(r => {
+        const parts = r.split(' — ');
+        return '<div class="researcher-item"><b>' + parts[0] + '</b>' + (parts[1] ? parts[1] : '') + '</div>';
+      }).join('') +
+    '</div>'
+  );
+
+  document.querySelector('.viewer-body').innerHTML = html;
+}
+
+function sectionWrap(num, title, inner){
+  return '<div class="framework-section">' +
+    '<h3><span class="pill">' + num + '</span>' + title + '</h3>' +
+    inner +
+  '</div>';
+}
+
+function renderLessonsBooks(){
+  const d = DATA;
+  const totalLessons = d.books.reduce((s,b) => s + b.lessons_count, 0);
+
+  document.getElementById('stat-total').textContent = totalLessons;
+  document.getElementById('stat-rw').textContent = d.books.length;
+  document.getElementById('stat-rc').textContent = d.niqqud_order.length;
+  document.getElementById('stat-pa').textContent = d.scanned_lessons + '/' + d.total_lessons;
+  document.getElementById('stat-sources').textContent = '3';
+  document.querySelector('.stat-card.v-lav .stat-label').textContent = 'שיעורים';
+  document.querySelector('.stat-card.v-sky .stat-label').textContent = 'חוברות';
+  document.querySelector('.stat-card.v-rose .stat-label').textContent = 'תנועות בסדר הניקוד';
+  document.querySelector('.stat-card.v-amber .stat-label').textContent = 'נסרק עד היום';
+
+  document.getElementById('viewer-head').innerHTML =
+    '<h2>' + d.source.name + '</h2>' +
+    '<div class="src-meta">' +
+    d.source.publisher + ' · ' +
+    'כיתה ' + d.source.grade + ' · ' +
+    d.source.total_lessons + ' שיעורים ב-' + d.books.length + ' חוברות · ' +
+    'נסרק: ' + d.source.fetched_at + ' · ' +
+    '<a href="' + d.source.url + '" target="_blank" rel="noopener">פלטפורמת מטח</a> · ' +
+    '<a href="' + d.source.internal_doc + '" target="_blank" rel="noopener">מאגר מקורי</a>' +
+    '</div>';
+
+  let html = '';
+
+  html += sectionWrap('1', 'תובנות מפתח מהסריקה',
+    '<p class="sec-intro">' + d.source.alignment + '</p>' +
+    '<ul class="insights-list">' +
+      d.source.key_insights.map(i => '<li>' + i + '</li>').join('') +
+    '</ul>'
+  );
+
+  const book1 = d.books[0];
+  html += sectionWrap('2', 'חוברת 1 — 22 האותיות ב-10 שיעורים',
+    '<div class="book-block book-1">' +
+      '<div class="book-head">' +
+        '<div class="book-pill">1</div>' +
+        '<div>' +
+          '<h4>' + book1.title + '</h4>' +
+          '<div class="book-meta">' + book1.lessons_count + ' שיעורים · סדר לא אלפביתי</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="book-rationale">' + book1.rationale + '</div>' +
+      '<div class="lesson-pills">' +
+        book1.lessons.map(l => '' +
+          '<div class="lesson-pill">' +
+            '<div class="l-num">שיעור ' + l.id + '</div>' +
+            '<div class="l-letters">' + l.letters.join(' · ') + '</div>' +
+            '<div class="l-cumul">' + l.cumulative + ' אותיות מצטבר</div>' +
+            (l.note ? '<div class="l-note">' + l.note + '</div>' : '') +
+          '</div>'
+        ).join('') +
+      '</div>' +
+    '</div>'
+  );
+
+  let booksHtml = '';
+  d.books.slice(1).forEach(b => {
+    booksHtml +=
+      '<div class="book-block book-' + b.book_num + '">' +
+        '<div class="book-head">' +
+          '<div class="book-pill">' + b.book_num + '</div>' +
+          '<div>' +
+            '<h4>חוברת ' + b.book_num + ' — ' + b.title + '</h4>' +
+            '<div class="book-meta">' + b.lessons_count + ' שיעורים</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="book-rationale">' + b.rationale + '</div>' +
+        b.sub_units.map(su => '' +
+          '<div class="sub-unit-row">' +
+            '<div class="sub-unit-top">' +
+              '<span class="name">' + su.name + '</span>' +
+              '<span class="range">שיעורים ' + su.range + '</span>' +
+              '<span class="phoneme">' + su.phoneme + '</span>' +
+              '<span class="niqqud">' + su.niqqud + '</span>' +
+            '</div>' +
+            (su.why ? '<div class="sub-unit-why">' + su.why + '</div>' : '') +
+          '</div>'
+        ).join('') +
+      '</div>';
+  });
+  html += sectionWrap('3', 'חוברות 2-5 — סדר התנועות', booksHtml);
+
+  html += sectionWrap('4', 'סדר התנועות המלא — סיכום',
+    '<table class="niqqud-tbl">' +
+      '<thead><tr><th>סדר</th><th>סימן</th><th>פונמה</th><th>חוברת</th><th>שיעורים</th></tr></thead>' +
+      '<tbody>' +
+        d.niqqud_order.map(n => '' +
+          '<tr><td>' + n.order + '</td><td>' + n.sign + '</td><td>' + n.phoneme + '</td><td>' + n.book + '</td><td>' + n.lessons + '</td></tr>'
+        ).join('') +
+      '</tbody>' +
+    '</table>'
+  );
+
+  html += sectionWrap('5', 'לוח שנה מומלץ — מבוסס על קסם וחברים',
+    '<p class="sec-intro">60 שיעורים פרוסים על 8 חודשים (ספט-אפר) = ~2 שיעורים/שבוע. משאיר את מאי-יוני לקריאה והבנה.</p>' +
+    '<div class="calendar-grid">' +
+      d.recommended_calendar.map(c => '' +
+        '<div class="cal-cell">' +
+          '<div class="cal-month">' + c.month + '</div>' +
+          '<div class="cal-body">' + c.content + '</div>' +
+        '</div>'
+      ).join('') +
+    '</div>'
+  );
+
+  html += sectionWrap('6', 'מה הנחנו בטיוטה — מול האמת של מטח',
+    '<p class="sec-intro">השוואה בין הניחושים המקוריים שלנו (טיוטה 0.1) לבין מה שגילינו מהסריקה</p>' +
+    d.draft_vs_truth.map(c => '' +
+      '<div class="compare-grid">' +
+        '<div class="compare-cell was">' +
+          '<span class="tag">טיוטה (ניחוש)</span>' +
+          '<div><b>' + c.area + ':</b> ' + c.draft_assumption + '</div>' +
+        '</div>' +
+        '<div class="compare-cell is">' +
+          '<span class="tag">קסם (אמת)</span>' +
+          '<div><b>' + c.area + ':</b> ' + c.kesem_truth + '</div>' +
+        '</div>' +
+      '</div>'
+    ).join('<div style="height:10px"></div>') +
+    '<div class="ok-box">' +
+      '<h5>✓ מה כן הנחנו נכון</h5>' +
+      '<ul>' + d.draft_was_correct.map(i => '<li>' + i + '</li>').join('') + '</ul>' +
+    '</div>'
+  );
+
+  html += sectionWrap('7', 'מה עדיין לא יודעים',
+    '<div class="questions-box">' +
+      '<h5>שאלות פתוחות — דורשות סריקה נוספת</h5>' +
+      '<ul>' + d.open_questions.map(q => '<li>' + q + '</li>').join('') + '</ul>' +
+    '</div>'
+  );
+
+  document.querySelector('.viewer-body').innerHTML = html;
+}
+
+function renderLomdaCatalog(){
+  const d = DATA;
+  const totalLomadot = d.source.total_lomadot;
+
+  document.getElementById('stat-total').textContent = totalLomadot;
+  document.getElementById('stat-rw').textContent = d.lomda_families.length;
+  document.getElementById('stat-rc').textContent = d.scanned_questions.length;
+  document.getElementById('stat-pa').textContent = d.pedagogical_principles ? Object.keys(d.pedagogical_principles).length : 6;
+  document.getElementById('stat-sources').textContent = '4';
+  document.querySelector('.stat-card.v-lav .stat-label').textContent = 'לומדות בקטלוג';
+  document.querySelector('.stat-card.v-sky .stat-label').textContent = 'משפחות פדגוגיות';
+  document.querySelector('.stat-card.v-rose .stat-label').textContent = 'שאלות שנסרקו';
+  document.querySelector('.stat-card.v-amber .stat-label').textContent = 'עקרונות פדגוגיים';
+
+  document.getElementById('viewer-head').innerHTML =
+    '<h2>' + d.source.name + '</h2>' +
+    '<div class="src-meta">' +
+    d.source.publisher + ' · ' +
+    'כיתה ' + d.source.grade + ' · ' +
+    totalLomadot + ' לומדות · ' +
+    'נסרק: ' + d.source.scanned_at + ' · ' +
+    '<a href="' + d.source.url + '" target="_blank" rel="noopener">פלטפורמת אופק</a> · ' +
+    '<a href="' + d.source.sample_lomda_url + '" target="_blank" rel="noopener">לומדה לדוגמה</a>' +
+    '</div>';
+
+  let html = '';
+
+  // Section 1: Key insights
+  html += sectionWrap('1', 'תובנות מפתח — איך אופק שונה מקסם',
+    '<p class="sec-intro">' + d.source.platform_role + '</p>' +
+    '<ul class="insights-list">' +
+      d.source.key_insights.map(i => '<li>' + i + '</li>').join('') +
+    '</ul>'
+  );
+
+  // Section 2: Pedagogical principles
+  const principleLabels = {
+    from_ear_to_eye: '🎧 מאוזן לעין',
+    spaced_repetition_letters: '🔁 הפצה חוזרת',
+    scaffolded_vowel_progression: '📈 סקאפולד תנועות',
+    integrated_grammar_from_start: '📐 דקדוק משולב',
+    cultural_integration: '🎉 חגים כעטיפה',
+    '10_minute_chunks': '⏱️ יחידות של 10 דק\''
+  };
+  let principlesHtml = '<div class="concept-grid">';
+  Object.entries(d.pedagogical_principles).forEach(([k,v]) => {
+    principlesHtml += '<div class="concept-card">' +
+      '<h4>' + (principleLabels[k] || k) + '</h4>' +
+      '<p style="margin:0;font-size:13px;color:var(--ink-muted);line-height:1.55">' + v + '</p>' +
+    '</div>';
+  });
+  principlesHtml += '</div>';
+  html += sectionWrap('2', '6 עקרונות פדגוגיים מנחים', principlesHtml);
+
+  // Section 3: Lomda families catalog
+  let familiesHtml = '';
+  d.lomda_families.forEach((f, idx) => {
+    const lomCount = Array.isArray(f.lomadot) ? f.lomadot.length : (f.letter_groupings_observed ? f.letter_groupings_observed.length : (f.sequence ? f.sequence.length : '?'));
+    familiesHtml +=
+      '<div class="book-block book-' + ((idx % 5) + 1) + '">' +
+        '<div class="book-head">' +
+          '<div class="book-pill">' + (idx+1) + '</div>' +
+          '<div>' +
+            '<h4>' + f.name + '</h4>' +
+            '<div class="book-meta">' + (typeof lomCount === 'number' ? lomCount + ' פריטים' : '') + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="book-rationale">' + (f.description || '') + '</div>' +
+        (f.pedagogical_role ? '<p style="margin:6px 0 0;font-size:12.5px;color:var(--lavender-deep);font-weight:600">תפקיד: ' + f.pedagogical_role + '</p>' : '') +
+        (f.comparison_with_kesem ? '<p style="margin:8px 0 0;font-size:12.5px;color:var(--ink-muted);font-style:italic">↔ מול קסם: ' + f.comparison_with_kesem + '</p>' : '') +
+        (f.key_insight ? '<div class="ok-box" style="margin-top:10px"><h5>💡 תובנה</h5><p style="margin:0;font-size:13px;color:#065f46">' + f.key_insight + '</p></div>' : '') +
+      '</div>';
+  });
+  html += sectionWrap('3', '11 משפחות לומדות באופק', familiesHtml);
+
+  // Section 4: Scanned questions
+  let questionsHtml = '';
+  d.scanned_questions.forEach((q, idx) => {
+    questionsHtml +=
+      '<div class="book-block book-' + ((idx % 5) + 1) + '" style="margin-bottom:14px">' +
+        '<h4 style="margin:0 0 8px;font-size:15px;color:var(--ink)">' + q.lomda_full_title + '</h4>' +
+        (q.instruction_he ? '<p style="margin:4px 0 8px;font-size:13px;color:var(--ink-muted);font-style:italic">«' + q.instruction_he + '»</p>' : '') +
+        (q.ui_pattern ? '<p style="margin:4px 0;font-size:12.5px;color:var(--ink-muted)"><b>UI:</b> ' + q.ui_pattern + '</p>' : '') +
+        (q.game_mechanic ? '<p style="margin:4px 0;font-size:12.5px;color:var(--ink-muted)"><b>מנגנון:</b> ' + q.game_mechanic + '</p>' : '') +
+        (q.pedagogical_breakthrough ? '<div class="ok-box" style="margin-top:10px"><h5>🎯 פריצת דרך פדגוגית</h5><p style="margin:0;font-size:13px;color:#065f46">' + q.pedagogical_breakthrough + '</p></div>' : '') +
+        (Array.isArray(q.pedagogical_breakthroughs) ? '<div class="ok-box" style="margin-top:10px"><h5>🎯 תובנות פדגוגיות</h5><ul style="margin:0;padding-inline-start:18px;font-size:13px;color:#065f46;line-height:1.7">' + q.pedagogical_breakthroughs.map(b => '<li>' + b + '</li>').join('') + '</ul></div>' : '') +
+      '</div>';
+  });
+  html += sectionWrap('4', '9 שאלות שנסרקו לעומק', questionsHtml);
+
+  // Section 5: Ofek vs Kesem comparison
+  if(d.summary_insights_for_engine_design && d.summary_insights_for_engine_design.ofek_vs_kesem_table){
+    let tblHtml = '<table class="niqqud-tbl"><thead><tr><th>ממד</th><th>אופק</th><th>קסם וחברים</th></tr></thead><tbody>';
+    d.summary_insights_for_engine_design.ofek_vs_kesem_table.forEach(row => {
+      tblHtml += '<tr><td style="font-weight:700">' + row.dimension + '</td><td>' + row.ofek + '</td><td>' + row.kesem + '</td></tr>';
+    });
+    tblHtml += '</tbody></table>';
+    html += sectionWrap('5', 'אופק ↔ קסם וחברים — השוואה', tblHtml);
+  }
+
+  // Section 6: Design principles to borrow
+  if(d.summary_insights_for_engine_design && d.summary_insights_for_engine_design.design_principles_to_borrow_for_engine){
+    html += sectionWrap('6', '11 עקרונות עיצוב לאמץ ב-Learning Engine',
+      '<ul class="insights-list">' +
+        d.summary_insights_for_engine_design.design_principles_to_borrow_for_engine.map(p => '<li>' + p + '</li>').join('') +
+      '</ul>'
+    );
+  }
+
+  // Section 7: Complementary strengths
+  if(d.summary_insights_for_engine_design){
+    const ofekStrengths = d.summary_insights_for_engine_design.what_ofek_offers_that_kesem_doesnt || [];
+    const kesemStrengths = d.summary_insights_for_engine_design.what_kesem_offers_that_ofek_doesnt || [];
+    html += sectionWrap('7', 'משלימים — לא תחליפים',
+      '<div class="compat-grid">' +
+        '<div class="compat-col ok">' +
+          '<h4>אופק נותן · קסם לא</h4>' +
+          '<ul>' + ofekStrengths.map(s => '<li>' + s + '</li>').join('') + '</ul>' +
+        '</div>' +
+        '<div class="compat-col gap">' +
+          '<h4>קסם נותן · אופק לא</h4>' +
+          '<ul>' + kesemStrengths.map(s => '<li>' + s + '</li>').join('') + '</ul>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  document.querySelector('.viewer-body').innerHTML = html;
+}
+
+const WORKSHEETS_BODY_HTML =
+  '<div class="legend">' +
+    '<div class="legend-item"><span class="cat-dot cat-reading_writing"></span>קריאה וכתיבה</div>' +
+    '<div class="legend-item"><span class="cat-dot cat-phonological_awareness"></span>מודעות פונולוגית</div>' +
+    '<div class="legend-item"><span class="cat-dot cat-reading_comprehension"></span>הבנת הנקרא</div>' +
+    '<div class="legend-item"><span class="cat-dot cat-vocabulary"></span>אוצר מילים</div>' +
+    '<div class="legend-item"><span class="cat-dot cat-language_structure"></span>מבנה הלשון</div>' +
+  '</div>' +
+  '<div class="filters" id="filters">' +
+    '<button class="filter-btn is-on" data-cat="all">הכל <span class="filter-count" id="cnt-all"></span></button>' +
+    '<button class="filter-btn" data-cat="reading_writing">קריאה וכתיבה <span class="filter-count" id="cnt-reading_writing"></span></button>' +
+    '<button class="filter-btn" data-cat="phonological_awareness">מודעות פונולוגית <span class="filter-count" id="cnt-phonological_awareness"></span></button>' +
+    '<button class="filter-btn" data-cat="reading_comprehension">הבנת הנקרא <span class="filter-count" id="cnt-reading_comprehension"></span></button>' +
+    '<button class="filter-btn" data-cat="vocabulary">אוצר מילים <span class="filter-count" id="cnt-vocabulary"></span></button>' +
+    '<button class="filter-btn" data-cat="language_structure">מבנה הלשון <span class="filter-count" id="cnt-language_structure"></span></button>' +
+    '<div class="search-wrap"><input type="text" id="search-input" placeholder="חיפוש (כותרת / אות / תנועה)"></div>' +
+  '</div>' +
+  '<div class="ws-grid" id="ws-grid"></div>' +
+  '<div class="empty-state" id="empty-state" style="display:none"><strong>אין תוצאות לסינון הזה</strong>נסי לבחור קטגוריה אחרת או לנקות את החיפוש</div>';
+
+function filterClick(e){
+  const btn = e.target.closest('.filter-btn');
+  if(!btn) return;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('is-on'));
+  btn.classList.add('is-on');
+  activeCat = btn.dataset.cat;
+  renderList();
+}
+function searchInput(e){ searchQ = e.target.value; renderList(); }
+
+function renderList(){
+  if(!DATA || DATA_TYPE !== 'worksheets') return;
+  const ws = DATA.worksheets;
+  const filtered = ws.filter(w => {
+    if(activeCat !== 'all' && w.category !== activeCat) return false;
+    if(searchQ){
+      const hay = (w.title + ' ' + (w.letter || '') + ' ' + (w.vowel || '')).toLowerCase();
+      if(!hay.includes(searchQ.toLowerCase())) return false;
+    }
+    return true;
+  });
+
+  const grid = document.getElementById('ws-grid');
+  const empty = document.getElementById('empty-state');
+  if(filtered.length === 0){
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  grid.innerHTML = filtered.map(w => {
+    const meta = [];
+    if(w.letter) meta.push('אות ' + w.letter);
+    if(w.vowel) meta.push(w.vowel);
+    meta.push(CAT_LABELS[w.category] || w.category);
+    return '<a href="' + w.pdf + '" target="_blank" rel="noopener" class="ws-card">' +
+      '<div class="ws-num">' + w.id + '</div>' +
+      '<div class="ws-body">' +
+        '<div class="ws-title">' + w.title + '</div>' +
+        '<div class="ws-meta">' +
+          '<span class="cat-dot cat-' + w.category + '"></span>' +
+          meta.join(' · ') +
+        '</div>' +
+      '</div>' +
+    '</a>';
+  }).join('');
+}
+
+document.getElementById('sources-grid').addEventListener('click', e => {
+  const card = e.target.closest('.source-card[data-source]');
+  if(!card) return;
+  loadSource(card.dataset.source);
+});
+
+loadSource(activeSource);
+</script>
+
+</body>
+</html>

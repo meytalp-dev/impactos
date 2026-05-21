@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>הצעה רשמית · מערכת למידה דיפרנציאלית · תוכנית החומש להכלה</title>
+<meta name="description" content="הצעה רשמית להפעלת מערכת למידה דיפרנציאלית לקריאה וכתיבה בכיתות א-ב, במסגרת תוכנית החומש להכלה הירושלמית.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* תוכנית החומש להכלה — ערכת מיתוג */
+  --teal: #2E7D8C;
+  --teal-light: #3A9BAD;
+  --teal-dark: #1E5A66;
+  --teal-soft: #e0f5f8;
+  --sand: #E8A849;
+  --sand-dark: #C88A2E;
+  --sand-soft: #fef3d7;
+  --burgundy: #8B3A4A;
+  --burgundy-light: #A94D60;
+  --burgundy-soft: #fce4ea;
+  --leaf: #4A9B7F;
+  --leaf-light: #5FB896;
+  --leaf-soft: #dcf5ec;
+  --cream: #F5F0E8;
+  --cream-dark: #E8DFD0;
+  --white: #FDFCFA;
+  --deep: #1E3D47;
+  --deep-2: #0F2A32;
+  --muted: #6B6158;
+  --line: #E8DFD0;
+  --line-soft: #F0EADC;
+
+  /* אימפקט.OS — ללוגו בלבד */
+  --io-indigo: #4F46E5;
+  --io-violet: #8B5CF6;
+  --io-gradient: linear-gradient(135deg, #4F46E5 0%, #8B5CF6 100%);
+
+  --radius: 20px;
+  --radius-sm: 12px;
+  --shadow-sm: 0 1px 2px rgba(30,61,71,.05), 0 1px 1px rgba(30,61,71,.03);
+  --shadow-md: 0 8px 24px -8px rgba(30,61,71,.10), 0 2px 4px rgba(30,61,71,.05);
+  --shadow-lg: 0 30px 60px -20px rgba(46,125,140,.18), 0 10px 30px -10px rgba(30,61,71,.10);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Heebo', system-ui, -apple-system, sans-serif;
+  background: var(--cream);
+  color: var(--deep);
+  line-height: 1.65;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+h1,h2,h3,h4,h5 { font-family: 'Rubik', 'Heebo', sans-serif; letter-spacing: -0.02em; line-height: 1.2; color: var(--deep); }
+.num, .en { font-family: 'Inter', 'Heebo', sans-serif; font-feature-settings: "tnum" 1; }
+
+.page { max-width: 1120px; margin: 0 auto; padding: 0 24px 80px; }
+
+/* ═══════════ TOPBAR ═══════════ */
+.topbar {
+  background: rgba(253,252,250,.85);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid rgba(232,223,208,.6);
+  padding: 14px 0;
+  position: sticky; top: 0; z-index: 50;
+}
+.topbar-inner {
+  max-width: 1120px; margin: 0 auto; padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.partnership { display: flex; align-items: center; gap: 14px; }
+.brand-mark {
+  width: 38px; height: 38px;
+  background: var(--io-gradient);
+  border-radius: 11px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 8px 20px -6px rgba(79,70,229,.4);
+  flex-shrink: 0;
+}
+.brand-mark svg { width: 22px; height: 22px; }
+.brand-text { font-family: 'Rubik', sans-serif; font-weight: 800; font-size: 1rem; letter-spacing: -0.02em; line-height: 1; }
+.brand-text .impact { color: var(--io-indigo); }
+.brand-text .os { color: var(--io-violet); }
+.brand-sub { font-size: .7rem; color: var(--muted); margin-top: 4px; font-weight: 500; }
+.partnership-x {
+  width: 1px; height: 30px; background: var(--line);
+}
+.client-brand {
+  display: flex; align-items: center; gap: 10px;
+}
+.client-emblem {
+  width: 38px; height: 38px; border-radius: 11px;
+  background: linear-gradient(135deg, var(--teal) 0%, var(--burgundy) 100%);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.client-emblem svg { width: 22px; height: 22px; }
+.client-text { font-family: 'Rubik', sans-serif; font-weight: 800; font-size: .95rem; color: var(--deep); line-height: 1.1; }
+.client-sub { font-size: .68rem; color: var(--muted); margin-top: 3px; font-weight: 500; }
+
+.topbar-meta { display: flex; align-items: center; gap: 18px; font-size: .82rem; color: var(--muted); }
+.topbar-meta b { color: var(--deep); font-weight: 600; }
+.topbar-actions { display: flex; gap: 8px; }
+.btn-ghost {
+  border: 1px solid var(--line); background: var(--white);
+  padding: 8px 14px; border-radius: 10px;
+  font-family: 'Rubik', sans-serif; font-weight: 600; font-size: .85rem;
+  color: var(--deep); cursor: pointer; transition: all .2s;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-ghost:hover { border-color: var(--teal); color: var(--teal); }
+
+/* ═══════════ HERO ═══════════ */
+.hero {
+  background: linear-gradient(180deg, var(--deep-2) 0%, var(--deep) 100%);
+  color: white;
+  padding: 80px 0 90px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content:'';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 600px 400px at 80% 20%, rgba(46,125,140,.32), transparent 60%),
+    radial-gradient(ellipse 500px 300px at 20% 80%, rgba(232,168,73,.18), transparent 60%);
+  pointer-events: none;
+}
+.hero-inner { max-width: 1120px; margin: 0 auto; padding: 0 24px; position: relative; }
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.14);
+  padding: 6px 14px; border-radius: 999px;
+  font-family: 'Rubik', sans-serif; font-weight: 600; font-size: .78rem;
+  letter-spacing: .04em; color: var(--leaf-light);
+  margin-bottom: 24px;
+}
+.hero-eyebrow .dot { width:6px; height:6px; border-radius:50%; background: var(--leaf-light); box-shadow: 0 0 0 4px rgba(95,184,150,.22); }
+.hero h1 {
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
+  font-weight: 800;
+  color: white;
+  margin-bottom: 18px;
+  max-width: 920px;
+}
+.hero h1 .accent {
+  background: linear-gradient(135deg, #A4EEFF 0%, #FCD7A0 100%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero-sub {
+  font-size: clamp(1.05rem, 1.4vw, 1.2rem);
+  color: rgba(255,255,255,.78);
+  max-width: 760px;
+  line-height: 1.7;
+}
+.hero-meta {
+  margin-top: 40px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  max-width: 920px;
+}
+.hero-meta-cell {
+  border: 1px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.03);
+  padding: 16px 18px;
+  border-radius: 14px;
+}
+.hero-meta-cell .label {
+  font-size: .72rem; font-weight: 600;
+  color: rgba(255,255,255,.55);
+  text-transform: uppercase; letter-spacing: .08em;
+  margin-bottom: 6px;
+  font-family: 'Rubik', sans-serif;
+}
+.hero-meta-cell .value {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700; color: white; font-size: 1.05rem;
+}
+
+/* ═══════════ SECTIONS ═══════════ */
+section { padding: 80px 0 0; }
+.section-head { max-width: 780px; margin-bottom: 40px; }
+.section-num {
+  display: inline-block;
+  font-family: 'Inter', sans-serif; font-weight: 700; font-size: .82rem;
+  color: var(--burgundy);
+  background: var(--burgundy-soft);
+  padding: 4px 12px; border-radius: 999px;
+  margin-bottom: 14px;
+  letter-spacing: .04em;
+}
+.section-title {
+  font-size: clamp(1.7rem, 3vw, 2.4rem);
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+.section-lede {
+  font-size: 1.1rem; color: var(--muted); line-height: 1.7;
+}
+
+/* ═══════════ EXECUTIVE SUMMARY ═══════════ */
+.summary-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 36px 40px;
+  box-shadow: var(--shadow-sm);
+  margin-top: -50px;
+  position: relative;
+  z-index: 10;
+}
+.summary-card::before {
+  content:''; position: absolute; top: -1px; right: 24px; left: 24px;
+  height: 3px; border-radius: 3px;
+  background: linear-gradient(90deg, var(--teal) 0%, var(--burgundy) 60%, var(--sand) 100%);
+}
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 36px;
+  align-items: start;
+}
+.summary-block h3 {
+  font-size: .82rem; font-weight: 700;
+  color: var(--burgundy); text-transform: uppercase; letter-spacing: .08em;
+  margin-bottom: 12px;
+}
+.summary-block p { color: var(--muted); line-height: 1.75; font-size: 1.02rem; }
+.summary-block b { color: var(--deep); font-weight: 600; }
+
+/* ═══════════ CHALLENGE ═══════════ */
+.challenge {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 36px 40px;
+  position: relative;
+}
+.challenge-quote {
+  font-family: 'Rubik', sans-serif;
+  font-size: 1.4rem; font-weight: 600;
+  color: var(--deep); line-height: 1.5;
+  border-right: 4px solid var(--burgundy);
+  padding-right: 20px;
+  margin-bottom: 20px;
+}
+.challenge p { color: var(--muted); font-size: 1.02rem; }
+
+/* ═══════════ PILLARS ═══════════ */
+.pillars {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+.pillar {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 28px;
+  transition: all .25s;
+  position: relative;
+  overflow: hidden;
+}
+.pillar:hover { border-color: var(--teal); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.pillar-icon {
+  width: 44px; height: 44px;
+  background: var(--teal-soft);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 18px;
+}
+.pillar-icon svg { width: 22px; height: 22px; color: var(--teal); }
+.pillar h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+.pillar p { font-size: .94rem; color: var(--muted); line-height: 1.6; }
+
+/* ═══════════ METHODOLOGY ═══════════ */
+.method-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 32px;
+  align-items: stretch;
+}
+.method-main {
+  background: linear-gradient(180deg, var(--deep-2) 0%, var(--teal-dark) 100%);
+  color: white;
+  border-radius: var(--radius);
+  padding: 40px;
+  position: relative; overflow: hidden;
+}
+.method-main::before {
+  content:''; position: absolute; top: -100px; right: -100px;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(232,168,73,.32), transparent 70%);
+  border-radius: 50%;
+}
+.method-main h3 {
+  color: white; font-size: 1.5rem; font-weight: 800;
+  margin-bottom: 16px; position: relative;
+}
+.method-main p { color: rgba(255,255,255,.78); margin-bottom: 24px; font-size: 1.02rem; line-height: 1.7; position: relative; }
+.skills-cloud { display: flex; flex-wrap: wrap; gap: 8px; position: relative; }
+.skill-chip {
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.16);
+  color: white;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-family: 'Rubik', sans-serif; font-weight: 600; font-size: .85rem;
+  transition: all .2s;
+}
+.skill-chip:hover { background: rgba(232,168,73,.18); border-color: var(--sand); }
+
+.engine {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 32px;
+  display: grid; gap: 20px;
+}
+.engine h4 {
+  font-size: 1.05rem; font-weight: 700;
+  display: flex; align-items: center; gap: 10px;
+}
+.engine h4 .pill {
+  font-family: 'Inter', sans-serif; font-weight: 700; font-size: .72rem;
+  background: var(--teal-soft); color: var(--teal-dark);
+  padding: 3px 10px; border-radius: 999px;
+}
+.engine ul { list-style: none; display: grid; gap: 8px; }
+.engine li {
+  padding-right: 20px; position: relative;
+  font-size: .94rem; color: var(--muted);
+}
+.engine li::before {
+  content:''; position: absolute; right: 0; top: 10px;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--burgundy);
+}
+.engine-row { padding-bottom: 18px; border-bottom: 1px solid var(--line-soft); }
+.engine-row:last-child { padding-bottom: 0; border: none; }
+
+/* ═══════════ LEVELS MAPPING ═══════════ */
+.levels-band {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 32px;
+  margin-top: 24px;
+}
+.levels-band h4 {
+  font-size: 1.05rem; font-weight: 800; margin-bottom: 6px;
+}
+.levels-band > p { font-size: .92rem; color: var(--muted); margin-bottom: 22px; }
+.levels-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+}
+.level {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px;
+  background: var(--white);
+  position: relative;
+}
+.level-1 { border-top: 3px solid var(--leaf); }
+.level-2 { border-top: 3px solid var(--teal); }
+.level-3 { border-top: 3px solid var(--sand); }
+.level-4 { border-top: 3px solid var(--burgundy); }
+.level-name { font-family: 'Rubik', sans-serif; font-weight: 800; font-size: 1rem; margin-bottom: 4px; }
+.level-tier { font-family: 'Inter', sans-serif; font-weight: 700; font-size: .7rem; color: var(--muted); letter-spacing: .06em; margin-bottom: 10px; text-transform: uppercase; }
+.level-desc { font-size: .85rem; color: var(--muted); line-height: 1.55; }
+
+/* ═══════════ FRAMEWORKS ═══════════ */
+.standards-intro {
+  background: linear-gradient(135deg, var(--cream) 0%, var(--white) 100%);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  display: flex; gap: 20px; align-items: center;
+}
+.standards-intro svg { flex-shrink: 0; }
+.standards-intro p { color: var(--deep); font-size: 1.02rem; line-height: 1.7; }
+.standards-intro b { color: var(--teal-dark); font-weight: 700; }
+
+.standards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+.standard {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 26px;
+  position: relative;
+  transition: all .2s;
+}
+.standard:hover { border-color: var(--burgundy); box-shadow: var(--shadow-md); }
+.standard-tag {
+  font-family: 'Inter', sans-serif; font-weight: 700; font-size: .72rem;
+  color: var(--burgundy); letter-spacing: .06em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.standard h4 {
+  font-size: 1.08rem; font-weight: 700;
+  margin-bottom: 8px;
+  font-family: 'Rubik', sans-serif;
+}
+.standard p { color: var(--muted); font-size: .92rem; line-height: 1.6; }
+
+/* ═══════════ DASHBOARD PRINCIPLES ═══════════ */
+.dashboard-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.principle, .antipattern {
+  border-radius: var(--radius);
+  padding: 32px;
+  border: 1px solid;
+}
+.principle {
+  background: linear-gradient(180deg, var(--leaf-soft) 0%, #ECFDF5 100%);
+  border-color: rgba(74,155,127,.3);
+}
+.antipattern {
+  background: linear-gradient(180deg, var(--burgundy-soft) 0%, #FFF1F2 100%);
+  border-color: rgba(139,58,74,.25);
+}
+.principle-head, .antipattern-head {
+  font-family: 'Rubik', sans-serif; font-weight: 800; font-size: 1rem;
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 18px;
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.principle-head { color: #2A6A52; }
+.antipattern-head { color: var(--burgundy); }
+.principle-head .badge, .antipattern-head .badge {
+  width: 24px; height: 24px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .9rem; background: white;
+}
+.principle ul, .antipattern ul { list-style: none; display: grid; gap: 12px; }
+.principle li, .antipattern li {
+  font-size: .94rem; line-height: 1.55;
+  padding-right: 22px; position: relative;
+}
+.principle li::before, .antipattern li::before {
+  content:''; position: absolute; right: 0; top: 8px;
+  width: 10px; height: 10px; border-radius: 3px;
+}
+.principle li::before { background: var(--leaf); }
+.antipattern li::before { background: var(--burgundy-light); }
+.principle li { color: #1F4D3B; }
+.antipattern li { color: #5C2530; }
+
+/* ═══════════ STUDENT / TEACHER ═══════════ */
+.student-band {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 36px 40px;
+}
+.student-stat-line {
+  display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.student-stat-number {
+  font-family: 'Inter', sans-serif; font-weight: 800;
+  font-size: clamp(2.5rem, 4vw, 3.4rem);
+  line-height: 1;
+  background: linear-gradient(135deg, var(--teal) 0%, var(--burgundy) 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.student-stat-label {
+  font-family: 'Rubik', sans-serif; font-weight: 600;
+  color: var(--deep); font-size: 1.1rem;
+}
+.student-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+.student-cell {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.student-cell h5 {
+  font-size: .98rem; font-weight: 700; margin-bottom: 6px;
+  color: var(--teal-dark);
+}
+.student-cell p { font-size: .88rem; color: var(--muted); line-height: 1.5; }
+
+/* ═══════════ 3 ROLES ═══════════ */
+.roles-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.role {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 28px;
+  position: relative;
+  overflow: hidden;
+}
+.role::before {
+  content:''; position: absolute; top: 0; right: 0; left: 0;
+  height: 4px;
+}
+.role-1::before { background: var(--teal); }
+.role-2::before { background: var(--burgundy); }
+.role-3::before { background: var(--sand); }
+.role-eyebrow {
+  font-family: 'Inter', sans-serif; font-weight: 700; font-size: .72rem;
+  color: var(--muted); letter-spacing: .08em; text-transform: uppercase;
+  margin-bottom: 6px; margin-top: 6px;
+}
+.role h4 { font-family: 'Rubik', sans-serif; font-weight: 800; font-size: 1.15rem; margin-bottom: 14px; }
+.role ul { list-style: none; display: grid; gap: 8px; }
+.role li {
+  position: relative; padding-right: 18px;
+  font-size: .9rem; color: var(--muted); line-height: 1.55;
+}
+.role li::before {
+  content:'•'; position: absolute; right: 2px; top: 0;
+  font-weight: 800;
+}
+.role-1 li::before { color: var(--teal); }
+.role-2 li::before { color: var(--burgundy); }
+.role-3 li::before { color: var(--sand-dark); }
+
+/* ═══════════ PRICING ═══════════ */
+.pricing-wrap {
+  background: linear-gradient(180deg, var(--white) 0%, var(--cream) 100%);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+.pricing-wrap::before {
+  content:''; position: absolute; top: 0; right: 0; left: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--teal) 0%, var(--burgundy) 50%, var(--sand) 100%);
+}
+.pricing-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: stretch;
+}
+.price-block {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 32px;
+  display: flex; flex-direction: column;
+  position: relative;
+}
+.price-block.featured {
+  background: linear-gradient(180deg, var(--white) 0%, var(--teal-soft) 100%);
+  border-color: rgba(46,125,140,.25);
+}
+.price-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'Inter', sans-serif; font-weight: 700; font-size: .72rem;
+  text-transform: uppercase; letter-spacing: .08em;
+  color: var(--burgundy);
+  background: var(--white);
+  padding: 4px 10px; border-radius: 999px;
+  border: 1px solid var(--burgundy-soft);
+  margin-bottom: 14px;
+  width: fit-content;
+}
+.price-block.featured .price-tag { color: var(--teal-dark); border-color: rgba(46,125,140,.25); }
+.price-title {
+  font-family: 'Rubik', sans-serif; font-weight: 800;
+  font-size: 1.25rem;
+  margin-bottom: 8px;
+}
+.price-sub { font-size: .92rem; color: var(--muted); margin-bottom: 22px; }
+.price-amount {
+  display: flex; align-items: baseline; gap: 8px;
+  margin-bottom: 6px;
+}
+.price-amount .currency {
+  font-family: 'Inter', sans-serif; font-weight: 700;
+  font-size: 1.4rem; color: var(--deep);
+}
+.price-amount .number {
+  font-family: 'Inter', sans-serif; font-weight: 800;
+  font-size: 2.6rem; line-height: 1;
+  background: linear-gradient(135deg, var(--teal) 0%, var(--burgundy) 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -.02em;
+}
+.price-amount .unit {
+  font-family: 'Rubik', sans-serif; font-weight: 600;
+  color: var(--muted); font-size: .95rem;
+}
+.price-vat { font-size: .82rem; color: var(--muted); margin-bottom: 18px; }
+.price-note {
+  background: rgba(232,168,73,.10);
+  border: 1px solid rgba(232,168,73,.28);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: .9rem;
+  color: var(--deep);
+  margin-bottom: 22px;
+  line-height: 1.6;
+}
+.price-includes {
+  font-family: 'Rubik', sans-serif; font-weight: 700; font-size: .78rem;
+  color: var(--deep);
+  text-transform: uppercase; letter-spacing: .06em;
+  margin-bottom: 12px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line-soft);
+}
+.price-list { list-style: none; display: grid; gap: 9px; }
+.price-list li {
+  font-size: .9rem; color: var(--muted); line-height: 1.55;
+  padding-right: 24px; position: relative;
+}
+.price-list li::before {
+  content:''; position: absolute; right: 0; top: 7px;
+  width: 14px; height: 14px;
+  background: linear-gradient(135deg, var(--teal) 0%, var(--leaf) 100%);
+  border-radius: 50%;
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/></svg>") center/12px no-repeat;
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/></svg>") center/12px no-repeat;
+}
+
+.pricing-example {
+  margin-top: 28px;
+  background: var(--white);
+  border: 1px dashed var(--cream-dark);
+  border-radius: 14px;
+  padding: 20px 24px;
+}
+.pricing-example h5 {
+  font-size: .92rem; font-weight: 700; margin-bottom: 12px;
+  color: var(--deep);
+}
+.pricing-example-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+}
+.pricing-example-row { display: flex; flex-direction: column; }
+.pricing-example-row .lbl { font-size: .78rem; color: var(--muted); }
+.pricing-example-row .val {
+  font-family: 'Inter', sans-serif; font-weight: 700;
+  font-size: 1.15rem; color: var(--deep);
+}
+
+/* ═══════════ NEXT STEPS ═══════════ */
+.next-card {
+  background: linear-gradient(135deg, var(--teal) 0%, var(--burgundy) 100%);
+  border-radius: var(--radius);
+  padding: 48px;
+  color: white;
+  position: relative; overflow: hidden;
+}
+.next-card::before {
+  content:''; position: absolute; top: -50px; left: -50px;
+  width: 240px; height: 240px;
+  background: radial-gradient(circle, rgba(232,168,73,.32), transparent 60%);
+}
+.next-card h2 {
+  color: white; font-size: 2rem; font-weight: 800;
+  margin-bottom: 12px; position: relative;
+}
+.next-card p {
+  color: rgba(255,255,255,.92);
+  font-size: 1.05rem;
+  max-width: 640px;
+  margin-bottom: 28px;
+  position: relative;
+}
+.next-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  position: relative;
+}
+.next-step {
+  background: rgba(255,255,255,.14);
+  border: 1px solid rgba(255,255,255,.22);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  padding: 16px;
+}
+.next-step .step-num {
+  font-family: 'Inter', sans-serif; font-weight: 700;
+  font-size: .72rem;
+  color: rgba(255,255,255,.75);
+  margin-bottom: 6px;
+}
+.next-step .step-txt {
+  font-family: 'Rubik', sans-serif; font-weight: 600; font-size: .95rem;
+  color: white;
+}
+
+/* ═══════════ FOOTER ═══════════ */
+.foot {
+  margin-top: 60px; padding-top: 32px;
+  border-top: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px;
+  color: var(--muted); font-size: .85rem;
+}
+.foot-brand { display: flex; align-items: center; gap: 10px; }
+.foot-brand .brand-text { font-size: .95rem; }
+
+/* ═══════════ RESPONSIVE ═══════════ */
+@media (max-width: 980px) {
+  .levels-grid { grid-template-columns: repeat(2, 1fr); }
+  .roles-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 880px) {
+  .summary-grid, .method-grid, .dashboard-split, .pricing-grid { grid-template-columns: 1fr; }
+  .summary-card, .challenge, .pricing-wrap, .next-card, .student-band { padding: 28px 22px; }
+  .price-block { padding: 24px 20px; }
+  .topbar-meta { display: none; }
+  .partnership-x { display: none; }
+  section { padding: 56px 0 0; }
+  .hero { padding: 56px 0 64px; }
+}
+@media (max-width: 560px) {
+  .levels-grid { grid-template-columns: 1fr; }
+  .client-text { font-size: .85rem; }
+}
+
+/* ═══════════ PRINT ═══════════ */
+@media print {
+  @page { size: A4; margin: 16mm; }
+  body { background: white; font-size: 11pt; }
+  .topbar, .topbar-actions { display: none; }
+  .hero { padding: 30px 0; page-break-after: avoid; }
+  .hero::before { display: none; }
+  section { padding: 24px 0 0; }
+  .summary-card, .pillar, .standard, .price-block, .engine, .student-band, .challenge, .role, .level, .levels-band {
+    box-shadow: none !important; border: 1px solid #ddd !important;
+    page-break-inside: avoid;
+  }
+  .next-card, .method-main, .hero {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .page-break { page-break-before: always; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar no-print">
+  <div class="topbar-inner">
+    <div class="partnership">
+      <a href="#" style="text-decoration:none; display:flex; align-items:center; gap:12px;">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="16" r="11" stroke="white" stroke-width="2" opacity=".4"/>
+            <circle cx="16" cy="5" r="2.2" fill="white"/>
+            <circle cx="16" cy="27" r="2.2" fill="white"/>
+            <circle cx="5" cy="16" r="2.2" fill="white"/>
+            <circle cx="27" cy="16" r="2.2" fill="white"/>
+            <ellipse cx="16" cy="16" rx="6" ry="3" stroke="white" stroke-width="1.6" fill="none"/>
+            <ellipse cx="16" cy="16" rx="3" ry="6" stroke="white" stroke-width="1.6" fill="none"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-text"><span class="impact">Impact</span> <span class="os">OS</span></div>
+          <div class="brand-sub">טכנולוגיה יוצרת אימפקט</div>
+        </div>
+      </a>
+      <div class="partnership-x"></div>
+      <div class="client-brand">
+        <div class="client-emblem" aria-hidden="true">
+          <svg viewBox="0 0 120 120" fill="none">
+            <g opacity="0.92">
+              <circle cx="60" cy="26" r="20" fill="white"/>
+              <circle cx="30" cy="78" r="20" fill="white" opacity=".82"/>
+              <circle cx="90" cy="78" r="20" fill="white" opacity=".82"/>
+            </g>
+          </svg>
+        </div>
+        <div>
+          <div class="client-text">תוכנית החומש להכלה</div>
+          <div class="client-sub">מנח"י ירושלים · עמותת אינקלו</div>
+        </div>
+      </div>
+    </div>
+    <div class="topbar-meta">
+      <span>הצעה רשמית · <b>RFP-2026-05-19</b></span>
+      <span>תאריך: <b>19.5.2026</b></span>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn-ghost" onclick="window.print()" aria-label="הדפסה / שמירה כ-PDF">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>
+        הדפסה / PDF
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <span class="dot"></span>
+      <span>הצעה רשמית · פיילוט מועדון ההכלה הירושלמי · תשפ"ז</span>
+    </div>
+    <h1>מערכת למידה דיפרנציאלית<br><span class="accent">לקריאה וכתיבה — כיתות א-ב</span></h1>
+    <p class="hero-sub">תשתית טכנולוגית להכלה אמיתית בכיתה ההטרוגנית. כל תלמיד במסלול שלו · כל מורָה עם תמונת מצב וכלי פעולה · רכזות ההכלה עם תמונת בית הספר · מטה התוכנית עם ראייה עירונית — בהתאם לתכנית הלימוד העירונית של מנח"י.</p>
+    <div class="hero-meta">
+      <div class="hero-meta-cell"><div class="label">לקוח</div><div class="value">תוכנית החומש להכלה</div></div>
+      <div class="hero-meta-cell"><div class="label">היקף ראשוני</div><div class="value">כ-15 בתי ספר</div></div>
+      <div class="hero-meta-cell"><div class="label">מיקוד</div><div class="value">כיתות א-ב</div></div>
+      <div class="hero-meta-cell"><div class="label">מסגרות</div><div class="value">DI · UDL 3.0 · MTSS · ZPD</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- EXECUTIVE SUMMARY -->
+  <div class="summary-card">
+    <div class="summary-grid">
+      <div class="summary-block">
+        <h3>תקציר ההצעה</h3>
+        <p>הצעה זו מציעה הקמת <b>מערכת למידה דיפרנציאלית לקריאה וכתיבה</b> בכיתות א-ב, בכ-15 בתי ספר ממועדון ההכלה הירושלמי. המערכת מתאימה את התרגול לכל תלמיד בזמן אמת, מבוססת על מיומנויות (לא בנק שאלות), ומציבה את <b>המורָה, רכזת ההכלה ומנהלת התוכנית</b> במרכז — כל אחת עם השכבה המידעית הרלוונטית לה.</p>
+      </div>
+      <div class="summary-block">
+        <h3>החזון</h3>
+        <p>הכלה אמיתית בכיתה ההטרוגנית — היעד המרכזי של תוכנית החומש. <b>אותו תוכן, מסלולים מותאמים</b>: ציפיות גבוהות לכולם, פיגומים שונים לכל אחד, מעטפת מורָה שלא תורדת לעלות תכנון. תשתית שמתורגמת ל-co-pilot של המורָה, לא במקומה.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- THE CHALLENGE -->
+  <section>
+    <div class="section-head">
+      <span class="section-num">01 · האתגר</span>
+      <h2 class="section-title">פערים בכיתה אחת — מורָה אחת</h2>
+      <p class="section-lede">תוכנית החומש מבקשת ממורות בירושלים לעבור מהוראה מסורתית לסביבה הטרוגנית עם מסלולים מותאמים. זה אתגר מקצועי כבד, ולא תיתכן הצלחה בלי תשתית שמורידה את עלות התכנון, מנגישה את הנתונים, ותופסת את המורָה ב-co-pilot.</p>
+    </div>
+    <div class="challenge">
+      <p class="challenge-quote">"המורָה לא צריכה עוד אפליקציית תרגול. היא צריכה מערכת שמחליטה ברמת התלמיד — מתחת לרמת הכיתה — ומתורגמת חזרה לפעולה ברורה ליום שני בבוקר."</p>
+      <p>המערכת נבנתה סביב שאלה אחת: <b>מה אני יודעת לעשות עם הנתונים שאני רואה?</b> כל מסך, כל התראה, כל המלצה — חוזרת לפעולה קונקרטית בכיתה. הסכנה הקלאסית של הכלה — להנגיש לחלשים על ידי הנמכה לכולם — נמנעת כאן בפירוש: <b>אותו תוכן, ארבעה פיגומים שונים</b>.</p>
+    </div>
+  </section>
+
+  <!-- 6 PILLARS -->
+  <section>
+    <div class="section-head">
+      <span class="section-num">02 · הפתרון</span>
+      <h2 class="section-title">שישה עמודים שמרכיבים את המערכת</h2>
+      <p class="section-lede">לא רק "מערכת תרגול" — תשתית עירונית של תוכן מאושר על בסיס תכנית הלימוד של מנח"י, מסלול אישי, אבחון שוטף, כלי מורָה, ראייה רוחבית לרכזות ההכלה ולמטה התוכנית.</p>
+    </div>
+    <div class="pillars">
+
+      <div class="pillar">
+        <div class="pillar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+        <h3>תוכן מאושר</h3>
+        <p>מבוסס על תכנית הלימוד הקיימת והמאושרת של מנח"י. אנחנו ממירים אותה למבנה דיגיטלי — לא מחליפים.</p>
+      </div>
+
+      <div class="pillar">
+        <div class="pillar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <h3>מסלול אישי</h3>
+        <p>כל תלמיד מקבל תרגול ברמת קושי מותאמת לשליטתו בפועל — לא לרמת הכיתה. אותו תוכן, פיגומים שונים.</p>
+      </div>
+
+      <div class="pillar">
+        <div class="pillar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div>
+        <h3>אבחון שוטף</h3>
+        <p>זיהוי פערי מיומנויות תוך כדי למידה. סקרינר אוניברסלי 3×בשנה (BOY/MOY/EOY) — סטנדרט מקצועי בינלאומי.</p>
+      </div>
+
+      <div class="pillar">
+        <div class="pillar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg></div>
+        <h3>כלי מורָה</h3>
+        <p>דשבורד יומיומי, פרופיל תלמיד, התראות על דפוסים והמלצות פעולה — לא דוחות חודשיים שאיש לא קורא.</p>
+      </div>
+
+      <div class="pillar">
+        <div class="pillar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6v6H9z"/></svg></div>
+        <h3>ראייה רב-שכבתית</h3>
+        <p>שלוש שכבות נתונים: מורָה רואה כיתה · רכזת הכלה רואה בית ספר · מנהלת התוכנית רואה את כל מועדון ההכלה.</p>
+      </div>
+
+      <div class="pillar">
+        <div class="pillar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+        <h3>סשנים קצרים</h3>
+        <p>10-15 דקות מותאמות לכל תלמיד. רמזים מדורגים, פירוק משימות, תמיכה קולית, חיזוקי הצלחה.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- METHODOLOGY -->
+  <section>
+    <div class="section-head">
+      <span class="section-num">03 · עקרון הליבה</span>
+      <h2 class="section-title">מבוססים על מיומנויות — לא על בנק שאלות</h2>
+      <p class="section-lede">ההבדל בין מערכת חזקה לחלשה הוא לא בכמות התרגילים — אלא במיפוי. כל תרגיל משויך למיומנות מוגדרת, רמת קושי וסוג טעות. המערכת לא מסתפקת ב"נכון/לא נכון", אלא מנסה להבין <em>מה מקור הקושי</em>.</p>
+    </div>
+
+    <div class="method-grid">
+
+      <div class="method-main">
+        <h3>9 מיומנויות יסוד בקריאה וכתיבה</h3>
+        <p>כל תרגיל במערכת משויך למיומנות אחת או יותר. ההמלצות, ההתראות והדוחות — כולם מבוססים על מיומנויות. זה מה שמאפשר התאמה אמיתית.</p>
+        <div class="skills-cloud">
+          <span class="skill-chip">זיהוי אותיות</span>
+          <span class="skill-chip">אות-צליל</span>
+          <span class="skill-chip">ניקוד ותנועות</span>
+          <span class="skill-chip">פענוח הברות</span>
+          <span class="skill-chip">קריאת מילים</span>
+          <span class="skill-chip">השלמת מילה</span>
+          <span class="skill-chip">אותיות/צלילים דומים</span>
+          <span class="skill-chip">הבנת משפט</span>
+          <span class="skill-chip">קריאה אוראלית</span>
+        </div>
+      </div>
+
+      <div class="engine">
+
+        <div class="engine-row">
+          <h4>מנוע הלמידה <span class="pill">מחליט</span></h4>
+          <ul>
+            <li>להמשיך באותה מיומנות, להעלות או להוריד רמה</li>
+            <li>לחזור למיומנויות קדם — לתת רמז או הסבר</li>
+            <li>להמליץ למורָה להתערב — באופן אקטיבי</li>
+          </ul>
+        </div>
+
+        <div class="engine-row">
+          <h4>המערכת <span class="pill">מנתחת</span></h4>
+          <ul>
+            <li>מיומנויות נבדקות, רמת קושי, נכון/שגוי</li>
+            <li>סוג הטעות, זמן תגובה, שימוש ברמזים</li>
+            <li>עקביות לאורך זמן — לא רק רגע נקודתי</li>
+          </ul>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- LEVELS MAPPING -->
+    <div class="levels-band">
+      <h4>ארבע רמות תוכנית החומש — ממופות ל-Tiers של MTSS</h4>
+      <p>השפה הירושלמית נשמרת כפי שהיא. הצירים הם של Tomlinson (Readiness, Interest, Learning Profile), שכבות התמיכה — של MTSS.</p>
+      <div class="levels-grid">
+        <div class="level level-1">
+          <div class="level-name">עצמאי</div>
+          <div class="level-tier num">MTSS · Tier 1</div>
+          <div class="level-desc">תלמיד שלומד באופן עצמאי לפי תכנית הליבה — תרגול מתקדם ואתגרים.</div>
+        </div>
+        <div class="level level-2">
+          <div class="level-name">חלקית</div>
+          <div class="level-tier num">MTSS · Tier 1</div>
+          <div class="level-desc">לומד ברובו עצמאית, עם פיגומים נקודתיים ורמזים במיומנויות ספציפיות.</div>
+        </div>
+        <div class="level level-3">
+          <div class="level-name">התאמות</div>
+          <div class="level-tier num">MTSS · Tier 2</div>
+          <div class="level-desc">דורש התאמות שיטתיות — פירוק משימה, רמזים מדורגים, אורך סשן מותאם.</div>
+        </div>
+        <div class="level level-4">
+          <div class="level-name">תמיכה מוגברת</div>
+          <div class="level-tier num">MTSS · Tier 3</div>
+          <div class="level-desc">דורש מעטפת אינטנסיבית — חזרה למיומנויות קדם, התערבות אישית של המורָה.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FRAMEWORKS -->
+  <section>
+    <div class="section-head">
+      <span class="section-num">04 · יסוד מחקרי</span>
+      <h2 class="section-title">המסגרות התיאורטיות שעליהן אנחנו בנויים</h2>
+      <p class="section-lede">המערכת אינה מומצאת מאפס. היא מתרגמת לארכיטקטורה תוכנתית חמש מסגרות מבוססות-ראיות שעיצבו את שדה ההכלה והוראת הקריאה במאה הזו.</p>
+    </div>
+
+    <div class="standards-intro">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#2E7D8C" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      <p><b>למה זה חשוב לתוכנית החומש:</b> כל סעיף ברישיון השנתי מעוגן ביסוד מחקרי בינלאומי — כך שההשקעה אינה ניסוי, אלא יישום מבוסס ראיות של המודלים שכבר הוכיחו את עצמם במערכות חינוך מובילות.</p>
+    </div>
+
+    <div class="standards-grid">
+
+      <div class="standard">
+        <div class="standard-tag">FRAMEWORK · DI</div>
+        <h4>Differentiated Instruction (Tomlinson)</h4>
+        <p>שלושת הצירים של דיפרנציאציה: <em>Readiness</em> (רמת מוכנות), <em>Interest</em> (תחומי עניין), <em>Learning Profile</em> (פרופיל למידה). המערכת מתאימה תרגול לפי שלושתם — לא רק רמת קושי.</p>
+      </div>
+
+      <div class="standard">
+        <div class="standard-tag">FRAMEWORK · UDL 3.0</div>
+        <h4>Universal Design for Learning</h4>
+        <p>"ציפיות גבוהות לכולם" — אותו תוכן, פיגומים שונים. כל פעילות נבנית כך שיש לה גרסה לארבע רמות התוכנית, בלי להנמיך את התוכן עצמו.</p>
+      </div>
+
+      <div class="standard">
+        <div class="standard-tag">FRAMEWORK · MTSS / RTI</div>
+        <h4>שלוש שכבות תמיכה</h4>
+        <p>במקום תיוג "חזק/חלש", המערכת ממקמת כל תלמיד באחת משלוש שכבות התערבות (Tier 1/2/3) — ממופות לרמות תוכנית החומש. שינוי שכבה מבוסס נתוני אבחון, לא התרשמות.</p>
+      </div>
+
+      <div class="standard">
+        <div class="standard-tag">THEORY · ZPD</div>
+        <h4>Zone of Proximal Development (ויגוצקי)</h4>
+        <p>כל תלמיד נשמר ב"אזור הלמידה המיטבי" — לא קל מדי, לא קשה מדי. רמת הקושי מותאמת לשליטה בפועל ועולה רק עם <em>mastery threshold</em>.</p>
+      </div>
+
+      <div class="standard">
+        <div class="standard-tag">METHODOLOGY · SOR</div>
+        <h4>Science of Reading</h4>
+        <p>הוראת קריאה מפורשת ושיטתית לפי הסדר המחקרי: פונמיקה ← פענוח ← שטף ← אוצר מילים ← הבנה. לא ניחושים מהקשר — לימוד מבוסס ראיות.</p>
+      </div>
+
+      <div class="standard">
+        <div class="standard-tag">CONTENT · DECODABLE TEXT</div>
+        <h4>טקסט שניתן לפענח, לא Leveled Text</h4>
+        <p>כל טקסט שהתלמיד פוגש בנוי מאותיות וצלילים שכבר נלמדו. מנצח את הגישה המסורתית של "טקסט ברמה X" — שמקדמת ניחושים במקום פענוח אמיתי.</p>
+      </div>
+
+      <div class="standard">
+        <div class="standard-tag">ENGINE · BKT</div>
+        <h4>Bayesian Knowledge Tracing</h4>
+        <p>מנוע אדפטיבי המעריך את הסיכוי שתלמיד שולט במיומנות נתונה — לא חישוב נאיבי של "הצליח/נכשל". מעבר ליחידה הבאה נקבע לפי <em>mastery threshold</em>, לא לפי תרגיל בודד.</p>
+      </div>
+
+      <div class="standard">
+        <div class="standard-tag">ASSESSMENT · UNIVERSAL SCREENER</div>
+        <h4>אבחון 3×בשנה (BOY · MOY · EOY)</h4>
+        <p>סקרינר אוניברסלי בתחילת השנה, אמצעיתה וסופה — סטנדרט מקצועי שמאפשר זיהוי מוקדם של תלמידים בסיכון ומדידת אפקטיביות התערבויות.</p>
+      </div>
+
+      <div class="standard">
+        <div class="standard-tag">TECH · ASR FOR KIDS</div>
+        <h4>זיהוי קולי לקול ילדים</h4>
+        <p>קריאה אוראלית היא המנבא החזק ביותר להבנת הנקרא. שילוב ASR מותאם לקולות ילדים (כפי שב-Amira / Microsoft Reading Coach / Ello) פותח עידן חדש של מדידה איכותית.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- WHAT MAKES STRONG VS WEAK -->
+  <section>
+    <div class="section-head">
+      <span class="section-num">05 · מה מבדיל אותנו</span>
+      <h2 class="section-title">מה עושות מערכות חזקות — ומה עושות חלשות</h2>
+      <p class="section-lede">למדנו את השוק. ההבדל בין מערכת שמורות אוהבות לבין כזו שנזרקת אחרי חודש — הוא בפרטים הקטנים: ניסוח ההמלצה, סוג ההתראה, מה נמדד כהצלחה.</p>
+    </div>
+
+    <div class="dashboard-split">
+
+      <div class="principle">
+        <div class="principle-head">
+          <span class="badge">✓</span>
+          <span>מערכות חזקות עושות כך</span>
+        </div>
+        <ul>
+          <li><b>המלצה ספציפית:</b> "שיעור X · 5 תלמידים · 8 דקות בקבוצה" — לא "מומלץ תרגול נוסף".</li>
+          <li><b>התראה רק על דפוס:</b> ירידה עקבית בשבוע, לא תלמיד שטעה פעם אחת.</li>
+          <li><b>פעולה ברורה לסגירה:</b> כל התראה מסתיימת בפעולה שהמורָה יכולה לבצע.</li>
+          <li><b>מטריקת הצלחה = שליטה:</b> שליטה במיומנות, לא דקות שימוש או מספר תרגילים.</li>
+          <li><b>בנק מתויג למיומנויות:</b> כל תרגיל יודע לאיזו מיומנות הוא שייך.</li>
+          <li><b>פרטיות מלאה:</b> כל תלמיד רואה רק את עצמו — אין השוואות פומביות.</li>
+        </ul>
+      </div>
+
+      <div class="antipattern">
+        <div class="antipattern-head">
+          <span class="badge">✗</span>
+          <span>מערכות חלשות נתפסות בכך</span>
+        </div>
+        <ul>
+          <li><b>בנק שאלות מבולגן</b> בלי שיוך למיומנויות — אי אפשר להבין מה התלמיד לא יודע.</li>
+          <li><b>"נסה שוב" אינסופי</b> בלי mastery threshold — תלמיד תקוע בלולאה במקום להתקדם.</li>
+          <li><b>השוואה פומבית</b> בין תלמידים — לוחות "המובילים" שפוגעים בתלמידים החלשים.</li>
+          <li><b>"מומלץ תרגול"</b> בלי לציין על מה ולכמה זמן — המורָה לא יודעת איך ליישם.</li>
+          <li><b>הצפת התראות</b> שאף אחד לא קורא — וההתראה החשובה מתפספסת.</li>
+          <li><b>מדידת דקות שימוש</b> כהצלחה — במקום שליטה אמיתית במיומנויות.</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 3 ROLES -->
+  <section>
+    <div class="section-head">
+      <span class="section-num">06 · שלוש שכבות, שלושה תפקידים</span>
+      <h2 class="section-title">לכל תפקיד — המסך שמתאים לו</h2>
+      <p class="section-lede">המורָה לא צריכה לראות את כל מועדון ההכלה. מנהלת התוכנית לא צריכה לראות תרגיל בודד. כל שכבה רואה את מה שרלוונטי לה — לא יותר, לא פחות. סוף לפיצול בין משו"ב ל-PDF ל-WhatsApp.</p>
+    </div>
+
+    <div class="roles-grid">
+
+      <div class="role role-1">
+        <div class="role-eyebrow">שכבה 1 · בית ספר</div>
+        <h4>המורָה / המחנכת</h4>
+        <ul>
+          <li>דשבורד כיתתי: מי מתקדם · מי תקוע · מי דורש התערבות</li>
+          <li>פרופיל תלמיד: מיומנויות חזקות, פערים פעילים, התקדמות בזמן</li>
+          <li>התראות חכמות: רק על דפוס מתמשך + פעולה ברורה</li>
+          <li>המלצות יישומיות: שיעור · רשימת תלמידים · זמן משוער · קבוצה</li>
+          <li>אינטגרציה עם תיק תלמיד מאוחד</li>
+        </ul>
+      </div>
+
+      <div class="role role-2">
+        <div class="role-eyebrow">שכבה 2 · בית ספר</div>
+        <h4>רכזת ההכלה</h4>
+        <ul>
+          <li>תמונת בית הספר: כמה תלמידים בכל רמה, מוקדי קושי בשכבה</li>
+          <li>מעקב סל מענים אישי לכל תלמיד</li>
+          <li>זיהוי תלמידים שדורשים מעבר Tier — מבוסס נתונים</li>
+          <li>אינטגרציה עם החלטות ועדה, יעדי קייס מנג'ר</li>
+          <li>שיחה ממוקדת עם המורה — בנתונים, לא בהתרשמות</li>
+        </ul>
+      </div>
+
+      <div class="role role-3">
+        <div class="role-eyebrow">שכבה 3 · עירוני</div>
+        <h4>מנהלת תוכנית החומש</h4>
+        <ul>
+          <li>צבע כל מועדון ההכלה: 60+ מוסדות, מאות כיתות</li>
+          <li>אפקטיביות תכניות תמיכה ברמת בית ספר ושכבה</li>
+          <li>שימוש בנתוני אבחון — % מורות שעדכנו פרופיל כיתה החודש</li>
+          <li>איגום משאבים חכם בין בתי הספר</li>
+          <li>דוחות למשרד החינוך — אוטומטיים, ללא הקלדה כפולה</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- STUDENT EXPERIENCE -->
+  <section>
+    <div class="section-head">
+      <span class="section-num">07 · חוויית התלמיד</span>
+      <h2 class="section-title">סשן של 10-15 דקות שמרגיש נכון</h2>
+      <p class="section-lede">לא קל מדי, לא קשה מדי. רמת קושי מותאמת לשליטה בפועל (ZPD), רמזים מדורגים לפני סימון שגיאה, חיזוקי הצלחה שבונים תחושת מסוגלות. <b>חברתית-רגשית לפני שזה קוגניטיבי</b> — התלמיד מרגיש "אני חלק מהכיתה הזו", גם כשהמסלול שלו אישי.</p>
+    </div>
+
+    <div class="student-band">
+      <div class="student-stat-line">
+        <div class="student-stat-number">10-15</div>
+        <div class="student-stat-label">דקות סשן · ברמת קושי שמותאמת לשליטה בפועל · באזור הלמידה המיטבי</div>
+      </div>
+
+      <div class="student-grid">
+
+        <div class="student-cell">
+          <h5>פשטות</h5>
+          <p>ממשק מותאם גיל א-ב. הוראות קוליות, סמלים, מינימום טקסט.</p>
+        </div>
+
+        <div class="student-cell">
+          <h5>תיווך</h5>
+          <p>רמזים מדורגים ופירוק משימה — לפני סימון "שגיאה".</p>
+        </div>
+
+        <div class="student-cell">
+          <h5>התמדה</h5>
+          <p>משוב מיידי, אלמנטים משחקיים מתונים — לא הצפת אנימציות.</p>
+        </div>
+
+        <div class="student-cell">
+          <h5>הצלחה</h5>
+          <p>חיזוק תחושת מסוגלות והתקדמות — כל תלמיד בקצבו.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ PRICING ═══════════ -->
+  <section class="page-break">
+    <div class="section-head">
+      <span class="section-num">08 · הצעת מחיר</span>
+      <h2 class="section-title">מבנה התמחור</h2>
+      <p class="section-lede">מודל דו-שלבי: דמי הקמה והתאמה ראשונית חד-פעמיים על בסיס תכנית הלימוד העירונית, ורישיון שנתי לתלמיד להפעלה שוטפת ותחזוקה מלאה.</p>
+    </div>
+
+    <div class="pricing-wrap">
+
+      <div class="pricing-grid">
+
+        <!-- SETUP -->
+        <div class="price-block">
+          <span class="price-tag">חד-פעמי</span>
+          <h3 class="price-title">הקמה והתאמה ראשונית</h3>
+          <p class="price-sub">בניית מערך תרגול דיפרנציאלי מלא על בסיס תכנית הלימוד העירונית של מנח"י.</p>
+
+          <div class="price-amount">
+            <span class="currency">₪</span>
+            <span class="number num">280,000</span>
+          </div>
+          <p class="price-vat num">+ מע"מ · תשלום חד-פעמי</p>
+
+          <p class="price-note">העלות מכסה את כל ההתאמה הפדגוגית והטכנית — מהמרת תכנית הלימוד הקיימת ועד עליה לאוויר בכל בתי הספר המשתתפים.</p>
+
+          <p class="price-includes">כולל</p>
+          <ul class="price-list">
+            <li>בניית מערך תרגול דיפרנציאלי מלא על בסיס תכנית הלימוד העירונית</li>
+            <li>מיפוי מיומנויות קריאה וכתיבה מתוך תכנית הלימוד</li>
+            <li>התאמת והרחבת מאגר התרגילים למבנה המיומנויות</li>
+            <li>הגדרת רמות קושי ומדדי ניווט פדגוגיים</li>
+            <li>הגדרת מנגנוני רמזים, תיווך ומשוב לתלמידים</li>
+            <li>התאמת דוחות בסיסיים ותצוגות מעקב לשלוש השכבות</li>
+            <li>הקמת סביבת עבודה: רשות, בתי ספר, כיתות, מורות, תלמידים</li>
+            <li>הכשרת צוותי ההפעלה — רכזות הכלה וצוותי תמיכה של התוכנית</li>
+          </ul>
+        </div>
+
+        <!-- ANNUAL -->
+        <div class="price-block featured">
+          <span class="price-tag">רישיון שנתי</span>
+          <h3 class="price-title">רישיון והפעלה שנתית</h3>
+          <p class="price-sub">תשלום שנתי לתלמיד, כולל את כל מרכיבי המערכת, התחזוקה, השדרוגים והתמיכה.</p>
+
+          <div class="price-amount">
+            <span class="currency">₪</span>
+            <span class="number num">160</span>
+            <span class="unit">לתלמיד / שנה</span>
+          </div>
+          <p class="price-vat num">+ מע"מ · מינימום להפעלה: 1,500 תלמידים</p>
+
+          <p class="price-note">המחיר כולל את כל מרכיבי המערכת — סביבת תלמיד, סביבת מורָה, AI במסגרת שימוש סביר, ועדכונים שוטפים.</p>
+
+          <p class="price-includes">כולל</p>
+          <ul class="price-list">
+            <li>שימוש שוטף במערכת</li>
+            <li>תרגול מותאם לתלמידים</li>
+            <li>סביבת מורָה מקיפה</li>
+            <li>מערך בקרה ודוחות ניהוליים לשלוש השכבות</li>
+            <li>תחזוקה ושדרוגים שוטפים</li>
+            <li>אבטחת מידע</li>
+            <li>תמיכה טכנית</li>
+            <li>עלויות AI במסגרת שימוש סביר</li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Example calculation -->
+      <div class="pricing-example">
+        <h5>דוגמת חישוב שנתית — 1,500 תלמידים, שנה ראשונה</h5>
+        <div class="pricing-example-grid">
+          <div class="pricing-example-row">
+            <span class="lbl">הקמה והתאמה (חד-פעמי)</span>
+            <span class="val num">₪280,000</span>
+          </div>
+          <div class="pricing-example-row">
+            <span class="lbl">רישיון שנתי (1,500 × ₪160)</span>
+            <span class="val num">₪240,000</span>
+          </div>
+          <div class="pricing-example-row">
+            <span class="lbl">סה"כ שנה א'</span>
+            <span class="val num" style="color:var(--teal);">₪520,000</span>
+          </div>
+          <div class="pricing-example-row">
+            <span class="lbl">משנה ב' ואילך</span>
+            <span class="val num" style="color:var(--burgundy);">₪240,000 / שנה</span>
+          </div>
+        </div>
+        <p style="font-size:.8rem; color:var(--muted); margin-top:14px;">לפני מע"מ · בכפוף למינימום של 1,500 תלמידים · התמחור עשוי להשתנות בהיקפים גדולים יותר במסגרת מו"מ.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- NEXT STEPS -->
+  <section>
+    <div class="next-card">
+      <h2>הצעד הבא</h2>
+      <p>הגדרת תכולת הפיילוט בשיתוף הצוות הפדגוגי של תוכנית החומש — בחירת בתי הספר ממועדון ההכלה, היקף תלמידים, מודל עבודה, תקציב מאושר ולוחות זמנים מפורטים.</p>
+      <div class="next-grid">
+        <div class="next-step">
+          <div class="step-num">01</div>
+          <div class="step-txt">פגישת אפיון עם מטה התוכנית</div>
+        </div>
+        <div class="next-step">
+          <div class="step-num">02</div>
+          <div class="step-txt">בחירת בתי הספר לפיילוט</div>
+        </div>
+        <div class="next-step">
+          <div class="step-num">03</div>
+          <div class="step-txt">מודל עבודה ולוחות זמנים</div>
+        </div>
+        <div class="next-step">
+          <div class="step-num">04</div>
+          <div class="step-txt">חתימה ועלייה לאוויר</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="foot">
+    <div class="foot-brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" fill="none">
+          <circle cx="16" cy="16" r="11" stroke="white" stroke-width="2" opacity=".4"/>
+          <circle cx="16" cy="5" r="2.2" fill="white"/>
+          <circle cx="16" cy="27" r="2.2" fill="white"/>
+          <circle cx="5" cy="16" r="2.2" fill="white"/>
+          <circle cx="27" cy="16" r="2.2" fill="white"/>
+          <ellipse cx="16" cy="16" rx="6" ry="3" stroke="white" stroke-width="1.6" fill="none"/>
+          <ellipse cx="16" cy="16" rx="3" ry="6" stroke="white" stroke-width="1.6" fill="none"/>
+        </svg>
+      </div>
+      <span class="brand-text"><span class="impact">Impact</span> <span class="os">OS</span> · טכנולוגיה יוצרת אימפקט · מציעה לתוכנית החומש להכלה</span>
+    </div>
+    <div>
+      <span>הצעה זו תקפה ל-60 יום מתאריך 19.5.2026</span>
+    </div>
+  </footer>
+
+</div>
+
+</body>
+</html>
