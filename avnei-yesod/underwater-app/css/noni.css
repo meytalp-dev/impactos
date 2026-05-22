@@ -1,0 +1,111 @@
+/* ============================================================
+   noni.css — דמות נוני
+   לפי design-system.md סעיף 8 (Noni Idle):
+   - נשימה: scale(1 → 1.02 → 1)
+   - מצמוץ אקראי כל 4-7 שניות
+   - זרועות: -2deg → 2deg
+   ============================================================ */
+
+.noni {
+  display: inline-block;
+  position: relative;
+  transform-origin: 50% 60%;
+  animation: noni-breathe 4.5s ease-in-out infinite;
+  filter: drop-shadow(0 12px 22px rgba(38, 80, 92, 0.18));
+}
+
+@keyframes noni-breathe {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.02); }
+}
+
+/* ===== זרועות מתנדנדות עדינות ===== */
+
+.noni .arm {
+  transform-origin: var(--arm-origin-x, 50%) var(--arm-origin-y, 30%);
+  animation: arm-sway 3.6s ease-in-out infinite alternate;
+}
+.noni .arm.a1 { animation-delay: -0.2s; animation-duration: 3.8s; }
+.noni .arm.a2 { animation-delay: -0.6s; animation-duration: 4.1s; }
+.noni .arm.a3 { animation-delay: -1.0s; animation-duration: 3.5s; }
+.noni .arm.a4 { animation-delay: -1.4s; animation-duration: 4.3s; }
+.noni .arm.a5 { animation-delay: -1.8s; animation-duration: 3.7s; }
+.noni .arm.a6 { animation-delay: -2.2s; animation-duration: 4.0s; }
+.noni .arm.a7 { animation-delay: -2.6s; animation-duration: 3.9s; }
+.noni .arm.a8 { animation-delay: -3.0s; animation-duration: 4.2s; }
+
+@keyframes arm-sway {
+  0%   { transform: rotate(-2deg); }
+  100% { transform: rotate(2deg); }
+}
+
+/* ===== מצמוץ — eyelid יורד לרגע ===== */
+/* הקפיצה ל-92% מאפשרת מצמוץ קצר אחת ל-~5 שניות */
+
+.noni .eyelid {
+  transform-origin: 50% 0%;
+  transform: scaleY(0);
+  animation: noni-blink 5.5s ease-in-out infinite;
+}
+.noni .eyelid.right { animation-delay: -0.05s; }
+.noni .eyelid.left  { animation-delay: 0s; }
+
+@keyframes noni-blink {
+  0%, 91%       { transform: scaleY(0); }
+  93%, 95%      { transform: scaleY(1); }
+  97%, 100%     { transform: scaleY(0); }
+}
+
+/* ===== הילת נוני בעת הצעת עזרה ===== */
+
+.noni.helping {
+  filter: drop-shadow(0 12px 22px rgba(38, 80, 92, 0.18))
+          drop-shadow(var(--glow-noni));
+}
+
+/* ===== בועת דיבור של נוני ===== */
+
+.noni-speech {
+  display: inline-block;
+  background: var(--warm-white);
+  color: var(--text-main);
+  padding: var(--space-s) var(--space-m);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-instruction);
+  font-weight: 600;
+  box-shadow: 0 8px 22px rgba(38, 80, 92, 0.12);
+  position: relative;
+  max-width: 24ch;
+  line-height: 1.35;
+}
+
+.noni-speech::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  right: 28px;
+  width: 22px;
+  height: 22px;
+  background: var(--warm-white);
+  border-radius: 50%;
+  box-shadow: -8px -2px 0 -8px var(--warm-white);
+}
+
+.noni-speech::before {
+  content: '';
+  position: absolute;
+  bottom: -22px;
+  right: 18px;
+  width: 10px;
+  height: 10px;
+  background: var(--warm-white);
+  border-radius: 50%;
+}
+
+/* ===== reduced motion ===== */
+
+@media (prefers-reduced-motion: reduce) {
+  .noni { animation: none; }
+  .noni .arm { animation: none; }
+  .noni .eyelid { animation: none; }
+}
