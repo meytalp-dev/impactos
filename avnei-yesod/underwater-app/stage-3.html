@@ -291,19 +291,26 @@
       position: fixed;
       bottom: clamp(12px, 3vw, 28px);
       right: clamp(8px, 2vw, 20px);
-      width: clamp(100px, 20vw, 160px);
+      width: clamp(100px, 18vw, 150px);
       z-index: 30;
       pointer-events: none;
       filter: drop-shadow(0 12px 22px rgba(38, 80, 92, 0.28));
-      animation:
-        noni-fade-in 700ms ease-out 400ms forwards,
-        noni-breathe 4.5s ease-in-out 1100ms infinite;
       opacity: 0;
+      transition: opacity 700ms ease;
+      transform-origin: 50% 80%;
+    }
+    .noni-fixed.ready {
+      opacity: 1;
+      animation: noni-breathe 4.5s ease-in-out infinite;
     }
 
-    @keyframes noni-fade-in {
-      from { opacity: 0; transform: translateY(20px) scale(0.92); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
+    /* מיקום נוני בדסקטופ — גבוה יותר, ליד הפעולה */
+    @media (orientation: landscape) and (min-width: 800px) {
+      .noni-fixed {
+        bottom: 20%;
+        right: clamp(16px, 3vw, 40px);
+        width: clamp(140px, 14vw, 200px);
+      }
     }
 
     @keyframes noni-breathe {
@@ -460,44 +467,42 @@
       margin: 0;
     }
 
-    /* ===== מצבי נוני ===== */
-
-    /* כל מצב: שילוב transform + filter glow + tilt עדין */
+    /* ===== מצבי נוני =====
+       opacity:1 חובה בכל מצב כי החלפת animation מאפסת את ה-fill-mode הקודם */
 
     .noni-fixed.noni-helping {
-      animation:
-        noni-tilt-help 600ms ease-out forwards,
-        noni-breathe 4.5s ease-in-out 600ms infinite;
+      opacity: 1;
+      animation: noni-help-bob 1800ms ease-in-out infinite;
       filter: drop-shadow(0 12px 22px rgba(38, 80, 92, 0.28))
-              drop-shadow(0 0 16px rgba(255, 231, 168, 0.7));
+              drop-shadow(0 0 18px rgba(255, 231, 168, 0.8));
     }
-    @keyframes noni-tilt-help {
-      from { transform: rotate(0) scale(1); }
-      to   { transform: rotate(-6deg) scale(1.05); }
+    @keyframes noni-help-bob {
+      0%, 100% { transform: rotate(-4deg) scale(1.03); }
+      50%      { transform: rotate(-7deg) scale(1.06) translateY(-5px); }
     }
 
     .noni-fixed.noni-hint {
-      animation:
-        noni-tilt-hint 600ms ease-out forwards,
-        noni-breathe 4.5s ease-in-out 600ms infinite;
+      opacity: 1;
+      animation: noni-hint-bob 1400ms ease-in-out infinite;
       filter: drop-shadow(0 12px 22px rgba(38, 80, 92, 0.28))
-              drop-shadow(0 0 22px rgba(255, 169, 141, 0.7));
+              drop-shadow(0 0 24px rgba(255, 169, 141, 0.85));
     }
-    @keyframes noni-tilt-hint {
-      from { transform: rotate(-6deg) scale(1.05); }
-      to   { transform: rotate(-10deg) scale(1.08); }
+    @keyframes noni-hint-bob {
+      0%, 100% { transform: rotate(-8deg) scale(1.06); }
+      50%      { transform: rotate(-11deg) scale(1.1) translateY(-7px); }
     }
 
     .noni-fixed.noni-cheering {
-      animation: noni-cheer 1200ms cubic-bezier(.2,.8,.25,1) forwards;
+      opacity: 1;
+      animation: noni-cheer 1500ms cubic-bezier(.2,.8,.25,1) 1 forwards;
       filter: drop-shadow(0 12px 22px rgba(38, 80, 92, 0.28))
-              drop-shadow(0 0 26px rgba(124, 231, 180, 0.8));
+              drop-shadow(0 0 28px rgba(124, 231, 180, 0.85));
     }
     @keyframes noni-cheer {
       0%   { transform: translateY(0) rotate(0) scale(1); }
-      30%  { transform: translateY(-22px) rotate(8deg) scale(1.12); }
-      50%  { transform: translateY(-12px) rotate(-5deg) scale(1.08); }
-      70%  { transform: translateY(-16px) rotate(3deg) scale(1.1); }
+      25%  { transform: translateY(-26px) rotate(8deg) scale(1.14); }
+      50%  { transform: translateY(-10px) rotate(-6deg) scale(1.08); }
+      75%  { transform: translateY(-18px) rotate(4deg) scale(1.1); }
       100% { transform: translateY(0) rotate(0) scale(1); }
     }
 
@@ -615,36 +620,76 @@
     // ============================================================
 
     const LETTER_SEQUENCE = ['ת', 'מ', 'ר', 'ב', 'ק'];
-    let ITEMS = [];          // כל הפריטים מה-JSON
+    // מיפוי אות → שם קובץ צליל (sound-tav, sound-mem, וכו')
+    const LETTER_TO_SOUND_FILE = {
+      'ת': 'sound-tav', 'מ': 'sound-mem', 'ר': 'sound-resh',
+      'ב': 'sound-bet', 'ק': 'sound-qof'
+    };
+
+    let ITEMS = [];
     let session = {
       letterIdx: 0,
       itemIdx: 0,
-      letterItems: [],       // פריטים של האות הנוכחית בסדר
+      letterItems: [],
       attempts: 0,
       correctCountInLetter: 0,
     };
 
-    // ===== Web Speech API · TTS =====
-    let voicesReady = false;
-    function ensureVoices() {
-      return new Promise(resolve => {
-        const voices = speechSynthesis.getVoices();
-        if (voices.length) { voicesReady = true; return resolve(); }
-        speechSynthesis.onvoiceschanged = () => { voicesReady = true; resolve(); };
-        setTimeout(() => resolve(), 800);
-      });
+    // ===== Audio system — MP3 files (איכות Edge TTS) =====
+
+    let currentAudio = null;
+    const audioCache = new Map(); // pre-loaded audio elements
+
+    function preloadAudio(key) {
+      if (audioCache.has(key)) return audioCache.get(key);
+      const a = new Audio();
+      a.preload = 'auto';
+      // קידוד URL לעברית
+      a.src = 'assets/audio/' + encodeURIComponent(key) + '.mp3';
+      audioCache.set(key, a);
+      return a;
     }
 
-    function speak(text, opts = {}) {
-      if (!('speechSynthesis' in window)) return;
+    function playAudio(key) {
+      if (!key) return Promise.resolve();
       try {
-        speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'he-IL';
-        u.rate = opts.rate || 0.85;
-        u.pitch = opts.pitch || 1.1;
-        speechSynthesis.speak(u);
-      } catch (e) {}
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+        }
+        const a = preloadAudio(key);
+        currentAudio = a;
+        a.currentTime = 0;
+        return a.play().catch(err => {
+          console.warn('Audio fail:', key, err);
+        });
+      } catch (e) {
+        console.warn('playAudio error:', e);
+        return Promise.resolve();
+      }
+    }
+
+    // מקריא את הצליל של האות הנוכחית
+    function playLetterSound(letter) {
+      const fn = LETTER_TO_SOUND_FILE[letter];
+      if (fn) playAudio(fn);
+    }
+
+    // מקריא רצף — מילה ראשונה, חכה, מילה שנייה
+    function playSequence(keys, delay = 800) {
+      let i = 0;
+      const next = () => {
+        if (i >= keys.length) return;
+        const k = keys[i++];
+        if (!k) return next();
+        const a = preloadAudio(k);
+        a.currentTime = 0;
+        a.onended = () => setTimeout(next, delay);
+        a.onerror = () => setTimeout(next, delay);
+        a.play().catch(() => setTimeout(next, delay));
+        currentAudio = a;
+      };
+      next();
     }
 
     // ===== Image path mapping =====
@@ -656,10 +701,13 @@
 
     // ===== Load items + start =====
     async function init() {
-      await ensureVoices();
       const res = await fetch('data/island-03-items.json');
       const data = await res.json();
       ITEMS = data.items;
+
+      // נוני "מוכן" — opacity:1
+      document.getElementById('noniImg').classList.add('ready');
+
       startLetter(0);
     }
 
@@ -733,7 +781,7 @@
 
       // השמעה אוטומטית רק אחרי שהמשתמש לחץ "נתחיל"
       if (audioUnlocked) {
-        setTimeout(() => speak(item.audio_cue_text || item.letter_in_focus), 350);
+        setTimeout(() => playLetterSound(item.letter_in_focus), 350);
       }
     }
 
@@ -761,22 +809,22 @@
       // הקראת המילה שהילד.ה לחצ.ה עליה (לימוד דרך טעות)
       const wrongWord = card.dataset.word;
 
+      const wrongConcept = card.dataset.concept; // עברית — שם הקובץ MP3
+
       if (session.attempts === 1) {
         setNoniState('help');
         showFeedback('בוא/י ננסה יחד');
-        // קודם משמיע את המילה שנבחרה, אחר כך את הצליל הנכון
-        speak(wrongWord, { rate: 0.85 });
-        setTimeout(() => speak('ננסה יחד', { rate: 0.9 }), 1100);
+        // קודם מקריא את המילה שנבחרה, אחר כך עידוד
+        playSequence([wrongConcept, 'trywithme'], 600);
       } else if (session.attempts === 2) {
         setNoniState('hint');
         showFeedback('נוני מצביע על התשובה');
-        // glow על הכרטיס הנכון
         document.querySelectorAll('.option-card').forEach(c => {
           if (c.dataset.correct === 'true') c.classList.add('hint-glow');
         });
         // השמעה חוזרת של הצליל הנכון
         const item = session.letterItems[session.itemIdx];
-        setTimeout(() => speak(item.audio_cue_text, { rate: 0.8 }), 300);
+        setTimeout(() => playLetterSound(item.letter_in_focus), 300);
       } else if (session.attempts >= 3) {
         setNoniState('hint');
         showFeedback('זאת התשובה — הקש/י עליה');
@@ -788,6 +836,7 @@
             c.style.outlineOffset = '2px';
           }
         });
+        playAudio('press-here');
       }
     }
 
@@ -803,14 +852,20 @@
       // נוני חוגג!
       setNoniState('cheer');
 
-      // פידבק חיובי
-      const messages = ['יופי!', 'מצוין', 'אש', 'בדיוק!', 'יפה מאוד'];
-      const msg = messages[Math.floor(Math.random() * messages.length)];
-      showFeedback(msg);
+      // פידבק חיובי — בחירה אקראית
+      const feedbackOptions = [
+        { text: 'יופי!', audio: 'great' },
+        { text: 'מצוין', audio: 'excellent' },
+        { text: 'בדיוק!', audio: 'exactly' },
+        { text: 'כל הכבוד', audio: 'great' },
+        { text: 'נכון', audio: 'right' },
+      ];
+      const fb = feedbackOptions[Math.floor(Math.random() * feedbackOptions.length)];
+      showFeedback(fb.text);
+
       // השמעה: קודם המילה הנכונה, אחר כך עידוד
-      const word = opt.word || opt.concept || '';
-      speak(word, { rate: 0.85, pitch: 1.1 });
-      setTimeout(() => speak(msg, { rate: 0.95, pitch: 1.2 }), 900);
+      const correctConcept = opt.concept || '';
+      playSequence([correctConcept, fb.audio], 700);
 
       // הענקת פנינה אם זו טעות אפס
       if (session.attempts === 0) {
@@ -874,13 +929,13 @@
         document.getElementById('completion').classList.add('show');
         document.getElementById('completionMsg').textContent =
           'סיימת את כל 5 האותיות. נוני אסף עבורך אלמוג אות זוהר.';
-        speak('כל הכבוד! סיימת את כל האותיות', { rate: 0.85 });
+        playAudio('all-done');
         return;
       }
 
       // מעבר לאות הבאה — מסך ביניים קצר
       showFeedback('סיימת את האות ' + letter + '! ממשיכים…');
-      speak('כל הכבוד, סיימת את האות ' + letter, { rate: 0.85 });
+      playAudio('stage-done');
       setTimeout(() => startLetter(session.letterIdx + 1), 2200);
     }
 
@@ -888,7 +943,7 @@
     document.getElementById('audioBtn').addEventListener('click', () => {
       const item = session.letterItems[session.itemIdx];
       if (!item) return;
-      speak(item.audio_cue_text || item.letter_in_focus);
+      playLetterSound(item.letter_in_focus);
       document.getElementById('audioBtn').classList.add('playing');
       setTimeout(() => document.getElementById('audioBtn').classList.remove('playing'), 600);
     });
@@ -897,12 +952,11 @@
     let audioUnlocked = false;
 
     document.getElementById('startBtn').addEventListener('click', async () => {
-      // נסיון השמעה ראשונית — משחרר את ה-TTS על iOS/Safari
+      // משחרר את ה-audio playback על iOS/Safari עם נגן ריק
       try {
-        const u = new SpeechSynthesisUtterance(' ');
-        u.lang = 'he-IL';
-        u.volume = 0;
-        speechSynthesis.speak(u);
+        const silentAudio = new Audio();
+        silentAudio.volume = 0;
+        await silentAudio.play().catch(() => {});
       } catch (e) {}
 
       audioUnlocked = true;
@@ -913,7 +967,7 @@
       // השמעה ראשונה אחרי טעינת הפריט הראשון
       setTimeout(() => {
         const item = session.letterItems[session.itemIdx];
-        if (item) speak(item.audio_cue_text || item.letter_in_focus);
+        if (item) playLetterSound(item.letter_in_focus);
       }, 600);
     });
   </script>

@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+"""
+מייצר MP3 לכל המילים של שלב 3 + הודעות פידבק.
+דורש: pip install edge-tts
+"""
+import asyncio
+import json
+import os
+import sys
+from pathlib import Path
+
+import edge_tts
+
+VOICE_HILA = "he-IL-HilaNeural"   # אישה
+VOICE_AVRI = "he-IL-AvriNeural"   # גבר (אופציה)
+VOICE = VOICE_HILA
+
+ROOT = Path(__file__).parent.parent
+OUT_DIR = ROOT / "assets" / "audio"
+OUT_DIR.mkdir(parents=True, exist_ok=True)
+
+WORDS_FILE = ROOT / "data" / "words-to-generate.json"
+
+# פידבק נוסף שלא קיים בתיקייה
+FEEDBACK_LINES = {
+    "trywithme": "בּוֹאוּ נְנַסֶּה יַחַד",
+    "exactly": "בְּדִיּוּק",
+    "wow": "וָואוּ, יָפֶה מְאוֹד",
+    "right": "נָכוֹן",
+    "press-here": "הַקֵּשׁ פֹּה",
+    "look-here": "הִסְתַּכֵּל פֹּה",
+    "lets-find": "בּוֹאוּ נִמְצָא יַחַד",
+    "great": "כָּל הַכָּבוֹד",
+    "stage-done": "סִיַּמְתָּ אֶת הָאוֹת! מַמְשִׁיכִים",
+    "all-done": "סִיַּמְתָּ אֶת כָּל הָאוֹתִיּוֹת. יְפֶהפֶה",
+}
+
+
+async def gen(text: str, filename: str):
+    out = OUT_DIR / f"{filename}.mp3"
+    if out.exists():
+        return f"skip {filename}"
+    try:
+        tts = edge_tts.Communicate(text, VOICE, rate="-10%")
+        await tts.save(str(out))
+        return f"OK   {filename}: {text}"
+    except Exception as e:
+        return f"FAIL {filename}: {text} ({type(e).__name__})"
+
+
+async def main():
+    with open(WORDS_FILE, "r", encoding="utf-8") as f:
+        words = json.load(f)
+
+    items = list(words.items()) + [(k, v) for k, v in FEEDBACK_LINES.items()]
+    print(f"Generating {len(items)} files sequentially...")
+
+    success = 0
+    for i, (key, text) in enumerate(items, 1):
+        result = await gen(text, key)
+        print(f"[{i}/{len(items)}] {result}")
+        if "OK" in result or "skip" in result:
+            success += 1
+        # רווח קצר בין בקשות
+        await asyncio.sleep(0.3)
+
+    print(f"\nSuccess: {success}/{len(items)}")
+    print(f"Output: {OUT_DIR}")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
