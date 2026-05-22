@@ -101,8 +101,9 @@
       width: 100%;
       height: 100%;
       display: grid;
-      grid-template-rows: auto 1fr auto;
-      padding: 90px var(--space-m) var(--space-m);
+      grid-template-rows: auto 1fr;
+      /* מקום מימין לנוני שמרחף אבסולוטית */
+      padding: 90px clamp(120px, 22vw, 180px) var(--space-m) var(--space-m);
       gap: var(--space-m);
       z-index: 10;
     }
@@ -233,11 +234,15 @@
       object-fit: contain;
     }
 
-    .option-card .word {
-      font-size: clamp(15px, 2.8vw, 20px);
-      font-weight: 700;
-      color: var(--text-main);
-      text-align: center;
+    /* תמונה היא הגיבורה — בלי מילה */
+    .option-card .pic {
+      width: clamp(80px, 16vw, 130px);
+      height: clamp(80px, 16vw, 130px);
+    }
+    .option-card .pic img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
     }
 
     /* פידבק על כרטיסים */
@@ -281,51 +286,109 @@
       pointer-events: none;
     }
 
-    /* ===== Noni + Feedback ===== */
-    .bottom-stage {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: var(--space-s);
-      padding-top: var(--space-s);
+    /* ===== Noni — אבסולוטי בפינה הימנית-תחתונה ===== */
+    .noni-fixed {
+      position: fixed;
+      bottom: clamp(12px, 3vw, 28px);
+      right: clamp(8px, 2vw, 20px);
+      width: clamp(100px, 20vw, 160px);
+      z-index: 30;
+      pointer-events: none;
+      filter: drop-shadow(0 12px 22px rgba(38, 80, 92, 0.28));
+      animation:
+        noni-fade-in 700ms ease-out 400ms forwards,
+        noni-breathe 4.5s ease-in-out 1100ms infinite;
+      opacity: 0;
     }
 
-    .noni-wrap {
-      position: relative;
-      width: clamp(80px, 18vw, 130px);
-      flex-shrink: 0;
-    }
-
-    .noni-img {
-      width: 100%;
-      height: auto;
-      display: block;
-      filter: drop-shadow(0 12px 22px rgba(38, 80, 92, 0.25));
-      animation: noni-breathe 4.5s ease-in-out infinite;
+    @keyframes noni-fade-in {
+      from { opacity: 0; transform: translateY(20px) scale(0.92); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
     }
 
     @keyframes noni-breathe {
       0%, 100% { transform: scale(1) translateY(0); }
-      50%      { transform: scale(1.025) translateY(-4px); }
+      50%      { transform: scale(1.03) translateY(-4px); }
     }
 
+    /* בועת פידבק שצפה מעל נוני */
     .feedback-bubble {
-      flex: 1;
+      position: fixed;
+      bottom: clamp(120px, 22vw, 180px);
+      right: clamp(70px, 14vw, 130px);
       background: var(--warm-white);
       border-radius: var(--radius-lg);
       padding: 12px 18px;
       font-size: clamp(15px, 3vw, 19px);
       font-weight: 700;
       color: var(--text-main);
-      box-shadow: 0 8px 22px rgba(38, 80, 92, 0.18);
+      box-shadow: 0 8px 22px rgba(38, 80, 92, 0.22);
       opacity: 0;
-      transform: translateY(8px);
+      transform: translateY(8px) scale(0.95);
       transition: opacity 280ms ease, transform 280ms ease;
-      max-width: 70%;
-      align-self: flex-end;
-      margin-bottom: 18px;
+      max-width: 60vw;
+      z-index: 31;
+      white-space: normal;
     }
-    .feedback-bubble.show { opacity: 1; transform: translateY(0); }
+    .feedback-bubble.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    .feedback-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      right: 28px;
+      width: 18px;
+      height: 18px;
+      background: var(--warm-white);
+      border-radius: 50%;
+    }
+    .feedback-bubble::before {
+      content: '';
+      position: absolute;
+      bottom: -20px;
+      right: 24px;
+      width: 9px;
+      height: 9px;
+      background: var(--warm-white);
+      border-radius: 50%;
+    }
+
+    /* ===== Tap-to-start overlay (לפתרון בעיית autoplay לשמע) ===== */
+    .tap-to-start {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(184, 232, 224, 0.94), rgba(99, 216, 208, 0.92));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-m);
+      z-index: 300;
+      cursor: pointer;
+      padding: var(--space-l);
+      text-align: center;
+    }
+    .tap-to-start.hidden { display: none; }
+    .tap-to-start h2 {
+      font-size: clamp(28px, 6vw, 42px);
+      font-weight: 900;
+      color: var(--text-main);
+      margin: 0;
+    }
+    .tap-to-start .start-btn {
+      height: 72px;
+      padding: 0 56px;
+      background: var(--water-secondary);
+      color: white;
+      border-radius: var(--radius-pill);
+      font-size: clamp(22px, 5vw, 28px);
+      font-weight: 800;
+      box-shadow: 0 12px 28px rgba(115, 217, 209, 0.5);
+      border: none;
+      cursor: pointer;
+    }
 
     /* ===== Success burst (גלי בועות זהב) ===== */
     .burst {
@@ -397,6 +460,47 @@
       margin: 0;
     }
 
+    /* ===== מצבי נוני ===== */
+
+    /* כל מצב: שילוב transform + filter glow + tilt עדין */
+
+    .noni-fixed.noni-helping {
+      animation:
+        noni-tilt-help 600ms ease-out forwards,
+        noni-breathe 4.5s ease-in-out 600ms infinite;
+      filter: drop-shadow(0 12px 22px rgba(38, 80, 92, 0.28))
+              drop-shadow(0 0 16px rgba(255, 231, 168, 0.7));
+    }
+    @keyframes noni-tilt-help {
+      from { transform: rotate(0) scale(1); }
+      to   { transform: rotate(-6deg) scale(1.05); }
+    }
+
+    .noni-fixed.noni-hint {
+      animation:
+        noni-tilt-hint 600ms ease-out forwards,
+        noni-breathe 4.5s ease-in-out 600ms infinite;
+      filter: drop-shadow(0 12px 22px rgba(38, 80, 92, 0.28))
+              drop-shadow(0 0 22px rgba(255, 169, 141, 0.7));
+    }
+    @keyframes noni-tilt-hint {
+      from { transform: rotate(-6deg) scale(1.05); }
+      to   { transform: rotate(-10deg) scale(1.08); }
+    }
+
+    .noni-fixed.noni-cheering {
+      animation: noni-cheer 1200ms cubic-bezier(.2,.8,.25,1) forwards;
+      filter: drop-shadow(0 12px 22px rgba(38, 80, 92, 0.28))
+              drop-shadow(0 0 26px rgba(124, 231, 180, 0.8));
+    }
+    @keyframes noni-cheer {
+      0%   { transform: translateY(0) rotate(0) scale(1); }
+      30%  { transform: translateY(-22px) rotate(8deg) scale(1.12); }
+      50%  { transform: translateY(-12px) rotate(-5deg) scale(1.08); }
+      70%  { transform: translateY(-16px) rotate(3deg) scale(1.1); }
+      100% { transform: translateY(0) rotate(0) scale(1); }
+    }
+
     /* ===== Layout responsiveness ===== */
     @media (orientation: landscape) and (min-width: 800px) {
       .game-area {
@@ -443,19 +547,27 @@
           <!-- 4 כרטיסי תמונה מוזרקים כאן -->
         </section>
 
-        <section class="bottom-stage">
-          <div class="feedback-bubble" id="feedbackBubble">ננסה יחד</div>
-          <div class="noni-wrap">
-            <img class="noni-img" src="assets/noni-hero-transparent.png" alt="נוני">
-          </div>
-        </section>
-
       </div>
 
       <!-- burst layer לבועות זהב -->
       <div class="burst" id="burst"></div>
     </div>
   </main>
+
+  <!-- נוני קבוע בפינה — מחוץ לגריד -->
+  <img class="noni-fixed" id="noniImg" src="assets/noni-hero-transparent.png" alt="נוני">
+
+  <!-- בועת פידבק קבועה מעל נוני -->
+  <div class="feedback-bubble" id="feedbackBubble"></div>
+
+  <!-- מסך פתיחה — משחרר את ה-TTS אחרי לחיצה -->
+  <div class="tap-to-start" id="tapToStart">
+    <h2>אלמוגי האותיות</h2>
+    <p style="font-size: clamp(18px, 4vw, 22px); color: var(--text-soft); max-width: 24ch; margin: 0;">
+      נוני יראה לך אות, ואת.ה תמצאו ביחד את התמונה שמתחילה באותו צליל
+    </p>
+    <button class="start-btn" id="startBtn">בוא/י נתחיל</button>
+  </div>
 
   <!-- Top bar -->
   <header class="top-bar">
@@ -580,7 +692,7 @@
       // ניקוי פידבק קודם
       hideFeedback();
 
-      // הזרקת אפשרויות
+      // הזרקת אפשרויות — תמונה בלבד, ללא מילה
       const grid = document.getElementById('optionsGrid');
       grid.innerHTML = '';
       item.options.forEach((opt, i) => {
@@ -588,6 +700,10 @@
         card.className = 'option-card';
         card.dataset.correct = opt.correct === true ? 'true' : 'false';
         card.dataset.index = i;
+        card.dataset.word = opt.word || opt.concept || '';
+        card.dataset.concept = opt.concept || '';
+        // alt לקורא מסך
+        card.setAttribute('aria-label', opt.concept || 'תמונה');
 
         const pic = document.createElement('div');
         pic.className = 'pic';
@@ -597,27 +713,37 @@
           img.src = path;
           img.alt = opt.concept || '';
           img.onerror = () => {
-            // נפילה לאימוג'י אם תמונה חסרה
             pic.innerHTML = '';
             pic.textContent = opt.emoji_suggestion || '?';
+            pic.style.fontSize = 'clamp(54px, 11vw, 88px)';
           };
           pic.appendChild(img);
         } else {
           pic.textContent = opt.emoji_suggestion || '?';
+          pic.style.fontSize = 'clamp(54px, 11vw, 88px)';
         }
 
-        const w = document.createElement('div');
-        w.className = 'word';
-        w.textContent = opt.word || opt.concept || '';
-
         card.appendChild(pic);
-        card.appendChild(w);
         card.addEventListener('click', () => handleTap(card, opt));
         grid.appendChild(card);
       });
 
-      // השמעה אוטומטית של הצליל אחרי כניסה
-      setTimeout(() => speak(item.audio_cue_text || item.letter_in_focus), 350);
+      // נוני חוזר למצב idle בין פריטים
+      setNoniState('idle');
+
+      // השמעה אוטומטית רק אחרי שהמשתמש לחץ "נתחיל"
+      if (audioUnlocked) {
+        setTimeout(() => speak(item.audio_cue_text || item.letter_in_focus), 350);
+      }
+    }
+
+    // ===== מצבי נוני =====
+    function setNoniState(state) {
+      const noni = document.getElementById('noniImg');
+      noni.classList.remove('noni-helping', 'noni-hint', 'noni-cheering');
+      if (state === 'help') noni.classList.add('noni-helping');
+      else if (state === 'hint') noni.classList.add('noni-hint');
+      else if (state === 'cheer') noni.classList.add('noni-cheering');
     }
 
     // ===== Tap handler · feedback מדורג =====
@@ -632,26 +758,34 @@
       card.classList.add('wrong');
       setTimeout(() => card.classList.add('dimmed'), 500);
 
+      // הקראת המילה שהילד.ה לחצ.ה עליה (לימוד דרך טעות)
+      const wrongWord = card.dataset.word;
+
       if (session.attempts === 1) {
-        showFeedback('ננסה יחד');
-        speak('ננסה יחד', { rate: 0.9 });
+        setNoniState('help');
+        showFeedback('בוא/י ננסה יחד');
+        // קודם משמיע את המילה שנבחרה, אחר כך את הצליל הנכון
+        speak(wrongWord, { rate: 0.85 });
+        setTimeout(() => speak('ננסה יחד', { rate: 0.9 }), 1100);
       } else if (session.attempts === 2) {
+        setNoniState('hint');
         showFeedback('נוני מצביע על התשובה');
         // glow על הכרטיס הנכון
         document.querySelectorAll('.option-card').forEach(c => {
           if (c.dataset.correct === 'true') c.classList.add('hint-glow');
         });
-        // השמעה חוזרת של הצליל
+        // השמעה חוזרת של הצליל הנכון
         const item = session.letterItems[session.itemIdx];
-        setTimeout(() => speak(item.audio_cue_text), 300);
+        setTimeout(() => speak(item.audio_cue_text, { rate: 0.8 }), 300);
       } else if (session.attempts >= 3) {
-        // הצגת התשובה — אבל לא לסמן הצלחה. הילד.ה צריך.ה להקיש.
-        showFeedback('זאת התשובה — נקיש עליה');
+        setNoniState('hint');
+        showFeedback('זאת התשובה — הקש/י עליה');
         document.querySelectorAll('.option-card').forEach(c => {
           if (c.dataset.correct === 'true') {
             c.classList.remove('hint-glow', 'dimmed');
             c.classList.add('hint-glow');
             c.style.outline = '4px solid #FFE7A8';
+            c.style.outlineOffset = '2px';
           }
         });
       }
@@ -666,13 +800,19 @@
       });
       card.classList.add('correct');
 
+      // נוני חוגג!
+      setNoniState('cheer');
+
       // פידבק חיובי
-      const messages = ['יפה מאוד!', 'מצוין', 'אש', 'את.ה צודק.ת', 'בדיוק!'];
+      const messages = ['יופי!', 'מצוין', 'אש', 'בדיוק!', 'יפה מאוד'];
       const msg = messages[Math.floor(Math.random() * messages.length)];
       showFeedback(msg);
-      speak(msg, { rate: 0.9 });
+      // השמעה: קודם המילה הנכונה, אחר כך עידוד
+      const word = opt.word || opt.concept || '';
+      speak(word, { rate: 0.85, pitch: 1.1 });
+      setTimeout(() => speak(msg, { rate: 0.95, pitch: 1.2 }), 900);
 
-      // הענקת פנינה אם זו טעות אפס (rewardImmediate)
+      // הענקת פנינה אם זו טעות אפס
       if (session.attempts === 0) {
         addPearl(1);
         renderPearlCounter();
@@ -687,7 +827,7 @@
       setTimeout(() => {
         session.itemIdx++;
         renderItem();
-      }, 1400);
+      }, 1800);
     }
 
     function showFeedback(text) {
@@ -753,8 +893,29 @@
       setTimeout(() => document.getElementById('audioBtn').classList.remove('playing'), 600);
     });
 
-    // ===== Boot =====
-    init();
+    // ===== Boot — מסך פתיחה משחרר את ה-TTS =====
+    let audioUnlocked = false;
+
+    document.getElementById('startBtn').addEventListener('click', async () => {
+      // נסיון השמעה ראשונית — משחרר את ה-TTS על iOS/Safari
+      try {
+        const u = new SpeechSynthesisUtterance(' ');
+        u.lang = 'he-IL';
+        u.volume = 0;
+        speechSynthesis.speak(u);
+      } catch (e) {}
+
+      audioUnlocked = true;
+      document.getElementById('tapToStart').classList.add('hidden');
+
+      await init();
+
+      // השמעה ראשונה אחרי טעינת הפריט הראשון
+      setTimeout(() => {
+        const item = session.letterItems[session.itemIdx];
+        if (item) speak(item.audio_cue_text || item.letter_in_focus);
+      }, 600);
+    });
   </script>
 
 </body>
