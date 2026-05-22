@@ -14,22 +14,12 @@
   <link rel="stylesheet" href="css/components.css">
 
   <style>
-    /* ===== Welcome Screen ===== */
-
-    body {
-      background: var(--water-main);
-      overflow: hidden;
-    }
+    body { background: var(--water-main); overflow: hidden; }
 
     .scene-bg {
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center;
-      /* כניסה רכה */
+      position: fixed; inset: 0; z-index: -1;
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center;
       opacity: 0;
       animation: bg-in 900ms ease-out 0ms forwards;
     }
@@ -40,48 +30,24 @@
     }
 
     .welcome {
-      min-height: 100vh;
-      min-height: 100dvh;
+      min-height: 100vh; min-height: 100dvh;
       display: grid;
-      grid-template-rows: auto 1fr auto;
+      grid-template-rows: auto 1fr auto auto;
       padding: var(--space-l) var(--space-m) var(--space-xl);
       position: relative;
     }
 
-    /* כיסוי עדין לקריאות טקסט מעל התמונה */
-    .welcome::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      background:
-        radial-gradient(ellipse 70% 40% at 50% 0%, rgba(255, 249, 244, 0.65) 0%, transparent 70%),
-        radial-gradient(ellipse 70% 30% at 50% 100%, rgba(115, 217, 209, 0.45) 0%, transparent 70%);
-      pointer-events: none;
-    }
-
     .top-bar {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      position: relative;
-      z-index: 2;
-    }
-
-    .stage {
-      display: grid;
-      align-items: start;
-      justify-items: center;
-      gap: var(--space-l);
-      padding-top: var(--space-l);
-      position: relative;
-      z-index: 2;
-      pointer-events: none;
+      display: flex; align-items: center; justify-content: flex-start;
+      position: relative; z-index: 3;
     }
 
     .greeting {
       text-align: center;
       max-width: 22ch;
+      margin: 0 auto;
+      padding-top: var(--space-m);
+      position: relative; z-index: 3;
     }
 
     .greeting .hello {
@@ -97,43 +63,112 @@
     }
 
     .greeting .sub {
-      font-size: clamp(18px, 4.5vw, 24px);
+      font-size: clamp(18px, 4.5vw, 22px);
       font-weight: 600;
       color: var(--text-main);
       margin: 0;
       text-shadow: 0 1px 0 rgba(255, 255, 255, 0.65);
     }
 
-    .actions {
+    /* ===== Noni overlay ===== */
+
+    .noni-stage {
       display: flex;
       justify-content: center;
-      gap: var(--space-s);
-      padding-bottom: var(--space-m);
+      align-items: center;
       position: relative;
       z-index: 2;
+      padding: var(--space-m) 0;
+    }
+
+    .noni-img {
+      width: min(64vw, 280px);
+      height: auto;
+      display: block;
+      filter: drop-shadow(0 16px 26px rgba(38, 80, 92, 0.22));
+      animation: noni-breathe 4.5s ease-in-out infinite;
+      transform-origin: 50% 60%;
+    }
+
+    @keyframes noni-breathe {
+      0%, 100% { transform: scale(1) translateY(0); }
+      50%      { transform: scale(1.025) translateY(-6px); }
+    }
+
+    /* speech bubble */
+    .noni-speech-float {
+      position: absolute;
+      top: 8%;
+      right: 14%;
+      background: var(--warm-white);
+      color: var(--text-main);
+      padding: 12px 18px;
+      border-radius: var(--radius-lg);
+      font-size: clamp(15px, 3.6vw, 18px);
+      font-weight: 600;
+      box-shadow: 0 8px 22px rgba(38, 80, 92, 0.18);
+      opacity: 0;
+      animation: speech-in 700ms ease-out 1200ms forwards;
+      max-width: 14ch;
+      text-align: center;
+    }
+    .noni-speech-float::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 24px;
+      width: 16px;
+      height: 16px;
+      background: var(--warm-white);
+      border-radius: 50%;
+    }
+    .noni-speech-float::before {
+      content: '';
+      position: absolute;
+      bottom: -16px;
+      left: 18px;
+      width: 8px;
+      height: 8px;
+      background: var(--warm-white);
+      border-radius: 50%;
+    }
+
+    @keyframes speech-in {
+      from { opacity: 0; transform: translateY(8px) scale(0.9); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .actions {
+      display: flex; justify-content: center;
+      padding-bottom: var(--space-m);
+      position: relative; z-index: 3;
     }
 
     .btn-primary {
       font-size: clamp(20px, 5vw, 26px);
-      padding: 0 clamp(40px, 9vw, 64px);
-      height: clamp(60px, 14vw, 72px);
-      pointer-events: auto;
+      padding: 0 clamp(48px, 11vw, 72px);
+      height: clamp(64px, 14vw, 72px);
+      letter-spacing: 0.04em;
     }
 
     /* כניסה ראשונית */
-    .greeting, .actions > * {
-      opacity: 0;
-      transform: translateY(10px);
+    .greeting, .actions > *, .noni-img {
+      opacity: 0; transform: translateY(10px);
     }
-    .greeting { animation: stage-in 700ms ease-out 350ms forwards; }
-    .actions > * { animation: stage-in 700ms ease-out 800ms forwards; }
+    .greeting   { animation: stage-in 700ms ease-out 350ms forwards; }
+    .noni-img   { animation: noni-in 900ms ease-out 600ms forwards,
+                              noni-breathe 4.5s ease-in-out 1500ms infinite; }
+    .actions > * { animation: stage-in 700ms ease-out 1000ms forwards; }
 
     @keyframes stage-in {
       to { opacity: 1; transform: translateY(0); }
     }
+    @keyframes noni-in {
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
 
     @media (prefers-reduced-motion: reduce) {
-      .scene-bg, .greeting, .actions > * {
+      .scene-bg, .greeting, .actions > *, .noni-img, .noni-speech-float {
         animation: none !important;
         opacity: 1 !important;
         transform: none !important;
@@ -143,8 +178,8 @@
 </head>
 <body>
 
-  <!-- ===== רקע — סצינת ה-Welcome מ-ChatGPT ===== -->
-  <img class="scene-bg" src="assets/scene-welcome.png" alt="" aria-hidden="true">
+  <!-- ===== רקע ים בלי נוני ===== -->
+  <img class="scene-bg" src="assets/scene-welcome-bg.png" alt="" aria-hidden="true">
 
   <!-- ===== UI overlay ===== -->
   <main class="welcome">
@@ -152,24 +187,27 @@
     <header class="top-bar">
       <div class="pearl-counter" aria-label="פנינים">
         <span class="pearl" aria-hidden="true"></span>
-        <span class="count" id="pearlCount">0</span>
+        <span class="count">0</span>
       </div>
     </header>
 
-    <section class="stage">
-      <div class="greeting">
-        <h1 class="hello">שלום, חבר/ה!</h1>
-        <p class="sub">נוני מחכה לך בעומק הים המואר</p>
-      </div>
+    <section class="greeting">
+      <h1 class="hello">שלום, חבר/ה!</h1>
+      <p class="sub">נוני מחכה לך בעומק הים</p>
+    </section>
+
+    <section class="noni-stage">
+      <div class="noni-speech-float">בוא/י נשחה יחד</div>
+      <img class="noni-img" src="assets/noni-hero-transparent.png" alt="נוני התמנון">
     </section>
 
     <div class="actions">
-      <a href="map.html" class="btn-primary" id="startBtn">
-        נתחיל
-      </a>
+      <a href="map.html" class="btn-primary">נתחיל</a>
     </div>
 
   </main>
+
+  <script src="js/state.js"></script>
 
 </body>
 </html>
