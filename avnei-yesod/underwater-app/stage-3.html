@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>אלמוגי האותיות · עומק הים המואר</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+
+  <style>
+    body {
+      background: linear-gradient(180deg, #B8E8E0 0%, #63D8D0 100%);
+      overflow: hidden;
+    }
+
+    /* ===== Stage scene ===== */
+    .stage-scene {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .scene-frame {
+      position: relative;
+      width: 100vw;
+      height: 100dvh;
+      overflow: hidden;
+    }
+
+    .scene-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    /* ===== Top bar ===== */
+    .top-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      padding: var(--space-m);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 50;
+      gap: var(--space-s);
+    }
+
+    .icon-btn {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1.5px solid rgba(255, 255, 255, 0.95);
+      box-shadow: 0 6px 16px rgba(38, 80, 92, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-main);
+      text-decoration: none;
+      transition: transform 180ms ease;
+    }
+    .icon-btn:active { transform: scale(0.92); }
+
+    .progress-pill {
+      flex: 0 1 auto;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 8px 18px;
+      border-radius: var(--radius-pill);
+      box-shadow: 0 6px 16px rgba(38, 80, 92, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 16px;
+      color: var(--text-main);
+    }
+
+    .progress-pill .pp-letter {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--coral);
+    }
+
+    /* ===== Game area ===== */
+    .game-area {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      padding: 90px var(--space-m) var(--space-m);
+      gap: var(--space-m);
+      z-index: 10;
+    }
+
+    /* ===== Letter display ===== */
+    .letter-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .letter-pedestal {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: clamp(110px, 22vw, 160px);
+      height: clamp(110px, 22vw, 160px);
+      background: radial-gradient(circle at 35% 30%,
+        rgba(255, 255, 255, 0.95) 0%,
+        var(--warm-white) 35%,
+        var(--hint) 100%);
+      border: 4px solid rgba(255, 255, 255, 0.95);
+      border-radius: 50%;
+      box-shadow:
+        0 14px 30px rgba(38, 80, 92, 0.25),
+        inset 0 0 24px rgba(255, 255, 255, 0.6),
+        0 0 0 0 rgba(255, 231, 168, 0.5);
+      animation: letter-pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes letter-pulse {
+      0%, 100% { box-shadow: 0 14px 30px rgba(38,80,92,0.25), inset 0 0 24px rgba(255,255,255,0.6), 0 0 0 0 rgba(255,231,168,0.6); }
+      50%      { box-shadow: 0 14px 30px rgba(38,80,92,0.25), inset 0 0 24px rgba(255,255,255,0.6), 0 0 0 20px rgba(255,231,168,0); }
+    }
+
+    .letter-display {
+      font-size: clamp(70px, 14vw, 110px);
+      font-weight: 900;
+      color: var(--text-main);
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+
+    .audio-btn {
+      position: absolute;
+      bottom: -8px;
+      right: -8px;
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: var(--water-secondary);
+      color: white;
+      border: 3px solid white;
+      box-shadow: 0 6px 16px rgba(115, 217, 209, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 180ms ease;
+    }
+    .audio-btn:active { transform: scale(0.92); }
+    .audio-btn.playing {
+      animation: audio-bump 600ms ease;
+    }
+    @keyframes audio-bump {
+      0%, 100% { transform: scale(1); }
+      50%      { transform: scale(1.15); }
+    }
+
+    .prompt-text {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 10px 20px;
+      border-radius: var(--radius-pill);
+      font-size: clamp(15px, 2.6vw, 19px);
+      font-weight: 700;
+      color: var(--text-main);
+      box-shadow: 0 6px 16px rgba(38, 80, 92, 0.12);
+      text-align: center;
+      max-width: 90%;
+    }
+
+    /* ===== Options grid ===== */
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(10px, 2.5vw, 18px);
+      align-content: center;
+      max-width: 540px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .option-card {
+      background: rgba(255, 255, 255, 0.94);
+      border: 3px solid rgba(255, 255, 255, 0.96);
+      border-radius: var(--radius-lg);
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(38, 80, 92, 0.15);
+      transition: transform 200ms cubic-bezier(.2,.8,.25,1), box-shadow 200ms ease, border-color 200ms ease;
+      min-height: clamp(110px, 22vw, 160px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .option-card:hover { transform: translateY(-3px); }
+    .option-card:active { transform: scale(0.96); }
+
+    .option-card .pic {
+      width: clamp(60px, 11vw, 90px);
+      height: clamp(60px, 11vw, 90px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(40px, 9vw, 64px);
+    }
+    .option-card .pic img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .option-card .word {
+      font-size: clamp(15px, 2.8vw, 20px);
+      font-weight: 700;
+      color: var(--text-main);
+      text-align: center;
+    }
+
+    /* פידבק על כרטיסים */
+    .option-card.correct {
+      border-color: var(--success);
+      box-shadow: 0 8px 20px rgba(124, 231, 180, 0.4), var(--glow-success);
+      animation: correct-bounce 600ms ease;
+    }
+
+    @keyframes correct-bounce {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+
+    .option-card.wrong {
+      animation: wrong-shake 500ms ease;
+      opacity: 0.5;
+    }
+
+    @keyframes wrong-shake {
+      0%, 100% { transform: translateX(0); }
+      20%      { transform: translateX(-4px); }
+      40%      { transform: translateX(4px); }
+      60%      { transform: translateX(-3px); }
+      80%      { transform: translateX(3px); }
+    }
+
+    .option-card.hint-glow {
+      border-color: var(--hint);
+      box-shadow: 0 8px 20px rgba(255, 231, 168, 0.5), var(--glow-pedagogic);
+      animation: hint-throb 1.4s ease-in-out infinite;
+    }
+    @keyframes hint-throb {
+      0%, 100% { transform: scale(1); }
+      50%      { transform: scale(1.04); }
+    }
+
+    .option-card.dimmed {
+      opacity: 0.35;
+      pointer-events: none;
+    }
+
+    /* ===== Noni + Feedback ===== */
+    .bottom-stage {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: var(--space-s);
+      padding-top: var(--space-s);
+    }
+
+    .noni-wrap {
+      position: relative;
+      width: clamp(80px, 18vw, 130px);
+      flex-shrink: 0;
+    }
+
+    .noni-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      filter: drop-shadow(0 12px 22px rgba(38, 80, 92, 0.25));
+      animation: noni-breathe 4.5s ease-in-out infinite;
+    }
+
+    @keyframes noni-breathe {
+      0%, 100% { transform: scale(1) translateY(0); }
+      50%      { transform: scale(1.025) translateY(-4px); }
+    }
+
+    .feedback-bubble {
+      flex: 1;
+      background: var(--warm-white);
+      border-radius: var(--radius-lg);
+      padding: 12px 18px;
+      font-size: clamp(15px, 3vw, 19px);
+      font-weight: 700;
+      color: var(--text-main);
+      box-shadow: 0 8px 22px rgba(38, 80, 92, 0.18);
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 280ms ease, transform 280ms ease;
+      max-width: 70%;
+      align-self: flex-end;
+      margin-bottom: 18px;
+    }
+    .feedback-bubble.show { opacity: 1; transform: translateY(0); }
+
+    /* ===== Success burst (גלי בועות זהב) ===== */
+    .burst {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 100;
+      overflow: visible;
+    }
+
+    .burst-bubble {
+      position: absolute;
+      bottom: 50%;
+      left: 50%;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #FFFFFF 0%, #FFF4C2 50%, #F0DA8E 100%);
+      box-shadow: 0 0 8px rgba(255, 244, 194, 0.8);
+      animation: burst-up 1100ms ease-out forwards;
+      opacity: 0;
+    }
+    @keyframes burst-up {
+      0%   { transform: translate(-50%, 0) scale(0.5); opacity: 1; }
+      100% { transform: translate(calc(-50% + var(--dx, 0px)), -180px) scale(1); opacity: 0; }
+    }
+
+    /* ===== Letter transition + completion overlay ===== */
+    .completion {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(184, 232, 224, 0.95) 0%, rgba(99, 216, 208, 0.95) 100%);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-l);
+      z-index: 200;
+      padding: var(--space-l);
+      text-align: center;
+    }
+    .completion.show { display: flex; }
+
+    .completion-title {
+      font-size: clamp(28px, 6vw, 42px);
+      font-weight: 900;
+      color: var(--text-main);
+      margin: 0;
+    }
+
+    .completion-souvenir {
+      width: 120px;
+      height: 120px;
+      filter: drop-shadow(0 10px 24px rgba(255, 168, 141, 0.5));
+      animation: souvenir-appear 1500ms cubic-bezier(.2,.8,.25,1) forwards;
+      opacity: 0;
+    }
+
+    @keyframes souvenir-appear {
+      0%   { opacity: 0; transform: scale(0.4) rotate(-20deg); }
+      60%  { opacity: 1; transform: scale(1.1) rotate(8deg); }
+      100% { opacity: 1; transform: scale(1) rotate(0); }
+    }
+
+    .completion-msg {
+      font-size: clamp(18px, 4vw, 24px);
+      font-weight: 600;
+      color: var(--text-soft);
+      max-width: 24ch;
+      margin: 0;
+    }
+
+    /* ===== Layout responsiveness ===== */
+    @media (orientation: landscape) and (min-width: 800px) {
+      .game-area {
+        grid-template-columns: 0.9fr 1.1fr;
+        grid-template-rows: 1fr auto;
+        gap: var(--space-l);
+        padding: 90px var(--space-l) var(--space-l);
+      }
+      .letter-stage { grid-row: 1; grid-column: 1; align-self: center; }
+      .options-grid { grid-row: 1; grid-column: 2; align-self: center; }
+      .bottom-stage { grid-row: 2; grid-column: 1 / -1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .letter-pedestal { animation: none; }
+      .noni-img { animation: none; }
+      .option-card.correct, .option-card.wrong, .option-card.hint-glow { animation: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="stage-scene">
+    <div class="scene-frame">
+      <img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true"
+           onerror="this.style.display='none'">
+
+      <div class="game-area">
+
+        <section class="letter-stage">
+          <div class="letter-pedestal">
+            <div class="letter-display" id="letterDisplay">ת</div>
+            <button class="audio-btn" id="audioBtn" aria-label="השמע שוב">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path d="M5 9v6h4l5 4V5L9 9H5z" fill="currentColor"/>
+                <path d="M16 8a4 4 0 010 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+              </svg>
+            </button>
+          </div>
+          <div class="prompt-text" id="promptText">איזו תמונה מתחילה בצליל הזה?</div>
+        </section>
+
+        <section class="options-grid" id="optionsGrid">
+          <!-- 4 כרטיסי תמונה מוזרקים כאן -->
+        </section>
+
+        <section class="bottom-stage">
+          <div class="feedback-bubble" id="feedbackBubble">ננסה יחד</div>
+          <div class="noni-wrap">
+            <img class="noni-img" src="assets/noni-hero-transparent.png" alt="נוני">
+          </div>
+        </section>
+
+      </div>
+
+      <!-- burst layer לבועות זהב -->
+      <div class="burst" id="burst"></div>
+    </div>
+  </main>
+
+  <!-- Top bar -->
+  <header class="top-bar">
+    <a href="map.html" class="icon-btn" aria-label="חזרה למפה">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+    <div class="progress-pill">
+      <span class="pp-letter" id="progressLetter">ת</span>
+      <span id="progressCount">1/10</span>
+    </div>
+    <div class="pearl-counter" aria-label="פנינים">
+      <span class="pearl" aria-hidden="true"></span>
+      <span class="count">0</span>
+    </div>
+  </header>
+
+  <!-- Completion overlay -->
+  <div class="completion" id="completion">
+    <h2 class="completion-title">כל הכבוד!</h2>
+    <!-- מזכרת השליטה: אלמוג אות זוהר -->
+    <svg class="completion-souvenir" viewBox="0 0 100 100">
+      <defs>
+        <radialGradient id="coral-grad" cx="40%" cy="40%" r="70%">
+          <stop offset="0%" stop-color="#FFE7A8"/>
+          <stop offset="60%" stop-color="#FFA98D"/>
+          <stop offset="100%" stop-color="#E27F66"/>
+        </radialGradient>
+      </defs>
+      <!-- אלמוג בצורת A פתוחה -->
+      <path d="M50 12 C 70 28, 80 50, 78 78 C 78 84, 72 86, 68 80 C 64 60, 56 50, 50 50 C 44 50, 36 60, 32 80 C 28 86, 22 84, 22 78 C 20 50, 30 28, 50 12 Z"
+            fill="url(#coral-grad)" stroke="#FFF" stroke-width="2"/>
+      <circle cx="50" cy="42" r="6" fill="#FFE7A8" opacity="0.9"/>
+      <circle cx="50" cy="42" r="3" fill="#FFFFFF"/>
+    </svg>
+    <p class="completion-msg" id="completionMsg">השלמת את האות. נוני אסף עבורך אלמוג אות זוהר.</p>
+    <a href="map.html" class="btn-primary">חזרה למפה</a>
+  </div>
+
+  <script src="js/state.js"></script>
+  <script>
+    // ============================================================
+    // stage-3.html · אלמוגי האותיות · zip recognition
+    // ============================================================
+
+    const LETTER_SEQUENCE = ['ת', 'מ', 'ר', 'ב', 'ק'];
+    let ITEMS = [];          // כל הפריטים מה-JSON
+    let session = {
+      letterIdx: 0,
+      itemIdx: 0,
+      letterItems: [],       // פריטים של האות הנוכחית בסדר
+      attempts: 0,
+      correctCountInLetter: 0,
+    };
+
+    // ===== Web Speech API · TTS =====
+    let voicesReady = false;
+    function ensureVoices() {
+      return new Promise(resolve => {
+        const voices = speechSynthesis.getVoices();
+        if (voices.length) { voicesReady = true; return resolve(); }
+        speechSynthesis.onvoiceschanged = () => { voicesReady = true; resolve(); };
+        setTimeout(() => resolve(), 800);
+      });
+    }
+
+    function speak(text, opts = {}) {
+      if (!('speechSynthesis' in window)) return;
+      try {
+        speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'he-IL';
+        u.rate = opts.rate || 0.85;
+        u.pitch = opts.pitch || 1.1;
+        speechSynthesis.speak(u);
+      } catch (e) {}
+    }
+
+    // ===== Image path mapping =====
+    function imgPath(jsonUrl) {
+      if (!jsonUrl) return null;
+      // JSON אומר 'images/island-03/x.png' — אצלנו זה 'assets/island-03/x.png'
+      return jsonUrl.replace(/^images\//, 'assets/');
+    }
+
+    // ===== Load items + start =====
+    async function init() {
+      await ensureVoices();
+      const res = await fetch('data/island-03-items.json');
+      const data = await res.json();
+      ITEMS = data.items;
+      startLetter(0);
+    }
+
+    function startLetter(idx) {
+      session.letterIdx = idx;
+      session.itemIdx = 0;
+      session.correctCountInLetter = 0;
+      const letter = LETTER_SEQUENCE[idx];
+      session.letterItems = ITEMS.filter(it => it.letter_in_focus === letter);
+      renderItem();
+    }
+
+    function renderItem() {
+      const item = session.letterItems[session.itemIdx];
+      if (!item) {
+        // סיימנו את האות → התקדמות
+        finishLetter();
+        return;
+      }
+      session.attempts = 0;
+
+      // עדכון כותרת ופרוגרס
+      document.getElementById('letterDisplay').textContent = item.letter_in_focus;
+      document.getElementById('progressLetter').textContent = item.letter_in_focus;
+      document.getElementById('progressCount').textContent =
+        (session.itemIdx + 1) + '/' + session.letterItems.length;
+      document.getElementById('promptText').textContent =
+        item.prompt || 'איזו תמונה מתחילה בצליל הזה?';
+
+      // ניקוי פידבק קודם
+      hideFeedback();
+
+      // הזרקת אפשרויות
+      const grid = document.getElementById('optionsGrid');
+      grid.innerHTML = '';
+      item.options.forEach((opt, i) => {
+        const card = document.createElement('button');
+        card.className = 'option-card';
+        card.dataset.correct = opt.correct === true ? 'true' : 'false';
+        card.dataset.index = i;
+
+        const pic = document.createElement('div');
+        pic.className = 'pic';
+        const path = imgPath(opt.image_url);
+        if (path) {
+          const img = document.createElement('img');
+          img.src = path;
+          img.alt = opt.concept || '';
+          img.onerror = () => {
+            // נפילה לאימוג'י אם תמונה חסרה
+            pic.innerHTML = '';
+            pic.textContent = opt.emoji_suggestion || '?';
+          };
+          pic.appendChild(img);
+        } else {
+          pic.textContent = opt.emoji_suggestion || '?';
+        }
+
+        const w = document.createElement('div');
+        w.className = 'word';
+        w.textContent = opt.word || opt.concept || '';
+
+        card.appendChild(pic);
+        card.appendChild(w);
+        card.addEventListener('click', () => handleTap(card, opt));
+        grid.appendChild(card);
+      });
+
+      // השמעה אוטומטית של הצליל אחרי כניסה
+      setTimeout(() => speak(item.audio_cue_text || item.letter_in_focus), 350);
+    }
+
+    // ===== Tap handler · feedback מדורג =====
+    function handleTap(card, opt) {
+      // אם נבחרה תשובה נכונה
+      if (opt.correct === true) {
+        return correct(card, opt);
+      }
+
+      // טעות
+      session.attempts++;
+      card.classList.add('wrong');
+      setTimeout(() => card.classList.add('dimmed'), 500);
+
+      if (session.attempts === 1) {
+        showFeedback('ננסה יחד');
+        speak('ננסה יחד', { rate: 0.9 });
+      } else if (session.attempts === 2) {
+        showFeedback('נוני מצביע על התשובה');
+        // glow על הכרטיס הנכון
+        document.querySelectorAll('.option-card').forEach(c => {
+          if (c.dataset.correct === 'true') c.classList.add('hint-glow');
+        });
+        // השמעה חוזרת של הצליל
+        const item = session.letterItems[session.itemIdx];
+        setTimeout(() => speak(item.audio_cue_text), 300);
+      } else if (session.attempts >= 3) {
+        // הצגת התשובה — אבל לא לסמן הצלחה. הילד.ה צריך.ה להקיש.
+        showFeedback('זאת התשובה — נקיש עליה');
+        document.querySelectorAll('.option-card').forEach(c => {
+          if (c.dataset.correct === 'true') {
+            c.classList.remove('hint-glow', 'dimmed');
+            c.classList.add('hint-glow');
+            c.style.outline = '4px solid #FFE7A8';
+          }
+        });
+      }
+    }
+
+    function correct(card, opt) {
+      // ניקוי כל הזיהויים, סימון נכון
+      document.querySelectorAll('.option-card').forEach(c => {
+        c.classList.remove('hint-glow', 'wrong', 'dimmed');
+        c.style.outline = '';
+        c.style.pointerEvents = 'none';
+      });
+      card.classList.add('correct');
+
+      // פידבק חיובי
+      const messages = ['יפה מאוד!', 'מצוין', 'אש', 'את.ה צודק.ת', 'בדיוק!'];
+      const msg = messages[Math.floor(Math.random() * messages.length)];
+      showFeedback(msg);
+      speak(msg, { rate: 0.9 });
+
+      // הענקת פנינה אם זו טעות אפס (rewardImmediate)
+      if (session.attempts === 0) {
+        addPearl(1);
+        renderPearlCounter();
+      }
+
+      // burst של בועות זהב
+      successBurst();
+
+      session.correctCountInLetter++;
+
+      // מעבר לפריט הבא
+      setTimeout(() => {
+        session.itemIdx++;
+        renderItem();
+      }, 1400);
+    }
+
+    function showFeedback(text) {
+      const fb = document.getElementById('feedbackBubble');
+      fb.textContent = text;
+      fb.classList.add('show');
+    }
+    function hideFeedback() {
+      const fb = document.getElementById('feedbackBubble');
+      fb.classList.remove('show');
+    }
+
+    // ===== Success burst — בועות זהב =====
+    function successBurst() {
+      const layer = document.getElementById('burst');
+      const cardRect = document.querySelector('.option-card.correct').getBoundingClientRect();
+      const cx = cardRect.left + cardRect.width / 2;
+      const cy = cardRect.top + cardRect.height / 2;
+
+      for (let i = 0; i < 6; i++) {
+        const b = document.createElement('div');
+        b.className = 'burst-bubble';
+        b.style.left = cx + 'px';
+        b.style.top = cy + 'px';
+        b.style.bottom = 'auto';
+        b.style.setProperty('--dx', (Math.random() * 140 - 70) + 'px');
+        b.style.animationDelay = (i * 60) + 'ms';
+        b.style.width = (10 + Math.random() * 10) + 'px';
+        b.style.height = b.style.width;
+        layer.appendChild(b);
+        setTimeout(() => b.remove(), 1300);
+      }
+    }
+
+    // ===== End of letter =====
+    function finishLetter() {
+      const letter = LETTER_SEQUENCE[session.letterIdx];
+      const accuracy = session.correctCountInLetter / session.letterItems.length;
+
+      // אם זו האות האחרונה — סיום מלא
+      if (session.letterIdx >= LETTER_SEQUENCE.length - 1) {
+        completeStage(3);
+        addSouvenir('אלמוג אות זוהר');
+        document.getElementById('completion').classList.add('show');
+        document.getElementById('completionMsg').textContent =
+          'סיימת את כל 5 האותיות. נוני אסף עבורך אלמוג אות זוהר.';
+        speak('כל הכבוד! סיימת את כל האותיות', { rate: 0.85 });
+        return;
+      }
+
+      // מעבר לאות הבאה — מסך ביניים קצר
+      showFeedback('סיימת את האות ' + letter + '! ממשיכים…');
+      speak('כל הכבוד, סיימת את האות ' + letter, { rate: 0.85 });
+      setTimeout(() => startLetter(session.letterIdx + 1), 2200);
+    }
+
+    // ===== Audio replay =====
+    document.getElementById('audioBtn').addEventListener('click', () => {
+      const item = session.letterItems[session.itemIdx];
+      if (!item) return;
+      speak(item.audio_cue_text || item.letter_in_focus);
+      document.getElementById('audioBtn').classList.add('playing');
+      setTimeout(() => document.getElementById('audioBtn').classList.remove('playing'), 600);
+    });
+
+    // ===== Boot =====
+    init();
+  </script>
+
+</body>
+</html>
