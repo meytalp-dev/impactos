@@ -2,7 +2,7 @@
 
 > **מסמך תיאום בין סוכנים.** מיטל מעדכנת. כל סוכן שנכנס לפרויקט אי 3 — קורא את זה תחילה.
 >
-> **עדכון אחרון:** 2026-05-23 · בסיום סבב המסך הראשי (stage-3-island.html)
+> **עדכון אחרון:** 2026-05-23 · **כל המשחקונים שולבו במסך הפתיחה — אי 3 מוכן לפיילוט.**
 
 ---
 
@@ -20,11 +20,13 @@
 
 | # | אות | משחקון | קובץ | סטטוס | quest tracking |
 |---|---|---|---|---|---|
-| 1 | מ | הצדף הקסום | `stage-3-shell.html` | ✅ נבדק | ⚠️ fallback ל-souvenir |
+| 1 | מ | הצדף הקסום | `stage-3-shell.html` | ✅ בנוי + נבדק | ✅ markQuestCompleted('shell') |
 | 2 | ב | הבית של נוני | `stage-3-house.html` | ✅ בנוי | ✅ markQuestCompleted('house') |
-| 3 | ר | שביל החזרה | `stage-3-trail-resh.html` | ✅ בנוי | ⚠️ fallback ל-souvenir |
-| 4 | ק | הצלת הדגים | `stage-3-rescue.html` | ✅ בנוי | ❌ אין souvenir + אין markQuestCompleted |
-| 5 | ת | הסערה והאור | `stage-3-storm.html` | ✅ בנוי | ⚠️ fallback ל-souvenir |
+| 3 | ר | שביל החזרה | `stage-3-trail-resh.html` | ✅ בנוי | ✅ markQuestCompleted('trail') |
+| 4 | ק | הצלת הדגים | `stage-3-rescue.html` + `js/rescue-controller.js` | ✅ בנוי | ✅ markQuestCompleted('rescue') (ב-controller) |
+| 5 | ת | הסערה והאור | `stage-3-storm.html` | ✅ בנוי | ✅ markQuestCompleted('storm') |
+
+**🎉 כל 5 המשחקונים מחוברים למסך הפתיחה. אי 3 מוכן.**
 
 ---
 
@@ -40,63 +42,14 @@
 
 ---
 
-## 🔧 משימות פתוחות (לסוכנים)
+## 🔧 משימות פתוחות
 
-### לסוכן הצדף הקסום (stage-3-shell.html)
+**אין כרגע משימות פתוחות לסוכנים** — כל המשחקונים מחוברים ופועלים.
 
-**משימה:** הוסף קריאה ל-`markQuestCompleted('shell')` בסיום המשחקון.
+### ניקוי אופציונלי (לא דחוף)
 
-**מיקום:** ב-`showCompletion()` או ב-`startFinale()`, לפני/אחרי `addSouvenir`.
-
-**קוד לחיקוי** (מ-stage-3-house.html):
-```js
-function markQuestCompleted(questId) {
-  try {
-    const key = 'island3-quests:completed';
-    const completed = JSON.parse(localStorage.getItem(key) || '[]');
-    if (!completed.includes(questId)) {
-      completed.push(questId);
-      localStorage.setItem(key, JSON.stringify(completed));
-    }
-  } catch (e) {}
-}
-// ובסיום:
-markQuestCompleted('shell');
-```
-
-**למה:** כרגע יש fallback ל-souvenir 'אלמוג אות זוהר' (עובד). אבל המנגנון העדכני הוא tracking מפורש.
-
----
-
-### לסוכן שביל החזרה (stage-3-trail-resh.html)
-
-**משימות:**
-1. הוסף `markQuestCompleted('trail')` בסיום (כמו לעיל).
-2. החלט: **stage-3-journey-resh.html** או **stage-3-trail-resh.html**? שניהם על ר' עם אותו souvenir. צריך **למחוק אחד מהם** או לאחד.
-   - הקובץ הקנוני לפי island.html: `stage-3-trail-resh.html`.
-
----
-
-### לסוכן הצלת הדגים (stage-3-rescue.html)
-
-**משימות חובה:**
-1. **הוסף `addSouvenir('...')`** בסיום — אין כרגע. הצע: `'להקת דגים זוהרת'` (מהטקסט בקובץ).
-2. **הוסף `markQuestCompleted('rescue')`** בסיום (כמו לעיל).
-
-**למה:** בלי אחד מהשניים, stage-3-island.html לא יזהה ש-ק' הושלמה והנעילה של ת' לא תיפתח.
-
----
-
-### לסוכן הסערה והאור (stage-3-storm.html)
-
-**משימה:** הוסף `markQuestCompleted('storm')` בסיום (כמו לעיל).
-
----
-
-### ניקוי כללי (לכל סוכן עם הזדמנות)
-
-- **stage-3-journey.html** (מ׳) — קובץ ישן, לפני שינוי הסדר הפדגוגי. **למחוק** אם אף סוכן לא צריך אותו.
-- **stage-3-journey-resh.html** (ר׳) — כפילות של stage-3-trail-resh.html. **לבחור אחד ולמחוק את השני**.
+- **stage-3-journey.html** (מ׳) — קובץ ישן, מהארכיטקטורה לפני ההחלטה הפדגוגית. אינו מקושר. אפשר למחוק.
+- **stage-3-journey-resh.html** (ר׳) — כפילות של stage-3-trail-resh.html. אפשר למחוק.
 
 ---
 
