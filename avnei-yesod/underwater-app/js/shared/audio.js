@@ -22,6 +22,12 @@ window.AvneiAudio = (function() {
     'ב': 'name-bet', 'ק': 'name-qof'
   };
 
+  // מיפוי אות → שאלת sound-match המלאה ("איזו תמונה מתחילה בצליל...")
+  const LETTER_TO_FIND_SOUND_PROMPT = {
+    'ת': 'find-sound-tav', 'מ': 'find-sound-mem', 'ר': 'find-sound-resh',
+    'ב': 'find-sound-bet', 'ק': 'find-sound-qof'
+  };
+
   function preload(key) {
     if (audioCache.has(key)) return audioCache.get(key);
     const a = new Audio();
@@ -80,6 +86,14 @@ window.AvneiAudio = (function() {
     return Promise.resolve();
   }
 
+  // מקריא את שאלת sound-match המלאה
+  // ("איזו תמונה מתחילה בצליל מ?") במקום רק את הצליל
+  function playFindSoundPrompt(letter) {
+    const fn = LETTER_TO_FIND_SOUND_PROMPT[letter];
+    if (fn) return play(fn);
+    return Promise.resolve();
+  }
+
   // משחרר אודיו על iOS/Safari
   function unlock() {
     try {
@@ -94,8 +108,8 @@ window.AvneiAudio = (function() {
 
   return {
     preload, play, playSequence,
-    playLetterSound, playLetterName,
+    playLetterSound, playLetterName, playFindSoundPrompt,
     unlock, isUnlocked,
-    LETTER_TO_SOUND_FILE, LETTER_TO_NAME_FILE,
+    LETTER_TO_SOUND_FILE, LETTER_TO_NAME_FILE, LETTER_TO_FIND_SOUND_PROMPT,
   };
 })();

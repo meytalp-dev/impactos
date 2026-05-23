@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-מייצר MP3 לשמות 5 האותיות הפעילות באי 3.
-שמות לפי האקדמיה ללשון העברית.
+מייצר MP3 לצלילי 5 האותיות הפעילות באי 3.
+צליל = ההגייה הראשונית של האות (לא שם האות, לא מילה).
 דורש: pip install edge-tts
 """
 import asyncio
@@ -17,13 +17,14 @@ ROOT = Path(__file__).parent.parent
 OUT_DIR = ROOT / "assets" / "audio"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-# שמות 5 האותיות הפעילות באי 3 (סדר חוברת 1 קסם וחברים)
-LETTER_NAMES = {
-    "name-tav":  "תָּו",
-    "name-mem":  "מֵם",
-    "name-resh": "רֵישׁ",
-    "name-bet":  "בֵּית",
-    "name-qof":  "קוֹף",
+# צלילי 5 האותיות — שווא נע אחרי האות נותן את הצליל הקצר
+# (להבדיל משם האות "מם" או הברה מלאה "מַ")
+LETTER_SOUNDS = {
+    "sound-tav":  "תְ",   # /t/
+    "sound-mem":  "מְ",   # /m/
+    "sound-resh": "רְ",   # /r/
+    "sound-bet":  "בְּ",  # /b/ (בית עם דגש)
+    "sound-qof":  "קְ",   # /k/
 }
 
 
@@ -32,7 +33,7 @@ async def gen(text: str, filename: str):
     if out.exists() and not FORCE:
         return f"skip {filename}"
     try:
-        tts = edge_tts.Communicate(text, VOICE, rate="-15%")
+        tts = edge_tts.Communicate(text, VOICE, rate="-20%")
         await tts.save(str(out))
         return f"OK   {filename}: {text}"
     except Exception as e:
@@ -40,8 +41,8 @@ async def gen(text: str, filename: str):
 
 
 async def main():
-    items = list(LETTER_NAMES.items())
-    print(f"Generating {len(items)} letter-name files...")
+    items = list(LETTER_SOUNDS.items())
+    print(f"Generating {len(items)} letter-sound files (voice={VOICE}, force={FORCE})...")
 
     success = 0
     for i, (key, text) in enumerate(items, 1):

@@ -48,9 +48,10 @@ window.AvneiSoundMatch = (function() {
     // בנייה ראשונית של ה-DOM פעם אחת
     _root.innerHTML = '';
     AvneiInstruction.mount(_root, {
-      text: `מה מתחיל בצליל ${_letter}?`,
+      text: `איזו תמונה מתחילה בצליל ${_letter}?`,
       onAudio: () => {
-        AvneiAudio.playLetterSound(_letter);
+        // מקריא את השאלה המלאה (לא רק את הצליל)
+        AvneiAudio.playFindSoundPrompt(_letter);
         _hintUsed = true;
       },
     });
@@ -97,7 +98,7 @@ window.AvneiSoundMatch = (function() {
 
     document.getElementById('smLetterDisplay').textContent = item.letter_in_focus || _letter;
     // עדכון טקסט בועת ההוראה לפי האות הנוכחית (אם יש שונה ברמת ה-item)
-    AvneiInstruction.setText(`מה מתחיל בצליל ${item.letter_in_focus || _letter}?`);
+    AvneiInstruction.setText(`איזו תמונה מתחילה בצליל ${item.letter_in_focus || _letter}?`);
 
     AvneiFeedback.hide();
 
@@ -140,14 +141,11 @@ window.AvneiSoundMatch = (function() {
 
     AvneiNoni.setState('idle');
 
-    // השמעת הצליל אוטומטית (כשאודיו unlocked)
+    // השמעת השאלה המלאה אוטומטית (כשאודיו unlocked)
+    // ("איזו תמונה מתחילה בצליל מ?") במקום רק את הצליל
     if (AvneiAudio.isUnlocked()) {
-      // pre-audio ב-L4 (הקראה לפני אינטראקציה)
-      if (cfg.preAudio) {
-        setTimeout(() => AvneiAudio.playLetterSound(item.letter_in_focus || _letter), 200);
-      } else {
-        setTimeout(() => AvneiAudio.playLetterSound(item.letter_in_focus || _letter), 350);
-      }
+      const delay = cfg.preAudio ? 200 : 350;
+      setTimeout(() => AvneiAudio.playFindSoundPrompt(item.letter_in_focus || _letter), delay);
     }
 
     // רמז אוטומטי לפי supportLevel

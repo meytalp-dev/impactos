@@ -11,9 +11,9 @@ from pathlib import Path
 
 import edge_tts
 
-VOICE_HILA = "he-IL-HilaNeural"   # אישה
-VOICE_AVRI = "he-IL-AvriNeural"   # גבר (אופציה)
-VOICE = VOICE_HILA
+VOICE_HILA = "he-IL-HilaNeural"   # אישה (לא בשימוש — Avri מדויק יותר בעברית)
+VOICE_AVRI = "he-IL-AvriNeural"   # גבר — קול ברירת מחדל
+VOICE = VOICE_AVRI
 
 ROOT = Path(__file__).parent.parent
 OUT_DIR = ROOT / "assets" / "audio"
@@ -36,9 +36,11 @@ FEEDBACK_LINES = {
 }
 
 
+FORCE = "--force" in sys.argv
+
 async def gen(text: str, filename: str):
     out = OUT_DIR / f"{filename}.mp3"
-    if out.exists():
+    if out.exists() and not FORCE:
         return f"skip {filename}"
     try:
         tts = edge_tts.Communicate(text, VOICE, rate="-10%")

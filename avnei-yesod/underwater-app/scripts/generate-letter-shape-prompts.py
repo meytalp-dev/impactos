@@ -4,11 +4,13 @@
 "מִצְאוּ אֶת הָאוֹת [שם]"
 """
 import asyncio
+import sys
 from pathlib import Path
 
 import edge_tts
 
-VOICE = "he-IL-HilaNeural"
+VOICE = "he-IL-AvriNeural"   # גבר — מדויק יותר בעברית
+FORCE = "--force" in sys.argv
 
 ROOT = Path(__file__).parent.parent
 OUT_DIR = ROOT / "assets" / "audio"
@@ -32,19 +34,29 @@ FIND_IN_WORD = {
     "find-letter-in-word-qof":  "אֵיפֹה הָאוֹת קוֹף בְּמִלָּה?",
 }
 
-# Variant B prompt — "איזו בועה אומרת..."
+# Variant B prompt — "איזו בועה/קונכייה אומרת..."
 BUBBLE_PROMPTS = {
-    "which-bubble-tav":  "אֵיזוֹ בּוּעָה אוֹמֶרֶת תָּו?",
-    "which-bubble-mem":  "אֵיזוֹ בּוּעָה אוֹמֶרֶת מֵם?",
-    "which-bubble-resh": "אֵיזוֹ בּוּעָה אוֹמֶרֶת רֵישׁ?",
-    "which-bubble-bet":  "אֵיזוֹ בּוּעָה אוֹמֶרֶת בֵּית?",
-    "which-bubble-qof":  "אֵיזוֹ בּוּעָה אוֹמֶרֶת קוֹף?",
+    "which-bubble-tav":  "אֵיזוֹ קוֹנְכִיָּה אוֹמֶרֶת תָּו?",
+    "which-bubble-mem":  "אֵיזוֹ קוֹנְכִיָּה אוֹמֶרֶת מֵם?",
+    "which-bubble-resh": "אֵיזוֹ קוֹנְכִיָּה אוֹמֶרֶת רֵישׁ?",
+    "which-bubble-bet":  "אֵיזוֹ קוֹנְכִיָּה אוֹמֶרֶת בֵּית?",
+    "which-bubble-qof":  "אֵיזוֹ קוֹנְכִיָּה אוֹמֶרֶת קוֹף?",
+}
+
+# Sound-match prompts — "איזו תמונה מתחילה בצליל..."
+# (חדש 23.5.2026 — לפני זה הקול השמיע רק את הצליל ולא את השאלה)
+SOUND_MATCH_PROMPTS = {
+    "find-sound-tav":  "אֵיזוֹ תְּמוּנָה מַתְחִילָה בַּצְּלִיל תּ?",
+    "find-sound-mem":  "אֵיזוֹ תְּמוּנָה מַתְחִילָה בַּצְּלִיל מ?",
+    "find-sound-resh": "אֵיזוֹ תְּמוּנָה מַתְחִילָה בַּצְּלִיל ר?",
+    "find-sound-bet":  "אֵיזוֹ תְּמוּנָה מַתְחִילָה בַּצְּלִיל בּ?",
+    "find-sound-qof":  "אֵיזוֹ תְּמוּנָה מַתְחִילָה בַּצְּלִיל ק?",
 }
 
 
 async def gen(text: str, filename: str):
     out = OUT_DIR / f"{filename}.mp3"
-    if out.exists():
+    if out.exists() and not FORCE:
         return f"skip {filename}"
     try:
         tts = edge_tts.Communicate(text, VOICE, rate="-15%")
@@ -55,7 +67,12 @@ async def gen(text: str, filename: str):
 
 
 async def main():
-    all_items = list(FIND_PROMPTS.items()) + list(FIND_IN_WORD.items()) + list(BUBBLE_PROMPTS.items())
+    all_items = (
+        list(FIND_PROMPTS.items())
+        + list(FIND_IN_WORD.items())
+        + list(BUBBLE_PROMPTS.items())
+        + list(SOUND_MATCH_PROMPTS.items())
+    )
     print(f"Generating {len(all_items)} prompt files...")
     success = 0
     for i, (key, text) in enumerate(all_items, 1):
