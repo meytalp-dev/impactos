@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>אבני יסוד — בלופרינט 22 איים · פאזה A</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7fafc;
+    --card: #ffffff;
+    --ink: #1a2332;
+    --ink-soft: #4a5568;
+    --ink-muted: #718096;
+    --accent: #2c7a7b;
+    --accent-soft: #b2f5ea;
+    --border: #e2e8f0;
+    --phase-1: #4fd1c5;
+    --phase-2: #9f7aea;
+    --phase-3: #f6ad55;
+    --phase-4: #f56565;
+    --risk-bg: #fef5e7;
+    --risk-border: #ed8936;
+    --game-bg: #ebf4ff;
+    --game-border: #4299e1;
+    --anchor-bg: #faf5ff;
+    --anchor-border: #9f7aea;
+    --gap-bg: #fff5f5;
+    --gap-border: #f56565;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Assistant', 'Heebo', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    font-size: 16px;
+  }
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+  header.page {
+    background: linear-gradient(135deg, #2c7a7b 0%, #4fd1c5 100%);
+    color: white;
+    padding: 40px 24px;
+    margin-bottom: 24px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(44, 122, 123, 0.15);
+  }
+  header.page h1 {
+    margin: 0 0 8px;
+    font-size: 32px;
+    font-weight: 700;
+  }
+  header.page .subtitle {
+    font-size: 18px;
+    opacity: 0.92;
+    margin-bottom: 16px;
+  }
+  header.page .meta {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 14px;
+  }
+  header.page .meta span {
+    background: rgba(255,255,255,0.15);
+    padding: 4px 12px;
+    border-radius: 12px;
+  }
+  .scope-note {
+    background: var(--card);
+    border-right: 4px solid var(--accent);
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    font-size: 15px;
+    color: var(--ink-soft);
+  }
+  .scope-note strong { color: var(--ink); }
+  section.cross-cutting {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 32px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 2px solid var(--gap-border);
+  }
+  section.cross-cutting h2 {
+    margin: 0 0 12px;
+    color: var(--gap-border);
+    font-size: 22px;
+  }
+  section.cross-cutting > p {
+    color: var(--ink-soft);
+    margin-bottom: 20px;
+  }
+  .gap {
+    background: var(--gap-bg);
+    border-right: 3px solid var(--gap-border);
+    padding: 14px 18px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+  .gap .gap-header {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    margin-bottom: 6px;
+  }
+  .gap .gap-id {
+    background: var(--gap-border);
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+  }
+  .gap .gap-name {
+    font-weight: 700;
+    font-size: 16px;
+  }
+  .gap .gap-research {
+    font-size: 13px;
+    color: var(--ink-muted);
+    margin-bottom: 4px;
+  }
+  .gap .gap-concern { margin: 6px 0; }
+  .gap .gap-rec {
+    background: rgba(255,255,255,0.7);
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-top: 6px;
+    font-size: 14px;
+  }
+  .gap .gap-rec::before {
+    content: 'המלצה: ';
+    font-weight: 700;
+    color: var(--gap-border);
+  }
+  .decision-required {
+    background: #fefce8;
+    border: 2px dashed #d4a72c;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-top: 16px;
+    font-weight: 600;
+  }
+  .decision-required::before {
+    content: '◆ ';
+    color: #d4a72c;
+  }
+  .islands-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  article.island {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border-top: 6px solid var(--phase-1);
+  }
+  article.island[data-phase="1"] { border-top-color: var(--phase-1); }
+  article.island[data-phase="2"] { border-top-color: var(--phase-2); }
+  article.island[data-phase="3"] { border-top-color: var(--phase-3); }
+  article.island[data-phase="4"] { border-top-color: var(--phase-4); }
+  .island-header {
+    margin-bottom: 16px;
+  }
+  .island-header .row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+  .island-number {
+    background: var(--accent);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .island-name-visual {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+  }
+  .island-name-pedagogical {
+    color: var(--ink-soft);
+    font-size: 15px;
+    font-style: italic;
+    margin-right: 52px;
+  }
+  .phase-tag {
+    display: inline-block;
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    margin-right: 52px;
+    margin-top: 6px;
+    font-weight: 600;
+  }
+  article.island[data-phase="1"] .phase-tag {
+    background: var(--phase-1);
+    color: white;
+  }
+  .island-section {
+    margin-top: 18px;
+  }
+  .island-section h4 {
+    font-size: 14px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 8px;
+    font-weight: 700;
+  }
+  .child-goal {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    padding: 14px 18px;
+    border-radius: 10px;
+    font-size: 17px;
+    font-weight: 600;
+    color: #78350f;
+  }
+  .skill-desc {
+    font-size: 16px;
+    line-height: 1.7;
+  }
+  .available {
+    background: #f0f9ff;
+    border-right: 3px solid #0284c7;
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  .available div { margin: 4px 0; }
+  .available strong { color: #075985; }
+  .games {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .game {
+    background: var(--game-bg);
+    border-right: 3px solid var(--game-border);
+    padding: 14px 18px;
+    border-radius: 8px;
+  }
+  .game .game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+  }
+  .game .game-name {
+    font-weight: 700;
+    font-size: 16px;
+  }
+  .game .envelope-tag {
+    background: var(--game-border);
+    color: white;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+  .game .game-description {
+    color: var(--ink-soft);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .game .game-objective {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--accent);
+    font-style: italic;
+  }
+  .game .game-objective::before {
+    content: '◆ ';
+    color: var(--accent);
+  }
+  .risks {
+    background: var(--risk-bg);
+    border-right: 3px solid var(--risk-border);
+    padding: 12px 18px;
+    border-radius: 8px;
+  }
+  .risks ul {
+    margin: 0;
+    padding-right: 20px;
+  }
+  .risks li {
+    margin: 6px 0;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .anchors {
+    background: var(--anchor-bg);
+    border-right: 3px solid var(--anchor-border);
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+  .anchors div { margin: 4px 0; }
+  .anchors strong { color: #553c9a; }
+  .stats {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+    padding: 12px;
+    background: #f7fafc;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .stats .stat strong { color: var(--ink); }
+  .sources {
+    font-size: 12px;
+    color: var(--ink-muted);
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+  }
+  .sources strong { color: var(--ink-soft); }
+  summary {
+    cursor: pointer;
+    padding: 8px 0;
+    font-weight: 600;
+    color: var(--accent);
+    user-select: none;
+  }
+  summary:hover { text-decoration: underline; }
+  details { margin-top: 8px; }
+  footer.page {
+    margin-top: 48px;
+    padding: 24px;
+    background: var(--card);
+    border-radius: 12px;
+    text-align: center;
+    color: var(--ink-muted);
+    font-size: 14px;
+  }
+  footer.page a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  footer.page a:hover { text-decoration: underline; }
+  .open-questions {
+    background: #fefce8;
+    border: 2px solid #ecc94b;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 24px;
+  }
+  .open-questions h3 {
+    margin: 0 0 12px;
+    color: #744210;
+  }
+  .open-questions ol {
+    margin: 0;
+    padding-right: 20px;
+  }
+  .open-questions li {
+    margin: 8px 0;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="page">
+  <h1>אבני יסוד — בלופרינט 22 איים</h1>
+  <div class="subtitle">פאזה A · איים 1, 2, 4-9 · טיוטה לבדיקה</div>
+  <div class="meta">
+    <span>גרסה 0.1</span>
+    <span>נוצר: 23.5.2026</span>
+    <span>אומת: Perplexity sonar-pro × 3</span>
+    <span>סטטוס: ממתין לבדיקת מיטל</span>
+  </div>
+</header>
+
+<div class="scope-note">
+  <strong>מה זה המסמך הזה:</strong> מסמך עבודה לעיצוב משחקונים והתאמות רמה לכל אי. מקור-אמת אחד שמשמש את הצוות ואת GPT לחשיבה ממוקדת.
+  <br><br>
+  <strong>מה הוא לא:</strong> לא מחליף את architecture-mvp.md (זה ארכיטקטורה) או narrative-spec.md (זה סיפור). זו שכבת תכנון משחקונים בלבד.
+  <br><br>
+  <strong>למה אי 3 חסר:</strong> אי 3 בעיצוב פעיל ב-underwater-app/stage-3.html. ייתווסף לבלופרינט אחרי שה-vertical slice יסתיים, כדי לעדכן הצעות לאיים אחרים על בסיס מה שלמדנו.
+</div>
+
+<section class="cross-cutting">
+  <h2>פערים חוצי-איים — סקירת פרפלקסיטי</h2>
+  <p>ממצאים שעולים שוב ושוב על פני האיים, ולא שייכים לאי ספציפי. צריך החלטה: לבנות אי חדש (= הרחבת ה-22), להוסיף לאי קיים, או לטפל ברוחב כל המערכת.</p>
+
+  <div class="gap" id="G1">
+    <div class="gap-header"><span class="gap-id">G1</span><span class="gap-name">אבחנת אותיות דומות (ד/ר, ב/כ/ך, מ/נ, ו/ז)</span></div>
+    <div class="gap-research">Taha & Saiegh-Haddad 2017 · Schiff & Raveh 2007 · Even Kriah</div>
+    <div class="gap-concern">בעיה ייחודית לעברית. אותיות דומות = שורש שגיאות גדול בכיתה א'. כרגע לא מטופל באף אי.</div>
+    <div class="gap-rec">להוסיף לאי 3 (זיהוי אותיות) כשלב פיגום מובנה, או לחשוב על משחקון "אותיות תאומות" שרץ במקביל ב-3 ו-4.</div>
+  </div>
+
+  <div class="gap" id="G2">
+    <div class="gap-header"><span class="gap-id">G2</span><span class="gap-name">אותיות סופיות (ך, ם, ן, ף, ץ)</span></div>
+    <div class="gap-research">Even Kriah · משה"ח תשפ"ו · literacy-yearly 0.4</div>
+    <div class="gap-concern">literacy-yearly אומר "משולבות בהקשר במילים" — אבל אף משחקון לא מתייחס במפורש. ילדה שלא יודעת שב-"דם" זה ם סופית ולא מ — תקרא "דמ".</div>
+    <div class="gap-rec">משחקון "הצורה הנכונה" באי 3 או 5: "אילו אות הולכת בסוף המילה?"</div>
+  </div>
+
+  <div class="gap" id="G3">
+    <div class="gap-header"><span class="gap-id">G3</span><span class="gap-name">שם-אות מול צליל</span></div>
+    <div class="gap-research">Share 2008</div>
+    <div class="gap-concern">ילדה לומדת "בית" כשם של ב, ואז כשמגיעים לדקודינג — ב = /b/ ולא /bait/. בלבול נפוץ.</div>
+    <div class="gap-rec">באי 3 — להבהיר במפורש: "השם שלה: בית. הצליל שלה: /ב/." באי 4 — לוודא שתוואי הכניסה לצירוף הוא הצליל, לא השם.</div>
+  </div>
+
+  <div class="gap" id="G4">
+    <div class="gap-header"><span class="gap-id">G4</span><span class="gap-name">טקסט קצר מחובר — משפט בן 2-3 מילים</span></div>
+    <div class="gap-research">Share 2008 · IDL Kim 2022</div>
+    <div class="gap-concern">כל המשחקונים שלי במילים בודדות. אבל קריאה אמיתית מתחילה במשפט. "אבא בא", "אני רואה" — מחברים דקודינג למשמעות. כרגע אין משחקון של משפט קצר באף אי בפאזה A.</div>
+    <div class="gap-rec">להוסיף משחקון "משפט ראשון" באי 5 או 6 — לאחר מיזוג, להציג "אבא בא" עם תמונה ופנס נע. או לקבוע שזה אי 15 בלבד (פאזה 3) ולוודא שיש גשר רך.</div>
+  </div>
+
+  <div class="gap" id="G5">
+    <div class="gap-header"><span class="gap-id">G5</span><span class="gap-name">ניקוד מעבר ל-/a/ /i/ /u/</span></div>
+    <div class="gap-research">משה"ח תשפ"ו</div>
+    <div class="gap-concern">באי 4 הציעו מיון לפי 3 תנועות. בפועל בכיתה א' לומדים גם צירה (ֵ), סגול (ֶ), חולם (וֹ), שווא (ְ).</div>
+    <div class="gap-rec">להרחיב את מיון התנועות באי 4 בשלבי פיגום: רמה 1 = 3 תנועות, רמה 2 = 5, רמה 3 = 6+. או — לעבור ל"משפחות תנועות" (צירה+סגול = /e/, חולם+שורוק = /o,u/).</div>
+  </div>
+
+  <div class="gap" id="G6">
+    <div class="gap-header"><span class="gap-id">G6</span><span class="gap-name">מיקום ויזואלי של ניקוד</span></div>
+    <div class="gap-research">Even Kriah</div>
+    <div class="gap-concern">ילדה צריכה לדעת איפה להסתכל — הניקוד יכול להיות מתחת לאות, משמאל, או מסביב. כרגע אין משחקון על זה.</div>
+    <div class="gap-rec">להוסיף לאי 4 משחקון "הסתכלי טוב" — אותו עיצור עם 3 ניקודים במיקומים שונים, לבחור איזה מתאים לצליל.</div>
+  </div>
+
+  <div class="gap" id="G7">
+    <div class="gap-header"><span class="gap-id">G7</span><span class="gap-name">צ'אנקים מורפולוגיים מובהקים (מ-, ה-, -ים)</span></div>
+    <div class="gap-research">Ravid 2012 · Shany & Share 2004</div>
+    <div class="gap-concern">באי 7 הצענו צ'אנקים פונולוגיים (קוֹ, פר-). הסקירה אומרת שעדיף לפחות חלקם מורפולוגיים: מַ- כתחילית, -ים כסיומת רבים, ה- כיידוע.</div>
+    <div class="gap-rec">באי 7 — להוסיף בשלב 3 משחקון על צ'אנקים מורפולוגיים (בנוסף לפונולוגיים). הצ'אנק "מַ-" מופיע בתחילת "מַחְבֶּרֶת", "מַעֲמָד".</div>
+  </div>
+
+  <div class="gap" id="G8">
+    <div class="gap-header"><span class="gap-id">G8</span><span class="gap-name">מעבר לטקסט לא מנוקד</span></div>
+    <div class="gap-research">Share & Levin 1999 · Shimron 2006</div>
+    <div class="gap-concern">כל פאזה A במנוקד. אבל קריאה בעברית עוברת לבלתי-מנוקד כבר בסוף א'/תחילת ב'.</div>
+    <div class="gap-rec">לא בפאזה A. שייך לפאזה B-C — לתכנן באי 14-18, להציג מילים שכיחות (מאי 8) בגרסה בלתי-מנוקדת כאתגר אופציונלי.</div>
+  </div>
+
+  <div class="gap" id="G9">
+    <div class="gap-header"><span class="gap-id">G9</span><span class="gap-name">אי 9 — Drag-root-to-pattern קשה מדי לגיל 6-7</span></div>
+    <div class="gap-research">Schiff & Ravid 2007 · Vaknin-Nusbaum 2017</div>
+    <div class="gap-concern">המשחקון השלישי באי 9 ("בנו מילה ממשפחה") הוא ברמה גבולית לגיל 6. דורש הבנה מטה-לשונית.</div>
+    <div class="gap-rec">לסמן את המשחקון הזה כ"אתגר" אופציונלי לרמות 1-2. לרמות 3-4 — לדחות לסוף השנה או לכיתה ב'.</div>
+  </div>
+
+  <div class="gap" id="G10">
+    <div class="gap-header"><span class="gap-id">G10</span><span class="gap-name">אי 2 — לפתוח עם בלנדינג של 2 פונמות, לא 3</span></div>
+    <div class="gap-research">Saiegh-Haddad 2003-2004</div>
+    <div class="gap-concern">מיזוג של 3 פונמות (/ש/ /מ/ /ש/ → "שמש") קשה.</div>
+    <div class="gap-rec">להתחיל מבלנדינג של 2 פונמות (/מ/ /א/ → "מא"), ורק אחרי p(BKT)>0.7 על שני — לפתוח ל-3.</div>
+  </div>
+
+  <div class="decision-required">החלטת מיטל: להוסיף את הפערים לאיים הקיימים (1-9), או לחשוב על איים נוספים. שינוי מ-22 ל-25 איים = שיקול ארכיטקטוני גדול.</div>
+</section>
+
+<div class="islands-grid" id="islands-grid">
+  <!-- islands will be rendered here by JS -->
+</div>
+
+<div class="open-questions">
+  <h3>שאלות פתוחות לפני סגירת פאזה A</h3>
+  <ol>
+    <li>האם להציג דגש בפועל באי 4 (ב vs בּ) או רק ויזואלית? — חשוב לעקביות מ-MVP</li>
+    <li>באי 6 — מהו סף השטף המאומת לעברית מנוקדת בכיתה א'? (Perplexity הציע סדר גודל אחר מהאנגלית; אומדן ספציפי דורש חיפוש נוסף)</li>
+    <li>באי 7 — מה ההגדרה האופרציונלית של "צ'אנק"? האם פונולוגי + מורפולוגי או רק פונולוגי?</li>
+    <li>באי 8 — האם להציג קליטיקים מופרדים (ב + בית) ב-MVP, או רק מודבקים (בבית)?</li>
+    <li>האם איי 7-9 בפאזה 1 אכן מסתיימים לפני פאזה 2? — narrative-spec רומז שכן, אבל literacy-yearly 0.4 מציע שמורפולוגיה רצה במקביל מנובמבר</li>
+  </ol>
+</div>
+
+<footer class="page">
+  <div><strong>אבני יסוד — מערכת תרגול דיפרנציאלית-אדפטיבית לכיתה א' עברית</strong></div>
+  <div style="margin-top:8px">
+    מסמכים קשורים:
+    <a href="../../narrative-spec.md">narrative-spec.md</a> ·
+    <a href="../../architecture-mvp.md">architecture-mvp.md</a> ·
+    <a href="../../underwater/game-envelopes.md">game-envelopes.md</a> ·
+    <a href="../knowledge-base/sources/22-islands-validated-2026-05-21.json">22-islands-validated.json</a>
+  </div>
+</footer>
+
+</div>
+
+<script>
+async function loadBlueprint() {
+  const res = await fetch('22-islands.json');
+  const data = await res.json();
+  const grid = document.getElementById('islands-grid');
+
+  data.islands.forEach(island => {
+    const card = document.createElement('article');
+    card.className = 'island';
+    card.dataset.phase = island.phase;
+
+    const games = island.mini_games.map(g => `
+      <div class="game">
+        <div class="game-header">
+          <span class="game-name">${g.name}</span>
+          <span class="envelope-tag">${g.envelope}</span>
+        </div>
+        <div class="game-description">${g.description}</div>
+        <div class="game-objective">${g.primary_objective}</div>
+      </div>
+    `).join('');
+
+    const risks = island.pedagogical_risks.map(r => `<li>${r}</li>`).join('');
+
+    const sources = (island.research_sources || []).join(' · ');
+
+    const letters = Array.isArray(island.available_at_arrival.letters)
+      ? (island.available_at_arrival.letters.length ? island.available_at_arrival.letters.join(' · ') : '— (אודיו בלבד)')
+      : island.available_at_arrival.letters;
+
+    card.innerHTML = `
+      <div class="island-header">
+        <div class="row">
+          <div class="island-number">${island.id}</div>
+          <h2 class="island-name-visual">${island.name_visual}</h2>
+        </div>
+        <div class="island-name-pedagogical">${island.name_pedagogical}</div>
+        <div class="phase-tag">פאזה ${island.phase} · ${island.phase_name}</div>
+      </div>
+
+      <div class="island-section">
+        <h4>מטרת האי לילד.ה</h4>
+        <div class="child-goal">${island.child_goal_one_line}</div>
+      </div>
+
+      <div class="island-section">
+        <h4>המיומנות הפדגוגית</h4>
+        <div class="skill-desc">${island.pedagogical_skill}</div>
+      </div>
+
+      <div class="island-section">
+        <h4>מה זמין ברגע ההגעה</h4>
+        <div class="available">
+          <div><strong>אותיות:</strong> ${letters}</div>
+          <div><strong>אוצר מילים:</strong> ${island.available_at_arrival.vocabulary_constraints}</div>
+          <div><strong>ניקוד:</strong> ${island.available_at_arrival.niqqud}</div>
+          <div><strong>חודש בתוכנית:</strong> ${island.available_at_arrival.month_in_curriculum}</div>
+        </div>
+      </div>
+
+      <div class="island-section">
+        <h4>3 משחקונים מוצעים</h4>
+        <div class="games">${games}</div>
+      </div>
+
+      <div class="island-section">
+        <h4>סיכונים פדגוגיים / LLM pitfalls</h4>
+        <div class="risks"><ul>${risks}</ul></div>
+      </div>
+
+      <details>
+        <summary>עוגנים מהסיפור (narrative-spec)</summary>
+        <div class="anchors">
+          <div><strong>לפני (אובך):</strong> ${island.narrative_anchors.before}</div>
+          <div><strong>רגע התבהרות:</strong> ${island.narrative_anchors.clearing_moment}</div>
+          <div><strong>מזכרת המפה:</strong> ${island.narrative_anchors.map_token}</div>
+          <div><strong>פריט אקווריום בבית נוני:</strong> ${island.narrative_anchors.aquarium_item}</div>
+        </div>
+      </details>
+
+      <div class="stats">
+        <div class="stat"><strong>אומדן פריטים:</strong> ${island.item_count_estimate}</div>
+        <div class="stat"><strong>סף שטף:</strong> ${island.fluency_threshold_seconds ? island.fluency_threshold_seconds + ' שניות' : '— לא רלוונטי'}</div>
+        <div class="stat"><strong>ציר דשבורד:</strong> ${island.teacher_axis}</div>
+        <div class="stat"><strong>מיומנות מתוך 9:</strong> #${island.skill_id_in_9}</div>
+      </div>
+
+      <div class="sources"><strong>מקורות:</strong> ${sources}</div>
+    `;
+
+    grid.appendChild(card);
+  });
+}
+
+loadBlueprint().catch(e => {
+  document.getElementById('islands-grid').innerHTML =
+    '<div style="background:#fee;padding:20px;border-radius:8px;color:#900">שגיאה בטעינת ה-JSON: ' + e.message + '<br><small>פתח את הקובץ דרך שרת מקומי (לא file://) כדי לטעון JSON.</small></div>';
+});
+</script>
+
+</body>
+</html>
