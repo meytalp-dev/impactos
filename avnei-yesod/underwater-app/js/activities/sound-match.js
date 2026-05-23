@@ -46,35 +46,35 @@ window.AvneiSoundMatch = (function() {
     _correctCount = 0;
 
     // בנייה ראשונית של ה-DOM פעם אחת
-    _root.innerHTML = `
-      <section class="letter-stage">
-        <div class="letter-pedestal">
-          <div class="letter-display" id="smLetterDisplay">${_letter}</div>
-          <button class="audio-btn" id="smAudioBtn" aria-label="השמע שוב">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <path d="M5 9v6h4l5 4V5L9 9H5z" fill="currentColor"/>
-              <path d="M16 8a4 4 0 010 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-            </svg>
-          </button>
-        </div>
-        <div class="prompt-text" id="smPromptText">איזו תמונה מתחילה בצליל הזה?</div>
-      </section>
-      <section class="options-grid" id="smOptionsGrid"></section>
-    `;
-
-    document.getElementById('smAudioBtn').addEventListener('click', () => {
-      AvneiAudio.playLetterSound(_letter);
-      _hintUsed = true;
-      const btn = document.getElementById('smAudioBtn');
-      btn.classList.add('playing');
-      setTimeout(() => btn.classList.remove('playing'), 600);
+    _root.innerHTML = '';
+    AvneiInstruction.mount(_root, {
+      text: `מה מתחיל בצליל ${_letter}?`,
+      onAudio: () => {
+        AvneiAudio.playLetterSound(_letter);
+        _hintUsed = true;
+      },
     });
+
+    const stage = document.createElement('section');
+    stage.className = 'letter-stage';
+    stage.innerHTML = `
+      <div class="letter-pedestal">
+        <div class="letter-display" id="smLetterDisplay">${_letter}</div>
+      </div>
+    `;
+    _root.appendChild(stage);
+
+    const grid = document.createElement('section');
+    grid.className = 'shell-grid';
+    grid.id = 'smOptionsGrid';
+    _root.appendChild(grid);
 
     renderItem();
   }
 
   function unmount() {
     if (_autoHintTimer) { clearTimeout(_autoHintTimer); _autoHintTimer = null; }
+    if (window.AvneiInstruction) AvneiInstruction.unmount();
     if (_root) _root.innerHTML = '';
     _root = null;
   }
@@ -96,8 +96,8 @@ window.AvneiSoundMatch = (function() {
     const cfg = AvneiScaffolding.configFor(_supportLevel, 'soundMatch');
 
     document.getElementById('smLetterDisplay').textContent = item.letter_in_focus || _letter;
-    document.getElementById('smPromptText').textContent =
-      item.prompt || 'איזו תמונה מתחילה בצליל הזה?';
+    // עדכון טקסט בועת ההוראה לפי האות הנוכחית (אם יש שונה ברמת ה-item)
+    AvneiInstruction.setText(`מה מתחיל בצליל ${item.letter_in_focus || _letter}?`);
 
     AvneiFeedback.hide();
 
@@ -106,33 +106,34 @@ window.AvneiSoundMatch = (function() {
 
     const grid = document.getElementById('smOptionsGrid');
     grid.innerHTML = '';
-    options.forEach((opt) => {
-      const card = document.createElement('button');
-      card.className = 'option-card';
-      card.dataset.correct = opt.correct === true ? 'true' : 'false';
-      card.dataset.word = opt.word || opt.concept || '';
-      card.dataset.concept = opt.concept || '';
-      card.setAttribute('aria-label', opt.concept || 'תמונה');
-
-      const pic = document.createElement('div');
-      pic.className = 'pic';
+    options.forEach((opt, i) => {
       const path = imgPath(opt.image_url);
+      let card;
       if (path) {
-        const img = document.createElement('img');
-        img.src = path;
-        img.alt = opt.concept || '';
-        img.onerror = () => {
-          pic.innerHTML = '';
-          pic.textContent = opt.emoji_suggestion || '?';
-          pic.style.fontSize = 'clamp(54px, 11vw, 88px)';
-        };
-        pic.appendChild(img);
+        card = AvneiShell.withImage({
+          src: path,
+          alt: opt.concept || '',
+          fallback: opt.emoji_suggestion || '?',
+          index: i,
+          ariaLabel: opt.concept || 'תמונה',
+          dataset: {
+            correct: opt.correct === true ? 'true' : 'false',
+            word: opt.word || opt.concept || '',
+            concept: opt.concept || '',
+          },
+        });
       } else {
-        pic.textContent = opt.emoji_suggestion || '?';
-        pic.style.fontSize = 'clamp(54px, 11vw, 88px)';
+        card = AvneiShell.create({
+          index: i,
+          ariaLabel: opt.concept || 'תמונה',
+          dataset: {
+            correct: opt.correct === true ? 'true' : 'false',
+            word: opt.word || opt.concept || '',
+            concept: opt.concept || '',
+          },
+        });
+        AvneiShell.setContent(card, `<span class="shell-fallback">${opt.emoji_suggestion || '?'}</span>`);
       }
-
-      card.appendChild(pic);
       card.addEventListener('click', () => handleTap(card, opt));
       grid.appendChild(card);
     });
@@ -161,7 +162,7 @@ window.AvneiSoundMatch = (function() {
     _autoHintTriggered = true;
     AvneiNoni.setState('hint');
     // הדגשה רכה של התשובה הנכונה
-    document.querySelectorAll('#smOptionsGrid .option-card').forEach(c => {
+    document.querySelectorAll('#smOptionsGrid .shell-option').forEach(c => {
       if (c.dataset.correct === 'true') c.classList.add('hint-glow');
     });
     AvneiAudio.playLetterSound(_letter);
@@ -190,7 +191,7 @@ window.AvneiSoundMatch = (function() {
       AvneiFeedback.show('נוני מצביע על התשובה');
       _hintUsed = true;
       _noniGuidanceUsed = true;
-      document.querySelectorAll('#smOptionsGrid .option-card').forEach(c => {
+      document.querySelectorAll('#smOptionsGrid .shell-option').forEach(c => {
         if (c.dataset.correct === 'true') c.classList.add('hint-glow');
       });
       const item = _items[_idx];
@@ -199,7 +200,7 @@ window.AvneiSoundMatch = (function() {
       AvneiNoni.setState('hint');
       AvneiFeedback.show('זאת התשובה — הקש/י עליה');
       _noniGuidanceUsed = true;
-      document.querySelectorAll('#smOptionsGrid .option-card').forEach(c => {
+      document.querySelectorAll('#smOptionsGrid .shell-option').forEach(c => {
         if (c.dataset.correct === 'true') {
           c.classList.remove('hint-glow', 'dimmed');
           c.classList.add('hint-glow');
@@ -212,7 +213,7 @@ window.AvneiSoundMatch = (function() {
   }
 
   function correct(card, opt) {
-    document.querySelectorAll('#smOptionsGrid .option-card').forEach(c => {
+    document.querySelectorAll('#smOptionsGrid .shell-option').forEach(c => {
       c.classList.remove('hint-glow', 'wrong', 'dimmed');
       c.style.outline = '';
       c.style.pointerEvents = 'none';

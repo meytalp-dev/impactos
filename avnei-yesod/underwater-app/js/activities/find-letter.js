@@ -39,6 +39,7 @@ window.AvneiFindLetter = (function() {
 
   function unmount() {
     if (_autoHintTimer) { clearTimeout(_autoHintTimer); _autoHintTimer = null; }
+    if (window.AvneiInstruction) AvneiInstruction.unmount();
     if (_root) _root.innerHTML = '';
     _root = null;
   }
@@ -59,36 +60,38 @@ window.AvneiFindLetter = (function() {
 
     const cfg = AvneiScaffolding.configFor(_supportLevel, 'find-letter');
 
-    _root.innerHTML = `
-      <section class="fl-stage">
-        <div class="fl-image-wrapper">
-          <img class="fl-image" src="${item.image_url}" alt="" onerror="this.style.display='none'">
-          <button class="audio-btn-large" id="flAudioBtn" aria-label="השמע שוב">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-              <path d="M5 9v6h4l5 4V5L9 9H5z" fill="currentColor"/>
-              <path d="M16 8a4 4 0 010 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-            </svg>
-          </button>
-        </div>
-        <div class="fl-word" id="flWord"></div>
-      </section>
+    // ניקוי + בועת הוראה
+    _root.innerHTML = '';
+    AvneiInstruction.mount(_root, {
+      text: `מצאי את ${_letter} בתוך המילה`,
+      onAudio: () => {
+        _hintUsed = true;
+        AvneiAudio.playSequence([item.prompt_audio_key, item.word_audio_key], 600);
+      },
+    });
+
+    // אזור המסגרת — תמונה משמאל + מילה מימין
+    const stage = document.createElement('section');
+    stage.className = 'fl-stage';
+    stage.innerHTML = `
+      <div class="word-frame">
+        <img class="word-frame__image" src="${item.image_url}" alt=""
+             onerror="this.style.display='none'">
+        <div class="word-frame__letters" id="flWord"></div>
+      </div>
     `;
+    _root.appendChild(stage);
 
     const wordEl = document.getElementById('flWord');
     item.letters.forEach((letter, i) => {
       const btn = document.createElement('button');
-      btn.className = 'fl-letter';
+      btn.className = 'word-frame__letter';
       btn.dataset.index = i;
       btn.dataset.correct = (i === item.target_index) ? 'true' : 'false';
       btn.textContent = letter;
       btn.setAttribute('aria-label', 'אות ' + letter);
       btn.addEventListener('click', () => handleTap(btn, i, item));
       wordEl.appendChild(btn);
-    });
-
-    document.getElementById('flAudioBtn').addEventListener('click', () => {
-      _hintUsed = true;
-      AvneiAudio.playSequence([item.prompt_audio_key, item.word_audio_key], 600);
     });
 
     AvneiNoni.setState('idle');
@@ -110,7 +113,7 @@ window.AvneiFindLetter = (function() {
   function triggerAutoHint(item) {
     _autoHintTriggered = true;
     AvneiNoni.setState('hint');
-    document.querySelectorAll('#flWord .fl-letter').forEach(c => {
+    document.querySelectorAll('#flWord .word-frame__letter').forEach(c => {
       if (c.dataset.correct === 'true') c.classList.add('hint-glow');
     });
     AvneiAudio.play(item.letter_name_audio_key || ('name-' + letterEnNameMap(_letter)));
@@ -148,7 +151,7 @@ window.AvneiFindLetter = (function() {
       AvneiNoni.setState('hint');
       AvneiFeedback.show('זאת היא — הקש/י עליה');
       _noniGuidanceUsed = true;
-      document.querySelectorAll('#flWord .fl-letter').forEach(c => {
+      document.querySelectorAll('#flWord .word-frame__letter').forEach(c => {
         if (c.dataset.correct === 'true') {
           c.classList.remove('hint-glow', 'dimmed');
           c.classList.add('hint-glow');
@@ -174,7 +177,7 @@ window.AvneiFindLetter = (function() {
   }
 
   function correct(btn, item) {
-    document.querySelectorAll('#flWord .fl-letter').forEach(c => {
+    document.querySelectorAll('#flWord .word-frame__letter').forEach(c => {
       c.classList.remove('hint-glow', 'wrong', 'dimmed');
       c.style.outline = '';
       c.style.pointerEvents = 'none';

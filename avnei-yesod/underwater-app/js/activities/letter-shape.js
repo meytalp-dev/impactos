@@ -46,6 +46,7 @@ window.AvneiLetterShape = (function() {
 
   function unmount() {
     if (_autoHintTimer) { clearTimeout(_autoHintTimer); _autoHintTimer = null; }
+    if (window.AvneiInstruction) AvneiInstruction.unmount();
     if (_root) _root.innerHTML = '';
     _root = null;
   }
@@ -77,40 +78,33 @@ window.AvneiLetterShape = (function() {
   // Variant A — רצפטיבי
   // ============================================================
   function renderVariantA(item, cfg) {
-    _root.innerHTML = `
-      <section class="ls-prompt-row">
-        <button class="audio-btn-large" id="lsAudioBtn" aria-label="השמע שוב">
-          <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
-            <path d="M5 9v6h4l5 4V5L9 9H5z" fill="currentColor"/>
-            <path d="M16 8a4 4 0 010 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-          </svg>
-        </button>
-      </section>
-      <section class="options-grid letter-options" id="lsOptionsGrid"></section>
-    `;
-
-    document.getElementById('lsAudioBtn').addEventListener('click', () => {
-      _hintUsed = true;
-      AvneiAudio.play(item.prompt_audio_key);
+    _root.innerHTML = '';
+    AvneiInstruction.mount(_root, {
+      text: `מצאי את ${_letter}`,
+      onAudio: () => {
+        _hintUsed = true;
+        AvneiAudio.play(item.prompt_audio_key);
+      },
     });
+
+    const grid = document.createElement('section');
+    grid.className = 'shell-grid';
+    grid.id = 'lsOptionsGrid';
+    _root.appendChild(grid);
 
     // קצירת options לפי supportLevel
     const opts = AvneiScaffolding.trimOptions(item.options, cfg.optionsCount);
 
-    const grid = document.getElementById('lsOptionsGrid');
-    grid.innerHTML = '';
-    opts.forEach((opt) => {
-      const card = document.createElement('button');
-      card.className = 'option-card letter-card';
-      card.dataset.correct = opt.correct === true ? 'true' : 'false';
-      card.dataset.letter = opt.letter;
-      card.setAttribute('aria-label', 'אות ' + opt.letter);
-
-      const letterEl = document.createElement('div');
-      letterEl.className = 'option-letter';
-      letterEl.textContent = opt.letter;
-      card.appendChild(letterEl);
-
+    opts.forEach((opt, i) => {
+      const card = AvneiShell.withLetter({
+        letter: opt.letter,
+        index: i,
+        ariaLabel: 'אות ' + opt.letter,
+        dataset: {
+          correct: opt.correct === true ? 'true' : 'false',
+          letter: opt.letter,
+        },
+      });
       card.addEventListener('click', () => handleTap(card, opt, item));
       grid.appendChild(card);
     });
@@ -133,34 +127,48 @@ window.AvneiLetterShape = (function() {
   // Variant B — פרודוקטיבי
   // ============================================================
   function renderVariantB(item, cfg) {
-    _root.innerHTML = `
-      <section class="letter-stage">
-        <div class="letter-pedestal big">
-          <div class="letter-display">${item.letter}</div>
-        </div>
-      </section>
-      <section class="bubble-grid" id="lsBubbleGrid"></section>
+    _root.innerHTML = '';
+    AvneiInstruction.mount(_root, {
+      text: `איזו קונכייה אומרת את הצליל של ${item.letter}?`,
+      onAudio: () => {
+        _hintUsed = true;
+        AvneiAudio.play(item.prompt_audio_key);
+      },
+    });
+
+    const stage = document.createElement('section');
+    stage.className = 'letter-stage';
+    stage.innerHTML = `
+      <div class="letter-pedestal big">
+        <div class="letter-display">${item.letter}</div>
+      </div>
     `;
+    _root.appendChild(stage);
+
+    const grid = document.createElement('section');
+    grid.className = 'shell-grid';
+    grid.id = 'lsBubbleGrid';
+    _root.appendChild(grid);
 
     const opts = AvneiScaffolding.trimOptions(item.options, cfg.optionsCount);
 
-    const grid = document.getElementById('lsBubbleGrid');
-    grid.innerHTML = '';
     opts.forEach((opt, i) => {
-      const bubble = document.createElement('button');
-      bubble.className = 'bubble-option';
-      bubble.dataset.correct = opt.correct === true ? 'true' : 'false';
-      bubble.dataset.letter = opt.letter;
-      bubble.setAttribute('aria-label', 'בועה ' + (i + 1));
-
-      // אייקון קול קטן בתוך הבועה — לרמוז שהיא ניתנת ללחיצה לשמיעה
-      bubble.innerHTML = `
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
-          <path d="M5 9v6h4l5 4V5L9 9H5z" fill="currentColor"/>
-          <path d="M16 8a4 4 0 010 8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      // קונכייה עם אייקון אודיו (במקום אות) — מסמן "הקש כדי לשמוע"
+      const bubble = AvneiShell.create({
+        index: i,
+        className: 'bubble-option',  // נשמר ליישומי highlight
+        ariaLabel: 'קונכייה ' + (i + 1),
+        dataset: {
+          correct: opt.correct === true ? 'true' : 'false',
+          letter: opt.letter,
+        },
+      });
+      AvneiShell.setContent(bubble, `
+        <svg width="46%" height="46%" viewBox="0 0 24 24" fill="none">
+          <path d="M5 9v6h4l5 4V5L9 9H5z" fill="var(--coral)"/>
+          <path d="M16 8a4 4 0 010 8" stroke="var(--coral)" stroke-width="2.5" stroke-linecap="round" fill="none"/>
         </svg>
-      `;
-
+      `);
       bubble.addEventListener('click', () => handleBubbleTap(bubble, opt, item));
       grid.appendChild(bubble);
     });
@@ -246,7 +254,7 @@ window.AvneiLetterShape = (function() {
   function correct(el, opt, item) {
     const gridSel = '#lsOptionsGrid, #lsBubbleGrid';
     document.querySelectorAll(gridSel).forEach(g => {
-      g.querySelectorAll('.option-card, .bubble-option').forEach(c => {
+      g.querySelectorAll('.shell-option, .option-card, .bubble-option').forEach(c => {
         c.classList.remove('hint-glow', 'wrong', 'dimmed');
         c.style.outline = '';
         c.style.pointerEvents = 'none';
