@@ -111,8 +111,8 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #FFE7A8;
-  box-shadow: 0 0 10px rgba(255, 231, 168, 0.95);
+  background: #A8E8FF;
+  box-shadow: 0 0 10px rgba(168, 232, 255, 0.95);
   animation: dot-pulse 1.8s ease-in-out infinite;
 }
 @keyframes dot-pulse {
@@ -134,7 +134,9 @@
   transition: transform 0.4s ease;
 }
 
-/* שתי תמונות בכל slot — dark כברירת מחדל, lit נחשפת כשהאלמוג מודלק */
+/* שני SVG בכל slot — dark כברירת מחדל, lit נחשפת כשהאלמוג מודלק.
+   ה-fill של ה-SVG נשלט דרך --coral-fill בכל מצב. */
+.coral-slot .coral-svg,
 .coral-slot .coral-img {
   position: absolute;
   inset: 0;
@@ -142,16 +144,28 @@
   height: 100%;
   object-fit: contain;
   filter: drop-shadow(0 4px 10px rgba(0,0,0,0.45));
-  transition: opacity 0.8s ease, transform 0.4s ease;
+  transition: opacity 0.8s ease, transform 0.4s ease, filter 0.6s ease;
 }
-.coral-slot .coral-img.coral-dark { opacity: 1;  z-index: 1; }
-.coral-slot .coral-img.coral-lit  { opacity: 0;  z-index: 2; }
-
-.coral-slot.lit .coral-img.coral-dark { opacity: 0; }
-.coral-slot.lit .coral-img.coral-lit  {
+.coral-slot .coral-dark {
   opacity: 1;
-  filter: drop-shadow(0 0 14px rgba(255, 231, 168, 0.95))
-          drop-shadow(0 0 28px rgba(255, 196, 130, 0.75));
+  z-index: 1;
+  --coral-fill: url(#coralGradDark);
+  --coral-spark: transparent;
+  --coral-spark2: transparent;
+}
+.coral-slot .coral-lit {
+  opacity: 0;
+  z-index: 2;
+  --coral-fill: url(#coralGradLit);
+  --coral-spark: url(#coralCoreLit);
+  --coral-spark2: rgba(255,255,255,0.9);
+}
+
+.coral-slot.lit .coral-dark { opacity: 0; }
+.coral-slot.lit .coral-lit  {
+  opacity: 1;
+  filter: drop-shadow(0 0 14px rgba(168, 232, 255, 0.95))
+          drop-shadow(0 0 28px rgba(115, 217, 209, 0.75));
   animation: coral-glow 2.6s ease-in-out infinite;
 }
 @keyframes coral-glow {
@@ -167,7 +181,7 @@
   100% { transform: scale(1); }
 }
 
-/* הילה גדולה רגעית כשאלמוג חדש נדלק — מאיר את הים סביבו */
+/* הילה גדולה רגעית כשאלמוג חדש נדלק — מאיר את הים סביבו (תכלת זוהר) */
 .light-burst {
   position: fixed;
   z-index: 90;
@@ -177,10 +191,10 @@
   max-height: 600px;
   border-radius: 50%;
   background: radial-gradient(circle,
-    rgba(255, 244, 194, 0.85) 0%,
-    rgba(255, 228, 168, 0.55) 25%,
-    rgba(255, 200, 130, 0.25) 55%,
-    rgba(255, 196, 130, 0) 75%);
+    rgba(232, 248, 255, 0.85) 0%,
+    rgba(168, 232, 255, 0.55) 25%,
+    rgba(115, 217, 209, 0.25) 55%,
+    rgba(79, 184, 201, 0) 75%);
   opacity: 0;
   pointer-events: none;
   mix-blend-mode: screen;
@@ -538,7 +552,7 @@ body .noni-fixed,
   margin: 0;
   line-height: 1.5;
 }
-.tap-to-start strong { color: #FFE7A8; }
+.tap-to-start strong { color: #A8E8FF; }
 .start-btn {
   background: #FFFFFF;
   color: var(--text-main, #26505C);
@@ -547,14 +561,14 @@ body .noni-fixed,
   padding: 16px 36px;
   border-radius: var(--radius-pill, 999px);
   box-shadow: 0 10px 28px rgba(0,0,0,0.35),
-              0 0 0 0 rgba(255, 231, 168, 0.55);
+              0 0 0 0 rgba(168, 232, 255, 0.55);
   margin-top: 12px;
   animation: start-pulse 2.2s ease-in-out infinite;
 }
 .start-btn:active { transform: scale(0.96); }
 @keyframes start-pulse {
-  0%, 100% { box-shadow: 0 10px 28px rgba(0,0,0,0.35), 0 0 0 0 rgba(255, 231, 168, 0.55); }
-  50%      { box-shadow: 0 10px 28px rgba(0,0,0,0.35), 0 0 0 16px rgba(255, 231, 168, 0); }
+  0%, 100% { box-shadow: 0 10px 28px rgba(0,0,0,0.35), 0 0 0 0 rgba(168, 232, 255, 0.55); }
+  50%      { box-shadow: 0 10px 28px rgba(0,0,0,0.35), 0 0 0 16px rgba(168, 232, 255, 0); }
 }
 
 /* כפתור רמקול בפתיחה */
@@ -628,8 +642,12 @@ body .noni-fixed,
   height: clamp(56px, 12vw, 76px);
   object-fit: contain;
   animation: coral-bounce 1.6s ease-in-out infinite;
-  filter: drop-shadow(0 0 12px rgba(255, 231, 168, 0.85))
-          drop-shadow(0 0 22px rgba(255, 196, 130, 0.55));
+  filter: drop-shadow(0 0 12px rgba(168, 232, 255, 0.85))
+          drop-shadow(0 0 22px rgba(115, 217, 209, 0.55));
+  /* תכלת זוהר תמיד */
+  --coral-fill: url(#coralGradLit);
+  --coral-spark: url(#coralCoreLit);
+  --coral-spark2: rgba(255,255,255,0.9);
 }
 .completion-corals .coral-mini:nth-child(2) { animation-delay: 0.15s; }
 .completion-corals .coral-mini:nth-child(3) { animation-delay: 0.3s; }

@@ -173,17 +173,15 @@ window.AvneiSoundMatch = (function() {
       return correct(card, opt);
     }
 
-    // טעות
+    // טעות — מודל תמיכות לפי feedback_avnei_yesod_support_levels:
+    // טעות 1 = אין תמיכה (הילד מנסה שוב), טעות 2 = רמז, טעות 3+ = הקש פה
     _attempts++;
     card.classList.add('wrong');
     setTimeout(() => card.classList.add('dimmed'), 500);
 
-    const wrongConcept = card.dataset.concept;
-
     if (_attempts === 1) {
-      AvneiNoni.setState('help');
-      AvneiFeedback.show('בוא/י ננסה יחד');
-      AvneiAudio.playSequence([wrongConcept, 'trywithme'], 600);
+      // אין תמיכה מילולית. רק טעות-עדינה ויזואלית. הילד מנסה שוב.
+      return;
     } else if (_attempts === 2) {
       AvneiNoni.setState('hint');
       AvneiFeedback.show('נוני מצביע על התשובה');
