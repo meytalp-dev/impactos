@@ -922,10 +922,20 @@
       const letter = LETTER_SEQUENCE[session.letterIdx];
       const accuracy = session.correctCountInLetter / session.letterItems.length;
 
+      // narrative-spec §8 — האות עולה לשלב 2 (tap-match השלמה).
+      // שלבים 1 (bloom), 3 (trace), 4 (find) יתווספו בעתיד.
+      if (typeof setLetterStage === 'function') {
+        setLetterStage(letter, 2);
+      }
+
       // אם זו האות האחרונה — סיום מלא
       if (session.letterIdx >= LETTER_SEQUENCE.length - 1) {
         completeStage(3);
         addSouvenir('אלמוג אות זוהר');
+        // narrative-spec §6 — פריט אקווריום בבית נוני
+        if (typeof addAquariumItem === 'function') {
+          addAquariumItem(3, 'letter-coral');
+        }
         document.getElementById('completion').classList.add('show');
         document.getElementById('completionMsg').textContent =
           'סיימת את כל 5 האותיות. נוני אסף עבורך אלמוג אות זוהר.';
