@@ -271,6 +271,9 @@
   (function () {
     const ISLAND_ID = 3;
     const LETTER = 'מ';
+    // Maps letter → audio-file suffix so the same controller works for any letter
+    const LETTER_AUDIO_KEYS = { 'מ': 'mem', 'ר': 'resh', 'ב': 'bet', 'ק': 'qof', 'ת': 'tav' };
+    const LETTER_KEY = LETTER_AUDIO_KEYS[LETTER];
     const TOTAL_STEPS = 5;
     const STONES_PER_ROUND = 3;
 
@@ -283,6 +286,7 @@
       stepIdx: 0,
       stepsCompleted: 0,
       locked: false,
+      wrongCount: 0,      // mistakes in the current round — drives 3-stage scaffolding
       hintTimer: null,
     };
 
@@ -359,6 +363,7 @@
       if (state.hintTimer) { clearTimeout(state.hintTimer); state.hintTimer = null; }
       elStonesArea.innerHTML = '';
       state.locked = false;
+      state.wrongCount = 0;   // reset scaffolding counter per round
 
       const distractors = pickDistractors(STONES_PER_ROUND - 1);
       const allLetters = shuffle([LETTER, ...distractors]);
@@ -386,23 +391,22 @@
       // Reset noni to idle for new round
       if (window.AvneiNoni) AvneiNoni.setState('idle');
 
-      // Auto-play prompt audio (sound-mem) — לקח: ילדים לא קוראים
+      // Auto-play the FULL mission audio — "תמצאו את האבן עם האות X"
+      // (feedback_pedagogy_full_questions_not_sounds: שאלה מלאה, לא רק צליל מבודד)
       if (window.AvneiAudio && AvneiAudio.isUnlocked && AvneiAudio.isUnlocked()) {
-        setTimeout(() => AvneiAudio.playLetterSound(LETTER), 300);
+        setTimeout(() => AvneiAudio.play('mission-find-stone-' + LETTER_KEY), 400);
       }
 
-      // Auto-hint after 9s of no taps
-      state.hintTimer = setTimeout(triggerHint, 9000);
+      // After 12s of no taps — gentle nudge: replay the full mission audio
+      state.hintTimer = setTimeout(idleNudge, 12000);
     }
 
-    function triggerHint() {
+    function idleNudge() {
       state.hintTimer = null;
       if (state.locked) return;
       if (window.AvneiNoni) AvneiNoni.setState('hint');
-      document.querySelectorAll('.stone[data-correct="true"]').forEach(s => {
-        s.classList.add('hint-glow');
-      });
-      if (window.AvneiAudio) AvneiAudio.playLetterSound(LETTER);
+      // Re-play the full question (not the bare letter sound)
+      if (window.AvneiAudio) AvneiAudio.play('mission-find-stone-' + LETTER_KEY);
     }
 
     // ============================================================
@@ -421,15 +425,90 @@
       }
     }
 
+    // ============================================================
+    // 3-stage scaffolding — אבני-יסוד pedagogy (אין מצב כישלון):
+    //   טעות 1 → "ננסה יחד" (audio only, no visual hint)
+    //   טעות 2 → רמז ויזואלי (hint-glow על האבן הנכונה) + צליל האות
+    //   טעות 3 → מציגים את התשובה (audio scaffold) + מעבר אוטומטי הלאה
+    // ============================================================
     function doWrong(stone) {
+      state.wrongCount++;
       stone.classList.add('wrong-sway');
-      if (window.AvneiNoni) AvneiNoni.setState('help');
-      if (window.AvneiAudio) AvneiAudio.play('try-again');
+      // Dim the wrong stone so the child doesn't keep tapping it
+      stone.classList.add('dimmed-wrong');
+      stone.style.pointerEvents = 'none';
 
+      if (window.AvneiNoni) AvneiNoni.setState('help');
+
+      if (state.wrongCount === 1) {
+        // Mistake 1 — "ננסה יחד"
+        if (window.AvneiAudio) AvneiAudio.play('try-together');
+      } else if (state.wrongCount === 2) {
+        // Mistake 2 — visual hint + letter sound (after wrong answer, the bare
+        // letter sound is OK per feedback_pedagogy_full_questions_not_sounds)
+        document.querySelectorAll('.stone[data-correct="true"]').forEach(s => {
+          s.classList.add('hint-glow');
+        });
+        if (window.AvneiAudio) {
+          AvneiAudio.playSequence(['try-again', 'sound-' + LETTER_KEY], 700);
+        }
+        setTimeout(() => {
+          if (window.AvneiNoni) AvneiNoni.setState('hint');
+        }, 200);
+      } else {
+        // Mistake 3 — show the answer + auto-advance (no failure mode)
+        state.locked = true;
+        showAnswerAndAdvance();
+        return;
+      }
+
+      // Recover after the gentle feedback
       setTimeout(() => {
         stone.classList.remove('wrong-sway');
-        if (window.AvneiNoni) AvneiNoni.setState('idle');
-      }, 800);
+        if (state.wrongCount === 1 && window.AvneiNoni) AvneiNoni.setState('idle');
+      }, 900);
+    }
+
+    function showAnswerAndAdvance() {
+      const correctStone = document.querySelector('.stone[data-correct="true"]');
+      if (correctStone) {
+        correctStone.classList.add('hint-glow');
+        elStonesArea.querySelectorAll('.stone').forEach(s => {
+          if (s !== correctStone) {
+            s.style.opacity = '0.32';
+            s.style.pointerEvents = 'none';
+            s.style.filter = 'grayscale(0.4)';
+          }
+        });
+      }
+      if (window.AvneiNoni) AvneiNoni.setState('hint');
+      // Spoken scaffold — "הנה היא, האות X. הקישו עליה."
+      if (window.AvneiAudio) AvneiAudio.play('scaffold-here-' + LETTER_KEY);
+
+      // After the audio plays — auto-resolve as if the child tapped correctly,
+      // so they don't get stuck. Pearl is still awarded (לפי השלמה, לא דיוק).
+      setTimeout(() => {
+        if (correctStone) {
+          correctStone.classList.add('correct-lift');
+          if (window.AvneiNoni) AvneiNoni.setState('cheer');
+          elNoni.classList.add('hopping');
+          setTimeout(() => elNoni.classList.remove('hopping'), 720);
+        }
+        if (typeof addPearl === 'function') {
+          addPearl(1);
+          updatePearlDisplay();
+        }
+        setTimeout(() => {
+          state.stepsCompleted++;
+          updateStepCounter();
+          if (state.stepsCompleted >= TOTAL_STEPS) {
+            setTimeout(startFinale, 700);
+          } else {
+            state.stepIdx++;
+            setTimeout(buildRound, 2200);
+          }
+        }, 1000);
+      }, 2800);
     }
 
     function doCorrect(stone) {
@@ -582,11 +661,15 @@
       elIntroSpkr.addEventListener('click', () => {
         if (window.AvneiAudio) AvneiAudio.unlock();
         elIntroSpkr.classList.add('playing');
-        // Until we record intro-journey MP3s, fall back to the letter sound twice
+        // Full mission explanation (recorded TTS) — the child doesn't read,
+        // so the speaker MUST say the task, not just the letter sound.
         if (window.AvneiAudio) {
-          AvneiAudio.playSequence(['sound-mem', 'find-mem'], 1200);
+          AvneiAudio.playSequence(
+            ['intro-journey-quest-' + LETTER_KEY, 'intro-journey-mission-' + LETTER_KEY],
+            600
+          );
         }
-        setTimeout(() => elIntroSpkr.classList.remove('playing'), 4000);
+        setTimeout(() => elIntroSpkr.classList.remove('playing'), 12000);
       });
     }
 
@@ -594,7 +677,8 @@
       elMissionSpkr.addEventListener('click', () => {
         if (window.AvneiAudio) {
           AvneiAudio.unlock();
-          AvneiAudio.playLetterSound(LETTER);
+          // Full question, not the isolated letter sound
+          AvneiAudio.play('mission-find-stone-' + LETTER_KEY);
         }
       });
     }
