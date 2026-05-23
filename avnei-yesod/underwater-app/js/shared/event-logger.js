@@ -67,6 +67,16 @@ window.AvneiEventLogger = (function() {
       timestamp:            Date.now(),
     };
     appendEvent(evt);  // מ-state.js
+
+    // עדכון BKT אוטומטי — מעדכן p(שולטת) פר-תלמיד.ה × פר-אי
+    if (window.AvneiBKT) {
+      try {
+        AvneiBKT.ingestEvent(evt);
+      } catch (e) {
+        console.warn('BKT update failed:', e);
+      }
+    }
+
     return evt;
   }
 
