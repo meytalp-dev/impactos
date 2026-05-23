@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>הצלת הדגים · עומק הים המואר</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/stage-3.css">
+  <link rel="stylesheet" href="css/rescue-quest.css">
+</head>
+<body>
+
+  <main class="stage-scene">
+    <div class="scene-frame">
+      <img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true"
+           onerror="this.style.display='none'">
+
+      <!-- Top header — school counter (5 fish slots) + mission bubble -->
+      <section class="rescue-header">
+        <div class="school-row" id="schoolRow" aria-label="להקת הדגים">
+          <div class="fish-slot" data-i="0"><span class="fish-icon" aria-hidden="true"></span></div>
+          <div class="fish-slot" data-i="1"><span class="fish-icon" aria-hidden="true"></span></div>
+          <div class="fish-slot" data-i="2"><span class="fish-icon" aria-hidden="true"></span></div>
+          <div class="fish-slot" data-i="3"><span class="fish-icon" aria-hidden="true"></span></div>
+          <div class="fish-slot" data-i="4"><span class="fish-icon" aria-hidden="true"></span></div>
+        </div>
+        <div class="instruction-bubble" id="missionBubble">
+          <button class="mission-speaker" id="missionSpeaker" aria-label="שמע את ההוראה">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
+              <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+            </svg>
+          </button>
+          <span>הקש/י על האצה עם <strong class="mem-letter">מ</strong></span>
+        </div>
+      </section>
+
+      <!-- Seaweed area — 4 closed seaweed pods with letters on them -->
+      <section class="seaweed-area" id="seaweedArea">
+        <!-- JS builds 4 .seaweed-pod elements here each round -->
+      </section>
+
+      <!-- burst layer לבועות זהב -->
+      <div class="burst" id="burst"></div>
+    </div>
+  </main>
+
+  <!-- Noni (src swapped by JS based on state) -->
+  <img class="noni-fixed" id="noniImg" src="assets/noni-idle.png" alt="נוני">
+
+  <!-- בועת פידבק (mostly hidden — kids don't read; audio + noni face do the work) -->
+  <div class="feedback-bubble" id="feedbackBubble"></div>
+
+  <!-- Top bar -->
+  <header class="top-bar">
+    <a href="map.html" class="icon-btn" aria-label="חזרה למפה">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+    <div class="rescue-counter" id="rescueCounter">
+      <span class="rc-letter">מ</span>
+      <span id="rescueCountDisplay">0/5 דגים</span>
+    </div>
+    <div class="pearl-counter" aria-label="פנינים">
+      <span class="pearl" aria-hidden="true"></span>
+      <span class="count" id="pearlCount">0</span>
+    </div>
+  </header>
+
+  <!-- Start overlay -->
+  <div class="tap-to-start" id="tapToStart">
+    <h2>הצלת הדגים</h2>
+    <button class="intro-speaker" id="introSpeaker" aria-label="שמע את ההסבר">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>הקש/י לשמוע</span>
+    </button>
+    <p>נוני שמע דגיגים בוכים. הם תקועים בתוך אצות בים.</p>
+    <p>רק אצות עם האות <strong>מ</strong> אפשר לפתוח! תצילו את כולם?</p>
+    <button class="start-btn" id="startBtn">בוא/י נציל!</button>
+  </div>
+
+  <!-- Completion overlay -->
+  <div class="completion" id="completion">
+    <h2>הצלתם את כל הדגים!</h2>
+    <div class="completion-school" id="completionSchool"></div>
+    <p id="completionMsg">להקת דגים זוהרת הצטרפה לבית של נוני.</p>
+    <a href="map.html" class="btn-primary">חזרה למפה</a>
+  </div>
+
+  <!-- SVG defs — fish icon used in slots + flying (fallback if PNG missing) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="fishSymbol" viewBox="0 0 64 40">
+        <defs>
+          <radialGradient id="fishGrad" cx="35%" cy="40%" r="65%">
+            <stop offset="0%" stop-color="#FFE7A8"/>
+            <stop offset="60%" stop-color="#FFA98D"/>
+            <stop offset="100%" stop-color="#E27F66"/>
+          </radialGradient>
+        </defs>
+        <ellipse cx="26" cy="20" rx="20" ry="14" fill="url(#fishGrad)"
+                 stroke="#FFFFFF" stroke-width="1.5"/>
+        <path d="M46 20 L62 8 L58 20 L62 32 Z"
+              fill="url(#fishGrad)" stroke="#FFFFFF" stroke-width="1.5"
+              stroke-linejoin="round"/>
+        <circle cx="18" cy="17" r="3" fill="#FFFFFF"/>
+        <circle cx="18" cy="17" r="1.6" fill="#26505C"/>
+        <path d="M12 24 Q16 27 22 25" stroke="#26505C" stroke-width="1.4"
+              fill="none" stroke-linecap="round"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <!-- Shared modules — load order matters -->
+  <script src="js/state.js"></script>
+  <script src="js/shared/audio.js"></script>
+  <script src="js/shared/noni.js"></script>
+  <script src="js/shared/feedback.js"></script>
+
+  <!-- ====== OVERRIDE: noni facial expressions via src swap (lesson #19) ====== -->
+  <script>
+  (function noniExpressions() {
+    const EXPR = {
+      idle:    'assets/noni-idle.png',
+      help:    'assets/noni-thinking.png',
+      hint:    'assets/noni-surprised.png',
+      cheer:   'assets/noni-happy.png',
+      dance:   'assets/noni-kiss.png',
+    };
+    Object.values(EXPR).forEach(src => { const i = new Image(); i.src = src; });
+
+    if (!window.AvneiNoni) return;
+    const origSetState = AvneiNoni.setState;
+    AvneiNoni.setState = function(state) {
+      origSetState.call(this, state);
+      const img = document.getElementById('noniImg');
+      if (!img) return;
+      const src = EXPR[state] || EXPR.idle;
+      if (img.src.indexOf(src.split('/').pop()) === -1) {
+        img.src = src;
+      }
+    };
+    document.addEventListener('DOMContentLoaded', () => {
+      const img = document.getElementById('noniImg');
+      if (img) img.src = EXPR.idle;
+    });
+  })();
+  </script>
+
+  <!-- ====== OVERRIDE: hide feedback bubble (lesson #15 — kids don't read) ====== -->
+  <script>
+  (function overrideFeedbackBubble() {
+    if (!window.AvneiFeedback) return;
+    const origHide = AvneiFeedback.hide;
+    AvneiFeedback.show = function() {
+      const fb = document.getElementById('feedbackBubble');
+      if (fb) fb.style.display = 'none';
+    };
+    AvneiFeedback.hide = function() {
+      origHide.call(this);
+      const fb = document.getElementById('feedbackBubble');
+      if (fb) fb.style.display = 'none';
+    };
+  })();
+  </script>
+
+  <script src="js/rescue-controller.js"></script>
+
+</body>
+</html>
