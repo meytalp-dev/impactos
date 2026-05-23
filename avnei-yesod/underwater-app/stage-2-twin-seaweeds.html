@@ -332,6 +332,20 @@
     }
   }
 
+  // playChain — רצף אודיו עם delay מותאם בין פריט לפריט (יותר מדויק מ-playSequence)
+  function playChain(steps) {
+    let i = 0;
+    const next = () => {
+      if (i >= steps.length) return;
+      const step = steps[i++];
+      const a = new Audio('assets/audio/' + encodeURIComponent(step.key) + '.mp3');
+      a.onended  = () => setTimeout(next, step.delayAfter || 0);
+      a.onerror  = () => setTimeout(next, step.delayAfter || 0);
+      a.play().catch(() => setTimeout(next, step.delayAfter || 0));
+    };
+    next();
+  }
+
   function onCorrect(answer) {
     elBtnSame.disabled = true;
     elBtnDiff.disabled = true;
@@ -341,31 +355,28 @@
 
     const r = state.rounds[state.idx];
 
-    // אנימציית האצות + רצף הסברי-צליל
     if (answer === 'same') {
       elRow.classList.add('feedback-same');
       setTimeout(() => elRibbon.classList.add('visible'), 600);
 
-      // "כן! שתי המילים מתחילות באותו צליל. הקשיבו:" → פונמה משותפת מאורכת
+      // "שתי המילים מתחילות באותו צליל." → פונמה אחת
       const phonemeKey = PHONEME_TO_AUDIO[r.phoneme_focus];
-      const keys = phonemeKey
-        ? ['twin-feedback-correct-same', phonemeKey]
-        : ['twin-feedback-correct-same'];
-      AvneiAudio.playSequence(keys, 2400);
+      const chain = [{ key: 'twin-feedback-correct-same', delayAfter: 400 }];
+      if (phonemeKey) chain.push({ key: phonemeKey, delayAfter: 0 });
+      playChain(chain);
     } else {
       elRow.classList.add('feedback-different');
 
-      // "כן! הצליל הראשון שונה. הקשיבו:" → פונמה 1 → "והמילה השנייה מתחילה בצליל" → פונמה 2
+      // "בשתי המילים יש צלילים שונים." → צליל 1 → המתנה 1 שנייה → צליל 2
       const [p1, p2] = r.phonemes || [];
       const k1 = PHONEME_TO_AUDIO[p1];
       const k2 = PHONEME_TO_AUDIO[p2];
-      const keys = ['twin-feedback-correct-different'];
-      if (k1) keys.push(k1);
-      if (k2) keys.push('twin-and-the-other', k2);
-      AvneiAudio.playSequence(keys, 2000);
+      const chain = [{ key: 'twin-feedback-correct-different', delayAfter: 400 }];
+      if (k1) chain.push({ key: k1, delayAfter: 1000 });
+      if (k2) chain.push({ key: k2, delayAfter: 0 });
+      playChain(chain);
     }
 
-    // particles
     spawnGlowParticles(answer);
 
     state.correctCount++;
@@ -376,8 +387,8 @@
       response_time_ms: null,
     });
 
-    // הארכת הזמן כדי שכל רצף ההסבר יושמע: same ~5s, different ~9s
-    const advanceDelay = (answer === 'same') ? 5500 : 9500;
+    // ספיק זמן לרצף האודיו: same ~4s, different ~6s
+    const advanceDelay = (answer === 'same') ? 4500 : 6800;
     setTimeout(advanceRound, advanceDelay);
   }
 
