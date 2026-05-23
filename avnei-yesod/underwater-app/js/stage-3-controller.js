@@ -21,6 +21,7 @@ window.AvneiStage3 = (function() {
     soundMatch: null,
     letterShape: null,
     findLetter: null,
+    tracePaths: null,
   };
   let _currentLetterIdx = 0;
 
@@ -28,14 +29,16 @@ window.AvneiStage3 = (function() {
   // טעינת data
   // ============================================================
   async function loadAllData() {
-    const [items03, letterShape, findLetter] = await Promise.all([
+    const [items03, letterShape, findLetter, tracePaths] = await Promise.all([
       fetch('data/island-03-items.json').then(r => r.json()),
       fetch('data/island-03-letter-shape.json').then(r => r.json()).catch(() => ({ items: [] })),
       fetch('data/island-03-find-letter.json').then(r => r.json()).catch(() => ({ items: [] })),
+      fetch('data/island-03-trace-paths.json').then(r => r.json()).catch(() => ({ letters: {} })),
     ]);
     _itemsByActivity.soundMatch  = items03.items || [];
     _itemsByActivity.letterShape = letterShape.items || [];
     _itemsByActivity.findLetter  = findLetter.items || [];
+    _itemsByActivity.tracePaths  = tracePaths.letters || {};
   }
 
   // ============================================================
@@ -58,6 +61,15 @@ window.AvneiStage3 = (function() {
     if (activity === 'findLetter') {
       return (_itemsByActivity.findLetter || []).filter(it => it.target_letter === letter);
     }
+    if (activity === 'tracePath') {
+      const td = (_itemsByActivity.tracePaths || {})[letter];
+      // מחזיר רק אם יש paths תקפים — אחרת array ריק והפעילות תידלג
+      if (!td || !Array.isArray(td.strokes) || td.strokes.length === 0) return [];
+      const allValid = td.strokes.every(s =>
+        typeof s.path_d === 'string' && s.path_d.trim().length > 0 && !s.path_d.includes('TBD')
+      );
+      return allValid ? [td] : [];
+    }
     return [];
   }
 
@@ -79,6 +91,8 @@ window.AvneiStage3 = (function() {
         variant = 'B';
       } else if (activityName === 'findLetter') {
         activity = window.AvneiFindLetter;
+      } else if (activityName === 'tracePath') {
+        activity = window.AvneiTracePath;
       }
 
       if (!activity) {
