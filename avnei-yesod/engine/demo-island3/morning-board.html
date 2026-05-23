@@ -326,7 +326,7 @@
 
   <div class="section">
     <h2 class="section-title">קבוצות אוטומטיות</h2>
-    <p class="section-subtitle">המערכת זיהתה את הקבוצות האלה אתמול ב-16:30 לאחר ריצת BKT על כל הילדים × כל האותיות.</p>
+    <p class="section-subtitle">המערכת ניתחה אתמול ב-16:30 את התקדמות כל ילד.ה — וזיהתה את הקבוצות האלה.</p>
     <div class="groups-row" id="groups"></div>
   </div>
 
@@ -369,6 +369,15 @@ function statusClass(s) {
   return { 'mastered': 'mastered', 'near-mastery': 'near', 'in-progress': 'progress', 'needs-review': 'review', 'not-attempted': 'not' }[s] || 'not';
 }
 
+function islandLabel(islandId) {
+  if (!STATE || !STATE.meta || !STATE.meta.islands_friendly_names) return 'אי ' + islandId;
+  return STATE.meta.islands_friendly_names[String(islandId)] || ('אי ' + islandId);
+}
+
+function supportLevelLabel(level) {
+  return { 1: 'עצמאי', 2: 'תמיכה קלה', 3: 'תמיכה אוטומטית', 4: 'תמיכה מלאה' }[level] || ('רמה ' + level);
+}
+
 function renderAll() {
   renderHero();
   renderGroups();
@@ -377,9 +386,10 @@ function renderAll() {
 }
 
 function renderHero() {
-  const ready = STATE.students.filter(s => s.tomorrow_plan.ready_for_island_5).length;
+  const ready = STATE.students.filter(s => s.tomorrow_plan.ready_for_next).length;
   const alerts = STATE.students.filter(s => s.tomorrow_plan.teacher_alert).length;
   const totalMins = STATE.students.reduce((sum, s) => sum + s.tomorrow_plan.total_minutes_estimated, 0);
+  const islandNames = (STATE.meta && STATE.meta.islands_friendly_names) || {};
   const today = new Date(STATE.meta.generated_at);
   const tomorrow = new Date(today.getTime() + 24*60*60*1000);
   const dateLabel = tomorrow.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -391,8 +401,8 @@ function renderHero() {
       </div>
       <h1>בוקר טוב, ${STATE.teacher_name}.</h1>
       <p>
-        ההצעה שלי להיום מבוססת על ${STATE.students.reduce((sum, s) => sum + s.completed_today.length, 0)} משחקונים שהילדים השלימו אתמול באי 3.
-        ${alerts} ילדים דורשים תשומת לב מיוחדת, ${ready} מוכנים לאי 5. ${STATE.auto_groups.length} קבוצות מתכנסות אוטומטית.
+        ההצעה שלי להיום מבוססת על ${STATE.students.reduce((sum, s) => sum + s.completed_today.length, 0)} משחקונים שהילדים השלימו אתמול — תרגול זיהוי 5 אותיות.
+        ${alerts} ילדים צריכים אותך לידם, ${ready} מוכנים לעבור לשלב הבא (חיבור אות+ניקוד). ${STATE.auto_groups.length} קבוצות זוהו אוטומטית.
       </p>
       <div class="morning-stats">
         <div class="morning-stat">
@@ -400,11 +410,11 @@ function renderHero() {
           <div class="morning-stat-value">${STATE.class_size}</div>
         </div>
         <div class="morning-stat">
-          <div class="morning-stat-label">מוכנים לאי 5</div>
+          <div class="morning-stat-label">מוכנים להמשיך</div>
           <div class="morning-stat-value">${ready}</div>
         </div>
         <div class="morning-stat">
-          <div class="morning-stat-label">דורש 1:1</div>
+          <div class="morning-stat-label">צריכים 1:1</div>
           <div class="morning-stat-value">${alerts}</div>
         </div>
         <div class="morning-stat">
@@ -438,7 +448,7 @@ function renderGroups() {
 
 function renderFilters() {
   const all       = STATE.students.length;
-  const ready     = STATE.students.filter(s => s.tomorrow_plan.ready_for_island_5).length;
+  const ready     = STATE.students.filter(s => s.tomorrow_plan.ready_for_next).length;
   const review    = STATE.students.filter(s => s.tomorrow_plan.primary_level >= 3).length;
   const alerts    = STATE.students.filter(s => s.tomorrow_plan.teacher_alert).length;
 
@@ -447,13 +457,13 @@ function renderFilters() {
       <span class="count">${all}</span> כל הכיתה
     </button>
     <button class="filter-tab ${CURRENT_FILTER === 'ready' ? 'active' : ''}" data-f="ready">
-      <span class="count">${ready}</span> מוכנים לאי 5
+      <span class="count">${ready}</span> מוכנים להמשיך
     </button>
     <button class="filter-tab ${CURRENT_FILTER === 'review' ? 'active' : ''}" data-f="review">
-      <span class="count">${review}</span> חיזוק (רמה 3-4)
+      <span class="count">${review}</span> צריכים חיזוק
     </button>
     <button class="filter-tab ${CURRENT_FILTER === 'alerts' ? 'active' : ''}" data-f="alerts">
-      <span class="count">${alerts}</span> דורש 1:1
+      <span class="count">${alerts}</span> צריכים 1:1
     </button>
   `;
   document.querySelectorAll('.filter-tab').forEach(b => {
@@ -467,7 +477,7 @@ function renderFilters() {
 
 function filterStudent(s) {
   if (CURRENT_FILTER === 'all')    return true;
-  if (CURRENT_FILTER === 'ready')  return s.tomorrow_plan.ready_for_island_5;
+  if (CURRENT_FILTER === 'ready')  return s.tomorrow_plan.ready_for_next;
   if (CURRENT_FILTER === 'review') return s.tomorrow_plan.primary_level >= 3;
   if (CURRENT_FILTER === 'alerts') return !!s.tomorrow_plan.teacher_alert;
   return true;
@@ -523,14 +533,14 @@ function renderStudents() {
 function buildWhyContent(s) {
   const plan = s.tomorrow_plan;
 
-  // Per-letter mini grid
+  // Per-letter mini grid — שפה פשוטה
   const letterRows = LETTER_ORDER.map(l => {
     const d = s.per_letter[l];
-    if (d.status === 'not-attempted') return `<div class="why-cell"><div class="why-cell-label">${l}</div><div class="why-cell-value" style="font-size: 11.5px; color: var(--ink-faded);">לא בוצע</div></div>`;
+    if (d.status === 'not-attempted') return `<div class="why-cell"><div class="why-cell-label">${l}</div><div class="why-cell-value" style="font-size: 11.5px; color: var(--ink-faded);">לא הגיע.ה</div></div>`;
     return `
       <div class="why-cell">
-        <div class="why-cell-label">${l} · ${d.fluency_median_sec.toFixed(1)}שנ'</div>
-        <div class="why-cell-value">p=${d.p_bkt.toFixed(2)}</div>
+        <div class="why-cell-label">${l} · ${d.fluency_median_sec.toFixed(1)} שנ' לתשובה</div>
+        <div class="why-cell-value" style="font-size: 13px;">${statusLabelHe(d.status)}</div>
       </div>
     `;
   }).join('');
@@ -539,29 +549,41 @@ function buildWhyContent(s) {
   const flagCounts = {};
   Object.values(s.per_letter).forEach(d => (d.flags || []).forEach(f => flagCounts[f] = (flagCounts[f]||0)+1));
   const flagText = Object.keys(flagCounts).length === 0
-    ? '<span style="color: var(--ink-faded);">לא זוהו דגלים.</span>'
-    : Object.entries(flagCounts).map(([f, c]) => `<span class="chip ${flagCounts[f] >= 2 ? 'gold' : 'violet'}" style="font-size: 11.5px; padding: 3px 9px; margin-left: 4px;">${flagLabel(f)} ×${c}</span>`).join('');
+    ? '<span style="color: var(--ink-faded);">אין דגלים — ההתקדמות נקייה.</span>'
+    : Object.entries(flagCounts).map(([f, c]) => `<span class="chip ${flagCounts[f] >= 2 ? 'gold' : 'violet'}" style="font-size: 11.5px; padding: 3px 9px; margin-left: 4px;">${flagLabel(f)} (${c} אותיות)</span>`).join('');
 
   return `
-    <div class="why-title">למה ההצעה הזאת — שקיפות אלגוריתם</div>
-    <div><strong>פרופיל:</strong> ${s.profile_flag}</div>
-    <div style="margin-top: 6px;"><strong>BKT פר אות:</strong></div>
+    <div class="why-title">למה זאת ההצעה</div>
+    <div><strong>תמונה כללית:</strong> ${s.profile_flag}</div>
+    <div style="margin-top: 6px;"><strong>מצב כל אות:</strong></div>
     <div class="why-grid">${letterRows}</div>
-    <div style="margin-top: 10px;"><strong>דגלים שזוהו:</strong> ${flagText}</div>
-    <div style="margin-top: 10px;"><strong>סף mastery:</strong> p&gt;0.90 + שטף ≤5שנ' + 2 סשנים רצופים</div>
+    <div style="margin-top: 10px;"><strong>מה זיהיתי:</strong> ${flagText}</div>
+    <div style="margin-top: 10px; font-size: 12px; color: var(--ink-faded);">
+      ילד.ה נחשב.ת "יודע.ת" אות אחרי שני סשנים רצופים עם דיוק גבוה ותשובה תוך 5 שניות.
+    </div>
     <div style="margin-top: 10px; background: rgba(255,255,255,0.7); padding: 10px 12px; border-radius: 8px;">
-      <strong style="color: var(--indigo-deep);">החלטת המערכת:</strong> ${plan.rationale}
+      <strong style="color: var(--indigo-deep);">ההסבר שלי:</strong> ${plan.rationale}
     </div>
   `;
 }
 
+function statusLabelHe(s) {
+  return {
+    'mastered':      'יודע.ת מצוין',
+    'near-mastery':  'כמעט שם',
+    'in-progress':   'באמצע',
+    'needs-review':  'צריך תרגול',
+    'not-attempted': 'לא הגיע.ה'
+  }[s] || s;
+}
+
 function flagLabel(f) {
   return {
-    'slow_response': 'איטיות',
-    'repeated_hint': 'רמזים',
-    'shape_vs_sound_gap': 'צורה≠צליל',
-    'find_letter_struggle': 'אות במילה',
-    'level4_drops': 'נפילה ברמה 4'
+    'slow_response': 'תשובה איטית',
+    'repeated_hint': 'הרבה רמזים',
+    'shape_vs_sound_gap': 'יודע.ת צליל, לא צורה',
+    'find_letter_struggle': 'מתקשה לאתר אות במילה',
+    'level4_drops': 'לא הצליח גם בעזרה מלאה'
   }[f] || f;
 }
 
@@ -570,7 +592,7 @@ function renderStudentRow(s) {
   const completedCount = s.completed_today.length;
   const masteredCount = Object.values(s.per_letter).filter(d => d.status === 'mastered').length;
 
-  const rowClass = plan.teacher_alert ? 'alert-bg' : (plan.ready_for_island_5 ? 'ready-bg' : '');
+  const rowClass = plan.teacher_alert ? 'alert-bg' : (plan.ready_for_next ? 'ready-bg' : '');
 
   return `
     <div class="student-row ${rowClass}">
@@ -581,9 +603,9 @@ function renderStudentRow(s) {
           <div class="row-profile">${s.profile_flag}</div>
           <div class="row-summary">
             <span class="chip" style="font-size: 11.5px; padding: 3px 10px;">${completedCount}/5 אתמול</span>
-            ${masteredCount > 0 ? `<span class="chip mastered" style="font-size: 11.5px; padding: 3px 10px;">${masteredCount} mastery</span>` : ''}
-            ${plan.ready_for_island_5 ? `<span class="chip green" style="font-size: 11.5px; padding: 3px 10px;"><span class="chip-dot"></span>אי 5</span>` : ''}
-            ${plan.teacher_alert ? `<span class="chip orange" style="font-size: 11.5px; padding: 3px 10px;"><span class="chip-dot"></span>1:1</span>` : ''}
+            ${masteredCount > 0 ? `<span class="chip mastered" style="font-size: 11.5px; padding: 3px 10px;">${masteredCount} יודע.ת מצוין</span>` : ''}
+            ${plan.ready_for_next ? `<span class="chip green" style="font-size: 11.5px; padding: 3px 10px;"><span class="chip-dot"></span>מוכן.ה לשלב הבא</span>` : ''}
+            ${plan.teacher_alert ? `<span class="chip orange" style="font-size: 11.5px; padding: 3px 10px;"><span class="chip-dot"></span>צריך 1:1</span>` : ''}
           </div>
         </div>
       </div>
@@ -597,8 +619,9 @@ function renderStudentRow(s) {
       <div class="plan-preview">
         <div class="plan-preview-meta">המערכת מציעה היום</div>
         <div class="plan-preview-text">
-          ${plan.primary_items} פריטים באי ${plan.primary_island} · רמה ${plan.primary_level} · מיקוד: <strong>${plan.primary_focus}</strong>
-          ${plan.secondary_island ? `<br><span style="color: var(--ink-soft); font-weight: 500;">+ ${plan.secondary_items} פריטים באי ${plan.secondary_island} (${plan.secondary_focus})</span>` : ''}
+          ${plan.primary_items} פריטים · <strong>${plan.primary_focus}</strong>
+          <span style="display: inline-block; font-size: 11.5px; color: var(--ink-faded); margin-right: 6px;">(${islandLabel(plan.primary_island)} · ${supportLevelLabel(plan.primary_level)})</span>
+          ${plan.secondary_island ? `<br><span style="color: var(--ink-soft); font-weight: 500;">+ ${plan.secondary_items} פריטים · ${plan.secondary_focus}</span>` : ''}
           <span style="float: left; font-size: 12px; color: var(--ink-faded); font-weight: 500;">${plan.total_minutes_estimated} דקות</span>
         </div>
       </div>

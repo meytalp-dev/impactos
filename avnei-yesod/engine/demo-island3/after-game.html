@@ -189,28 +189,28 @@ let STATE = null;
 
 const FLAG_DESCRIPTIONS = {
   slow_response: {
-    title: 'זמן תגובה איטי',
-    body: 'דיוק טוב אבל מעל סף השטף (5 שניות). אינדיקציה אפשרית לעומס קוגניטיבי או לקריאה לא אוטומטית. שווה תרגול חזרה מהיר ברמת תמיכה נמוכה יותר.',
+    title: 'התשובה יוצאת לאט',
+    body: 'הילד.ה עונה נכון, אבל לוקח יותר מ-5 שניות. הקריאה עוד לא אוטומטית. שווה תרגול חזרה מהיר עם פחות עזרה.',
     cls: 'gold'
   },
   repeated_hint: {
-    title: 'שימוש חוזר ברמז',
-    body: 'התלמיד.ה נעזר.ה ברמז ב-3+ פריטים. סימן שצריך עוד תמיכה — או שהפריטים קשים מדי לרמה הנוכחית.',
+    title: 'משתמש.ת בהרבה רמזים',
+    body: 'נעזר.ה ברמז ב-3 פריטים או יותר. סימן שצריך עוד תמיכה — או שהאתגר הנוכחי קשה לרמה הזאת.',
     cls: 'gold'
   },
   shape_vs_sound_gap: {
-    title: 'פער צורה-צליל',
-    body: 'מזהה את הצליל מצוין (soundMatch גבוה) אבל מתקשה בצורת האות (letterShape נמוך). פרופיל ויזואלי-אורתוגרפי — דורש דגש על תרגול צורה (מעטפת זיכרון-מיון).',
+    title: 'יודע.ת את הצליל, מתקשה בצורה',
+    body: 'כשמשמיעים לו.ה את הצליל — מצליח.ה. כשרואה את הצורה של האות — מתקשה. צריך תרגול ייעודי של זיהוי צורות (משחק זיכרון-מיון).',
     cls: 'violet'
   },
   find_letter_struggle: {
-    title: 'קושי לאתר אות בתוך מילה',
-    body: 'מזהה אות בודדת אבל מתקשה כשהיא בהקשר מילה. צעד טבעי במעבר לאי 5 — לא בעיה נקודתית.',
+    title: 'מתקשה לאתר אות בתוך מילה',
+    body: 'אות בודדת — בסדר. בתוך מילה — קשה. זה נורמלי בדרך לשלב הבא (חיבור אות+ניקוד).',
     cls: 'violet'
   },
   level4_drops: {
-    title: 'נפילה ברמת תמיכה 4',
-    body: 'המערכת הציעה תמיכה מוגברת אוטומטית — והתלמיד.ה עדיין לא הצליח.ה. סף לכך שאי 3 הזה דורש 1:1 של מורה, לא תרגול עצמאי.',
+    title: 'לא הצליח.ה גם בעזרה הכי גדולה',
+    body: 'המערכת ניסתה את כל רמות העזרה האוטומטיות — לא הספיק. צריך 1:1 עם המורה, לא תרגול עצמאי.',
     cls: 'orange'
   }
 };
@@ -274,11 +274,11 @@ function statusClass(status) {
 }
 function statusLabel(status) {
   return {
-    'mastered':      'בקירוב mastery',
-    'near-mastery':  'קרוב למאסטרי',
-    'in-progress':   'באמצע התקדמות',
-    'needs-review':  'דורש חזרה',
-    'not-attempted': 'לא הספיק'
+    'mastered':      'יודע.ת מצוין',
+    'near-mastery':  'כמעט שם',
+    'in-progress':   'באמצע',
+    'needs-review':  'צריך תרגול',
+    'not-attempted': 'לא הגיע.ה'
   }[status] || status;
 }
 
@@ -289,36 +289,36 @@ function buildHypothesis(letterData) {
   if (letterData.status === 'mastered') {
     return {
       label: 'תמונה חיובית',
-      text: 'התלמיד.ה רוכש.ת את האות. דיוק גבוה, שטף תחת הסף, ללא רמזים. אם זה ייציב גם בסשן הבא — האות תיכנס ל-mastery יציבה ותעבור לחזרה רווחת.'
+      text: 'התלמיד.ה יודע.ת את האות. דיוק גבוה, תשובה מהירה, בלי רמזים. אם זה יישאר יציב גם בסשן הבא — האות תיכנס ל"יודע.ת מצוין" ותעבור לחזרה רגועה.'
     };
   }
   if (flags.includes('shape_vs_sound_gap')) {
     return {
-      label: 'השערה אבחנתית',
-      text: 'התלמיד.ה יודע.ת את <strong>צליל</strong> האות, אבל מתקשה בזיהוי <strong>הצורה</strong>. זה פרופיל ויזואלי-אורתוגרפי. המעטפת שתעזור: זיכרון-מיון של צורות דומות (ולא עוד טאפ-להתאמה).'
+      label: 'מה אני חושב.ת שקורה',
+      text: 'יודע.ת את <strong>הצליל</strong> של האות מצוין, אבל מתקשה לזהות את <strong>הצורה</strong>. המשחק שיעזור: זיכרון-מיון של צורות דומות (לא עוד תרגול רגיל).'
     };
   }
   if (flags.includes('level4_drops')) {
     return {
       label: 'התראה',
-      text: 'גם ברמת תמיכה 4 לא הצליח.ה — סימן שאי 3 לא ה-prerequisite הנכון כרגע. ייתכן שיש פער בסיסי באי 1 או 2 (מודעות פונולוגית). מומלץ ליווי 1:1 + חזרה לבסיס.'
+      text: 'גם בעזרה הכי גדולה שהמערכת נותנת — לא הצליח.ה. ייתכן שצריך לחזור קודם לבסיס (הבחנה בצלילים), לא להישאר על האותיות. מומלץ 1:1 + חזרה לשלב מוקדם יותר.'
     };
   }
   if (flags.includes('slow_response') && letterData.accuracy >= 0.8) {
     return {
-      label: 'השערה אבחנתית',
-      text: 'הדיוק טוב אבל הקריאה לא אוטומטית עדיין. הזיהוי מתבצע במאמץ. תרגול חזרה מהיר ברמת תמיכה נמוכה יותר יכול לבנות אוטומטיות.'
+      label: 'מה אני חושב.ת שקורה',
+      text: 'הדיוק טוב, אבל התשובה יוצאת לאט — האות לא מזוהה אוטומטית עדיין. חזרה מהירה עם פחות עזרה תעזור לזה להפוך אוטומטי.'
     };
   }
   if (flags.includes('repeated_hint')) {
     return {
-      label: 'השערה אבחנתית',
-      text: 'נעזר.ה ברמזים יותר מהממוצע. שווה לבדוק האם הרמה הנוכחית (' + Math.round(supportAvg) + ') מתאימה, או שצריך לעלות רמה לפיגום אוטומטי גדול יותר.'
+      label: 'מה אני חושב.ת שקורה',
+      text: 'נעזר.ה ברמזים יותר מהממוצע. שווה לבדוק אם רמת התמיכה הנוכחית מתאימה, או שצריך להוסיף עוד עזרה אוטומטית.'
     };
   }
   return {
     label: 'תמונה ראשונית',
-    text: 'התקדמות סבירה בקנה המידה של הקנייה ראשונית. דרושים עוד 1-2 סשנים כדי לאשש או לדחות את הכיוון הזה.'
+    text: 'התקדמות סבירה לסשן ראשון. דרושים עוד 1-2 סשנים כדי לדעת אם הכיוון הזה נכון.'
   };
 }
 
@@ -364,7 +364,7 @@ function render(studentId, letter) {
     <div class="hypothesis">
       <div class="hypothesis-label">${hyp.label}</div>
       <div class="hypothesis-text">${hyp.text}</div>
-      <div class="hypothesis-disclaimer">דרושים 2-3 סשנים לוודאות — זו לא קביעה אבחנתית.</div>
+      <div class="hypothesis-disclaimer">זאת תמונה ראשונית מסשן אחד. דרושים עוד 1-2 סשנים כדי לאשר.</div>
     </div>
 
     <div class="kpi-row">
@@ -376,23 +376,23 @@ function render(studentId, letter) {
       </div>
 
       <div class="kpi">
-        <div class="kpi-label">זמן תגובה חציוני</div>
+        <div class="kpi-label">זמן תשובה ממוצע</div>
         <div class="kpi-value num">${letterData.fluency_median_sec.toFixed(1)}<span style="font-size: 16px; color: var(--ink-faded);"> שנ'</span></div>
-        <div class="kpi-sub">סף שטף לאי 3: ${'≤'}5.0 שנ'</div>
+        <div class="kpi-sub">סף סביר: עד 5 שניות</div>
         <div class="kpi-bar"><span style="width:${Math.min(100, (5 / letterData.fluency_median_sec) * 100)}%; background: ${letterData.fluency_median_sec <= 5 ? 'var(--green)' : 'var(--gold)'};"></span></div>
       </div>
 
       <div class="kpi">
-        <div class="kpi-label">רמת פיגום ממוצעת</div>
-        <div class="kpi-value num">${letterData.support_level_avg.toFixed(1)}<span style="font-size: 16px; color: var(--ink-faded);">/4</span></div>
-        <div class="kpi-sub">${supportLabel(letterData.support_level_avg)}</div>
+        <div class="kpi-label">כמה עזרה היה צריך</div>
+        <div class="kpi-value num small">${supportLabel(letterData.support_level_avg)}</div>
+        <div class="kpi-sub">המערכת התאימה אוטומטית</div>
         <div class="kpi-bar"><span style="width:${(letterData.support_level_avg / 4) * 100}%; background: var(--lvl-${Math.round(letterData.support_level_avg)});"></span></div>
       </div>
 
       <div class="kpi">
-        <div class="kpi-label">רמזים</div>
+        <div class="kpi-label">רמזים שלקח</div>
         <div class="kpi-value num">${letterData.hints_used}</div>
-        <div class="kpi-sub">${letterData.hints_used === 0 ? 'עצמאי לחלוטין' : letterData.hints_used <= 2 ? 'בקנה מידה תקין' : 'מעל הממוצע'}</div>
+        <div class="kpi-sub">${letterData.hints_used === 0 ? 'בלי רמזים — מצוין' : letterData.hints_used <= 2 ? 'מספר סביר' : 'יותר מהממוצע'}</div>
       </div>
     </div>
 
@@ -409,16 +409,15 @@ function render(studentId, letter) {
     ${renderFlags(letterData)}
 
     <div class="section">
-      <h2 class="section-title">סטטוס פדגוגי באות ${letter}</h2>
+      <h2 class="section-title">המצב באות ${letter}</h2>
       <div class="card" style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
         <span class="chip ${statusClass(letterData.status)}" style="font-size: 13.5px; padding: 7px 16px;">
           <span class="chip-dot"></span>
           ${statusLabel(letterData.status)}
         </span>
         <span style="font-size: 13.5px; color: var(--ink-soft);">
-          p(BKT) = <strong class="num">${letterData.p_bkt.toFixed(2)}</strong>
-          · סף mastery: <strong class="num">0.90</strong>
-          · ${letterData.status === 'mastered' ? 'יציבות נדרשת: עוד סשן רצוף אחד' : 'דרושים עוד תרגולים לפני קביעת mastery'}
+          ביטחון המערכת: <strong class="num">${Math.round(letterData.p_bkt * 100)}%</strong>
+          · ${letterData.status === 'mastered' ? 'עוד סשן יציב אחד נדרש כדי לסגור' : 'דרושים עוד 1-2 סשנים כדי לדעת בוודאות'}
         </span>
       </div>
     </div>
@@ -432,10 +431,10 @@ function render(studentId, letter) {
 }
 
 function supportLabel(avg) {
-  if (avg <= 1.2) return 'עצמאית (רמה 1)';
-  if (avg <= 2.4) return 'תמיכה חלקית (רמה 2)';
-  if (avg <= 3.4) return 'התאמות אוטומטיות (רמה 3)';
-  return 'תמיכה מוגברת (רמה 4)';
+  if (avg <= 1.2) return 'עצמאי.ת';
+  if (avg <= 2.4) return 'עזרה קלה';
+  if (avg <= 3.4) return 'עזרה אוטומטית';
+  return 'עזרה מלאה';
 }
 
 function renderErrorViz(letterData) {
@@ -475,13 +474,13 @@ function renderFlags(letterData) {
   if (flags.length === 0) {
     return `
       <div class="section">
-        <h2 class="section-title">דגלי מערכת</h2>
+        <h2 class="section-title">מה זיהיתי</h2>
         <div class="card" style="display: flex; align-items: center; gap: 10px;">
           <span class="chip green" style="padding: 6px 14px;">
-            <span class="chip-dot"></span> אין דגלים
+            <span class="chip-dot"></span> ההתקדמות נקייה
           </span>
           <span style="font-size: 13.5px; color: var(--ink-soft);">
-            ההתקדמות נמצאת בקנה מידה תקין למצב הזה.
+            אין סימני אזהרה — הכל בקצב סביר.
           </span>
         </div>
       </div>
@@ -490,7 +489,7 @@ function renderFlags(letterData) {
 
   return `
     <div class="section">
-      <h2 class="section-title">דגלי מערכת — מה שזוהה אוטומטית</h2>
+      <h2 class="section-title">מה זיהיתי</h2>
       <div class="flag-list">
         ${flags.map(f => {
           const desc = FLAG_DESCRIPTIONS[f] || { title: f, body: '', cls: 'violet' };

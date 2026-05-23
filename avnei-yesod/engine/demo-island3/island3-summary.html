@@ -177,16 +177,16 @@ let STATE = null;
 const LETTER_ORDER = ['ב', 'ק', 'מ', 'ת', 'ר'];
 
 const FLAG_DESCRIPTIONS = {
-  slow_response: { title: 'זמן תגובה איטי', cls: 'gold',
-    note: tpl => 'איטיות עקבית במספר אותיות — קריאה לא אוטומטית עדיין.' },
-  repeated_hint: { title: 'שימוש חוזר ברמז', cls: 'gold',
-    note: tpl => 'נעזר.ה ברמזים מעל הממוצע — אינדיקציה לקושי.' },
-  shape_vs_sound_gap: { title: 'פער צורה-צליל', cls: 'violet',
-    note: tpl => 'יודע.ת את הצליל, מתקשה בצורה. דורש מעטפת זיכרון-מיון.' },
-  find_letter_struggle: { title: 'קושי לאתר אות בתוך מילה', cls: 'violet',
-    note: tpl => 'אות בודדת בסדר, בהקשר — קשה. צעד טבעי לקראת אי 5.' },
-  level4_drops: { title: 'נפילה ברמת תמיכה 4', cls: 'orange',
-    note: tpl => 'גם בתמיכה מוגברת לא הצליח.ה — דורש 1:1.' }
+  slow_response: { title: 'התשובה יוצאת לאט', cls: 'gold',
+    note: tpl => 'נכון, אבל לוקח יותר מ-5 שניות. הקריאה עוד לא אוטומטית.' },
+  repeated_hint: { title: 'משתמש.ת בהרבה רמזים', cls: 'gold',
+    note: tpl => 'נעזר.ה ברמזים יותר מהממוצע — סימן לקושי במצב הנוכחי.' },
+  shape_vs_sound_gap: { title: 'יודע.ת את הצליל, לא את הצורה', cls: 'violet',
+    note: tpl => 'כשמשמיעים את הצליל — מצליח. כשרואה את האות — מתקשה. צריך תרגול ייעודי של זיהוי צורות.' },
+  find_letter_struggle: { title: 'מתקשה לאתר אות בתוך מילה', cls: 'violet',
+    note: tpl => 'אות בודדת בסדר, בתוך מילה — קשה. זה נורמלי בדרך לשלב הבא.' },
+  level4_drops: { title: 'לא הצליח.ה גם בעזרה הכי גדולה', cls: 'orange',
+    note: tpl => 'המערכת ניסתה את כל רמות העזרה — לא הספיק. דורש 1:1.' }
 };
 
 function init() {
@@ -223,7 +223,14 @@ function statusClass(s) {
   return { 'mastered': 'mastered', 'near-mastery': 'near', 'in-progress': 'progress', 'needs-review': 'review', 'not-attempted': 'not' }[s] || 'not';
 }
 function statusLabel(s) {
-  return { 'mastered': 'mastery', 'near-mastery': 'קרוב', 'in-progress': 'התקדמות', 'needs-review': 'חזרה', 'not-attempted': 'לא הספיק.ה' }[s] || s;
+  return { 'mastered': 'יודע.ת מצוין', 'near-mastery': 'כמעט שם', 'in-progress': 'באמצע', 'needs-review': 'צריך תרגול', 'not-attempted': 'לא הגיע.ה' }[s] || s;
+}
+function islandLabel(islandId) {
+  if (!STATE || !STATE.meta || !STATE.meta.islands_friendly_names) return 'אי ' + islandId;
+  return STATE.meta.islands_friendly_names[String(islandId)] || ('אי ' + islandId);
+}
+function supportLevelLabel(level) {
+  return { 1: 'עצמאי', 2: 'תמיכה קלה', 3: 'תמיכה אוטומטית', 4: 'תמיכה מלאה' }[level] || ('רמה ' + level);
 }
 
 function aggregateFlags(student) {
@@ -247,22 +254,22 @@ function buildInterpretation(student) {
   const notDone  = Object.values(student.per_letter).filter(d => d.status === 'not-attempted').length;
 
   if (mastered === 5) {
-    return 'כל 5 האותיות במצב mastery — דיוק גבוה, שטף תחת הסף, ללא רמזים. <strong>' + student.name + ' מוכן.ה לעבור לאי 5 (מיזוג CV)</strong>. סשן יציבות נוסף קצר ייצור קונסולידציה ארוכת-טווח.';
+    return 'כל 5 האותיות במצב <strong>"יודע.ת מצוין"</strong> — דיוק גבוה, תשובה מהירה, בלי רמזים. <strong>' + student.name + ' מוכן.ה לעבור לשלב הבא — חיבור אות+ניקוד (בָּ, רָ, תָ)</strong>. סשן קצר נוסף יחזק את הביטחון לטווח ארוך.';
   }
   if (mastered >= 3 && notDone === 0) {
-    return 'התקדמות יציבה — <strong>' + mastered + ' אותיות עברו mastery</strong>, ' + (5 - mastered) + ' קרובות. סשן אחד-שניים נוספים על האותיות החלשות יסגרו את אי 3. במקביל אפשר לפתוח את אי 5.';
+    return 'התקדמות יציבה — <strong>' + mastered + ' אותיות נמצאות במצב "יודע.ת מצוין"</strong>, ' + (5 - mastered) + ' כמעט שם. סשן אחד-שניים נוספים יסגרו את השלב הזה. במקביל אפשר להתחיל את השלב הבא (חיבור אות+ניקוד).';
   }
   if (review >= 3) {
-    return '<strong>' + review + ' אותיות במצב חזרה</strong> — אי 3 לא מתבסס כרגע. ' + (
+    return '<strong>' + review + ' אותיות צריכות חזרה</strong> — האותיות עוד לא מתבססות. ' + (
       student.tomorrow_plan.teacher_alert
-        ? 'יש סף שמצדיק ליווי 1:1 — לא להמשיך אדפטיבי לבד.'
-        : 'המערכת מציעה לחזק את האותיות החלשות ברמת פיגום עולה, ולחזור גם לאי 2 (PA) כתשתית.'
+        ? 'דרוש ליווי 1:1 — לא להמשיך לבד.'
+        : 'המערכת מציעה לחזק את האותיות החלשות עם יותר עזרה ויותר תרגול, וגם לחזור לבסיס של הבחנה בצלילים.'
     );
   }
   if (notDone >= 2) {
-    return '<strong>' + notDone + ' משחקונים לא בוצעו</strong> היום. המערכת תקצה אותם ראשונים מחר, ברמת פיגום שמתאימה ל' + (student.tomorrow_plan.teacher_alert ? 'תמיכה מוגברת' : 'הרמה הממוצעת של ' + student.name) + '.';
+    return '<strong>' + notDone + ' משחקונים לא בוצעו</strong> היום. המערכת תקצה אותם ראשונים מחר, עם רמת עזרה שמתאימה ל' + student.name + '.';
   }
-  return 'התקדמות באמצע — חלק במצב in-progress, חלק קרוב ל-mastery. עוד סשן יחזק את התמונה. אין דגלים חמורים.';
+  return 'התקדמות באמצע — חלק באותיות עוד באמצע, חלק כמעט "יודע.ת מצוין". עוד סשן יחזק את התמונה. אין דגלים חמורים.';
 }
 
 function render(sid) {
@@ -286,9 +293,9 @@ function render(sid) {
           <div class="summary-name">${student.name}</div>
           <div class="summary-profile">${student.profile_flag}</div>
         </div>
-        <span class="chip ${plan.ready_for_island_5 ? 'green' : 'progress'}" style="font-size: 13px; padding: 7px 16px;">
+        <span class="chip ${plan.ready_for_next ? 'green' : 'progress'}" style="font-size: 13px; padding: 7px 16px;">
           <span class="chip-dot"></span>
-          ${plan.ready_for_island_5 ? 'מוכן.ה לאי 5' : 'נשאר.ת באי 3'}
+          ${plan.ready_for_next ? 'מוכן.ה לשלב הבא' : 'ממשיכ.ה בזיהוי אותיות'}
         </span>
       </div>
       <div class="summary-meta">
@@ -300,9 +307,9 @@ function render(sid) {
 
     <div class="progress-rail">
       <div class="progress-rail-head">
-        <span class="progress-rail-label">מצב אי 3 — 5 אותיות</span>
+        <span class="progress-rail-label">ההתקדמות בזיהוי 5 אותיות</span>
         <span style="font-size: 12.5px; color: var(--ink-soft);">
-          ${mastered} mastery · ${near} קרוב · ${progress} התקדמות · ${review} חזרה · ${notDone} לא בוצע
+          ${mastered} יודע.ת מצוין · ${near} כמעט · ${progress} באמצע · ${review} צריך תרגול · ${notDone} לא הגיע.ה
         </span>
       </div>
       <div class="progress-rail-bar">
@@ -316,15 +323,15 @@ function render(sid) {
 
     ${plan.teacher_alert ? `
       <div class="alert">
-        <div class="alert-title">⚠ התראת מערכת — תמיכה מוגברת</div>
+        <div class="alert-title">⚠ צריך אותך לידו.ה</div>
         <div class="alert-body">${plan.teacher_alert}</div>
       </div>
     ` : ''}
 
-    ${plan.ready_for_island_5 ? `
+    ${plan.ready_for_next ? `
       <div class="next-island-banner">
-        <div class="next-island-title">המערכת ממליצה לפתוח את אי 5 (מיזוג CV)</div>
-        <div class="next-island-body">לפי מפת ה-prerequisites של 22 האיים — אי 3 הוא תנאי לאי 5. ${student.name} עומד.ת בסף.</div>
+        <div class="next-island-title">המערכת ממליצה לעבור לשלב הבא — חיבור אות+ניקוד</div>
+        <div class="next-island-body">${student.name} יודע.ת מצוין את 5 האותיות הראשונות. השלב הבא הוא לחבר אות עם ניקוד לצליל אחד (בָּ, רָ, תָ).</div>
       </div>
     ` : ''}
 
@@ -341,11 +348,11 @@ function render(sid) {
     </div>
 
     <div class="section">
-      <h2 class="section-title">3 הדגלים החזקים שזוהו</h2>
+      <h2 class="section-title">3 הדברים שזיהיתי בולטים</h2>
       ${topFlags.length === 0 ? `
         <div class="card" style="display: flex; align-items: center; gap: 10px;">
-          <span class="chip green" style="padding: 6px 14px;"><span class="chip-dot"></span> אין דגלים</span>
-          <span style="font-size: 13.5px; color: var(--ink-soft);">ההתקדמות נקייה — אין צורך בהתערבות נקודתית.</span>
+          <span class="chip green" style="padding: 6px 14px;"><span class="chip-dot"></span> ההתקדמות נקייה</span>
+          <span style="font-size: 13.5px; color: var(--ink-soft);">אין סימני אזהרה — אין צורך בהתערבות נקודתית.</span>
         </div>
       ` : `
         <div class="flag-list">
@@ -395,9 +402,9 @@ function renderLetterCard(student, letter) {
     <a class="letter-card ${cls} clickable" href="after-game.html?student=${student.id}&letter=${encodeURIComponent(letter)}" style="text-decoration: none; color: inherit;">
       <div class="letter-glyph">${letter}</div>
       <div class="letter-game">${game.name}</div>
-      <div class="letter-metric"><span>p(BKT)</span><strong class="num">${data.p_bkt.toFixed(2)}</strong></div>
-      <div class="letter-metric"><span>זמן חציון</span><strong class="num">${data.fluency_median_sec.toFixed(1)}שנ'</strong></div>
-      <div class="letter-metric"><span>סטטוס</span>
+      <div class="letter-metric"><span>ביטחון</span><strong class="num">${Math.round(data.p_bkt * 100)}%</strong></div>
+      <div class="letter-metric"><span>זמן תשובה</span><strong class="num">${data.fluency_median_sec.toFixed(1)} שנ'</strong></div>
+      <div class="letter-metric"><span>מצב</span>
         <span class="chip ${cls}" style="font-size: 11px; padding: 2px 8px;">${statusLabel(data.status)}</span>
       </div>
     </a>
@@ -416,21 +423,26 @@ function renderPlanCard(student) {
         <div class="plan-block">
           <div class="plan-block-label">תרגול ראשי</div>
           <div class="plan-block-value">
-            אי ${plan.primary_island} · ${plan.primary_items} פריטים · רמה ${plan.primary_level}
+            ${plan.primary_items} פריטים · ${supportLevelLabel(plan.primary_level)}
           </div>
           <div style="font-size: 13px; color: var(--ink-soft); margin-top: 4px;">
             מיקוד: <strong style="color: var(--ink);">${plan.primary_focus}</strong>
           </div>
-          ${plan.primary_envelope ? `<div style="font-size: 12px; color: var(--ink-faded); margin-top: 4px;">מעטפת: ${plan.primary_envelope}</div>` : ''}
+          <div style="font-size: 12px; color: var(--ink-faded); margin-top: 4px;">
+            ${islandLabel(plan.primary_island)}${plan.primary_envelope ? ' · ' + plan.primary_envelope : ''}
+          </div>
         </div>
         ${plan.secondary_island ? `
           <div class="plan-block">
             <div class="plan-block-label">תרגול משני</div>
             <div class="plan-block-value">
-              אי ${plan.secondary_island} · ${plan.secondary_items} פריטים · רמה ${plan.secondary_level}
+              ${plan.secondary_items} פריטים · ${supportLevelLabel(plan.secondary_level)}
             </div>
             <div style="font-size: 13px; color: var(--ink-soft); margin-top: 4px;">
               מיקוד: <strong style="color: var(--ink);">${plan.secondary_focus}</strong>
+            </div>
+            <div style="font-size: 12px; color: var(--ink-faded); margin-top: 4px;">
+              ${islandLabel(plan.secondary_island)}
             </div>
           </div>
         ` : `
