@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>הצדף הקסום · עומק הים המואר</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/shell-quest.css">
+</head>
+<body>
+
+  <main class="quest-scene">
+    <div class="quest-frame">
+      <img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true"
+           onerror="this.style.display='none'">
+
+      <!-- Shell + keys -->
+      <section class="shell-container" id="shellContainer">
+        <img class="shell-img shell-closed idle" id="shellClosed"
+             src="assets/island-03/shell-game/shell-closed.png" alt="">
+        <img class="shell-img shell-open" id="shellOpen"
+             src="assets/island-03/shell-game/shell-open.png" alt="">
+        <div class="shell-glow" aria-hidden="true"></div>
+        <span class="spark" style="--sx:-80px;--sy:-40px;left:48%;top:42%;animation-delay:0.2s"></span>
+        <span class="spark" style="--sx:90px;--sy:-30px;left:50%;top:38%;animation-delay:0.4s"></span>
+        <span class="spark" style="--sx:-40px;--sy:-90px;left:46%;top:46%;animation-delay:0.6s"></span>
+        <span class="spark" style="--sx:60px;--sy:-100px;left:52%;top:44%;animation-delay:0.8s"></span>
+        <span class="spark" style="--sx:0;--sy:-110px;left:50%;top:40%;animation-delay:1s"></span>
+
+        <!-- Treasure: glowing coral souvenir -->
+        <svg class="treasure" id="treasure" viewBox="0 0 100 100" aria-hidden="true">
+          <defs>
+            <radialGradient id="coralGrad" cx="40%" cy="40%" r="70%">
+              <stop offset="0%" stop-color="#FFE7A8"/>
+              <stop offset="60%" stop-color="#FFA98D"/>
+              <stop offset="100%" stop-color="#E27F66"/>
+            </radialGradient>
+          </defs>
+          <path d="M50 12 C 70 28, 80 50, 78 78 C 78 84, 72 86, 68 80 C 64 60, 56 50, 50 50 C 44 50, 36 60, 32 80 C 28 86, 22 84, 22 78 C 20 50, 30 28, 50 12 Z"
+                fill="url(#coralGrad)" stroke="#FFF" stroke-width="2"/>
+          <circle cx="50" cy="42" r="6" fill="#FFE7A8" opacity="0.9"/>
+          <circle cx="50" cy="42" r="3" fill="#FFFFFF"/>
+        </svg>
+      </section>
+
+      <!-- 5 key slots -->
+      <div class="keys-row" id="keysRow">
+        <div class="key-slot" data-i="0"><div class="key-icon"><svg class="key-svg" viewBox="0 0 40 56"><use href="#keySymbol"/></svg></div></div>
+        <div class="key-slot" data-i="1"><div class="key-icon"><svg class="key-svg" viewBox="0 0 40 56"><use href="#keySymbol"/></svg></div></div>
+        <div class="key-slot" data-i="2"><div class="key-icon"><svg class="key-svg" viewBox="0 0 40 56"><use href="#keySymbol"/></svg></div></div>
+        <div class="key-slot" data-i="3"><div class="key-icon"><svg class="key-svg" viewBox="0 0 40 56"><use href="#keySymbol"/></svg></div></div>
+        <div class="key-slot" data-i="4"><div class="key-icon"><svg class="key-svg" viewBox="0 0 40 56"><use href="#keySymbol"/></svg></div></div>
+      </div>
+
+      <!-- Question + options -->
+      <div class="quest-bottom">
+        <div class="question-bubble" id="questionBubble">
+          <button class="speaker-btn" id="speakerBtn" aria-label="שמע את השאלה">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+              <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+            </svg>
+          </button>
+          <span id="questionText">איזו תמונה מתחילה בצליל מ?</span>
+        </div>
+        <div class="options-grid" id="optionsGrid"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Noni + feedback bubble -->
+  <img class="noni-fixed" id="noniImg" src="assets/noni-hero-transparent.png" alt="נוני">
+  <div class="feedback-bubble" id="feedbackBubble"></div>
+
+  <!-- Top bar -->
+  <header class="quest-topbar">
+    <a href="map.html" class="icon-btn" aria-label="חזרה למפה">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+    <div class="pearl-counter" aria-label="פנינים">
+      <span class="pearl" aria-hidden="true"></span>
+      <span id="pearlCount">0</span>
+    </div>
+  </header>
+
+  <!-- Start overlay -->
+  <div class="tap-to-start" id="tapToStart">
+    <h2>הצדף הקסום</h2>
+    <p>נוני מצא צדף סגור. בתוכו אוצר — אבל צריך <strong>5 מפתחות בצורת מ׳</strong> כדי לפתוח אותו.</p>
+    <p style="font-size: clamp(15px, 3vw, 18px);">בכל פעם שתמצאו תמונה שמתחילה בצליל מ׳ — תקבלו מפתח!</p>
+    <button class="start-btn" id="startBtn">בוא/י נתחיל</button>
+  </div>
+
+  <!-- Completion overlay -->
+  <div class="completion" id="completion">
+    <h2>מצאתם את האוצר!</h2>
+    <svg class="completion-souvenir" viewBox="0 0 100 100">
+      <use href="#coralFinal"/>
+    </svg>
+    <p id="completionMsg">אלמוג אות זוהר הצטרף לבית של נוני.</p>
+    <a href="map.html" class="btn-primary">חזרה למפה</a>
+  </div>
+
+  <!-- SVG defs (key + coral final) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <!-- Key shaped like Hebrew letter מ -->
+      <symbol id="keySymbol" viewBox="0 0 40 56">
+        <defs>
+          <linearGradient id="keyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#A8F4ED"/>
+            <stop offset="100%" stop-color="#73D9D1"/>
+          </linearGradient>
+        </defs>
+        <!-- Hebrew מ shape as key head -->
+        <path d="M6 4 L34 4 L34 22 Q34 28 28 28 L26 28 Q22 28 22 24 L22 14 L18 14 L18 30 Q18 34 14 34 L10 34 Q6 34 6 30 Z"
+              fill="url(#keyGrad)" stroke="#FFFFFF" stroke-width="1.5" stroke-linejoin="round"/>
+        <!-- Key shaft -->
+        <rect x="17" y="34" width="6" height="14" fill="url(#keyGrad)" stroke="#FFFFFF" stroke-width="1.5"/>
+        <!-- Teeth -->
+        <rect x="11" y="44" width="6" height="4" fill="url(#keyGrad)" stroke="#FFFFFF" stroke-width="1.5"/>
+        <rect x="11" y="50" width="6" height="4" fill="url(#keyGrad)" stroke="#FFFFFF" stroke-width="1.5"/>
+        <!-- Sparkle -->
+        <circle cx="14" cy="14" r="2" fill="#FFFFFF" opacity="0.9"/>
+      </symbol>
+      <!-- Coral final (souvenir) -->
+      <symbol id="coralFinal" viewBox="0 0 100 100">
+        <defs>
+          <radialGradient id="coralGradFinal" cx="40%" cy="40%" r="70%">
+            <stop offset="0%" stop-color="#FFE7A8"/>
+            <stop offset="60%" stop-color="#FFA98D"/>
+            <stop offset="100%" stop-color="#E27F66"/>
+          </radialGradient>
+        </defs>
+        <path d="M50 12 C 70 28, 80 50, 78 78 C 78 84, 72 86, 68 80 C 64 60, 56 50, 50 50 C 44 50, 36 60, 32 80 C 28 86, 22 84, 22 78 C 20 50, 30 28, 50 12 Z"
+              fill="url(#coralGradFinal)" stroke="#FFF" stroke-width="2"/>
+        <circle cx="50" cy="42" r="6" fill="#FFE7A8" opacity="0.9"/>
+        <circle cx="50" cy="42" r="3" fill="#FFFFFF"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <!-- Shared modules -->
+  <script src="js/state.js"></script>
+  <script src="js/shared/audio.js"></script>
+
+  <script>
+  // ============================================================
+  // shell-quest controller — הצדף הקסום (אי 3, אות מ׳)
+  // ============================================================
+
+  const ISLAND_ID = 3;
+  const LETTER = 'מ';
+  const TOTAL_KEYS = 5;
+
+  const state = {
+    items: [],
+    idx: 0,
+    keysCollected: 0,
+    attempts: 0,
+    locked: false,
+  };
+
+  const elShell = document.getElementById('shellContainer');
+  const elGrid  = document.getElementById('optionsGrid');
+  const elBubble = document.getElementById('feedbackBubble');
+  const elNoni  = document.getElementById('noniImg');
+  const elPearlCount = document.getElementById('pearlCount');
+
+  function imgPath(jsonUrl) {
+    if (!jsonUrl) return null;
+    return jsonUrl.replace(/^images\//, 'assets/');
+  }
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function showFeedback(text, duration = 1500) {
+    elBubble.textContent = text;
+    elBubble.classList.add('show');
+    setTimeout(() => elBubble.classList.remove('show'), duration);
+  }
+
+  function cheerNoni() {
+    elNoni.classList.add('cheering');
+    setTimeout(() => elNoni.classList.remove('cheering'), 800);
+  }
+
+  // ============================================================
+  // טעינה
+  // ============================================================
+  async function loadItems() {
+    const res = await fetch('data/island-03-items.json');
+    const data = await res.json();
+    const memItems = (data.items || []).filter(it => it.letter_in_focus === LETTER);
+    // עדיפות ל-L1-L2 (קל-בינוני). אם יש לפחות 5 — קח 5 אקראיים מתוכם.
+    const easy = memItems.filter(it => it.level <= 2);
+    const pool = easy.length >= TOTAL_KEYS ? easy : memItems;
+    state.items = shuffle(pool).slice(0, TOTAL_KEYS);
+  }
+
+  // ============================================================
+  // סיבוב — מציג שאלה + 4 אפשרויות
+  // ============================================================
+  function renderRound() {
+    if (state.idx >= TOTAL_KEYS) return;
+    state.attempts = 0;
+    state.locked = false;
+
+    const item = state.items[state.idx];
+    const options = shuffle(item.options || []);
+
+    elGrid.innerHTML = '';
+    options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.dataset.correct = opt.correct ? '1' : '0';
+      btn.dataset.word = opt.concept || opt.word;
+      const src = imgPath(opt.image_url);
+      const fallback = opt.emoji_suggestion || '?';
+      btn.innerHTML = src
+        ? `<img src="${src}" alt="${opt.concept || ''}" onerror="this.outerHTML='<span style=&quot;font-size:64px&quot;>${fallback}</span>'">`
+        : `<span style="font-size:64px">${fallback}</span>`;
+      btn.addEventListener('click', () => handlePick(btn, opt));
+      elGrid.appendChild(btn);
+    });
+
+    // Auto-play the question prompt after a short pause
+    setTimeout(() => AvneiAudio.playFindSoundPrompt(LETTER), 350);
+  }
+
+  function handlePick(btn, opt) {
+    if (state.locked) return;
+
+    if (opt.correct) {
+      state.locked = true;
+      btn.classList.add('correct');
+      cheerNoni();
+      const cheers = ['great', 'excellent', 'exactly'];
+      AvneiAudio.play(cheers[Math.floor(Math.random() * cheers.length)]);
+      showFeedback('מצאתם!');
+      flyKeyFrom(btn);
+
+      // Pearls: 1 only if first try
+      if (state.attempts === 0) {
+        if (typeof addPearls === 'function') addPearls(1);
+        updatePearlDisplay();
+      }
+
+      state.keysCollected++;
+      const slot = document.querySelector(`.key-slot[data-i="${state.keysCollected - 1}"]`);
+      setTimeout(() => slot && slot.classList.add('filled'), 750);
+
+      state.idx++;
+      if (state.keysCollected >= TOTAL_KEYS) {
+        setTimeout(openShell, 1500);
+      } else {
+        setTimeout(renderRound, 1700);
+      }
+    } else {
+      // טעות — פידבק מדורג, לימוד דרך טעות
+      state.attempts++;
+      btn.classList.add('dim');
+      btn.disabled = true;
+
+      // השמעת המילה שנבחרה (לימוד דרך טעות) — נשתמש בשם הקובץ אם קיים
+      const wordKey = btn.dataset.word;
+      if (wordKey) {
+        // ננסה להשמיע את שם המילה (אם קובץ קיים)
+        AvneiAudio.play(wordKey);
+      }
+
+      if (state.attempts === 1) {
+        showFeedback('בוא/י ננסה יחד');
+        AvneiAudio.play('trywithme');
+      } else if (state.attempts === 2) {
+        showFeedback('הצליל הוא מ׳');
+        AvneiAudio.playLetterSound(LETTER);
+        // הדגשה של התשובה הנכונה
+        const correctBtn = elGrid.querySelector('[data-correct="1"]');
+        if (correctBtn) correctBtn.classList.add('hint-glow');
+      } else {
+        // אחרי 3 נסיונות — הילד לוחץ על הנכון ועוברים הלאה
+        const correctBtn = elGrid.querySelector('[data-correct="1"]');
+        if (correctBtn) {
+          correctBtn.classList.add('hint-glow');
+          showFeedback('הקש/י עליה');
+          AvneiAudio.play('press-here');
+        }
+      }
+    }
+  }
+
+  // ============================================================
+  // אנימציית "מפתח טס" מהאופציה הנכונה לתוך ה-slot
+  // ============================================================
+  function flyKeyFrom(sourceBtn) {
+    const slotIdx = state.keysCollected; // עוד לא עודכן
+    const slot = document.querySelector(`.key-slot[data-i="${slotIdx}"]`);
+    if (!slot) return;
+
+    const sRect = sourceBtn.getBoundingClientRect();
+    const tRect = slot.getBoundingClientRect();
+
+    const flyEl = document.createElement('div');
+    flyEl.className = 'flying-key';
+    flyEl.innerHTML = `<svg viewBox="0 0 40 56" style="width:100%;height:100%"><use href="#keySymbol"/></svg>`;
+    flyEl.style.left = (sRect.left + sRect.width / 2 - 28) + 'px';
+    flyEl.style.top  = (sRect.top + sRect.height / 2 - 36) + 'px';
+    document.body.appendChild(flyEl);
+
+    // Force reflow then animate
+    requestAnimationFrame(() => {
+      const dx = (tRect.left + tRect.width / 2) - (sRect.left + sRect.width / 2);
+      const dy = (tRect.top + tRect.height / 2) - (sRect.top + sRect.height / 2);
+      flyEl.style.transform = `translate(${dx}px, ${dy}px) scale(0.7)`;
+    });
+
+    setTimeout(() => {
+      flyEl.style.opacity = '0';
+      setTimeout(() => flyEl.remove(), 350);
+    }, 900);
+  }
+
+  // ============================================================
+  // פתיחת הצדף — האנימציה הדרמטית
+  // ============================================================
+  async function openShell() {
+    showFeedback('הצדף מזדעזע...', 1800);
+    elShell.classList.add('shaking');
+    AvneiAudio.play('lets-find');
+
+    setTimeout(() => {
+      elShell.classList.remove('shaking');
+      // החלפה: הצדף הסגור נעלם, הפתוח מופיע
+      document.getElementById('shellClosed').style.opacity = '0';
+      document.getElementById('shellOpen').style.opacity = '1';
+      elShell.classList.add('opened');
+      showFeedback('הצדף נפתח!', 2000);
+      cheerNoni();
+      AvneiAudio.play('all-done');
+    }, 1300);
+
+    setTimeout(() => {
+      showCompletion();
+    }, 4200);
+  }
+
+  function showCompletion() {
+    // Save state
+    if (typeof completeStage === 'function') completeStage(ISLAND_ID);
+    if (typeof addSouvenir === 'function') addSouvenir('אלמוג אות זוהר');
+    document.getElementById('completion').classList.add('show');
+  }
+
+  function updatePearlDisplay() {
+    if (typeof getPearls === 'function') {
+      elPearlCount.textContent = getPearls();
+    }
+  }
+
+  // ============================================================
+  // Speaker button
+  // ============================================================
+  document.getElementById('speakerBtn').addEventListener('click', () => {
+    AvneiAudio.playFindSoundPrompt(LETTER);
+  });
+
+  // ============================================================
+  // Bootstrap
+  // ============================================================
+  document.getElementById('startBtn').addEventListener('click', async () => {
+    AvneiAudio.unlock();
+    document.getElementById('tapToStart').classList.add('hidden');
+
+    try {
+      await loadItems();
+    } catch (e) {
+      console.error('Failed to load items:', e);
+      return;
+    }
+
+    updatePearlDisplay();
+
+    if (state.items.length < TOTAL_KEYS) {
+      console.error('Not enough items for', LETTER, 'got', state.items.length);
+      return;
+    }
+
+    renderRound();
+  });
+
+  // Dev shortcuts: ?reset=1 (clear state), ?skip=N (start with N keys)
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('reset') === '1') {
+    localStorage.removeItem('underwater-app:v1');
+    console.log('localStorage reset.');
+  }
+
+  </script>
+
+</body>
+</html>
