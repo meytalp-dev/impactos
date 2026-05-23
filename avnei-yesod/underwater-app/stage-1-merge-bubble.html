@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>אוספים את החלקים · אי 1 · עומק הים המואר</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/stage-1.css">
+  <link rel="stylesheet" href="css/bubble-rise.css">
+  <link rel="stylesheet" href="css/merge-bubble.css">
+</head>
+<body>
+
+  <main class="stage-1-scene">
+    <img class="bay-bg" src="assets/island-01/bay-bg.png" alt="" aria-hidden="true">
+
+    <div class="ambient-bubble" style="left: 12%; width: 28px; height: 28px; animation-duration: 14s; --drift: 20px;"></div>
+    <div class="ambient-bubble" style="left: 78%; width: 22px; height: 22px; animation-duration: 18s; animation-delay: 3s; --drift: -15px;"></div>
+    <div class="ambient-bubble" style="left: 30%; width: 18px; height: 18px; animation-duration: 12s; animation-delay: 6s; --drift: 10px;"></div>
+    <div class="ambient-bubble" style="left: 88%; width: 32px; height: 32px; animation-duration: 20s; animation-delay: 9s; --drift: -25px;"></div>
+
+    <div class="merge-stage" id="mergeStage">
+      <!-- בועה גדולה (יעד) -->
+      <div class="merge-big-bubble fog-0" id="bigBubble" data-fog="0">
+        <img class="merge-word-img" id="wordImg" src="assets/island-01/parpar.png" alt="">
+      </div>
+      <!-- בועות הברה (מקור גרירה) — JS ממלא -->
+    </div>
+
+    <img class="noni-bay" id="noniImg" src="assets/noni-idle.png" alt="נוני">
+  </main>
+
+  <header class="stage-1-topbar">
+    <a href="stage-1-island.html" class="icon-btn" aria-label="חזרה לתפריט האי">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+
+    <div class="word-pill" id="wordPill">
+      <img class="pill-img" id="pillImg" src="assets/island-01/parpar.png" alt="">
+      <span id="wordPillText">פַּרְפַּר</span>
+    </div>
+
+    <button class="replay-btn" id="replayBtn" aria-label="השמע שוב">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+    </button>
+  </header>
+
+  <div class="rise-instruction" id="riseInstruction" style="display:none">
+    <div class="rise-instruction__bubble">
+      <button class="mini-speaker" id="instructionSpeaker" aria-label="השמע">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
+        </svg>
+      </button>
+      <span id="instructionText">הקשיבו...</span>
+    </div>
+  </div>
+
+  <div class="tap-to-start" id="tapToStart">
+    <h2>אוספים את החלקים</h2>
+    <button class="intro-speaker" id="introSpeaker" aria-label="הקש לשמיעה">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>הקש/י לשמוע</span>
+    </button>
+    <p>החלקים של המילה התפזרו בים.</p>
+    <p><strong>תגררו אותם לבועה הגדולה — והמילה תתבהר!</strong></p>
+    <button class="start-btn" id="startBtn">בוא/י נתחיל!</button>
+  </div>
+
+  <div class="completion" id="completion">
+    <h2>אספנו את כל החלקים!</h2>
+    <p id="completionMsg">המילה שלמה. נוני שמח.</p>
+    <div>
+      <button class="btn-primary" id="nextWordBtn">מילה נוספת</button>
+      <a href="stage-1-island.html" class="btn-primary btn-secondary">חזרה לאי</a>
+    </div>
+  </div>
+
+  <div class="feedback-toast" id="feedbackToast"></div>
+  <div class="celebrate-particles" id="celebrateParticles" aria-hidden="true"></div>
+
+  <audio id="audioPlayer" preload="auto"></audio>
+
+  <script>
+  // ============================================================
+  // MergeBubble — controller
+  // הילדה גוררת בועות-הברה לבועה הגדולה. כל הברה נכונה
+  // מתבהרת התמונה. כשכל ההברות נאספו = חגיגה.
+  // ============================================================
+
+  const AUDIO_BASE = 'assets/audio/island-01';
+  const audio = document.getElementById('audioPlayer');
+
+  let WORDS = [];
+  let currentWordIndex = 0;
+  let currentWord = null;
+  let collectedCount = 0;
+  let started = false;
+  let hintTimer = null;
+
+  // ----- Audio helpers -----
+  function playAudio(filename, onEnd) {
+    audio.src = `${AUDIO_BASE}/${filename}.mp3`;
+    audio.onended = onEnd || null;
+    audio.play().catch(() => {
+      if (onEnd) setTimeout(onEnd, 800);
+    });
+  }
+  function playSequence(filenames, onAllDone, gapMs = 350) {
+    if (!filenames.length) { onAllDone && onAllDone(); return; }
+    const [first, ...rest] = filenames;
+    playAudio(first, () => {
+      if (rest.length === 0) { onAllDone && onAllDone(); return; }
+      setTimeout(() => playSequence(rest, onAllDone, gapMs), gapMs);
+    });
+  }
+
+  async function loadWords() {
+    try {
+      const res = await fetch('data/island-01-words.json');
+      const data = await res.json();
+      WORDS = data.words;
+    } catch (err) { console.error(err); }
+  }
+
+  function pickDistractor(word) {
+    const excludeIds = new Set(word.syllable_ids);
+    const pool = [];
+    WORDS.forEach(w => {
+      if (w.id === word.id) return;
+      w.syllables.forEach((syl, i) => {
+        const sid = w.syllable_ids[i];
+        if (excludeIds.has(sid)) return;
+        pool.push({
+          syllable_id: sid,
+          audio: w.syllable_audios[i].split('/').pop().replace('.mp3', '')
+        });
+      });
+    });
+    const shuffled = pool.sort(() => Math.random() - 0.5);
+    return shuffled[0] || null;
+  }
+
+  // ----- Build fragments around the big bubble -----
+  function buildFragments() {
+    // remove old fragments
+    document.querySelectorAll('.merge-fragment').forEach(el => el.remove());
+
+    const stage = document.getElementById('mergeStage');
+
+    const correct = currentWord.syllables.map((syl, i) => ({
+      syllable_id: currentWord.syllable_ids[i],
+      audio: currentWord.syllable_audios[i].split('/').pop().replace('.mp3', ''),
+      correct: true,
+    }));
+    const distractor = pickDistractor(currentWord);
+    const all = [...correct];
+    if (distractor) all.push({ syllable_id: distractor.syllable_id, audio: distractor.audio, correct: false });
+    all.sort(() => Math.random() - 0.5);
+
+    const positions = pickPositions(all.length);
+    const speakerSvg = `<svg class="speaker-icon" viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/></svg>`;
+
+    all.forEach((c, idx) => {
+      const f = document.createElement('div');
+      f.className = 'merge-fragment';
+      f.dataset.correct = c.correct ? '1' : '0';
+      f.dataset.audio = c.audio;
+      f.style.left = positions[idx].left;
+      f.style.top = positions[idx].top;
+      f.style.animationDelay = `${idx * 0.3}s`;
+      f.innerHTML = speakerSvg;
+      stage.appendChild(f);
+      attachDrag(f);
+    });
+  }
+
+  function pickPositions(n) {
+    const POOL = [
+      { left: '6%',  top: '20%' },
+      { left: '6%',  top: '64%' },
+      { left: '82%', top: '20%' },
+      { left: '82%', top: '64%' },
+    ];
+    return POOL.slice(0, n).sort(() => Math.random() - 0.5);
+  }
+
+  // ----- Drag implementation using Pointer Events -----
+  function attachDrag(el) {
+    let startX, startY, originLeft, originTop, originLeftPct, originTopPct;
+    let lastTap = 0;
+
+    function onDown(e) {
+      e.preventDefault();
+      // tap (no move yet) → play this fragment's sound
+      const now = Date.now();
+      if (now - lastTap < 250) return; // debounce
+      lastTap = now;
+
+      const point = e.touches ? e.touches[0] : e;
+      startX = point.clientX;
+      startY = point.clientY;
+      const rect = el.getBoundingClientRect();
+      originLeft = rect.left;
+      originTop = rect.top;
+      originLeftPct = el.style.left;
+      originTopPct = el.style.top;
+
+      // play the syllable on touch start
+      playAudio(el.dataset.audio);
+
+      el.classList.add('dragging');
+      el.style.left = originLeft + 'px';
+      el.style.top = originTop + 'px';
+      el.style.right = 'auto';
+
+      el.setPointerCapture && el.setPointerCapture(e.pointerId);
+
+      el.addEventListener('pointermove', onMove);
+      el.addEventListener('pointerup', onUp);
+      el.addEventListener('pointercancel', onUp);
+    }
+
+    function onMove(e) {
+      const point = e;
+      const dx = point.clientX - startX;
+      const dy = point.clientY - startY;
+      el.style.left = (originLeft + dx) + 'px';
+      el.style.top = (originTop + dy) + 'px';
+
+      // Check overlap with big bubble for visual feedback
+      const big = document.getElementById('bigBubble').getBoundingClientRect();
+      const center = { x: point.clientX, y: point.clientY };
+      const bigCenter = { x: big.left + big.width / 2, y: big.top + big.height / 2 };
+      const dist = Math.hypot(center.x - bigCenter.x, center.y - bigCenter.y);
+      if (dist < big.width * 0.55) {
+        document.getElementById('bigBubble').classList.add('drop-target');
+      } else {
+        document.getElementById('bigBubble').classList.remove('drop-target');
+      }
+    }
+
+    function onUp(e) {
+      el.removeEventListener('pointermove', onMove);
+      el.removeEventListener('pointerup', onUp);
+      el.removeEventListener('pointercancel', onUp);
+      el.classList.remove('dragging');
+      document.getElementById('bigBubble').classList.remove('drop-target');
+
+      // check final position
+      const big = document.getElementById('bigBubble').getBoundingClientRect();
+      const rect = el.getBoundingClientRect();
+      const center = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+      const bigCenter = { x: big.left + big.width / 2, y: big.top + big.height / 2 };
+      const dist = Math.hypot(center.x - bigCenter.x, center.y - bigCenter.y);
+
+      if (dist < big.width * 0.55) {
+        handleDrop(el, rect);
+      } else {
+        // return home
+        el.style.left = originLeftPct;
+        el.style.top = originTopPct;
+        el.classList.add('return');
+        setTimeout(() => el.classList.remove('return'), 500);
+      }
+    }
+
+    el.addEventListener('pointerdown', onDown);
+  }
+
+  function handleDrop(el, fragRect) {
+    if (el.dataset.correct === '1') {
+      // Correct! absorb
+      el.classList.add('absorbed');
+      trailParticles(fragRect);
+      playAudio(el.dataset.audio, () => {
+        collectedCount++;
+        document.getElementById('bigBubble').classList.remove(`fog-${collectedCount - 1}`);
+        document.getElementById('bigBubble').classList.add(`fog-${Math.min(collectedCount, 3)}`);
+        document.getElementById('bigBubble').dataset.fog = collectedCount;
+
+        if (collectedCount === currentWord.syllable_count) {
+          setTimeout(completeWord, 800);
+        }
+        setTimeout(() => el.remove(), 700);
+      });
+    } else {
+      // Wrong fragment → wobble + return + audio
+      el.classList.add('wobble');
+      playAudio(el.dataset.audio, () => {
+        playAudio('support-mistake-1');
+      });
+      setTimeout(() => {
+        el.classList.remove('wobble');
+        // animate back to original position
+        el.style.transition = 'left 0.5s cubic-bezier(0.34,1.56,0.64,1), top 0.5s cubic-bezier(0.34,1.56,0.64,1)';
+        // find an empty pool position
+        const POOL = [
+          { left: '6%',  top: '20%' },
+          { left: '6%',  top: '64%' },
+          { left: '82%', top: '20%' },
+          { left: '82%', top: '64%' },
+        ];
+        const used = Array.from(document.querySelectorAll('.merge-fragment')).filter(x => x !== el).map(x => `${x.style.left}|${x.style.top}`);
+        const free = POOL.find(p => !used.includes(`${p.left}|${p.top}`)) || POOL[0];
+        el.style.left = free.left;
+        el.style.top = free.top;
+        setTimeout(() => { el.style.transition = ''; }, 600);
+      }, 600);
+    }
+  }
+
+  function trailParticles(fromRect) {
+    const big = document.getElementById('bigBubble').getBoundingClientRect();
+    const start = { x: fromRect.left + fromRect.width / 2, y: fromRect.top + fromRect.height / 2 };
+    const end = { x: big.left + big.width / 2, y: big.top + big.height / 2 };
+    for (let i = 0; i < 6; i++) {
+      const p = document.createElement('div');
+      p.className = 'absorb-particle';
+      const t = i / 6;
+      p.style.left = (start.x + (end.x - start.x) * t) + 'px';
+      p.style.top = (start.y + (end.y - start.y) * t) + 'px';
+      p.style.animationDelay = `${i * 0.05}s`;
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 700);
+    }
+  }
+
+  // ----- Word complete: celebrate -----
+  function completeWord() {
+    const noni = document.getElementById('noniImg');
+    noni.src = 'assets/noni-happy.png';
+    noni.classList.add('celebrating');
+    burstParticles();
+    setTimeout(() => {
+      playAudio(`word-${currentWord.id}`, () => setTimeout(showCompletion, 700));
+    }, 400);
+  }
+
+  function burstParticles() {
+    const container = document.getElementById('celebrateParticles');
+    container.innerHTML = '';
+    const colors = ['#FFF7C8', '#FFA98D', '#B981FF', '#A8E8FF', '#73D9D1'];
+    for (let i = 0; i < 28; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const angle = (i / 28) * Math.PI * 2;
+      const dist = 200 + Math.random() * 120;
+      p.style.left = `${50 + (Math.random() - 0.5) * 10}%`;
+      p.style.top = `${50 + (Math.random() - 0.5) * 10}%`;
+      p.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
+      p.style.setProperty('--dy', `${Math.sin(angle) * dist - 80}px`);
+      p.style.background = colors[i % colors.length];
+      p.style.boxShadow = `0 0 12px ${colors[i % colors.length]}`;
+      p.style.animationDelay = `${(i % 6) * 0.06}s`;
+      container.appendChild(p);
+    }
+    setTimeout(() => { container.innerHTML = ''; }, 3000);
+  }
+
+  function showCompletion() {
+    document.getElementById('completion').classList.add('visible');
+  }
+
+  function showInstruction(text) {
+    document.getElementById('riseInstruction').style.display = 'flex';
+    document.getElementById('instructionText').textContent = text;
+  }
+
+  // ----- Word switching -----
+  function loadWord(idx) {
+    currentWordIndex = (idx + WORDS.length) % WORDS.length;
+    currentWord = WORDS[currentWordIndex];
+    collectedCount = 0;
+
+    document.getElementById('wordImg').src = currentWord.image;
+    document.getElementById('pillImg').src = currentWord.image;
+    document.getElementById('wordPillText').textContent = currentWord.display;
+
+    const big = document.getElementById('bigBubble');
+    ['fog-0', 'fog-1', 'fog-2', 'fog-3'].forEach(c => big.classList.remove(c));
+    big.classList.add('fog-0');
+    big.dataset.fog = 0;
+
+    const noni = document.getElementById('noniImg');
+    noni.src = 'assets/noni-idle.png';
+    noni.classList.remove('celebrating');
+
+    document.getElementById('completion').classList.remove('visible');
+
+    showInstruction('הַקְשִׁיבוּ לַמִּלָּה...');
+
+    // play split + whole
+    const syllableKeys = currentWord.syllable_audios.map(p => p.split('/').pop().replace('.mp3', ''));
+    setTimeout(() => {
+      playSequence(syllableKeys, () => {
+        setTimeout(() => {
+          playAudio(`word-${currentWord.id}`, () => {
+            buildFragments();
+            showInstruction('גָּרְרוּ אֶת הַחֲלָקִים לַבּוּעָה');
+          });
+        }, 500);
+      }, 400);
+    }, 500);
+  }
+
+  function nextWord() {
+    loadWord(currentWordIndex + 1);
+  }
+
+  function start() {
+    if (started) return;
+    started = true;
+    document.getElementById('tapToStart').classList.add('hidden');
+    loadWord(Math.floor(Math.random() * WORDS.length));
+  }
+
+  document.getElementById('startBtn').addEventListener('click', start);
+  document.getElementById('introSpeaker').addEventListener('click', (e) => {
+    e.stopPropagation();
+    playAudio('ui-bubble-story');
+  });
+  document.getElementById('replayBtn').addEventListener('click', () => {
+    if (!currentWord) return;
+    playAudio(`word-${currentWord.id}`);
+  });
+  document.getElementById('instructionSpeaker').addEventListener('click', () => {
+    if (!currentWord) return;
+    playAudio(`word-${currentWord.id}`);
+  });
+  document.getElementById('nextWordBtn').addEventListener('click', nextWord);
+
+  (async function init() {
+    await loadWords();
+    audio.src = `${AUDIO_BASE}/ui-bubble-story.mp3`;
+  })();
+  </script>
+</body>
+</html>

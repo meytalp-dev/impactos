@@ -1,0 +1,430 @@
+/* ============================================================
+   fish-schools.css — להקות הדגיגים · אי 2
+   מנגנון: phoneme categorization (sort to phoneme home)
+   נוצר 23.5.2026 לפי הסדר המאומת בפרפלקסיטי
+   ============================================================ */
+
+/* ===== Stage scene ===== */
+.fish-scene {
+  background: linear-gradient(180deg, #BFF1FF 0%, #A8E8FF 40%, #73D9D1 100%);
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.fish-scene::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 14% 18%, rgba(255,255,255,0.4) 0, transparent 2px),
+    radial-gradient(circle at 82% 30%, rgba(255,255,255,0.35) 0, transparent 2px),
+    radial-gradient(circle at 28% 62%, rgba(255,255,255,0.4) 0, transparent 2.5px),
+    radial-gradient(circle at 90% 78%, rgba(255,255,255,0.3) 0, transparent 2px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ===== Top bar ===== */
+.fish-top-bar {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255,255,255,0.6);
+}
+
+.fish-top-bar .back-btn {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.85);
+  color: var(--text-main);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(38,80,92,0.15);
+}
+
+.fish-top-bar .round-counter {
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text-main);
+  background: rgba(255,255,255,0.85);
+  padding: 8px 18px;
+  border-radius: var(--radius-pill);
+}
+
+/* ===== Stage area ===== */
+.fish-stage {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 16px 28px;
+  min-height: calc(100vh - 72px);
+  gap: 14px;
+}
+
+.round-dots {
+  display: flex;
+  gap: 6px;
+  margin: 4px 0 6px;
+}
+.round-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.6);
+  border: 1.5px solid rgba(38,80,92,0.18);
+}
+.round-dot.correct { background: #B8F2CF; border-color: #6BCB9A; }
+.round-dot.current { background: var(--hint); border-color: #C49A2D; transform: scale(1.15); }
+
+/* ===== Schools row — שני "בתים" צמודים ===== */
+.schools-row {
+  display: flex;
+  gap: 14px;
+  width: 100%;
+  max-width: 540px;
+  justify-content: center;
+}
+
+.school {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 22px;
+  padding: 14px 12px 12px;
+  border: 3px solid transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.25s ease, border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  min-height: 175px;
+}
+
+.school:active { transform: translateY(2px); }
+.school.disabled { opacity: 0.55; pointer-events: none; }
+
+/* כשנדרש רמז — להקות "מנעות" */
+.school.hint-pulse {
+  animation: school-hint-pulse 1.4s ease-in-out infinite;
+}
+@keyframes school-hint-pulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(255,231,168,0); }
+  50%      { box-shadow: 0 0 24px rgba(255,231,168,0.6); }
+}
+
+/* כשהלהקה קולטת דגיג בהצלחה */
+.school.accepting {
+  background: rgba(255, 255, 255, 0.85);
+  transform: scale(1.04);
+}
+
+.school[data-phoneme="מ"].accepting {
+  border-color: #4FB8C9;
+  box-shadow: 0 0 32px rgba(115, 217, 209, 0.7);
+}
+.school[data-phoneme="ס"].accepting {
+  border-color: #FF8A6B;
+  box-shadow: 0 0 32px rgba(255, 169, 141, 0.7);
+}
+
+/* ===== Label fish (the school's "leader") ===== */
+.school-label-fish {
+  width: 78px;
+  height: 78px;
+  margin-bottom: 6px;
+  display: block;
+  filter: drop-shadow(0 4px 8px rgba(38,80,92,0.2));
+}
+
+.school[data-phoneme="מ"] .school-label-fish .fish-body { fill: url(#fishGradMmm); }
+.school[data-phoneme="ס"] .school-label-fish .fish-body { fill: url(#fishGradSss); }
+
+.school-label-text {
+  font-family: 'Heebo', sans-serif;
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--text-main);
+  background: white;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  margin-bottom: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.school-speaker-icon {
+  width: 14px;
+  height: 14px;
+  opacity: 0.7;
+}
+
+/* ===== Accumulated fish ===== */
+.accumulated-row {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 6px;
+  min-height: 24px;
+  align-items: center;
+}
+
+.accumulated-fish {
+  width: 22px;
+  height: 22px;
+  opacity: 0;
+  transform: translateY(-12px) scale(0.4);
+  transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.accumulated-fish.appeared {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* ===== Center — current fish ===== */
+.fish-stage-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 540px;
+  position: relative;
+  min-height: 220px;
+}
+
+.current-fish-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.current-fish-wrap.visible { opacity: 1; transform: translateY(0); }
+
+.current-fish-svg {
+  width: 130px;
+  height: 130px;
+  filter: drop-shadow(0 6px 16px rgba(38,80,92,0.25));
+  animation: fish-float 3.4s ease-in-out infinite;
+}
+
+@keyframes fish-float {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%      { transform: translateY(-10px) rotate(2deg); }
+}
+
+.current-word-bubble {
+  background: white;
+  padding: 10px 22px;
+  border-radius: var(--radius-pill);
+  font-family: 'Heebo', sans-serif;
+  font-weight: 800;
+  font-size: 24px;
+  color: var(--text-main);
+  box-shadow: 0 4px 14px rgba(38,80,92,0.2);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.replay-fish-btn {
+  width: 20px;
+  height: 20px;
+  background: none;
+  border: none;
+  color: var(--text-main);
+  opacity: 0.6;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.replay-fish-btn svg { width: 100%; height: 100%; }
+
+.fish-tap-hint {
+  font-family: 'Heebo', sans-serif;
+  font-size: 13px;
+  color: var(--text-soft);
+  background: rgba(255,255,255,0.7);
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  margin-top: -4px;
+}
+
+/* ===== Fish animation when wrong (jiggle) ===== */
+.current-fish-wrap.wrong-jiggle {
+  animation: fish-wrong-jiggle 0.55s ease-in-out;
+}
+@keyframes fish-wrong-jiggle {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-8px) rotate(-3deg); }
+  40%      { transform: translateX(8px) rotate(3deg); }
+  60%      { transform: translateX(-6px) rotate(-2deg); }
+  80%      { transform: translateX(4px) rotate(1deg); }
+}
+
+/* ===== Fish swims away (correct) ===== */
+.current-fish-wrap.swimming-to-school {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(var(--swim-dx, 0), var(--swim-dy, -120px)) scale(0.3);
+  transition: opacity 0.7s ease, transform 0.9s cubic-bezier(0.5, 0, 0.5, 1);
+}
+
+/* ===== Tap-to-start overlay ===== */
+.tap-to-start {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(168,232,255,0.96) 0%, rgba(115,217,209,0.96) 100%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  gap: 18px;
+}
+.tap-to-start.hidden { display: none; }
+.tap-to-start h2 {
+  font-family: 'Heebo', sans-serif;
+  font-weight: 900;
+  font-size: clamp(28px, 7vw, 38px);
+  color: white;
+  text-shadow: 0 2px 10px rgba(38,80,92,0.3);
+  margin: 0;
+}
+.tap-to-start p {
+  font-family: 'Heebo', sans-serif;
+  font-size: clamp(17px, 4vw, 21px);
+  color: white;
+  max-width: 540px;
+  line-height: 1.5;
+  margin: 0;
+  text-shadow: 0 1px 6px rgba(38,80,92,0.25);
+}
+.intro-speaker {
+  background: rgba(255,255,255,0.25);
+  border: 2px solid rgba(255,255,255,0.7);
+  color: white;
+  padding: 14px 28px;
+  border-radius: var(--radius-pill);
+  font-family: 'Heebo', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.intro-speaker svg { width: 22px; height: 22px; }
+.intro-speaker.playing { background: rgba(255,255,255,0.45); }
+.start-btn {
+  background: white;
+  color: var(--text-main);
+  padding: 16px 42px;
+  border-radius: var(--radius-pill);
+  font-family: 'Heebo', sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 10px 26px rgba(38,80,92,0.3);
+  transition: transform 0.2s ease;
+}
+.start-btn:active { transform: translateY(2px); }
+
+/* ===== Completion overlay ===== */
+.fish-completion {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 249, 244, 0.98) 0%, rgba(168, 232, 255, 0.98) 100%);
+  z-index: 120;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  text-align: center;
+  gap: 20px;
+}
+.fish-completion.show { display: flex; }
+.fish-completion h2 {
+  font-family: 'Heebo', sans-serif;
+  font-weight: 900;
+  font-size: clamp(30px, 7.5vw, 42px);
+  color: var(--text-main);
+  margin: 0;
+}
+.fish-completion p {
+  font-family: 'Heebo', sans-serif;
+  font-size: clamp(17px, 4vw, 20px);
+  color: var(--text-main);
+  max-width: 480px;
+  line-height: 1.55;
+  margin: 0;
+}
+.fish-completion .btn-primary {
+  background: linear-gradient(135deg, #73D9D1, #4FB8C9);
+  color: white;
+  padding: 16px 36px;
+  border-radius: var(--radius-pill);
+  font-family: 'Heebo', sans-serif;
+  font-weight: 800;
+  font-size: 19px;
+  text-decoration: none;
+  box-shadow: 0 10px 22px rgba(79, 184, 201, 0.4);
+}
+
+/* ===== Confetti ===== */
+.confetti-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 200;
+  overflow: hidden;
+}
+.confetti-piece {
+  position: absolute;
+  top: -20px;
+  border-radius: 4px;
+  animation: confetti-fall linear forwards;
+}
+@keyframes confetti-fall {
+  to { transform: translateY(110vh) rotate(720deg); }
+}
+
+/* ===== Mobile tightening ===== */
+@media (max-width: 380px) {
+  .school { min-height: 150px; padding: 10px 8px; }
+  .school-label-fish { width: 64px; height: 64px; }
+  .school-label-text { font-size: 15px; padding: 3px 10px; }
+  .current-fish-svg { width: 108px; height: 108px; }
+  .current-word-bubble { font-size: 20px; padding: 8px 16px; }
+  .accumulated-fish { width: 18px; height: 18px; }
+}

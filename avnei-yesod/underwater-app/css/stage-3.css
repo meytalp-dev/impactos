@@ -712,74 +712,70 @@ body {
   padding: 4px clamp(8px, 2vw, 16px);
 }
 
-.shell-option {
-  position: relative;
-  width: clamp(120px, 22vw, 180px);
-  aspect-ratio: 1 / 1;
-  background: transparent;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  transition: transform 220ms cubic-bezier(.2,.8,.25,1), filter 220ms ease;
-  filter: drop-shadow(0 14px 22px rgba(38, 80, 92, 0.25));
-}
-.shell-option:hover  { transform: translateY(-6px); }
-.shell-option:active { transform: scale(0.95); }
+/* shell-option הפך לבועה (.bubble) מאז 23.5.2026 ערב.
+   הסגנונות של .bubble נטענים מ-components.css.
+   ה-state classes כאן ממופים לאנימציות בועה (.bubble.zoharet/.correct/.wrong-pulse). */
 
-.shell-svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-/* התוכן (אות/תמונה) ממוקם מעל הפנינה */
 .shell-content {
-  position: absolute;
-  /* הפנינה במרכז 50% רוחב, גובה ~45% מהראש */
-  top: 8%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 70%;
-  height: 60%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
+  /* wrapper פנימי — נשמר לתאימות API של AvneiShell.setContent. שקוף ואינו ממוקם:
+     .bubble כבר מטפל ב-centering דרך display:flex. */
+  display: contents;
 }
 
 .shell-letter {
-  font-size: clamp(54px, 12vw, 92px);
-  font-weight: 900;
-  color: var(--text-main);
+  font-family: 'Rubik', 'Heebo', sans-serif;
+  font-size: clamp(54px, 12vw, 86px);
+  font-weight: 700;
+  color: var(--deep);
   line-height: 1;
-  text-shadow: 0 2px 0 rgba(255,255,255,0.6);
+  user-select: none;
 }
 
 .shell-image {
-  max-width: 88%;
-  max-height: 88%;
+  /* תמונה ב-70% מהבועה, contain — בהתאם לסטנדרט.
+     ‫!important מבטיח שגם אם <img class="shell-image"> מקבל את .bubble img רוצה לקבוע 70%,
+     שלא תידרס. */
+  width: 70%;
+  height: 70%;
   object-fit: contain;
+  pointer-events: none;
 }
+
 .shell-fallback {
   font-size: clamp(46px, 10vw, 72px);
   line-height: 1;
 }
 
-/* פידבק על שלBella */
+/* === מיפוי מצבים ישנים ל-bubble states === */
+
+/* .correct — אותה התנהגות כמו .bubble.correct */
 .shell-option.correct {
-  animation: correct-bounce 600ms ease;
-  filter: drop-shadow(0 14px 24px rgba(124, 231, 180, 0.55))
-          drop-shadow(0 0 20px rgba(124, 231, 180, 0.8));
+  border-color: var(--success);
+  box-shadow:
+    inset 0 -8px 16px rgba(99, 207, 229, 0.25),
+    0 0 28px var(--success),
+    0 6px 16px rgba(38, 80, 92, 0.10);
+  animation: bubble-pop 700ms ease-out;
 }
+
+/* .wrong — אך ורק shake רכה, ללא אדום, ללא הפחתת opacity חזקה (לפי הסטנדרט).
+   opacity 0.85 מספיק כדי לסמן שהאפשרות נפסלה זמנית. */
 .shell-option.wrong {
-  animation: wrong-shake 500ms ease;
-  opacity: 0.55;
+  animation: bubble-shake 400ms ease-in-out;
+  opacity: 0.85;
 }
+
+/* .hint-glow — גלואו זהוב + הילה פועמת */
 .shell-option.hint-glow {
-  animation: hint-throb 1.4s ease-in-out infinite;
-  filter: drop-shadow(0 14px 24px rgba(255, 231, 168, 0.65))
-          drop-shadow(0 0 20px rgba(255, 231, 168, 0.9));
+  border-color: var(--gold-hint);
+  box-shadow:
+    inset 0 -8px 16px rgba(99, 207, 229, 0.25),
+    0 0 28px var(--gold-hint),
+    0 6px 16px rgba(38, 80, 92, 0.10);
+  animation: bubble-hint 1.4s ease-in-out infinite;
 }
+
+/* .dimmed — מעמעם אפשרות שנפסלה (אחרי .wrong). */
 .shell-option.dimmed {
   opacity: 0.35;
   pointer-events: none;

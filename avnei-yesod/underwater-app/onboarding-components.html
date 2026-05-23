@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>רכיבי המסע — Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ──────────────────────────────────────────────────────────
+   Design tokens — pulled from design-system.md
+   ────────────────────────────────────────────────────────── */
+:root {
+  --water-main:    #A8E8FF;
+  --water-deep:    #73D9D1;
+  --water-soft:    #8DDFFF;
+  --water-line:    #63CFE5;
+  --coral:         #FFA98D;
+  --mint:          #B8F2CF;
+  --mint-deep:     #8ED9B8;
+  --sand:          #F8E3D6;
+  --stone:         #DAD6C9;
+  --white-warm:    #FFF9F4;
+  --lavender:      #D9D2FF;
+  --peach:         #FFC8AE;
+  --gold-hint:     #FFE7A8;
+  --success:       #7CE7B4;
+  --deep:          #1E3D47;
+  --shell-pink:    #FFD3D8;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Heebo', sans-serif;
+  background: linear-gradient(180deg, var(--water-main) 0%, var(--water-deep) 100%);
+  min-height: 100vh;
+  padding: 40px 24px 80px;
+  color: var(--deep);
+}
+
+h1 {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 800;
+  font-size: 32px;
+  margin-bottom: 8px;
+  color: var(--deep);
+}
+
+.subtitle {
+  font-size: 15px;
+  color: var(--deep);
+  opacity: 0.75;
+  margin-bottom: 40px;
+}
+
+.container { max-width: 1200px; margin: 0 auto; }
+
+section {
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(10px);
+  border-radius: 28px;
+  padding: 32px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 24px rgba(38, 80, 92, 0.10);
+}
+
+section h2 {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  margin-bottom: 4px;
+  color: var(--deep);
+}
+
+section .section-note {
+  font-size: 13px;
+  color: var(--deep);
+  opacity: 0.65;
+  margin-bottom: 24px;
+}
+
+.state-row {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.state-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.state-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--deep);
+  opacity: 0.7;
+  text-transform: uppercase;
+}
+
+/* ──────────────────────────────────────────────────────────
+   COMPONENT 1 — Image Bubble (בועת תמונה)
+   ────────────────────────────────────────────────────────── */
+.bubble {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  border: 3px solid rgba(255, 255, 255, 0.85);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 220ms ease, box-shadow 300ms ease, border-color 220ms ease;
+  animation: bubble-breath 4s ease-in-out infinite;
+  box-shadow:
+    inset 0 -8px 16px rgba(99, 207, 229, 0.25),
+    0 6px 16px rgba(38, 80, 92, 0.10);
+}
+
+/* Inner shine — top sparkle */
+.bubble::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  right: 28px;
+  width: 32px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  filter: blur(3px);
+}
+
+.bubble img {
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+  user-select: none;
+  pointer-events: none;
+}
+
+.bubble:active { transform: scale(0.96); }
+
+/* States */
+.bubble.zoharet {
+  border-color: var(--gold-hint);
+  box-shadow:
+    inset 0 -8px 16px rgba(99, 207, 229, 0.25),
+    0 0 24px var(--gold-hint),
+    0 6px 16px rgba(38, 80, 92, 0.10);
+  animation: bubble-hint 1.4s ease-in-out infinite;
+}
+
+.bubble.correct {
+  border-color: var(--success);
+  box-shadow:
+    inset 0 -8px 16px rgba(99, 207, 229, 0.25),
+    0 0 28px var(--success),
+    0 6px 16px rgba(38, 80, 92, 0.10);
+  animation: bubble-pop 600ms ease-out;
+}
+
+.bubble.wrong-pulse {
+  animation: bubble-shake 400ms ease-in-out;
+}
+
+@keyframes bubble-breath {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-4px) scale(1.02); }
+}
+
+@keyframes bubble-hint {
+  0%, 100% { box-shadow: inset 0 -8px 16px rgba(99,207,229,0.25), 0 0 18px var(--gold-hint), 0 6px 16px rgba(38,80,92,0.10); }
+  50%      { box-shadow: inset 0 -8px 16px rgba(99,207,229,0.25), 0 0 32px var(--gold-hint), 0 6px 16px rgba(38,80,92,0.10); }
+}
+
+@keyframes bubble-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+@keyframes bubble-shake {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-6px); }
+  50%      { transform: translateX(0); }
+  75%      { transform: translateX(6px); }
+}
+
+/* ──────────────────────────────────────────────────────────
+   COMPONENT 2 — Letter Coral (אלמוג-אות)
+   ────────────────────────────────────────────────────────── */
+.coral {
+  position: relative;
+  width: 160px;
+  height: 220px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  transition: transform 220ms ease;
+}
+
+.coral:active { transform: scale(0.95); }
+
+.coral-svg {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 160px;
+  height: 180px;
+  transition: filter 300ms ease, transform 300ms ease;
+}
+
+.coral-letter {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
+  font-size: 72px;
+  color: var(--deep);
+  line-height: 1;
+  z-index: 2;
+  transition: transform 300ms ease, text-shadow 300ms ease;
+}
+
+.coral.zoher .coral-letter {
+  transform: translateX(-50%) translateY(-8px);
+  text-shadow: 0 0 16px var(--gold-hint);
+}
+.coral.zoher .coral-svg {
+  filter: drop-shadow(0 0 12px var(--gold-hint));
+  animation: coral-sway 1.5s ease-in-out infinite;
+}
+
+.coral.correct-glow .coral-letter {
+  transform: translateX(-50%) translateY(-14px);
+  text-shadow: 0 0 18px var(--success);
+}
+.coral.correct-glow .coral-svg {
+  filter: drop-shadow(0 0 16px var(--success));
+  animation: coral-bloom 700ms ease-out;
+}
+
+@keyframes coral-sway {
+  0%, 100% { transform: translateX(-50%) rotate(-1deg); }
+  50%      { transform: translateX(-50%) rotate(1deg); }
+}
+
+@keyframes coral-bloom {
+  0%   { transform: translateX(-50%) scale(1); }
+  50%  { transform: translateX(-50%) scale(1.08); }
+  100% { transform: translateX(-50%) scale(1); }
+}
+
+/* Default ambient — gentle idle wobble */
+.coral .coral-svg {
+  animation: coral-idle 4s ease-in-out infinite;
+}
+@keyframes coral-idle {
+  0%, 100% { transform: translateX(-50%) rotate(-0.5deg); }
+  50%      { transform: translateX(-50%) rotate(0.5deg); }
+}
+
+/* Sand base under all corals */
+.sand-base {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140px;
+  height: 18px;
+  background: radial-gradient(ellipse, var(--sand) 0%, rgba(248, 227, 214, 0) 70%);
+  z-index: 0;
+}
+
+.coral-row {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 20px;
+}
+
+/* ──────────────────────────────────────────────────────────
+   COMPONENT 3 — Big Word Bubble (בועת מילה)
+   ────────────────────────────────────────────────────────── */
+.word-bubble {
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.65);
+  border: 4px solid rgba(255, 255, 255, 0.92);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 220ms ease, box-shadow 300ms ease;
+  animation: word-bubble-breath 5s ease-in-out infinite;
+  box-shadow:
+    inset 0 -16px 32px rgba(99, 207, 229, 0.20),
+    0 12px 32px rgba(38, 80, 92, 0.12);
+}
+
+.word-bubble::before {
+  content: '';
+  position: absolute;
+  top: 26px;
+  right: 52px;
+  width: 56px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  filter: blur(4px);
+}
+
+.word-text {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
+  font-size: 96px;
+  color: var(--deep);
+  line-height: 1;
+  user-select: none;
+}
+
+.word-bubble.pulsing {
+  animation: word-bubble-invite 1.8s ease-in-out infinite;
+}
+
+.word-bubble.spoken {
+  box-shadow:
+    inset 0 -16px 32px rgba(99, 207, 229, 0.20),
+    0 0 36px var(--success),
+    0 12px 32px rgba(38, 80, 92, 0.12);
+}
+
+@keyframes word-bubble-breath {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-6px) scale(1.015); }
+}
+
+@keyframes word-bubble-invite {
+  0%, 100% { transform: scale(1); box-shadow: inset 0 -16px 32px rgba(99,207,229,0.20), 0 0 18px var(--gold-hint), 0 12px 32px rgba(38,80,92,0.12); }
+  50%      { transform: scale(1.04); box-shadow: inset 0 -16px 32px rgba(99,207,229,0.20), 0 0 36px var(--gold-hint), 0 12px 32px rgba(38,80,92,0.12); }
+}
+
+/* ──────────────────────────────────────────────────────────
+   COMPONENT 4 — Dot Card (כרטיס נקודות לסגמנטציה)
+   ────────────────────────────────────────────────────────── */
+.dot-card {
+  width: 140px;
+  height: 140px;
+  background: rgba(255, 255, 255, 0.65);
+  border: 3px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: transform 220ms ease, box-shadow 300ms ease, border-color 220ms ease;
+  box-shadow:
+    inset 0 -8px 16px rgba(99, 207, 229, 0.25),
+    0 6px 16px rgba(38, 80, 92, 0.10);
+  position: relative;
+}
+
+.dot-card::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  right: 22px;
+  width: 24px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  filter: blur(2px);
+}
+
+.dot-card:active { transform: scale(0.95); }
+
+.dot {
+  width: 18px;
+  height: 18px;
+  background: var(--deep);
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot-card.selected {
+  border-color: var(--water-line);
+  box-shadow:
+    inset 0 -8px 16px rgba(99, 207, 229, 0.25),
+    0 0 24px var(--water-main),
+    0 6px 16px rgba(38, 80, 92, 0.10);
+}
+
+.dot-card.selected .dot {
+  background: var(--water-line);
+}
+
+/* ──────────────────────────────────────────────────────────
+   Note panels (לחצנים אינטראקטיביים לבדיקה)
+   ────────────────────────────────────────────────────────── */
+.try-it {
+  margin-top: 32px;
+  padding: 20px 24px;
+  background: var(--gold-hint);
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--deep);
+}
+.try-it strong { font-weight: 700; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>רכיבי המסע — Preview</h1>
+  <p class="subtitle">4 רכיבי SVG/CSS פנימיים. כל רכיב במצביו השונים. לבדוק בפועל לפני שיורד לקוד המסע.</p>
+
+  <!-- ───── COMPONENT 1: Image Bubble ───── -->
+  <section>
+    <h2>1. בועת תמונה</h2>
+    <p class="section-note">לשלבים 1.1 (צליל ראשון), 1.2 (חרוז), 3.1 (מילה ↔ תמונה). 4 מצבים.</p>
+
+    <div class="state-row">
+      <div class="state-cell">
+        <div class="bubble" onclick="this.classList.toggle('correct'); setTimeout(()=>this.classList.remove('correct'),700)">
+          <img src="assets/island-03/bayit.png" alt="בית">
+        </div>
+        <span class="state-label">Default</span>
+      </div>
+      <div class="state-cell">
+        <div class="bubble zoharet">
+          <img src="assets/island-03/marak.png" alt="מרק">
+        </div>
+        <span class="state-label">Zoharet (רמז)</span>
+      </div>
+      <div class="state-cell">
+        <div class="bubble correct">
+          <img src="assets/island-03/rimon.png" alt="רימון">
+        </div>
+        <span class="state-label">Correct</span>
+      </div>
+      <div class="state-cell">
+        <div class="bubble wrong-pulse">
+          <img src="assets/island-03/balon.png" alt="בלון">
+        </div>
+        <span class="state-label">Wrong-pulse</span>
+      </div>
+    </div>
+
+    <div class="try-it">
+      <strong>נסי:</strong> לחצי על "Default" → היא תתקפץ למצב Correct.
+      "Zoharet" — האנימציה רצה בלולאה (זה הרמז אחרי טעות).
+      "Wrong-pulse" — רעידה קצרה ללא אדום (רענני לראות שוב).
+    </div>
+  </section>
+
+  <!-- ───── COMPONENT 2: Letter Coral ───── -->
+  <section>
+    <h2>2. אלמוגי אותיות</h2>
+    <p class="section-note">לשלב 2 (אות+צליל). 5 אותיות: מָ · רָ · בָּ · תָּ · לָ. שורה ראשונה — Default. שורה שנייה — Zoher (רמז). שורה שלישית — Correct-glow.</p>
+
+    <div style="font-size: 12px; font-weight: 600; opacity: 0.7; margin-bottom: 8px;">Default</div>
+    <div class="coral-row">
+      <div class="coral">
+        <span class="coral-letter">מָ</span>
+        <svg class="coral-svg" viewBox="0 0 160 180" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="coralGrad1" cx="50%" cy="60%" r="60%">
+              <stop offset="0%" stop-color="#FFC0AB"/>
+              <stop offset="100%" stop-color="#FFA98D"/>
+            </radialGradient>
+          </defs>
+          <!-- Main coral trunk -->
+          <path d="M80 180 Q70 130 65 100 Q55 70 75 50 Q80 40 80 30 Q80 20 90 30 Q95 50 90 70 Q100 90 95 120 Q90 150 90 180 Z" fill="url(#coralGrad1)"/>
+          <!-- Side branches -->
+          <ellipse cx="55" cy="110" rx="14" ry="20" fill="url(#coralGrad1)" transform="rotate(-25 55 110)"/>
+          <ellipse cx="108" cy="120" rx="12" ry="18" fill="url(#coralGrad1)" transform="rotate(20 108 120)"/>
+          <ellipse cx="65" cy="80" rx="10" ry="14" fill="url(#coralGrad1)" transform="rotate(-15 65 80)"/>
+          <!-- Sand base -->
+          <ellipse cx="80" cy="178" rx="50" ry="8" fill="#F8E3D6" opacity="0.7"/>
+        </svg>
+      </div>
+
+      <div class="coral">
+        <span class="coral-letter">רָ</span>
+        <svg class="coral-svg" viewBox="0 0 160 180" xmlns="http://www.w3.org/2000/svg">
+          <path d="M80 180 Q72 130 68 100 Q58 70 78 50 Q83 40 83 30 Q83 20 93 30 Q97 50 92 70 Q102 90 97 120 Q92 150 92 180 Z" fill="url(#coralGrad1)"/>
+          <ellipse cx="58" cy="115" rx="13" ry="19" fill="url(#coralGrad1)" transform="rotate(-22 58 115)"/>
+          <ellipse cx="110" cy="125" rx="11" ry="17" fill="url(#coralGrad1)" transform="rotate(22 110 125)"/>
+          <ellipse cx="68" cy="85" rx="9" ry="13" fill="url(#coralGrad1)" transform="rotate(-12 68 85)"/>
+          <ellipse cx="80" cy="178" rx="50" ry="8" fill="#F8E3D6" opacity="0.7"/>
+        </svg>
+      </div>
+
+      <div class="coral">
+        <span class="coral-letter">בָּ</span>
+        <svg class="coral-svg" viewBox="0 0 160 180" xmlns="http://www.w3.org/2000/svg">
+          <path d="M80 180 Q70 130 65 100 Q55 70 75 50 Q80 40 80 30 Q80 20 90 30 Q95 50 90 70 Q100 90 95 120 Q90 150 90 180 Z" fill="url(#coralGrad1)"/>
+          <ellipse cx="55" cy="110" rx="14" ry="20" fill="url(#coralGrad1)" transform="rotate(-25 55 110)"/>
+          <ellipse cx="108" cy="120" rx="12" ry="18" fill="url(#coralGrad1)" transform="rotate(20 108 120)"/>
+          <ellipse cx="65" cy="80" rx="10" ry="14" fill="url(#coralGrad1)" transform="rotate(-15 65 80)"/>
+          <ellipse cx="80" cy="178" rx="50" ry="8" fill="#F8E3D6" opacity="0.7"/>
+        </svg>
+      </div>
+
+      <div class="coral">
+        <span class="coral-letter">תָּ</span>
+        <svg class="coral-svg" viewBox="0 0 160 180" xmlns="http://www.w3.org/2000/svg">
+          <path d="M80 180 Q72 130 68 100 Q58 70 78 50 Q83 40 83 30 Q83 20 93 30 Q97 50 92 70 Q102 90 97 120 Q92 150 92 180 Z" fill="url(#coralGrad1)"/>
+          <ellipse cx="58" cy="115" rx="13" ry="19" fill="url(#coralGrad1)" transform="rotate(-22 58 115)"/>
+          <ellipse cx="110" cy="125" rx="11" ry="17" fill="url(#coralGrad1)" transform="rotate(22 110 125)"/>
+          <ellipse cx="80" cy="178" rx="50" ry="8" fill="#F8E3D6" opacity="0.7"/>
+        </svg>
+      </div>
+
+      <div class="coral">
+        <span class="coral-letter">לָ</span>
+        <svg class="coral-svg" viewBox="0 0 160 180" xmlns="http://www.w3.org/2000/svg">
+          <path d="M80 180 Q70 130 65 100 Q55 70 75 50 Q80 40 80 30 Q80 20 90 30 Q95 50 90 70 Q100 90 95 120 Q90 150 90 180 Z" fill="url(#coralGrad1)"/>
+          <ellipse cx="55" cy="110" rx="14" ry="20" fill="url(#coralGrad1)" transform="rotate(-25 55 110)"/>
+          <ellipse cx="108" cy="120" rx="12" ry="18" fill="url(#coralGrad1)" transform="rotate(20 108 120)"/>
+          <ellipse cx="65" cy="80" rx="10" ry="14" fill="url(#coralGrad1)" transform="rotate(-15 65 80)"/>
+          <ellipse cx="80" cy="178" rx="50" ry="8" fill="#F8E3D6" opacity="0.7"/>
+        </svg>
+      </div>
+    </div>
+
+    <div style="font-size: 12px; font-weight: 600; opacity: 0.7; margin: 24px 0 8px;">Zoher (רמז — בלולאה)</div>
+    <div class="coral-row">
+      <div class="coral zoher">
+        <span class="coral-letter">מָ</span>
+        <svg class="coral-svg" viewBox="0 0 160 180" xmlns="http://www.w3.org/2000/svg">
+          <path d="M80 180 Q70 130 65 100 Q55 70 75 50 Q80 40 80 30 Q80 20 90 30 Q95 50 90 70 Q100 90 95 120 Q90 150 90 180 Z" fill="url(#coralGrad1)"/>
+          <ellipse cx="55" cy="110" rx="14" ry="20" fill="url(#coralGrad1)" transform="rotate(-25 55 110)"/>
+          <ellipse cx="108" cy="120" rx="12" ry="18" fill="url(#coralGrad1)" transform="rotate(20 108 120)"/>
+          <ellipse cx="65" cy="80" rx="10" ry="14" fill="url(#coralGrad1)" transform="rotate(-15 65 80)"/>
+          <ellipse cx="80" cy="178" rx="50" ry="8" fill="#F8E3D6" opacity="0.7"/>
+        </svg>
+      </div>
+    </div>
+
+    <div style="font-size: 12px; font-weight: 600; opacity: 0.7; margin: 24px 0 8px;">Correct-glow (לאחר טאפ נכון)</div>
+    <div class="coral-row">
+      <div class="coral correct-glow">
+        <span class="coral-letter">מָ</span>
+        <svg class="coral-svg" viewBox="0 0 160 180" xmlns="http://www.w3.org/2000/svg">
+          <path d="M80 180 Q70 130 65 100 Q55 70 75 50 Q80 40 80 30 Q80 20 90 30 Q95 50 90 70 Q100 90 95 120 Q90 150 90 180 Z" fill="url(#coralGrad1)"/>
+          <ellipse cx="55" cy="110" rx="14" ry="20" fill="url(#coralGrad1)" transform="rotate(-25 55 110)"/>
+          <ellipse cx="108" cy="120" rx="12" ry="18" fill="url(#coralGrad1)" transform="rotate(20 108 120)"/>
+          <ellipse cx="65" cy="80" rx="10" ry="14" fill="url(#coralGrad1)" transform="rotate(-15 65 80)"/>
+          <ellipse cx="80" cy="178" rx="50" ry="8" fill="#F8E3D6" opacity="0.7"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="try-it">
+      <strong>הערה:</strong> ה-SVG של האלמוג הוא flat-vector פשוט שאני בניתי — לא ב-ChatGPT. אם הוא לא יושב מספיק טוב, אפשר לייצר תמונת PNG של אלמוג ולשים אות בנפרד מעל. כרגע: 1 וריאציה גרפית, 5 אותיות שונות.
+    </div>
+  </section>
+
+  <!-- ───── COMPONENT 3: Big Word Bubble ───── -->
+  <section>
+    <h2>3. בועת מילה גדולה</h2>
+    <p class="section-note">לשלב 4 (decoding אדפטיבי). מילה מנוקדת בתוך בועה ענקית. 3 מצבים.</p>
+
+    <div class="state-row">
+      <div class="state-cell">
+        <div class="word-bubble">
+          <span class="word-text">אִמָּא</span>
+        </div>
+        <span class="state-label">Default</span>
+      </div>
+      <div class="state-cell">
+        <div class="word-bubble pulsing">
+          <span class="word-text">בָּא</span>
+        </div>
+        <span class="state-label">Pulsing (מזמין)</span>
+      </div>
+      <div class="state-cell">
+        <div class="word-bubble spoken">
+          <span class="word-text">אִמָּא</span>
+        </div>
+        <span class="state-label">Spoken (אחרי השמעה)</span>
+      </div>
+    </div>
+
+    <div class="try-it">
+      <strong>הערה:</strong> המילה היא טקסט מנוקד רגיל ב-Rubik 96px. הניקוד צריך להתרנדר נכון בכל דפדפן. בדוק בכרום ובספארי.
+    </div>
+  </section>
+
+  <!-- ───── COMPONENT 4: Dot Card ───── -->
+  <section>
+    <h2>4. כרטיס נקודות (סגמנטציה)</h2>
+    <p class="section-note">לשלב 1.3 (אדפטיבי — כמה צלילים במילה). 3 וריאנטים: • / •• / •••. לחיצה = selected.</p>
+
+    <div class="state-row">
+      <div class="state-cell">
+        <div class="dot-card" onclick="this.classList.toggle('selected')">
+          <span class="dot"></span>
+        </div>
+        <span class="state-label">1 צליל</span>
+      </div>
+      <div class="state-cell">
+        <div class="dot-card selected" onclick="this.classList.toggle('selected')">
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+        <span class="state-label">2 צלילים (Selected)</span>
+      </div>
+      <div class="state-cell">
+        <div class="dot-card" onclick="this.classList.toggle('selected')">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+        <span class="state-label">3 צלילים</span>
+      </div>
+    </div>
+
+    <div class="try-it">
+      <strong>נסי:</strong> לחצי על כל אחת מהן — מצב selected נדלק/נכבה.
+    </div>
+  </section>
+
+  <!-- ───── Summary ───── -->
+  <section style="background: rgba(255,255,255,0.95);">
+    <h2>סיכום</h2>
+    <p style="font-size: 15px; line-height: 1.8;">
+      4 רכיבים מוכנים. אם משהו כאן לא מתאים — תיקון מיידי לפני בניית המסע.
+      <br><br>
+      <strong>שאלות שכדאי לבדוק:</strong>
+    </p>
+    <ul style="font-size: 14px; line-height: 2; padding-right: 22px;">
+      <li>האם בועת התמונה (קומפ' 1) מספיק מזמינה לטאפ? יותר/פחות פעימה?</li>
+      <li>האלמוגים (קומפ' 2) — האם 5 אלמוגים דומים מדי? צריך וריאציה בצורה?</li>
+      <li>הניקוד בבועת המילה (קומפ' 3) — נראה נכון בכל דפדפן?</li>
+      <li>כרטיסי הנקודות (קומפ' 4) — הילדה בת 6 תבין שזה "ספור צלילים"?</li>
+    </ul>
+  </section>
+
+</div>
+
+</body>
+</html>

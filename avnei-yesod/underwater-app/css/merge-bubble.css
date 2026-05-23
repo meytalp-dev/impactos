@@ -1,0 +1,215 @@
+/* ============================================================
+   merge-bubble.css — משחקון 2 באי 1
+   "אוספים את החלקים" · מיזוג הברות בגרירה
+   ============================================================ */
+
+/* ===== Stage layout ===== */
+.merge-stage {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* ===== Foggy big bubble (target) ===== */
+.merge-big-bubble {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: clamp(220px, 42vw, 360px);
+  height: clamp(220px, 42vw, 360px);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255,255,255,0.85), rgba(255,255,255,0.2) 60%, transparent 80%),
+    radial-gradient(circle at 50% 50%, rgba(168, 232, 255, 0.42), rgba(115, 217, 209, 0.42));
+  border: 3px dashed rgba(255,255,255,0.75);
+  box-shadow:
+    inset 0 0 36px rgba(255,255,255,0.55),
+    0 0 30px rgba(255, 247, 200, 0.4),
+    0 0 60px rgba(168, 232, 255, 0.4);
+  display: grid;
+  place-items: center;
+  pointer-events: auto;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  animation: bubble-bob 4s ease-in-out infinite;
+}
+
+.merge-big-bubble::after {
+  content: "";
+  position: absolute;
+  inset: 12% 12% auto auto;
+  width: 26%;
+  height: 22%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  filter: blur(2.5px);
+  pointer-events: none;
+}
+
+/* fog state — when fragments are missing */
+.merge-big-bubble.fog-0 .merge-word-img { opacity: 0.20; filter: blur(8px) grayscale(0.4); }
+.merge-big-bubble.fog-1 .merge-word-img { opacity: 0.45; filter: blur(4px) grayscale(0.2); }
+.merge-big-bubble.fog-2 .merge-word-img { opacity: 0.75; filter: blur(1px); }
+.merge-big-bubble.fog-3 .merge-word-img { opacity: 1; filter: none; }
+
+.merge-big-bubble.fog-3 {
+  border-style: solid;
+  border-color: rgba(255,255,255,0.95);
+  box-shadow:
+    inset 0 0 50px rgba(255,255,255,0.85),
+    0 0 60px var(--i1-glow-warm, #FFF7C8),
+    0 0 120px rgba(255, 247, 200, 0.7);
+  animation: bubble-bob 4s ease-in-out infinite, big-complete-glow 1.6s ease-out;
+}
+
+@keyframes big-complete-glow {
+  0%   { transform: translate(-50%, -50%) scale(1); }
+  40%  { transform: translate(-50%, -50%) scale(1.12); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+.merge-big-bubble.drop-target {
+  border-color: var(--i1-glow-warm, #FFF7C8);
+  border-style: solid;
+  box-shadow:
+    inset 0 0 50px rgba(255,255,255,0.85),
+    0 0 50px var(--i1-glow-warm, #FFF7C8),
+    0 0 100px rgba(255, 247, 200, 0.6);
+}
+
+@keyframes bubble-bob {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+  50%      { transform: translate(-50%, -50%) translateY(-8px); }
+}
+
+.merge-word-img {
+  width: 68%;
+  height: 68%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 14px rgba(0,0,0,0.12));
+  pointer-events: none;
+  transition: opacity 0.6s ease, filter 0.6s ease;
+}
+
+/* ===== Draggable syllable bubbles ===== */
+.merge-fragment {
+  position: absolute;
+  width: clamp(86px, 14vw, 120px);
+  height: clamp(86px, 14vw, 120px);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255,255,255,0.95), rgba(255,255,255,0.25) 55%, transparent 78%),
+    radial-gradient(circle at 50% 50%, rgba(217, 210, 255, 0.55), rgba(168, 232, 255, 0.55));
+  border: 2.5px solid rgba(255,255,255,0.9);
+  box-shadow:
+    inset 0 0 26px rgba(255,255,255,0.55),
+    0 0 22px rgba(255, 247, 200, 0.5),
+    0 8px 22px rgba(0,0,0,0.1);
+  display: grid;
+  place-items: center;
+  cursor: grab;
+  pointer-events: auto;
+  touch-action: none; /* enable pointer-based drag on mobile */
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  animation: frag-float 3.5s ease-in-out infinite;
+  z-index: 5;
+}
+
+.merge-fragment::before {
+  content: "";
+  position: absolute;
+  inset: 14% 14% auto auto;
+  width: 26%;
+  height: 22%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  filter: blur(1.5px);
+  pointer-events: none;
+}
+
+.merge-fragment .speaker-icon {
+  width: 42%;
+  height: 42%;
+  fill: var(--text-main);
+  opacity: 0.6;
+}
+
+@keyframes frag-float {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50%      { transform: translateY(-6px) rotate(1deg); }
+}
+
+.merge-fragment.dragging {
+  cursor: grabbing;
+  animation: none;
+  transform: scale(1.1);
+  box-shadow:
+    inset 0 0 30px rgba(255,255,255,0.7),
+    0 0 36px var(--i1-glow-warm, #FFF7C8),
+    0 12px 30px rgba(0,0,0,0.2);
+  z-index: 100;
+}
+
+.merge-fragment.absorbed {
+  animation: absorb 0.6s ease-in forwards;
+  pointer-events: none;
+}
+
+@keyframes absorb {
+  0%   { transform: scale(1); opacity: 1; }
+  60%  { transform: scale(0.55); opacity: 0.6; }
+  100% { transform: scale(0.1); opacity: 0; }
+}
+
+.merge-fragment.return {
+  animation: return-home 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes return-home {
+  0%   { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.merge-fragment.wobble {
+  animation: merge-wobble 0.6s ease-in-out;
+}
+
+@keyframes merge-wobble {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(-6deg); }
+  40% { transform: rotate(6deg); }
+  60% { transform: rotate(-4deg); }
+  80% { transform: rotate(4deg); }
+}
+
+/* ===== Helper hint — gently pulses the next syllable ===== */
+.merge-fragment.hint {
+  animation: frag-hint 1.4s ease-in-out infinite;
+  box-shadow:
+    inset 0 0 30px rgba(255, 247, 200, 0.7),
+    0 0 30px var(--i1-glow-warm, #FFF7C8),
+    0 0 60px rgba(255, 247, 200, 0.5);
+}
+
+@keyframes frag-hint {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.12); }
+}
+
+/* ===== Particles trail when fragment is absorbed ===== */
+.absorb-particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--i1-glow-warm, #FFF7C8);
+  box-shadow: 0 0 8px var(--i1-glow-warm, #FFF7C8);
+  pointer-events: none;
+  animation: trail-fade 0.6s ease-out forwards;
+}
+
+@keyframes trail-fade {
+  0%   { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.2); }
+}

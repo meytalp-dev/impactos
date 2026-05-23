@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>להקות הדגיגים · עומק הים המואר</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/fish-schools.css">
+</head>
+<body>
+
+  <!-- SVG defs — gradients for fish bodies (referenced by CSS) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="fishGradMmm" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%"  stop-color="#A8E8FF"/>
+        <stop offset="55%" stop-color="#73D9D1"/>
+        <stop offset="100%" stop-color="#4FB8C9"/>
+      </linearGradient>
+      <linearGradient id="fishGradSss" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%"  stop-color="#FFE7A8"/>
+        <stop offset="55%" stop-color="#FFA98D"/>
+        <stop offset="100%" stop-color="#E27F66"/>
+      </linearGradient>
+      <linearGradient id="fishGradCurrent" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%"  stop-color="#FFF9F4"/>
+        <stop offset="55%" stop-color="#D9D2FF"/>
+        <stop offset="100%" stop-color="#9C8FFF"/>
+      </linearGradient>
+
+      <!-- Reusable fish symbol -->
+      <symbol id="fishSym" viewBox="0 0 100 80">
+        <!-- tail -->
+        <path d="M 88 40 L 100 18 L 100 62 Z"
+              fill="currentColor" opacity="0.85"/>
+        <!-- body -->
+        <ellipse class="fish-body" cx="48" cy="40" rx="42" ry="28"/>
+        <!-- top fin -->
+        <path d="M 36 14 Q 48 4, 60 18 L 56 24 Q 46 18, 38 22 Z"
+              fill="currentColor" opacity="0.7"/>
+        <!-- bottom fin -->
+        <path d="M 36 66 Q 48 76, 60 62 L 56 56 Q 46 62, 38 58 Z"
+              fill="currentColor" opacity="0.7"/>
+        <!-- belly highlight -->
+        <ellipse cx="44" cy="50" rx="22" ry="10" fill="#FFFFFF" opacity="0.4"/>
+        <!-- eye -->
+        <circle cx="20" cy="34" r="5" fill="#FFFFFF"/>
+        <circle cx="20" cy="34" r="2.5" fill="#26505C"/>
+        <!-- smile -->
+        <path d="M 12 44 Q 18 48, 26 44" stroke="#26505C" stroke-width="1.5"
+              fill="none" stroke-linecap="round"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <main class="fish-scene">
+
+    <!-- Top bar -->
+    <header class="fish-top-bar">
+      <a href="map.html" class="back-btn" aria-label="חזרה למפה">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <div class="round-counter" id="roundCounter">דגיג 1/8</div>
+      <div style="width:44px"></div>
+    </header>
+
+    <!-- Stage area -->
+    <section class="fish-stage">
+
+      <div class="round-dots" id="roundDots" aria-hidden="true"></div>
+
+      <!-- 2 schools (the "homes") -->
+      <div class="schools-row" id="schoolsRow">
+
+        <!-- School: /מ/ -->
+        <div class="school" data-school-id="school-mmm" data-phoneme="מ" tabindex="0" role="button" aria-label="להקת מ — לחץ לשלוח דגיג">
+          <svg class="school-label-fish" viewBox="0 0 100 80" style="color: #4FB8C9">
+            <use href="#fishSym"/>
+          </svg>
+          <div class="school-label-text">
+            <span>להקת מ</span>
+            <svg class="school-speaker-icon" viewBox="0 0 24 24" fill="none">
+              <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
+              <path d="M15.5 8.5a4 4 0 0 1 0 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+            </svg>
+          </div>
+          <div class="accumulated-row" data-acc-for="school-mmm" aria-hidden="true"></div>
+        </div>
+
+        <!-- School: /ס/ -->
+        <div class="school" data-school-id="school-sss" data-phoneme="ס" tabindex="0" role="button" aria-label="להקת ס — לחץ לשלוח דגיג">
+          <svg class="school-label-fish" viewBox="0 0 100 80" style="color: #E27F66">
+            <use href="#fishSym"/>
+          </svg>
+          <div class="school-label-text">
+            <span>להקת ס</span>
+            <svg class="school-speaker-icon" viewBox="0 0 24 24" fill="none">
+              <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
+              <path d="M15.5 8.5a4 4 0 0 1 0 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+            </svg>
+          </div>
+          <div class="accumulated-row" data-acc-for="school-sss" aria-hidden="true"></div>
+        </div>
+      </div>
+
+      <!-- Center — current fish to sort -->
+      <div class="fish-stage-center">
+        <div class="current-fish-wrap" id="currentFishWrap" tabindex="0" role="button" aria-label="דגיג נוכחי — הקש לשמוע את המילה">
+          <svg class="current-fish-svg" id="currentFishSvg" viewBox="0 0 100 80" style="color: #9C8FFF">
+            <!-- A unique body for the current fish — purple/lavender -->
+            <!-- tail -->
+            <path d="M 88 40 L 100 18 L 100 62 Z" fill="currentColor" opacity="0.85"/>
+            <!-- body with lavender gradient -->
+            <ellipse cx="48" cy="40" rx="42" ry="28" fill="url(#fishGradCurrent)"/>
+            <!-- fins -->
+            <path d="M 36 14 Q 48 4, 60 18 L 56 24 Q 46 18, 38 22 Z" fill="currentColor" opacity="0.7"/>
+            <path d="M 36 66 Q 48 76, 60 62 L 56 56 Q 46 62, 38 58 Z" fill="currentColor" opacity="0.7"/>
+            <!-- belly highlight -->
+            <ellipse cx="44" cy="50" rx="22" ry="10" fill="#FFFFFF" opacity="0.55"/>
+            <!-- eye -->
+            <circle cx="20" cy="34" r="5" fill="#FFFFFF"/>
+            <circle cx="20" cy="34" r="2.5" fill="#26505C"/>
+            <!-- smile -->
+            <path d="M 12 44 Q 18 48, 26 44" stroke="#26505C" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          </svg>
+          <div class="current-word-bubble">
+            <span id="currentWord"></span>
+            <button class="replay-fish-btn" id="replayFishBtn" aria-label="שמע שוב את המילה" onclick="event.stopPropagation()">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
+                <path d="M15.5 8.5a4 4 0 0 1 0 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+              </svg>
+            </button>
+          </div>
+          <div class="fish-tap-hint">הקש על הדגיג לשמוע · הקש על הלהקה לשלוח</div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Tap-to-start overlay -->
+  <div class="tap-to-start" id="tapToStart">
+    <h2>להקות הדגיגים</h2>
+    <p>שתי להקות דגיגים חיות בשונית. כל להקה אוהבת צליל אחד.<br>שלחו כל דגיג הביתה — ללהקה שמתחילה <strong>באותו צליל</strong>.</p>
+    <button class="intro-speaker" id="introSpeaker" aria-label="שמע את ההסבר">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>הקש/י לשמוע את ההסבר</span>
+    </button>
+    <button class="start-btn" id="startBtn">בוא/י נתחיל</button>
+  </div>
+
+  <!-- Completion overlay -->
+  <div class="fish-completion" id="completion">
+    <h2>כל הדגיגים הביתה!</h2>
+    <p>שתי הלהקות שמחות — כל דגיג מצא את הצליל שלו.</p>
+    <a href="map.html" class="btn-primary">חזרה למפה</a>
+  </div>
+
+  <!-- ===== Shared modules ===== -->
+  <script src="js/state.js"></script>
+  <script src="js/shared/audio.js"></script>
+  <script src="js/shared/event-logger.js" onerror="window.AvneiEventLogger = { log: function(){} }"></script>
+
+  <script>
+  // ============================================================
+  // להקות הדגיגים — Fish Schools · אי 2
+  // מנגנון: phoneme categorization (sort into "phoneme home")
+  // אומת בפרפלקסיטי 23.5.2026 — 2 קטגוריות לרמה 1-2
+  // ============================================================
+
+  const ISLAND_ID = 2;
+  const GAME_ID = 'fish-schools';
+
+  // ===== State =====
+  const state = {
+    rounds: [],
+    schools: [],
+    wordAudio: {},
+    idx: 0,
+    mistakesInRound: 0,
+    correctCount: 0,
+    accumulatedBySchool: {},
+    busy: false,
+    sessionId: 'fs_' + Date.now(),
+  };
+
+  // ===== DOM refs =====
+  const $ = (id) => document.getElementById(id);
+  const elRow      = $('schoolsRow');
+  const elCenter   = $('currentFishWrap');
+  const elWord     = $('currentWord');
+  const elDots     = $('roundDots');
+  const elCounter  = $('roundCounter');
+  const elReplay   = $('replayFishBtn');
+
+  function renderDots() {
+    elDots.innerHTML = '';
+    state.rounds.forEach((r, i) => {
+      const dot = document.createElement('div');
+      dot.className = 'round-dot';
+      if (i < state.idx) dot.classList.add('correct');
+      else if (i === state.idx) dot.classList.add('current');
+      elDots.appendChild(dot);
+    });
+  }
+
+  function updateCounter() {
+    elCounter.textContent = `דגיג ${state.idx + 1}/${state.rounds.length}`;
+  }
+
+  function getCurrentRound() {
+    return state.rounds[state.idx];
+  }
+
+  function loadRound() {
+    state.mistakesInRound = 0;
+    state.busy = false;
+
+    elCenter.classList.remove('visible', 'wrong-jiggle', 'swimming-to-school');
+    elCenter.style.removeProperty('--swim-dx');
+    elCenter.style.removeProperty('--swim-dy');
+    document.querySelectorAll('.school').forEach(s => {
+      s.classList.remove('accepting', 'hint-pulse', 'disabled');
+    });
+
+    const r = getCurrentRound();
+    elWord.textContent = r.word;
+    renderDots();
+    updateCounter();
+
+    // הוף — דגיג חדש שוחה למרכז
+    setTimeout(() => {
+      elCenter.classList.add('visible');
+      // השמע אוטומטית את המילה אחרי שהדגיג הופיע
+      setTimeout(() => playWord(), 700);
+    }, 250);
+  }
+
+  function playWord() {
+    const r = getCurrentRound();
+    const key = state.wordAudio[r.word];
+    if (key) AvneiAudio.play(key);
+  }
+
+  function playSchoolPhoneme(schoolId) {
+    const school = state.schools.find(s => s.id === schoolId);
+    if (school && school.phoneme_audio) {
+      AvneiAudio.play(school.phoneme_audio);
+    }
+  }
+
+  function logEvent(eventType, payload) {
+    try {
+      if (window.AvneiEventLogger && AvneiEventLogger.log) {
+        AvneiEventLogger.log({
+          session_id: state.sessionId,
+          activity_type: GAME_ID,
+          primary_island: ISLAND_ID,
+          event_type: eventType,
+          round_id: getCurrentRound()?.id,
+          ...payload,
+        });
+      }
+    } catch (e) { /* fail-safe */ }
+  }
+
+  function handleSchoolTap(schoolId) {
+    if (state.busy) return;
+    const r = getCurrentRound();
+    const isCorrect = (schoolId === r.correct_school);
+    if (isCorrect) onCorrect(schoolId);
+    else onWrong(schoolId);
+  }
+
+  // playChain — שרשור אודיו עם delay מותאם פר-פריט
+  function playChain(steps) {
+    let i = 0;
+    const next = () => {
+      if (i >= steps.length) return;
+      const step = steps[i++];
+      const a = new Audio('assets/audio/' + encodeURIComponent(step.key) + '.mp3');
+      a.onended = () => setTimeout(next, step.delayAfter || 0);
+      a.onerror = () => setTimeout(next, step.delayAfter || 0);
+      a.play().catch(() => setTimeout(next, step.delayAfter || 0));
+    };
+    next();
+  }
+
+  function onCorrect(schoolId) {
+    state.busy = true;
+    state.correctCount++;
+    const school = state.schools.find(s => s.id === schoolId);
+    if (!school) return;
+
+    // 1) הלהקה "קולטת" את הדגיג — glow + scale
+    const schoolEl = document.querySelector(`.school[data-school-id="${schoolId}"]`);
+    schoolEl.classList.add('accepting');
+
+    // 2) הדגיג שוחה אל הלהקה (translate לפי כיוון)
+    const centerRect = elCenter.getBoundingClientRect();
+    const schoolRect = schoolEl.getBoundingClientRect();
+    const dx = (schoolRect.left + schoolRect.width / 2) - (centerRect.left + centerRect.width / 2);
+    const dy = (schoolRect.top + schoolRect.height / 2) - (centerRect.top + centerRect.height / 2);
+    elCenter.style.setProperty('--swim-dx', dx + 'px');
+    elCenter.style.setProperty('--swim-dy', dy + 'px');
+    elCenter.classList.add('swimming-to-school');
+
+    // 3) פידבק קולי + צליל הלהקה: "כן! הדגיג חזר הביתה." → פונמת הלהקה
+    setTimeout(() => {
+      playChain([
+        { key: 'fish-feedback-correct', delayAfter: 400 },
+        { key: school.phoneme_audio, delayAfter: 0 },
+      ]);
+    }, 350);
+
+    // 4) הוסף דגיג מצטבר ללהקה
+    setTimeout(() => {
+      addAccumulatedFish(schoolId);
+    }, 950);
+
+    logEvent('answer_correct', {
+      is_correct: true,
+      answer_school: schoolId,
+      mistakes: state.mistakesInRound,
+    });
+
+    // 5) המתן לסיום הרצף הקולי ואז התקדם
+    setTimeout(advanceRound, 4200);
+  }
+
+  function addAccumulatedFish(schoolId) {
+    const container = document.querySelector(`.accumulated-row[data-acc-for="${schoolId}"]`);
+    if (!container) return;
+    const school = state.schools.find(s => s.id === schoolId);
+    const color = school.phoneme === 'מ' ? '#4FB8C9' : '#E27F66';
+
+    const fish = document.createElement('div');
+    fish.className = 'accumulated-fish';
+    fish.style.color = color;
+    fish.innerHTML = `<svg viewBox="0 0 100 80" style="width:100%;height:100%;color:${color}"><use href="#fishSym"/></svg>`;
+    container.appendChild(fish);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => fish.classList.add('appeared'));
+    });
+  }
+
+  function onWrong(schoolId) {
+    state.mistakesInRound++;
+    elCenter.classList.remove('wrong-jiggle');
+    void elCenter.offsetWidth;
+    elCenter.classList.add('wrong-jiggle');
+
+    logEvent('answer_wrong', {
+      is_correct: false,
+      answer_school: schoolId,
+      mistakes: state.mistakesInRound,
+    });
+
+    if (state.mistakesInRound === 1) {
+      // טעות 1: ג'יגלינג + השמעה חוזרת של המילה
+      setTimeout(playWord, 700);
+    } else if (state.mistakesInRound === 2) {
+      // טעות 2: רמז — להקות פועמות + הסבר ש"אפשר לשמוע את צליל הלהקה"
+      document.querySelectorAll('.school').forEach(s => s.classList.add('hint-pulse'));
+      AvneiAudio.play('fish-hint-listen-to-school');
+    } else {
+      // טעות 3+: ניתוב אוטומטי ללהקה הנכונה
+      state.busy = true;
+      AvneiAudio.play('fish-feedback-try-again');
+      setTimeout(() => {
+        const r = getCurrentRound();
+        onCorrect(r.correct_school);
+      }, 2000);
+    }
+  }
+
+  function advanceRound() {
+    state.idx++;
+    if (state.idx >= state.rounds.length) {
+      finishGame();
+      return;
+    }
+    loadRound();
+  }
+
+  function finishGame() {
+    AvneiAudio.play('fish-finale-complete');
+    spawnConfetti(60);
+    logEvent('game_complete', {
+      correct_count: state.correctCount,
+      total_rounds: state.rounds.length,
+    });
+    markQuestCompleted();
+    setTimeout(() => $('completion').classList.add('show'), 1400);
+  }
+
+  function spawnConfetti(count) {
+    const container = $('confettiLayer') || (() => {
+      const c = document.createElement('div');
+      c.id = 'confettiLayer';
+      c.className = 'confetti-layer';
+      document.body.appendChild(c);
+      return c;
+    })();
+    const colors = ['#A8E8FF', '#73D9D1', '#FFA98D', '#FFE7A8', '#D9D2FF', '#B8F2CF'];
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('span');
+      p.className = 'confetti-piece';
+      p.style.left = Math.random() * 100 + 'vw';
+      p.style.background = colors[Math.floor(Math.random() * colors.length)];
+      p.style.animationDelay = (Math.random() * 0.8) + 's';
+      p.style.animationDuration = (2.4 + Math.random() * 2.2) + 's';
+      p.style.width = (6 + Math.random() * 8) + 'px';
+      p.style.height = (10 + Math.random() * 14) + 'px';
+      p.style.transform = `rotate(${Math.random() * 360}deg)`;
+      container.appendChild(p);
+      setTimeout(() => p.remove(), 5500);
+    }
+  }
+
+  function markQuestCompleted() {
+    try {
+      const key = 'island2-quests:completed';
+      const completed = JSON.parse(localStorage.getItem(key) || '[]');
+      if (!completed.includes(GAME_ID)) {
+        completed.push(GAME_ID);
+        localStorage.setItem(key, JSON.stringify(completed));
+      }
+    } catch (e) { /* fail-safe */ }
+  }
+
+  // ===== Event bindings =====
+  document.querySelectorAll('.school').forEach(schoolEl => {
+    schoolEl.addEventListener('click', (e) => {
+      AvneiAudio.unlock();
+      // אם נגעו ב-label-text (וקטור הצליל) — רק השמע פונמה
+      if (e.target.closest('.school-label-text')) {
+        const sid = schoolEl.dataset.schoolId;
+        playSchoolPhoneme(sid);
+        return;
+      }
+      handleSchoolTap(schoolEl.dataset.schoolId);
+    });
+  });
+
+  elCenter.addEventListener('click', () => {
+    AvneiAudio.unlock();
+    playWord();
+  });
+  elReplay.addEventListener('click', () => {
+    AvneiAudio.unlock();
+    playWord();
+  });
+
+  document.getElementById('introSpeaker').addEventListener('click', () => {
+    AvneiAudio.unlock();
+    const btn = document.getElementById('introSpeaker');
+    btn.classList.add('playing');
+    AvneiAudio.playSequence(['intro-fish-schools', 'intro-fish-mission'], 800);
+    setTimeout(() => btn.classList.remove('playing'), 14000);
+  });
+
+  // ===== Load data and start =====
+  async function loadAndStart() {
+    try {
+      const res = await fetch('data/island-02-fish-schools.json');
+      const data = await res.json();
+      state.rounds = data.rounds;
+      state.schools = data.schools;
+      state.wordAudio = data.word_audio;
+      loadRound();
+    } catch (e) {
+      console.error('Failed to load fish-schools data:', e);
+    }
+  }
+
+  document.getElementById('startBtn').addEventListener('click', async () => {
+    AvneiAudio.unlock();
+    document.getElementById('tapToStart').classList.add('hidden');
+    await loadAndStart();
+  });
+
+  // Reset support
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('reset') === '1') {
+    localStorage.removeItem('island2-quests:completed');
+    console.log('Island 2 quest progress reset.');
+  }
+
+  </script>
+
+</body>
+</html>

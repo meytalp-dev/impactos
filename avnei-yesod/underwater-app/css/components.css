@@ -208,9 +208,238 @@
   box-shadow: 0 6px 16px rgba(255, 200, 100, 0.25);
 }
 
+/* ============================================================
+   סטנדרט ויזואלי אבני יסוד (אומת ב-onboarding.html 23.5.2026)
+   .bubble · .coral · .word-bubble
+   מקור: feedback_avnei_yesod_visual_standard.md
+   ============================================================ */
+
+/* ===== Image bubble (180×180) ===== */
+
+.bubble {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  border: 3px solid rgba(255, 255, 255, 0.85);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 220ms ease, box-shadow 300ms ease, border-color 220ms ease;
+  animation: bubble-breath 4s ease-in-out infinite;
+  box-shadow:
+    inset 0 -8px 16px rgba(99, 207, 229, 0.25),
+    0 6px 16px rgba(38, 80, 92, 0.10);
+  user-select: none;
+}
+
+.bubble::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  right: 28px;
+  width: 32px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  filter: blur(3px);
+  pointer-events: none;
+}
+
+.bubble img {
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.bubble:active { transform: scale(0.96); }
+.bubble.locked { pointer-events: none; opacity: 0.85; }
+
+.bubble.zoharet {
+  border-color: var(--gold-hint);
+  box-shadow:
+    inset 0 -8px 16px rgba(99, 207, 229, 0.25),
+    0 0 28px var(--gold-hint),
+    0 6px 16px rgba(38, 80, 92, 0.10);
+  animation: bubble-hint 1.4s ease-in-out infinite;
+}
+
+.bubble.correct {
+  border-color: var(--success);
+  box-shadow:
+    inset 0 -8px 16px rgba(99, 207, 229, 0.25),
+    0 0 28px var(--success),
+    0 6px 16px rgba(38, 80, 92, 0.10);
+  animation: bubble-pop 700ms ease-out;
+}
+
+.bubble.wrong-pulse { animation: bubble-shake 400ms ease-in-out; }
+
+@keyframes bubble-breath {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-4px) scale(1.02); }
+}
+@keyframes bubble-hint {
+  0%, 100% { box-shadow: inset 0 -8px 16px rgba(99,207,229,0.25), 0 0 18px var(--gold-hint), 0 6px 16px rgba(38,80,92,0.10); }
+  50%      { box-shadow: inset 0 -8px 16px rgba(99,207,229,0.25), 0 0 32px var(--gold-hint), 0 6px 16px rgba(38,80,92,0.10); }
+}
+@keyframes bubble-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.14); }
+  100% { transform: scale(1); }
+}
+@keyframes bubble-shake {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-6px); }
+  75%      { transform: translateX(6px); }
+}
+
+/* ===== Letter coral (160×220) ===== */
+
+.coral {
+  position: relative;
+  width: 160px;
+  height: 220px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  transition: transform 220ms ease;
+  user-select: none;
+}
+
+.coral:active { transform: scale(0.95); }
+.coral.locked { pointer-events: none; opacity: 0.9; }
+
+.coral .coral-svg {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 160px;
+  height: 180px;
+  animation: coral-idle 4s ease-in-out infinite;
+}
+
+.coral .coral-letter {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Rubik', 'Heebo', sans-serif;
+  font-weight: 700;
+  font-size: 72px;
+  color: var(--deep);
+  line-height: 1;
+  z-index: 2;
+  transition: transform 300ms ease, text-shadow 300ms ease;
+}
+
+.coral.zoher .coral-letter {
+  transform: translateX(-50%) translateY(-8px);
+  text-shadow: 0 0 16px var(--gold-hint);
+}
+.coral.zoher .coral-svg {
+  filter: drop-shadow(0 0 12px var(--gold-hint));
+}
+
+.coral.correct-glow .coral-letter {
+  transform: translateX(-50%) translateY(-14px);
+  text-shadow: 0 0 18px var(--success);
+}
+.coral.correct-glow .coral-svg {
+  filter: drop-shadow(0 0 16px var(--success));
+  animation: coral-bloom 700ms ease-out;
+}
+
+@keyframes coral-idle {
+  0%, 100% { transform: translateX(-50%) rotate(-0.5deg); }
+  50%      { transform: translateX(-50%) rotate(0.5deg); }
+}
+@keyframes coral-bloom {
+  0%   { transform: translateX(-50%) scale(1); }
+  50%  { transform: translateX(-50%) scale(1.08); }
+  100% { transform: translateX(-50%) scale(1); }
+}
+
+/* ===== Big word bubble (380×380) ===== */
+
+.word-bubble {
+  width: 380px;
+  height: 380px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.65);
+  border: 4px solid rgba(255, 255, 255, 0.92);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 220ms ease, box-shadow 300ms ease;
+  animation: word-bubble-breath 5s ease-in-out infinite;
+  box-shadow:
+    inset 0 -16px 32px rgba(99, 207, 229, 0.20),
+    0 12px 32px rgba(38, 80, 92, 0.12);
+  user-select: none;
+}
+
+.word-bubble::before {
+  content: '';
+  position: absolute;
+  top: 26px;
+  right: 52px;
+  width: 56px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  filter: blur(4px);
+  pointer-events: none;
+}
+
+.word-bubble .word-text {
+  font-family: 'Rubik', 'Heebo', sans-serif;
+  font-weight: 700;
+  font-size: 96px;
+  color: var(--deep);
+  line-height: 1;
+  user-select: none;
+}
+
+.word-bubble.pulsing { animation: word-bubble-invite 1.8s ease-in-out infinite; }
+.word-bubble.spoken {
+  box-shadow:
+    inset 0 -16px 32px rgba(99, 207, 229, 0.20),
+    0 0 36px var(--success),
+    0 12px 32px rgba(38, 80, 92, 0.12);
+}
+
+@keyframes word-bubble-breath {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-6px) scale(1.015); }
+}
+@keyframes word-bubble-invite {
+  0%, 100% { transform: scale(1); box-shadow: inset 0 -16px 32px rgba(99,207,229,0.20), 0 0 18px var(--gold-hint), 0 12px 32px rgba(38,80,92,0.12); }
+  50%      { transform: scale(1.04); box-shadow: inset 0 -16px 32px rgba(99,207,229,0.20), 0 0 36px var(--gold-hint), 0 12px 32px rgba(38,80,92,0.12); }
+}
+
+/* ===== Mobile (≤640px) ===== */
+
+@media (max-width: 640px) {
+  .bubble { width: 140px; height: 140px; }
+  .coral { width: 130px; height: 180px; }
+  .coral .coral-svg { width: 130px; height: 150px; }
+  .coral .coral-letter { font-size: 58px; }
+  .word-bubble { width: 280px; height: 280px; }
+  .word-bubble .word-text { font-size: 76px; }
+}
+
 /* ===== Reduced motion ===== */
 
 @media (prefers-reduced-motion: reduce) {
   .btn-primary, .btn-secondary, .bubble-btn { transition: none; }
-  .bubble-btn { animation: none; }
+  .bubble-btn, .bubble, .coral .coral-svg, .word-bubble { animation: none; }
 }
