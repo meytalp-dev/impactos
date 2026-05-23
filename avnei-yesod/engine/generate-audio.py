@@ -33,13 +33,15 @@ LETTER_NAMES = {
 }
 
 # ─── 22 צלילי אותיות (עם פתח/קמץ) ───
+# חשוב: סיום בנקודה ("תַּ.") מאלץ TTS להגיד את ההברה ולעצור,
+# במקום להשלים אותה למילה נפוצה ("תהיה" וכו') — בלי הנקודה Hila הזויה.
 LETTER_SOUNDS = {
-    "sound-alef": "אַ", "sound-bet": "בַּ", "sound-gimel": "גַּ", "sound-dalet": "דַּ",
-    "sound-hey": "הַ", "sound-vav": "וַ", "sound-zayin": "זַ", "sound-het": "חַ",
-    "sound-tet": "טַ", "sound-yud": "יַ", "sound-kaf": "כַּ", "sound-lamed": "לַ",
-    "sound-mem": "מַ", "sound-nun": "נַ", "sound-samekh": "סַ", "sound-ayin": "עַ",
-    "sound-pey": "פַּ", "sound-tzadi": "צַ", "sound-qof": "קַ", "sound-resh": "רַ",
-    "sound-shin": "שַׁ", "sound-tav": "תַּ",
+    "sound-alef": "אַ.", "sound-bet": "בַּ.", "sound-gimel": "גַּ.", "sound-dalet": "דַּ.",
+    "sound-hey": "הַ.", "sound-vav": "וַ.", "sound-zayin": "זַ.", "sound-het": "חַ.",
+    "sound-tet": "טַ.", "sound-yud": "יַ.", "sound-kaf": "כַּ.", "sound-lamed": "לַ.",
+    "sound-mem": "מַ.", "sound-nun": "נַ.", "sound-samekh": "סַ.", "sound-ayin": "עַ.",
+    "sound-pey": "פַּ.", "sound-tzadi": "צַ.", "sound-qof": "קַ.", "sound-resh": "רַ.",
+    "sound-shin": "שַׁ.", "sound-tav": "תַּ.",
 }
 
 # ─── 7 ניקודים ───
@@ -77,7 +79,9 @@ async def generate_one(text: str, filename: Path):
     if filename.exists() and filename.stat().st_size > 0:
         print(f"  ✓ קיים: {filename.name}")
         return
-    communicate = edge_tts.Communicate(text, VOICE, rate="-15%", pitch="+5Hz")
+    # בלי pitch — pitch="+5Hz" + rate="-15%" גרם ל-Hila להזות מילים שלמות
+    # על הברה בודדת ("תַּ" → "תהיה"). rate=-10% בלי pitch נשמע נכון.
+    communicate = edge_tts.Communicate(text, VOICE, rate="-10%")
     await communicate.save(str(filename))
     size_kb = filename.stat().st_size / 1024
     print(f"  ✓ {filename.name} ({size_kb:.1f}KB)")
