@@ -15,7 +15,7 @@ try:
 except ImportError:
     sys.exit("חסר edge-tts. הריצי: pip install edge-tts")
 
-VOICE = "he-IL-HilaNeural"
+VOICE = "he-IL-AvriNeural"  # קביעה גלובלית 23.5.2026 — לא Hila!
 OUT_DIR = Path(__file__).parent / "audio" / "he"
 
 # ─── 22 שמות אותיות + 5 סופיות ───

@@ -163,8 +163,12 @@ window.AvneiLetterShape = (function() {
           letter: opt.letter,
         },
       });
+      // תיקון חוב #2 (23.5.2026): הצגת האות בתוך הקונכייה במקום רמקול אילם.
+      // הילדה צריכה לראות איזו אות יושבת בכל קונכייה, אחרת היא מנחשת.
+      // רמקול קטן בפינה — מסמן "הקש כדי לשמוע".
       AvneiShell.setContent(bubble, `
-        <svg width="46%" height="46%" viewBox="0 0 24 24" fill="none">
+        <div class="shell-letter-display" style="font-size: 3.2em; font-weight: 700; color: var(--coral); font-family: 'Frank Ruhl Libre', 'David', serif; line-height: 1;">${opt.letter}</div>
+        <svg class="shell-speaker-hint" width="20%" height="20%" viewBox="0 0 24 24" fill="none" style="position:absolute; bottom:8%; left:8%; opacity:0.6;">
           <path d="M5 9v6h4l5 4V5L9 9H5z" fill="var(--coral)"/>
           <path d="M16 8a4 4 0 010 8" stroke="var(--coral)" stroke-width="2.5" stroke-linecap="round" fill="none"/>
         </svg>
