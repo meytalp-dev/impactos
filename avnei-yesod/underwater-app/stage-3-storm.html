@@ -32,40 +32,23 @@
       <div class="storm-overlay" aria-hidden="true"></div>
       <div class="storm-flash" aria-hidden="true"></div>
 
-      <!-- Quest header — באנר + שורת 5 אלמוגי-ת׳ -->
-      <section class="quest-header">
+      <!-- Hunt header — באנר הוראה + 5 נקודות התקדמות -->
+      <section class="hunt-header">
         <div class="storm-banner" id="stormBanner">
           <span class="storm-banner-dot"></span>
-          <span id="stormBannerText">גן האלמוגים חשוך</span>
+          <span id="stormBannerText">הקש על האות ת׳</span>
         </div>
-        <div class="corals-row" id="coralsRow">
-          <!-- כל slot: SVG אחד (אותה צורת ת׳), הצבע משתנה דרך --coral-fill לפי dark/lit
-               אם מאוחר יותר מורידים PNG אמיתי — מחליפים את ה-svg ב-img. -->
-          <div class="coral-slot" data-i="0">
-            <svg class="coral-svg coral-dark" viewBox="0 0 60 80"><use href="#tavCoral"/></svg>
-            <svg class="coral-svg coral-lit"  viewBox="0 0 60 80"><use href="#tavCoral"/></svg>
-          </div>
-          <div class="coral-slot" data-i="1">
-            <svg class="coral-svg coral-dark" viewBox="0 0 60 80"><use href="#tavCoral"/></svg>
-            <svg class="coral-svg coral-lit"  viewBox="0 0 60 80"><use href="#tavCoral"/></svg>
-          </div>
-          <div class="coral-slot" data-i="2">
-            <svg class="coral-svg coral-dark" viewBox="0 0 60 80"><use href="#tavCoral"/></svg>
-            <svg class="coral-svg coral-lit"  viewBox="0 0 60 80"><use href="#tavCoral"/></svg>
-          </div>
-          <div class="coral-slot" data-i="3">
-            <svg class="coral-svg coral-dark" viewBox="0 0 60 80"><use href="#tavCoral"/></svg>
-            <svg class="coral-svg coral-lit"  viewBox="0 0 60 80"><use href="#tavCoral"/></svg>
-          </div>
-          <div class="coral-slot" data-i="4">
-            <svg class="coral-svg coral-dark" viewBox="0 0 60 80"><use href="#tavCoral"/></svg>
-            <svg class="coral-svg coral-lit"  viewBox="0 0 60 80"><use href="#tavCoral"/></svg>
-          </div>
+        <div class="hunt-progress" id="huntProgress" aria-label="התקדמות">
+          <span class="hunt-progress__dot" data-i="0"></span>
+          <span class="hunt-progress__dot" data-i="1"></span>
+          <span class="hunt-progress__dot" data-i="2"></span>
+          <span class="hunt-progress__dot" data-i="3"></span>
+          <span class="hunt-progress__dot" data-i="4"></span>
         </div>
       </section>
 
-      <!-- אזור פעילות — כל סיבוב mount-activity אחר -->
-      <div class="game-area quest-game-area" id="gameRoot"></div>
+      <!-- שטח הציד — אלמוגי-אותיות פזורים. JS ממלא 12 tiles ב-letterField -->
+      <div class="letter-field" id="letterField" aria-label="שטח הציד"></div>
 
       <div class="burst" id="burst"></div>
     </div>
@@ -105,7 +88,7 @@
       <span>הקש/י לשמוע</span>
     </button>
     <p>הייתה סערה. גן האלמוגים חשוך. נוני עצוב.</p>
-    <p>תפתרו <strong>5 חידות על האות ת׳</strong> ותדליקו 5 אלמוגי-ת׳ — וכל אלמוג יחזיר עוד אור לים.</p>
+    <p>בים יש אלמוגים עם אותיות. <strong>הקישו על כל ה-ת׳-ים</strong> — וכל אחד שתדליקו יחזיר עוד אור לים.</p>
     <button class="start-btn" id="startBtn">בוא/י נדליק!</button>
   </div>
 
@@ -232,56 +215,43 @@
   })();
   </script>
 
-  <script src="js/shared/scaffolding.js"></script>
-  <script src="js/shared/event-logger.js"></script>
-  <script src="js/shared/shell.js"></script>
-  <script src="js/shared/instruction.js"></script>
-  <script src="js/activities/sound-match.js"></script>
-  <script src="js/activities/letter-shape.js"></script>
-  <script src="js/activities/find-letter.js"></script>
+  <!-- מנגנון Hunt לא משתמש ב-activities (sound-match/letter-shape/find-letter).
+       state.js + audio.js + noni.js + feedback.js לבד מספיקים. -->
+
 
   <script>
   // ============================================================
-  // storm-quest controller — הסערה והאור (5 חידות מ׳ → 5 אלמוגים מאירים)
-  // מבנה מקביל ל-shell-quest. שינוי עיקרי: ההישג הסיפורי הוא הארת הים.
+  // storm-quest controller — "ציד האורות"
+  // ים מלא אלמוגי-אותיות. הילד מקליק על ת׳-ים. כל ת׳ נכון מאיר אזור.
+  // 5 ת׳-ים שהודלקו → הים זוהר מחדש.
   // ============================================================
 
   const ISLAND_ID = 3;
   const LETTER = 'ת';
   const TOTAL_CORALS = 5;
+  const TOTAL_TILES = 12;          // סך אלמוגים במסך
+  const NUM_TARGETS = TOTAL_CORALS; // 5 ת׳-ים מתוך 12
 
-  // עבור ת׳ יש כרגע רק sound-match items (10 פריטים — מספיק ל-5 סיבובים).
-  // letter-shape ו-find-letter קיימים רק ל-מ׳. כשיוסיפו data — אפשר לחזור ל-mix.
-  const STAGES = [
-    { activity: 'soundMatch',  variant: null },
-    { activity: 'soundMatch',  variant: null },
-    { activity: 'soundMatch',  variant: null },
-    { activity: 'soundMatch',  variant: null },
-    { activity: 'soundMatch',  variant: null },
-  ];
+  // אותיות מסיחות (לא ת׳) — מאי 23 ספט: ת מ ר ב ק הן אותיות אי 3,
+  // השאר עוד לא נלמדו אבל מותרות כצורות חזותיות.
+  const DISTRACTOR_LETTERS = ['מ', 'ר', 'ב', 'ק', 'ש', 'ל', 'נ', 'ד', 'ע'];
 
-  // הודעות באנר לפי כמה אלמוגים הודלקו (תחושת התקדמות סיפורית)
   const BANNER_MESSAGES = [
-    'גן האלמוגים חשוך',
-    'אור ראשון!',
+    'הקש על האות ת׳',
+    'יופי! אור ראשון',
     'הים מתחיל להאיר',
-    'עוד קצת חושך — ואור!',
+    'עוד קצת — ויש אור!',
     'כמעט כל הים זוהר',
     'הים זוהר שוב!',
   ];
 
   const state = {
-    soundMatchItems: [],
-    letterShapeAItems: [],
-    letterShapeBItems: [],
-    findLetterItems: [],
-    soundMatchPool: [],
     coralsLit: 0,
-    stageIdx: 0,
+    tiles: [],   // [{ el, letter, isTarget, lit }]
   };
 
   const elFrame   = document.getElementById('sceneFrame');
-  const elRoot    = document.getElementById('gameRoot');
+  const elField   = document.getElementById('letterField');
   const elBanner  = document.getElementById('stormBannerText');
   const elNoni    = document.getElementById('noniImg');
 
@@ -303,6 +273,13 @@
     if (elBanner) elBanner.textContent = BANNER_MESSAGES[litCount] || BANNER_MESSAGES[0];
   }
 
+  function updateProgressDots(litCount) {
+    document.querySelectorAll('.hunt-progress__dot').forEach((d, i) => {
+      if (i < litCount) d.classList.add('lit');
+      else d.classList.remove('lit');
+    });
+  }
+
   function updatePearlDisplay() {
     if (typeof getPearls === 'function') {
       document.getElementById('pearlCount').textContent = getPearls();
@@ -310,117 +287,112 @@
   }
 
   // ============================================================
-  // טעינת כל ה-data
+  // בניית שטח האלמוגים — 12 tiles פזורים ב-grid 4x3 עם offset אקראי
   // ============================================================
-  async function loadAllData() {
-    const [items03, letterShape, findLetter] = await Promise.all([
-      fetch('data/island-03-items.json').then(r => r.json()),
-      fetch('data/island-03-letter-shape.json').then(r => r.json()).catch(() => ({ items: [] })),
-      fetch('data/island-03-find-letter.json').then(r => r.json()).catch(() => ({ items: [] })),
+  function buildField() {
+    elField.innerHTML = '';
+    state.tiles = [];
+
+    // בחירת אותיות — 5 ת׳ + 7 מסיחים אקראיים
+    const distractors = shuffle(DISTRACTOR_LETTERS).slice(0, TOTAL_TILES - NUM_TARGETS);
+    const letters = shuffle([
+      ...Array(NUM_TARGETS).fill(LETTER),
+      ...distractors,
     ]);
 
-    state.soundMatchItems = (items03.items || []).filter(it =>
-      it.letter_in_focus === LETTER
-    );
-    state.letterShapeAItems = (letterShape.items || []).filter(it =>
-      it.letter === LETTER && it.variant === 'A'
-    );
-    state.letterShapeBItems = (letterShape.items || []).filter(it =>
-      it.letter === LETTER && it.variant === 'B'
-    );
-    state.findLetterItems = (findLetter.items || []).filter(it =>
-      it.target_letter === LETTER
-    );
+    // grid 4 עמודות × 3 שורות. כל תא בערך 25% רוחב × 33% גובה.
+    // הסחנו 0-12% בכל ציר כדי לתת תחושת פיזור אורגנית.
+    const cols = 4, rows = 3;
+    const cellW = 100 / cols, cellH = 100 / rows;
 
-    state.soundMatchPool = shuffle(state.soundMatchItems);
-  }
+    letters.forEach((letter, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
 
-  function getStageItems(stage) {
-    if (stage.activity === 'soundMatch') {
-      const next = state.soundMatchPool.shift();
-      return next ? [next] : [];
-    }
-    if (stage.activity === 'letterShape' && stage.variant === 'A') {
-      return state.letterShapeAItems.length > 0
-        ? [state.letterShapeAItems[0]]
-        : [];
-    }
-    if (stage.activity === 'letterShape' && stage.variant === 'B') {
-      return state.letterShapeBItems.length > 0
-        ? [state.letterShapeBItems[0]]
-        : [];
-    }
-    if (stage.activity === 'findLetter') {
-      return state.findLetterItems.length > 0
-        ? [state.findLetterItems[Math.floor(Math.random() * state.findLetterItems.length)]]
-        : [];
-    }
-    return [];
-  }
+      // מיקום בסיס + ג'יטר
+      const jitterX = (Math.random() - 0.5) * 8;   // ±4%
+      const jitterY = (Math.random() - 0.5) * 10;  // ±5%
+      const left = cellW * col + cellW * 0.5 + jitterX;
+      const top  = cellH * row + cellH * 0.5 + jitterY;
 
-  function runStage(stage) {
-    return new Promise((resolve) => {
-      let activity;
-      if (stage.activity === 'soundMatch')  activity = window.AvneiSoundMatch;
-      if (stage.activity === 'letterShape') activity = window.AvneiLetterShape;
-      if (stage.activity === 'findLetter')  activity = window.AvneiFindLetter;
+      const tile = document.createElement('div');
+      tile.className = 'letter-tile';
+      tile.style.left = `calc(${left}% - clamp(27px, 6.5vw, 36px))`;
+      tile.style.top  = `calc(${top}%  - clamp(27px, 6.5vw, 36px))`;
+      tile.style.animationDelay = (Math.random() * 2.5) + 's';
+      tile.dataset.letter = letter;
+      tile.dataset.target = (letter === LETTER) ? 'true' : 'false';
+      tile.setAttribute('role', 'button');
+      tile.setAttribute('aria-label', 'אלמוג עם האות ' + letter);
 
-      if (!activity) {
-        console.warn('Missing activity:', stage.activity);
-        return resolve({ skipped: true });
-      }
+      tile.innerHTML = `
+        <div class="letter-tile__shell">
+          <span class="letter-tile__letter">${letter}</span>
+        </div>
+        <div class="letter-tile__ripple"></div>
+      `;
 
-      const items = getStageItems(stage);
-      if (items.length === 0) {
-        console.warn('No items for', stage.activity, stage.variant, '— fallback to sound-match');
-        if (state.soundMatchPool.length > 0) {
-          const fb = state.soundMatchPool.shift();
-          window.AvneiSoundMatch.mount(elRoot, {
-            letter: LETTER,
-            supportLevel: 1,
-            items: [fb],
-            onItemComplete: () => {},
-            onActivityComplete: (summary) => {
-              window.AvneiSoundMatch.unmount();
-              resolve(summary);
-            },
-          });
-          return;
-        }
-        return resolve({ skipped: true });
-      }
+      tile.addEventListener('click', () => handleTileClick(tile, letter === LETTER));
+      elField.appendChild(tile);
 
-      activity.mount(elRoot, {
-        letter: LETTER,
-        supportLevel: 1,
-        variant: stage.variant,
-        items,
-        onItemComplete: () => {},
-        onActivityComplete: (summary) => {
-          activity.unmount();
-          resolve(summary);
-        },
-      });
+      state.tiles.push({ el: tile, letter, isTarget: letter === LETTER, lit: false });
     });
+
+    // בועות-אווירה (4 בועות נעות ברקע)
+    for (let i = 0; i < 4; i++) {
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble-deco';
+      const size = 14 + Math.random() * 28;
+      bubble.style.width = size + 'px';
+      bubble.style.height = size + 'px';
+      bubble.style.left = Math.random() * 95 + 'vw';
+      bubble.style.bottom = (-20 + Math.random() * 10) + 'vh';
+      bubble.style.animationDuration = (8 + Math.random() * 6) + 's';
+      bubble.style.animationDelay = (Math.random() * 4) + 's';
+      elField.appendChild(bubble);
+    }
   }
 
   // ============================================================
-  // האירוע המרכזי: אלמוג נדלק → הים נפתח לאור
+  // טיפול בלחיצה על אלמוג
   // ============================================================
-  function lightCoral(idx) {
-    const slot = document.querySelector(`.coral-slot[data-i="${idx}"]`);
-    if (!slot) return;
+  function handleTileClick(tile, isTarget) {
+    if (tile.classList.contains('lit')) return;       // כבר הואר
+    if (tile.classList.contains('wrong-flash')) return; // עוד באנימציית רעידה
 
-    // הילה גדולה רגעית — "פיצוץ אור"
-    spawnLightBurst(slot);
+    if (isTarget) {
+      onCorrectHit(tile);
+    } else {
+      onWrongHit(tile);
+    }
+  }
 
-    slot.classList.add('just-lit');
-    setTimeout(() => slot.classList.add('lit'), 200);
-    setTimeout(() => slot.classList.remove('just-lit'), 800);
+  function onCorrectHit(tile) {
+    spawnLightBurst(tile);
+    tile.classList.add('lit');
+
+    state.coralsLit++;
+    updateCoralCounter();
+    updateBanner(state.coralsLit);
+    updateProgressDots(state.coralsLit);
+    updatePearlDisplay();
 
     // עדכון רמת ההארה של ה-scene
     elFrame.classList.remove('lit-0','lit-1','lit-2','lit-3','lit-4','lit-5');
-    elFrame.classList.add('lit-' + (idx + 1));
+    elFrame.classList.add('lit-' + state.coralsLit);
+
+    AvneiAudio.play('great');
+    cheerNoni();
+
+    if (state.coralsLit >= TOTAL_CORALS) {
+      setTimeout(startFinale, 1100);
+    }
+  }
+
+  function onWrongHit(tile) {
+    tile.classList.add('wrong-flash');
+    setTimeout(() => tile.classList.remove('wrong-flash'), 600);
+    // ללא אודיו ענישה — לפי feedback_avnei_yesod_support_levels
   }
 
   function spawnLightBurst(anchorEl) {
@@ -435,7 +407,6 @@
 
   function cheerNoni() {
     if (window.AvneiNoni) AvneiNoni.setState('cheer');
-    // עדכון מצב ה-idle לפי התקדמות, לפני שחוזרים אליו
     if (window.STORM_setIdleByLit) window.STORM_setIdleByLit(state.coralsLit);
     setTimeout(() => {
       if (window.AvneiNoni) AvneiNoni.setState('idle');
@@ -519,43 +490,15 @@
   }
 
   // ============================================================
-  // הרצה ראשית — 5 שלבים ברצף, כל הצלחה מאירה אלמוג
+  // הרצה ראשית — בנייה של שטח הציד והפעלה
   // ============================================================
-  async function runQuest() {
+  function runQuest() {
     AvneiNoni.ready();
     updatePearlDisplay();
     updateCoralCounter();
     updateBanner(0);
-
-    for (let i = 0; i < TOTAL_CORALS; i++) {
-      state.stageIdx = i;
-      const stage = STAGES[i];
-      const result = await runStage(stage);
-
-      if (result && result.skipped) {
-        continue;
-      }
-
-      // האלמוג ה-i נדלק
-      lightCoral(state.coralsLit);
-      state.coralsLit++;
-      updateCoralCounter();
-      updateBanner(state.coralsLit);
-      updatePearlDisplay();
-      cheerNoni();
-
-      // המתנה ארוכה כדי שאודיו ההצלחה יסיים לפני ה-prompt הבא (לקח מ-shell-quest)
-      if (state.coralsLit < TOTAL_CORALS) {
-        await new Promise(r => setTimeout(r, 2400));
-      }
-    }
-
-    if (state.coralsLit >= TOTAL_CORALS) {
-      setTimeout(startFinale, 1000);
-    } else {
-      console.warn('Not enough stages completed:', state.coralsLit);
-      showCompletion();
-    }
+    updateProgressDots(0);
+    buildField();
   }
 
   // ============================================================
@@ -574,17 +517,10 @@
   // ============================================================
   // Bootstrap
   // ============================================================
-  document.getElementById('startBtn').addEventListener('click', async () => {
+  document.getElementById('startBtn').addEventListener('click', () => {
     AvneiAudio.unlock();
     document.getElementById('tapToStart').classList.add('hidden');
-
-    try {
-      await loadAllData();
-    } catch (e) {
-      console.error('Failed to load data:', e);
-      return;
-    }
-
+    // אין צורך לטעון data — האותיות נבחרות מקבוצה קבועה בקוד
     runQuest();
   });
 
