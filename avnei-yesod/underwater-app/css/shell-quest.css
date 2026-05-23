@@ -285,26 +285,51 @@
   filter: grayscale(0.25) !important;
 }
 
-/* Feedback bubble — friendlier appearance, cleaner pill */
+/* Feedback bubble — speech cloud beside noni (left of him), tail points right */
 .feedback-bubble {
-  background: linear-gradient(180deg, #FFFFFF 0%, #FFF9F4 100%) !important;
-  border-radius: 24px !important;
-  padding: 12px 20px !important;
+  background: #FFFFFF !important;
+  border-radius: 22px !important;
+  padding: 12px 18px !important;
   font-size: clamp(15px, 3.5vw, 19px) !important;
   font-weight: 700 !important;
   color: var(--text-main, #26505C) !important;
-  box-shadow: 0 8px 22px rgba(38, 80, 92, 0.18),
-              0 0 0 3px rgba(255, 255, 255, 0.7) inset !important;
-  border: 2px solid rgba(115, 217, 209, 0.4);
-  /* Position above noni (bottom-center) */
-  left: 50% !important;
-  right: auto !important;
-  bottom: clamp(140px, 22vh, 200px) !important;
-  transform: translateX(-50%) translateY(8px);
-  max-width: min(280px, 80vw);
+  box-shadow: 0 8px 22px rgba(38, 80, 92, 0.18) !important;
+  border: 2.5px solid rgba(115, 217, 209, 0.6) !important;
+  /* Beside noni: to his LEFT, at the same height as his upper body */
+  left: auto !important;
+  right: clamp(110px, 24vw, 170px) !important;
+  bottom: clamp(18vh, 20vh, 22vh) !important;
+  transform: translateY(8px);
+  max-width: min(220px, 56vw);
 }
 .feedback-bubble.show {
-  transform: translateX(-50%) translateY(0) !important;
+  transform: translateY(0) !important;
+}
+
+/* Tail — two triangles on the RIGHT side, pointing TO noni */
+.feedback-bubble::before,
+.feedback-bubble::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+.feedback-bubble::before {
+  /* outer (border-color) triangle */
+  top: 60%;
+  right: -16px;
+  transform: translateY(-50%);
+  border-width: 8px 0 8px 16px;
+  border-color: transparent transparent transparent rgba(115, 217, 209, 0.6);
+}
+.feedback-bubble::after {
+  /* inner (white) triangle */
+  top: 60%;
+  right: -11px;
+  transform: translateY(-50%);
+  border-width: 6px 0 6px 13px;
+  border-color: transparent transparent transparent #FFFFFF;
 }
 
 /* ===== Top bar (uses .quest-counter alongside built-in icon-btn/pearl-counter) ===== */
@@ -365,72 +390,66 @@
   transform: translateY(0);
 }
 
-/* ===== Noni — bottom-center, hugging the activity options ===== */
+/* ===== Noni — right side beside the options (not below — bubble was covering text) ===== */
 body .noni-fixed,
 .noni-fixed {
   position: fixed !important;
-  bottom: clamp(6px, 1.5vh, 16px) !important;
-  left: 50% !important;
-  right: auto !important;
+  bottom: clamp(10vh, 14vh, 18vh) !important;
+  right: clamp(4px, 3vw, 18px) !important;
+  left: auto !important;
   top: auto !important;
   width: clamp(96px, 20vw, 140px) !important;
   height: auto !important;
   z-index: 30 !important;
   pointer-events: none;
   filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.22));
-  transform: translateX(-50%);
   transform-origin: 50% 90%;
   animation: noni-idle-bob 3.6s ease-in-out infinite;
 }
-/* Landscape — bottom-center too, larger */
+/* Landscape — right side, mid-height */
 @media (orientation: landscape) and (min-width: 800px) {
   body .noni-fixed,
   .noni-fixed {
-    bottom: 16px !important;
-    left: 50% !important;
-    right: auto !important;
+    bottom: 18vh !important;
+    right: 20px !important;
+    left: auto !important;
     top: auto !important;
     width: clamp(130px, 16vw, 180px) !important;
-    transform: translateX(-50%);
   }
 }
 
-/* Keyframes — every step preserves translateX(-50%) so noni stays centered */
+/* Keyframes — noni positioned by right/bottom, no horizontal centering needed */
 @keyframes noni-idle-bob {
-  0%, 100% { transform: translateX(-50%) translateY(0) rotate(-2deg); }
-  50%      { transform: translateX(-50%) translateY(-8px) rotate(2deg); }
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%      { transform: translateY(-8px) rotate(2deg); }
 }
 
-/* Helping state — leans toward the activity */
 .noni-fixed.noni-helping { animation: noni-lean 1.2s ease-in-out infinite !important; }
 @keyframes noni-lean {
-  0%, 100% { transform: translateX(-50%) translateY(0)    rotate(-8deg)  scale(1.02); }
-  50%      { transform: translateX(-50%) translateY(-4px) rotate(-12deg) scale(1.05); }
+  0%, 100% { transform: translateY(0)    rotate(-8deg)  scale(1.02); }
+  50%      { transform: translateY(-4px) rotate(-12deg) scale(1.05); }
 }
 
-/* Hint state — bounces toward the correct answer */
 .noni-fixed.noni-hint { animation: noni-point 0.9s ease-in-out infinite !important; }
 @keyframes noni-point {
-  0%, 100% { transform: translateX(-50%) translateY(0)     rotate(-4deg); }
-  50%      { transform: translateX(-50%) translateY(-14px) rotate(-10deg) scale(1.06); }
+  0%, 100% { transform: translateY(0)     rotate(-4deg); }
+  50%      { transform: translateY(-14px) rotate(-10deg) scale(1.06); }
 }
 
-/* Cheer state — happy jumping */
 .noni-fixed.noni-cheering { animation: noni-cheer-jump 0.55s ease-in-out 3 !important; }
 @keyframes noni-cheer-jump {
-  0%, 100% { transform: translateX(-50%) translateY(0)     rotate(0); }
-  30%      { transform: translateX(-50%) translateY(-26px) rotate(-12deg) scale(1.08); }
-  60%      { transform: translateX(-50%) translateY(-26px) rotate(12deg)  scale(1.08); }
+  0%, 100% { transform: translateY(0)     rotate(0); }
+  30%      { transform: translateY(-26px) rotate(-12deg) scale(1.08); }
+  60%      { transform: translateY(-26px) rotate(12deg)  scale(1.08); }
 }
 
-/* Finale dance */
 .noni-fixed.dancing { animation: noni-dance 0.9s ease-in-out infinite !important; }
 @keyframes noni-dance {
-  0%   { transform: translateX(-50%) translateY(0)     rotate(-12deg) scale(1.0); }
-  25%  { transform: translateX(-50%) translateY(-22px) rotate(8deg)   scale(1.1); }
-  50%  { transform: translateX(-50%) translateY(-6px)  rotate(-18deg) scale(1.05); }
-  75%  { transform: translateX(-50%) translateY(-22px) rotate(14deg)  scale(1.1); }
-  100% { transform: translateX(-50%) translateY(0)     rotate(-12deg) scale(1.0); }
+  0%   { transform: translateY(0)     rotate(-12deg) scale(1.0); }
+  25%  { transform: translateY(-22px) rotate(8deg)   scale(1.1); }
+  50%  { transform: translateY(-6px)  rotate(-18deg) scale(1.05); }
+  75%  { transform: translateY(-22px) rotate(14deg)  scale(1.1); }
+  100% { transform: translateY(0)     rotate(-12deg) scale(1.0); }
 }
 
 /* ===== Confetti layer (finale) ===== */

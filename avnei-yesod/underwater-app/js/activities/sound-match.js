@@ -221,7 +221,7 @@ window.AvneiSoundMatch = (function() {
 
     const feedbackOptions = [
       { text: 'מצאנו יחד!', audio: 'great' },
-      { text: 'בדיוק!', audio: 'exactly' },
+      { text: 'יופי גדול!', audio: 'exactly' },
       { text: 'יופי, האות מתחילה לזהור', audio: 'right' },
     ];
     const fb = feedbackOptions[Math.floor(Math.random() * feedbackOptions.length)];
