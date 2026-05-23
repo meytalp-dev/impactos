@@ -15,13 +15,14 @@
 
 (function () {
   const ISLAND_ID = 3;
-  const LETTER = 'מ';
+  const LETTER = 'ק';
   const TOTAL_FISH = 5;
   const PODS_PER_ROUND = 4;
 
   // Distractor letters — fill the 3 non-correct pods per round.
   // Limited to letters with existing sound-XXX.mp3 audio (AvriNeural verified).
-  const DISTRACTOR_LETTERS = ['ר', 'ב', 'ק', 'ת', 'ל', 'נ', 'ש', 'ד', 'ה', 'ע'];
+  // Note: 'ק' is the target — it's excluded here so it appears exactly once per round.
+  const DISTRACTOR_LETTERS = ['ר', 'ב', 'מ', 'ת', 'ל', 'נ', 'ש', 'ד', 'ה', 'ע'];
 
   // Feedback audio pool — lesson #6, #18: only AvriNeural-verified files.
   // 'good.mp3' deliberately excluded — not confirmed as AvriNeural recording.
@@ -357,7 +358,7 @@
       elIntroSpeaker.classList.add('playing');
       // TODO: replace with intro-rescue-quest + intro-rescue-mission MP3s (AvriNeural)
       if (window.AvneiAudio) {
-        AvneiAudio.playSequence(['sound-mem', 'sound-mem'], 1200);
+        AvneiAudio.playSequence(['sound-qof', 'sound-qof'], 1200);
       }
       setTimeout(() => elIntroSpeaker.classList.remove('playing'), 4000);
     });
