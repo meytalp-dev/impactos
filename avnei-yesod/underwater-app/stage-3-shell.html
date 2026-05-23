@@ -522,9 +522,22 @@
     }
   }
 
+  // Mark this quest done so stage-3-island.html unlocks the next letter
+  function markQuestCompleted(questId) {
+    try {
+      const key = 'island3-quests:completed';
+      const completed = JSON.parse(localStorage.getItem(key) || '[]');
+      if (!completed.includes(questId)) {
+        completed.push(questId);
+        localStorage.setItem(key, JSON.stringify(completed));
+      }
+    } catch (e) {}
+  }
+
   function showCompletion() {
     if (typeof completeStage === 'function') completeStage(ISLAND_ID);
     if (typeof addSouvenir === 'function') addSouvenir('אלמוג אות זוהר');
+    markQuestCompleted('shell');
     document.getElementById('completion').classList.add('show');
     // Keep confetti going on the completion screen
     spawnConfetti(40);
