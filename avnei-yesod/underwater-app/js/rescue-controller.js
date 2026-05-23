@@ -384,8 +384,22 @@
   function showCompletion() {
     if (typeof completeStage === 'function') completeStage(ISLAND_ID);
     if (typeof addSouvenir === 'function') addSouvenir('להקת דגים זוהרת');
+    markQuestCompleted('rescue');
     elCompletion.classList.add('show');
     spawnConfetti(40);
+  }
+
+  // Quest tracking — stage-3-island.html reads island3-quests:completed
+  // to gate the next letter (ת׳ / storm) after rescue (ק׳) is done.
+  function markQuestCompleted(questId) {
+    try {
+      const key = 'island3-quests:completed';
+      const completed = JSON.parse(localStorage.getItem(key) || '[]');
+      if (!completed.includes(questId)) {
+        completed.push(questId);
+        localStorage.setItem(key, JSON.stringify(completed));
+      }
+    } catch (e) {}
   }
 
   // ============================================================
