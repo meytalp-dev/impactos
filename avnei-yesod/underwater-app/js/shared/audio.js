@@ -94,12 +94,13 @@ window.AvneiAudio = (function() {
     return Promise.resolve();
   }
 
-  // משחרר אודיו על iOS/Safari
+  // משחרר אודיו על iOS/Safari ע"י השמעת קובץ WAV שקט (ללא נתונים)
+  // (במקום sound-tav עם volume=0 שהיה זולג לאוזניים — באג שזוהה 23.5.2026)
+  const SILENT_WAV = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
   function unlock() {
     try {
-      const u = preload('sound-tav');
-      u.volume = 0;
-      u.play().then(() => { u.volume = 1; }).catch(() => {});
+      const u = new Audio(SILENT_WAV);
+      u.play().catch(() => {});
     } catch (e) {}
     unlocked = true;
   }
