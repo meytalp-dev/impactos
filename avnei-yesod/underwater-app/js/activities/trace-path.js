@@ -5,19 +5,26 @@
 // פדגוגיה: primary_island_id=19 (כתב יד), secondary=[3]
 // Lenient — אין כישלון על סטייה. coverage ≥ 0.6 = הצלחה.
 //
-// תלוי בנתוני path מ-data/island-03-trace-paths.json.
-// אם אין path data תקפים (status: awaiting_gpt_paths) — הפעילות מדלגת על עצמה.
+// 4 חזרות עם פיגום הולך וקטן:
+//   trial 0: מספרים + template + auto-hint
+//   trial 1: template בלבד (בלי מספרים, בלי auto-hint)
+//   trial 2: בלי שום עזרה
+//   trial 3: בלי שום עזרה (חזרה לקיבוע)
+// הקווים שצוירו ב-stroke קודם נשארים על המסך עד סוף ה-trial.
+// בין trials — כל הקווים מתאפסים והילד.ה מתחיל.ה את האות מחדש.
 // ============================================================
 
 window.AvneiTracePath = (function() {
 
   const ACTIVITY_TYPE = 'tracePath';
   const SVG_NS = 'http://www.w3.org/2000/svg';
+  const TOTAL_TRIALS = 4;
 
   let _root = null;
   let _letter = null;
   let _letterData = null;
   let _strokes = [];
+  let _trialIdx = 0;
   let _currentStrokeIdx = 0;
   let _supportLevel = 1;
   let _strokeStartTime = 0;
@@ -50,20 +57,9 @@ window.AvneiTracePath = (function() {
 
     _letterData = item;
     _strokes = item.strokes;
-    _currentStrokeIdx = 0;
-
-    _root.innerHTML = '';
-    AvneiInstruction.mount(_root, {
-      text: 'עקוב/י על האות עם האצבע',
-      onAudio: () => {
-        _hintUsed = true;
-        AvneiAudio.playLetterName(_letter);
-      },
-    });
-
-    buildStage();
+    _trialIdx = 0;
     AvneiNoni.setState('idle');
-    startStroke(0);
+    startTrial(0);
   }
 
   function isItemValid(item) {
@@ -75,7 +71,6 @@ window.AvneiTracePath = (function() {
     );
   }
 
-  // ===== Unmount =====
   function unmount() {
     if (_autoHintTimer) { clearTimeout(_autoHintTimer); _autoHintTimer = null; }
     if (window.AvneiInstruction) AvneiInstruction.unmount();
@@ -83,11 +78,63 @@ window.AvneiTracePath = (function() {
     _root = null;
   }
 
+  // ===== Trial flow =====
+  function startTrial(idx) {
+    _trialIdx = idx;
+    _currentStrokeIdx = 0;
+    _attempts = 0;
+
+    _root.innerHTML = '';
+    AvneiInstruction.mount(_root, {
+      text: trialInstructionText(idx),
+      onAudio: () => {
+        _hintUsed = true;
+        AvneiAudio.playLetterName(_letter);
+      },
+    });
+
+    buildStage();
+    AvneiNoni.setState('idle');
+    startStroke(0);
+  }
+
+  function trialInstructionText(idx) {
+    if (idx === 0) return 'עקוב/י על האות עם האצבע';
+    if (idx === 1) return 'עכשיו בלי המספרים — את.ה יודע/ת';
+    if (idx === 2) return 'עכשיו לבד';
+    return 'עוד פעם אחת — מצוין';
+  }
+
+  function finishTrial() {
+    if (_autoHintTimer) { clearTimeout(_autoHintTimer); _autoHintTimer = null; }
+
+    if (_trialIdx < TOTAL_TRIALS - 1) {
+      const remaining = TOTAL_TRIALS - _trialIdx - 1;
+      AvneiNoni.setState('cheer');
+      AvneiFeedback.show(remaining === 1
+        ? 'מצוין! עוד פעם אחת'
+        : 'יופי! ננסה שוב');
+      setTimeout(() => startTrial(_trialIdx + 1), 1800);
+    } else {
+      AvneiNoni.setState('cheer');
+      AvneiFeedback.show('האות מתחילה לזהור');
+      setTimeout(() => finishActivity(), 1600);
+    }
+  }
+
+  function finishActivity() {
+    _onActivityComplete({
+      correctCount: _strokes.length * TOTAL_TRIALS,
+      totalItems: _strokes.length * TOTAL_TRIALS,
+    });
+  }
+
   // ===== Stage build =====
   function buildStage() {
     const stage = document.createElement('section');
     stage.className = 'tp-stage';
     stage.innerHTML = `
+      <div class="tp-trials" id="tpTrials"></div>
       <div class="tp-canvas-wrap">
         <svg class="tp-canvas" viewBox="${_letterData.viewBox || '0 0 200 200'}"
              xmlns="${SVG_NS}" preserveAspectRatio="xMidYMid meet"></svg>
@@ -98,8 +145,24 @@ window.AvneiTracePath = (function() {
     _svg = stage.querySelector('.tp-canvas');
 
     drawGuides();
-    drawAllTemplates();
+    if (showTemplate()) drawAllTemplates();
+    renderTrialProgress();
     renderStrokeProgress();
+  }
+
+  function showTemplate() {
+    // template רק ב-trial 0 ו-1
+    return _trialIdx <= 1;
+  }
+
+  function showMarkers() {
+    // מספרים רק ב-trial 0
+    return _trialIdx === 0;
+  }
+
+  function useAutoHint() {
+    // auto-hint רק ב-trial 0 (לפי supportLevel)
+    return _trialIdx === 0;
   }
 
   function drawGuides() {
@@ -145,7 +208,7 @@ window.AvneiTracePath = (function() {
   // ===== Stroke flow =====
   function startStroke(idx) {
     if (idx >= _strokes.length) {
-      finishActivity();
+      finishTrial();
       return;
     }
     _currentStrokeIdx = idx;
@@ -157,23 +220,40 @@ window.AvneiTracePath = (function() {
     _tracePoints = [];
     if (_autoHintTimer) { clearTimeout(_autoHintTimer); _autoHintTimer = null; }
 
-    clearActiveOverlay();
-    drawStartMarker(_strokes[idx]);
-    renderStrokeProgress();
+    // לא מוחקים את ה-strokes הקודמים — נשארים על המסך
+    // רק מנתקים את ה-reference כדי לא לערוך path קודם
+    _activePath = null;
 
+    if (showMarkers()) {
+      drawStartMarker(_strokes[idx]);
+    } else {
+      removeStartMarker();
+    }
+    renderStrokeProgress();
     setupPointerEvents();
 
     const cfg = AvneiScaffolding.configFor(_supportLevel, 'trace-path');
 
-    // narration
-    if (AvneiAudio.isUnlocked() && _strokes[idx].narration) {
-      // ב-MVP אין MP3 לnarrations הספציפיות — נשתמש בשם האות בלבד
+    if (AvneiAudio.isUnlocked() && _strokes[idx].narration && _trialIdx === 0) {
       setTimeout(() => AvneiAudio.playLetterName(_letter), cfg.preAudio ? 150 : 400);
     }
 
-    // auto-hint by support level
-    if (cfg.autoHintDelayMs !== null) {
+    if (useAutoHint() && cfg.autoHintDelayMs !== null) {
       _autoHintTimer = setTimeout(() => triggerAutoHint(), cfg.autoHintDelayMs);
+    }
+  }
+
+  function renderTrialProgress() {
+    const el = document.getElementById('tpTrials');
+    if (!el) return;
+    el.innerHTML = '';
+    for (let i = 0; i < TOTAL_TRIALS; i++) {
+      const pip = document.createElement('span');
+      pip.className = 'tp-trial-pip';
+      if (i < _trialIdx) pip.classList.add('done');
+      else if (i === _trialIdx) pip.classList.add('active');
+      pip.textContent = String(i + 1);
+      el.appendChild(pip);
     }
   }
 
@@ -190,7 +270,6 @@ window.AvneiTracePath = (function() {
     });
   }
 
-  // צבע ה-stroke הנוכחי — תומך ב-N צבעים מ-trace_colors[], או fallback
   function getStrokeColor() {
     const vd = _letterData.visual_design || {};
     const palette = Array.isArray(vd.trace_colors) && vd.trace_colors.length > 0
@@ -199,10 +278,13 @@ window.AvneiTracePath = (function() {
     return palette[_currentStrokeIdx % palette.length];
   }
 
-  function drawStartMarker(stroke) {
-    // remove old marker
+  function removeStartMarker() {
     const old = _svg.querySelector('.tp-marker');
     if (old) old.remove();
+  }
+
+  function drawStartMarker(stroke) {
+    removeStartMarker();
     if (!stroke.start_point || stroke.start_point.length !== 2) return;
 
     const vd = _letterData.visual_design || {};
@@ -229,7 +311,6 @@ window.AvneiTracePath = (function() {
     text.textContent = String(stroke.id);
     g.appendChild(text);
 
-    // pulse animation
     const animateR = document.createElementNS(SVG_NS, 'animate');
     animateR.setAttribute('attributeName', 'r');
     animateR.setAttribute('values', '11;14;11');
@@ -246,7 +327,6 @@ window.AvneiTracePath = (function() {
     demonstrateStroke();
   }
 
-  // הדגמה — נקודה זוהרת רצה לאורך ה-path
   function demonstrateStroke() {
     const stroke = _strokes[_currentStrokeIdx];
     const tpl = _svg.querySelector(`.tp-template[data-stroke-id="${stroke.id}"]`);
@@ -300,7 +380,9 @@ window.AvneiTracePath = (function() {
     if (_autoHintTimer) { clearTimeout(_autoHintTimer); _autoHintTimer = null; }
     _drawing = true;
     _tracePoints = [];
-    clearActiveOverlay();
+    // מסלקים רק את ה-active הקיים (אם נשאר מניסיון כושל קודם)
+    // לא נוגעים ב-tp-done קודמים
+    if (_activePath) { _activePath.remove(); _activePath = null; }
     const p = clientToSvgPoint(evt);
     addTracePoint(p);
     if (_svg.setPointerCapture) {
@@ -323,10 +405,6 @@ window.AvneiTracePath = (function() {
   function addTracePoint(p) {
     _tracePoints.push([p.x, p.y]);
     drawActiveOverlay();
-  }
-
-  function clearActiveOverlay() {
-    if (_activePath) { _activePath.remove(); _activePath = null; }
   }
 
   function drawActiveOverlay() {
@@ -353,24 +431,24 @@ window.AvneiTracePath = (function() {
     const stroke = _strokes[_currentStrokeIdx];
     const samples = stroke.direction_samples || [];
     if (samples.length === 0 || _tracePoints.length < 3) {
-      // not enough data — count as miss
       return onStrokeMiss();
     }
 
-    const threshold = (_supportLevel >= 4) ? 0.5 : 0.6;
-    const tolerance = (_supportLevel >= 3) ? 35 : 25;
+    // ב-trials ללא template — tolerance רחב יותר (אין רפרנס ויזואלי)
+    const baseThreshold = (_supportLevel >= 4) ? 0.5 : 0.6;
+    const baseTolerance = (_supportLevel >= 3) ? 35 : 25;
+    const trialTolerance = showTemplate() ? baseTolerance : (baseTolerance + 10);
+    const trialThreshold = showTemplate() ? baseThreshold : Math.max(0.45, baseThreshold - 0.1);
 
     let covered = 0;
     for (const s of samples) {
       const nearest = nearestDistance(s, _tracePoints);
-      if (nearest <= tolerance) covered++;
+      if (nearest <= trialTolerance) covered++;
     }
     const coverage = covered / samples.length;
-
-    // also check stroke direction (start→end order roughly correct)
     const dirOk = checkDirection(stroke);
 
-    if (coverage >= threshold && dirOk) {
+    if (coverage >= trialThreshold && dirOk) {
       onStrokeSuccess(coverage);
     } else {
       onStrokeMiss(coverage);
@@ -392,32 +470,32 @@ window.AvneiTracePath = (function() {
     const last  = _tracePoints[_tracePoints.length - 1];
     const dStart = Math.hypot(first[0] - stroke.start_point[0], first[1] - stroke.start_point[1]);
     const dEnd   = Math.hypot(last[0]  - stroke.end_point[0],   last[1]  - stroke.end_point[1]);
-    // התחלה צריכה להיות קרובה ל-start, סיום קרוב ל-end
-    return dStart < 40 && dEnd < 40;
+    // tolerance רחב יותר ב-trials מאוחרים
+    const limit = showTemplate() ? 40 : 55;
+    return dStart < limit && dEnd < limit;
   }
 
-  // ===== Stroke result =====
   function onStrokeSuccess(coverage) {
-    // freeze the active overlay (make it the "done" stroke)
+    // קיבוע ה-active כ-done — נשאר על המסך עד סוף ה-trial
     if (_activePath) {
+      _activePath.classList.remove('tp-active');
       _activePath.classList.add('tp-done');
       _activePath.setAttribute('opacity', '1');
+      _activePath = null;  // קריטי — מאפס reference כדי שה-stroke הבא ייצור path חדש
     }
+    // marker רק ב-trial 0 — מוסר אחרי הצלחה
+    removeStartMarker();
     AvneiNoni.setState('cheer');
-    AvneiFeedback.show(_currentStrokeIdx === _strokes.length - 1
-      ? 'האות מתחילה לזהור'
-      : 'יופי! עכשיו המשיכה הבאה');
 
-    if (_attempts === 0) {
+    if (_attempts === 0 && _trialIdx === 0) {
       addPearl(1);
       renderPearlCounter();
     }
 
-    // log per-stroke event
     const result = {
       activity_type: ACTIVITY_TYPE,
-      activity_variant: 'stroke-' + (_currentStrokeIdx + 1),
-      item_id: _letterData.letter_name + '-s' + (_currentStrokeIdx + 1),
+      activity_variant: 'trial-' + (_trialIdx + 1) + '-stroke-' + (_currentStrokeIdx + 1),
+      item_id: _letterData.letter_name + '-t' + (_trialIdx + 1) + '-s' + (_currentStrokeIdx + 1),
       target_letter: _letter,
       supportLevel: _supportLevel,
       is_correct: _attempts === 0,
@@ -430,13 +508,13 @@ window.AvneiTracePath = (function() {
     AvneiEventLogger.logActivityResult(result);
     _onItemComplete(result);
 
-    setTimeout(() => startStroke(_currentStrokeIdx + 1), 1500);
+    setTimeout(() => startStroke(_currentStrokeIdx + 1), 900);
   }
 
   function onStrokeMiss(coverage) {
     _attempts++;
-    // remove the failed trace
-    clearActiveOverlay();
+    // מסלקים את ה-active הכושל בלבד (לא נוגעים ב-tp-done)
+    if (_activePath) { _activePath.remove(); _activePath = null; }
 
     if (_attempts === 1) {
       AvneiNoni.setState('help');
@@ -446,19 +524,17 @@ window.AvneiTracePath = (function() {
       AvneiFeedback.show('נראה את הדרך יחד');
       _hintUsed = true;
       _noniGuidanceUsed = true;
-      demonstrateStroke();
+      if (showTemplate()) demonstrateStroke();
     } else if (_attempts >= 3) {
       AvneiNoni.setState('hint');
       AvneiFeedback.show('עוקבים יחד');
       _noniGuidanceUsed = true;
-      demonstrateStroke();
-      // accept on 4th attempt — lenient
+      if (showTemplate()) demonstrateStroke();
       setTimeout(() => acceptLenient(), 2400);
     }
   }
 
   function acceptLenient() {
-    // mark stroke done by drawing the template path in full color
     const stroke = _strokes[_currentStrokeIdx];
     const vd = _letterData.visual_design || {};
     const color = getStrokeColor();
@@ -472,16 +548,9 @@ window.AvneiTracePath = (function() {
     p.setAttribute('stroke-linejoin', 'round');
     p.classList.add('tp-done');
     _svg.appendChild(p);
+    _activePath = null;  // לא רוצים שה-stroke הבא יערוך את זה
 
-    onStrokeSuccess(0); // log as success after lenient accept
-  }
-
-  // ===== Activity end =====
-  function finishActivity() {
-    _onActivityComplete({
-      correctCount: _strokes.length,
-      totalItems: _strokes.length,
-    });
+    onStrokeSuccess(0);
   }
 
   return { mount, unmount, ACTIVITY_TYPE };
