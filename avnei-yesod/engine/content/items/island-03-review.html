@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>סקירת פריטים · אי 3 · זיהוי אותיות · אבני יסוד</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Playpen+Sans+Hebrew:wght@500;700;800&family=Frank+Ruhl+Libre:wght@600;700;800;900&family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F7F5F0;
+  --card: #fff;
+  --ink: #1A1A2E;
+  --ink-soft: #4A5070;
+  --ink-faded: #8A8F9F;
+  --line: rgba(26,26,46,0.08);
+  --indigo: #4F46E5;
+  --indigo-soft: #ECE8FF;
+  --pink: #EC4899;
+  --green: #10B981;
+  --gold: #F59E0B;
+  --red: #EF4444;
+  --orange: #FB923C;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Heebo', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.55;
+  min-height: 100vh;
+}
+h1, h2, h3 { font-family: 'Playpen Sans Hebrew', sans-serif; }
+.hebrew-niqqud { font-family: 'Frank Ruhl Libre', serif; }
+.num { font-family: 'Inter', sans-serif; }
+
+/* ─── Wrap & hero ─── */
+.wrap { max-width: 1100px; margin: 0 auto; padding: 24px 20px 100px; }
+
+.hero {
+  background: linear-gradient(135deg, var(--indigo) 0%, #8B5CF6 100%);
+  color: white;
+  border-radius: 20px;
+  padding: 28px 32px;
+  margin-bottom: 24px;
+}
+.hero-badge { display: inline-block; padding: 4px 12px; background: rgba(255,255,255,0.2); border-radius: 999px; font-size: 11.5px; font-weight: 700; margin-bottom: 10px; letter-spacing: 0.05em; }
+.hero h1 { font-size: clamp(24px, 4vw, 32px); margin-bottom: 6px; }
+.hero p { font-size: 15px; opacity: 0.95; max-width: 700px; }
+
+/* ─── Top toolbar (sticky filters + progress) ─── */
+.toolbar {
+  position: sticky; top: 0; z-index: 30;
+  background: rgba(247,245,240,0.96);
+  backdrop-filter: blur(10px);
+  margin: 0 -20px 20px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.toolbar-inner {
+  max-width: 1100px; margin: 0 auto;
+  display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+}
+.filter-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  border-radius: 999px;
+  font-family: 'Heebo', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--ink);
+  transition: all .15s;
+}
+.filter-btn:hover { border-color: var(--indigo); }
+.filter-btn.active { background: var(--indigo); color: white; border-color: var(--indigo); }
+.filter-btn.lvl1 { border-right: 3px solid var(--green); padding-right: 14px; }
+.filter-btn.lvl2 { border-right: 3px solid var(--gold); padding-right: 14px; }
+.filter-btn.lvl3 { border-right: 3px solid var(--orange); padding-right: 14px; }
+.filter-btn.lvl4 { border-right: 3px solid var(--red); padding-right: 14px; }
+
+.progress-pill {
+  margin-right: auto;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex; align-items: center; gap: 10px;
+}
+.progress-pill .approved { color: var(--green); }
+.progress-pill .draft { color: var(--ink-faded); }
+.progress-pill .needs-edit { color: var(--gold); }
+
+.export-btn {
+  padding: 8px 18px;
+  background: var(--ink);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Heebo', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.export-btn:hover { background: var(--indigo); }
+
+/* ─── Item card ─── */
+.item-card {
+  background: var(--card);
+  border-radius: 18px;
+  padding: 24px 28px;
+  margin-bottom: 16px;
+  border: 1px solid var(--line);
+  box-shadow: 0 4px 12px rgba(26,26,46,0.04);
+  transition: opacity .2s;
+}
+.item-card.hidden { display: none; }
+.item-card.approved { border-color: var(--green); background: linear-gradient(to left, #f0fdf4 0%, var(--card) 50%); }
+.item-card.needs-edit { border-color: var(--gold); background: linear-gradient(to left, #fffbeb 0%, var(--card) 50%); }
+.item-card.rejected { opacity: 0.4; border-color: var(--red); }
+
+.item-header {
+  display: flex; gap: 12px; align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.item-id {
+  font-family: 'Inter', sans-serif;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--ink-faded);
+  letter-spacing: 0.05em;
+}
+.tag {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.tag.letter {
+  background: #fce7f3; color: #831843;
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 14px;
+  padding: 3px 12px;
+}
+.tag.lvl1 { background: #d1fae5; color: #065f46; }
+.tag.lvl2 { background: #fef3c7; color: #78350f; }
+.tag.lvl3 { background: #ffedd5; color: #7c2d12; }
+.tag.lvl4 { background: #fee2e2; color: #991b1b; }
+.tag.envelope { background: var(--indigo-soft); color: var(--indigo); }
+.tag.type { background: rgba(0,0,0,0.05); color: var(--ink-soft); }
+
+.item-prompt {
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  line-height: 1.6;
+  color: var(--ink);
+}
+.item-letter-large {
+  display: inline-block;
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 48px;
+  font-weight: 800;
+  color: var(--pink);
+  margin: 0 8px;
+  vertical-align: middle;
+}
+.item-audio-note {
+  font-size: 12px;
+  color: var(--ink-faded);
+  font-style: italic;
+  margin-bottom: 14px;
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.option {
+  background: #FFF8E7;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 14px 8px 8px;
+  text-align: center;
+  position: relative;
+}
+.option.correct { border-color: var(--green); background: #d1fae5; }
+.option-emoji {
+  font-size: 52px;
+  margin-bottom: 4px;
+  line-height: 1;
+}
+.option-image {
+  width: 90px;
+  height: 90px;
+  margin-bottom: 4px;
+  object-fit: contain;
+  display: block;
+}
+.option-image + .option-emoji-fallback {
+  display: none;
+}
+.option-image-missing {
+  font-size: 32px;
+  margin-bottom: 4px;
+  opacity: 0.6;
+  display: inline-block;
+  padding: 6px 10px;
+  background: #fef3c7;
+  border-radius: 8px;
+  border: 1px dashed var(--gold);
+}
+.option-word-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  padding-top: 4px;
+  border-top: 1px dashed rgba(0,0,0,0.12);
+  margin-top: 4px;
+}
+.option-word-label .hebrew-niqqud {
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 14px;
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+.option-word-label small {
+  display: block;
+  font-size: 9.5px;
+  color: var(--ink-faded);
+  font-weight: 500;
+  margin-top: 2px;
+  letter-spacing: 0.02em;
+}
+
+/* ─── Audio/Visual blocks ─── */
+.block-label {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+.audio-label { background: #DBEAFE; color: #1E40AF; }
+.visual-label { background: #FCE7F3; color: #9D174D; }
+
+.audio-block {
+  background: linear-gradient(to left, #EFF6FF 0%, #fff 60%);
+  border: 1px solid #BFDBFE;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+}
+.audio-prompt {
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.65;
+  margin-bottom: 10px;
+  color: var(--ink);
+}
+.play-btn {
+  padding: 8px 18px;
+  background: #2563EB;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Heebo', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .15s;
+}
+.play-btn:hover { transform: translateY(-1px); background: #1D4ED8; }
+.play-btn.playing { background: #EC4899; }
+.audio-side-note {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(0,0,0,0.08);
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+.audio-side-note small { font-size: 11px; opacity: 0.7; }
+
+.visual-block {
+  background: linear-gradient(to left, #FDF2F8 0%, #fff 60%);
+  border: 1px solid #FBCFE8;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+}
+.big-letter-display {
+  text-align: center;
+  margin: 6px 0 14px;
+}
+.big-letter-display .item-letter-large {
+  font-size: 64px;
+  display: inline-block;
+  background: white;
+  padding: 6px 24px;
+  border-radius: 18px;
+  border: 3px dashed var(--pink);
+  box-shadow: 0 4px 12px rgba(236,72,153,0.15);
+}
+.visual-disclaimer {
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: var(--ink-faded);
+  font-style: italic;
+  line-height: 1.5;
+}
+.visual-disclaimer b { color: var(--ink-soft); font-style: normal; }
+.option .correct-mark {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: var(--green);
+  color: white;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.item-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--bg);
+  border-radius: 10px;
+  margin-bottom: 14px;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+@media (max-width: 640px) {
+  .item-meta { grid-template-columns: 1fr; }
+}
+.item-meta div { line-height: 1.5; }
+.item-meta b { color: var(--ink); }
+.item-meta code {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  background: rgba(0,0,0,0.04);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.hint-note {
+  background: #fffbeb;
+  border-right: 3px solid var(--gold);
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 14px;
+  font-size: 12.5px;
+  color: #78350f;
+}
+.hint-note b { color: var(--ink); }
+
+/* ─── Review actions ─── */
+.review-row {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  padding-top: 14px;
+  border-top: 1px dashed var(--line);
+}
+.btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-family: 'Heebo', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--card);
+  transition: all .15s;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn.approve { background: var(--green); color: white; border-color: var(--green); }
+.btn.approve:hover { background: #059669; }
+.btn.needs-edit { background: var(--gold); color: white; border-color: var(--gold); }
+.btn.needs-edit:hover { background: #d97706; }
+.btn.reject { background: #fee2e2; color: var(--red); border-color: #fecaca; }
+.btn.reject:hover { background: var(--red); color: white; }
+
+.notes-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-family: 'Heebo', sans-serif;
+  font-size: 13px;
+  background: var(--card);
+}
+.notes-input:focus { outline: none; border-color: var(--indigo); }
+
+/* ─── Print styles ─── */
+@media print {
+  body { background: white; }
+  .toolbar, .review-row, .hero, footer { display: none !important; }
+  .wrap { padding: 0; max-width: none; }
+  .item-card {
+    page-break-inside: avoid;
+    border: 1px solid #ddd;
+    box-shadow: none;
+    margin-bottom: 14px;
+  }
+  .item-card.hidden { display: block !important; }
+}
+
+footer {
+  margin-top: 36px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-faded);
+}
+footer a { color: var(--indigo); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hero">
+  <div class="hero-badge">★ סקירת פריטים · אי 3 · v0.1-draft</div>
+  <h1>זיהוי אותיות — בנק פריטים לסקירה</h1>
+  <p>50 פריטים שנוצרו אוטומטית מ-vocab-bank (v2 — אחרי תיקון 3 דגלים + fallback ל-ר). עברי על כל אחד — אישור / שינוי / דחייה. ההחלטות נשמרות אוטומטית ב-localStorage.</p>
+</div>
+
+<div style="background:linear-gradient(135deg,#fff8e1 0%,#fef3c7 100%);border:2px solid #f59e0b;border-radius:14px;padding:18px 22px;margin-bottom:20px;">
+  <div style="display:flex;gap:14px;align-items:flex-start;">
+    <div style="font-size:28px;line-height:1;">🔊</div>
+    <div style="font-size:13.5px;line-height:1.65;color:#78350f;">
+      <b style="font-size:15px;color:#78350f;">חשוב — תלמידי כיתה א' לא קוראים את ה-prompt!</b><br>
+      ה-prompt בכל פריט הוא <b>תסריט קולי</b> — הילדים <b>שומעים</b> אותו (הקלטה / TTS), לא קוראים. הם רק רואים את האות הגדולה ואת 4 התמונות. הטקסט בכרטיסיות הסקירה הוא <b>לצורך הסקירה שלך בלבד</b>.<br>
+      <b>כפתור 🔊 על כל פריט</b> משמיע איך זה יישמע לילד (TTS דפדפן זמני).<br>
+      <b>תכנית האודיו לפיילוט:</b> Prompt = TTS עברית · <b>22 צלילי האותיות = הקלטה בקולך</b> (10 דק' הקלטה).
+    </div>
+  </div>
+</div>
+
+<div id="audio-diagnostic" style="display:none;background:#fef2f2;border:2px solid #dc2626;border-radius:14px;padding:16px 22px;margin-bottom:20px;font-size:13.5px;line-height:1.7;color:#7f1d1d;"></div>
+
+<!-- ─── Toolbar ─── -->
+<div class="toolbar">
+  <div class="toolbar-inner">
+    <span class="progress-pill">
+      <span class="approved">✓ <b id="count-approved">0</b> אושרו</span>
+      <span class="needs-edit">⚠ <b id="count-edit">0</b> לתיקון</span>
+      <span class="draft"><b id="count-draft">50</b> בטיוטה</span>
+    </span>
+
+    <button class="filter-btn active" data-filter-letter="all">כל האותיות</button>
+    <button class="filter-btn" data-filter-letter="ת" style="font-family:'Frank Ruhl Libre',serif; font-size:16px;">ת</button>
+    <button class="filter-btn" data-filter-letter="מ" style="font-family:'Frank Ruhl Libre',serif; font-size:16px;">מ</button>
+    <button class="filter-btn" data-filter-letter="ר" style="font-family:'Frank Ruhl Libre',serif; font-size:16px;">ר</button>
+    <button class="filter-btn" data-filter-letter="ב" style="font-family:'Frank Ruhl Libre',serif; font-size:16px;">ב</button>
+    <button class="filter-btn" data-filter-letter="ק" style="font-family:'Frank Ruhl Libre',serif; font-size:16px;">ק</button>
+
+    <button class="filter-btn lvl1" data-filter-level="1">רמה 1</button>
+    <button class="filter-btn lvl2" data-filter-level="2">רמה 2</button>
+    <button class="filter-btn lvl3" data-filter-level="3">רמה 3</button>
+    <button class="filter-btn lvl4" data-filter-level="4">רמה 4</button>
+
+    <button class="export-btn" onclick="exportApproved()">ייצא פריטים שאושרו ←</button>
+    <button class="export-btn" style="background:var(--gold);" onclick="exportNeedsEdit()">⚠ ייצא לתיקון ←</button>
+    <button class="export-btn" style="background:#fff; color:var(--ink); border:1px solid var(--line);" onclick="window.print()">🖨 הדפסה לדף נייר</button>
+  </div>
+</div>
+
+<!-- ─── Items load here ─── -->
+<div id="items-host">
+  <div style="text-align:center; padding:60px; color:var(--ink-faded);">טוען פריטים…</div>
+</div>
+
+<footer>
+  <p>חלק מ-<a href="../../../index.html">אבני יסוד</a> · בנק פריטים: <code>engine/content/items/island-03-letter-recognition.json</code> · מסמך-אם: <a href="../../../architecture-mvp.md">architecture-mvp.md</a></p>
+</footer>
+
+</div>
+
+<script>
+let ITEMS = [];
+let filterLetter = 'all';
+let filterLevel = 'all';
+
+const LEVEL_NAMES = {1: 'עצמאי', 2: 'חלקית', 3: 'התאמות', 4: 'תמיכה מוגברת'};
+
+const EMBEDDED_DATA = {"meta": {"title": "אבני יסוד · אי 3 · זיהוי אותיות · בנק פריטים", "island_id": 3, "island_slug": "letter-recognition", "version": "0.2-draft", "created": "2026-05-22", "purpose": "Vertical Slice — 5 אותיות ראשונות של ספטמבר. גרסה 0.2 אחרי סקירה פדגוגית של מיטל ב-22.5.2026.", "generator": "build_island3_items.py v2 · seed=42", "fixes_in_v2": ["כל אופציה חייבת אימוג'י אמיתי (אין 🖼️ placeholders)", "L1-L2 focus words: שמות עצם מוחשיים בעדיפות. נופלים לפעלים/תארים מאוירים רק כשאין שמות-עצם זמינים (למשל ר עם רק רַקֶּפֶת).", "L3-L4 focus words: שמות עצם + פעלים + תארים מאוירים — כולם פתוחים.", "מסיחים: תת-קטגוריה שונה מהמילה הנכונה. ללא שמות פרטיים בכלל.", "פריטים שלא עומדים בכללים — מדלגים עליהם עם לוג.", "פריטים שהשתמשו ב-verb-fallback מסומנים ב-_used_verb_fallback_at_L1_L2: true"], "verb_fallback_count": 0, "review_status": "all-draft", "total_items": 50, "skipped_count": 0, "skipped_details": [], "letters": ["ת", "מ", "ר", "ב", "ק"], "levels_distribution_requested": {"1": 3, "2": 3, "3": 2, "4": 2}}, "items": [{"id": "i03-ת-l1-01", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 1, "type": "hear-sound-choose-image", "letter_in_focus": "ת", "letters_required": ["ת"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל ת' בְּהַתְחָלָה?", "audio_cue_text": "ת", "options": [{"word": "מִיטָּה", "concept": "מיטה", "emoji_suggestion": "🛏️", "category": "nouns_objects", "image_url": "images/island-03/mita.png"}, {"word": "רוֹבּוֹט", "concept": "רובוט", "emoji_suggestion": "🤖", "category": "nouns_objects", "image_url": "images/island-03/robot.png"}, {"word": "תָּמָר", "concept": "תמר", "emoji_suggestion": "🌴", "category": "nouns_food", "image_url": "images/island-03/tamar.png", "correct": true}, {"word": "לִוְיָתָן", "concept": "לויתן", "emoji_suggestion": "🐋", "category": "nouns_animals", "image_url": "images/island-03/livyatan.png"}], "hints": null, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_food", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ת-l1-02", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 1, "type": "hear-sound-choose-image", "letter_in_focus": "ת", "letters_required": ["ת"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל ת' בְּהַתְחָלָה?", "audio_cue_text": "ת", "options": [{"word": "רֶגֶל", "concept": "רגל", "emoji_suggestion": "🦵", "category": "nouns_objects", "image_url": "images/island-03/regel.png"}, {"word": "מִרְאָה", "concept": "מראה", "emoji_suggestion": "🪞", "category": "nouns_objects", "image_url": "images/island-03/mira.png"}, {"word": "תּוּת", "concept": "תות", "emoji_suggestion": "🍓", "category": "nouns_food", "image_url": "images/island-03/tut.png", "correct": true}, {"word": "מִשְׁקָפַיִם", "concept": "משקפים", "emoji_suggestion": "👓", "category": "nouns_objects", "image_url": "images/island-03/mishkafayim.png"}], "hints": null, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_food", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ת-l1-03", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 1, "type": "hear-sound-choose-image", "letter_in_focus": "ת", "letters_required": ["ת"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל ת' בְּהַתְחָלָה?", "audio_cue_text": "ת", "options": [{"word": "מַגָּף", "concept": "מגף", "emoji_suggestion": "🥾", "category": "nouns_objects", "image_url": "images/island-03/magaf.png"}, {"word": "מִטְרִיָּה", "concept": "מטריה", "emoji_suggestion": "☂️", "category": "nouns_objects", "image_url": "images/island-03/mitriya.png"}, {"word": "מַחְשֵׁב", "concept": "מחשב", "emoji_suggestion": "💻", "category": "nouns_objects", "image_url": "images/island-03/machshev.png"}, {"word": "תַּפּוּחַ", "concept": "תפוח", "emoji_suggestion": "🍎", "category": "nouns_food", "image_url": "images/island-03/tapuach.png", "correct": true}], "hints": null, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_food", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ת-l2-01", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 2, "type": "hear-sound-choose-image", "letter_in_focus": "ת", "letters_required": ["ת"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל ת' בְּהַתְחָלָה?", "audio_cue_text": "ת", "options": [{"word": "נָחָשׁ", "concept": "נחש", "emoji_suggestion": "🐍", "category": "nouns_animals", "image_url": "images/island-03/nachash.png"}, {"word": "נְמָלָה", "concept": "נמלה", "emoji_suggestion": "🐜", "category": "nouns_animals", "image_url": "images/island-03/nemala.png"}, {"word": "תְּרוּפָה", "concept": "תרופה", "emoji_suggestion": "💊", "category": "nouns_objects", "image_url": "images/island-03/trufa.png", "correct": true}, {"word": "רִמּוֹן", "concept": "רמון", "emoji_suggestion": "🍎", "category": "nouns_food", "image_url": "images/island-03/rimon.png"}], "hints": {"type": "replay-sound", "available_immediately": true, "text": "לחיצה כדי לשמוע את הצליל ת שוב"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ת-l2-02", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 2, "type": "hear-sound-choose-image", "letter_in_focus": "ת", "letters_required": ["ת"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל ת' בְּהַתְחָלָה?", "audio_cue_text": "ת", "options": [{"word": "תִּיק", "concept": "תיק", "emoji_suggestion": "👜", "category": "nouns_objects", "image_url": "images/island-03/tik.png", "correct": true}, {"word": "סֵפֶר", "concept": "ספר", "emoji_suggestion": "📖", "category": "nouns_food", "image_url": "images/island-03/sefer.png"}, {"word": "בָּנָנָה", "concept": "בננה", "emoji_suggestion": "🍌", "category": "nouns_food", "image_url": "images/island-03/banana.png"}, {"word": "חָלָב", "concept": "חלב", "emoji_suggestion": "🥛", "category": "nouns_food", "image_url": "images/island-03/chalav.png"}], "hints": {"type": "replay-sound", "available_immediately": true, "text": "לחיצה כדי לשמוע את הצליל ת שוב"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ת-l2-03", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 2, "type": "hear-sound-choose-image", "letter_in_focus": "ת", "letters_required": ["ת"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל ת' בְּהַתְחָלָה?", "audio_cue_text": "ת", "options": [{"word": "מַשָּׂאִית", "concept": "משאית", "emoji_suggestion": "🚚", "category": "nouns_objects", "image_url": "images/island-03/masait.png"}, {"word": "מַטֶּה", "concept": "מטה", "emoji_suggestion": "🪄", "category": "nouns_objects"}, {"word": "מְכוֹנִית", "concept": "מכונית", "emoji_suggestion": "🚗", "category": "nouns_objects", "image_url": "images/island-03/mechonit.png"}, {"word": "תִּינוֹק", "concept": "תינוק", "emoji_suggestion": "👶", "category": "nouns_animals", "image_url": "images/island-03/tinok.png", "correct": true}], "hints": {"type": "replay-sound", "available_immediately": true, "text": "לחיצה כדי לשמוע את הצליל ת שוב"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_animals", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ת-l3-01", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 3, "type": "guided-letter-recognition", "letter_in_focus": "ת", "letters_required": ["ת"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "הִנֵּה הָאוֹת ת. אֵיזוֹ תְּמוּנָה מַתְחִילָה בָּאוֹת הַזּוֹ?", "letter_displayed": "ת", "audio_cue_text": "ת", "options": [{"word": "בֵּיצָה", "concept": "ביצה", "emoji_suggestion": "🥚", "category": "nouns_food", "image_url": "images/island-03/beitza.png"}, {"word": "רִיבָּה", "concept": "ריבה", "emoji_suggestion": "🍓", "category": "nouns_food", "image_url": "images/island-03/riba.png"}, {"word": "תַּרְמִיל", "concept": "תרמיל", "emoji_suggestion": "🎒", "category": "nouns_objects", "image_url": "images/island-03/tarmil.png", "correct": true}], "hints": {"type": "highlight-letter", "after_seconds": 5, "text": "הָאוֹת ת נִשְׁמַעַת כְּמוֹ 'תתת'"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ת-l3-02", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 3, "type": "guided-letter-recognition", "letter_in_focus": "ת", "letters_required": ["ת"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "הִנֵּה הָאוֹת ת. אֵיזוֹ תְּמוּנָה מַתְחִילָה בָּאוֹת הַזּוֹ?", "letter_displayed": "ת", "audio_cue_text": "ת", "options": [{"word": "מַמְתַּקִּים", "concept": "ממתקים", "emoji_suggestion": "🍬", "category": "nouns_food", "image_url": "images/island-03/mamtakim.png"}, {"word": "כָּרִיךְ", "concept": "כריך", "emoji_suggestion": "🥪", "category": "nouns_food", "image_url": "images/island-03/karich.png"}, {"word": "תַּנּוּר", "concept": "תנור", "emoji_suggestion": "🍳", "category": "nouns_objects", "image_url": "images/island-03/tanur.png", "correct": true}], "hints": {"type": "highlight-letter", "after_seconds": 5, "text": "הָאוֹת ת נִשְׁמַעַת כְּמוֹ 'תתת'"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ת-l4-01", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 4, "type": "listen-point-repeat", "letter_in_focus": "ת", "letters_required": ["ת"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "הַמּוֹרָה אוֹמֶרֶת אֶת הַצְּלִיל. תָּצְבִּיעַ עַל הָאוֹת ת:", "letter_displayed": "ת", "audio_cue_text": "ת", "options": [{"word": "מַקֵּל", "concept": "מקל", "emoji_suggestion": "🦯", "category": "nouns_objects", "image_url": "images/island-03/makel.png"}, {"word": "תֻּכִּי", "concept": "תכי", "emoji_suggestion": "🦜", "category": "nouns_animals", "image_url": "images/island-03/tuki.png", "correct": true}], "teacher_alert_after_2_failures": true, "wait_for_teacher_confirmation": true, "scaffolding_note": "המורה מקריאה קודם, מצביעה על האות, ואז התלמיד.ה חוזר.ת. תרגיל 'אצבע על האות'.", "hints": {"type": "show-letter", "after_seconds": 3, "text": "מצביעים על האות ת"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_animals", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ת-l4-02", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 4, "type": "listen-point-repeat", "letter_in_focus": "ת", "letters_required": ["ת"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "הַמּוֹרָה אוֹמֶרֶת אֶת הַצְּלִיל. תָּצְבִּיעַ עַל הָאוֹת ת:", "letter_displayed": "ת", "audio_cue_text": "ת", "options": [{"word": "תַּפּוּז", "concept": "תפוז", "emoji_suggestion": "🍊", "category": "nouns_food", "image_url": "images/island-03/tapuz.png", "correct": true}, {"word": "קַנְגּוּרוּ", "concept": "קנגורו", "emoji_suggestion": "🦘", "category": "nouns_objects", "image_url": "images/island-03/kanguru.png"}], "teacher_alert_after_2_failures": true, "wait_for_teacher_confirmation": true, "scaffolding_note": "המורה מקריאה קודם, מצביעה על האות, ואז התלמיד.ה חוזר.ת. תרגיל 'אצבע על האות'.", "hints": {"type": "show-letter", "after_seconds": 3, "text": "מצביעים על האות ת"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_food", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-מ-l1-01", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 1, "type": "hear-sound-choose-image", "letter_in_focus": "מ", "letters_required": ["מ"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל מ' בְּהַתְחָלָה?", "audio_cue_text": "מ", "options": [{"word": "מַטֶּה", "concept": "מטה", "emoji_suggestion": "🪄", "category": "nouns_objects", "correct": true}, {"word": "נְמָלָה", "concept": "נמלה", "emoji_suggestion": "🐜", "category": "nouns_animals", "image_url": "images/island-03/nemala.png"}, {"word": "בֵּיצָה", "concept": "ביצה", "emoji_suggestion": "🥚", "category": "nouns_food", "image_url": "images/island-03/beitza.png"}, {"word": "תַּפּוּז", "concept": "תפוז", "emoji_suggestion": "🍊", "category": "nouns_food", "image_url": "images/island-03/tapuz.png"}], "hints": null, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-מ-l1-02", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 1, "type": "hear-sound-choose-image", "letter_in_focus": "מ", "letters_required": ["מ"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל מ' בְּהַתְחָלָה?", "audio_cue_text": "מ", "options": [{"word": "נָחָשׁ", "concept": "נחש", "emoji_suggestion": "🐍", "category": "nouns_animals", "image_url": "images/island-03/nachash.png"}, {"word": "מַחְבֶּרֶת", "concept": "מחברת", "emoji_suggestion": "📓", "category": "nouns_objects", "image_url": "images/island-03/machberet.png", "correct": true}, {"word": "בָּנָנָה", "concept": "בננה", "emoji_suggestion": "🍌", "category": "nouns_food", "image_url": "images/island-03/banana.png"}, {"word": "רוֹפֵא", "concept": "רופא", "emoji_suggestion": "🩺", "category": "nouns_people", "image_url": "images/island-03/rofe.png"}], "hints": null, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-מ-l1-03", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 1, "type": "hear-sound-choose-image", "letter_in_focus": "מ", "letters_required": ["מ"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל מ' בְּהַתְחָלָה?", "audio_cue_text": "מ", "options": [{"word": "מִכְנָסַיִם", "concept": "מכנסים", "emoji_suggestion": "👖", "category": "nouns_objects", "image_url": "images/island-03/michnasayim.png", "correct": true}, {"word": "תִּינוֹק", "concept": "תינוק", "emoji_suggestion": "👶", "category": "nouns_animals", "image_url": "images/island-03/tinok.png"}, {"word": "תָּמָר", "concept": "תמר", "emoji_suggestion": "🌴", "category": "nouns_food", "image_url": "images/island-03/tamar.png"}, {"word": "תַּפּוּחַ", "concept": "תפוח", "emoji_suggestion": "🍎", "category": "nouns_food", "image_url": "images/island-03/tapuach.png"}], "hints": null, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-מ-l2-01", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 2, "type": "hear-sound-choose-image", "letter_in_focus": "מ", "letters_required": ["מ"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל מ' בְּהַתְחָלָה?", "audio_cue_text": "מ", "options": [{"word": "תֻּכִּי", "concept": "תכי", "emoji_suggestion": "🦜", "category": "nouns_animals", "image_url": "images/island-03/tuki.png"}, {"word": "חַלָּה", "concept": "חלה", "emoji_suggestion": "🍞", "category": "nouns_food", "image_url": "images/island-03/chala.png"}, {"word": "מַתָּנָה", "concept": "מתנה", "emoji_suggestion": "🎁", "category": "nouns_objects", "image_url": "images/island-03/matana.png", "correct": true}, {"word": "חִפּוּשִׁית", "concept": "חפושית", "emoji_suggestion": "🐞", "category": "nouns_animals", "image_url": "images/island-03/chipushit.png"}], "hints": {"type": "replay-sound", "available_immediately": true, "text": "לחיצה כדי לשמוע את הצליל מ שוב"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-מ-l2-02", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 2, "type": "hear-sound-choose-image", "letter_in_focus": "מ", "letters_required": ["מ"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל מ' בְּהַתְחָלָה?", "audio_cue_text": "מ", "options": [{"word": "לִוְיָתָן", "concept": "לויתן", "emoji_suggestion": "🐋", "category": "nouns_animals", "image_url": "images/island-03/livyatan.png"}, {"word": "מִרְאָה", "concept": "מראה", "emoji_suggestion": "🪞", "category": "nouns_objects", "image_url": "images/island-03/mira.png", "correct": true}, {"word": "סֵפֶר", "concept": "ספר", "emoji_suggestion": "📖", "category": "nouns_food", "image_url": "images/island-03/sefer.png"}, {"word": "חָלָב", "concept": "חלב", "emoji_suggestion": "🥛", "category": "nouns_food", "image_url": "images/island-03/chalav.png"}], "hints": {"type": "replay-sound", "available_immediately": true, "text": "לחיצה כדי לשמוע את הצליל מ שוב"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-מ-l2-03", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 2, "type": "hear-sound-choose-image", "letter_in_focus": "מ", "letters_required": ["מ"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל מ' בְּהַתְחָלָה?", "audio_cue_text": "מ", "options": [{"word": "מַחַק", "concept": "מחק", "emoji_suggestion": "🧽", "category": "nouns_objects", "image_url": "images/island-03/machak.png", "correct": true}, {"word": "רִיבָּה", "concept": "ריבה", "emoji_suggestion": "🍓", "category": "nouns_food", "image_url": "images/island-03/riba.png"}, {"word": "קִפּוֹד", "concept": "קפוד", "emoji_suggestion": "🦔", "category": "nouns_animals", "image_url": "images/island-03/kipod.png"}, {"word": "כָּרִיךְ", "concept": "כריך", "emoji_suggestion": "🥪", "category": "nouns_food", "image_url": "images/island-03/karich.png"}], "hints": {"type": "replay-sound", "available_immediately": true, "text": "לחיצה כדי לשמוע את הצליל מ שוב"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-מ-l3-01", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 3, "type": "guided-letter-recognition", "letter_in_focus": "מ", "letters_required": ["מ"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "הִנֵּה הָאוֹת מ. אֵיזוֹ תְּמוּנָה מַתְחִילָה בָּאוֹת הַזּוֹ?", "letter_displayed": "מ", "audio_cue_text": "מ", "options": [{"word": "רִמּוֹן", "concept": "רמון", "emoji_suggestion": "🍎", "category": "nouns_food", "image_url": "images/island-03/rimon.png"}, {"word": "תּוּת", "concept": "תות", "emoji_suggestion": "🍓", "category": "nouns_food", "image_url": "images/island-03/tut.png"}, {"word": "מִשְׁקָפַיִם", "concept": "משקפים", "emoji_suggestion": "👓", "category": "nouns_objects", "image_url": "images/island-03/mishkafayim.png", "correct": true}], "hints": {"type": "highlight-letter", "after_seconds": 5, "text": "הָאוֹת מ נִשְׁמַעַת כְּמוֹ 'מממ'"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-מ-l3-02", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 3, "type": "guided-letter-recognition", "letter_in_focus": "מ", "letters_required": ["מ"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "הִנֵּה הָאוֹת מ. אֵיזוֹ תְּמוּנָה מַתְחִילָה בָּאוֹת הַזּוֹ?", "letter_displayed": "מ", "audio_cue_text": "מ", "options": [{"word": "נְמָלָה", "concept": "נמלה", "emoji_suggestion": "🐜", "category": "nouns_animals", "image_url": "images/island-03/nemala.png"}, {"word": "מַפְתֵּחַ", "concept": "מפתח", "emoji_suggestion": "🔑", "category": "nouns_objects", "image_url": "images/island-03/mafteach.png", "correct": true}, {"word": "תֻּכִּי", "concept": "תכי", "emoji_suggestion": "🦜", "category": "nouns_animals", "image_url": "images/island-03/tuki.png"}], "hints": {"type": "highlight-letter", "after_seconds": 5, "text": "הָאוֹת מ נִשְׁמַעַת כְּמוֹ 'מממ'"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-מ-l4-01", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 4, "type": "listen-point-repeat", "letter_in_focus": "מ", "letters_required": ["מ"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "הַמּוֹרָה אוֹמֶרֶת אֶת הַצְּלִיל. תָּצְבִּיעַ עַל הָאוֹת מ:", "letter_displayed": "מ", "audio_cue_text": "מ", "options": [{"word": "מַחַק", "concept": "מחק", "emoji_suggestion": "🧽", "category": "nouns_objects", "image_url": "images/island-03/machak.png", "correct": true}, {"word": "קִפּוֹד", "concept": "קפוד", "emoji_suggestion": "🦔", "category": "nouns_animals", "image_url": "images/island-03/kipod.png"}], "teacher_alert_after_2_failures": true, "wait_for_teacher_confirmation": true, "scaffolding_note": "המורה מקריאה קודם, מצביעה על האות, ואז התלמיד.ה חוזר.ת. תרגיל 'אצבע על האות'.", "hints": {"type": "show-letter", "after_seconds": 3, "text": "מצביעים על האות מ"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-מ-l4-02", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 4, "type": "listen-point-repeat", "letter_in_focus": "מ", "letters_required": ["מ"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "הַמּוֹרָה אוֹמֶרֶת אֶת הַצְּלִיל. תָּצְבִּיעַ עַל הָאוֹת מ:", "letter_displayed": "מ", "audio_cue_text": "מ", "options": [{"word": "כָּרִיךְ", "concept": "כריך", "emoji_suggestion": "🥪", "category": "nouns_food", "image_url": "images/island-03/karich.png"}, {"word": "מַטֶּה", "concept": "מטה", "emoji_suggestion": "🪄", "category": "nouns_objects", "correct": true}], "teacher_alert_after_2_failures": true, "wait_for_teacher_confirmation": true, "scaffolding_note": "המורה מקריאה קודם, מצביעה על האות, ואז התלמיד.ה חוזר.ת. תרגיל 'אצבע על האות'.", "hints": {"type": "show-letter", "after_seconds": 3, "text": "מצביעים על האות מ"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ר-l1-01", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 1, "type": "hear-sound-choose-image", "letter_in_focus": "ר", "letters_required": ["ר"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל ר' בְּהַתְחָלָה?", "audio_cue_text": "ר", "options": [{"word": "רַקֶּפֶת", "concept": "רקפת", "emoji_suggestion": "🌸", "category": "nouns_objects", "image_url": "images/island-03/rakefet.png", "correct": true}, {"word": "לִוְיָתָן", "concept": "לויתן", "emoji_suggestion": "🐋", "category": "nouns_animals", "image_url": "images/island-03/livyatan.png"}, {"word": "בָּנָנָה", "concept": "בננה", "emoji_suggestion": "🍌", "category": "nouns_food", "image_url": "images/island-03/banana.png"}, {"word": "חָלָב", "concept": "חלב", "emoji_suggestion": "🥛", "category": "nouns_food", "image_url": "images/island-03/chalav.png"}], "hints": null, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ר-l1-02", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 1, "type": "hear-sound-choose-image", "letter_in_focus": "ר", "letters_required": ["ר"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל ר' בְּהַתְחָלָה?", "audio_cue_text": "ר", "options": [{"word": "תּוּת", "concept": "תות", "emoji_suggestion": "🍓", "category": "nouns_food", "image_url": "images/island-03/tut.png"}, {"word": "תִּינוֹק", "concept": "תינוק", "emoji_suggestion": "👶", "category": "nouns_animals", "image_url": "images/island-03/tinok.png"}, {"word": "תֻּכִּי", "concept": "תכי", "emoji_suggestion": "🦜", "category": "nouns_animals", "image_url": "images/island-03/tuki.png"}, {"word": "רוֹבּוֹט", "concept": "רובוט", "emoji_suggestion": "🤖", "category": "nouns_objects", "image_url": "images/island-03/robot.png", "correct": true}], "hints": null, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ר-l1-03", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 1, "type": "hear-sound-choose-image", "letter_in_focus": "ר", "letters_required": ["ר"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל ר' בְּהַתְחָלָה?", "audio_cue_text": "ר", "options": [{"word": "בָּיִת", "concept": "בית", "emoji_suggestion": "🏠", "category": "nouns_objects", "image_url": "images/island-03/bayit.png"}, {"word": "בֻּבָּה", "concept": "בבה", "emoji_suggestion": "🪆", "category": "nouns_objects", "image_url": "images/island-03/buba.png"}, {"word": "רוֹפֵא", "concept": "רופא", "emoji_suggestion": "🩺", "category": "nouns_people", "image_url": "images/island-03/rofe.png", "correct": true}, {"word": "מַחַק", "concept": "מחק", "emoji_suggestion": "🧽", "category": "nouns_objects", "image_url": "images/island-03/machak.png"}], "hints": null, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_people", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ר-l2-01", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 2, "type": "hear-sound-choose-image", "letter_in_focus": "ר", "letters_required": ["ר"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל ר' בְּהַתְחָלָה?", "audio_cue_text": "ר", "options": [{"word": "מָרָק", "concept": "מרק", "emoji_suggestion": "🍲", "category": "nouns_food", "image_url": "images/island-03/marak.png"}, {"word": "רֶגֶל", "concept": "רגל", "emoji_suggestion": "🦵", "category": "nouns_objects", "image_url": "images/island-03/regel.png", "correct": true}, {"word": "סֵפֶר", "concept": "ספר", "emoji_suggestion": "📖", "category": "nouns_food", "image_url": "images/island-03/sefer.png"}, {"word": "בֵּיצָה", "concept": "ביצה", "emoji_suggestion": "🥚", "category": "nouns_food", "image_url": "images/island-03/beitza.png"}], "hints": {"type": "replay-sound", "available_immediately": true, "text": "לחיצה כדי לשמוע את הצליל ר שוב"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ר-l2-02", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 2, "type": "hear-sound-choose-image", "letter_in_focus": "ר", "letters_required": ["ר"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל ר' בְּהַתְחָלָה?", "audio_cue_text": "ר", "options": [{"word": "מַמְתַּקִּים", "concept": "ממתקים", "emoji_suggestion": "🍬", "category": "nouns_food", "image_url": "images/island-03/mamtakim.png"}, {"word": "רַדְיוֹ", "concept": "רדיו", "emoji_suggestion": "📻", "category": "nouns_objects", "image_url": "images/island-03/radyo.png", "correct": true}, {"word": "חַלָּה", "concept": "חלה", "emoji_suggestion": "🍞", "category": "nouns_food", "image_url": "images/island-03/chala.png"}, {"word": "תַּפּוּז", "concept": "תפוז", "emoji_suggestion": "🍊", "category": "nouns_food", "image_url": "images/island-03/tapuz.png"}], "hints": {"type": "replay-sound", "available_immediately": true, "text": "לחיצה כדי לשמוע את הצליל ר שוב"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ר-l2-03", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 2, "type": "hear-sound-choose-image", "letter_in_focus": "ר", "letters_required": ["ר"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל ר' בְּהַתְחָלָה?", "audio_cue_text": "ר", "options": [{"word": "כָּרִיךְ", "concept": "כריך", "emoji_suggestion": "🥪", "category": "nouns_food", "image_url": "images/island-03/karich.png"}, {"word": "רוֹלֶר", "concept": "רולר", "emoji_suggestion": "⛸️", "category": "nouns_objects", "image_url": "images/island-03/roler.png", "correct": true}, {"word": "קִפּוֹד", "concept": "קפוד", "emoji_suggestion": "🦔", "category": "nouns_animals", "image_url": "images/island-03/kipod.png"}, {"word": "נָחָשׁ", "concept": "נחש", "emoji_suggestion": "🐍", "category": "nouns_animals", "image_url": "images/island-03/nachash.png"}], "hints": {"type": "replay-sound", "available_immediately": true, "text": "לחיצה כדי לשמוע את הצליל ר שוב"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ר-l3-01", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 3, "type": "guided-letter-recognition", "letter_in_focus": "ר", "letters_required": ["ר"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "הִנֵּה הָאוֹת ר. אֵיזוֹ תְּמוּנָה מַתְחִילָה בָּאוֹת הַזּוֹ?", "letter_displayed": "ר", "audio_cue_text": "ר", "options": [{"word": "מַשָּׂאִית", "concept": "משאית", "emoji_suggestion": "🚚", "category": "nouns_objects", "image_url": "images/island-03/masait.png"}, {"word": "מַקֵּל", "concept": "מקל", "emoji_suggestion": "🦯", "category": "nouns_objects", "image_url": "images/island-03/makel.png"}, {"word": "רִמּוֹן", "concept": "רמון", "emoji_suggestion": "🍎", "category": "nouns_food", "image_url": "images/island-03/rimon.png", "correct": true}], "hints": {"type": "highlight-letter", "after_seconds": 5, "text": "הָאוֹת ר נִשְׁמַעַת כְּמוֹ 'ררר'"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_food", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ר-l3-02", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 3, "type": "guided-letter-recognition", "letter_in_focus": "ר", "letters_required": ["ר"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "הִנֵּה הָאוֹת ר. אֵיזוֹ תְּמוּנָה מַתְחִילָה בָּאוֹת הַזּוֹ?", "letter_displayed": "ר", "audio_cue_text": "ר", "options": [{"word": "רַמְזוֹר", "concept": "רמזור", "emoji_suggestion": "🚦", "category": "nouns_objects", "image_url": "images/island-03/ramzor.png", "correct": true}, {"word": "תָּמָר", "concept": "תמר", "emoji_suggestion": "🌴", "category": "nouns_food", "image_url": "images/island-03/tamar.png"}, {"word": "חִפּוּשִׁית", "concept": "חפושית", "emoji_suggestion": "🐞", "category": "nouns_animals", "image_url": "images/island-03/chipushit.png"}], "hints": {"type": "highlight-letter", "after_seconds": 5, "text": "הָאוֹת ר נִשְׁמַעַת כְּמוֹ 'ררר'"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ר-l4-01", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 4, "type": "listen-point-repeat", "letter_in_focus": "ר", "letters_required": ["ר"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "הַמּוֹרָה אוֹמֶרֶת אֶת הַצְּלִיל. תָּצְבִּיעַ עַל הָאוֹת ר:", "letter_displayed": "ר", "audio_cue_text": "ר", "options": [{"word": "תַּנּוּר", "concept": "תנור", "emoji_suggestion": "🍳", "category": "nouns_objects", "image_url": "images/island-03/tanur.png"}, {"word": "רִיבָּה", "concept": "ריבה", "emoji_suggestion": "🍓", "category": "nouns_food", "image_url": "images/island-03/riba.png", "correct": true}], "teacher_alert_after_2_failures": true, "wait_for_teacher_confirmation": true, "scaffolding_note": "המורה מקריאה קודם, מצביעה על האות, ואז התלמיד.ה חוזר.ת. תרגיל 'אצבע על האות'.", "hints": {"type": "show-letter", "after_seconds": 3, "text": "מצביעים על האות ר"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_food", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ר-l4-02", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 4, "type": "listen-point-repeat", "letter_in_focus": "ר", "letters_required": ["ר"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "הַמּוֹרָה אוֹמֶרֶת אֶת הַצְּלִיל. תָּצְבִּיעַ עַל הָאוֹת ר:", "letter_displayed": "ר", "audio_cue_text": "ר", "options": [{"word": "נְמָלָה", "concept": "נמלה", "emoji_suggestion": "🐜", "category": "nouns_animals", "image_url": "images/island-03/nemala.png"}, {"word": "רַכֶּבֶת", "concept": "רכבת", "emoji_suggestion": "🚂", "category": "nouns_objects", "image_url": "images/island-03/rakevet.png", "correct": true}], "teacher_alert_after_2_failures": true, "wait_for_teacher_confirmation": true, "scaffolding_note": "המורה מקריאה קודם, מצביעה על האות, ואז התלמיד.ה חוזר.ת. תרגיל 'אצבע על האות'.", "hints": {"type": "show-letter", "after_seconds": 3, "text": "מצביעים על האות ר"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ב-l1-01", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 1, "type": "hear-sound-choose-image", "letter_in_focus": "ב", "letters_required": ["ב"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל ב' בְּהַתְחָלָה?", "audio_cue_text": "ב", "options": [{"word": "בּוּעוֹת", "concept": "בועות", "emoji_suggestion": "🫧", "category": "nouns_objects", "image_url": "images/island-03/buot.png", "correct": true}, {"word": "חַלָּה", "concept": "חלה", "emoji_suggestion": "🍞", "category": "nouns_food", "image_url": "images/island-03/chala.png"}, {"word": "לִוְיָתָן", "concept": "לויתן", "emoji_suggestion": "🐋", "category": "nouns_animals", "image_url": "images/island-03/livyatan.png"}, {"word": "תִּינוֹק", "concept": "תינוק", "emoji_suggestion": "👶", "category": "nouns_animals", "image_url": "images/island-03/tinok.png"}], "hints": null, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ב-l1-02", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 1, "type": "hear-sound-choose-image", "letter_in_focus": "ב", "letters_required": ["ב"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל ב' בְּהַתְחָלָה?", "audio_cue_text": "ב", "options": [{"word": "נְמָלָה", "concept": "נמלה", "emoji_suggestion": "🐜", "category": "nouns_animals", "image_url": "images/island-03/nemala.png"}, {"word": "קִפּוֹד", "concept": "קפוד", "emoji_suggestion": "🦔", "category": "nouns_animals", "image_url": "images/island-03/kipod.png"}, {"word": "בָּרָד", "concept": "ברד", "emoji_suggestion": "🌨️", "category": "nouns_objects", "image_url": "images/island-03/barad.png", "correct": true}, {"word": "תֻּכִּי", "concept": "תכי", "emoji_suggestion": "🦜", "category": "nouns_animals", "image_url": "images/island-03/tuki.png"}], "hints": null, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ב-l1-03", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 1, "type": "hear-sound-choose-image", "letter_in_focus": "ב", "letters_required": ["ב"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל ב' בְּהַתְחָלָה?", "audio_cue_text": "ב", "options": [{"word": "סֵפֶר", "concept": "ספר", "emoji_suggestion": "📖", "category": "nouns_food", "image_url": "images/island-03/sefer.png"}, {"word": "בָּלוֹן", "concept": "בלון", "emoji_suggestion": "🎈", "category": "nouns_objects", "image_url": "images/island-03/balon.png", "correct": true}, {"word": "תָּמָר", "concept": "תמר", "emoji_suggestion": "🌴", "category": "nouns_food", "image_url": "images/island-03/tamar.png"}, {"word": "כָּרִיךְ", "concept": "כריך", "emoji_suggestion": "🥪", "category": "nouns_food", "image_url": "images/island-03/karich.png"}], "hints": null, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ב-l2-01", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 2, "type": "hear-sound-choose-image", "letter_in_focus": "ב", "letters_required": ["ב"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל ב' בְּהַתְחָלָה?", "audio_cue_text": "ב", "options": [{"word": "תַּרְמִיל", "concept": "תרמיל", "emoji_suggestion": "🎒", "category": "nouns_objects", "image_url": "images/island-03/tarmil.png"}, {"word": "רוֹפֵא", "concept": "רופא", "emoji_suggestion": "🩺", "category": "nouns_people", "image_url": "images/island-03/rofe.png"}, {"word": "בָּנָנָה", "concept": "בננה", "emoji_suggestion": "🍌", "category": "nouns_food", "image_url": "images/island-03/banana.png", "correct": true}, {"word": "מִשְׁקָפַיִם", "concept": "משקפים", "emoji_suggestion": "👓", "category": "nouns_objects", "image_url": "images/island-03/mishkafayim.png"}], "hints": {"type": "replay-sound", "available_immediately": true, "text": "לחיצה כדי לשמוע את הצליל ב שוב"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_food", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ב-l2-02", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 2, "type": "hear-sound-choose-image", "letter_in_focus": "ב", "letters_required": ["ב"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל ב' בְּהַתְחָלָה?", "audio_cue_text": "ב", "options": [{"word": "בָּיִת", "concept": "בית", "emoji_suggestion": "🏠", "category": "nouns_objects", "image_url": "images/island-03/bayit.png", "correct": true}, {"word": "רִיבָּה", "concept": "ריבה", "emoji_suggestion": "🍓", "category": "nouns_food", "image_url": "images/island-03/riba.png"}, {"word": "מַמְתַּקִּים", "concept": "ממתקים", "emoji_suggestion": "🍬", "category": "nouns_food", "image_url": "images/island-03/mamtakim.png"}, {"word": "מָרָק", "concept": "מרק", "emoji_suggestion": "🍲", "category": "nouns_food", "image_url": "images/island-03/marak.png"}], "hints": {"type": "replay-sound", "available_immediately": true, "text": "לחיצה כדי לשמוע את הצליל ב שוב"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ב-l2-03", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 2, "type": "hear-sound-choose-image", "letter_in_focus": "ב", "letters_required": ["ב"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל ב' בְּהַתְחָלָה?", "audio_cue_text": "ב", "options": [{"word": "תַּפּוּז", "concept": "תפוז", "emoji_suggestion": "🍊", "category": "nouns_food", "image_url": "images/island-03/tapuz.png"}, {"word": "תַּפּוּחַ", "concept": "תפוח", "emoji_suggestion": "🍎", "category": "nouns_food", "image_url": "images/island-03/tapuach.png"}, {"word": "בְּרֵכָה", "concept": "ברכה", "emoji_suggestion": "🏊", "category": "nouns_objects", "image_url": "images/island-03/brecha.png", "correct": true}, {"word": "חִפּוּשִׁית", "concept": "חפושית", "emoji_suggestion": "🐞", "category": "nouns_animals", "image_url": "images/island-03/chipushit.png"}], "hints": {"type": "replay-sound", "available_immediately": true, "text": "לחיצה כדי לשמוע את הצליל ב שוב"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ב-l3-01", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 3, "type": "guided-letter-recognition", "letter_in_focus": "ב", "letters_required": ["ב"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "הִנֵּה הָאוֹת ב. אֵיזוֹ תְּמוּנָה מַתְחִילָה בָּאוֹת הַזּוֹ?", "letter_displayed": "ב", "audio_cue_text": "ב", "options": [{"word": "חָלָב", "concept": "חלב", "emoji_suggestion": "🥛", "category": "nouns_food", "image_url": "images/island-03/chalav.png"}, {"word": "רִמּוֹן", "concept": "רמון", "emoji_suggestion": "🍎", "category": "nouns_food", "image_url": "images/island-03/rimon.png"}, {"word": "בֹּהֶן", "concept": "בהן", "emoji_suggestion": "👍", "category": "nouns_objects", "image_url": "images/island-03/bohen.png", "correct": true}], "hints": {"type": "highlight-letter", "after_seconds": 5, "text": "הָאוֹת ב נִשְׁמַעַת כְּמוֹ 'בבב'"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ב-l3-02", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 3, "type": "guided-letter-recognition", "letter_in_focus": "ב", "letters_required": ["ב"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "הִנֵּה הָאוֹת ב. אֵיזוֹ תְּמוּנָה מַתְחִילָה בָּאוֹת הַזּוֹ?", "letter_displayed": "ב", "audio_cue_text": "ב", "options": [{"word": "תּוּת", "concept": "תות", "emoji_suggestion": "🍓", "category": "nouns_food", "image_url": "images/island-03/tut.png"}, {"word": "בָּרָק", "concept": "ברק", "emoji_suggestion": "⚡", "category": "nouns_objects", "image_url": "images/island-03/barak.png", "correct": true}, {"word": "נָחָשׁ", "concept": "נחש", "emoji_suggestion": "🐍", "category": "nouns_animals", "image_url": "images/island-03/nachash.png"}], "hints": {"type": "highlight-letter", "after_seconds": 5, "text": "הָאוֹת ב נִשְׁמַעַת כְּמוֹ 'בבב'"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ב-l4-01", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 4, "type": "listen-point-repeat", "letter_in_focus": "ב", "letters_required": ["ב"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "הַמּוֹרָה אוֹמֶרֶת אֶת הַצְּלִיל. תָּצְבִּיעַ עַל הָאוֹת ב:", "letter_displayed": "ב", "audio_cue_text": "ב", "options": [{"word": "מָרָק", "concept": "מרק", "emoji_suggestion": "🍲", "category": "nouns_food", "image_url": "images/island-03/marak.png"}, {"word": "בָּיִת", "concept": "בית", "emoji_suggestion": "🏠", "category": "nouns_objects", "image_url": "images/island-03/bayit.png", "correct": true}], "teacher_alert_after_2_failures": true, "wait_for_teacher_confirmation": true, "scaffolding_note": "המורה מקריאה קודם, מצביעה על האות, ואז התלמיד.ה חוזר.ת. תרגיל 'אצבע על האות'.", "hints": {"type": "show-letter", "after_seconds": 3, "text": "מצביעים על האות ב"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ב-l4-02", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 4, "type": "listen-point-repeat", "letter_in_focus": "ב", "letters_required": ["ב"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "הַמּוֹרָה אוֹמֶרֶת אֶת הַצְּלִיל. תָּצְבִּיעַ עַל הָאוֹת ב:", "letter_displayed": "ב", "audio_cue_text": "ב", "options": [{"word": "תַּפּוּחַ", "concept": "תפוח", "emoji_suggestion": "🍎", "category": "nouns_food", "image_url": "images/island-03/tapuach.png"}, {"word": "בָּרָק", "concept": "ברק", "emoji_suggestion": "⚡", "category": "nouns_objects", "image_url": "images/island-03/barak.png", "correct": true}], "teacher_alert_after_2_failures": true, "wait_for_teacher_confirmation": true, "scaffolding_note": "המורה מקריאה קודם, מצביעה על האות, ואז התלמיד.ה חוזר.ת. תרגיל 'אצבע על האות'.", "hints": {"type": "show-letter", "after_seconds": 3, "text": "מצביעים על האות ב"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ק-l1-01", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 1, "type": "hear-sound-choose-image", "letter_in_focus": "ק", "letters_required": ["ק"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל ק' בְּהַתְחָלָה?", "audio_cue_text": "ק", "options": [{"word": "רוֹפֵא", "concept": "רופא", "emoji_suggestion": "🩺", "category": "nouns_people", "image_url": "images/island-03/rofe.png"}, {"word": "תָּמָר", "concept": "תמר", "emoji_suggestion": "🌴", "category": "nouns_food", "image_url": "images/island-03/tamar.png"}, {"word": "קֻבִּיָּה", "concept": "קביה", "emoji_suggestion": "🎲", "category": "nouns_objects", "image_url": "images/island-03/kubiya.png", "correct": true}, {"word": "חִפּוּשִׁית", "concept": "חפושית", "emoji_suggestion": "🐞", "category": "nouns_animals", "image_url": "images/island-03/chipushit.png"}], "hints": null, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ק-l1-02", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 1, "type": "hear-sound-choose-image", "letter_in_focus": "ק", "letters_required": ["ק"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל ק' בְּהַתְחָלָה?", "audio_cue_text": "ק", "options": [{"word": "לִוְיָתָן", "concept": "לויתן", "emoji_suggestion": "🐋", "category": "nouns_animals", "image_url": "images/island-03/livyatan.png"}, {"word": "מַמְתַּקִּים", "concept": "ממתקים", "emoji_suggestion": "🍬", "category": "nouns_food", "image_url": "images/island-03/mamtakim.png"}, {"word": "בֵּיצָה", "concept": "ביצה", "emoji_suggestion": "🥚", "category": "nouns_food", "image_url": "images/island-03/beitza.png"}, {"word": "קַלְמָר", "concept": "קלמר", "emoji_suggestion": "✏️", "category": "nouns_objects", "image_url": "images/island-03/kalmar.png", "correct": true}], "hints": null, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ק-l1-03", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 1, "type": "hear-sound-choose-image", "letter_in_focus": "ק", "letters_required": ["ק"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל ק' בְּהַתְחָלָה?", "audio_cue_text": "ק", "options": [{"word": "רַמְזוֹר", "concept": "רמזור", "emoji_suggestion": "🚦", "category": "nouns_objects", "image_url": "images/island-03/ramzor.png"}, {"word": "בָּצָל", "concept": "בצל", "emoji_suggestion": "🧅", "category": "nouns_objects", "image_url": "images/island-03/batzal.png"}, {"word": "סֵפֶר", "concept": "ספר", "emoji_suggestion": "📖", "category": "nouns_food", "image_url": "images/island-03/sefer.png"}, {"word": "קִפּוֹד", "concept": "קפוד", "emoji_suggestion": "🦔", "category": "nouns_animals", "image_url": "images/island-03/kipod.png", "correct": true}], "hints": null, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_animals", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ק-l2-01", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 2, "type": "hear-sound-choose-image", "letter_in_focus": "ק", "letters_required": ["ק"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל ק' בְּהַתְחָלָה?", "audio_cue_text": "ק", "options": [{"word": "רִיבָּה", "concept": "ריבה", "emoji_suggestion": "🍓", "category": "nouns_food", "image_url": "images/island-03/riba.png"}, {"word": "תֻּכִּי", "concept": "תכי", "emoji_suggestion": "🦜", "category": "nouns_animals", "image_url": "images/island-03/tuki.png"}, {"word": "קוּפְסָה", "concept": "קופסה", "emoji_suggestion": "📦", "category": "nouns_objects", "image_url": "images/island-03/kupsa.png", "correct": true}, {"word": "תַּפּוּז", "concept": "תפוז", "emoji_suggestion": "🍊", "category": "nouns_food", "image_url": "images/island-03/tapuz.png"}], "hints": {"type": "replay-sound", "available_immediately": true, "text": "לחיצה כדי לשמוע את הצליל ק שוב"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ק-l2-02", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 2, "type": "hear-sound-choose-image", "letter_in_focus": "ק", "letters_required": ["ק"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל ק' בְּהַתְחָלָה?", "audio_cue_text": "ק", "options": [{"word": "קוּמְקוּם", "concept": "קומקום", "emoji_suggestion": "🫖", "category": "nouns_objects", "image_url": "images/island-03/kumkum.png", "correct": true}, {"word": "תּוּת", "concept": "תות", "emoji_suggestion": "🍓", "category": "nouns_food", "image_url": "images/island-03/tut.png"}, {"word": "כָּרִיךְ", "concept": "כריך", "emoji_suggestion": "🥪", "category": "nouns_food", "image_url": "images/island-03/karich.png"}, {"word": "חַלָּה", "concept": "חלה", "emoji_suggestion": "🍞", "category": "nouns_food", "image_url": "images/island-03/chala.png"}], "hints": {"type": "replay-sound", "available_immediately": true, "text": "לחיצה כדי לשמוע את הצליל ק שוב"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ק-l2-03", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 2, "type": "hear-sound-choose-image", "letter_in_focus": "ק", "letters_required": ["ק"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל ק' בְּהַתְחָלָה?", "audio_cue_text": "ק", "options": [{"word": "תִּינוֹק", "concept": "תינוק", "emoji_suggestion": "👶", "category": "nouns_animals", "image_url": "images/island-03/tinok.png"}, {"word": "נָחָשׁ", "concept": "נחש", "emoji_suggestion": "🐍", "category": "nouns_animals", "image_url": "images/island-03/nachash.png"}, {"word": "קַנְגּוּרוּ", "concept": "קנגורו", "emoji_suggestion": "🦘", "category": "nouns_objects", "image_url": "images/island-03/kanguru.png", "correct": true}, {"word": "מָרָק", "concept": "מרק", "emoji_suggestion": "🍲", "category": "nouns_food", "image_url": "images/island-03/marak.png"}], "hints": {"type": "replay-sound", "available_immediately": true, "text": "לחיצה כדי לשמוע את הצליל ק שוב"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ק-l3-01", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 3, "type": "guided-letter-recognition", "letter_in_focus": "ק", "letters_required": ["ק"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "הִנֵּה הָאוֹת ק. אֵיזוֹ תְּמוּנָה מַתְחִילָה בָּאוֹת הַזּוֹ?", "letter_displayed": "ק", "audio_cue_text": "ק", "options": [{"word": "חָלָב", "concept": "חלב", "emoji_suggestion": "🥛", "category": "nouns_food", "image_url": "images/island-03/chalav.png"}, {"word": "רִמּוֹן", "concept": "רמון", "emoji_suggestion": "🍎", "category": "nouns_food", "image_url": "images/island-03/rimon.png"}, {"word": "קַסְדָּה", "concept": "קסדה", "emoji_suggestion": "⛑️", "category": "nouns_objects", "image_url": "images/island-03/kasda.png", "correct": true}], "hints": {"type": "highlight-letter", "after_seconds": 5, "text": "הָאוֹת ק נִשְׁמַעַת כְּמוֹ 'קקק'"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ק-l3-02", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 3, "type": "guided-letter-recognition", "letter_in_focus": "ק", "letters_required": ["ק"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "הִנֵּה הָאוֹת ק. אֵיזוֹ תְּמוּנָה מַתְחִילָה בָּאוֹת הַזּוֹ?", "letter_displayed": "ק", "audio_cue_text": "ק", "options": [{"word": "בָּנָנָה", "concept": "בננה", "emoji_suggestion": "🍌", "category": "nouns_food", "image_url": "images/island-03/banana.png"}, {"word": "נְמָלָה", "concept": "נמלה", "emoji_suggestion": "🐜", "category": "nouns_animals", "image_url": "images/island-03/nemala.png"}, {"word": "קְפִיץ", "concept": "קפיץ", "emoji_suggestion": "🌀", "category": "nouns_objects", "image_url": "images/island-03/kfitz.png", "correct": true}], "hints": {"type": "highlight-letter", "after_seconds": 5, "text": "הָאוֹת ק נִשְׁמַעַת כְּמוֹ 'קקק'"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ק-l4-01", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 4, "type": "listen-point-repeat", "letter_in_focus": "ק", "letters_required": ["ק"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "הַמּוֹרָה אוֹמֶרֶת אֶת הַצְּלִיל. תָּצְבִּיעַ עַל הָאוֹת ק:", "letter_displayed": "ק", "audio_cue_text": "ק", "options": [{"word": "קַלְמָר", "concept": "קלמר", "emoji_suggestion": "✏️", "category": "nouns_objects", "image_url": "images/island-03/kalmar.png", "correct": true}, {"word": "חַלָּה", "concept": "חלה", "emoji_suggestion": "🍞", "category": "nouns_food", "image_url": "images/island-03/chala.png"}], "teacher_alert_after_2_failures": true, "wait_for_teacher_confirmation": true, "scaffolding_note": "המורה מקריאה קודם, מצביעה על האות, ואז התלמיד.ה חוזר.ת. תרגיל 'אצבע על האות'.", "hints": {"type": "show-letter", "after_seconds": 3, "text": "מצביעים על האות ק"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_objects", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}, {"id": "i03-ק-l4-02", "island_id": 3, "island_slug": "letter-recognition", "envelope": "tap-match", "level": 4, "type": "listen-point-repeat", "letter_in_focus": "ק", "letters_required": ["ק"], "niqqud_required": [], "skills_tested": [1, 2], "prompt": "הַמּוֹרָה אוֹמֶרֶת אֶת הַצְּלִיל. תָּצְבִּיעַ עַל הָאוֹת ק:", "letter_displayed": "ק", "audio_cue_text": "ק", "options": [{"word": "בָּצָל", "concept": "בצל", "emoji_suggestion": "🧅", "category": "nouns_objects", "image_url": "images/island-03/batzal.png"}, {"word": "קִפּוֹד", "concept": "קפוד", "emoji_suggestion": "🦔", "category": "nouns_animals", "image_url": "images/island-03/kipod.png", "correct": true}], "teacher_alert_after_2_failures": true, "wait_for_teacher_confirmation": true, "scaffolding_note": "המורה מקריאה קודם, מצביעה על האות, ואז התלמיד.ה חוזר.ת. תרגיל 'אצבע על האות'.", "hints": {"type": "show-letter", "after_seconds": 3, "text": "מצביעים על האות ק"}, "review_status": "draft", "review_notes": "", "source": "vocab-bank · nouns_animals", "created_by": "auto-generator-v2", "created_at": "2026-05-22"}]};
+
+async function load() {
+  try {
+    ITEMS = EMBEDDED_DATA.items;
+    // Restore review state from localStorage
+    const stored = JSON.parse(localStorage.getItem('island03-reviews') || '{}');
+    ITEMS.forEach(it => {
+      if (stored[it.id]) {
+        it.review_status = stored[it.id].status;
+        it.review_notes = stored[it.id].notes || '';
+      }
+    });
+    render();
+    setupFilters();
+    updateCounts();
+  } catch (e) {
+    document.getElementById('items-host').innerHTML =
+      `<div style="text-align:center; padding:60px; color:var(--red);">שגיאת טעינה: ${e.message}<br><br>פתחי דרך שרת מקומי (לא file://).</div>`;
+  }
+}
+
+function render() {
+  const host = document.getElementById('items-host');
+  host.innerHTML = ITEMS.map(it => renderItem(it)).join('');
+  applyFilters();
+}
+
+function renderItem(it) {
+  const correctOption = it.options.find(o => o.correct);
+  const optionsHtml = it.options.map(o => {
+    // Prefer real PNG image; fall back to Unicode emoji if image fails to load.
+    // Image path is relative to this HTML (which lives in engine/content/items/),
+    // so prefix with "../" to reach engine/content/images/...
+    const emoji = o.emoji_suggestion || '🖼️';
+    const visual = o.image_url
+      ? `<img class="option-image" src="../${o.image_url}" alt="${o.concept || o.word}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><div class="option-emoji" style="display:none">${emoji}</div>`
+      : `<div class="option-emoji">${emoji}</div>`;
+    return `
+    <div class="option ${o.correct ? 'correct' : ''}">
+      ${visual}
+      <div class="option-word-label">
+        <span class="hebrew-niqqud">${o.word}</span>
+        <small>(לסקירה בלבד)</small>
+      </div>
+      ${o.correct ? '<div class="correct-mark">✓</div>' : ''}
+    </div>
+  `;
+  }).join('');
+
+  return `
+    <div class="item-card ${it.review_status === 'approved' ? 'approved' : ''} ${it.review_status === 'needs-edit' ? 'needs-edit' : ''} ${it.review_status === 'rejected' ? 'rejected' : ''}"
+         data-letter="${it.letter_in_focus}" data-level="${it.level}" data-id="${it.id}">
+
+      <div class="item-header">
+        <span class="item-id">${it.id}</span>
+        <span class="tag letter">${it.letter_in_focus}</span>
+        <span class="tag lvl${it.level}">רמה ${it.level} · ${LEVEL_NAMES[it.level]}</span>
+        <span class="tag envelope">${it.envelope}</span>
+        <span class="tag type">${it.type}</span>
+      </div>
+
+      <!-- ── מה הילד.ה שומעת ── -->
+      <div class="audio-block">
+        <div class="block-label audio-label">🔊 הילד.ה שומעת (אודיו)</div>
+        <div class="audio-prompt hebrew-niqqud">${it.prompt}</div>
+        <button class="play-btn" onclick="playPrompt(this, ${JSON.stringify(it.prompt).replace(/"/g,'&quot;')})">▶ השמיעי כמו לילד</button>
+        <div class="audio-side-note">
+          <b>צליל מושמע בנפרד:</b> <span class="hebrew-niqqud" style="font-size:18px;color:var(--pink);font-weight:800;">${it.audio_cue_text || '—'}</span>
+          <small>(בפיילוט — הקלטה בקולך)</small>
+        </div>
+      </div>
+
+      <!-- ── מה הילד.ה רואה ── -->
+      <div class="visual-block">
+        <div class="block-label visual-label">👀 הילד.ה רואה (ויזואלי בלבד)</div>
+        ${it.letter_displayed ? `<div class="big-letter-display"><span class="item-letter-large hebrew-niqqud">${it.letter_displayed}</span></div>` : ''}
+        <div class="options-grid">${optionsHtml}</div>
+        <div class="visual-disclaimer">⚠ הטקסט הקטן מתחת לכל תמונה — <b>לא מוצג לילד.ה</b>. הוא כאן רק כדי שתדעי איזו מילה התמונה מייצגת.</div>
+      </div>
+
+      <div class="item-meta">
+        <div>
+          <b>מיומנויות נבדקות:</b> ${it.skills_tested.map(s => `מיומנות ${s}`).join(', ')}<br>
+          <b>תשובה נכונה:</b> <span class="hebrew-niqqud">${correctOption.word}</span>
+        </div>
+        <div>
+          <b>מקור:</b> <code>${it.source}</code><br>
+          <b>נוצר על-ידי:</b> ${it.created_by}
+        </div>
+      </div>
+
+      ${it.hints ? `
+        <div class="hint-note">
+          <b>פיגום (${it.hints.type}):</b> ${it.hints.text}
+          ${it.hints.after_seconds ? ` · אחרי ${it.hints.after_seconds} שניות` : ''}
+          ${it.hints.available_immediately ? ' · זמין מיד בלחיצה' : ''}
+        </div>
+      ` : ''}
+
+      ${it.scaffolding_note ? `<div class="hint-note">${it.scaffolding_note}</div>` : ''}
+
+      <div class="review-row">
+        <button class="btn approve" onclick="setStatus('${it.id}', 'approved')">✓ אשרי</button>
+        <button class="btn needs-edit" onclick="setStatus('${it.id}', 'needs-edit')">⚠ דורש תיקון</button>
+        <button class="btn reject" onclick="setStatus('${it.id}', 'rejected')">✕ דחי</button>
+        <input class="notes-input" placeholder="הערות (אופציונלי)" value="${it.review_notes || ''}"
+               oninput="setNotes('${it.id}', this.value)">
+      </div>
+    </div>
+  `;
+}
+
+let SELECTED_VOICE = null;
+
+function listVoices() {
+  if (!('speechSynthesis' in window)) return [];
+  return speechSynthesis.getVoices();
+}
+
+function findHebrewVoice() {
+  const voices = listVoices();
+  return voices.find(v => v.lang === 'he-IL' || v.lang === 'iw-IL')
+      || voices.find(v => v.lang.startsWith('he'))
+      || voices.find(v => v.lang.startsWith('iw'))
+      || voices.find(v => v.name.toLowerCase().includes('hebrew'))
+      || null;
+}
+
+function diagnoseAudio() {
+  const panel = document.getElementById('audio-diagnostic');
+  if (!panel) return;
+  if (!('speechSynthesis' in window)) {
+    panel.innerHTML = '<b style="color:#c00;">❌ הדפדפן לא תומך ב-TTS כלל.</b> פתחי ב-Edge / Chrome עדכניים.';
+    panel.style.display = 'block';
+    return;
+  }
+  const voices = listVoices();
+  const heVoice = findHebrewVoice();
+  let html = '';
+  if (voices.length === 0) {
+    html = '<b style="color:#c00;">⚠ עוד לא נטענו קולות. רעננו בעוד 2 שניות.</b>';
+  } else if (heVoice) {
+    SELECTED_VOICE = heVoice;
+    html = `<b style="color:#10b981;">✓ נמצא קול עברית:</b> <b>${heVoice.name}</b> (${heVoice.lang})<br>
+            <button onclick="testVoice('${heVoice.name.replace(/'/g, "\\'")}')"
+                    style="margin-top:8px;padding:7px 16px;background:#10b981;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:700;">
+              🔊 בדיקה: "שלום ילדים"
+            </button>`;
+  } else {
+    html = `<b style="color:#c00;font-size:14px;">❌ אין קול עברית בדפדפן הזה (${voices.length} קולות אחרים זמינים).</b><br><br>
+            <b>פתרונות מהמהיר לאיטי:</b><br>
+            <b>1.</b> פתחי את הקובץ ב-<b>Microsoft Edge</b> במקום Chrome. ל-Edge יש קול עברית מובנה (Microsoft Asaf Online, cloud-based).<br>
+            <b>2.</b> אם את כבר ב-Edge — Windows Settings → Time & Language → Speech → Manage voices → Add → עברית.<br>
+            <b>3.</b> בינתיים: קראי את ה-prompt בעיניים מהטקסט הכחול (הוא מנוקד).<br><br>
+            <b>קולות זמינים:</b> ${voices.slice(0, 10).map(v => v.lang).join(', ')}${voices.length > 10 ? '…' : ''}`;
+  }
+  panel.innerHTML = html;
+  panel.style.display = 'block';
+}
+
+function testVoice(voiceName) {
+  const voice = listVoices().find(v => v.name === voiceName);
+  const u = new SpeechSynthesisUtterance('שָׁלוֹם יְלָדִים');
+  if (voice) u.voice = voice;
+  u.lang = 'he-IL';
+  u.rate = 0.85;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
+
+function playPrompt(btn, text) {
+  if (!('speechSynthesis' in window)) { diagnoseAudio(); return; }
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'he-IL';
+  utter.rate = 0.85;
+  utter.pitch = 1.0;
+  const heVoice = SELECTED_VOICE || findHebrewVoice();
+  if (heVoice) {
+    utter.voice = heVoice;
+  } else {
+    btn.textContent = '⚠ אין קול עברית — ראי באנר';
+    btn.style.background = '#c00';
+    setTimeout(() => {
+      btn.textContent = '▶ השמיעי כמו לילד';
+      btn.style.background = '';
+    }, 3000);
+    diagnoseAudio();
+    document.getElementById('audio-diagnostic').scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+  btn.classList.add('playing');
+  btn.textContent = '▶ מנגן…';
+  utter.onend = () => {
+    btn.classList.remove('playing');
+    btn.textContent = '▶ השמיעי כמו לילד';
+  };
+  utter.onerror = () => {
+    btn.classList.remove('playing');
+    btn.textContent = '⚠ שגיאה';
+  };
+  speechSynthesis.speak(utter);
+}
+
+if ('speechSynthesis' in window) {
+  if (speechSynthesis.getVoices().length === 0) {
+    speechSynthesis.onvoiceschanged = diagnoseAudio;
+  } else {
+    setTimeout(diagnoseAudio, 100);
+  }
+}
+
+function setStatus(id, status) {
+  const it = ITEMS.find(x => x.id === id);
+  if (!it) return;
+  it.review_status = status;
+  saveReview(it);
+  render();
+  updateCounts();
+}
+
+function setNotes(id, notes) {
+  const it = ITEMS.find(x => x.id === id);
+  if (!it) return;
+  it.review_notes = notes;
+  saveReview(it);
+}
+
+function saveReview(it) {
+  const stored = JSON.parse(localStorage.getItem('island03-reviews') || '{}');
+  stored[it.id] = { status: it.review_status, notes: it.review_notes };
+  localStorage.setItem('island03-reviews', JSON.stringify(stored));
+}
+
+function setupFilters() {
+  document.querySelectorAll('[data-filter-letter]').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('[data-filter-letter]').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      filterLetter = b.dataset.filterLetter;
+      applyFilters();
+    });
+  });
+  document.querySelectorAll('[data-filter-level]').forEach(b => {
+    b.addEventListener('click', () => {
+      const wasActive = b.classList.contains('active');
+      document.querySelectorAll('[data-filter-level]').forEach(x => x.classList.remove('active'));
+      if (!wasActive) {
+        b.classList.add('active');
+        filterLevel = b.dataset.filterLevel;
+      } else {
+        filterLevel = 'all';
+      }
+      applyFilters();
+    });
+  });
+}
+
+function applyFilters() {
+  document.querySelectorAll('.item-card').forEach(card => {
+    const letterMatch = filterLetter === 'all' || card.dataset.letter === filterLetter;
+    const levelMatch = filterLevel === 'all' || card.dataset.level === filterLevel;
+    card.classList.toggle('hidden', !(letterMatch && levelMatch));
+  });
+}
+
+function updateCounts() {
+  document.getElementById('count-approved').textContent = ITEMS.filter(it => it.review_status === 'approved').length;
+  document.getElementById('count-edit').textContent = ITEMS.filter(it => it.review_status === 'needs-edit').length;
+  document.getElementById('count-draft').textContent = ITEMS.filter(it => it.review_status === 'draft').length;
+}
+
+function exportApproved() {
+  const approved = ITEMS.filter(it => it.review_status === 'approved');
+  if (approved.length === 0) { alert('עוד לא אישרת אף פריט.'); return; }
+  const out = {
+    meta: { exported_at: new Date().toISOString(), count: approved.length, source: 'island-03-letter-recognition.json' },
+    items: approved
+  };
+  const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `island-03-approved-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportNeedsEdit() {
+  const needsEdit = ITEMS.filter(it => it.review_status === 'needs-edit');
+  if (needsEdit.length === 0) { alert('לא סימנת אף פריט כדורש תיקון.'); return; }
+  const out = {
+    meta: { exported_at: new Date().toISOString(), count: needsEdit.length, source: 'island-03-letter-recognition.json', status: 'needs-edit' },
+    items: needsEdit
+  };
+  const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `island-03-needs-edit-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+load();
+</script>
+</body>
+</html>
