@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>אחרי משחקון · אבני יסוד</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Playpen+Sans+Hebrew:wght@500;700;800&family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="demo-style.css">
+<style>
+  .selector {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    padding: 14px 18px;
+    margin-bottom: 22px;
+    display: flex; align-items: center; gap: 12px;
+    flex-wrap: wrap;
+    box-shadow: var(--shadow-sm);
+  }
+  .selector-label {
+    font-size: 12px; font-weight: 700;
+    color: var(--ink-faded);
+    letter-spacing: 0.05em;
+  }
+  .selector select {
+    font-family: 'Heebo', sans-serif;
+    font-size: 14px; font-weight: 600;
+    color: var(--ink);
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 8px 14px;
+    cursor: pointer;
+  }
+
+  .game-head {
+    background: linear-gradient(135deg, var(--card) 0%, var(--bg-soft) 100%);
+    border-radius: var(--radius-lg);
+    padding: 26px 28px;
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+    margin-bottom: 22px;
+    display: flex; align-items: center; gap: 22px;
+    flex-wrap: wrap;
+  }
+  .game-letter {
+    width: 88px; height: 88px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, var(--indigo) 0%, var(--violet) 100%);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playpen Sans Hebrew', sans-serif;
+    font-size: 52px; font-weight: 800;
+    box-shadow: 0 8px 24px rgba(79, 70, 229, 0.30);
+    flex-shrink: 0;
+  }
+  .game-info { flex: 1; min-width: 200px; }
+  .game-meta {
+    font-size: 12.5px; font-weight: 700;
+    color: var(--violet); letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .game-title {
+    font-family: 'Playpen Sans Hebrew', sans-serif;
+    font-size: 26px; font-weight: 800;
+    color: var(--ink); margin-bottom: 6px;
+  }
+  .game-sub { font-size: 14.5px; color: var(--ink-soft); }
+  .game-time {
+    font-size: 12px; color: var(--ink-faded);
+    background: var(--indigo-soft);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-weight: 600;
+  }
+
+  .error-viz {
+    background: var(--bg-soft);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    margin-top: 12px;
+  }
+  .error-bar {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+  .error-bar:last-child { margin-bottom: 0; }
+  .error-bar-track {
+    flex: 1; height: 8px; border-radius: 999px;
+    background: rgba(245, 158, 11, 0.12);
+    overflow: hidden;
+  }
+  .error-bar-track > span {
+    display: block; height: 100%; border-radius: 999px;
+    background: var(--gold);
+  }
+  .error-count {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700; color: var(--ink);
+    min-width: 26px; text-align: left;
+  }
+
+  .hypothesis {
+    background: linear-gradient(135deg, var(--violet-soft) 0%, var(--indigo-soft) 100%);
+    border-radius: var(--radius);
+    border-right: 4px solid var(--violet);
+    padding: 18px 20px;
+    margin-bottom: 18px;
+  }
+  .hypothesis-label {
+    font-size: 11.5px; font-weight: 800;
+    color: var(--violet); letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+  .hypothesis-text {
+    font-size: 15px; font-weight: 600;
+    color: var(--ink); line-height: 1.55;
+    margin-bottom: 8px;
+  }
+  .hypothesis-disclaimer {
+    font-size: 12px; color: var(--ink-faded);
+    font-style: italic;
+  }
+
+  .actions-row {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin-top: 22px;
+  }
+
+  .empty-state {
+    background: var(--bg-soft);
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius);
+    padding: 40px 24px;
+    text-align: center;
+    color: var(--ink-faded);
+  }
+  .empty-state-icon {
+    font-family: 'Playpen Sans Hebrew', sans-serif;
+    font-size: 48px;
+    color: var(--lavender);
+    margin-bottom: 12px;
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <div class="brand-mark">א</div>
+    <div>
+      <div class="brand-name">אבני יסוד</div>
+      <div class="brand-sub">אחרי משחקון · אי 3</div>
+    </div>
+  </a>
+  <div class="topbar-actions">
+    <span class="demo-tag">דמו</span>
+    <a class="nav-link" href="index.html">שער</a>
+    <a class="nav-link" href="morning-board.html">בוקר טוב</a>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="selector">
+    <span class="selector-label">בחירת תלמיד.ה ומשחקון:</span>
+    <select id="student-select" aria-label="תלמיד"></select>
+    <select id="letter-select" aria-label="אות"></select>
+    <span style="margin-right: auto; font-size: 12px; color: var(--ink-faded);">
+      ה-URL מתעדכן — אפשר לשתף קישור ישיר למורה
+    </span>
+  </div>
+
+  <div id="content"></div>
+
+  <div class="foot">
+    דמו · רגע 01: אחרי משחקון בודד · המסך נטען על-פי state.json
+  </div>
+
+</main>
+
+<script>
+const STATE_URL = 'state.json';
+let STATE = null;
+
+const FLAG_DESCRIPTIONS = {
+  slow_response: {
+    title: 'זמן תגובה איטי',
+    body: 'דיוק טוב אבל מעל סף השטף (5 שניות). אינדיקציה אפשרית לעומס קוגניטיבי או לקריאה לא אוטומטית. שווה תרגול חזרה מהיר ברמת תמיכה נמוכה יותר.',
+    cls: 'gold'
+  },
+  repeated_hint: {
+    title: 'שימוש חוזר ברמז',
+    body: 'התלמיד.ה נעזר.ה ברמז ב-3+ פריטים. סימן שצריך עוד תמיכה — או שהפריטים קשים מדי לרמה הנוכחית.',
+    cls: 'gold'
+  },
+  shape_vs_sound_gap: {
+    title: 'פער צורה-צליל',
+    body: 'מזהה את הצליל מצוין (soundMatch גבוה) אבל מתקשה בצורת האות (letterShape נמוך). פרופיל ויזואלי-אורתוגרפי — דורש דגש על תרגול צורה (מעטפת זיכרון-מיון).',
+    cls: 'violet'
+  },
+  find_letter_struggle: {
+    title: 'קושי לאתר אות בתוך מילה',
+    body: 'מזהה אות בודדת אבל מתקשה כשהיא בהקשר מילה. צעד טבעי במעבר לאי 5 — לא בעיה נקודתית.',
+    cls: 'violet'
+  },
+  level4_drops: {
+    title: 'נפילה ברמת תמיכה 4',
+    body: 'המערכת הציעה תמיכה מוגברת אוטומטית — והתלמיד.ה עדיין לא הצליח.ה. סף לכך שאי 3 הזה דורש 1:1 של מורה, לא תרגול עצמאי.',
+    cls: 'orange'
+  }
+};
+
+const LETTER_ORDER = ['ב', 'ק', 'מ', 'ת', 'ר'];
+
+function init() {
+  fetch(STATE_URL).then(r => r.json()).then(data => {
+    STATE = data;
+    populateSelectors();
+    handleUrlChange();
+  });
+}
+
+function populateSelectors() {
+  const studentSel = document.getElementById('student-select');
+  const letterSel = document.getElementById('letter-select');
+
+  STATE.students.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.id;
+    opt.textContent = s.name + ' (' + s.completed_today.length + '/5 משחקונים)';
+    studentSel.appendChild(opt);
+  });
+
+  LETTER_ORDER.forEach(l => {
+    const opt = document.createElement('option');
+    opt.value = l;
+    const game = STATE.meta.games_island3[l];
+    opt.textContent = l + ' — ' + game.name;
+    letterSel.appendChild(opt);
+  });
+
+  studentSel.addEventListener('change', updateUrl);
+  letterSel.addEventListener('change', updateUrl);
+}
+
+function updateUrl() {
+  const sid = document.getElementById('student-select').value;
+  const letter = document.getElementById('letter-select').value;
+  const newUrl = window.location.pathname + '?student=' + sid + '&letter=' + encodeURIComponent(letter);
+  history.replaceState(null, '', newUrl);
+  render(sid, letter);
+}
+
+function handleUrlChange() {
+  const params = new URLSearchParams(window.location.search);
+  const sid = params.get('student') || STATE.students[0].id;
+  const letter = params.get('letter') || 'ב';
+  document.getElementById('student-select').value = sid;
+  document.getElementById('letter-select').value = letter;
+  render(sid, letter);
+}
+
+function statusClass(status) {
+  if (status === 'mastered')      return 'mastered';
+  if (status === 'near-mastery')  return 'near';
+  if (status === 'in-progress')   return 'progress';
+  if (status === 'needs-review')  return 'review';
+  return 'not';
+}
+function statusLabel(status) {
+  return {
+    'mastered':      'בקירוב mastery',
+    'near-mastery':  'קרוב למאסטרי',
+    'in-progress':   'באמצע התקדמות',
+    'needs-review':  'דורש חזרה',
+    'not-attempted': 'לא הספיק'
+  }[status] || status;
+}
+
+function buildHypothesis(letterData) {
+  const flags = letterData.flags || [];
+  const supportAvg = letterData.support_level_avg;
+
+  if (letterData.status === 'mastered') {
+    return {
+      label: 'תמונה חיובית',
+      text: 'התלמיד.ה רוכש.ת את האות. דיוק גבוה, שטף תחת הסף, ללא רמזים. אם זה ייציב גם בסשן הבא — האות תיכנס ל-mastery יציבה ותעבור לחזרה רווחת.'
+    };
+  }
+  if (flags.includes('shape_vs_sound_gap')) {
+    return {
+      label: 'השערה אבחנתית',
+      text: 'התלמיד.ה יודע.ת את <strong>צליל</strong> האות, אבל מתקשה בזיהוי <strong>הצורה</strong>. זה פרופיל ויזואלי-אורתוגרפי. המעטפת שתעזור: זיכרון-מיון של צורות דומות (ולא עוד טאפ-להתאמה).'
+    };
+  }
+  if (flags.includes('level4_drops')) {
+    return {
+      label: 'התראה',
+      text: 'גם ברמת תמיכה 4 לא הצליח.ה — סימן שאי 3 לא ה-prerequisite הנכון כרגע. ייתכן שיש פער בסיסי באי 1 או 2 (מודעות פונולוגית). מומלץ ליווי 1:1 + חזרה לבסיס.'
+    };
+  }
+  if (flags.includes('slow_response') && letterData.accuracy >= 0.8) {
+    return {
+      label: 'השערה אבחנתית',
+      text: 'הדיוק טוב אבל הקריאה לא אוטומטית עדיין. הזיהוי מתבצע במאמץ. תרגול חזרה מהיר ברמת תמיכה נמוכה יותר יכול לבנות אוטומטיות.'
+    };
+  }
+  if (flags.includes('repeated_hint')) {
+    return {
+      label: 'השערה אבחנתית',
+      text: 'נעזר.ה ברמזים יותר מהממוצע. שווה לבדוק האם הרמה הנוכחית (' + Math.round(supportAvg) + ') מתאימה, או שצריך לעלות רמה לפיגום אוטומטי גדול יותר.'
+    };
+  }
+  return {
+    label: 'תמונה ראשונית',
+    text: 'התקדמות סבירה בקנה המידה של הקנייה ראשונית. דרושים עוד 1-2 סשנים כדי לאשש או לדחות את הכיוון הזה.'
+  };
+}
+
+function render(studentId, letter) {
+  const student = STATE.students.find(s => s.id === studentId);
+  const letterData = student.per_letter[letter];
+  const game = STATE.meta.games_island3[letter];
+  const root = document.getElementById('content');
+
+  if (letterData.status === 'not-attempted') {
+    root.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">⌒</div>
+        <h2 style="font-family: 'Playpen Sans Hebrew', sans-serif; font-weight: 800; margin-bottom: 6px;">
+          ${student.name} לא הספיק.ה את "${game.name}" היום
+        </h2>
+        <p style="font-size: 14px;">
+          האות ${letter} תוקצה ראשונה בתכנית של מחר (ראו דשבורד הבוקר).
+        </p>
+        <div style="margin-top: 18px;">
+          <a class="btn btn-soft" href="island3-summary.html?student=${studentId}">← סיכום אי 3 של ${student.name}</a>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  const hyp = buildHypothesis(letterData);
+  const accPct = Math.round(letterData.accuracy * 100);
+  const errorEvents = letterData.attempts_total - Math.round(letterData.accuracy * letterData.attempts_total);
+
+  root.innerHTML = `
+    <div class="game-head">
+      <div class="game-letter">${letter}</div>
+      <div class="game-info">
+        <div class="game-meta">${student.name} · רגע אחרי משחקון</div>
+        <div class="game-title">${game.name}</div>
+        <div class="game-sub">5 שלבי משחקון · אות ${letter} · 10-15 חשיפות פדגוגיות</div>
+      </div>
+      <div class="game-time">סיים.ה לפני 2 דקות</div>
+    </div>
+
+    <div class="hypothesis">
+      <div class="hypothesis-label">${hyp.label}</div>
+      <div class="hypothesis-text">${hyp.text}</div>
+      <div class="hypothesis-disclaimer">דרושים 2-3 סשנים לוודאות — זו לא קביעה אבחנתית.</div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="kpi-label">דיוק</div>
+        <div class="kpi-value num">${accPct}%</div>
+        <div class="kpi-sub">${letterData.attempts_total - errorEvents}/${letterData.attempts_total} פריטים נכונים</div>
+        <div class="kpi-bar"><span style="width:${accPct}%; background: var(--st-${statusClass(letterData.status) === 'progress' ? 'progress' : statusClass(letterData.status)});"></span></div>
+      </div>
+
+      <div class="kpi">
+        <div class="kpi-label">זמן תגובה חציוני</div>
+        <div class="kpi-value num">${letterData.fluency_median_sec.toFixed(1)}<span style="font-size: 16px; color: var(--ink-faded);"> שנ'</span></div>
+        <div class="kpi-sub">סף שטף לאי 3: ${'≤'}5.0 שנ'</div>
+        <div class="kpi-bar"><span style="width:${Math.min(100, (5 / letterData.fluency_median_sec) * 100)}%; background: ${letterData.fluency_median_sec <= 5 ? 'var(--green)' : 'var(--gold)'};"></span></div>
+      </div>
+
+      <div class="kpi">
+        <div class="kpi-label">רמת פיגום ממוצעת</div>
+        <div class="kpi-value num">${letterData.support_level_avg.toFixed(1)}<span style="font-size: 16px; color: var(--ink-faded);">/4</span></div>
+        <div class="kpi-sub">${supportLabel(letterData.support_level_avg)}</div>
+        <div class="kpi-bar"><span style="width:${(letterData.support_level_avg / 4) * 100}%; background: var(--lvl-${Math.round(letterData.support_level_avg)});"></span></div>
+      </div>
+
+      <div class="kpi">
+        <div class="kpi-label">רמזים</div>
+        <div class="kpi-value num">${letterData.hints_used}</div>
+        <div class="kpi-sub">${letterData.hints_used === 0 ? 'עצמאי לחלוטין' : letterData.hints_used <= 2 ? 'בקנה מידה תקין' : 'מעל הממוצע'}</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2 class="section-title">דפוס שגיאות</h2>
+      <div class="card">
+        <div style="font-size: 14px; color: var(--ink-soft); margin-bottom: 12px;">
+          ${letterData.error_pattern && letterData.error_pattern !== '—' ? letterData.error_pattern : 'לא זוהה דפוס שגיאות ברור — הטעויות מפוזרות.'}
+        </div>
+        ${renderErrorViz(letterData)}
+      </div>
+    </div>
+
+    ${renderFlags(letterData)}
+
+    <div class="section">
+      <h2 class="section-title">סטטוס פדגוגי באות ${letter}</h2>
+      <div class="card" style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+        <span class="chip ${statusClass(letterData.status)}" style="font-size: 13.5px; padding: 7px 16px;">
+          <span class="chip-dot"></span>
+          ${statusLabel(letterData.status)}
+        </span>
+        <span style="font-size: 13.5px; color: var(--ink-soft);">
+          p(BKT) = <strong class="num">${letterData.p_bkt.toFixed(2)}</strong>
+          · סף mastery: <strong class="num">0.90</strong>
+          · ${letterData.status === 'mastered' ? 'יציבות נדרשת: עוד סשן רצוף אחד' : 'דרושים עוד תרגולים לפני קביעת mastery'}
+        </span>
+      </div>
+    </div>
+
+    <div class="actions-row">
+      <button class="btn btn-primary" onclick="acknowledgeAndContinue()">ראיתי — המשך</button>
+      <button class="btn btn-ghost" onclick="markForTomorrow('${student.id}', '${letter}')">סמני לטיפול בבוקר מחר</button>
+      <a class="btn btn-soft" href="island3-summary.html?student=${studentId}">סיכום מלא של ${student.name}</a>
+    </div>
+  `;
+}
+
+function supportLabel(avg) {
+  if (avg <= 1.2) return 'עצמאית (רמה 1)';
+  if (avg <= 2.4) return 'תמיכה חלקית (רמה 2)';
+  if (avg <= 3.4) return 'התאמות אוטומטיות (רמה 3)';
+  return 'תמיכה מוגברת (רמה 4)';
+}
+
+function renderErrorViz(letterData) {
+  if (!letterData.error_pattern || letterData.error_pattern === '—') return '';
+
+  const total = letterData.attempts_total;
+  const errors = total - Math.round(letterData.accuracy * total);
+  if (errors === 0) return '';
+
+  // נסה לחלץ מספרים מדפוס השגיאות
+  const matches = letterData.error_pattern.match(/(\d+)\s*פעמים/g) || [];
+  if (matches.length === 0) {
+    return `
+      <div class="error-viz">
+        <div class="error-bar">
+          <span>${errors} טעויות סה"כ</span>
+          <span class="error-bar-track"><span style="width: ${(errors/total)*100}%;"></span></span>
+          <span class="error-count num">${errors}/${total}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="error-viz">
+      <div class="error-bar">
+        <span style="min-width: 140px;">${escapeHtml(letterData.error_pattern.split(' — ')[0] || letterData.error_pattern)}</span>
+        <span class="error-bar-track"><span style="width: ${(errors/total)*100}%;"></span></span>
+        <span class="error-count num">${errors}/${total}</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderFlags(letterData) {
+  const flags = letterData.flags || [];
+  if (flags.length === 0) {
+    return `
+      <div class="section">
+        <h2 class="section-title">דגלי מערכת</h2>
+        <div class="card" style="display: flex; align-items: center; gap: 10px;">
+          <span class="chip green" style="padding: 6px 14px;">
+            <span class="chip-dot"></span> אין דגלים
+          </span>
+          <span style="font-size: 13.5px; color: var(--ink-soft);">
+            ההתקדמות נמצאת בקנה מידה תקין למצב הזה.
+          </span>
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="section">
+      <h2 class="section-title">דגלי מערכת — מה שזוהה אוטומטית</h2>
+      <div class="flag-list">
+        ${flags.map(f => {
+          const desc = FLAG_DESCRIPTIONS[f] || { title: f, body: '', cls: 'violet' };
+          return `
+            <div class="flag ${desc.cls}">
+              <div class="flag-title">${desc.title}</div>
+              <div>${desc.body}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function escapeHtml(s) {
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+function acknowledgeAndContinue() {
+  const sid = document.getElementById('student-select').value;
+  const letters = LETTER_ORDER;
+  const cur = document.getElementById('letter-select').value;
+  const idx = letters.indexOf(cur);
+  const next = letters[(idx + 1) % letters.length];
+  document.getElementById('letter-select').value = next;
+  updateUrl();
+}
+
+function markForTomorrow(sid, letter) {
+  const flag = JSON.parse(localStorage.getItem('island3_morning_focus') || '[]');
+  flag.push({ student: sid, letter: letter, ts: Date.now() });
+  localStorage.setItem('island3_morning_focus', JSON.stringify(flag));
+  alert('סומן לטיפול בבוקר מחר. תוכלי לראות זאת בדשבורד הבוקר.');
+}
+
+init();
+</script>
+
+</body>
+</html>
