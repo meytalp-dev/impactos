@@ -129,6 +129,58 @@
   transform: scale(1);
 }
 
+/* ===== תמונת הבית האמיתי (ChatGPT) — נחשפת אחרי 5 לבנים =====
+   ה-SVG הפנימי משמש לתהליך הבנייה ההדרגתי, ואז התמונה מחליפה
+   אותו כדי לחשוף את הבית "במלוא תפארתו". */
+.house-final-image {
+  position: absolute;
+  inset: -8%;
+  width: 116%;
+  height: 116%;
+  object-fit: contain;
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity 1s ease, transform 1.2s cubic-bezier(.34, 1.56, .64, 1);
+  pointer-events: none;
+  z-index: 3;
+  filter: drop-shadow(0 18px 28px rgba(38, 80, 92, 0.32));
+}
+.house-container.revealed .house-final-image {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ה-SVG הפנימי מתעמעם כשהתמונה האמיתית נחשפת */
+.house-container.revealed .house-svg {
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+/* נוני בחלון — מופיע אחרי שהבית האמיתי נחשף */
+.house-noni-window {
+  position: absolute;
+  width: 46%;
+  height: auto;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%) scale(0.4);
+  opacity: 0;
+  transition: opacity 0.7s ease 1.4s,
+              transform 0.9s cubic-bezier(.34, 1.56, .64, 1) 1.4s;
+  pointer-events: none;
+  z-index: 5;
+  filter: drop-shadow(0 8px 18px rgba(38, 80, 92, 0.35));
+}
+.house-container.revealed .house-noni-window {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+  animation: noni-window-bob 3.5s ease-in-out infinite 2.4s;
+}
+@keyframes noni-window-bob {
+  0%, 100% { transform: translateX(-50%) scale(1) translateY(0); }
+  50%      { transform: translateX(-50%) scale(1) translateY(-4px); }
+}
+
 /* ===== Brick row — 5 slots under the house ===== */
 .bricks-row {
   display: flex;
@@ -588,9 +640,11 @@ body .noni-fixed,
   margin: 0;
 }
 .completion-souvenir {
-  width: 170px;
-  height: 170px;
+  width: clamp(180px, 38vw, 240px);
+  height: auto;
+  object-fit: contain;
   animation: souvenir-float 3s ease-in-out infinite;
+  filter: drop-shadow(0 14px 22px rgba(38, 80, 92, 0.35));
 }
 @keyframes souvenir-float {
   0%, 100% { transform: translateY(0) rotate(-3deg); }

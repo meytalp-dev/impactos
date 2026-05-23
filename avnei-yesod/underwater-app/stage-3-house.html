@@ -146,6 +146,16 @@
                     paint-order="stroke fill">מ</text>
             </g>
           </svg>
+
+          <!-- ===== תמונת הבית האמיתי (ChatGPT) — נחשפת אחרי 5 לבנים ===== -->
+          <img class="house-final-image"
+               src="assets/island-03/house-game/coral-house.png"
+               alt="" aria-hidden="true">
+
+          <!-- ===== נוני מציץ מהחלון — מופיע אחרי שהבית נחשף ===== -->
+          <img class="house-noni-window"
+               src="assets/island-03/house-game/noni-in-window.png"
+               alt="" aria-hidden="true">
         </div>
 
         <!-- 5 brick slots that fill as pieces are placed -->
@@ -206,9 +216,9 @@
   <!-- Completion overlay -->
   <div class="completion" id="completion">
     <h2>הבית של נוני מוכן!</h2>
-    <svg class="completion-souvenir" viewBox="0 0 220 200">
-      <use href="#houseFinal"/>
-    </svg>
+    <img class="completion-souvenir"
+         src="assets/island-03/house-game/coral-house.png"
+         alt="הבית של נוני">
     <p id="completionMsg">בית-אלמוג בצורת מ׳ הצטרף לעולם של נוני.</p>
     <a href="map.html" class="btn-primary">חזרה למפה</a>
   </div>
@@ -518,22 +528,29 @@
   // נוני נכנס פנימה (אנימציה לכיוון הבית), קונפטי + נשיקות
   // ============================================================
   async function completeHouse() {
-    // 1) הבית מקבל הילה זהובה + אור בחלונות + אות מ׳ זוהרת במרכז
+    // 1) הבית מקבל הילה זהובה + אור בחלונות (SVG פנימי)
     elHouse.classList.add('completed');
     AvneiAudio.play('great');
 
     // 2) נוני מגיב — מאושר
     cheerNoni();
 
-    // 3) קצת המתנה כדי שהילד יראה את האור — ואז נוני "נכנס"
+    // 3) אחרי 900ms — חושפים את תמונת הבית האמיתי (ChatGPT)
+    //    ה-SVG הפנימי מתעמעם, התמונה האמיתית fade-in,
+    //    ונוני בחלון מופיע בעיכוב נוסף (CSS transition-delay)
+    setTimeout(() => {
+      elHouse.classList.add('revealed');
+    }, 900);
+
+    // 4) נוני הראשי "נכנס" לבית (אנימציה לכיוון הבית)
     setTimeout(() => {
       elNoni.classList.add('entering-house');
-    }, 1600);
+    }, 2200);
 
-    // 4) חגיגה דרמטית: קונפטי + נשיקות + קול גמר
+    // 5) חגיגה דרמטית: קונפטי + נשיקות + קול גמר
     setTimeout(() => {
       startFinale();
-    }, 3000);
+    }, 3600);
   }
 
   function startFinale() {
