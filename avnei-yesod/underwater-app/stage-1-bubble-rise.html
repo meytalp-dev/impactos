@@ -173,14 +173,15 @@
   }
 
   // ----- Build distractor syllables from OTHER words -----
-  function pickDistractors(targetWord, targetSyllableIndex, count = 2) {
-    const targetSylId = targetWord.syllable_ids[targetSyllableIndex];
+  // excludeIds = syllable_ids that are already on screen (target word's own syllables)
+  function pickDistractors(targetWord, count = 4) {
+    const excludeIds = new Set(targetWord.syllable_ids);
     const pool = [];
     WORDS.forEach(w => {
       if (w.id === targetWord.id) return;
       w.syllables.forEach((syl, i) => {
         const sylId = w.syllable_ids[i];
-        if (sylId === targetSylId) return; // skip identical syllable
+        if (excludeIds.has(sylId)) return;
         pool.push({
           syllable: syl,
           syllable_id: sylId,
@@ -232,43 +233,52 @@
     }
   }
 
-  // ----- Build syllable bubbles for current syllable -----
-  function buildChoiceBubbles() {
+  // ----- Build ALL bubbles for the word (correct syllables + distractors) -----
+  // Called ONCE per word. Bubbles stay on screen as child progresses through syllables.
+  function buildAllBubblesForWord() {
     const field = document.getElementById('choiceField');
     field.innerHTML = '';
 
-    const correctSyl = currentWord.syllables[currentSyllableIndex];
-    const correctAudio = currentWord.syllable_audios[currentSyllableIndex].split('/').pop().replace('.mp3', '');
+    // 1. correct syllables (each with its order index)
+    const correctChoices = currentWord.syllables.map((syl, i) => ({
+      syllable: syl,
+      syllable_id: currentWord.syllable_ids[i],
+      audio: currentWord.syllable_audios[i].split('/').pop().replace('.mp3', ''),
+      correct: true,
+      order: i
+    }));
 
-    const distractors = pickDistractors(currentWord, currentSyllableIndex, 2);
+    // 2. distractors — 3 for 2-syl words, 3 for 3-syl words (total bubbles: 5 or 6)
+    const distractorCount = currentWord.syllable_count === 2 ? 3 : 3;
+    const distractors = pickDistractors(currentWord, distractorCount).map(d => ({
+      syllable: d.syllable,
+      syllable_id: d.syllable_id,
+      audio: d.audio,
+      correct: false,
+      order: -1
+    }));
 
-    const choices = [
-      { syllable: correctSyl, audio: correctAudio, correct: true },
-      ...distractors.map(d => ({ syllable: d.syllable, audio: d.audio, correct: false }))
-    ].sort(() => Math.random() - 0.5);
+    const all = [...correctChoices, ...distractors].sort(() => Math.random() - 0.5);
 
-    // Position the 3 bubbles around the big bubble (left, right, top-center)
-    const positions = [
-      { left: '12%', top: '40%' },
-      { left: '70%', top: '40%' },
-      { left: '40%', top: '10%' },
-    ];
+    // Positions — distributed around the center, avoiding the big bubble area
+    // Big bubble is bottom-center (50%, ~14%-86%), so place choices on sides + top
+    const positions = pickPositions(all.length);
 
-    // SVG speaker icon — same as top-bar replay button
     const speakerSvg = `<svg class="speaker-icon" viewBox="0 0 24 24" fill="none">
         <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
         <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
       </svg>`;
 
-    choices.forEach((c, idx) => {
+    all.forEach((c, idx) => {
       const b = document.createElement('button');
       b.className = 'syllable-bubble';
       b.dataset.correct = c.correct ? '1' : '0';
+      b.dataset.order = c.order;
       b.dataset.audio = c.audio;
       b.dataset.idx = idx;
       b.style.left = positions[idx].left;
       b.style.top = positions[idx].top;
-      b.style.animationDelay = `${idx * 0.4}s`;
+      b.style.animationDelay = `${idx * 0.25}s`;
       b.setAttribute('aria-label', `בועה ${idx + 1}`);
       b.innerHTML = speakerSvg;
 
@@ -277,11 +287,9 @@
       field.appendChild(b);
     });
 
-    // Show instruction with target syllable
-    showInstruction(`איזוֹ בּוּעָה אוֹמֶרֶת "${correctSyl}"?`);
-
     // === AUTO DEMO: play each bubble in sequence ===
     demoRunning = true;
+    showInstruction('הַקְשִׁיבוּ לְכָל בּוּעָה...');
     const bubbles = Array.from(field.querySelectorAll('.syllable-bubble'));
     const demoItems = bubbles.map(b => ({
       audio: b.dataset.audio,
@@ -292,26 +300,36 @@
       playSequenceWithStep(
         demoItems,
         (item) => {
-          // pulse this bubble while it speaks
           item.btn.classList.add('demo-pulse', 'heard');
           setTimeout(() => item.btn.classList.remove('demo-pulse'), 900);
         },
         () => {
-          // After demo: repeat target syllable, then enable interaction
-          setTimeout(() => {
-            playAudio(correctAudio, () => {
-              demoRunning = false;
-              // start hint timer
-              hintTimer = setTimeout(() => {
-                const correctBtn = field.querySelector('[data-correct="1"]');
-                if (correctBtn) correctBtn.classList.add('hint');
-              }, 9000);
-            });
-          }, 300);
+          setTimeout(() => promptForCurrentSyllable(), 400);
         },
-        450
+        420
       );
-    }, 600);
+    }, 500);
+  }
+
+  // Prompt the child to find the next-needed syllable
+  function promptForCurrentSyllable() {
+    const targetSyl = currentWord.syllables[currentSyllableIndex];
+    const targetAudio = currentWord.syllable_audios[currentSyllableIndex].split('/').pop().replace('.mp3', '');
+
+    const promptText = currentSyllableIndex === 0
+      ? `תִּמְצְאוּ אֶת "${targetSyl}"`
+      : `עַכְשָׁו "${targetSyl}"`;
+    showInstruction(promptText);
+
+    playAudio(targetAudio, () => {
+      demoRunning = false;
+      // hint after 9 seconds of inactivity
+      clearTimeout(hintTimer);
+      hintTimer = setTimeout(() => {
+        const correctBtn = document.querySelector(`.syllable-bubble[data-order="${currentSyllableIndex}"]`);
+        if (correctBtn) correctBtn.classList.add('hint');
+      }, 9000);
+    });
   }
 
   function showInstruction(text) {
@@ -320,67 +338,90 @@
     el.style.display = 'flex';
   }
 
+  // Position bubbles around the bay, avoiding the central rise track
+  function pickPositions(n) {
+    // Predefined "good" positions — sides + top, avoiding bottom-center (big bubble)
+    const POOL = [
+      { left: '6%',  top: '22%' },
+      { left: '6%',  top: '52%' },
+      { left: '78%', top: '22%' },
+      { left: '78%', top: '52%' },
+      { left: '38%', top: '6%'  },
+      { left: '20%', top: '78%' },
+      { left: '64%', top: '78%' },
+    ];
+    return POOL.slice(0, n).sort(() => Math.random() - 0.5);
+  }
+
   function handleChoiceClick(btn, choice) {
     // ignore clicks during auto-demo
     if (demoRunning) return;
+    // ignore clicks on bubbles already used (correct + popped)
+    if (btn.classList.contains('correct')) return;
     clearTimeout(hintTimer);
 
     const targetAudio = currentWord.syllable_audios[currentSyllableIndex].split('/').pop().replace('.mp3', '');
+    const targetSyl = currentWord.syllables[currentSyllableIndex];
 
-    if (choice.correct) {
+    // ===== CASE A: correct bubble AND correct order =====
+    if (choice.correct && choice.order === currentSyllableIndex) {
       btn.classList.add('correct');
-      // siblings out
-      document.querySelectorAll('.syllable-bubble').forEach(b => {
-        if (b !== btn) {
-          b.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-          b.style.opacity = '0';
-          b.style.transform = 'scale(0.6)';
-          b.style.pointerEvents = 'none';
-        }
-      });
-      // play the syllable audio, then advance
+      btn.style.pointerEvents = 'none';
+
       playAudio(choice.audio, () => {
         // light up checkpoint
         const cps = document.querySelectorAll('.checkpoint');
         if (cps[currentSyllableIndex]) cps[currentSyllableIndex].classList.add('lit');
         // move big bubble up
         moveBigBubbleTo(currentSyllableIndex);
-        // toast
-        showFeedbackToast(currentSyllableIndex + 1 === currentWord.syllable_count ? '' : 'יָפֶה!');
-        // next or complete
+        // advance
         currentSyllableIndex++;
         mistakeCount = 0;
         if (currentSyllableIndex >= currentWord.syllable_count) {
-          setTimeout(completeWord, 1300);
+          setTimeout(completeWord, 1100);
         } else {
-          setTimeout(buildChoiceBubbles, 1100);
+          // toast + prompt next syllable (bubbles stay on screen!)
+          showFeedbackToast('יָפֶה!');
+          setTimeout(promptForCurrentSyllable, 1000);
         }
       });
-    } else {
-      // WRONG bubble — play its sound (so the child hears what each bubble says)
-      mistakeCount++;
-      btn.classList.add('wobble', 'heard');
-      setTimeout(() => btn.classList.remove('wobble'), 600);
-
-      // 1. Play the wrong bubble's sound — so kid learns what it says
-      // 2. Then provide support based on mistake count
-      playAudio(choice.audio, () => {
-        if (mistakeCount === 1) {
-          // soft replay of target
-          setTimeout(() => playAudio(targetAudio), 350);
-        } else if (mistakeCount === 2) {
-          // hint glow + target replay
-          const correctBtn = document.querySelector('.syllable-bubble[data-correct="1"]');
-          if (correctBtn) correctBtn.classList.add('hint');
-          setTimeout(() => playSequence(['support-mistake-2', targetAudio]), 300);
-        } else {
-          // direct help
-          const correctBtn = document.querySelector('.syllable-bubble[data-correct="1"]');
-          if (correctBtn) correctBtn.classList.add('hint');
-          setTimeout(() => playAudio('support-mistake-3'), 300);
-        }
-      });
+      return;
     }
+
+    // ===== CASE B: correct syllable BUT wrong order =====
+    // (e.g. clicked "תוּל" before "חָ")
+    if (choice.correct && choice.order !== currentSyllableIndex) {
+      mistakeCount++;
+      btn.classList.add('wobble');
+      setTimeout(() => btn.classList.remove('wobble'), 600);
+      // play what they tapped, then remind them about order
+      playAudio(choice.audio, () => {
+        // hint: glow on the CORRECT next bubble
+        const correctBtn = document.querySelector(`.syllable-bubble[data-order="${currentSyllableIndex}"]`);
+        if (correctBtn) correctBtn.classList.add('hint');
+        setTimeout(() => playAudio(targetAudio), 350);
+      });
+      return;
+    }
+
+    // ===== CASE C: wrong syllable (distractor) =====
+    mistakeCount++;
+    btn.classList.add('wobble', 'heard');
+    setTimeout(() => btn.classList.remove('wobble'), 600);
+
+    playAudio(choice.audio, () => {
+      if (mistakeCount === 1) {
+        setTimeout(() => playAudio(targetAudio), 350);
+      } else if (mistakeCount === 2) {
+        const correctBtn = document.querySelector(`.syllable-bubble[data-order="${currentSyllableIndex}"]`);
+        if (correctBtn) correctBtn.classList.add('hint');
+        setTimeout(() => playSequence(['support-mistake-2', targetAudio]), 300);
+      } else {
+        const correctBtn = document.querySelector(`.syllable-bubble[data-order="${currentSyllableIndex}"]`);
+        if (correctBtn) correctBtn.classList.add('hint');
+        setTimeout(() => playAudio('support-mistake-3'), 300);
+      }
+    });
   }
 
   function showFeedbackToast(text) {
@@ -482,7 +523,7 @@
         // Pass 2: full word after a pause
         setTimeout(() => {
           playAudio(`word-${currentWord.id}`, () => {
-            setTimeout(buildChoiceBubbles, 500);
+            setTimeout(buildAllBubblesForWord, 500);
           });
         }, 600);
       }, 400);
