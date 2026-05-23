@@ -159,24 +159,22 @@
     }
   }
 
-  // Progressive scaffold (pattern from find-letter.js):
-  //   attempt 1 — gentle nudge + try-again audio + noni 'help'
-  //   attempt 2 — visual hint-glow on the correct pod + play letter SOUND
-  //   attempt 3+ — keep hint-glow + play letter NAME (name-qof)
+  // Support model — per [[feedback-avnei-yesod-support-levels]] (Meytal 23.5.2026):
+  //   attempt 1 — VISUAL ONLY (gentle-sway). NO noni-help. NO audio. Let kid retry alone.
+  //   attempt 2 — hint-glow on correct pod + play letter SOUND. Noni 'hint'.
+  //   attempt 3+ — keep hint-glow + play 'press-here.mp3'. Direct nudge to correct pod.
   function doWrong(pod) {
     state.attempts++;
     pod.classList.add('wrong-sway');
 
     if (state.attempts === 1) {
-      if (window.AvneiNoni) AvneiNoni.setState('help');
-      if (window.AvneiAudio) AvneiAudio.play('try-again');
+      // No verbal/audio support — visual sway is enough on attempt 1
     } else if (state.attempts === 2) {
       if (window.AvneiNoni) AvneiNoni.setState('hint');
       document.querySelectorAll('.seaweed-pod[data-correct="true"]').forEach(p => {
         p.classList.add('hint-glow');
       });
       if (window.AvneiAudio) {
-        // Play the SOUND of the letter (ק → "ק" phoneme)
         setTimeout(() => AvneiAudio.playLetterSound(LETTER), 400);
       }
     } else if (state.attempts >= 3) {
@@ -185,14 +183,12 @@
         p.classList.add('hint-glow');
       });
       if (window.AvneiAudio) {
-        // Play the NAME of the letter (ק → "קוף") — stronger cue
-        setTimeout(() => AvneiAudio.playLetterName(LETTER), 400);
+        setTimeout(() => AvneiAudio.play('press-here'), 400);
       }
     }
 
     setTimeout(() => {
       pod.classList.remove('wrong-sway');
-      // Keep noni state — let it linger so kid registers the help
     }, 700);
   }
 
