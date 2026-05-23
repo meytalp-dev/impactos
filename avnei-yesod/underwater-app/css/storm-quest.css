@@ -7,44 +7,53 @@
    (RTL, מיקום נוני, בועת פידבק) + שכבת חושך/אור ייחודית לסערה.
    ============================================================ */
 
-/* ===== Storm overlay — שכבת חושך שדועכת אחרי כל אלמוג שמודלק ===== */
+/* ===== שכבות סצנת הים — dark מעל bright. dark דועך כשהילד פותר חידות ===== */
+.scene-frame .scene-bg.storm-scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+.scene-frame .scene-bg.storm-scene-bright {
+  /* שכבת הים הזוהר — קבועה למטה, גלויה כשה-dark דועך */
+  z-index: 1;
+}
+.scene-frame .scene-bg.storm-scene-dark {
+  /* שכבת הסערה — מעל. opacity יורד עם כל אלמוג מודלק */
+  z-index: 2;
+  opacity: 1;
+  transition: opacity 1.4s ease;
+}
+.scene-frame.lit-0 .storm-scene-dark { opacity: 1;   }
+.scene-frame.lit-1 .storm-scene-dark { opacity: 0.82; }
+.scene-frame.lit-2 .storm-scene-dark { opacity: 0.6;  }
+.scene-frame.lit-3 .storm-scene-dark { opacity: 0.38; }
+.scene-frame.lit-4 .storm-scene-dark { opacity: 0.18; }
+.scene-frame.lit-5 .storm-scene-dark { opacity: 0;    }
+
+/* Storm overlay — שכבת ערפל-חושך עדינה נוספת (מעל ה-dark scene),
+   נותנת עומק וסיוע גם אם הרקעים לא נטענים */
 .scene-frame .storm-overlay {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 2;
+  z-index: 3;
   background:
     radial-gradient(ellipse at 50% 35%,
       rgba(8, 22, 48, 0) 0%,
-      rgba(8, 22, 48, 0.25) 30%,
-      rgba(5, 15, 38, 0.78) 100%),
-    linear-gradient(180deg,
-      rgba(15, 30, 60, 0.55) 0%,
-      rgba(8, 22, 48, 0.35) 40%,
-      rgba(5, 18, 42, 0.55) 100%);
+      rgba(8, 22, 48, 0.18) 40%,
+      rgba(5, 15, 38, 0.45) 100%);
   opacity: 1;
   transition: opacity 1.4s ease;
 }
-
-/* Filter על תמונת הרקע — מצב סוער: כהה + צבעים קרים + רוויה נמוכה */
-.scene-frame .scene-bg {
-  filter: brightness(0.45) saturate(0.45) hue-rotate(200deg);
-  transition: filter 1.4s ease;
-}
-
-/* התקדמות 0→5: הים נפתח לאור */
-.scene-frame.lit-0 .storm-overlay { opacity: 1; }
-.scene-frame.lit-1 .storm-overlay { opacity: 0.8; }
-.scene-frame.lit-2 .storm-overlay { opacity: 0.6; }
-.scene-frame.lit-3 .storm-overlay { opacity: 0.4; }
-.scene-frame.lit-4 .storm-overlay { opacity: 0.2; }
-.scene-frame.lit-5 .storm-overlay { opacity: 0; }
-
-.scene-frame.lit-1 .scene-bg { filter: brightness(0.55) saturate(0.55) hue-rotate(160deg); }
-.scene-frame.lit-2 .scene-bg { filter: brightness(0.68) saturate(0.7)  hue-rotate(120deg); }
-.scene-frame.lit-3 .scene-bg { filter: brightness(0.8)  saturate(0.85) hue-rotate(80deg);  }
-.scene-frame.lit-4 .scene-bg { filter: brightness(0.95) saturate(1.0)  hue-rotate(35deg);  }
-.scene-frame.lit-5 .scene-bg { filter: brightness(1.12) saturate(1.18) hue-rotate(0deg);   }
+.scene-frame.lit-0 .storm-overlay { opacity: 0.95; }
+.scene-frame.lit-1 .storm-overlay { opacity: 0.75; }
+.scene-frame.lit-2 .storm-overlay { opacity: 0.55; }
+.scene-frame.lit-3 .storm-overlay { opacity: 0.35; }
+.scene-frame.lit-4 .storm-overlay { opacity: 0.15; }
+.scene-frame.lit-5 .storm-overlay { opacity: 0;    }
 
 /* בזק רכים בזמן החושך — מפסיקים אחרי 3 אלמוגים מודלקים */
 .scene-frame .storm-flash {
@@ -119,25 +128,30 @@
 }
 
 .coral-slot {
-  width: clamp(48px, 11vw, 64px);
+  width: clamp(52px, 12vw, 72px);
   height: clamp(64px, 14vw, 84px);
   position: relative;
   transition: transform 0.4s ease;
 }
 
-.coral-slot .coral-svg {
+/* שתי תמונות בכל slot — dark כברירת מחדל, lit נחשפת כשהאלמוג מודלק */
+.coral-slot .coral-img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  filter: saturate(0.15) brightness(0.5) drop-shadow(0 4px 10px rgba(0,0,0,0.45));
-  opacity: 0.6;
-  transition: filter 0.8s ease, opacity 0.8s ease, transform 0.4s ease;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.45));
+  transition: opacity 0.8s ease, transform 0.4s ease;
 }
+.coral-slot .coral-img.coral-dark { opacity: 1;  z-index: 1; }
+.coral-slot .coral-img.coral-lit  { opacity: 0;  z-index: 2; }
 
-.coral-slot.lit .coral-svg {
-  filter: saturate(1.25) brightness(1.05)
-          drop-shadow(0 0 14px rgba(255, 231, 168, 0.95))
-          drop-shadow(0 0 28px rgba(255, 196, 130, 0.75));
+.coral-slot.lit .coral-img.coral-dark { opacity: 0; }
+.coral-slot.lit .coral-img.coral-lit  {
   opacity: 1;
+  filter: drop-shadow(0 0 14px rgba(255, 231, 168, 0.95))
+          drop-shadow(0 0 28px rgba(255, 196, 130, 0.75));
   animation: coral-glow 2.6s ease-in-out infinite;
 }
 @keyframes coral-glow {
@@ -610,10 +624,12 @@ body .noni-fixed,
   margin-top: 4px;
 }
 .completion-corals .coral-mini {
-  width: clamp(40px, 9vw, 56px);
+  width: clamp(48px, 10vw, 64px);
   height: clamp(56px, 12vw, 76px);
+  object-fit: contain;
   animation: coral-bounce 1.6s ease-in-out infinite;
-  filter: saturate(1.25) drop-shadow(0 0 12px rgba(255, 231, 168, 0.85));
+  filter: drop-shadow(0 0 12px rgba(255, 231, 168, 0.85))
+          drop-shadow(0 0 22px rgba(255, 196, 130, 0.55));
 }
 .completion-corals .coral-mini:nth-child(2) { animation-delay: 0.15s; }
 .completion-corals .coral-mini:nth-child(3) { animation-delay: 0.3s; }

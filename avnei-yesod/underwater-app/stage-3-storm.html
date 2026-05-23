@@ -19,10 +19,16 @@
 
   <main class="stage-scene">
     <div class="scene-frame lit-0" id="sceneFrame">
-      <img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true"
+      <!-- שכבת בסיס: הים הזוהר (לא משתנה — נחשף בהדרגה כשה-dark דועך) -->
+      <img class="scene-bg storm-scene storm-scene-bright"
+           src="assets/island-03/storm-game/scene-storm-bright.png" alt="" aria-hidden="true"
+           onerror="this.style.display='none'">
+      <!-- שכבה עליונה: הים הסוער — opacity יורד עם כל אלמוג -->
+      <img class="scene-bg storm-scene storm-scene-dark"
+           src="assets/island-03/storm-game/scene-storm-dark.png" alt="" aria-hidden="true"
            onerror="this.style.display='none'">
 
-      <!-- שכבות סערה: חושך + הבזקים רכים -->
+      <!-- שכבות סערה: ערפל חושך עדין + הבזקים רכים -->
       <div class="storm-overlay" aria-hidden="true"></div>
       <div class="storm-flash" aria-hidden="true"></div>
 
@@ -33,11 +39,26 @@
           <span id="stormBannerText">גן האלמוגים חשוך</span>
         </div>
         <div class="corals-row" id="coralsRow">
-          <div class="coral-slot" data-i="0"><svg class="coral-svg" viewBox="0 0 60 80"><use href="#memCoral"/></svg></div>
-          <div class="coral-slot" data-i="1"><svg class="coral-svg" viewBox="0 0 60 80"><use href="#memCoral"/></svg></div>
-          <div class="coral-slot" data-i="2"><svg class="coral-svg" viewBox="0 0 60 80"><use href="#memCoral"/></svg></div>
-          <div class="coral-slot" data-i="3"><svg class="coral-svg" viewBox="0 0 60 80"><use href="#memCoral"/></svg></div>
-          <div class="coral-slot" data-i="4"><svg class="coral-svg" viewBox="0 0 60 80"><use href="#memCoral"/></svg></div>
+          <div class="coral-slot" data-i="0">
+            <img class="coral-img coral-dark" src="assets/island-03/storm-game/coral-mem-dark.png" alt="">
+            <img class="coral-img coral-lit"  src="assets/island-03/storm-game/coral-mem-lit.png"  alt="">
+          </div>
+          <div class="coral-slot" data-i="1">
+            <img class="coral-img coral-dark" src="assets/island-03/storm-game/coral-mem-dark.png" alt="">
+            <img class="coral-img coral-lit"  src="assets/island-03/storm-game/coral-mem-lit.png"  alt="">
+          </div>
+          <div class="coral-slot" data-i="2">
+            <img class="coral-img coral-dark" src="assets/island-03/storm-game/coral-mem-dark.png" alt="">
+            <img class="coral-img coral-lit"  src="assets/island-03/storm-game/coral-mem-lit.png"  alt="">
+          </div>
+          <div class="coral-slot" data-i="3">
+            <img class="coral-img coral-dark" src="assets/island-03/storm-game/coral-mem-dark.png" alt="">
+            <img class="coral-img coral-lit"  src="assets/island-03/storm-game/coral-mem-lit.png"  alt="">
+          </div>
+          <div class="coral-slot" data-i="4">
+            <img class="coral-img coral-dark" src="assets/island-03/storm-game/coral-mem-dark.png" alt="">
+            <img class="coral-img coral-lit"  src="assets/island-03/storm-game/coral-mem-lit.png"  alt="">
+          </div>
         </div>
       </section>
 
@@ -48,8 +69,8 @@
     </div>
   </main>
 
-  <!-- Noni (src swap by JS) -->
-  <img class="noni-fixed" id="noniImg" src="assets/noni-thinking.png" alt="נוני">
+  <!-- Noni (src swap by JS). idle = sad-storm — חוזר ל-happy רק כשמדליקים אלמוג -->
+  <img class="noni-fixed" id="noniImg" src="assets/island-03/storm-game/noni-sad-storm.png" alt="נוני">
 
   <!-- בועת פידבק -->
   <div class="feedback-bubble" id="feedbackBubble"></div>
@@ -90,11 +111,11 @@
   <div class="completion" id="completion">
     <h2>הים זוהר שוב!</h2>
     <div class="completion-corals" aria-hidden="true">
-      <svg class="coral-mini" viewBox="0 0 60 80"><use href="#memCoral"/></svg>
-      <svg class="coral-mini" viewBox="0 0 60 80"><use href="#memCoral"/></svg>
-      <svg class="coral-mini" viewBox="0 0 60 80"><use href="#memCoral"/></svg>
-      <svg class="coral-mini" viewBox="0 0 60 80"><use href="#memCoral"/></svg>
-      <svg class="coral-mini" viewBox="0 0 60 80"><use href="#memCoral"/></svg>
+      <img class="coral-mini" src="assets/island-03/storm-game/coral-mem-lit.png" alt="">
+      <img class="coral-mini" src="assets/island-03/storm-game/coral-mem-lit.png" alt="">
+      <img class="coral-mini" src="assets/island-03/storm-game/coral-mem-lit.png" alt="">
+      <img class="coral-mini" src="assets/island-03/storm-game/coral-mem-lit.png" alt="">
+      <img class="coral-mini" src="assets/island-03/storm-game/coral-mem-lit.png" alt="">
     </div>
     <p id="completionMsg">5 אלמוגי-מ׳ מאירים את גן האלמוגים. נוני שמח.</p>
     <a href="map.html" class="btn-primary">חזרה למפה</a>
@@ -154,14 +175,23 @@
   <!-- ====== OVERRIDE: noni facial expressions via src swap (מ-shell-quest) ====== -->
   <script>
   (function noniExpressions() {
+    // EXPR.idle משתנה דינמית לפי כמה אלמוגים מודלקים
+    // (window.STORM_setIdleByLit() מהקונטרולר). ברירת מחדל: עצוב.
     const EXPR = {
-      idle:    'assets/noni-thinking.png',   // התחלה — נוני עצוב/חושב
+      idle:    'assets/island-03/storm-game/noni-sad-storm.png',
       help:    'assets/noni-thinking.png',
       hint:    'assets/noni-surprised.png',
       cheer:   'assets/noni-happy.png',
       dance:   'assets/noni-kiss.png',
     };
     Object.values(EXPR).forEach(src => { const i = new Image(); i.src = src; });
+
+    // נחשף לקונטרולר כדי לעדכן את הבעת ה-idle לפי התקדמות
+    window.STORM_setIdleByLit = function(litCount) {
+      if (litCount >= 4)      EXPR.idle = 'assets/noni-happy.png';
+      else if (litCount >= 2) EXPR.idle = 'assets/noni-thinking.png';
+      else                    EXPR.idle = 'assets/island-03/storm-game/noni-sad-storm.png';
+    };
 
     if (!window.AvneiNoni) return;
     const origSetState = AvneiNoni.setState;
@@ -399,6 +429,8 @@
 
   function cheerNoni() {
     if (window.AvneiNoni) AvneiNoni.setState('cheer');
+    // עדכון מצב ה-idle לפי התקדמות, לפני שחוזרים אליו
+    if (window.STORM_setIdleByLit) window.STORM_setIdleByLit(state.coralsLit);
     setTimeout(() => {
       if (window.AvneiNoni) AvneiNoni.setState('idle');
     }, 1500);
