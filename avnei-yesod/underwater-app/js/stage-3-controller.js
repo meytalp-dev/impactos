@@ -189,6 +189,10 @@ window.AvneiStage3 = (function() {
 
   // ============================================================
   // הרצה ראשית
+  // תומך ב-URL params לבדיקה:
+  //   ?letter=מ        — מתחיל ישר מהאות הזו (משאיר אותיות קודמות ללא שינוי)
+  //   ?only=מ          — רץ רק על האות הזו, מציג completion בסוף
+  //   ?reset=1         — מאפס localStorage לפני הרצה (משלב נקי)
   // ============================================================
   async function run() {
     _gameRoot = document.getElementById('gameRoot');
@@ -196,6 +200,15 @@ window.AvneiStage3 = (function() {
       console.error('gameRoot element not found');
       return;
     }
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('reset') === '1') {
+      localStorage.removeItem('underwater-app:v1');
+      console.log('localStorage reset.');
+    }
+
+    const startLetter = params.get('letter');
+    const onlyLetter  = params.get('only');
 
     try {
       await loadAllData();
@@ -206,10 +219,18 @@ window.AvneiStage3 = (function() {
 
     AvneiNoni.ready();
 
-    for (let i = 0; i < LETTER_SEQUENCE.length; i++) {
+    let sequence = LETTER_SEQUENCE;
+    if (onlyLetter && LETTER_SEQUENCE.includes(onlyLetter)) {
+      sequence = [onlyLetter];
+    } else if (startLetter && LETTER_SEQUENCE.includes(startLetter)) {
+      const startIdx = LETTER_SEQUENCE.indexOf(startLetter);
+      sequence = LETTER_SEQUENCE.slice(startIdx);
+    }
+
+    for (let i = 0; i < sequence.length; i++) {
       _currentLetterIdx = i;
-      const letter = LETTER_SEQUENCE[i];
-      updateProgressPill(letter, i + 1, LETTER_SEQUENCE.length);
+      const letter = sequence[i];
+      updateProgressPill(letter, i + 1, sequence.length);
       await runLetter(letter);
     }
 
