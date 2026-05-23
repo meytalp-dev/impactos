@@ -236,20 +236,20 @@
     margin: 6px 0;
     align-items: flex-start;
   }
-  .tier-label {
+  .level-label {
     background: #2c7a7b;
     color: white;
-    font-size: 12px;
-    padding: 3px 10px;
-    border-radius: 6px;
+    font-size: 13px;
+    padding: 4px 12px;
+    border-radius: 8px;
     font-weight: 700;
     white-space: nowrap;
     flex-shrink: 0;
   }
-  .tier-label.t1 { background: #48bb78; }
-  .tier-label.t2 { background: #4299e1; }
-  .tier-label.t3 { background: #d69e2e; }
-  .tier-label.t4 { background: #e53e3e; }
+  .level-label.l1 { background: #48bb78; }
+  .level-label.l2 { background: #4299e1; }
+  .level-label.l3 { background: #d69e2e; }
+  .level-label.l4 { background: #e53e3e; }
   .legend {
     background: white;
     padding: 14px 20px;
@@ -328,6 +328,14 @@ const ISLAND_NAMES = {
   9: 'מורפולוגיה'
 };
 function islandName(n) { return ISLAND_NAMES[n] || ('אי ' + n); }
+
+// תרגום שמות מבדקים מאנגלית לעברית
+const ASSESSMENT_NAMES_HE = {
+  'BOY': 'תחילת שנה',
+  'MOY': 'אמצע שנה',
+  'EOY': 'סוף שנה'
+};
+function assessmentNameHe(code) { return ASSESSMENT_NAMES_HE[code] || (code || 'מבדק'); }
 
 async function load() {
   const res = await fetch('grade1-daily-tashpaz.json');
@@ -417,7 +425,7 @@ function render() {
         <div class="island-banner island-none">
           <div class="island-num">מבדק</div>
           <div class="island-info">
-            <div class="island-label">${d.assessment_type || 'מבדק'}</div>
+            <div class="island-label">${assessmentNameHe(d.assessment_type)}</div>
             <div class="island-name">ראמ"ה</div>
           </div>
         </div>
@@ -482,10 +490,10 @@ function showModal(dayNum) {
         ${a2.pack ? `<div><strong>פאק חודשי:</strong> ${a2.pack}</div>` : ''}
         ${a2.primary_island ? `<div><strong>אי ראשי:</strong> ${a2.primary_island}</div>` : ''}
         ${a2.game_to_play ? `<div><strong>משחקון מומלץ:</strong> ${a2.game_to_play}</div>` : ''}
-        ${a2.tier_1 ? `<div class="tier-row"><span class="tier-label t1">Tier 1</span><span>${a2.tier_1}</span></div>` : ''}
-        ${a2.tier_2 ? `<div class="tier-row"><span class="tier-label t2">Tier 2</span><span>${a2.tier_2}</span></div>` : ''}
-        ${a2.tier_3 ? `<div class="tier-row"><span class="tier-label t3">Tier 3</span><span>${a2.tier_3}</span></div>` : ''}
-        ${a2.tier_4 ? `<div class="tier-row"><span class="tier-label t4">Tier 4</span><span>${a2.tier_4}</span></div>` : ''}
+        ${a2.tier_1 ? `<div class="tier-row"><span class="level-label l1">רמה 1 · עצמאי</span><span>${a2.tier_1}</span></div>` : ''}
+        ${a2.tier_2 ? `<div class="tier-row"><span class="level-label l2">רמה 2 · חלקית</span><span>${a2.tier_2}</span></div>` : ''}
+        ${a2.tier_3 ? `<div class="tier-row"><span class="level-label l3">רמה 3 · התאמות</span><span>${a2.tier_3}</span></div>` : ''}
+        ${a2.tier_4 ? `<div class="tier-row"><span class="level-label l4">רמה 4 · תמיכה</span><span>${a2.tier_4}</span></div>` : ''}
       </div>
     `;
   }
