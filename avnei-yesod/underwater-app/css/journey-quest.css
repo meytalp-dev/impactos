@@ -1,0 +1,598 @@
+/* ============================================================
+   journey-quest.css — שביל החזרה (אי 3, אות מ׳)
+   נוני בדרך הביתה · 5 קבוצות אבני ים · בכל אחת אבן עם מ׳
+   נטען *אחרי* stage-3.css כדי לעקוף game-area defaults.
+   ============================================================ */
+
+/* ===== Journey header — progress dots + mission bubble fixed under top-bar ===== */
+.journey-header {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 0 16px;
+  pointer-events: none;
+}
+.journey-header > * { pointer-events: auto; }
+
+/* ===== Path progress — 5 stepping stones across the top ===== */
+.path-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  direction: ltr; /* progress goes left→right regardless of language */
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 999px;
+  box-shadow: 0 6px 16px rgba(38, 80, 92, 0.12);
+}
+
+.path-step {
+  width: 26px;
+  height: 26px;
+  border-radius: 50% 50% 45% 55% / 55% 45% 55% 45%;
+  background: rgba(168, 232, 255, 0.35);
+  border: 2px dashed rgba(38, 80, 92, 0.32);
+  box-shadow: inset 0 2px 4px rgba(38, 80, 92, 0.12);
+  transition: background 0.4s ease, border 0.4s ease,
+              box-shadow 0.4s ease, transform 0.4s ease;
+  position: relative;
+}
+
+.path-step.completed {
+  background: linear-gradient(180deg, #FFE7A8 0%, #FFA98D 100%);
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 0 14px rgba(255, 231, 168, 0.7),
+              inset 0 2px 4px rgba(255, 255, 255, 0.5);
+  animation: step-pop 0.5s ease;
+}
+
+.path-step.current {
+  border-color: rgba(38, 80, 92, 0.7);
+  box-shadow: 0 0 14px rgba(115, 217, 209, 0.5);
+  animation: step-current-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes step-pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.3) rotate(8deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+@keyframes step-current-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.12); }
+}
+
+/* ===== Mission bubble — instruction with speaker ===== */
+.journey-header .instruction-bubble {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #FFFFFF;
+  color: var(--text-main, #26505C);
+  padding: 10px 18px;
+  border-radius: 26px;
+  font-size: clamp(15px, 3.5vw, 19px);
+  font-weight: 700;
+  box-shadow: 0 8px 18px rgba(38, 80, 92, 0.15);
+  border: 2.5px solid rgba(115, 217, 209, 0.55);
+  max-width: min(420px, 92vw);
+}
+
+.journey-header .instruction-bubble .mem-letter {
+  font-size: clamp(20px, 4.4vw, 24px);
+  color: var(--coral, #FFA98D);
+  margin: 0 2px;
+}
+
+.mission-speaker {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--water-secondary, #73D9D1);
+  color: #FFFFFF;
+  border: none;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 10px rgba(115, 217, 209, 0.5);
+  animation: speaker-soft-pulse 2s ease-in-out infinite;
+  cursor: pointer;
+}
+.mission-speaker svg { width: 22px; height: 22px; }
+.mission-speaker:active { transform: scale(0.92); }
+@keyframes speaker-soft-pulse {
+  0%, 100% { box-shadow: 0 4px 10px rgba(115, 217, 209, 0.5),
+                         0 0 0 0 rgba(115, 217, 209, 0.5); }
+  50%      { box-shadow: 0 4px 10px rgba(115, 217, 209, 0.5),
+                         0 0 0 10px rgba(115, 217, 209, 0); }
+}
+
+/* ===== Home target — visible the whole game in the top-right corner =====
+   "Goal" reminder. Grows slightly per completed step. */
+.home-target {
+  position: fixed;
+  top: clamp(140px, 22vw, 200px);
+  right: clamp(12px, 4vw, 28px);
+  width: clamp(80px, 18vw, 120px);
+  aspect-ratio: 1 / 1;
+  z-index: 11;
+  pointer-events: none;
+  filter: drop-shadow(0 8px 18px rgba(38, 80, 92, 0.25));
+  transition: transform 0.7s cubic-bezier(.34,1.56,.64,1),
+              filter 0.7s ease;
+  animation: home-float 4.2s ease-in-out infinite;
+}
+.home-target.step-1 { transform: scale(1.08); }
+.home-target.step-2 { transform: scale(1.16); }
+.home-target.step-3 { transform: scale(1.24); }
+.home-target.step-4 { transform: scale(1.34); }
+.home-target.step-5 {
+  transform: scale(1.5);
+  filter: drop-shadow(0 0 24px rgba(255, 231, 168, 0.9))
+          drop-shadow(0 12px 24px rgba(38, 80, 92, 0.3));
+}
+.home-target img, .home-target svg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+@keyframes home-float {
+  0%, 100% { transform-origin: 50% 100%; }
+  50%      { translate: 0 -6px; }
+}
+
+/* ===== Stones area — 3 stones per round, child taps the מ׳ one ===== */
+.stones-area {
+  position: absolute;
+  top: clamp(260px, 40vw, 340px);
+  left: 0;
+  right: 0;
+  bottom: clamp(140px, 20vh, 200px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(10px, 3vw, 28px);
+  padding: 0 16px;
+  direction: rtl;
+  flex-wrap: wrap;
+  z-index: 8;
+}
+
+.stone {
+  position: relative;
+  width: clamp(86px, 22vw, 132px);
+  aspect-ratio: 1.15 / 1;
+  cursor: pointer;
+  filter: drop-shadow(0 10px 18px rgba(38, 80, 92, 0.28));
+  animation: stone-bob 3.6s ease-in-out infinite;
+  transition: transform 0.3s ease, filter 0.3s ease, opacity 0.3s ease;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  display: grid;
+  place-items: center;
+}
+.stone:nth-child(2) { animation-delay: 0.6s; }
+.stone:nth-child(3) { animation-delay: 1.2s; }
+
+.stone:active {
+  transform: scale(0.95);
+}
+
+@keyframes stone-bob {
+  0%, 100% { transform: translateY(0) rotate(-1.5deg); }
+  50%      { transform: translateY(-4px) rotate(1.5deg); }
+}
+
+.stone__shape {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.stone__letter {
+  position: relative;
+  z-index: 2;
+  font-family: 'Heebo', sans-serif;
+  font-size: clamp(36px, 9vw, 58px);
+  font-weight: 900;
+  color: #FFFFFF;
+  text-shadow:
+    0 2px 0 rgba(38, 80, 92, 0.6),
+    0 4px 8px rgba(38, 80, 92, 0.45);
+  line-height: 1;
+  letter-spacing: 0;
+  pointer-events: none;
+}
+
+/* Stone color variants (random per render for variety) */
+.stone--mint .stone__shape   { color: #98E5C0; }
+.stone--peach .stone__shape  { color: #FFB39A; }
+.stone--lavender .stone__shape { color: #C8B8F5; }
+.stone--sky .stone__shape    { color: #A8E8FF; }
+.stone--sand .stone__shape   { color: #FFE7A8; }
+
+/* Hint glow — pulses the correct stone after long pause */
+.stone.hint-glow {
+  animation: stone-hint-pulse 1.4s ease-in-out infinite;
+  filter: drop-shadow(0 10px 22px rgba(255, 217, 130, 0.65))
+          drop-shadow(0 0 32px rgba(255, 231, 168, 0.85));
+}
+@keyframes stone-hint-pulse {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-6px) scale(1.07); }
+}
+
+/* Soft wrong feedback — gentle shake, no harsh red */
+.stone.wrong-sway {
+  animation: stone-gentle-shake 0.55s ease;
+  opacity: 0.82;
+  filter: drop-shadow(0 10px 18px rgba(255, 200, 200, 0.45));
+}
+@keyframes stone-gentle-shake {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  25%  { transform: translateX(-5px) rotate(-2deg); }
+  50%  { transform: translateX(5px)  rotate(2deg); }
+  75%  { transform: translateX(-3px) rotate(-1deg); }
+}
+
+/* Correct stone — lifts + glows briefly before transition */
+.stone.correct-lift {
+  animation: stone-lift 0.9s ease;
+  z-index: 3;
+}
+@keyframes stone-lift {
+  0%   { transform: translateY(0) scale(1); }
+  40%  { transform: translateY(-22px) scale(1.12);
+         filter: drop-shadow(0 16px 30px rgba(255, 217, 130, 0.7))
+                 drop-shadow(0 0 36px rgba(255, 231, 168, 0.95)); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+/* ===== Bubbles rising behind the path — atmosphere ===== */
+.journey-bubbles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 2;
+}
+.journey-bubbles span {
+  position: absolute;
+  bottom: -20px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.9), rgba(168, 232, 255, 0.55));
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  animation: bubble-rise linear infinite;
+  opacity: 0.7;
+}
+@keyframes bubble-rise {
+  0%   { transform: translateY(0) translateX(0); opacity: 0; }
+  10%  { opacity: 0.8; }
+  90%  { opacity: 0.5; }
+  100% { transform: translateY(-110vh) translateX(20px); opacity: 0; }
+}
+
+/* ===== Noni — bottom-center, hops between stones ===== */
+body .noni-fixed,
+.noni-fixed {
+  position: fixed !important;
+  bottom: clamp(12vh, 16vh, 22vh) !important;
+  left: 50% !important;
+  right: auto !important;
+  top: auto !important;
+  width: clamp(96px, 20vw, 140px) !important;
+  height: auto !important;
+  z-index: 30 !important;
+  pointer-events: none;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.22));
+  transform-origin: 50% 90%;
+  animation: noni-journey-idle 3.6s ease-in-out infinite;
+}
+
+/* Landscape — same bottom-center idea, slightly higher */
+@media (orientation: landscape) and (min-width: 800px) {
+  body .noni-fixed,
+  .noni-fixed {
+    bottom: 14vh !important;
+    left: 50% !important;
+    width: clamp(120px, 14vw, 170px) !important;
+  }
+}
+
+/* IMPORTANT: every keyframe must preserve translateX(-50%) — לקח 14 מ-mem-lessons */
+@keyframes noni-journey-idle {
+  0%, 100% { transform: translateX(-50%) translateY(0) rotate(-2deg); }
+  50%      { transform: translateX(-50%) translateY(-8px) rotate(2deg); }
+}
+
+.noni-fixed.noni-thinking-state {
+  animation: noni-thinking-lean 1.2s ease-in-out infinite !important;
+}
+@keyframes noni-thinking-lean {
+  0%, 100% { transform: translateX(-50%) translateY(0)    rotate(-6deg) scale(1.02); }
+  50%      { transform: translateX(-50%) translateY(-4px) rotate(-10deg) scale(1.05); }
+}
+
+.noni-fixed.noni-cheering {
+  animation: noni-cheer-hop 0.55s ease-in-out 3 !important;
+}
+@keyframes noni-cheer-hop {
+  0%, 100% { transform: translateX(-50%) translateY(0)     rotate(0); }
+  30%      { transform: translateX(-50%) translateY(-26px) rotate(-10deg) scale(1.08); }
+  60%      { transform: translateX(-50%) translateY(-26px) rotate(10deg)  scale(1.08); }
+}
+
+.noni-fixed.hopping {
+  animation: noni-stone-hop 0.7s ease-in-out !important;
+}
+@keyframes noni-stone-hop {
+  0%   { transform: translateX(-50%) translateY(0) rotate(0); }
+  40%  { transform: translateX(-50%) translateY(-44px) rotate(-8deg) scale(1.1); }
+  70%  { transform: translateX(-50%) translateY(-44px) rotate(8deg)  scale(1.1); }
+  100% { transform: translateX(-50%) translateY(0) rotate(0); }
+}
+
+/* Finale: noni jumps toward the home in the top-right */
+.noni-fixed.flying-home {
+  animation: noni-fly-home 1.3s cubic-bezier(.34,1.56,.64,1) forwards !important;
+}
+@keyframes noni-fly-home {
+  0%   { transform: translateX(-50%) translateY(0) rotate(0) scale(1); opacity: 1; }
+  60%  { transform: translateX(20vw) translateY(-50vh) rotate(20deg) scale(0.85); opacity: 1; }
+  100% { transform: translateX(40vw) translateY(-66vh) rotate(0) scale(0.5); opacity: 0; }
+}
+
+.noni-fixed.dancing {
+  animation: noni-final-dance 0.9s ease-in-out infinite !important;
+}
+@keyframes noni-final-dance {
+  0%   { transform: translateX(-50%) translateY(0)     rotate(-12deg) scale(1.0); }
+  25%  { transform: translateX(-50%) translateY(-22px) rotate(8deg)   scale(1.1); }
+  50%  { transform: translateX(-50%) translateY(-6px)  rotate(-18deg) scale(1.05); }
+  75%  { transform: translateX(-50%) translateY(-22px) rotate(14deg)  scale(1.1); }
+  100% { transform: translateX(-50%) translateY(0)     rotate(-12deg) scale(1.0); }
+}
+
+/* ===== Top bar journey counter ===== */
+.journey-counter {
+  flex: 0 1 auto;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 6px 16px rgba(38, 80, 92, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--text-main);
+}
+.journey-counter .jc-letter {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--coral, #FFA98D);
+}
+
+/* ===== Hide the built-in feedback bubble — לקח: ילדים לא קוראים ===== */
+.feedback-bubble { display: none !important; }
+
+/* ===== Tap-to-start overlay ===== */
+.tap-to-start {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 24px;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(168, 232, 255, 0.96), rgba(115, 217, 209, 0.96));
+  backdrop-filter: blur(4px);
+}
+.tap-to-start.hidden { display: none; }
+.tap-to-start h2 {
+  font-size: clamp(32px, 7vw, 48px);
+  color: var(--text-main);
+  margin: 0;
+}
+.tap-to-start p {
+  font-size: clamp(17px, 3.5vw, 21px);
+  max-width: 28ch;
+  color: var(--text-soft);
+  margin: 0;
+  line-height: 1.5;
+}
+.start-btn {
+  background: #FFFFFF;
+  color: var(--text-main);
+  font-size: 22px;
+  font-weight: 700;
+  padding: 16px 36px;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  margin-top: 12px;
+  border: none;
+  cursor: pointer;
+}
+.start-btn:active { transform: scale(0.96); }
+
+/* Intro speaker — accessible for non-readers (לקח 10) */
+.intro-speaker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--water-secondary, #73D9D1);
+  color: #FFFFFF;
+  font-size: 17px;
+  font-weight: 700;
+  padding: 12px 22px;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 8px 20px rgba(115, 217, 209, 0.5);
+  animation: speaker-pulse 1.8s ease-in-out infinite;
+  border: none;
+  cursor: pointer;
+}
+.intro-speaker svg { width: 26px; height: 26px; flex-shrink: 0; }
+.intro-speaker:active { transform: scale(0.96); }
+.intro-speaker.playing { animation: speaker-active 0.5s ease-in-out infinite; }
+@keyframes speaker-pulse {
+  0%, 100% {
+    box-shadow: 0 8px 20px rgba(115, 217, 209, 0.5),
+                0 0 0 0 rgba(115, 217, 209, 0.6);
+  }
+  50% {
+    box-shadow: 0 8px 20px rgba(115, 217, 209, 0.5),
+                0 0 0 14px rgba(115, 217, 209, 0);
+  }
+}
+@keyframes speaker-active {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.05); }
+}
+
+/* ===== Completion overlay ===== */
+.completion {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  padding: 24px;
+  text-align: center;
+  background: linear-gradient(180deg,
+              rgba(168, 232, 255, 0.95) 0%,
+              rgba(255, 244, 194, 0.95) 100%);
+}
+.completion.show { display: flex; animation: fade-in 0.6s ease; }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+.completion h2 {
+  font-size: clamp(30px, 7vw, 46px);
+  color: var(--text-main);
+  margin: 0;
+}
+.completion-souvenir,
+.completion-home {
+  width: 180px;
+  height: 180px;
+  animation: souvenir-float 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 30px rgba(255, 231, 168, 0.85));
+}
+@keyframes souvenir-float {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50%      { transform: translateY(-12px) rotate(3deg); }
+}
+.completion p {
+  font-size: clamp(17px, 3.5vw, 21px);
+  max-width: 28ch;
+  color: var(--text-soft);
+  margin: 0;
+  line-height: 1.5;
+}
+.btn-primary {
+  background: var(--water-secondary, #73D9D1);
+  color: #FFFFFF;
+  font-size: 20px;
+  font-weight: 700;
+  padding: 14px 32px;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  box-shadow: 0 8px 20px rgba(115, 217, 209, 0.5);
+  display: inline-block;
+}
+
+/* ===== Confetti + kisses (finale) — לקח 13 ===== */
+.confetti-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 280;
+  overflow: hidden;
+}
+.confetti-piece {
+  position: absolute;
+  top: -20px;
+  border-radius: 2px;
+  animation: confetti-fall linear forwards;
+}
+@keyframes confetti-fall {
+  0%   { transform: translateY(0) rotate(0deg);    opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0.4; }
+}
+
+.kisses-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 285;
+  overflow: hidden;
+}
+.kiss-heart {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  animation: kiss-rise 3.2s ease-out forwards;
+  filter: drop-shadow(0 4px 8px rgba(255, 107, 157, 0.5));
+}
+.kiss-heart svg { width: 100%; height: 100%; }
+@keyframes kiss-rise {
+  0%   { transform: translateY(0) translateX(0) scale(0.5) rotate(0deg); opacity: 0; }
+  15%  { transform: translateY(-30px) translateX(10px) scale(1) rotate(-8deg); opacity: 1; }
+  60%  { transform: translateY(-50vh) translateX(40px) scale(1.1) rotate(8deg); opacity: 1; }
+  100% { transform: translateY(-90vh) translateX(-20px) scale(0.7) rotate(-12deg); opacity: 0; }
+}
+
+/* ===== Door-open glow burst from the home (finale) ===== */
+.home-target.opened {
+  animation: home-open-pop 0.8s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes home-open-pop {
+  0%   { transform: scale(1.5) rotate(0); }
+  60%  { transform: scale(1.95) rotate(-3deg); }
+  100% { transform: scale(1.8)  rotate(0); }
+}
+
+/* ===== Small screens ===== */
+@media (max-height: 700px) {
+  .journey-header { top: 56px; gap: 8px; }
+  .path-step { width: 22px; height: 22px; }
+  .home-target { width: clamp(70px, 16vw, 100px); top: 130px; }
+  .stones-area { top: clamp(220px, 36vw, 300px); }
+}
+
+/* ===== Landscape tablet/desktop ===== */
+@media (orientation: landscape) and (min-width: 820px) {
+  .journey-header { top: 70px; }
+  .stones-area {
+    top: clamp(220px, 30vw, 300px);
+    bottom: clamp(120px, 18vh, 180px);
+    gap: clamp(20px, 4vw, 48px);
+  }
+  .stone { width: clamp(110px, 14vw, 160px); }
+  .home-target {
+    top: clamp(140px, 18vw, 200px);
+    right: clamp(20px, 5vw, 50px);
+    width: clamp(120px, 14vw, 180px);
+  }
+}
