@@ -68,8 +68,8 @@
     </div>
   </main>
 
-  <!-- Noni -->
-  <img class="noni-fixed" id="noniImg" src="assets/noni-hero-transparent.png" alt="נוני">
+  <!-- Noni (src swapped by JS based on state) -->
+  <img class="noni-fixed" id="noniImg" src="assets/noni-idle.png" alt="נוני">
 
   <!-- בועת פידבק -->
   <div class="feedback-bubble" id="feedbackBubble"></div>
@@ -157,6 +157,40 @@
   <script src="js/shared/audio.js"></script>
   <script src="js/shared/noni.js"></script>
   <script src="js/shared/feedback.js"></script>
+
+  <!-- ====== OVERRIDE: noni facial expressions via src swap ====== -->
+  <script>
+  (function noniExpressions() {
+    const EXPR = {
+      idle:    'assets/noni-idle.png',
+      help:    'assets/noni-thinking.png',
+      hint:    'assets/noni-surprised.png',
+      cheer:   'assets/noni-happy.png',
+      dance:   'assets/noni-kiss.png',
+    };
+
+    // Preload all images so swapping is instant
+    Object.values(EXPR).forEach(src => { const i = new Image(); i.src = src; });
+
+    if (!window.AvneiNoni) return;
+    const origSetState = AvneiNoni.setState;
+    AvneiNoni.setState = function(state) {
+      origSetState.call(this, state);
+      const img = document.getElementById('noniImg');
+      if (!img) return;
+      const src = EXPR[state] || EXPR.idle;
+      if (img.src.indexOf(src.split('/').pop()) === -1) {
+        img.src = src;
+      }
+    };
+
+    // Set initial idle on load
+    document.addEventListener('DOMContentLoaded', () => {
+      const img = document.getElementById('noniImg');
+      if (img) img.src = EXPR.idle;
+    });
+  })();
+  </script>
 
   <!-- ====== OVERRIDE: force feedback bubble styling via inline style ======
        Inline style wins over any external CSS (even !important rules in
@@ -468,8 +502,9 @@
   // החגיגה — נוני רוקד, קונפטי, נשיקות
   // ============================================================
   function startFinale() {
-    // Noni dances
+    // Noni dances + blows kiss expression
     elNoni.classList.add('dancing');
+    elNoni.src = 'assets/noni-kiss.png';
 
     // Spawn confetti
     spawnConfetti(80);
