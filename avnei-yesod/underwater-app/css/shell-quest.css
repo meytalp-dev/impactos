@@ -3,17 +3,21 @@
    מתלבש מעל stage-3.css. טוען *אחריה* כדי לעקוף עיצובי game-area.
    ============================================================ */
 
-/* ===== Quest header — shell + key slots above the activity ===== */
+/* ===== Quest header — shell + key slots fixed under top-bar ===== */
 .quest-header {
-  position: relative;
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
   z-index: 12;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 64px 16px 8px;
+  gap: 8px;
+  padding: 0 16px;
   pointer-events: none;
 }
+.quest-header > * { pointer-events: auto; }
 
 .shell-container {
   position: relative;
@@ -174,26 +178,61 @@
 
 /* ===== Override game-area for quest layout ===== */
 .quest-game-area {
-  /* override stage-3.css .game-area to fit below the shell+keys */
-  padding: 12px clamp(140px, 22vw, 200px) 24px 16px !important;
+  /* Big padding-top to leave room for fixed top-bar + quest-header (shell+keys) */
+  padding: clamp(330px, 52vw, 420px) 16px 130px 16px !important;
   justify-content: flex-start !important;
+  align-items: center !important;
   gap: 14px !important;
-  min-height: 0 !important;
-  /* The scene wraps both header + game-area in flex column */
+  min-height: 100dvh !important;
+  width: 100% !important;
 }
 
-.scene-frame {
-  display: flex !important;
-  flex-direction: column;
-  align-items: stretch;
+/* RTL: shell-grid in this quest uses natural row (right→left in RTL) */
+.quest-game-area .shell-grid {
+  flex-direction: row !important;
+  flex-wrap: wrap;
+  justify-content: center !important;
+  gap: clamp(8px, 2vw, 16px) !important;
+  margin-top: 4px;
 }
 
 /* Activity content tighter so the shell stays visible */
-.quest-game-area .letter-stage { margin-top: 4px; }
-.quest-game-area .letter-pedestal { width: clamp(80px, 16vw, 120px); height: clamp(80px, 16vw, 120px); }
-.quest-game-area .letter-pedestal .letter-display { font-size: clamp(50px, 10vw, 80px); }
-.quest-game-area .shell-grid { margin-top: 4px; }
-.quest-game-area .shell-option { width: clamp(96px, 18vw, 140px); height: clamp(96px, 18vw, 140px); }
+.quest-game-area .letter-stage { margin-top: 0; gap: 6px; }
+.quest-game-area .letter-pedestal { width: clamp(76px, 14vw, 110px); height: clamp(76px, 14vw, 110px); }
+.quest-game-area .letter-pedestal.big { width: clamp(86px, 16vw, 130px); height: clamp(86px, 16vw, 130px); }
+.quest-game-area .letter-pedestal .letter-display { font-size: clamp(44px, 9vw, 70px); }
+.quest-game-area .letter-pedestal.big .letter-display { font-size: clamp(54px, 11vw, 86px); }
+.quest-game-area .shell-option { width: clamp(86px, 18vw, 130px); height: clamp(86px, 18vw, 130px); }
+
+/* Instruction bubble compact */
+.quest-game-area .instruction-bubble {
+  font-size: clamp(15px, 3.5vw, 19px) !important;
+  padding: 10px 16px !important;
+  max-width: min(420px, 90vw);
+}
+
+/* ===== Softer hint glow — no more harsh outline ===== */
+.quest-game-area .shell-option.hint-glow {
+  animation: hint-soft-pulse 1.6s ease-in-out infinite !important;
+  filter: drop-shadow(0 10px 22px rgba(255, 217, 130, 0.65))
+          drop-shadow(0 0 28px rgba(255, 231, 168, 0.75)) !important;
+}
+@keyframes hint-soft-pulse {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    filter: drop-shadow(0 10px 22px rgba(255, 217, 130, 0.55))
+            drop-shadow(0 0 22px rgba(255, 231, 168, 0.6));
+  }
+  50% {
+    transform: translateY(-4px) scale(1.05);
+    filter: drop-shadow(0 14px 28px rgba(255, 217, 130, 0.75))
+            drop-shadow(0 0 36px rgba(255, 231, 168, 0.95));
+  }
+}
+/* Remove the harsh outline inline-style set by sound-match.js */
+.quest-game-area .shell-option[style*="outline"] {
+  outline: none !important;
+}
 
 /* ===== Top bar (uses .quest-counter alongside built-in icon-btn/pearl-counter) ===== */
 .quest-counter {
@@ -233,7 +272,7 @@
 .feedback-bubble {
   position: fixed;
   left: 150px;
-  bottom: 90px;
+  bottom: 110px;
   background: #FFFFFF;
   padding: 10px 16px;
   border-radius: 20px;
@@ -251,6 +290,125 @@
 .feedback-bubble.show {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* ===== Noni — closer to the activity + lively motion ===== */
+.noni-fixed {
+  position: fixed !important;
+  bottom: 10px;
+  left: 10px;
+  width: clamp(110px, 22vw, 160px) !important;
+  height: auto !important;
+  z-index: 30;
+  pointer-events: none;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.22));
+  transform-origin: 50% 90%;
+  animation: noni-idle-bob 3.6s ease-in-out infinite;
+}
+
+@keyframes noni-idle-bob {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%      { transform: translateY(-8px) rotate(2deg); }
+}
+
+/* Helping state — leans toward the activity */
+.noni-fixed.noni-helping {
+  animation: noni-lean 1.2s ease-in-out infinite;
+}
+@keyframes noni-lean {
+  0%, 100% { transform: translateY(0) rotate(-8deg) scale(1.02); }
+  50%      { transform: translateY(-4px) rotate(-12deg) scale(1.05); }
+}
+
+/* Hint state — bounces toward the correct answer */
+.noni-fixed.noni-hint {
+  animation: noni-point 0.9s ease-in-out infinite;
+}
+@keyframes noni-point {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50%      { transform: translateY(-14px) rotate(-10deg) scale(1.06); }
+}
+
+/* Cheer state — happy jumping */
+.noni-fixed.noni-cheering {
+  animation: noni-cheer-jump 0.55s ease-in-out 3;
+}
+@keyframes noni-cheer-jump {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  30%      { transform: translateY(-26px) rotate(-12deg) scale(1.08); }
+  60%      { transform: translateY(-26px) rotate(12deg)  scale(1.08); }
+}
+
+/* Finale dance — spins, jumps, sends love */
+.noni-fixed.dancing {
+  animation: noni-dance 0.9s ease-in-out infinite;
+}
+@keyframes noni-dance {
+  0%   { transform: translateY(0)    rotate(-12deg) scale(1.0); }
+  25%  { transform: translateY(-22px) rotate(8deg)   scale(1.1); }
+  50%  { transform: translateY(-6px)  rotate(-18deg) scale(1.05); }
+  75%  { transform: translateY(-22px) rotate(14deg)  scale(1.1); }
+  100% { transform: translateY(0)    rotate(-12deg) scale(1.0); }
+}
+
+/* ===== Confetti layer (finale) ===== */
+.confetti-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 280;
+  overflow: hidden;
+}
+.confetti-piece {
+  position: absolute;
+  top: -20px;
+  border-radius: 2px;
+  animation: confetti-fall linear forwards;
+}
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) rotate(720deg);
+    opacity: 0.4;
+  }
+}
+
+/* ===== Kisses layer (finale) ===== */
+.kisses-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 285;
+  overflow: hidden;
+}
+.kiss-heart {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  animation: kiss-rise 3.2s ease-out forwards;
+  filter: drop-shadow(0 4px 8px rgba(255, 107, 157, 0.5));
+}
+.kiss-heart svg { width: 100%; height: 100%; }
+@keyframes kiss-rise {
+  0% {
+    transform: translateY(0) translateX(0) scale(0.5) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(-30px) translateX(10px) scale(1) rotate(-8deg);
+  }
+  60% {
+    transform: translateY(-50vh) translateX(40px) scale(1.1) rotate(8deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-90vh) translateX(-20px) scale(0.7) rotate(-12deg);
+    opacity: 0;
+  }
 }
 
 /* ===== Tap-to-start overlay ===== */
