@@ -1,10 +1,32 @@
 // ============================================================
 // state.js — ניהול מצב מתמשך ב-localStorage
-// פנינים · מזכרות · שלבים · ניסיונות · אותיות · אקווריום · מפה
-// מסמך-אם: ../narrative-spec.md
+// פנינים · מזכרות · שלבים · אותיות · אקווריום · אירועים · דגלי מורה
+// מסמך-אם: ../narrative-spec.md + spec של אי 3 (23.5.2026)
 // ============================================================
 
 const STATE_KEY = 'underwater-app:v1';
+
+// סדר פעילויות חדש (23.5.2026, אי 3):
+// 1=letter-shape · 2=sound-match · 3=find-letter · 4=trace-path
+// השמות הישנים (BLOOM/TAP_MATCH/TRACE/FIND) נשמרים כ-deprecated alias.
+const LETTER_STAGES = {
+  LETTER_SHAPE: 1,
+  SOUND_MATCH:  2,
+  FIND_LETTER:  3,
+  TRACE_PATH:   4,
+  // deprecated aliases (לא להשתמש בקוד חדש)
+  BLOOM: 1, TAP_MATCH: 2, TRACE: 3, FIND: 4,
+};
+
+// אילו פעילויות זמינות פר-אות באי 3 (MVP — trace-path דחוי עד אימות פדגוגי).
+// כשיתווסף trace, פשוט להוסיף 'tracePath' לרשימה של אות מ.
+const LETTER_AVAILABLE_ACTIVITIES = {
+  'ת': ['soundMatch'],
+  'מ': ['letterShapeA', 'letterShapeB', 'soundMatch', 'findLetter'],
+  'ר': ['soundMatch'],
+  'ב': ['soundMatch'],
+  'ק': ['soundMatch'],
+};
 
 const DEFAULT_STATE = {
   // ===== נכסי ליבה (קיים מ-v1) =====
@@ -16,21 +38,33 @@ const DEFAULT_STATE = {
   audioOn: true,
 
   // ===== Phase B · narrative-spec v1.0 (23.5.2026) =====
-  // מצב צמיחה לכל אות באי 3 (וגם איים עתידיים עם אותיות)
-  // מבנה: { 'ת': { stage: 2, completed: false }, ... }
-  // stage: 1=bloom, 2=tap-match, 3=trace, 4=find. completed=true אחרי שלב 4.
+  // מבנה חדש לכל אות:
+  // {
+  //   stage: 2,                              // deprecated — נשמר ל-backward compat
+  //   completed: false,                      // deprecated
+  //   completedActivities: ['soundMatch'],   // חדש — מקור-אמת
+  //   perActivityStats: {
+  //     'soundMatch': { attempts: [0,1], responseTimes: [3200, 4100], hintUsed: [false, true] }
+  //   },
+  //   currentSupportLevel: 1,                // חדש — 1-4
+  //   bloomed: false                         // חדש — true כשהושלמו כל availableActivities של האות
+  // }
   letterProgress: {},
 
   // פריטים בחלון בית נוני — אקווריום זיכרונות
-  // מבנה: [{ islandId: 1, itemKey: 'humming-bubble', addedAt: ts }]
   aquarium: [],
 
-  // טריגרי מעבר שכבר התרחשו (כדי לא להציג פעמיים)
-  // 'phase-1-end', 'phase-2-end', 'phase-3-end', 'flow-reversal' (לפני אי 19)
+  // טריגרי מעבר שכבר התרחשו
   phaseTransitionsSeen: [],
+
+  // ===== חדש 23.5.2026 — event log + teacher flags =====
+  // events מוגבל ל-1000 אחרונים (FIFO) כדי לא לתפוח ב-localStorage.
+  events: [],
+  teacherFlags: [],
 };
 
-// deep clone של DEFAULT_STATE — מונע מוטציה של arrays/objects פנימיים
+const EVENTS_MAX = 1000;
+
 function freshDefaults() {
   return JSON.parse(JSON.stringify(DEFAULT_STATE));
 }
@@ -88,9 +122,6 @@ function completeStage(id) {
   const s = loadState();
   if (!s.completedStages.includes(id)) {
     s.completedStages.push(id);
-    // currentStageId = האי הנמוך הראשון מ-1 עד 22 שטרם הושלם.
-    // כך אם הילד.ה השלימה את אי 3 (vertical slice) לפני 1-2,
-    // currentStageId נשאר 1 ולא קופץ ל-4.
     let next = 1;
     while (s.completedStages.includes(next) && next <= 22) next++;
     s.currentStageId = next;
@@ -110,8 +141,6 @@ function getCurrentStageId() {
 // מפה — "אופק קרוב" (narrative-spec §3)
 // ============================================================
 
-// מחזיר את המצב הויזואלי של אי במפה
-// 'completed' | 'current' | 'next-near' | 'next-distant' | 'horizon'
 function getMapState(islandId) {
   const s = loadState();
   if (s.completedStages.includes(islandId)) return 'completed';
@@ -123,33 +152,76 @@ function getMapState(islandId) {
   return 'horizon';
 }
 
-// האם להציג את האי בכלל במפה (לא 'horizon')
 function isIslandVisible(islandId) {
   return getMapState(islandId) !== 'horizon';
 }
 
 // ============================================================
-// צמיחת אותיות באי 3 (narrative-spec §8)
+// צמיחת אותיות באי 3 — סכמה חדשה (23.5.2026)
 // ============================================================
-
-const LETTER_STAGES = { BLOOM: 1, TAP_MATCH: 2, TRACE: 3, FIND: 4 };
 
 function getLetterProgress(letter) {
   const lp = loadState().letterProgress;
-  return lp[letter] || { stage: 0, completed: false };
+  return lp[letter] || {
+    stage: 0,
+    completed: false,
+    completedActivities: [],
+    perActivityStats: {},
+    currentSupportLevel: 1,
+    bloomed: false,
+  };
 }
 
-// מקדמים את האות לשלב נתון. stage=4 גם מסמן completed.
-function setLetterStage(letter, stage) {
-  if (stage < 1 || stage > 4) return;
+function getAvailableActivities(letter) {
+  return LETTER_AVAILABLE_ACTIVITIES[letter] || [];
+}
+
+// קוראים אחרי השלמת פעילות. מעדכן completedActivities + perActivityStats.
+// stats = { attempts, response_time_ms, hint_used, auto_hint_triggered, noni_guidance_used }
+function recordActivityComplete(letter, activity, stats) {
   const s = loadState();
-  const current = s.letterProgress[letter] || { stage: 0, completed: false };
-  // אל תוריד שלב — רק עלייה או הישארות
-  if (stage <= current.stage) return;
-  s.letterProgress[letter] = {
-    stage: stage,
-    completed: stage === 4,
+  const current = s.letterProgress[letter] || {
+    stage: 0, completed: false,
+    completedActivities: [], perActivityStats: {},
+    currentSupportLevel: 1, bloomed: false,
   };
+
+  // הוספה ל-completedActivities (אם לא קיים)
+  if (!current.completedActivities.includes(activity)) {
+    current.completedActivities.push(activity);
+  }
+
+  // צבירת stats פר-activity
+  if (!current.perActivityStats[activity]) {
+    current.perActivityStats[activity] = {
+      attempts: [], responseTimes: [], hintUsed: [],
+    };
+  }
+  const pa = current.perActivityStats[activity];
+  if (stats) {
+    if (typeof stats.attempts === 'number') pa.attempts.push(stats.attempts);
+    if (typeof stats.response_time_ms === 'number') pa.responseTimes.push(stats.response_time_ms);
+    if (typeof stats.hint_used === 'boolean') pa.hintUsed.push(stats.hint_used);
+  }
+
+  // backward compat — לעדכן את stage הישן לפי הסדר החדש
+  const STAGE_BY_ACTIVITY = {
+    'letterShapeA': 1, 'letterShapeB': 1,
+    'soundMatch':   2,
+    'findLetter':   3,
+    'tracePath':    4,
+  };
+  const stageForActivity = STAGE_BY_ACTIVITY[activity] || 0;
+  if (stageForActivity > current.stage) current.stage = stageForActivity;
+
+  // bloomed = כל הפעילויות הזמינות הושלמו
+  const available = getAvailableActivities(letter);
+  const allDone = available.length > 0 &&
+                  available.every(a => current.completedActivities.includes(a));
+  current.bloomed = allDone;
+  current.completed = allDone;  // backward compat
+
+  s.letterProgress[letter] = current;
   saveState(s);
 }
 
@@ -157,17 +229,58 @@ function isLetterCompleted(letter) {
   return getLetterProgress(letter).completed === true;
 }
 
-// רשימת אותיות שהושלמו (לשרת environmental print)
-function getMasteredLetters() {
-  const lp = loadState().letterProgress;
-  return Object.keys(lp).filter(letter => lp[letter].completed);
+function isLetterBloomed(letter) {
+  return getLetterProgress(letter).bloomed === true;
 }
 
-// אחוז צמיחה ויזואלי (לא חשוף לילד.ה, רק לרינדור)
-// 0% / 25% / 50% / 75% / 100%
+function getMasteredLetters() {
+  const lp = loadState().letterProgress;
+  return Object.keys(lp).filter(letter => lp[letter].completed || lp[letter].bloomed);
+}
+
+// אחוז צמיחה ויזואלי — יחסי ל-availableActivities של האות (לא 25% קבוע).
+// אם לאות יש 1 פעילות זמינה והיא הושלמה — 100%.
+// אם לאות מ יש 4 והושלמו 3 — 75%.
+// לא חשוף לילד.ה כמספר — רק לרינדור ויזואלי.
 function getLetterGrowthPercent(letter) {
-  const stage = getLetterProgress(letter).stage;
-  return stage * 25;
+  const prog = getLetterProgress(letter);
+  const available = getAvailableActivities(letter);
+  if (available.length === 0) return 0;
+  const done = available.filter(a => prog.completedActivities.includes(a)).length;
+  return Math.round((done / available.length) * 100);
+}
+
+// Deprecated — נשאר ל-backward compat של קריאות ישנות שעדיין משתמשות בו.
+function setLetterStage(letter, stage) {
+  if (stage < 1 || stage > 4) return;
+  const s = loadState();
+  const current = s.letterProgress[letter] || {
+    stage: 0, completed: false,
+    completedActivities: [], perActivityStats: {},
+    currentSupportLevel: 1, bloomed: false,
+  };
+  if (stage <= current.stage) return;
+  current.stage = stage;
+  current.completed = current.completed || (stage === 4);
+  s.letterProgress[letter] = current;
+  saveState(s);
+}
+
+function getCurrentSupportLevel(letter) {
+  return getLetterProgress(letter).currentSupportLevel || 1;
+}
+
+function setCurrentSupportLevel(letter, level) {
+  if (level < 1 || level > 4) return;
+  const s = loadState();
+  const current = s.letterProgress[letter] || {
+    stage: 0, completed: false,
+    completedActivities: [], perActivityStats: {},
+    currentSupportLevel: 1, bloomed: false,
+  };
+  current.currentSupportLevel = level;
+  s.letterProgress[letter] = current;
+  saveState(s);
 }
 
 // ============================================================
@@ -175,15 +288,12 @@ function getLetterGrowthPercent(letter) {
 // ============================================================
 
 function canShowLetterInWorld(letter) {
-  return isLetterCompleted(letter);
+  return isLetterBloomed(letter);
 }
 
-// מילים מותרות רק אחרי שאי 5 הושלם (מיזוג למילים)
-// וכל אות במילה היא אות שנלמדה
 function canShowWordInWorld(word) {
   if (!isStageCompleted(5)) return false;
   const mastered = getMasteredLetters();
-  // מסירים ניקוד ותווים נוספים — בודקים רק אותיות עיצוריות
   const letters = word.replace(/[^א-ת]/g, '').split('');
   return letters.every(l => mastered.includes(l));
 }
@@ -221,13 +331,48 @@ function markTransitionSeen(name) {
   }
 }
 
-// פאזה לפי מספר אי (לא חשוף לילד.ה — לדשבורד מורה ולטריגרי מעבר)
 function getPhaseForIsland(islandId) {
-  if (islandId >= 1 && islandId <= 9)   return 1;  // הים מוצא קול
-  if (islandId >= 10 && islandId <= 14) return 2;  // הים מוצא קשר
-  if (islandId >= 15 && islandId <= 18) return 3;  // הים מספר סיפור
-  if (islandId >= 19 && islandId <= 22) return 4;  // הים עונה בקול שלך
+  if (islandId >= 1 && islandId <= 9)   return 1;
+  if (islandId >= 10 && islandId <= 14) return 2;
+  if (islandId >= 15 && islandId <= 18) return 3;
+  if (islandId >= 19 && islandId <= 22) return 4;
   return 0;
+}
+
+// ============================================================
+// Event log + teacher flags (חדש 23.5.2026)
+// ============================================================
+
+// מוסיף event יחיד ל-buffer. ה-buffer נחתך ל-EVENTS_MAX אחרונים.
+function appendEvent(evt) {
+  const s = loadState();
+  if (!Array.isArray(s.events)) s.events = [];
+  s.events.push(evt);
+  if (s.events.length > EVENTS_MAX) {
+    s.events = s.events.slice(-EVENTS_MAX);
+  }
+  saveState(s);
+}
+
+function getEvents() {
+  return loadState().events || [];
+}
+
+function clearEvents() {
+  const s = loadState();
+  s.events = [];
+  saveState(s);
+}
+
+function appendTeacherFlag(flag) {
+  const s = loadState();
+  if (!Array.isArray(s.teacherFlags)) s.teacherFlags = [];
+  s.teacherFlags.push({ ...flag, recordedAt: Date.now() });
+  saveState(s);
+}
+
+function getTeacherFlags() {
+  return loadState().teacherFlags || [];
 }
 
 // ============================================================
@@ -242,15 +387,21 @@ function renderPearlCounter() {
 document.addEventListener('DOMContentLoaded', renderPearlCounter);
 
 // ============================================================
-// Debug helpers (קונסולה בלבד — לא חשוף ב-UI)
+// Debug helpers
 // ============================================================
 
 window.__avneiYesod = {
   state: loadState,
   reset: () => { localStorage.removeItem(STATE_KEY); location.reload(); },
-  // לסט מצב בדיקה מהיר
   setLetter: setLetterStage,
   completeIsland: completeStage,
   addAquarium: addAquariumItem,
   mapState: getMapState,
+  // חדש
+  events: getEvents,
+  flags: getTeacherFlags,
+  growth: getLetterGrowthPercent,
+  available: getAvailableActivities,
+  recordActivity: recordActivityComplete,
+  dumpEvents: () => console.table(getEvents()),
 };
