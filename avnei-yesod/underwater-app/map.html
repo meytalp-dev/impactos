@@ -139,16 +139,6 @@
       color: var(--text-main);
     }
 
-    /* פעימה רכה רק על השלב הפעיל */
-    .map-node.active .node-dot {
-      background: radial-gradient(circle at 32% 28%,
-        #FFFFFF 0%,
-        #FFE7A8 30%,
-        var(--coral) 95%);
-      color: #fff;
-      animation: node-pulse 2.4s ease-in-out infinite;
-    }
-
     @keyframes node-pulse {
       0%, 100% {
         box-shadow:
@@ -166,16 +156,96 @@
       }
     }
 
-    /* שלב נעול */
-    .map-node.locked .node-dot {
+    /* ===== מצבי מפה לפי narrative-spec §3 — "אופק קרוב" ===== */
+    /* completed | current | next-near | next-distant | horizon */
+
+    /* completed — אי שכבר התבהר. מואר בעדינות, אפשר לחזור אליו */
+    .map-node.map-state-completed .node-dot {
       background: radial-gradient(circle at 32% 28%,
-        rgba(255, 255, 255, 0.95) 0%,
-        rgba(218, 214, 201, 0.85) 100%);
-      color: var(--text-soft);
-      filter: saturate(0.55);
+        #FFFFFF 0%,
+        #DCF6EC 30%,
+        var(--water-secondary, #73D9D1) 95%);
+      border-color: rgba(255, 255, 255, 0.95);
+      color: var(--text-main, #1a3a3a);
+      animation: node-completed-glow 5s ease-in-out infinite;
     }
-    .map-node.locked { cursor: not-allowed; }
-    .map-node.locked .node-label { opacity: 0.5; }
+    @keyframes node-completed-glow {
+      0%, 100% {
+        box-shadow:
+          0 8px 22px rgba(38, 80, 92, 0.25),
+          inset 0 0 18px rgba(255, 255, 255, 0.5);
+      }
+      50% {
+        box-shadow:
+          0 8px 22px rgba(38, 80, 92, 0.25),
+          inset 0 0 18px rgba(255, 255, 255, 0.5),
+          0 0 0 10px rgba(184, 242, 208, 0.2);
+      }
+    }
+
+    /* current — האי הנוכחי. פעימה חמה כמו ה-active המקורי */
+    .map-node.map-state-current .node-dot {
+      background: radial-gradient(circle at 32% 28%,
+        #FFFFFF 0%,
+        #FFE7A8 30%,
+        var(--coral, #FFA98D) 95%);
+      color: #fff;
+      animation: node-pulse 2.4s ease-in-out infinite;
+    }
+
+    /* next-near — נראה באובך רך. צללית קרובה, פרטים מטושטשים.
+       רך, לא חסום ולא עצוב. אסור: גוונים אפורים, cursor not-allowed, סטורציה נמוכה */
+    .map-node.map-state-next-near {
+      opacity: 0.62;
+      filter: blur(0.6px);
+      cursor: default;
+      pointer-events: none;
+    }
+    .map-node.map-state-next-near .node-dot {
+      background: radial-gradient(circle at 32% 28%,
+        rgba(255, 255, 255, 0.94) 0%,
+        rgba(200, 240, 232, 0.85) 35%,
+        rgba(155, 220, 210, 0.7) 95%);
+      border-color: rgba(255, 255, 255, 0.8);
+      color: rgba(60, 90, 95, 0.55);
+      box-shadow: 0 6px 18px rgba(38, 80, 92, 0.15);
+    }
+    .map-node.map-state-next-near .node-label {
+      background: rgba(255, 255, 255, 0.55);
+      color: rgba(70, 90, 100, 0.65);
+      font-weight: 500;
+      box-shadow: 0 3px 8px rgba(38, 80, 92, 0.08);
+    }
+
+    /* next-distant — אור רחוק, צללית מטושטשת, ללא תווית */
+    .map-node.map-state-next-distant {
+      opacity: 0.32;
+      filter: blur(1.6px);
+      cursor: default;
+      pointer-events: none;
+    }
+    .map-node.map-state-next-distant .node-dot {
+      background: radial-gradient(circle at 32% 28%,
+        rgba(255, 255, 255, 0.85) 0%,
+        rgba(190, 225, 220, 0.7) 100%);
+      border-color: rgba(255, 255, 255, 0.6);
+      color: transparent;
+    }
+    .map-node.map-state-next-distant .node-label {
+      display: none;
+    }
+
+    /* horizon — לא מציגים כלל. ערפל ים בלבד */
+    .map-node.map-state-horizon {
+      display: none;
+    }
+
+    /* Vertical Slice override — מאפשר קליק לאיים בפיתוח גם אם הם next-near.
+       יוסר כשייבנו 22 איים מלאים. */
+    .map-node[data-vs-open="true"] {
+      pointer-events: auto !important;
+      cursor: pointer !important;
+    }
 
     .node-label {
       display: block;
@@ -247,8 +317,8 @@
       to   { opacity: 1; transform: translate(50%, -50%); }
     }
 
-    /* פעימה חוזרת על שלב פעיל אחרי הכניסה */
-    .map-node.active .node-dot { animation: node-pulse 2.4s ease-in-out 1.5s infinite; }
+    /* פעימה חוזרת על האי הנוכחי אחרי הכניסה (delay אחרי fade-in) */
+    .map-node.map-state-current .node-dot { animation: node-pulse 2.4s ease-in-out 1.5s infinite; }
 
     /* ===== Hint לסיבוב מובייל ===== */
     .rotate-hint {
@@ -278,7 +348,11 @@
         opacity: 1 !important;
         transform: translate(50%, -50%) !important;
       }
-      .map-node.active .node-dot { animation: none !important; }
+      .map-node.map-state-current .node-dot { animation: none !important; }
+      .map-node.map-state-completed .node-dot { animation: none !important; }
+      .map-node.map-state-next-near, .map-node.map-state-next-distant {
+        filter: none !important; opacity: 0.7 !important;
+      }
     }
   </style>
 </head>
@@ -291,22 +365,24 @@
 
       <h1 class="map-title">המפה של נוני</h1>
 
-      <!-- 3 הצמתים ממוקמים ב-% על תמונת המפה (יחס 16:9 קבוע) -->
+      <!-- 3 הצמתים ממוקמים ב-% על תמונת המפה (יחס 16:9 קבוע)
+           מצב הצומת מוחל דינמית ב-JS לפי getMapState() מ-state.js.
+           data-vs-open: vertical-slice override שמאפשר קליק גם ב-next-near. -->
 
-      <!-- שלב 1 — פעיל (השונית הימנית הבהירה) -->
-      <a href="stage-1.html" class="map-node active" style="right: 19%; top: 60%;">
+      <!-- אי 1 — מפרץ הבועות המזמרות (השונית הימנית) -->
+      <a href="stage-1.html" class="map-node" data-island-id="1" style="right: 19%; top: 60%;">
         <div class="node-dot">1</div>
         <span class="node-label">מפרץ הבועות המזמרות</span>
       </a>
 
-      <!-- שלב 2 — נעול (השונית האמצעית) -->
-      <a class="map-node locked" style="right: 50%; top: 53%;" aria-disabled="true">
+      <!-- אי 2 — שונית גלי הצליל (השונית האמצעית) -->
+      <a class="map-node" data-island-id="2" style="right: 50%; top: 53%;">
         <div class="node-dot">2</div>
         <span class="node-label">שונית גלי הצליל</span>
       </a>
 
-      <!-- שלב 3 — פתוח לפיתוח (שונית השמאלית) -->
-      <a href="stage-3.html" class="map-node active" style="right: 82%; top: 46%;">
+      <!-- אי 3 — אלמוגי האותיות (השונית השמאלית) — vertical slice dev access -->
+      <a href="stage-3.html" class="map-node" data-island-id="3" data-vs-open="true" style="right: 82%; top: 46%;">
         <div class="node-dot">3</div>
         <span class="node-label">אלמוגי האותיות</span>
       </a>
@@ -349,6 +425,24 @@
 
   <script src="js/state.js"></script>
   <script>
+    // === narrative-spec §3 — "אופק קרוב" ===
+    // החלת מצב המפה הויזואלי לכל אי לפי getMapState() מ-state.js
+    (function applyMapStates() {
+      if (typeof getMapState !== 'function') return;
+      document.querySelectorAll('.map-node[data-island-id]').forEach(node => {
+        const id = parseInt(node.dataset.islandId, 10);
+        const mapState = getMapState(id);
+        node.classList.add(`map-state-${mapState}`);
+        // איים שלא הושלמו ואינם נוכחיים — לא ניתן ללחוץ
+        // (אלא אם vertical-slice override פעיל — data-vs-open)
+        if (mapState !== 'current' && mapState !== 'completed' && !node.dataset.vsOpen) {
+          node.removeAttribute('href');
+          node.setAttribute('aria-disabled', 'true');
+        }
+      });
+    })();
+
+    // מזכרות שליטה — תצוגה מותנית בהשלמות
     if (typeof isStageCompleted === 'function' && isStageCompleted(1)) {
       const ring = document.getElementById('echoRing');
       if (ring) ring.style.display = 'block';

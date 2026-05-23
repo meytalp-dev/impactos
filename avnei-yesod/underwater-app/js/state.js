@@ -30,13 +30,18 @@ const DEFAULT_STATE = {
   phaseTransitionsSeen: [],
 };
 
+// deep clone של DEFAULT_STATE — מונע מוטציה של arrays/objects פנימיים
+function freshDefaults() {
+  return JSON.parse(JSON.stringify(DEFAULT_STATE));
+}
+
 function loadState() {
   try {
     const raw = localStorage.getItem(STATE_KEY);
-    if (!raw) return { ...DEFAULT_STATE };
-    return { ...DEFAULT_STATE, ...JSON.parse(raw) };
+    if (!raw) return freshDefaults();
+    return { ...freshDefaults(), ...JSON.parse(raw) };
   } catch {
-    return { ...DEFAULT_STATE };
+    return freshDefaults();
   }
 }
 
@@ -83,8 +88,12 @@ function completeStage(id) {
   const s = loadState();
   if (!s.completedStages.includes(id)) {
     s.completedStages.push(id);
-    // קידום currentStageId לאי הגבוה הבא שטרם הושלם
-    if (id >= s.currentStageId) s.currentStageId = id + 1;
+    // currentStageId = האי הנמוך הראשון מ-1 עד 22 שטרם הושלם.
+    // כך אם הילד.ה השלימה את אי 3 (vertical slice) לפני 1-2,
+    // currentStageId נשאר 1 ולא קופץ ל-4.
+    let next = 1;
+    while (s.completedStages.includes(next) && next <= 22) next++;
+    s.currentStageId = next;
     saveState(s);
   }
 }
