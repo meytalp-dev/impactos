@@ -1,0 +1,225 @@
+/* ============================================================
+   splitting-bubble.css — משחקון 2 באי 1
+   הבועה שמתפצלת נכון · פיצול הברות
+   ============================================================ */
+
+/* ===== Stage layout: large central bubble ===== */
+.split-stage {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+/* ===== The big bubble (clickable) ===== */
+.split-big-bubble {
+  position: relative;
+  width: clamp(220px, 42vw, 360px);
+  height: clamp(220px, 42vw, 360px);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255,255,255,0.95), rgba(255,255,255,0.25) 55%, transparent 78%),
+    radial-gradient(circle at 50% 50%, rgba(168, 232, 255, 0.55), rgba(115, 217, 209, 0.55));
+  border: 4px solid rgba(255,255,255,0.85);
+  box-shadow:
+    inset 0 0 36px rgba(255,255,255,0.6),
+    0 0 40px rgba(255, 247, 200, 0.6),
+    0 0 80px rgba(168, 232, 255, 0.5);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: bubble-bob 4s ease-in-out infinite;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.split-big-bubble::after {
+  content: "";
+  position: absolute;
+  inset: 12% 12% auto auto;
+  width: 26%;
+  height: 22%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  filter: blur(2.5px);
+  pointer-events: none;
+}
+
+@keyframes bubble-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.split-big-bubble.listening {
+  animation: bubble-pulse-listen 0.55s ease-out;
+}
+
+@keyframes bubble-pulse-listen {
+  0%   { transform: scale(1); box-shadow: inset 0 0 36px rgba(255,255,255,0.6), 0 0 40px rgba(255,247,200,0.6), 0 0 80px rgba(168,232,255,0.5); }
+  50%  { transform: scale(1.08); box-shadow: inset 0 0 50px rgba(255,255,255,0.85), 0 0 60px rgba(255,247,200,0.9), 0 0 120px rgba(168,232,255,0.8); }
+  100% { transform: scale(1); box-shadow: inset 0 0 36px rgba(255,255,255,0.6), 0 0 40px rgba(255,247,200,0.6), 0 0 80px rgba(168,232,255,0.5); }
+}
+
+.split-big-bubble:active {
+  transform: scale(0.96);
+}
+
+.split-big-bubble.tapped {
+  animation: tap-flash 0.4s ease-out;
+}
+
+@keyframes tap-flash {
+  0%   { box-shadow: inset 0 0 36px rgba(255,255,255,0.6), 0 0 40px rgba(255,247,200,0.6), 0 0 80px rgba(168,232,255,0.5); }
+  40%  { box-shadow: inset 0 0 60px rgba(255,255,255,0.95), 0 0 70px var(--i1-glow-warm, #FFF7C8), 0 0 140px rgba(255,247,200,0.95); }
+  100% { box-shadow: inset 0 0 36px rgba(255,255,255,0.6), 0 0 40px rgba(255,247,200,0.6), 0 0 80px rgba(168,232,255,0.5); }
+}
+
+.split-big-bubble.wobble {
+  animation: split-wobble 0.6s ease-in-out;
+}
+
+@keyframes split-wobble {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  20% { transform: rotate(-5deg); }
+  40% { transform: rotate(5deg); }
+  60% { transform: rotate(-3deg); }
+  80% { transform: rotate(3deg); }
+}
+
+/* ===== Word image inside the bubble ===== */
+.split-word-img {
+  width: 68%;
+  height: 68%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 14px rgba(0,0,0,0.12));
+  pointer-events: none;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* ===== Crack lines that appear on each tap ===== */
+.crack-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: 50%;
+}
+
+.crack-line {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, var(--i1-glow-warm, #FFF7C8), transparent);
+  border-radius: 2px;
+  transform-origin: center;
+  opacity: 0;
+  box-shadow: 0 0 10px var(--i1-glow-warm, #FFF7C8), 0 0 24px rgba(255,247,200,0.7);
+}
+
+.crack-line.show {
+  animation: crack-flash 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes crack-flash {
+  0%   { opacity: 0; transform: translate(-50%, -50%) rotate(var(--angle, 0deg)) scaleX(0); }
+  50%  { opacity: 1; transform: translate(-50%, -50%) rotate(var(--angle, 0deg)) scaleX(1.02); }
+  100% { opacity: 0.55; transform: translate(-50%, -50%) rotate(var(--angle, 0deg)) scaleX(1); }
+}
+
+/* ===== Split moment: bubble breaks into small ones ===== */
+.split-big-bubble.splitting {
+  animation: big-split 0.9s ease-out forwards;
+}
+
+@keyframes big-split {
+  0%   { transform: scale(1); opacity: 1; }
+  40%  { transform: scale(1.2); opacity: 0.9; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+.split-big-bubble.splitting .split-word-img {
+  opacity: 0;
+  transform: scale(0.6);
+}
+
+/* ===== Small syllable bubbles ===== */
+.syl-fragment {
+  position: absolute;
+  width: clamp(78px, 13vw, 110px);
+  height: clamp(78px, 13vw, 110px);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255,255,255,0.95), rgba(255,255,255,0.25) 55%, transparent 78%),
+    radial-gradient(circle at 50% 50%, rgba(217, 210, 255, 0.55), rgba(168, 232, 255, 0.55));
+  border: 2.5px solid rgba(255,255,255,0.9);
+  box-shadow:
+    inset 0 0 26px rgba(255,255,255,0.55),
+    0 0 22px rgba(255, 247, 200, 0.5),
+    0 8px 22px rgba(0,0,0,0.1);
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.syl-fragment::before {
+  content: "";
+  position: absolute;
+  inset: 14% 14% auto auto;
+  width: 26%;
+  height: 22%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  filter: blur(1.5px);
+}
+
+.syl-fragment .speaker-icon {
+  width: 40%;
+  height: 40%;
+  fill: var(--text-main);
+  opacity: 0.55;
+}
+
+.syl-fragment.appear {
+  animation: frag-appear 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes frag-appear {
+  0%   { opacity: 0; transform: translate(0, 0) scale(0.4); }
+  100% { opacity: 1; transform: translate(var(--fx, 0), var(--fy, 0)) scale(1); }
+}
+
+.syl-fragment.glow {
+  animation: frag-glow 0.7s ease-out;
+}
+
+@keyframes frag-glow {
+  0%   { box-shadow: inset 0 0 26px rgba(255,255,255,0.55), 0 0 22px rgba(255,247,200,0.5), 0 8px 22px rgba(0,0,0,0.1); }
+  50%  { box-shadow: inset 0 0 36px rgba(255,255,255,0.85), 0 0 50px var(--i1-glow-warm, #FFF7C8), 0 8px 22px rgba(0,0,0,0.1); }
+  100% { box-shadow: inset 0 0 26px rgba(255,255,255,0.55), 0 0 22px rgba(255,247,200,0.5), 0 8px 22px rgba(0,0,0,0.1); }
+}
+
+/* ===== Tap hint — finger animation ===== */
+.tap-hint {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  animation: tap-hint-pulse 1.6s ease-in-out infinite;
+  z-index: 50;
+}
+
+@keyframes tap-hint-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50%      { transform: scale(0.85); opacity: 0.4; }
+}
+
+.tap-hint svg {
+  width: 60px;
+  height: 60px;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.25));
+}
