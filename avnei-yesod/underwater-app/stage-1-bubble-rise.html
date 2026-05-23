@@ -129,6 +129,7 @@
   let mistakeCount = 0;
   let started = false;
   let hintTimer = null;
+  let demoRunning = false; // disables clicks during auto-demo
 
   // ----- Audio helpers -----
   function playAudio(filename, onEnd) {
@@ -140,10 +141,24 @@
     });
   }
 
-  function playSequence(filenames, onAllDone) {
+  function playSequence(filenames, onAllDone, gapMs = 250) {
     if (!filenames.length) { onAllDone && onAllDone(); return; }
     const [first, ...rest] = filenames;
-    playAudio(first, () => playSequence(rest, onAllDone));
+    playAudio(first, () => {
+      if (rest.length === 0) { onAllDone && onAllDone(); return; }
+      setTimeout(() => playSequence(rest, onAllDone, gapMs), gapMs);
+    });
+  }
+
+  // playSequence variant with per-step callback (used by demo)
+  function playSequenceWithStep(items, onStep, onDone, gapMs = 350) {
+    if (!items.length) { onDone && onDone(); return; }
+    const [first, ...rest] = items;
+    onStep && onStep(first);
+    playAudio(first.audio, () => {
+      if (rest.length === 0) { onDone && onDone(); return; }
+      setTimeout(() => playSequenceWithStep(rest, onStep, onDone, gapMs), gapMs);
+    });
   }
 
   // ----- Word bank loading -----
@@ -239,39 +254,79 @@
       { left: '40%', top: '10%' },
     ];
 
+    // SVG speaker icon — same as top-bar replay button
+    const speakerSvg = `<svg class="speaker-icon" viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>`;
+
     choices.forEach((c, idx) => {
       const b = document.createElement('button');
       b.className = 'syllable-bubble';
       b.dataset.correct = c.correct ? '1' : '0';
       b.dataset.audio = c.audio;
+      b.dataset.idx = idx;
       b.style.left = positions[idx].left;
       b.style.top = positions[idx].top;
       b.style.animationDelay = `${idx * 0.4}s`;
       b.setAttribute('aria-label', `בועה ${idx + 1}`);
+      b.innerHTML = speakerSvg;
 
       b.addEventListener('click', () => handleChoiceClick(b, c));
-      // tap on bubble to hear it
-      b.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        playAudio(c.audio);
-      });
 
       field.appendChild(b);
     });
 
-    // play target syllable + start hint timer
-    clearTimeout(hintTimer);
+    // Show instruction with target syllable
+    showInstruction(`איזוֹ בּוּעָה אוֹמֶרֶת "${correctSyl}"?`);
+
+    // === AUTO DEMO: play each bubble in sequence ===
+    demoRunning = true;
+    const bubbles = Array.from(field.querySelectorAll('.syllable-bubble'));
+    const demoItems = bubbles.map(b => ({
+      audio: b.dataset.audio,
+      btn: b
+    }));
+
     setTimeout(() => {
-      playAudio(correctAudio);
-      hintTimer = setTimeout(() => {
-        const correctBtn = field.querySelector('[data-correct="1"]');
-        if (correctBtn) correctBtn.classList.add('hint');
-      }, 8000);
-    }, 300);
+      playSequenceWithStep(
+        demoItems,
+        (item) => {
+          // pulse this bubble while it speaks
+          item.btn.classList.add('demo-pulse', 'heard');
+          setTimeout(() => item.btn.classList.remove('demo-pulse'), 900);
+        },
+        () => {
+          // After demo: repeat target syllable, then enable interaction
+          setTimeout(() => {
+            playAudio(correctAudio, () => {
+              demoRunning = false;
+              // start hint timer
+              hintTimer = setTimeout(() => {
+                const correctBtn = field.querySelector('[data-correct="1"]');
+                if (correctBtn) correctBtn.classList.add('hint');
+              }, 9000);
+            });
+          }, 300);
+        },
+        450
+      );
+    }, 600);
+  }
+
+  function showInstruction(text) {
+    const el = document.getElementById('riseInstruction');
+    document.getElementById('instructionText').textContent = text;
+    el.style.display = 'flex';
   }
 
   function handleChoiceClick(btn, choice) {
+    // ignore clicks during auto-demo
+    if (demoRunning) return;
     clearTimeout(hintTimer);
+
+    const targetAudio = currentWord.syllable_audios[currentSyllableIndex].split('/').pop().replace('.mp3', '');
+
     if (choice.correct) {
       btn.classList.add('correct');
       // siblings out
@@ -290,8 +345,8 @@
         if (cps[currentSyllableIndex]) cps[currentSyllableIndex].classList.add('lit');
         // move big bubble up
         moveBigBubbleTo(currentSyllableIndex);
-        // bubble effect on big bubble
-        showFeedbackToast(currentSyllableIndex + 1 === currentWord.syllable_count ? '' : 'יפה!');
+        // toast
+        showFeedbackToast(currentSyllableIndex + 1 === currentWord.syllable_count ? '' : 'יָפֶה!');
         // next or complete
         currentSyllableIndex++;
         mistakeCount = 0;
@@ -302,25 +357,29 @@
         }
       });
     } else {
+      // WRONG bubble — play its sound (so the child hears what each bubble says)
       mistakeCount++;
-      btn.classList.add('wobble');
+      btn.classList.add('wobble', 'heard');
       setTimeout(() => btn.classList.remove('wobble'), 600);
 
-      // Support levels (avnei-yesod-support-levels)
-      if (mistakeCount === 1) {
-        // soft replay only
-        setTimeout(() => playAudio(currentWord.syllable_audios[currentSyllableIndex].split('/').pop().replace('.mp3', '')), 400);
-      } else if (mistakeCount === 2) {
-        // hint glow on correct
-        const correctBtn = document.querySelector('.syllable-bubble[data-correct="1"]');
-        if (correctBtn) correctBtn.classList.add('hint');
-        playSequence(['support-mistake-2', currentWord.syllable_audios[currentSyllableIndex].split('/').pop().replace('.mp3', '')]);
-      } else {
-        // direct help: "הנה הבועה — הקישו עליה"
-        const correctBtn = document.querySelector('.syllable-bubble[data-correct="1"]');
-        if (correctBtn) correctBtn.classList.add('hint');
-        playAudio('support-mistake-3');
-      }
+      // 1. Play the wrong bubble's sound — so kid learns what it says
+      // 2. Then provide support based on mistake count
+      playAudio(choice.audio, () => {
+        if (mistakeCount === 1) {
+          // soft replay of target
+          setTimeout(() => playAudio(targetAudio), 350);
+        } else if (mistakeCount === 2) {
+          // hint glow + target replay
+          const correctBtn = document.querySelector('.syllable-bubble[data-correct="1"]');
+          if (correctBtn) correctBtn.classList.add('hint');
+          setTimeout(() => playSequence(['support-mistake-2', targetAudio]), 300);
+        } else {
+          // direct help
+          const correctBtn = document.querySelector('.syllable-bubble[data-correct="1"]');
+          if (correctBtn) correctBtn.classList.add('hint');
+          setTimeout(() => playAudio('support-mistake-3'), 300);
+        }
+      });
     }
   }
 
@@ -410,14 +469,23 @@
 
     // build checkpoints & first round
     buildCheckpoints(currentWord.syllable_count);
-    document.getElementById('riseInstruction').style.display = 'flex';
-    document.getElementById('instructionText').textContent = 'הקשיבו... איזו בועה אומרת את הצליל?';
+    showInstruction('הַקְשִׁיבוּ לַמִּלָּה...');
 
-    // play word once, then build choices
+    // Play word in two passes:
+    //  1. SPLIT syllables (with pause between) — teaches the breaks
+    //  2. WHOLE word (natural rhythm) — anchors to meaning
+    const syllableKeys = currentWord.syllable_audios.map(p => p.split('/').pop().replace('.mp3', ''));
+
     setTimeout(() => {
-      playAudio(`word-${currentWord.id}`, () => {
-        setTimeout(buildChoiceBubbles, 400);
-      });
+      // Pass 1: syllables, slow with pauses
+      playSequence(syllableKeys, () => {
+        // Pass 2: full word after a pause
+        setTimeout(() => {
+          playAudio(`word-${currentWord.id}`, () => {
+            setTimeout(buildChoiceBubbles, 500);
+          });
+        }, 600);
+      }, 400);
     }, 500);
   }
 
