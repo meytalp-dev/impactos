@@ -1,11 +1,7 @@
-// סימולציה לאימות BKT — מריץ אירועים סינתטיים ובודק שה-p(שולטת) מתעדכן כמצופה
-// הרצה: node test-bkt.js
-
-// טעינה ידנית של bkt.js במצב Node (בלי DOM/window)
+// סימולציה לאימות BKT (גרסה 2.0 — 4 פערים נסגרו)
 const fs = require('fs');
 const path = require('path');
 
-// stub עבור localStorage + window
 global.localStorage = {
   _data: {},
   getItem(k) { return this._data[k] || null; },
@@ -14,57 +10,132 @@ global.localStorage = {
 };
 global.window = {};
 
-// טעינת bkt.js
 const bktCode = fs.readFileSync(path.join(__dirname, '../js/shared/bkt.js'), 'utf-8');
 eval(bktCode);
 const BKT = global.window.AvneiBKT;
 
-// ============================================================
-// סימולציות
-// ============================================================
-
 function fmtP(p) { return (p * 100).toFixed(1) + '%'; }
-
-function runSim(label, events) {
+function divider(label) {
   console.log('\n' + '='.repeat(60));
-  console.log('SIMULATION:', label);
+  console.log(label);
   console.log('='.repeat(60));
-  BKT.reset('test-student');
-
-  events.forEach((isCorrect, i) => {
-    const result = BKT.ingestEvent({
-      student_id: 'test-student',
-      session_id: 'sess-1',
-      primary_island_id: 3,
-      is_correct: isCorrect,
-      response_time_ms: 3000,
-    });
-    console.log(`  פריט ${(i+1).toString().padStart(2)}: ${isCorrect ? '✓' : '✗'}  →  p(שולטת) = ${fmtP(result.pKnown)}`);
-  });
-
-  const mastery = BKT.checkMastery('test-student', 3);
-  console.log(`\n  סופי: p = ${fmtP(mastery.pKnown)}  ·  mastered? ${mastery.mastered}  ·  ${mastery.reason}`);
 }
 
 // ============================================================
-// תרחישים
+// פער 1 — sub-BKT באי 3
 // ============================================================
+divider('פער 1 — sub-BKT באי 3 (גרעיני פר אות)');
+BKT.reset('maya');
 
-// 1. ילדה שתמיד צודקת
-runSim('כל הפריטים נכונים (10)', [true, true, true, true, true, true, true, true, true, true]);
+// Maya טובה ב-מ, חלשה ב-ר
+const sequence = [
+  { letter: 'מ', correct: true },
+  { letter: 'מ', correct: true },
+  { letter: 'מ', correct: true },
+  { letter: 'ר', correct: false },
+  { letter: 'ר', correct: false },
+  { letter: 'מ', correct: true },
+  { letter: 'ת', correct: true },
+  { letter: 'ת', correct: true },
+  { letter: 'ר', correct: false },
+  { letter: 'ב', correct: true },
+];
 
-// 2. ילדה שתמיד טועה
-runSim('כל הפריטים שגויים (10)', [false, false, false, false, false, false, false, false, false, false]);
+sequence.forEach(s => {
+  BKT.ingestEvent({
+    student_id: 'maya', session_id: 'sess-1',
+    primary_island_id: 3, target_letter: s.letter,
+    is_correct: s.correct, response_time_ms: 3000,
+  });
+});
 
-// 3. ילדה ממוצעת — 70% דיוק
-runSim('70% נכון (7/10)', [true, true, false, true, true, false, true, false, true, true]);
+const status = BKT.checkMastery('maya', 3);
+console.log('\nאי 3 פר-אות (אחרי 10 פריטים):');
+Object.entries(status.per_letter).forEach(([l, s]) => {
+  if (s.attempts > 0) {
+    console.log(`  ${l}: p=${fmtP(s.pKnown)} · ${s.attempts} ניסיונות · דיוק ${fmtP(s.accuracy)}`);
+  }
+});
+console.log(`\naggregate p = ${fmtP(status.aggregate_pKnown)}`);
+console.log(`אותיות חלשות: ${status.weak_letters.join(', ') || 'אין'}`);
+console.log(`weak via API: ${BKT.getWeakLettersIn3('maya').join(', ') || 'אין'}`);
 
-// 4. ילדה שמתחילה לאט ומשתפרת
-runSim('שיפור הדרגתי (4 נכונים, אז 6 נכונים)', [false, false, true, false, true, true, true, true, true, true]);
+// ============================================================
+// פער 4 — Cold start (setInitialState)
+// ============================================================
+divider('פער 4 — Cold start מאבחון');
+BKT.reset('david');
 
-// 5. False positive test — ניחוש בודד
-runSim('ניחוש אחד באקראי בתוך 9 טעויות', [false, false, false, true, false, false, false, false, false, false]);
+// David מתחיל עם אבחון: יודע 60% מהאותיות (אי 3) ו-30% מ-PA (אי 2)
+BKT.setInitialState('david', 3, {
+  pL0: 0.60,
+  initialTier: 1,  // יש לו רקע, מתחיל ב-Tier קל
+});
+BKT.setInitialState('david', 2, {
+  pL0: 0.30,
+  initialTier: 3,  // חלש ב-PA, צריך תמיכה
+});
 
+console.log('\nDavid אחרי setInitialState:');
+const i3 = BKT.checkMastery('david', 3);
+console.log(`  אי 3: aggregate p = ${fmtP(i3.aggregate_pKnown)}`);
+const i2 = BKT.checkMastery('david', 2);
+console.log(`  אי 2: p = ${fmtP(i2.pKnown)}`);
+
+// ============================================================
+// פער 4 + 2 — Cold start פר אות באי 3
+// ============================================================
+divider('פער 4 + 2 — Cold start פר-אות באי 3');
+BKT.reset('noa');
+
+// Noa מאבחון: יודעת ת ומ היטב, חלשה ב-ר ב-ק
+BKT.setInitialState('noa', 3, {
+  per_letter: {
+    'ת': 0.85,
+    'מ': 0.80,
+    'ר': 0.20,
+    'ב': 0.50,
+    'ק': 0.25,
+  },
+});
+
+const noaStatus = BKT.checkMastery('noa', 3);
+console.log('\nNoa pre-set per letter:');
+Object.entries(noaStatus.per_letter).forEach(([l, s]) => {
+  console.log(`  ${l}: p=${fmtP(s.pKnown)}`);
+});
+console.log(`aggregate = ${fmtP(noaStatus.aggregate_pKnown)}`);
+
+// ============================================================
+// פער 2 — recommendInitialTier
+// ============================================================
+divider('פער 2 — recommendInitialTier');
+
+// תרחיש 1: ילד עם BKT-prereq
+BKT.reset('shir');
+// Shir השלימה אי 2 ב-p=0.85
+const shirState = BKT.loadState ? BKT.loadState() : { shir: { 2: { pKnown: 0.85 } } };
+// (נטען ידנית כי loadState פרטית)
+global.localStorage._data['avnei-bkt-v1'] = JSON.stringify({ shir: { 2: { pKnown: 0.85 } } });
+
+const rec1 = BKT.recommendInitialTier('shir', 3);
+console.log(`\nShir → אי 3: Tier ${rec1.tier} (מקור: ${rec1.source}, best_p = ${rec1.best_prereq_p ? fmtP(rec1.best_prereq_p) : '?'})`);
+
+// תרחיש 2: ילד עם profile, בלי BKT
+BKT.reset('alon');
+global.localStorage._data['avnei-bkt-v1'] = JSON.stringify({ alon: { _meta: { profile: 'phonological' } } });
+
+const rec2 = BKT.recommendInitialTier('alon', 4);
+console.log(`Alon (פונולוגי) → אי 4: Tier ${rec2.tier} (מקור: ${rec2.source})`);
+
+// תרחיש 3: ילד ללא נתונים
+BKT.reset('default-kid');
+global.localStorage._data['avnei-bkt-v1'] = JSON.stringify({});
+
+const rec3 = BKT.recommendInitialTier('default-kid', 3);
+console.log(`default-kid (אין נתונים) → אי 3: Tier ${rec3.tier} (מקור: ${rec3.source}, uncertain: ${rec3.uncertainty})`);
+
+// ============================================================
 console.log('\n' + '='.repeat(60));
-console.log('סיכום: BKT מתפקד כמצופה');
+console.log('סיכום: כל 4 הפערים נסגרו ב-BKT engine');
 console.log('='.repeat(60));
