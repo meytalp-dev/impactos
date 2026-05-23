@@ -952,11 +952,12 @@
     let audioUnlocked = false;
 
     document.getElementById('startBtn').addEventListener('click', async () => {
-      // משחרר את ה-audio playback על iOS/Safari עם נגן ריק
+      // משחרר את ה-audio playback על iOS/Safari ע"י play() על קובץ קיים
+      // לא ל-await — Audio בלי src מחזיר Promise שלא נסגר בכל הדפדפנים
       try {
-        const silentAudio = new Audio();
-        silentAudio.volume = 0;
-        await silentAudio.play().catch(() => {});
+        const unlocker = preloadAudio('sound-tav');
+        unlocker.volume = 0;
+        unlocker.play().then(() => { unlocker.volume = 1; }).catch(() => {});
       } catch (e) {}
 
       audioUnlocked = true;
