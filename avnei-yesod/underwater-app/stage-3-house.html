@@ -579,8 +579,24 @@
   function showCompletion() {
     if (typeof completeStage === 'function') completeStage(ISLAND_ID);
     if (typeof addSouvenir === 'function') addSouvenir('בית-אלמוג ב׳');
+    markQuestCompleted('house');
     document.getElementById('completion').classList.add('show');
     spawnConfetti(40);
+  }
+
+  // Quest tracking — stores which sub-quests of island-3 are complete.
+  // Used by stage-3-island.html to gate access to the next quest.
+  function markQuestCompleted(questId) {
+    try {
+      const key = 'island3-quests:completed';
+      const completed = JSON.parse(localStorage.getItem(key) || '[]');
+      if (!completed.includes(questId)) {
+        completed.push(questId);
+        localStorage.setItem(key, JSON.stringify(completed));
+      }
+    } catch (e) {
+      console.warn('Failed to mark quest completed:', e);
+    }
   }
 
   async function runQuest() {
