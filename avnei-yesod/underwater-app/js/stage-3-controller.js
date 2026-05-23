@@ -157,18 +157,27 @@ window.AvneiStage3 = (function() {
   // הרצת אות מלאה
   // ============================================================
   async function runLetter(letter) {
-    const available = getAvailableActivities(letter);
+    let available = getAvailableActivities(letter);
     if (available.length === 0) {
       console.warn(`No available activities for letter ${letter}`);
       return;
     }
 
+    // URL param ?activity=tracePath — להריץ רק פעילות אחת (לבדיקה)
+    const params = new URLSearchParams(window.location.search);
+    const onlyActivity = params.get('activity');
+    if (onlyActivity && available.includes(onlyActivity)) {
+      available = [onlyActivity];
+    }
+
     const supportLevel = getCurrentSupportLevel(letter) || 1;
 
     for (const activityName of available) {
-      // אם הפעילות כבר הושלמה — לדלג
-      const prog = getLetterProgress(letter);
-      if (prog.completedActivities.includes(activityName)) continue;
+      // אם הפעילות כבר הושלמה — לדלג (אלא אם ?activity מצביע עליה ספציפית)
+      if (!onlyActivity) {
+        const prog = getLetterProgress(letter);
+        if (prog.completedActivities.includes(activityName)) continue;
+      }
 
       await runActivity(letter, activityName, supportLevel);
     }
