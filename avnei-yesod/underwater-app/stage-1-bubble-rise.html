@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>הבועה שרוצה לעלות · אי 1 · עומק הים המואר</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/stage-1.css">
+  <link rel="stylesheet" href="css/bubble-rise.css">
+</head>
+<body>
+
+  <!-- ============ Scene ============ -->
+  <main class="stage-1-scene">
+    <img class="bay-bg" src="assets/island-01/bay-bg.png" alt="" aria-hidden="true">
+
+    <!-- בועות רקע אטמוספריות -->
+    <div class="ambient-bubble" style="left: 12%; width: 28px; height: 28px; animation-duration: 14s; animation-delay: 0s; --drift: 20px;"></div>
+    <div class="ambient-bubble" style="left: 78%; width: 22px; height: 22px; animation-duration: 18s; animation-delay: 3s; --drift: -15px;"></div>
+    <div class="ambient-bubble" style="left: 30%; width: 18px; height: 18px; animation-duration: 12s; animation-delay: 6s; --drift: 10px;"></div>
+    <div class="ambient-bubble" style="left: 88%; width: 32px; height: 32px; animation-duration: 20s; animation-delay: 9s; --drift: -25px;"></div>
+    <div class="ambient-bubble" style="left: 6%; width: 20px; height: 20px; animation-duration: 16s; animation-delay: 11s; --drift: 18px;"></div>
+
+    <!-- מסלול אנכי + צ'קפוינטים -->
+    <div class="rise-track" id="riseTrack">
+      <!-- checkpoints מתווספים דינמית לפי syllable_count -->
+    </div>
+
+    <!-- הבועה הגדולה -->
+    <div class="big-bubble" id="bigBubble">
+      <img class="word-img" id="wordImg" src="assets/island-01/parpar.png" alt="">
+    </div>
+
+    <!-- נוני -->
+    <img class="noni-bay" id="noniImg" src="assets/noni-idle.png" alt="נוני">
+
+    <!-- שדה בועות-הברה -->
+    <div class="choice-field" id="choiceField" aria-label="בועות הברה לבחירה"></div>
+
+    <!-- טבעת זוהר בקצה הים -->
+    <div class="surface-ring" id="surfaceRing"></div>
+  </main>
+
+  <!-- ============ Top bar ============ -->
+  <header class="stage-1-topbar">
+    <a href="map.html" class="icon-btn" aria-label="חזרה למפה">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+
+    <div class="word-pill" id="wordPill">
+      <img class="pill-img" id="pillImg" src="assets/island-01/parpar.png" alt="">
+      <span id="wordPillText">פַּרְפַּר</span>
+    </div>
+
+    <button class="replay-btn" id="replayBtn" aria-label="השמע שוב">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+    </button>
+  </header>
+
+  <!-- ============ הוראה דיסקרטית ============ -->
+  <div class="rise-instruction" id="riseInstruction" style="display:none">
+    <div class="rise-instruction__bubble">
+      <button class="mini-speaker" id="instructionSpeaker" aria-label="השמע">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
+        </svg>
+      </button>
+      <span id="instructionText">איזו בועה אומרת את הצליל?</span>
+    </div>
+  </div>
+
+  <!-- ============ tap-to-start ============ -->
+  <div class="tap-to-start" id="tapToStart">
+    <h2>הבועה שרוצה לעלות</h2>
+    <button class="intro-speaker" id="introSpeaker" aria-label="הקש לשמיעה">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>הקש/י לשמוע</span>
+    </button>
+    <p>בועת-אור קטנה נתקעה בקרקעית.</p>
+    <p><strong>בואו נעזור לה לעלות לפני המים.</strong></p>
+    <button class="start-btn" id="startBtn">בוא/י נתחיל!</button>
+  </div>
+
+  <!-- ============ completion ============ -->
+  <div class="completion" id="completion">
+    <h2>הבועה עלתה!</h2>
+    <p id="completionMsg">בועת-האור הגיעה לפני המים. נוני שמח.</p>
+    <div>
+      <button class="btn-primary" id="nextWordBtn">מילה נוספת</button>
+      <a href="map.html" class="btn-primary btn-secondary">חזרה למפה</a>
+    </div>
+  </div>
+
+  <!-- ============ Feedback toast ============ -->
+  <div class="feedback-toast" id="feedbackToast"></div>
+
+  <!-- ============ Particles ============ -->
+  <div class="celebrate-particles" id="celebrateParticles" aria-hidden="true"></div>
+
+  <!-- ============ Audio elements ============ -->
+  <audio id="audioPlayer" preload="auto"></audio>
+
+  <script>
+  // ============================================================
+  // BubbleRise — controller
+  // ============================================================
+
+  const AUDIO_BASE = 'assets/audio/island-01';
+  const audio = document.getElementById('audioPlayer');
+
+  let WORDS = [];
+  let currentWordIndex = 0;
+  let currentWord = null;
+  let currentSyllableIndex = 0;
+  let mistakeCount = 0;
+  let started = false;
+  let hintTimer = null;
+
+  // ----- Audio helpers -----
+  function playAudio(filename, onEnd) {
+    audio.src = `${AUDIO_BASE}/${filename}.mp3`;
+    audio.onended = onEnd || null;
+    audio.play().catch(err => {
+      console.warn('audio play blocked:', err);
+      if (onEnd) setTimeout(onEnd, 800);
+    });
+  }
+
+  function playSequence(filenames, onAllDone) {
+    if (!filenames.length) { onAllDone && onAllDone(); return; }
+    const [first, ...rest] = filenames;
+    playAudio(first, () => playSequence(rest, onAllDone));
+  }
+
+  // ----- Word bank loading -----
+  async function loadWords() {
+    try {
+      const res = await fetch('data/island-01-words.json');
+      const data = await res.json();
+      WORDS = data.words;
+    } catch (err) {
+      console.error('failed to load words:', err);
+    }
+  }
+
+  // ----- Build distractor syllables from OTHER words -----
+  function pickDistractors(targetWord, targetSyllableIndex, count = 2) {
+    const targetSylId = targetWord.syllable_ids[targetSyllableIndex];
+    const pool = [];
+    WORDS.forEach(w => {
+      if (w.id === targetWord.id) return;
+      w.syllables.forEach((syl, i) => {
+        const sylId = w.syllable_ids[i];
+        if (sylId === targetSylId) return; // skip identical syllable
+        pool.push({
+          syllable: syl,
+          syllable_id: sylId,
+          audio: w.syllable_audios[i].split('/').pop().replace('.mp3', '')
+        });
+      });
+    });
+    // shuffle and take N unique
+    const shuffled = pool.sort(() => Math.random() - 0.5);
+    const seen = new Set();
+    const out = [];
+    for (const item of shuffled) {
+      if (seen.has(item.syllable_id)) continue;
+      seen.add(item.syllable_id);
+      out.push(item);
+      if (out.length >= count) break;
+    }
+    return out;
+  }
+
+  // ----- Build checkpoints based on syllable count -----
+  function buildCheckpoints(count) {
+    const track = document.getElementById('riseTrack');
+    track.innerHTML = '';
+    // Distribute checkpoints evenly between bottom (14%) and top (12%)
+    // For 2 syllables → 2 checkpoints; for 3 → 3
+    for (let i = 0; i < count; i++) {
+      const cp = document.createElement('div');
+      cp.className = 'checkpoint';
+      cp.dataset.i = i;
+      // higher i = higher on screen
+      const bottomPct = 14 + ((i + 1) * (74 / count));
+      cp.style.bottom = `${bottomPct}%`;
+      track.appendChild(cp);
+    }
+  }
+
+  // ----- Position big bubble at checkpoint i -----
+  function moveBigBubbleTo(i) {
+    const big = document.getElementById('bigBubble');
+    if (i < 0) {
+      big.style.bottom = '14%';
+      return;
+    }
+    const checkpoints = document.querySelectorAll('.checkpoint');
+    const cp = checkpoints[i];
+    if (cp) {
+      big.style.bottom = cp.style.bottom;
+    }
+  }
+
+  // ----- Build syllable bubbles for current syllable -----
+  function buildChoiceBubbles() {
+    const field = document.getElementById('choiceField');
+    field.innerHTML = '';
+
+    const correctSyl = currentWord.syllables[currentSyllableIndex];
+    const correctAudio = currentWord.syllable_audios[currentSyllableIndex].split('/').pop().replace('.mp3', '');
+
+    const distractors = pickDistractors(currentWord, currentSyllableIndex, 2);
+
+    const choices = [
+      { syllable: correctSyl, audio: correctAudio, correct: true },
+      ...distractors.map(d => ({ syllable: d.syllable, audio: d.audio, correct: false }))
+    ].sort(() => Math.random() - 0.5);
+
+    // Position the 3 bubbles around the big bubble (left, right, top-center)
+    const positions = [
+      { left: '12%', top: '40%' },
+      { left: '70%', top: '40%' },
+      { left: '40%', top: '10%' },
+    ];
+
+    choices.forEach((c, idx) => {
+      const b = document.createElement('button');
+      b.className = 'syllable-bubble';
+      b.dataset.correct = c.correct ? '1' : '0';
+      b.dataset.audio = c.audio;
+      b.style.left = positions[idx].left;
+      b.style.top = positions[idx].top;
+      b.style.animationDelay = `${idx * 0.4}s`;
+      b.setAttribute('aria-label', `בועה ${idx + 1}`);
+
+      b.addEventListener('click', () => handleChoiceClick(b, c));
+      // tap on bubble to hear it
+      b.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        playAudio(c.audio);
+      });
+
+      field.appendChild(b);
+    });
+
+    // play target syllable + start hint timer
+    clearTimeout(hintTimer);
+    setTimeout(() => {
+      playAudio(correctAudio);
+      hintTimer = setTimeout(() => {
+        const correctBtn = field.querySelector('[data-correct="1"]');
+        if (correctBtn) correctBtn.classList.add('hint');
+      }, 8000);
+    }, 300);
+  }
+
+  function handleChoiceClick(btn, choice) {
+    clearTimeout(hintTimer);
+    if (choice.correct) {
+      btn.classList.add('correct');
+      // siblings out
+      document.querySelectorAll('.syllable-bubble').forEach(b => {
+        if (b !== btn) {
+          b.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+          b.style.opacity = '0';
+          b.style.transform = 'scale(0.6)';
+          b.style.pointerEvents = 'none';
+        }
+      });
+      // play the syllable audio, then advance
+      playAudio(choice.audio, () => {
+        // light up checkpoint
+        const cps = document.querySelectorAll('.checkpoint');
+        if (cps[currentSyllableIndex]) cps[currentSyllableIndex].classList.add('lit');
+        // move big bubble up
+        moveBigBubbleTo(currentSyllableIndex);
+        // bubble effect on big bubble
+        showFeedbackToast(currentSyllableIndex + 1 === currentWord.syllable_count ? '' : 'יפה!');
+        // next or complete
+        currentSyllableIndex++;
+        mistakeCount = 0;
+        if (currentSyllableIndex >= currentWord.syllable_count) {
+          setTimeout(completeWord, 1300);
+        } else {
+          setTimeout(buildChoiceBubbles, 1100);
+        }
+      });
+    } else {
+      mistakeCount++;
+      btn.classList.add('wobble');
+      setTimeout(() => btn.classList.remove('wobble'), 600);
+
+      // Support levels (avnei-yesod-support-levels)
+      if (mistakeCount === 1) {
+        // soft replay only
+        setTimeout(() => playAudio(currentWord.syllable_audios[currentSyllableIndex].split('/').pop().replace('.mp3', '')), 400);
+      } else if (mistakeCount === 2) {
+        // hint glow on correct
+        const correctBtn = document.querySelector('.syllable-bubble[data-correct="1"]');
+        if (correctBtn) correctBtn.classList.add('hint');
+        playSequence(['support-mistake-2', currentWord.syllable_audios[currentSyllableIndex].split('/').pop().replace('.mp3', '')]);
+      } else {
+        // direct help: "הנה הבועה — הקישו עליה"
+        const correctBtn = document.querySelector('.syllable-bubble[data-correct="1"]');
+        if (correctBtn) correctBtn.classList.add('hint');
+        playAudio('support-mistake-3');
+      }
+    }
+  }
+
+  function showFeedbackToast(text) {
+    if (!text) return;
+    const t = document.getElementById('feedbackToast');
+    t.textContent = text;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 1100);
+  }
+
+  // ----- Word complete: surface + celebration -----
+  function completeWord() {
+    const big = document.getElementById('bigBubble');
+    const noni = document.getElementById('noniImg');
+    const ring = document.getElementById('surfaceRing');
+
+    // swap noni to happy
+    noni.src = 'assets/noni-happy.png';
+    noni.classList.add('celebrating');
+
+    // surface burst
+    ring.classList.add('active');
+
+    // big bubble pops
+    big.classList.add('popping');
+
+    // particles
+    burstParticles();
+
+    // play full word audio
+    setTimeout(() => playAudio(`word-${currentWord.id}`, () => {
+      setTimeout(showCompletion, 700);
+    }), 700);
+  }
+
+  function burstParticles() {
+    const container = document.getElementById('celebrateParticles');
+    container.innerHTML = '';
+    const colors = ['#FFF7C8', '#FFA98D', '#B981FF', '#A8E8FF', '#73D9D1'];
+    for (let i = 0; i < 28; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const angle = (i / 28) * Math.PI * 2;
+      const dist = 200 + Math.random() * 120;
+      p.style.left = `${50 + (Math.random() - 0.5) * 10}%`;
+      p.style.top = `${60 + (Math.random() - 0.5) * 10}%`;
+      p.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
+      p.style.setProperty('--dy', `${Math.sin(angle) * dist - 100}px`);
+      p.style.background = colors[i % colors.length];
+      p.style.boxShadow = `0 0 12px ${colors[i % colors.length]}`;
+      p.style.animationDelay = `${(i % 6) * 0.06}s`;
+      container.appendChild(p);
+    }
+    setTimeout(() => { container.innerHTML = ''; }, 3000);
+  }
+
+  function showCompletion() {
+    document.getElementById('completion').classList.add('visible');
+  }
+
+  // ----- Word switching -----
+  function loadWord(idx) {
+    currentWordIndex = (idx + WORDS.length) % WORDS.length;
+    currentWord = WORDS[currentWordIndex];
+    currentSyllableIndex = 0;
+    mistakeCount = 0;
+
+    // update UI
+    document.getElementById('wordImg').src = currentWord.image;
+    document.getElementById('pillImg').src = currentWord.image;
+    document.getElementById('wordPillText').textContent = currentWord.display;
+
+    // reset visuals
+    document.querySelectorAll('.checkpoint').forEach(c => c.classList.remove('lit'));
+    const big = document.getElementById('bigBubble');
+    big.classList.remove('popping');
+    big.style.bottom = '14%';
+    big.style.opacity = '1';
+
+    const noni = document.getElementById('noniImg');
+    noni.src = 'assets/noni-idle.png';
+    noni.classList.remove('celebrating');
+
+    document.getElementById('surfaceRing').classList.remove('active');
+    document.getElementById('completion').classList.remove('visible');
+
+    // build checkpoints & first round
+    buildCheckpoints(currentWord.syllable_count);
+    document.getElementById('riseInstruction').style.display = 'flex';
+    document.getElementById('instructionText').textContent = 'הקשיבו... איזו בועה אומרת את הצליל?';
+
+    // play word once, then build choices
+    setTimeout(() => {
+      playAudio(`word-${currentWord.id}`, () => {
+        setTimeout(buildChoiceBubbles, 400);
+      });
+    }, 500);
+  }
+
+  function nextWord() {
+    loadWord(currentWordIndex + 1);
+  }
+
+  // ----- Start flow -----
+  function start() {
+    if (started) return;
+    started = true;
+    document.getElementById('tapToStart').classList.add('hidden');
+    // start with random word
+    loadWord(Math.floor(Math.random() * WORDS.length));
+  }
+
+  // ----- Event wiring -----
+  document.getElementById('startBtn').addEventListener('click', start);
+  document.getElementById('introSpeaker').addEventListener('click', (e) => {
+    e.stopPropagation();
+    playAudio('ui-bubble-story');
+  });
+  document.getElementById('replayBtn').addEventListener('click', () => {
+    if (!currentWord) return;
+    playAudio(`word-${currentWord.id}`);
+  });
+  document.getElementById('instructionSpeaker').addEventListener('click', () => {
+    if (!currentWord) return;
+    const targetAudio = currentWord.syllable_audios[currentSyllableIndex].split('/').pop().replace('.mp3', '');
+    playAudio(targetAudio);
+  });
+  document.getElementById('nextWordBtn').addEventListener('click', nextWord);
+
+  // ----- Init -----
+  (async function init() {
+    await loadWords();
+    // preload intro story audio
+    audio.src = `${AUDIO_BASE}/ui-bubble-story.mp3`;
+  })();
+  </script>
+</body>
+</html>
