@@ -1,0 +1,255 @@
+/* ============================================================
+   journey-trail.css — שביל החזרה (גרסת trail)
+   12 אבנים מפוזרות לאורך נתיב מפותל. הילד.ה לוחץ.ת על אבני האות
+   היעד, ונוני קופץ מאחת לשנייה עד שהוא מגיע הביתה.
+   ============================================================ */
+
+/* ===== Trail container — overlays the whole scene ===== */
+.path-trail {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;   /* only the stones receive clicks */
+}
+
+/* ===== Trail stone — placed at custom %/% via inline style ===== */
+.trail-stone {
+  position: absolute;
+  width: clamp(56px, 12vw, 84px);
+  aspect-ratio: 1.15 / 1;
+  transform: translate(-50%, 50%);  /* x,y refer to the stone center; bottom-anchored */
+  cursor: pointer;
+  pointer-events: auto;
+  display: grid;
+  place-items: center;
+  /* Kill button defaults */
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  font: inherit;
+  color: inherit;
+  filter: drop-shadow(0 8px 14px rgba(38, 80, 92, 0.32));
+  animation: trail-stone-bob 3.6s ease-in-out infinite;
+  transition: opacity 0.5s ease, filter 0.5s ease;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.trail-stone:focus,
+.trail-stone:focus-visible { outline: none; }
+
+/* Stagger the gentle bob */
+.trail-stone:nth-child(odd)  { animation-delay: 0.3s; }
+.trail-stone:nth-child(3n)   { animation-delay: 0.8s; }
+.trail-stone:nth-child(5n)   { animation-delay: 1.2s; }
+
+@keyframes trail-stone-bob {
+  0%, 100% { transform: translate(-50%, 50%) rotate(-1.5deg); }
+  50%      { transform: translate(-50%, calc(50% - 3px)) rotate(1.5deg); }
+}
+
+.trail-stone:active {
+  filter: drop-shadow(0 4px 8px rgba(38, 80, 92, 0.32));
+}
+
+/* Stone shape (SVG fills) — random pastel per render */
+.trail-stone__shape {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.trail-stone--mint     .trail-stone__shape { color: #98E5C0; }
+.trail-stone--peach    .trail-stone__shape { color: #FFB39A; }
+.trail-stone--lavender .trail-stone__shape { color: #C8B8F5; }
+.trail-stone--sky      .trail-stone__shape { color: #A8E8FF; }
+.trail-stone--sand     .trail-stone__shape { color: #FFE7A8; }
+
+.trail-stone__letter {
+  position: relative;
+  z-index: 2;
+  font-family: 'Heebo', sans-serif;
+  font-size: clamp(26px, 6vw, 40px);
+  font-weight: 900;
+  color: #FFFFFF;
+  text-shadow:
+    0 2px 0 rgba(38, 80, 92, 0.6),
+    0 4px 8px rgba(38, 80, 92, 0.45);
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* Distractors are slightly smaller + more transparent — visually "background" */
+.trail-stone--distractor {
+  width: clamp(48px, 10vw, 72px);
+  opacity: 0.85;
+  filter: drop-shadow(0 6px 10px rgba(38, 80, 92, 0.22));
+}
+.trail-stone--distractor .trail-stone__letter {
+  font-size: clamp(22px, 5vw, 32px);
+}
+
+/* The target letter (ר/מ) — gently calls attention without screaming */
+.trail-stone--target {
+  filter: drop-shadow(0 10px 16px rgba(255, 217, 130, 0.42))
+          drop-shadow(0 0 18px rgba(255, 231, 168, 0.35));
+}
+
+/* ===== Cleared state — stone Noni already jumped on ===== */
+.trail-stone.cleared {
+  opacity: 0.55;
+  animation: none;
+  filter: drop-shadow(0 4px 8px rgba(38, 80, 92, 0.2))
+          grayscale(0.25);
+  pointer-events: none;
+}
+.trail-stone.cleared .trail-stone__letter {
+  opacity: 0.7;
+}
+
+/* Wrong-tap shake (same gentle pattern as the other game) */
+.trail-stone.wrong-sway {
+  animation: stone-gentle-shake 0.55s ease;
+  opacity: 0.8;
+}
+.trail-stone.dimmed-wrong {
+  opacity: 0.5;
+  filter: grayscale(0.35);
+  animation: none;
+}
+
+/* Hint glow — pulses the nearest available target after mistakes */
+.trail-stone.hint-glow {
+  animation: trail-hint-pulse 1.4s ease-in-out infinite !important;
+  filter: drop-shadow(0 10px 22px rgba(255, 217, 130, 0.7))
+          drop-shadow(0 0 32px rgba(255, 231, 168, 0.95)) !important;
+  z-index: 9;
+}
+@keyframes trail-hint-pulse {
+  0%, 100% { transform: translate(-50%, 50%) scale(1) rotate(-1deg); }
+  50%      { transform: translate(-50%, calc(50% - 6px)) scale(1.12) rotate(1deg); }
+}
+
+/* Burst when Noni lands on a stone */
+.trail-stone.just-landed {
+  animation: trail-stone-pop 0.7s ease !important;
+}
+@keyframes trail-stone-pop {
+  0%   { transform: translate(-50%, 50%) scale(1); }
+  35%  { transform: translate(-50%, calc(50% + 8px)) scale(1.18);
+         filter: drop-shadow(0 14px 28px rgba(255, 217, 130, 0.85))
+                 drop-shadow(0 0 36px rgba(255, 231, 168, 1)); }
+  100% { transform: translate(-50%, 50%) scale(1); }
+}
+
+/* ===== Noni — absolute-positioned in the scene, moves to clicked stone ===== */
+.scene-frame > .noni-on-trail {
+  position: absolute;
+  /* JS sets `left` and `bottom` to the % of the active stone */
+  width: clamp(74px, 14vw, 110px);
+  height: auto;
+  z-index: 30;
+  pointer-events: none;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.22));
+  transform: translate(-50%, 30%);     /* center horizontally, sit slightly above the stone */
+  transform-origin: 50% 90%;
+  /* The move happens via top/left transitions in JS; the bobble runs always */
+  animation: noni-trail-bob 3.6s ease-in-out infinite;
+}
+
+@keyframes noni-trail-bob {
+  0%, 100% { transform: translate(-50%, 30%) rotate(-3deg); }
+  50%      { transform: translate(-50%, calc(30% - 6px)) rotate(3deg); }
+}
+
+.noni-on-trail.hopping {
+  animation: noni-trail-hop 0.75s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes noni-trail-hop {
+  0%   { transform: translate(-50%, 30%) rotate(0); }
+  45%  { transform: translate(-50%, calc(30% - 60px)) rotate(-10deg) scale(1.08); }
+  100% { transform: translate(-50%, 30%) rotate(0); }
+}
+
+.noni-on-trail.helping {
+  animation: noni-trail-help 1.2s ease-in-out infinite;
+}
+@keyframes noni-trail-help {
+  0%, 100% { transform: translate(-50%, 30%)        rotate(-8deg) scale(1.02); }
+  50%      { transform: translate(-50%, calc(30% - 4px)) rotate(-12deg) scale(1.05); }
+}
+
+.noni-on-trail.cheering {
+  animation: noni-trail-cheer 0.55s ease-in-out 3;
+}
+@keyframes noni-trail-cheer {
+  0%, 100% { transform: translate(-50%, 30%)         rotate(0); }
+  50%      { transform: translate(-50%, calc(30% - 24px)) rotate(-10deg) scale(1.08); }
+}
+
+/* Noni enters the house — scales down + fades while bobbing into the doorway */
+.noni-on-trail.entering-home {
+  animation: noni-trail-enter-home 1.2s ease-in forwards;
+}
+@keyframes noni-trail-enter-home {
+  0%   { transform: translate(-50%, 30%)   rotate(0)    scale(1);   opacity: 1; }
+  40%  { transform: translate(-50%, 28%)   rotate(-4deg) scale(0.92); opacity: 1; }
+  70%  { transform: translate(-50%, 35%)   rotate(2deg) scale(0.55); opacity: 0.85; }
+  100% { transform: translate(-50%, 40%)   rotate(0)    scale(0.28); opacity: 0; }
+}
+
+/* The two transitions (left, bottom) move smoothly between stones */
+.noni-on-trail {
+  transition: left 0.7s cubic-bezier(.34,1.56,.64,1),
+              bottom 0.7s cubic-bezier(.34,1.56,.64,1);
+}
+
+/* ===== Hide the default fixed-position .noni-fixed — we use .noni-on-trail instead ===== */
+.path-trail-mode .noni-fixed { display: none !important; }
+
+/* ===== Trail-mode tweaks to existing UI ===== */
+.path-trail-mode .stones-area { display: none !important; }
+.path-trail-mode .home-target {
+  /* Slightly bigger + steady — the goal is the trail end, no longer a "score" indicator */
+  top: clamp(120px, 18vw, 180px);
+  right: clamp(8px, 3vw, 24px);
+  width: clamp(90px, 18vw, 130px);
+}
+
+/* Decorative ground (subtle path "trail" lines from Noni to home) */
+.trail-path-line {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 6;
+  opacity: 0.32;
+}
+.trail-path-line path {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.55);
+  stroke-width: 2.5;
+  stroke-dasharray: 6 10;
+  stroke-linecap: round;
+  animation: trail-dash 30s linear infinite;
+}
+@keyframes trail-dash {
+  to { stroke-dashoffset: -300; }
+}
+
+/* ===== Small screens ===== */
+@media (max-height: 700px) {
+  .trail-stone { width: clamp(50px, 10vw, 70px); }
+  .trail-stone--distractor { width: clamp(42px, 9vw, 58px); }
+}
+
+/* ===== Landscape tablet/desktop ===== */
+@media (orientation: landscape) and (min-width: 820px) {
+  .trail-stone { width: clamp(72px, 9vw, 96px); }
+  .trail-stone--distractor { width: clamp(60px, 7.5vw, 80px); }
+}

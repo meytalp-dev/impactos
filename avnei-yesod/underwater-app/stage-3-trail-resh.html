@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>שביל החזרה · אות ר · עומק הים המואר</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/stage-3.css">
+  <link rel="stylesheet" href="css/journey-quest.css">
+  <link rel="stylesheet" href="css/journey-trail.css">
+</head>
+<body class="path-trail-mode">
+
+  <main class="stage-scene">
+    <div class="scene-frame">
+      <img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true"
+           onerror="this.style.display='none'">
+
+      <!-- Rising bubbles for atmosphere -->
+      <div class="journey-bubbles" id="journeyBubbles" aria-hidden="true"></div>
+
+      <!-- Dashed path line from Noni's start to the home -->
+      <svg class="trail-path-line" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M 12 88 Q 22 72, 32 64 T 50 50 T 70 38 T 88 22" />
+      </svg>
+
+      <!-- Mission bubble — fixed at top-center (no progress dots since the trail IS the progress) -->
+      <section class="journey-header">
+        <div class="instruction-bubble" id="missionBubble">
+          <button class="mission-speaker" id="missionSpeaker" aria-label="שמע את ההוראה">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
+              <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+            </svg>
+          </button>
+          <span>הקש/י על האבן עם <strong class="mem-letter">ר</strong></span>
+        </div>
+      </section>
+
+      <!-- Home target — visible the whole game in the top-right corner -->
+      <div class="home-target" id="homeTarget" aria-label="הבית של נוני">
+        <img id="homeImg" src="assets/island-03/journey-game/home-closed.png" alt=""
+             onerror="this.style.display='none'; document.getElementById('homeFallback').style.display='block';">
+        <svg id="homeFallback" style="display:none" viewBox="0 0 100 100" aria-hidden="true">
+          <defs>
+            <linearGradient id="houseGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#FFE7A8"/>
+              <stop offset="55%" stop-color="#FFA98D"/>
+              <stop offset="100%" stop-color="#E27F66"/>
+            </linearGradient>
+          </defs>
+          <ellipse cx="50" cy="86" rx="38" ry="6" fill="rgba(38,80,92,0.18)"/>
+          <path d="M22 84 Q18 50 30 38 Q34 22 50 18 Q66 22 70 38 Q82 50 78 84 Z"
+                fill="url(#houseGrad)" stroke="#FFFFFF" stroke-width="2.5" stroke-linejoin="round"/>
+          <path id="houseDoor" d="M40 84 L40 62 Q50 56 60 62 L60 84 Z"
+                fill="#7A4A3A" stroke="#FFFFFF" stroke-width="1.8" stroke-linejoin="round"/>
+          <circle cx="50" cy="42" r="9" fill="#FFE7A8" stroke="#FFFFFF" stroke-width="2"/>
+        </svg>
+      </div>
+
+      <!-- The trail itself — JS populates 12 stones along the curve -->
+      <div class="path-trail" id="pathTrail"></div>
+
+      <!-- Noni — absolute-positioned in the scene, moves stone-to-stone -->
+      <img class="noni-on-trail" id="noniImg" src="assets/noni-idle.png" alt="נוני"
+           style="left: 12%; bottom: 12%;">
+
+      <!-- legacy stones-area hidden by .path-trail-mode CSS — keep for layout safety -->
+      <section class="stones-area" id="stonesArea" aria-hidden="true"></section>
+    </div>
+  </main>
+
+  <!-- Top bar -->
+  <header class="top-bar">
+    <a href="map.html" class="icon-btn" aria-label="חזרה למפה">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+    <div class="journey-counter" id="journeyCounter">
+      <span class="jc-letter">ר</span>
+      <span id="stepCountDisplay">0/5 אבנים</span>
+    </div>
+    <div class="pearl-counter" aria-label="פנינים">
+      <span class="pearl" aria-hidden="true"></span>
+      <span class="count" id="pearlCount">0</span>
+    </div>
+  </header>
+
+  <!-- Start overlay -->
+  <div class="tap-to-start" id="tapToStart">
+    <h2>שביל החזרה</h2>
+    <button class="intro-speaker" id="introSpeaker" aria-label="שמע את ההסבר">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>הקש/י לשמוע</span>
+    </button>
+    <p>נוני הולך ברגליים בחזרה הביתה.</p>
+    <p>בדרך יש שביל של אבנים — קפצו על כל האבנים עם <strong>ר</strong> כדי להגיע הביתה!</p>
+    <button class="start-btn" id="startBtn">בוא/י נחזור הביתה</button>
+  </div>
+
+  <!-- Completion overlay -->
+  <div class="completion" id="completion">
+    <h2>הגענו הביתה!</h2>
+    <img class="completion-home" id="completionHomeImg"
+         src="assets/island-03/journey-game/home-open.png" alt=""
+         onerror="this.style.display='none'; document.getElementById('completionHomeFallback').style.display='block';">
+    <svg id="completionHomeFallback" class="completion-home" style="display:none" viewBox="0 0 100 100" aria-hidden="true">
+      <ellipse cx="50" cy="88" rx="38" ry="6" fill="rgba(38,80,92,0.18)"/>
+      <path d="M22 84 Q18 50 30 38 Q34 22 50 18 Q66 22 70 38 Q82 50 78 84 Z"
+            fill="#FFA98D" stroke="#FFFFFF" stroke-width="2.5" stroke-linejoin="round"/>
+      <circle cx="50" cy="42" r="9" fill="#FFE7A8" stroke="#FFFFFF" stroke-width="2"/>
+    </svg>
+    <p>נוני חזר הביתה. אבן זוהרת מהשביל הצטרפה לבית.</p>
+    <a href="map.html" class="btn-primary">חזרה למפה</a>
+  </div>
+
+  <!-- SVG defs -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="stoneSymbol" viewBox="0 0 120 100">
+        <defs>
+          <radialGradient id="stoneSheen2" cx="35%" cy="30%" r="65%">
+            <stop offset="0%" stop-color="rgba(255,255,255,0.85)"/>
+            <stop offset="40%" stop-color="rgba(255,255,255,0.25)"/>
+            <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+          </radialGradient>
+          <linearGradient id="stoneShade2" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="rgba(255,255,255,0.4)"/>
+            <stop offset="60%" stop-color="rgba(255,255,255,0)"/>
+            <stop offset="100%" stop-color="rgba(38,80,92,0.32)"/>
+          </linearGradient>
+        </defs>
+        <path d="M14 56 C 10 32, 32 12, 56 10 C 86 8, 110 28, 110 50 C 112 78, 86 92, 60 92 C 32 92, 18 82, 14 56 Z"
+              fill="currentColor" stroke="#FFFFFF" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M14 56 C 10 32, 32 12, 56 10 C 86 8, 110 28, 110 50 C 112 78, 86 92, 60 92 C 32 92, 18 82, 14 56 Z"
+              fill="url(#stoneSheen2)"/>
+        <path d="M14 56 C 10 32, 32 12, 56 10 C 86 8, 110 28, 110 50 C 112 78, 86 92, 60 92 C 32 92, 18 82, 14 56 Z"
+              fill="url(#stoneShade2)"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <!-- Shared modules -->
+  <script src="js/state.js"></script>
+  <script src="js/shared/audio.js"></script>
+  <script src="js/shared/noni.js"></script>
+  <script src="js/shared/feedback.js"></script>
+
+  <!-- Noni facial-expression swap (same as other games) -->
+  <script>
+  (function noniExpressions() {
+    const EXPR = {
+      idle:    'assets/noni-idle.png',
+      help:    'assets/noni-thinking.png',
+      hint:    'assets/noni-surprised.png',
+      cheer:   'assets/noni-happy.png',
+      dance:   'assets/noni-kiss.png',
+    };
+    Object.values(EXPR).forEach(src => { const i = new Image(); i.src = src; });
+
+    if (!window.AvneiNoni) return;
+    const origSetState = AvneiNoni.setState;
+    AvneiNoni.setState = function(state) {
+      // We don't want the legacy class swaps (.noni-helping etc.) because
+      // they target .noni-fixed. We manage trail noni's classes ourselves.
+      const img = document.getElementById('noniImg');
+      if (!img) return;
+      const src = EXPR[state] || EXPR.idle;
+      if (img.src.indexOf(src.split('/').pop()) === -1) img.src = src;
+    };
+    document.addEventListener('DOMContentLoaded', () => {
+      const img = document.getElementById('noniImg');
+      if (img) img.src = EXPR.idle;
+    });
+  })();
+  </script>
+
+  <!-- Hide the built-in feedback bubble (kids don't read) -->
+  <script>
+  (function () {
+    if (!window.AvneiFeedback) return;
+    AvneiFeedback.show = function() {};
+    AvneiFeedback.hide = function() {};
+  })();
+  </script>
+
+  <!-- ============================================================
+       Trail controller — שביל החזרה (גרסת trail)
+       12 אבנים מפוזרות. הילד.ה לוחץ.ת על כל אבני ר — נוני קופץ מהאחת
+       לשנייה. 5 קליקים נכונים → סיום.
+       ============================================================ -->
+  <script>
+  (function () {
+    const ISLAND_ID = 3;
+    const LETTER = 'ר';
+    const LETTER_AUDIO_KEYS = { 'מ': 'mem', 'ר': 'resh', 'ב': 'bet', 'ק': 'qof', 'ת': 'tav' };
+    const LETTER_KEY = LETTER_AUDIO_KEYS[LETTER];
+
+    // 12 stones spread along a curve from bottom-left to top-right.
+    // 5 are the target letter, 7 are distractors. The child taps all 5 targets
+    // in any order; Noni hops to whichever target they tap.
+    // (x, y) are percentages — x is left, y is "bottom" (from the bottom of the scene).
+    const STONES = [
+      { letter: 'ר', x: 22, y: 22, target: true,  variant: 'mint' },
+      { letter: 'ב', x: 14, y: 36, target: false, variant: 'peach' },
+      { letter: 'ר', x: 30, y: 42, target: true,  variant: 'sand' },
+      { letter: 'נ', x: 42, y: 30, target: false, variant: 'lavender' },
+      { letter: 'ר', x: 46, y: 50, target: true,  variant: 'sky' },
+      { letter: 'מ', x: 38, y: 60, target: false, variant: 'peach' },
+      { letter: 'ר', x: 58, y: 58, target: true,  variant: 'mint' },
+      { letter: 'ש', x: 50, y: 70, target: false, variant: 'lavender' },
+      { letter: 'ר', x: 70, y: 64, target: true,  variant: 'sand' },
+      { letter: 'ת', x: 64, y: 76, target: false, variant: 'sky' },
+      { letter: 'ק', x: 26, y: 56, target: false, variant: 'lavender' },
+      { letter: 'ל', x: 78, y: 48, target: false, variant: 'mint' },
+    ];
+
+    const TOTAL_TARGETS = STONES.filter(s => s.target).length;  // = 5
+
+    const state = {
+      stepsCompleted: 0,
+      locked: false,
+      wrongCount: 0,          // resets after each successful tap (per "round")
+      hintTimer: null,
+    };
+
+    const elTrail       = document.getElementById('pathTrail');
+    const elNoni        = document.getElementById('noniImg');
+    const elStepCount   = document.getElementById('stepCountDisplay');
+    const elTapToStart  = document.getElementById('tapToStart');
+    const elCompletion  = document.getElementById('completion');
+    const elStartBtn    = document.getElementById('startBtn');
+    const elIntroSpkr   = document.getElementById('introSpeaker');
+    const elMissionSpkr = document.getElementById('missionSpeaker');
+    const elHome        = document.getElementById('homeTarget');
+    const elBubblesBg   = document.getElementById('journeyBubbles');
+
+    // ============================================================
+    // Build the trail — once per game (not per round)
+    // ============================================================
+    function buildTrail() {
+      elTrail.innerHTML = '';
+      STONES.forEach((stoneData, idx) => {
+        const el = document.createElement('button');
+        el.type = 'button';
+        const targetClass = stoneData.target ? 'trail-stone--target' : 'trail-stone--distractor';
+        el.className = `trail-stone trail-stone--${stoneData.variant} ${targetClass}`;
+        el.dataset.idx = idx;
+        el.dataset.letter = stoneData.letter;
+        el.dataset.target = stoneData.target ? 'true' : 'false';
+        el.setAttribute('aria-label', 'אבן עם האות ' + stoneData.letter);
+        el.style.left   = stoneData.x + '%';
+        el.style.bottom = stoneData.y + '%';
+
+        el.innerHTML = `
+          <svg class="trail-stone__shape" viewBox="0 0 120 100" preserveAspectRatio="xMidYMid meet">
+            <use href="#stoneSymbol"/>
+          </svg>
+          <span class="trail-stone__letter">${stoneData.letter}</span>
+        `;
+        el.addEventListener('click', () => handleStoneTap(idx, el));
+        elTrail.appendChild(el);
+      });
+    }
+
+    // ============================================================
+    // Helpers
+    // ============================================================
+    function updateStepCounter() {
+      if (elStepCount) {
+        elStepCount.textContent = state.stepsCompleted + '/' + TOTAL_TARGETS + ' אבנים';
+      }
+      // Grow the home target slightly per step
+      elHome.classList.remove('step-1','step-2','step-3','step-4','step-5');
+      if (state.stepsCompleted >= 1) elHome.classList.add('step-' + state.stepsCompleted);
+    }
+
+    function updatePearlDisplay() {
+      if (typeof getPearls === 'function') {
+        const el = document.getElementById('pearlCount');
+        if (el) el.textContent = getPearls();
+      }
+    }
+
+    function spawnBackgroundBubbles() {
+      for (let i = 0; i < 10; i++) {
+        const b = document.createElement('span');
+        const size = 6 + Math.random() * 14;
+        b.style.width  = size + 'px';
+        b.style.height = size + 'px';
+        b.style.left = Math.random() * 100 + 'vw';
+        b.style.animationDuration = (10 + Math.random() * 10) + 's';
+        b.style.animationDelay = (Math.random() * 12) + 's';
+        elBubblesBg.appendChild(b);
+      }
+    }
+
+    // ============================================================
+    // Find the nearest still-available target — used for hint + showAnswer
+    // (uses Noni's current position as the reference)
+    // ============================================================
+    function nearestAvailableTarget() {
+      const noniX = parseFloat(elNoni.style.left);
+      const noniY = parseFloat(elNoni.style.bottom);
+      let best = null;
+      let bestDist = Infinity;
+      const stones = elTrail.querySelectorAll('.trail-stone[data-target="true"]');
+      stones.forEach(el => {
+        if (el.classList.contains('cleared')) return;
+        const sx = parseFloat(el.style.left);
+        const sy = parseFloat(el.style.bottom);
+        const d = (sx - noniX) ** 2 + (sy - noniY) ** 2;
+        if (d < bestDist) { bestDist = d; best = el; }
+      });
+      return best;
+    }
+
+    // ============================================================
+    // Click handler
+    // ============================================================
+    function handleStoneTap(idx, el) {
+      if (state.locked) return;
+      if (el.classList.contains('cleared')) return;
+      if (state.hintTimer) { clearTimeout(state.hintTimer); state.hintTimer = null; }
+
+      const isTarget = el.dataset.target === 'true';
+      if (isTarget) {
+        state.locked = true;
+        doCorrect(el, STONES[idx]);
+      } else {
+        doWrong(el);
+      }
+    }
+
+    // ============================================================
+    // CORRECT tap — Noni hops to the stone
+    // ============================================================
+    function doCorrect(el, stoneData) {
+      // Mark cleared
+      el.classList.add('just-landed');
+      setTimeout(() => el.classList.remove('just-landed'), 720);
+
+      // Hide any leftover hint glow on other stones
+      elTrail.querySelectorAll('.trail-stone.hint-glow').forEach(s => s.classList.remove('hint-glow'));
+
+      // Move Noni to the stone (transition is set in CSS)
+      elNoni.style.left   = stoneData.x + '%';
+      elNoni.style.bottom = stoneData.y + '%';
+
+      // Hopping animation
+      elNoni.classList.add('hopping');
+      setTimeout(() => elNoni.classList.remove('hopping'), 780);
+
+      // Noni cheers
+      if (window.AvneiNoni) AvneiNoni.setState('cheer');
+      if (window.AvneiAudio) AvneiAudio.play('good');
+
+      // Pearl
+      if (typeof addPearl === 'function') {
+        addPearl(1);
+        updatePearlDisplay();
+      }
+
+      // After the hop completes — mark stone as cleared, advance counter
+      setTimeout(() => {
+        el.classList.add('cleared');
+        state.stepsCompleted++;
+        state.wrongCount = 0;   // reset scaffolding for the next "search"
+        updateStepCounter();
+        state.locked = false;
+
+        if (state.stepsCompleted >= TOTAL_TARGETS) {
+          setTimeout(startFinale, 700);
+        }
+      }, 800);
+    }
+
+    // ============================================================
+    // 3-stage scaffolding (same pedagogy as the rounds version)
+    // ============================================================
+    function doWrong(el) {
+      state.wrongCount++;
+      el.classList.add('wrong-sway', 'dimmed-wrong');
+      el.style.pointerEvents = 'none';
+
+      if (window.AvneiNoni) AvneiNoni.setState('help');
+      elNoni.classList.add('helping');
+      setTimeout(() => elNoni.classList.remove('helping'), 900);
+
+      if (state.wrongCount === 1) {
+        if (window.AvneiAudio) AvneiAudio.play('try-together');
+      } else if (state.wrongCount === 2) {
+        const hint = nearestAvailableTarget();
+        if (hint) hint.classList.add('hint-glow');
+        if (window.AvneiAudio) AvneiAudio.playSequence(['try-again', 'sound-' + LETTER_KEY], 700);
+        setTimeout(() => { if (window.AvneiNoni) AvneiNoni.setState('hint'); }, 200);
+      } else {
+        state.locked = true;
+        showAnswerAndAdvance();
+        return;
+      }
+
+      setTimeout(() => {
+        el.classList.remove('wrong-sway');
+        if (state.wrongCount === 1 && window.AvneiNoni) AvneiNoni.setState('idle');
+      }, 900);
+    }
+
+    function showAnswerAndAdvance() {
+      const target = nearestAvailableTarget();
+      if (!target) return;
+      target.classList.add('hint-glow');
+      // Dim all non-target stones
+      elTrail.querySelectorAll('.trail-stone').forEach(s => {
+        if (s !== target && !s.classList.contains('cleared')) {
+          s.style.opacity = '0.32';
+          s.style.filter = 'grayscale(0.4)';
+          s.style.pointerEvents = 'none';
+        }
+      });
+      if (window.AvneiNoni) AvneiNoni.setState('hint');
+      if (window.AvneiAudio) AvneiAudio.play('scaffold-here-' + LETTER_KEY);
+
+      // After the spoken scaffold — auto-tap the highlighted target
+      setTimeout(() => {
+        const idx = parseInt(target.dataset.idx, 10);
+        // Reset the dimmed siblings before doCorrect so they look normal post-hop
+        elTrail.querySelectorAll('.trail-stone').forEach(s => {
+          if (s !== target && !s.classList.contains('cleared')) {
+            s.style.opacity = '';
+            s.style.filter = '';
+            s.style.pointerEvents = '';
+          }
+        });
+        target.classList.remove('hint-glow');
+        doCorrect(target, STONES[idx]);
+      }, 2800);
+    }
+
+    // ============================================================
+    // Finale — Noni walks the last stretch to the doorway, then enters
+    // ============================================================
+    function startFinale() {
+      // Step 1: Noni walks to the doorstep (continues the path's motion)
+      elNoni.style.left   = '88%';
+      elNoni.style.bottom = '74%';
+      elNoni.classList.add('hopping');
+      setTimeout(() => elNoni.classList.remove('hopping'), 780);
+      if (window.AvneiNoni) AvneiNoni.setState('cheer');
+      if (window.AvneiAudio) AvneiAudio.play('great');
+
+      // Step 2: Door opens — Noni notices and starts entering
+      setTimeout(() => {
+        elHome.classList.add('opened');
+        const homeImg = document.getElementById('homeImg');
+        if (homeImg && homeImg.style.display !== 'none') {
+          const openSrc = 'assets/island-03/journey-game/home-open.png';
+          const tester = new Image();
+          tester.onload = () => { homeImg.src = openSrc; };
+          tester.src = openSrc;
+        }
+      }, 1100);
+
+      // Step 3: Noni enters the house (scale-down + fade)
+      setTimeout(() => {
+        elNoni.classList.add('entering-home');
+        if (window.AvneiAudio) AvneiAudio.play('finale-found-treasure');
+        spawnConfetti(80);
+        spawnKisses(8);
+      }, 1700);
+
+      // Step 4: Completion screen
+      setTimeout(showCompletion, 3300);
+    }
+
+    function spawnConfetti(count) {
+      const container = document.getElementById('confettiLayer') || (() => {
+        const c = document.createElement('div');
+        c.id = 'confettiLayer';
+        c.className = 'confetti-layer';
+        document.body.appendChild(c);
+        return c;
+      })();
+      const colors = ['#FFE7A8', '#FFA98D', '#B8F2CF', '#A8E8FF', '#D9D2FF', '#FFD3D8'];
+      for (let i = 0; i < count; i++) {
+        const piece = document.createElement('span');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + 'vw';
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDelay = (Math.random() * 0.8) + 's';
+        piece.style.animationDuration = (2.4 + Math.random() * 2.2) + 's';
+        piece.style.width = (6 + Math.random() * 8) + 'px';
+        piece.style.height = (10 + Math.random() * 14) + 'px';
+        piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+        container.appendChild(piece);
+        setTimeout(() => piece.remove(), 5000);
+      }
+    }
+
+    function spawnKisses(count) {
+      const container = document.getElementById('kissesLayer') || (() => {
+        const c = document.createElement('div');
+        c.id = 'kissesLayer';
+        c.className = 'kisses-layer';
+        document.body.appendChild(c);
+        return c;
+      })();
+      for (let i = 0; i < count; i++) {
+        const k = document.createElement('span');
+        k.className = 'kiss-heart';
+        k.style.left = (50 + Math.random() * 20) + 'vw';
+        k.style.bottom = (40 + Math.random() * 14) + 'vh';
+        k.style.animationDelay = (Math.random() * 1.2) + 's';
+        k.innerHTML = `
+          <svg viewBox="0 0 32 32">
+            <path d="M16 28 C 6 20, 2 14, 6 9 C 10 4, 14 8, 16 12 C 18 8, 22 4, 26 9 C 30 14, 26 20, 16 28 Z"
+                  fill="#FF6B9D" stroke="#FFFFFF" stroke-width="1.5"/>
+          </svg>
+        `;
+        container.appendChild(k);
+        setTimeout(() => k.remove(), 5000);
+      }
+    }
+
+    function showCompletion() {
+      if (typeof completeStage === 'function') completeStage(ISLAND_ID);
+      if (typeof addSouvenir === 'function') addSouvenir('אבן שביל זוהרת');
+      elCompletion.classList.add('show');
+      spawnConfetti(40);
+    }
+
+    // ============================================================
+    // Intro / mission speakers — full sentences (not isolated letter sound)
+    // ============================================================
+    if (elIntroSpkr) {
+      elIntroSpkr.addEventListener('click', () => {
+        if (window.AvneiAudio) AvneiAudio.unlock();
+        elIntroSpkr.classList.add('playing');
+        if (window.AvneiAudio) {
+          AvneiAudio.playSequence(
+            ['intro-journey-quest-' + LETTER_KEY, 'intro-journey-mission-' + LETTER_KEY],
+            600
+          );
+        }
+        setTimeout(() => elIntroSpkr.classList.remove('playing'), 12000);
+      });
+    }
+
+    if (elMissionSpkr) {
+      elMissionSpkr.addEventListener('click', () => {
+        if (window.AvneiAudio) {
+          AvneiAudio.unlock();
+          AvneiAudio.play('mission-find-stone-' + LETTER_KEY);
+        }
+      });
+    }
+
+    // ============================================================
+    // Bootstrap
+    // ============================================================
+    if (elStartBtn) {
+      elStartBtn.addEventListener('click', () => {
+        if (window.AvneiAudio) AvneiAudio.unlock();
+        elTapToStart.classList.add('hidden');
+        spawnBackgroundBubbles();
+        buildTrail();
+        updateStepCounter();
+        updatePearlDisplay();
+
+        // Autoplay the full mission so the child knows what to do
+        setTimeout(() => {
+          if (window.AvneiAudio) AvneiAudio.play('mission-find-stone-' + LETTER_KEY);
+        }, 500);
+      });
+    }
+
+    // Dev: jump straight to finale
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('reset') === '1') {
+      localStorage.removeItem('underwater-app:v1');
+      console.log('localStorage reset.');
+    }
+    if (params.get('skip') === '1') {
+      setTimeout(() => {
+        elTapToStart && elTapToStart.classList.add('hidden');
+        spawnBackgroundBubbles();
+        buildTrail();
+        state.stepsCompleted = TOTAL_TARGETS;
+        updateStepCounter();
+        startFinale();
+      }, 500);
+    }
+  })();
+  </script>
+
+</body>
+</html>
