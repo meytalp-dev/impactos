@@ -23,11 +23,22 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # ─── מילים מלאות ──────────────────────────────────────────────
 WORDS = {
-    "word-parpar":  "פַּרְפַּר",
-    "word-kadur":   "כַּדּוּר",
-    "word-chatul":  "חָתוּל",
-    "word-avtiach": "אֲבַטִּיחַ",
-    "word-banana":  "בָּנָנָה",
+    "word-parpar":   "פַּרְפַּר",
+    "word-kadur":    "כַּדּוּר",
+    "word-chatul":   "חָתוּל",
+    "word-avtiach":  "אֲבַטִּיחַ",
+    "word-banana":   "בָּנָנָה",
+    # 10 מילים נוספות (גרסה 0.2)
+    "word-aba":      "אַבָּא",
+    "word-ima":      "אִמָּא",
+    "word-kelev":    "כֶּלֶב",
+    "word-arnav":    "אַרְנָב",
+    "word-dubi":     "דּוּבִּי",
+    "word-barvaz":   "בַּרְוָז",
+    "word-yeled":    "יֶלֶד",
+    "word-sefer":    "סֵפֶר",
+    "word-shokolad": "שׁוֹקוֹלָד",
+    "word-mekarer":  "מְקָרֵר",
 }
 
 # ─── הברות נפרדות ─────────────────────────────────────────────
@@ -44,6 +55,29 @@ SYLLABLES = {
     "syl-ba":    "בָּ",
     "syl-na":    "נָ",
     "syl-nah":   "נָה",
+    # הברות חדשות (גרסה 0.2)
+    "syl-a":     "אַ",
+    "syl-ba2":   "בָּא",
+    "syl-i":     "אִ",
+    "syl-ma":    "מָּא",
+    "syl-ke":    "כֶּ",
+    "syl-lev":   "לֶב",
+    "syl-ar":    "אַר",
+    "syl-nav":   "נָב",
+    "syl-du":    "דּוּ",
+    "syl-bi":    "בִּי",
+    "syl-bar":   "בַּר",
+    "syl-vaz":   "וָז",
+    "syl-ye":    "יֶ",
+    "syl-led":   "לֶד",
+    "syl-se":    "סֵ",
+    "syl-fer":   "פֶר",
+    "syl-sho":   "שׁוֹ",
+    "syl-ko":    "קוֹ",
+    "syl-lad":   "לָד",
+    "syl-me":    "מְ",
+    "syl-ka2":   "קָ",
+    "syl-rer":   "רֵר",
 }
 
 # ─── UI / קופי משחקון ─────────────────────────────────────────
