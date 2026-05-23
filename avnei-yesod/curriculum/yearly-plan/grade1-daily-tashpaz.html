@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>תוכנית שנתית — כיתה א' תשפ"ז</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Assistant', system-ui, sans-serif;
+    background: #f7fafc;
+    color: #1a2332;
+    line-height: 1.55;
+    font-size: 16px;
+  }
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px 18px 80px; }
+  header.top {
+    background: linear-gradient(135deg, #2c7a7b 0%, #4fd1c5 100%);
+    color: white;
+    padding: 36px 28px;
+    border-radius: 18px;
+    margin-bottom: 24px;
+  }
+  header.top h1 { font-size: 32px; margin-bottom: 8px; }
+  header.top .subtitle { font-size: 18px; opacity: 0.95; margin-bottom: 14px; }
+  header.top .stats {
+    display: flex; gap: 14px; flex-wrap: wrap;
+  }
+  header.top .stats span {
+    background: rgba(255,255,255,0.18); padding: 6px 14px; border-radius: 14px;
+    font-size: 14px;
+  }
+
+  .filter-bar {
+    background: white;
+    padding: 18px 24px;
+    border-radius: 14px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .filter-bar label { font-weight: 600; }
+  .filter-bar select, .filter-bar input {
+    padding: 8px 12px;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 15px;
+  }
+
+  .month-section {
+    margin-bottom: 28px;
+  }
+  .month-header {
+    background: white;
+    padding: 18px 24px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    font-size: 22px;
+    font-weight: 800;
+    color: #2c7a7b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .month-header .count {
+    background: #2c7a7b; color: white;
+    font-size: 14px;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-weight: 600;
+  }
+
+  .days-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+  }
+  .day-card {
+    background: white;
+    padding: 16px 18px;
+    border-radius: 12px;
+    border-right: 5px solid #4fd1c5;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .day-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+  .day-card.assessment { border-right-color: #d69e2e; background: #fffaf0; }
+  .day-card.detailed { border-right-color: #2c7a7b; }
+  .day-card.skeleton { border-right-color: #cbd5e0; opacity: 0.8; }
+  .day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .day-num {
+    background: #2c7a7b; color: white;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800;
+    font-size: 15px;
+  }
+  .day-card.assessment .day-num { background: #d69e2e; }
+  .day-date {
+    color: #718096;
+    font-size: 13px;
+  }
+  .day-topic {
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 6px;
+  }
+  .day-meta {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    font-size: 12px;
+  }
+  .day-meta span {
+    background: #e6fffa;
+    color: #234e52;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+  .day-meta .pack {
+    background: #faf5ff;
+    color: #553c9a;
+  }
+  .day-meta .island {
+    background: #fef3c7;
+    color: #78350f;
+  }
+  .day-card.skeleton .day-meta { opacity: 0.7; }
+
+  .modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 35, 50, 0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+  }
+  .modal.open { display: flex; }
+  .modal-content {
+    background: white;
+    border-radius: 18px;
+    padding: 32px;
+    max-width: 700px;
+    width: 100%;
+    max-height: 88vh;
+    overflow-y: auto;
+  }
+  .modal-content h2 { margin-bottom: 16px; color: #2c7a7b; }
+  .axis {
+    background: #f7fafc;
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    border-right: 4px solid #2c7a7b;
+  }
+  .axis h3 { font-size: 16px; margin-bottom: 8px; color: #2c7a7b; }
+  .axis-2 { border-right-color: #4299e1; }
+  .axis-2 h3 { color: #2c5282; }
+  .axis-3 { border-right-color: #d69e2e; }
+  .axis-3 h3 { color: #744210; }
+  .modal-close {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    background: #e53e3e;
+    color: white;
+    border: none;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .tier-row {
+    display: flex;
+    gap: 8px;
+    margin: 6px 0;
+    align-items: flex-start;
+  }
+  .tier-label {
+    background: #2c7a7b;
+    color: white;
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .tier-label.t1 { background: #48bb78; }
+  .tier-label.t2 { background: #4299e1; }
+  .tier-label.t3 { background: #d69e2e; }
+  .tier-label.t4 { background: #e53e3e; }
+  .legend {
+    background: white;
+    padding: 14px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+  .legend strong { color: #2c7a7b; }
+  .legend .dot {
+    display: inline-block;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    margin: 0 4px;
+    vertical-align: middle;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="top">
+  <h1>תוכנית שנתית — כיתה א' תשפ"ז</h1>
+  <div class="subtitle">2026-2027 · 180 ימי לימוד · שלושה צירים פר יום</div>
+  <div class="stats">
+    <span id="totalDays">— ימים</span>
+    <span id="detailedDays">— מפורטים</span>
+    <span id="skeletonDays">— שלד</span>
+    <span id="assessmentDays">— מבדקים</span>
+  </div>
+</header>
+
+<div class="legend">
+  <strong>אגדה:</strong>
+  <span><span class="dot" style="background:#2c7a7b;"></span>יום מפורט במלואו</span> ·
+  <span><span class="dot" style="background:#cbd5e0;"></span>שלד (יושלם)</span> ·
+  <span><span class="dot" style="background:#d69e2e;"></span>יום מבדק (BOY/MOY/EOY)</span>
+  <br>
+  <strong>3 צירים פר יום:</strong> 1) מה המורה מלמדת · 2) מה אבני יסוד מתרגלת פר Tier · 3) העשרות אופציונליות
+</div>
+
+<div class="filter-bar">
+  <label>סינון:</label>
+  <select id="monthFilter">
+    <option value="">כל החודשים</option>
+  </select>
+  <select id="islandFilter">
+    <option value="">כל האיים</option>
+  </select>
+  <input type="search" id="search" placeholder="חיפוש נושא...">
+</div>
+
+<div id="content"></div>
+
+<div class="modal" id="modal">
+  <div class="modal-content" style="position:relative;">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+let dayData = [];
+
+async function load() {
+  const res = await fetch('grade1-daily-tashpaz.json');
+  const data = await res.json();
+  dayData = data.days;
+
+  // header stats
+  document.getElementById('totalDays').textContent = dayData.length + ' ימים';
+  const detailed = dayData.filter(d => d.axis_1_teaching).length;
+  const skeleton = dayData.filter(d => d.topic_short && !d.axis_1_teaching).length;
+  const assess = dayData.filter(d => d.is_assessment_day).length;
+  document.getElementById('detailedDays').textContent = detailed + ' מפורטים';
+  document.getElementById('skeletonDays').textContent = skeleton + ' שלד';
+  document.getElementById('assessmentDays').textContent = assess + ' מבדקים';
+
+  // populate filters
+  const months = [...new Set(dayData.map(d => d.month).filter(m => m))];
+  const monthSel = document.getElementById('monthFilter');
+  months.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m; opt.textContent = m;
+    monthSel.appendChild(opt);
+  });
+
+  const islands = [...new Set(dayData.map(d => d.axis_1_teaching && d.axis_1_teaching.macro_island).filter(i => i))].sort((a,b) => a-b);
+  const islandSel = document.getElementById('islandFilter');
+  islands.forEach(i => {
+    const opt = document.createElement('option');
+    opt.value = i; opt.textContent = 'אי ' + i;
+    islandSel.appendChild(opt);
+  });
+
+  monthSel.addEventListener('change', render);
+  islandSel.addEventListener('change', render);
+  document.getElementById('search').addEventListener('input', render);
+
+  render();
+}
+
+function render() {
+  const monthF = document.getElementById('monthFilter').value;
+  const islandF = document.getElementById('islandFilter').value;
+  const searchF = document.getElementById('search').value.toLowerCase();
+
+  const filtered = dayData.filter(d => {
+    if (d._note_) return false;
+    if (monthF && d.month !== monthF) return false;
+    if (islandF) {
+      const i = (d.axis_1_teaching && d.axis_1_teaching.macro_island) || d.primary_island;
+      if (i != islandF) return false;
+    }
+    if (searchF) {
+      const text = (d.topic_short || (d.axis_1_teaching && d.axis_1_teaching.topic) || '').toLowerCase();
+      if (!text.includes(searchF)) return false;
+    }
+    return true;
+  });
+
+  const byMonth = {};
+  filtered.forEach(d => {
+    const m = d.month || 'לא ידוע';
+    if (!byMonth[m]) byMonth[m] = [];
+    byMonth[m].push(d);
+  });
+
+  const orderedMonths = ["ספטמבר","אוקטובר","נובמבר","דצמבר","ינואר","פברואר","מרץ","אפריל","מאי","יוני"];
+
+  const html = orderedMonths.filter(m => byMonth[m]).map(month => {
+    const days = byMonth[month];
+    const cards = days.map(d => {
+      const isDetailed = !!d.axis_1_teaching;
+      const isAssessment = d.is_assessment_day;
+      const topic = d.axis_1_teaching ? d.axis_1_teaching.topic : (d.topic_short || 'TBD');
+      const island = (d.axis_1_teaching && d.axis_1_teaching.macro_island) || d.primary_island;
+      const cardClass = isAssessment ? 'assessment' : (isDetailed ? 'detailed' : 'skeleton');
+
+      return `
+        <div class="day-card ${cardClass}" onclick="showModal(${d.day})">
+          <div class="day-header">
+            <div class="day-num">${d.day}</div>
+            <div class="day-date">${d.date || '—'} · ${d.weekday || ''}</div>
+          </div>
+          <div class="day-topic">${topic}</div>
+          <div class="day-meta">
+            ${d.pack_id ? `<span class="pack">${d.pack_id.replace('grade1-','')}</span>` : ''}
+            ${island ? `<span class="island">אי ${island}</span>` : ''}
+            ${isAssessment ? `<span style="background:#fef5e7;color:#744210">${d.assessment_type || 'מבדק'}</span>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="month-section">
+        <div class="month-header">
+          ${month}
+          <span class="count">${days.length} ימים</span>
+        </div>
+        <div class="days-grid">${cards}</div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('content').innerHTML = html;
+}
+
+function showModal(dayNum) {
+  const d = dayData.find(x => x.day === dayNum);
+  if (!d) return;
+
+  let body = `<h2>יום ${d.day} · ${d.date || '—'} · ${d.month || ''}</h2>`;
+
+  if (d.axis_1_teaching) {
+    const a1 = d.axis_1_teaching;
+    body += `
+      <div class="axis">
+        <h3>ציר 1 — מה המורה מלמדת (25 דק' כיתה)</h3>
+        <div><strong>נושא:</strong> ${a1.topic || '—'}</div>
+        ${a1.macro_island ? `<div><strong>אי-מקור:</strong> ${a1.macro_island}</div>` : ''}
+        ${a1.sub_skill ? `<div><strong>תת-מיומנות:</strong> ${a1.sub_skill}</div>` : ''}
+        ${a1.letters_introduced_today && a1.letters_introduced_today.length ? `<div><strong>אותיות חדשות:</strong> ${a1.letters_introduced_today.join(', ')}</div>` : ''}
+        ${a1.letters_featured && a1.letters_featured.length ? `<div><strong>אותיות פעילות:</strong> ${a1.letters_featured.join(', ')}</div>` : ''}
+        ${a1.words_to_introduce && a1.words_to_introduce.length ? `<div><strong>מילים:</strong> ${a1.words_to_introduce.join(', ')}</div>` : ''}
+        ${a1.teaching_notes ? `<div style="margin-top:8px;color:#4a5568;font-style:italic">${a1.teaching_notes}</div>` : ''}
+      </div>
+    `;
+  }
+
+  if (d.axis_2_practice_avnei_yesod) {
+    const a2 = d.axis_2_practice_avnei_yesod;
+    body += `
+      <div class="axis axis-2">
+        <h3>ציר 2 — מה אבני יסוד מתרגלת (20 דק')</h3>
+        ${a2.pack ? `<div><strong>פאק חודשי:</strong> ${a2.pack}</div>` : ''}
+        ${a2.primary_island ? `<div><strong>אי ראשי:</strong> ${a2.primary_island}</div>` : ''}
+        ${a2.game_to_play ? `<div><strong>משחקון מומלץ:</strong> ${a2.game_to_play}</div>` : ''}
+        ${a2.tier_1 ? `<div class="tier-row"><span class="tier-label t1">Tier 1</span><span>${a2.tier_1}</span></div>` : ''}
+        ${a2.tier_2 ? `<div class="tier-row"><span class="tier-label t2">Tier 2</span><span>${a2.tier_2}</span></div>` : ''}
+        ${a2.tier_3 ? `<div class="tier-row"><span class="tier-label t3">Tier 3</span><span>${a2.tier_3}</span></div>` : ''}
+        ${a2.tier_4 ? `<div class="tier-row"><span class="tier-label t4">Tier 4</span><span>${a2.tier_4}</span></div>` : ''}
+      </div>
+    `;
+  }
+
+  if (d.axis_3_enrichment && Object.keys(d.axis_3_enrichment).length > 0) {
+    const a3 = d.axis_3_enrichment;
+    body += `
+      <div class="axis axis-3">
+        <h3>ציר 3 — העשרות אופציונליות</h3>
+        ${a3.quick_class_games && a3.quick_class_games.length ? `<div><strong>משחקי כיתה קצרים:</strong><ul style="padding-right:22px;margin-top:4px;">${a3.quick_class_games.map(g => `<li>${g}</li>`).join('')}</ul></div>` : ''}
+        ${a3.advanced ? `<div style="margin-top:8px"><strong>למתקדמים:</strong> ${a3.advanced}</div>` : ''}
+        ${a3.struggling ? `<div style="margin-top:6px"><strong>למתקשים:</strong> ${a3.struggling}</div>` : ''}
+      </div>
+    `;
+  }
+
+  if (!d.axis_1_teaching && d.topic_short) {
+    body += `
+      <div class="axis" style="background:#fef5e7;border-right-color:#d69e2e;">
+        <h3>יום שלד</h3>
+        <div><strong>נושא:</strong> ${d.topic_short}</div>
+        ${d.pack_id ? `<div><strong>פאק:</strong> ${d.pack_id}</div>` : ''}
+        ${d.primary_island ? `<div><strong>אי ראשי:</strong> ${d.primary_island}</div>` : ''}
+        <div style="margin-top:12px;color:#744210;font-style:italic">
+          הפירוט המלא יושלם בסבב הבא. השתמשי בפאק החודשי + literacy-grade1-2-yearly.md לבינתיים.
+        </div>
+      </div>
+    `;
+  }
+
+  document.getElementById('modalBody').innerHTML = body;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+document.getElementById('modal').addEventListener('click', (e) => {
+  if (e.target.id === 'modal') closeModal();
+});
+
+load();
+</script>
+
+</body>
+</html>
