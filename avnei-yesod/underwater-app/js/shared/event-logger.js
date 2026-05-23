@@ -19,6 +19,12 @@ window.AvneiEventLogger = (function() {
     'soundMatch':   3,
     'findLetter':   3,
     'tracePath':    19,
+    // משחקונים פר-אות (מ-23.5.2026)
+    'storm-quest':  3,   // אות ת
+    'rescue':       3,   // אות ק
+    'trail':        3,   // אות ר
+    'house':        3,   // אות ב
+    'shell':        3,   // אות מ
   };
 
   const SECONDARY_ISLANDS = {
@@ -27,6 +33,11 @@ window.AvneiEventLogger = (function() {
     'soundMatch':   [2],   // first-sound awareness
     'findLetter':   [5],   // exposure to written word
     'tracePath':    [3],   // letter recognition reinforcement
+    'storm-quest':  [2],   // hunt-for-sound
+    'rescue':       [2],   // first-sound awareness in distractor pods
+    'trail':        [2],   // identify target letter among distractors
+    'house':        [],
+    'shell':        [],
   };
 
   // result = {

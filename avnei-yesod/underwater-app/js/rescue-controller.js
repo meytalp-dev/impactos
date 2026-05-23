@@ -151,6 +151,21 @@
     if (state.hintTimer) { clearTimeout(state.hintTimer); state.hintTimer = null; }
 
     const isCorrect = pod.dataset.correct === 'true';
+
+    // לוגינג לתובנות מורה (23.5.2026)
+    if (window.AvneiEventLogger) {
+      AvneiEventLogger.logActivityResult({
+        activity_type: 'rescue',
+        target_letter: LETTER,
+        item_id: 'rescue-fish-' + (state.fishRescued + 1),
+        supportLevel: 1,
+        is_correct: isCorrect,
+        attempts: isCorrect ? (state.attempts + 1) : (state.attempts + 1),
+        response_time_ms: null,
+        hint_used: state.attempts >= 1,
+      });
+    }
+
     if (isCorrect) {
       state.locked = true;
       doRescue(pod);

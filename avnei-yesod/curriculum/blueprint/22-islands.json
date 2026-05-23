@@ -17,6 +17,11 @@
         "date": "2026-05-23",
         "version": "0.2-draft",
         "changes": "שילוב פלט GPT — 48 וריאציות (39 נקיות, 9 תוקנו מחציית מטאפורות), Session Journey פר-אי (8), companion_ui גלובלי, החלפת 3 משחקונים חלשים בוריאציות חזקות יותר. GPT mockup נשמר ב-assets/gpt-mockup-2026-05-23.png"
+      },
+      {
+        "date": "2026-05-23",
+        "version": "0.3-draft",
+        "changes": "מודל תמיכות עודכן לשתי שכבות (micro: per-item mistake count + macro: BKT supportLevel). תיעוד תשתית תובנות המורה הקיימת בקוד (event-logger.js + 5 דגלים אוטומטיים + state.js). תיעוד 5 המשחקונים שנבנו בפועל (shell/rescue/house/trail/storm — אחד לכל אות MVP). דשבורד מורה אמיתי נבנה ב-underwater-app/teacher-live.html."
       }
     ],
     "sources_consulted": [
@@ -43,6 +48,70 @@
     "shared-read": "קריאה משותפת עם נוני, פנס/קו אור נע",
     "mini-task": "משימה קצרה ממוקדת של 15-40 שניות",
     "memory-sort": "מיון פריטים לקטגוריות / זכירה"
+  },
+
+  "support_model": {
+    "intro": "שתי שכבות תמיכה — חיות יחד, לא קונפליקט.",
+    "layer_micro_per_item": {
+      "name": "מודל הטעויות בתוך פריט",
+      "rule": "טעות 1 = רעידה ויזואלית עדינה בלבד (אין תמיכה מילולית) · טעות 2 = רמז ויזואלי + השמעת הצליל + נוני מצביע · טעות 3+ = 'הקש פה' — הצבעה ישירה + press-here audio",
+      "source": "feedback_avnei_yesod_support_levels.md · מיטל 23.5.2026 (storm-quest pivot)",
+      "implemented_in": ["sound-match.js", "letter-shape.js", "find-letter.js", "rescue-controller.js (אינלין)", "stage-3-trail-resh.html (אינלין)", "stage-3-storm.html (אינלין)"]
+    },
+    "layer_macro_bkt": {
+      "name": "BKT supportLevel (1-4)",
+      "rule": "מערכת בוחרת אילו פריטים להציג לפי p(שולטת). Tier 1 = פריטים עם מסיחים קרובים, אין רמז זמין · Tier 4 = פריטים עם רמזים בנויים-פנימה, מסיחים רחוקים · התראה למורה אחרי 2 כישלונות",
+      "source": "architecture-mvp.md §3",
+      "implemented_in": "טרם — חלק משלב 3 ב-roadmap",
+      "interaction_with_micro": "Tier מקבע את BACKGROUND של הפריט (קושי + רמזים זמינים). מודל הטעויות פועל IN-ITEM. אפשרי בעתיד להתאים את הספים: Tier 4 → רמז כבר על טעות 1 (במקום 2)."
+    }
+  },
+
+  "teacher_insights_architecture": {
+    "intro": "תשתית תובנות המורה נבנתה בקוד ב-23.5.2026. רכיבים:",
+    "components": {
+      "event_logger": {
+        "file": "underwater-app/js/shared/event-logger.js",
+        "captures": ["student_id", "session_id", "activity_type", "target_letter", "supportLevel", "is_correct", "attempts", "response_time_ms", "hint_used", "auto_hint_triggered", "noni_guidance_used"],
+        "storage": "localStorage · 1000 events FIFO"
+      },
+      "automatic_flag_patterns": {
+        "intro": "5 דפוסים אוטומטיים שמתקעים דגל לדשבורד המורה:",
+        "patterns": [
+          "slow_response — זמן תגובה חציוני > 5שנ' למרות דיוק גבוה",
+          "repeated_hint — שימוש ברמז ב-3+ פריטים",
+          "shape_vs_sound_gap — אחוז גבוה ב-letter-shape A אבל נמוך ב-B",
+          "find_letter_struggle — דיוק טוב ב-letter-shape אבל קושי ב-findLetter",
+          "level4_drops — שתי נפילות רצופות גם בתמיכה מוגברת"
+        ]
+      },
+      "primary_secondary_island_tagging": "כל activity מתויג לאי ראשי + איים משניים (לתשתית BKT עתידית רב-ממדית)",
+      "live_dashboard": {
+        "file": "underwater-app/teacher-live.html",
+        "url": "https://impact-os.app/avnei-yesod/underwater-app/teacher-live.html",
+        "shows": ["תקציר ניסיונות+דיוק", "פירוט פר-אות", "פירוט פר-משחקון", "כל הדגלים האוטומטיים", "10 אירועים אחרונים"],
+        "refresh": "אוטומטי כל 3 שניות"
+      }
+    },
+    "what_works_today": "5 משחקונים פעילים מזינים נתונים. הדשבורד החי קורא אותם ומציג. דגלים אוטומטיים פועלים על כל activity_type.",
+    "what_remains": [
+      "BKT engine (שלב 3 ב-roadmap) — יקבע supportLevel דינמי לפי דפוס",
+      "מספר מזהי תלמיד אמיתיים (כרגע STUDENT_ID = 'local')",
+      "Apps Script שמסנכרן ל-Google Sheet (לעבודה מרחוק)",
+      "מסך 'קבוצות אוטומטיות' לבוקר (Tasks 8.1-8.2 ב-architecture-mvp)"
+    ]
+  },
+
+  "implemented_games_per_letter": {
+    "intro": "5 משחקונים שונים — אחד פר-אות MVP. כל משחקון = מטאפורה + מנגנון אינטראקטיבי שונה.",
+    "games": [
+      {"letter": "מ", "game": "shell", "name_he": "הצדף הקסום", "file": "stage-3-shell.html", "mechanic": "5 חידות → 5 מפתחות → צדף נפתח", "envelope": "sound-match"},
+      {"letter": "ק", "game": "rescue", "name_he": "הצלת הדגים", "file": "stage-3-rescue.html", "mechanic": "scaffold מדורג · 4 קונכיות → דג חופשי", "envelope": "sound-match + dynamic scaffold"},
+      {"letter": "ב", "game": "house", "name_he": "הבית של נוני", "file": "stage-3-house.html", "mechanic": "הקש/י לשמוע + מציאת אות", "envelope": "letter-shape + sound-match"},
+      {"letter": "ר", "game": "trail", "name_he": "שביל החזרה", "file": "stage-3-trail-resh.html", "mechanic": "12 אבנים → נוני נכנס לבית", "envelope": "find-letter בקנה מידה גדול"},
+      {"letter": "ת", "game": "storm-quest", "name_he": "ציד האורות", "file": "stage-3-storm.html", "mechanic": "ציד אלמוגים מאירים — סערה מתבהרת", "envelope": "custom (לא sound-match)"}
+    ],
+    "implication": "במקום 5 משחקונים זהים × 5 אותיות (24 משחקונים), יש 5 משחקונים שונים × אות אחת כל אחד. גיוון מנגנונים פתר את בעיית 'אותה משימה חוזרת'. תקף ל-MVP. לפאזה הבאה (B+C) — לחשוב אם להחיל את אותם 5 משחקונים על אותיות נוספות, או לבנות 5 חדשים."
   },
 
   "companion_ui": {

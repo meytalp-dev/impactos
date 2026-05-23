@@ -156,6 +156,7 @@
 
   <!-- Shared modules — load order matters -->
   <script src="js/state.js"></script>
+  <script src="js/shared/event-logger.js"></script>
   <script src="js/shared/audio.js"></script>
   <script src="js/shared/noni.js"></script>
   <script src="js/shared/feedback.js"></script>
@@ -377,6 +378,20 @@
     updateProgressDots(state.coralsLit);
     updatePearlDisplay();
 
+    // לוגינג לתובנות מורה (23.5.2026)
+    if (window.AvneiEventLogger) {
+      AvneiEventLogger.logActivityResult({
+        activity_type: 'storm-quest',
+        target_letter: LETTER,
+        item_id: 'storm-coral-' + state.coralsLit,
+        supportLevel: 1,
+        is_correct: true,
+        attempts: 1,
+        response_time_ms: Date.now() - (state.lastTileShownAt || Date.now()),
+      });
+      state.lastTileShownAt = Date.now();
+    }
+
     // עדכון רמת ההארה של ה-scene
     elFrame.classList.remove('lit-0','lit-1','lit-2','lit-3','lit-4','lit-5');
     elFrame.classList.add('lit-' + state.coralsLit);
@@ -393,6 +408,19 @@
     tile.classList.add('wrong-flash');
     setTimeout(() => tile.classList.remove('wrong-flash'), 600);
     // ללא אודיו ענישה — לפי feedback_avnei_yesod_support_levels
+
+    // לוגינג לתובנות מורה
+    if (window.AvneiEventLogger) {
+      AvneiEventLogger.logActivityResult({
+        activity_type: 'storm-quest',
+        target_letter: LETTER,
+        item_id: 'storm-wrong',
+        supportLevel: 1,
+        is_correct: false,
+        attempts: 1,
+        response_time_ms: null,
+      });
+    }
   }
 
   function spawnLightBurst(anchorEl) {

@@ -153,6 +153,7 @@
 
   <!-- Shared modules -->
   <script src="js/state.js"></script>
+  <script src="js/shared/event-logger.js"></script>
   <script src="js/shared/audio.js"></script>
   <script src="js/shared/noni.js"></script>
   <script src="js/shared/feedback.js"></script>
@@ -335,6 +336,21 @@
       if (state.hintTimer) { clearTimeout(state.hintTimer); state.hintTimer = null; }
 
       const isTarget = el.dataset.target === 'true';
+
+      // לוגינג לתובנות מורה (23.5.2026)
+      if (window.AvneiEventLogger) {
+        AvneiEventLogger.logActivityResult({
+          activity_type: 'trail',
+          target_letter: 'ר',
+          item_id: 'trail-stone-' + idx,
+          supportLevel: 1,
+          is_correct: isTarget,
+          attempts: (state.wrongCount || 0) + 1,
+          response_time_ms: null,
+          hint_used: (state.wrongCount || 0) >= 1,
+        });
+      }
+
       if (isTarget) {
         state.locked = true;
         doCorrect(el, STONES[idx]);
