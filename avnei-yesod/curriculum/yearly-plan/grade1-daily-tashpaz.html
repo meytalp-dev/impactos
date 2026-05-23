@@ -118,9 +118,59 @@
     font-size: 15px;
     margin-bottom: 6px;
   }
+  .island-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, var(--island-bg-1, #fef3c7) 0%, var(--island-bg-2, #fde68a) 100%);
+    padding: 10px 14px;
+    border-radius: 10px;
+    margin: 8px 0;
+    border: 2px solid var(--island-border, #d69e2e);
+  }
+  .island-banner .island-num {
+    background: var(--island-border, #d69e2e);
+    color: white;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .island-banner .island-info {
+    flex: 1;
+    line-height: 1.25;
+  }
+  .island-banner .island-label {
+    font-size: 11px;
+    color: var(--island-border, #78350f);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .island-banner .island-name {
+    font-weight: 800;
+    font-size: 15px;
+    color: var(--island-text, #78350f);
+  }
+
+  /* Island color themes */
+  .island-1 { --island-bg-1:#e0f2fe; --island-bg-2:#bae6fd; --island-border:#0284c7; --island-text:#075985; }
+  .island-2 { --island-bg-1:#ede9fe; --island-bg-2:#ddd6fe; --island-border:#7c3aed; --island-text:#5b21b6; }
+  .island-3 { --island-bg-1:#fef3c7; --island-bg-2:#fde68a; --island-border:#d69e2e; --island-text:#78350f; }
+  .island-4 { --island-bg-1:#fce7f3; --island-bg-2:#fbcfe8; --island-border:#db2777; --island-text:#9f1239; }
+  .island-5 { --island-bg-1:#d1fae5; --island-bg-2:#a7f3d0; --island-border:#059669; --island-text:#064e3b; }
+  .island-6 { --island-bg-1:#fee2e2; --island-bg-2:#fecaca; --island-border:#dc2626; --island-text:#7f1d1d; }
+  .island-7 { --island-bg-1:#dbeafe; --island-bg-2:#bfdbfe; --island-border:#2563eb; --island-text:#1e3a8a; }
+  .island-8 { --island-bg-1:#ccfbf1; --island-bg-2:#99f6e4; --island-border:#0d9488; --island-text:#134e4a; }
+  .island-9 { --island-bg-1:#f5d0fe; --island-bg-2:#f0abfc; --island-border:#a21caf; --island-text:#701a75; }
+  .island-none { --island-bg-1:#e2e8f0; --island-bg-2:#cbd5e0; --island-border:#64748b; --island-text:#1e293b; }
+
   .day-meta {
     display: flex; gap: 6px; flex-wrap: wrap;
     font-size: 12px;
+    margin-top: 6px;
   }
   .day-meta span {
     background: #e6fffa;
@@ -133,11 +183,7 @@
     background: #faf5ff;
     color: #553c9a;
   }
-  .day-meta .island {
-    background: #fef3c7;
-    color: #78350f;
-  }
-  .day-card.skeleton .day-meta { opacity: 0.7; }
+  .day-card.skeleton .island-banner { opacity: 0.75; }
 
   .modal {
     position: fixed;
@@ -269,6 +315,20 @@
 <script>
 let dayData = [];
 
+// שמות איים — להצגה
+const ISLAND_NAMES = {
+  1: 'מודעות הברתית',
+  2: 'מודעות פונמית',
+  3: 'זיהוי אותיות',
+  4: 'אות + ניקוד (CV)',
+  5: 'מיזוג למילים',
+  6: 'שטף מילה',
+  7: 'מילים ארוכות',
+  8: 'מילים שכיחות + הבנה',
+  9: 'מורפולוגיה'
+};
+function islandName(n) { return ISLAND_NAMES[n] || ('אי ' + n); }
+
 async function load() {
   const res = await fetch('grade1-daily-tashpaz.json');
   const data = await res.json();
@@ -344,17 +404,35 @@ function render() {
       const island = (d.axis_1_teaching && d.axis_1_teaching.macro_island) || d.primary_island;
       const cardClass = isAssessment ? 'assessment' : (isDetailed ? 'detailed' : 'skeleton');
 
+      const islandClass = island ? `island-${island}` : 'island-none';
+      const islandBanner = island ? `
+        <div class="island-banner ${islandClass}">
+          <div class="island-num">${island}</div>
+          <div class="island-info">
+            <div class="island-label">אי</div>
+            <div class="island-name">${islandName(island)}</div>
+          </div>
+        </div>
+      ` : (isAssessment ? `
+        <div class="island-banner island-none">
+          <div class="island-num">מבדק</div>
+          <div class="island-info">
+            <div class="island-label">${d.assessment_type || 'מבדק'}</div>
+            <div class="island-name">ראמ"ה</div>
+          </div>
+        </div>
+      ` : '');
+
       return `
         <div class="day-card ${cardClass}" onclick="showModal(${d.day})">
           <div class="day-header">
             <div class="day-num">${d.day}</div>
             <div class="day-date">${d.date || '—'} · ${d.weekday || ''}</div>
           </div>
+          ${islandBanner}
           <div class="day-topic">${topic}</div>
           <div class="day-meta">
             ${d.pack_id ? `<span class="pack">${d.pack_id.replace('grade1-','')}</span>` : ''}
-            ${island ? `<span class="island">אי ${island}</span>` : ''}
-            ${isAssessment ? `<span style="background:#fef5e7;color:#744210">${d.assessment_type || 'מבדק'}</span>` : ''}
           </div>
         </div>
       `;
