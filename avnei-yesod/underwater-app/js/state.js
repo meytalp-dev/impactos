@@ -22,7 +22,7 @@ const LETTER_STAGES = {
 // כשיתווסף trace, פשוט להוסיף 'tracePath' לרשימה של אות מ.
 const LETTER_AVAILABLE_ACTIVITIES = {
   'ת': ['soundMatch'],
-  'מ': ['letterShapeA', 'letterShapeB', 'soundMatch', 'findLetter'],
+  'מ': ['letterShapeA', 'letterShapeB', 'soundMatch', 'findLetter', 'tracePath'],
   'ר': ['soundMatch'],
   'ב': ['soundMatch'],
   'ק': ['soundMatch'],
@@ -211,6 +211,9 @@ function recordActivityComplete(letter, activity, stats) {
     'findLetter':   3,
     'tracePath':    4,
   };
+  // הערה: getLetterGrowthPercent מחשב יחסית ל-availableActivities של האות,
+  // אז ההוספה של tracePath ל-LETTER_AVAILABLE_ACTIVITIES['מ'] מעדכנת אוטומטית
+  // את ה-percent של מ' מ-5 פעילויות (כולל 2 וריאנטים של letter-shape).
   const stageForActivity = STAGE_BY_ACTIVITY[activity] || 0;
   if (stageForActivity > current.stage) current.stage = stageForActivity;
 

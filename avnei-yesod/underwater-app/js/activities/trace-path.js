@@ -190,6 +190,15 @@ window.AvneiTracePath = (function() {
     });
   }
 
+  // צבע ה-stroke הנוכחי — תומך ב-N צבעים מ-trace_colors[], או fallback
+  function getStrokeColor() {
+    const vd = _letterData.visual_design || {};
+    const palette = Array.isArray(vd.trace_colors) && vd.trace_colors.length > 0
+      ? vd.trace_colors
+      : ['#E54545', '#F59E0B', '#8B5CF6', '#4A8FE0'];
+    return palette[_currentStrokeIdx % palette.length];
+  }
+
   function drawStartMarker(stroke) {
     // remove old marker
     const old = _svg.querySelector('.tp-marker');
@@ -200,9 +209,7 @@ window.AvneiTracePath = (function() {
     const g = document.createElementNS(SVG_NS, 'g');
     g.classList.add('tp-marker');
 
-    const color = _currentStrokeIdx === 0
-      ? (vd.trace_color_stroke_1 || '#E54545')
-      : (vd.trace_color_stroke_2 || '#4A8FE0');
+    const color = getStrokeColor();
 
     const circle = document.createElementNS(SVG_NS, 'circle');
     circle.setAttribute('cx', stroke.start_point[0]);
@@ -248,10 +255,7 @@ window.AvneiTracePath = (function() {
     const length = tpl.getTotalLength ? tpl.getTotalLength() : 0;
     if (length === 0) return;
 
-    const vd = _letterData.visual_design || {};
-    const color = _currentStrokeIdx === 0
-      ? (vd.trace_color_stroke_1 || '#E54545')
-      : (vd.trace_color_stroke_2 || '#4A8FE0');
+    const color = getStrokeColor();
 
     const dot = document.createElementNS(SVG_NS, 'circle');
     dot.setAttribute('r', '6');
@@ -328,9 +332,7 @@ window.AvneiTracePath = (function() {
   function drawActiveOverlay() {
     if (_tracePoints.length < 2) return;
     const vd = _letterData.visual_design || {};
-    const color = _currentStrokeIdx === 0
-      ? (vd.trace_color_stroke_1 || '#E54545')
-      : (vd.trace_color_stroke_2 || '#4A8FE0');
+    const color = getStrokeColor();
 
     if (!_activePath) {
       _activePath = document.createElementNS(SVG_NS, 'polyline');
@@ -459,9 +461,7 @@ window.AvneiTracePath = (function() {
     // mark stroke done by drawing the template path in full color
     const stroke = _strokes[_currentStrokeIdx];
     const vd = _letterData.visual_design || {};
-    const color = _currentStrokeIdx === 0
-      ? (vd.trace_color_stroke_1 || '#E54545')
-      : (vd.trace_color_stroke_2 || '#4A8FE0');
+    const color = getStrokeColor();
 
     const p = document.createElementNS(SVG_NS, 'path');
     p.setAttribute('d', stroke.path_d);
