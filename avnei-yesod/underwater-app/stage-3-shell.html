@@ -94,6 +94,13 @@
   <!-- Start overlay -->
   <div class="tap-to-start" id="tapToStart">
     <h2>הצדף הקסום</h2>
+    <button class="intro-speaker" id="introSpeaker" aria-label="שמע את ההסבר">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>הקש/י לשמוע</span>
+    </button>
     <p>נוני מצא צדף סגור. בתוכו אוצר — אבל צריך <strong>5 מפתחות בצורת מ׳</strong> כדי לפתוח אותו.</p>
     <p style="font-size: clamp(15px, 3vw, 18px);">תפתרו 5 חידות על האות מ׳ ותקבלו מפתחות!</p>
     <button class="start-btn" id="startBtn">בוא/י נתחיל</button>
@@ -395,8 +402,8 @@
     // Spawn floating kisses
     spawnKisses(8);
 
-    // Play cheer audio (real word, not the misleading all-done)
-    AvneiAudio.play('excellent');
+    // Play proper finale audio + cheer
+    AvneiAudio.playSequence(['great', 'finale-found-treasure'], 800);
 
     // Show completion overlay after a beat
     setTimeout(showCompletion, 1800);
@@ -497,6 +504,17 @@
       showCompletion();
     }
   }
+
+  // ============================================================
+  // Intro speaker — plays the explanation in Hebrew (kids who don't read)
+  // ============================================================
+  document.getElementById('introSpeaker').addEventListener('click', () => {
+    AvneiAudio.unlock();
+    const btn = document.getElementById('introSpeaker');
+    btn.classList.add('playing');
+    AvneiAudio.playSequence(['intro-shell-quest', 'intro-shell-mission'], 600);
+    setTimeout(() => btn.classList.remove('playing'), 12000);
+  });
 
   // ============================================================
   // Bootstrap
