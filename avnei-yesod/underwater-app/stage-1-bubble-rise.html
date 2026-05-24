@@ -98,7 +98,14 @@
   <!-- ============ completion ============ -->
   <div class="completion" id="completion">
     <h2>הבועה עלתה!</h2>
-    <p id="completionMsg">בועת-האור הגיעה לפני המים. נוני שמח.</p>
+    <button class="intro-speaker" id="completionSpeaker" aria-label="השמע">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>הקש/י לשמוע</span>
+    </button>
+    <p id="completionMsg">בועת-האור הגיעה לפני המים.</p>
     <div>
       <button class="btn-primary" id="nextWordBtn">מילה נוספת</button>
       <a href="map.html" class="btn-primary btn-secondary">חזרה למפה</a>
@@ -480,6 +487,8 @@
 
   function showCompletion() {
     document.getElementById('completion').classList.add('visible');
+    // play completion audio automatically — children can't read
+    setTimeout(() => playAudio('ui-complete-rise'), 400);
   }
 
   // ----- Word switching -----
@@ -559,6 +568,10 @@
     playAudio(targetAudio);
   });
   document.getElementById('nextWordBtn').addEventListener('click', nextWord);
+  document.getElementById('completionSpeaker').addEventListener('click', (e) => {
+    e.stopPropagation();
+    playAudio('ui-complete-rise');
+  });
 
   // ----- Init -----
   (async function init() {
