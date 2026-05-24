@@ -97,6 +97,7 @@ SUPPORT = {
     "support-mistake-1": "לֹא נוֹרָא. נְנַסֶּה שׁוּב.",
     "support-mistake-2": "הִנֵּה רֶמֶז. תִּשְׁמְעוּ עוֹד פַּעַם.",
     "support-mistake-3": "הִנֵּה הַבּוּעָה הַנְּכוֹנָה. הַקִּישׁוּ עָלֶיהָ.",
+    "support-order":     "לְפִי הַסֵּדֶר! קוֹדֶם זוֹ.",
 }
 
 ALL_LINES = {**WORDS, **SYLLABLES, **UI, **SUPPORT}

@@ -109,6 +109,7 @@
   let currentWordIndex = 0;
   let currentWord = null;
   let collectedCount = 0;
+  let nextExpectedOrder = 0; // which syllable index the child must collect next (0, 1, 2...)
   let started = false;
   let hintTimer = null;
 
@@ -172,10 +173,11 @@
       syllable_id: currentWord.syllable_ids[i],
       audio: currentWord.syllable_audios[i].split('/').pop().replace('.mp3', ''),
       correct: true,
+      order: i,
     }));
     const distractor = pickDistractor(currentWord);
     const all = [...correct];
-    if (distractor) all.push({ syllable_id: distractor.syllable_id, audio: distractor.audio, correct: false });
+    if (distractor) all.push({ syllable_id: distractor.syllable_id, audio: distractor.audio, correct: false, order: -1 });
     all.sort(() => Math.random() - 0.5);
 
     const positions = pickPositions(all.length);
@@ -186,6 +188,7 @@
       f.className = 'merge-fragment';
       f.dataset.correct = c.correct ? '1' : '0';
       f.dataset.audio = c.audio;
+      f.dataset.order = String(c.order);
       f.style.left = positions[idx].left;
       f.style.top = positions[idx].top;
       f.style.animationDelay = `${idx * 0.3}s`;
@@ -294,49 +297,78 @@
   }
 
   function handleDrop(el, fragRect) {
-    if (el.dataset.correct === '1') {
-      // Correct! absorb. NO audio here — the syllable already played on pointerdown.
+    const isCorrectSyllable = el.dataset.correct === '1';
+    const fragOrder = parseInt(el.dataset.order, 10);
+
+    // ===== CASE A: correct syllable AND correct order =====
+    if (isCorrectSyllable && fragOrder === nextExpectedOrder) {
       el.classList.add('absorbed');
       trailParticles(fragRect);
 
-      // Apply fog reduction immediately, not after audio
       collectedCount++;
+      nextExpectedOrder++;
       const big = document.getElementById('bigBubble');
       ['fog-0','fog-1','fog-2','fog-3'].forEach(c => big.classList.remove(c));
       big.classList.add(`fog-${Math.min(collectedCount, 3)}`);
       big.dataset.fog = collectedCount;
 
-      // Remove fragment after absorb animation
       setTimeout(() => el.remove(), 700);
 
-      // Complete if all syllables collected
       if (collectedCount === currentWord.syllable_count) {
         setTimeout(completeWord, 1000);
+      } else {
+        // hint glow on the NEXT expected fragment (so child knows what's next)
+        setTimeout(() => {
+          const nextBtn = document.querySelector(`.merge-fragment[data-order="${nextExpectedOrder}"]`);
+          if (nextBtn) {
+            nextBtn.classList.add('hint');
+            setTimeout(() => nextBtn.classList.remove('hint'), 3500);
+          }
+        }, 800);
       }
       return;
     }
-    {
-      // Wrong fragment → wobble + support audio (the syllable itself already played on pointerdown)
+
+    // ===== CASE B: correct syllable BUT wrong order =====
+    // (e.g. dropped "תוּל" when we still need "חָ")
+    if (isCorrectSyllable && fragOrder !== nextExpectedOrder) {
       el.classList.add('wobble');
-      setTimeout(() => playAudio('support-mistake-1'), 350);
+      returnToHome(el);
+      // play order-support, then glow on the expected one
+      setTimeout(() => playAudio('support-order'), 350);
       setTimeout(() => {
-        el.classList.remove('wobble');
-        // animate back to original position
-        el.style.transition = 'left 0.5s cubic-bezier(0.34,1.56,0.64,1), top 0.5s cubic-bezier(0.34,1.56,0.64,1)';
-        // find an empty pool position
-        const POOL = [
-          { left: '6%',  top: '20%' },
-          { left: '6%',  top: '64%' },
-          { left: '82%', top: '20%' },
-          { left: '82%', top: '64%' },
-        ];
-        const used = Array.from(document.querySelectorAll('.merge-fragment')).filter(x => x !== el).map(x => `${x.style.left}|${x.style.top}`);
-        const free = POOL.find(p => !used.includes(`${p.left}|${p.top}`)) || POOL[0];
-        el.style.left = free.left;
-        el.style.top = free.top;
-        setTimeout(() => { el.style.transition = ''; }, 600);
+        const expectedBtn = document.querySelector(`.merge-fragment[data-order="${nextExpectedOrder}"]`);
+        if (expectedBtn) {
+          expectedBtn.classList.add('hint');
+          setTimeout(() => expectedBtn.classList.remove('hint'), 3500);
+        }
       }, 600);
+      return;
     }
+
+    // ===== CASE C: distractor (wrong syllable entirely) =====
+    el.classList.add('wobble');
+    returnToHome(el);
+    setTimeout(() => playAudio('support-mistake-1'), 350);
+  }
+
+  // Animate fragment back to its origin pool position
+  function returnToHome(el) {
+    setTimeout(() => {
+      el.classList.remove('wobble');
+      el.style.transition = 'left 0.5s cubic-bezier(0.34,1.56,0.64,1), top 0.5s cubic-bezier(0.34,1.56,0.64,1)';
+      const POOL = [
+        { left: '6%',  top: '20%' },
+        { left: '6%',  top: '64%' },
+        { left: '82%', top: '20%' },
+        { left: '82%', top: '64%' },
+      ];
+      const used = Array.from(document.querySelectorAll('.merge-fragment')).filter(x => x !== el).map(x => `${x.style.left}|${x.style.top}`);
+      const free = POOL.find(p => !used.includes(`${p.left}|${p.top}`)) || POOL[0];
+      el.style.left = free.left;
+      el.style.top = free.top;
+      setTimeout(() => { el.style.transition = ''; }, 600);
+    }, 600);
   }
 
   function trailParticles(fromRect) {
@@ -401,6 +433,7 @@
     currentWordIndex = (idx + WORDS.length) % WORDS.length;
     currentWord = WORDS[currentWordIndex];
     collectedCount = 0;
+    nextExpectedOrder = 0;
 
     document.getElementById('wordImg').src = currentWord.image;
     document.getElementById('pillImg').src = currentWord.image;
