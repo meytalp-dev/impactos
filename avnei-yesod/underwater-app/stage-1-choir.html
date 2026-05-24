@@ -106,12 +106,14 @@
 
   <audio id="audioPlayer" preload="auto"></audio>
 
+  <script src="js/shared/mastery.js"></script>
   <script>
   // ============================================================
   // ChoirGame — controller
   // הילדה לוחצת על בועות-מקהלה בסדר. כל לחיצה נכונה מעירה
   // את הבועה לתמיד. כשכל הנכונות ערות → מקהלה שרה!
   // ============================================================
+  const GAME_ID = 'choirGame';
 
   const AUDIO_BASE = 'assets/audio/island-01';
   const audio = document.getElementById('audioPlayer');
@@ -121,6 +123,7 @@
   let currentWord = null;
   let nextExpectedOrder = 0;
   let mistakeCount = 0;
+  let wordMistakeTotal = 0;
   let started = false;
   let acceptingClicks = false;
   let hintTimer = null;
@@ -265,6 +268,7 @@
     // CASE B: correct syllable but wrong order
     if (isCorrectSyl && c.order !== nextExpectedOrder && !isIdenticalToExpected) {
       mistakeCount++;
+      wordMistakeTotal++;
       s.classList.add('wobble');
       setTimeout(() => s.classList.remove('wobble'), 600);
       playAudio(c.audio, () => {
@@ -280,6 +284,7 @@
 
     // CASE C: distractor
     mistakeCount++;
+    wordMistakeTotal++;
     s.classList.add('wobble');
     setTimeout(() => s.classList.remove('wobble'), 600);
     playAudio(c.audio, () => {
@@ -322,6 +327,9 @@
   }
 
   function celebrate() {
+    if (window.AvneiMastery) {
+      window.AvneiMastery.recordResult(currentWord.id, GAME_ID, wordMistakeTotal);
+    }
     const noni = document.getElementById('noniImg');
     noni.src = 'assets/noni-happy.png';
     noni.classList.add('celebrating');
@@ -378,6 +386,7 @@
     currentWord = WORDS[currentWordIndex];
     nextExpectedOrder = 0;
     mistakeCount = 0;
+    wordMistakeTotal = 0;
     acceptingClicks = false;
 
     document.getElementById('wordImg').src = currentWord.image;
@@ -408,7 +417,11 @@
     }, 500);
   }
 
-  function nextWord() { loadWord(currentWordIndex + 1); }
+  function nextWord() {
+    const w = window.AvneiMastery ? window.AvneiMastery.pickWord(GAME_ID, WORDS) : null;
+    const idx = w ? WORDS.indexOf(w) : (currentWordIndex + 1);
+    loadWord(idx);
+  }
 
   async function start() {
     if (started) return;
@@ -416,7 +429,9 @@
     document.getElementById('tapToStart').classList.add('hidden');
     if (!WORDS.length) await loadWords();
     if (!WORDS.length) { console.error('failed to load words'); return; }
-    loadWord(Math.floor(Math.random() * WORDS.length));
+    const w = window.AvneiMastery ? window.AvneiMastery.pickWord(GAME_ID, WORDS) : null;
+    const idx = w ? WORDS.indexOf(w) : Math.floor(Math.random() * WORDS.length);
+    loadWord(idx);
   }
 
   document.getElementById('startBtn').addEventListener('click', start);

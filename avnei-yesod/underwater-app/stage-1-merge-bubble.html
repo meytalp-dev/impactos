@@ -102,12 +102,14 @@
 
   <audio id="audioPlayer" preload="auto"></audio>
 
+  <script src="js/shared/mastery.js"></script>
   <script>
   // ============================================================
   // MergeBubble — controller
   // הילדה גוררת בועות-הברה לבועה הגדולה. כל הברה נכונה
   // מתבהרת התמונה. כשכל ההברות נאספו = חגיגה.
   // ============================================================
+  const GAME_ID = 'mergeBubble';
 
   const AUDIO_BASE = 'assets/audio/island-01';
   const audio = document.getElementById('audioPlayer');
@@ -117,6 +119,7 @@
   let currentWord = null;
   let collectedCount = 0;
   let nextExpectedOrder = 0; // which syllable index the child must collect next (0, 1, 2...)
+  let wordMistakeTotal = 0;  // total mistakes in current word (for mastery)
   let started = false;
   let hintTimer = null;
 
@@ -351,6 +354,7 @@
     // ===== CASE B: correct syllable BUT wrong order (and not identical) =====
     // (e.g. dropped "תוּל" when we still need "חָ")
     if (isCorrectSyllable && fragOrder !== nextExpectedOrder && !isIdenticalToExpected) {
+      wordMistakeTotal++;
       el.classList.add('wobble');
       returnToHome(el);
       // play order-support, then glow on the expected one
@@ -366,6 +370,7 @@
     }
 
     // ===== CASE C: distractor (wrong syllable entirely) =====
+    wordMistakeTotal++;
     el.classList.add('wobble');
     returnToHome(el);
     setTimeout(() => playAudio('support-mistake-1'), 350);
@@ -408,6 +413,10 @@
 
   // ----- Word complete: celebrate -----
   function completeWord() {
+    if (window.AvneiMastery) {
+      window.AvneiMastery.recordResult(currentWord.id, GAME_ID, wordMistakeTotal);
+    }
+
     const noni = document.getElementById('noniImg');
     noni.src = 'assets/noni-happy.png';
     noni.classList.add('celebrating');
@@ -455,6 +464,7 @@
     currentWord = WORDS[currentWordIndex];
     collectedCount = 0;
     nextExpectedOrder = 0;
+    wordMistakeTotal = 0;
 
     document.getElementById('wordImg').src = currentWord.image;
     document.getElementById('pillImg').src = currentWord.image;
@@ -488,7 +498,9 @@
   }
 
   function nextWord() {
-    loadWord(currentWordIndex + 1);
+    const w = window.AvneiMastery ? window.AvneiMastery.pickWord(GAME_ID, WORDS) : null;
+    const idx = w ? WORDS.indexOf(w) : (currentWordIndex + 1);
+    loadWord(idx);
   }
 
   async function start() {
@@ -502,7 +514,9 @@
       console.error('failed to load words');
       return;
     }
-    loadWord(Math.floor(Math.random() * WORDS.length));
+    const w = window.AvneiMastery ? window.AvneiMastery.pickWord(GAME_ID, WORDS) : null;
+    const idx = w ? WORDS.indexOf(w) : Math.floor(Math.random() * WORDS.length);
+    loadWord(idx);
   }
 
   document.getElementById('startBtn').addEventListener('click', start);

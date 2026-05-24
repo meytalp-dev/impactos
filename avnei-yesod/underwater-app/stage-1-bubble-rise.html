@@ -456,6 +456,11 @@
 
   // ----- Word complete: surface + celebration -----
   function completeWord() {
+    // record mastery result
+    if (window.AvneiMastery) {
+      window.AvneiMastery.recordResult(currentWord.id, GAME_ID, wordMistakeTotal);
+    }
+
     const big = document.getElementById('bigBubble');
     const noni = document.getElementById('noniImg');
     const ring = document.getElementById('surfaceRing');
@@ -512,6 +517,7 @@
     currentWord = WORDS[currentWordIndex];
     currentSyllableIndex = 0;
     mistakeCount = 0;
+    wordMistakeTotal = 0;
 
     // update UI
     document.getElementById('wordImg').src = currentWord.image;
@@ -555,7 +561,9 @@
   }
 
   function nextWord() {
-    loadWord(currentWordIndex + 1);
+    const w = window.AvneiMastery ? window.AvneiMastery.pickWord(GAME_ID, WORDS) : null;
+    const idx = w ? WORDS.indexOf(w) : (currentWordIndex + 1);
+    loadWord(idx);
   }
 
   // ----- Start flow -----
@@ -572,7 +580,9 @@
       showInstruction('שגיאת טעינה — נסי לרענן');
       return;
     }
-    loadWord(Math.floor(Math.random() * WORDS.length));
+    const w = window.AvneiMastery ? window.AvneiMastery.pickWord(GAME_ID, WORDS) : null;
+    const idx = w ? WORDS.indexOf(w) : Math.floor(Math.random() * WORDS.length);
+    loadWord(idx);
   }
 
   // ----- Event wiring -----
