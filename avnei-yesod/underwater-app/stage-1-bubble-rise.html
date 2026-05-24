@@ -121,10 +121,12 @@
   <!-- ============ Audio elements ============ -->
   <audio id="audioPlayer" preload="auto"></audio>
 
+  <script src="js/shared/mastery.js"></script>
   <script>
   // ============================================================
   // BubbleRise — controller
   // ============================================================
+  const GAME_ID = 'bubbleRise';
 
   const AUDIO_BASE = 'assets/audio/island-01';
   const audio = document.getElementById('audioPlayer');
@@ -134,6 +136,7 @@
   let currentWord = null;
   let currentSyllableIndex = 0;
   let mistakeCount = 0;
+  let wordMistakeTotal = 0; // total mistakes in current word (for mastery)
   let started = false;
   let hintTimer = null;
   let demoRunning = false; // disables clicks during auto-demo
@@ -353,17 +356,19 @@
     el.style.display = 'flex';
   }
 
-  // Position bubbles around the bay, avoiding the central rise track
+  // Position bubbles in the upper half of the field, avoiding:
+  //   - the big bubble (bottom-center, large hit area)
+  //   - noni (bottom-right corner)
+  //   - mobile edge overflow (was happening with left: 78%)
+  // 6 slots, 3-column × 2-row grid. Bubble width is ~86-130px (clamp).
   function pickPositions(n) {
-    // Predefined "good" positions — sides + top, avoiding bottom-center (big bubble)
     const POOL = [
-      { left: '6%',  top: '22%' },
-      { left: '6%',  top: '52%' },
-      { left: '78%', top: '22%' },
-      { left: '78%', top: '52%' },
-      { left: '38%', top: '6%'  },
-      { left: '20%', top: '78%' },
-      { left: '64%', top: '78%' },
+      { left: '4%',  top: '6%'  },
+      { left: '38%', top: '2%'  },
+      { left: '68%', top: '6%'  },
+      { left: '4%',  top: '36%' },
+      { left: '38%', top: '32%' },
+      { left: '68%', top: '36%' },
     ];
     return POOL.slice(0, n).sort(() => Math.random() - 0.5);
   }
@@ -407,6 +412,7 @@
     // (e.g. clicked "תוּל" before "חָ")
     if (choice.correct && choice.order !== currentSyllableIndex) {
       mistakeCount++;
+      wordMistakeTotal++;
       btn.classList.add('wobble');
       setTimeout(() => btn.classList.remove('wobble'), 600);
       // play what they tapped, then remind them about order
@@ -421,6 +427,7 @@
 
     // ===== CASE C: wrong syllable (distractor) =====
     mistakeCount++;
+    wordMistakeTotal++;
     btn.classList.add('wobble', 'heard');
     setTimeout(() => btn.classList.remove('wobble'), 600);
 
