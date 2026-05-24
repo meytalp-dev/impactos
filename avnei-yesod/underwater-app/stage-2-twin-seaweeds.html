@@ -332,16 +332,23 @@
     }
   }
 
-  // playChain — רצף אודיו עם delay מותאם בין פריט לפריט (יותר מדויק מ-playSequence)
+  // playChain — רצף אודיו עם delay מותאם בין פריט לפריט.
+  // קריטי: משתמשים ב-AvneiAudio.play() שעוצרת את האודיו הקודם — כדי
+  // למנוע חפיפה עם השמעת מילה שעדיין רצה ברקע.
   function playChain(steps) {
     let i = 0;
     const next = () => {
       if (i >= steps.length) return;
       const step = steps[i++];
-      const a = new Audio('assets/audio/' + encodeURIComponent(step.key) + '.mp3');
-      a.onended  = () => setTimeout(next, step.delayAfter || 0);
-      a.onerror  = () => setTimeout(next, step.delayAfter || 0);
-      a.play().catch(() => setTimeout(next, step.delayAfter || 0));
+      AvneiAudio.play(step.key); // עוצר אוטומטית כל אודיו פעיל
+      const a = AvneiAudio.preload(step.key);
+      const onDone = () => {
+        a.removeEventListener('ended', onDone);
+        a.removeEventListener('error', onDone);
+        setTimeout(next, step.delayAfter || 0);
+      };
+      a.addEventListener('ended', onDone);
+      a.addEventListener('error', onDone);
     };
     next();
   }

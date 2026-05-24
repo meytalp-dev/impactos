@@ -285,16 +285,25 @@
     else onWrong(schoolId);
   }
 
-  // playChain — שרשור אודיו עם delay מותאם פר-פריט
+  // playChain — שרשור אודיו עם delay מותאם פר-פריט.
+  // קריטי: משתמשים ב-AvneiAudio.play() שעוצרת את האודיו הקודם (כמו המילה
+  // שמתנגנת אוטומטית בתחילת סיבוב) — כדי שלא יחפפו.
   function playChain(steps) {
     let i = 0;
     const next = () => {
       if (i >= steps.length) return;
       const step = steps[i++];
-      const a = new Audio('assets/audio/' + encodeURIComponent(step.key) + '.mp3');
-      a.onended = () => setTimeout(next, step.delayAfter || 0);
-      a.onerror = () => setTimeout(next, step.delayAfter || 0);
-      a.play().catch(() => setTimeout(next, step.delayAfter || 0));
+      // AvneiAudio.play עוצרת אוטומטית כל אודיו שמתנגן כעת
+      AvneiAudio.play(step.key);
+      // hook אל ה-cached audio של AvneiAudio כדי לזהות סיום ולחבר שלב הבא
+      const a = AvneiAudio.preload(step.key);
+      const onDone = () => {
+        a.removeEventListener('ended', onDone);
+        a.removeEventListener('error', onDone);
+        setTimeout(next, step.delayAfter || 0);
+      };
+      a.addEventListener('ended', onDone);
+      a.addEventListener('error', onDone);
     };
     next();
   }
