@@ -76,8 +76,8 @@
       </svg>
       <span>הקש/י לשמוע</span>
     </button>
-    <p>החלקים של המילה התפזרו בים.</p>
-    <p><strong>תגררו אותם לבועה הגדולה — והמילה תתבהר!</strong></p>
+    <p>בבועה הגדולה יש תמונה — אבל היא בערפל.</p>
+    <p><strong>תגררו את חלקי המילה לבועה — כל חלק יבהיר את התמונה עוד קצת!</strong></p>
     <button class="start-btn" id="startBtn">בוא/י נתחיל!</button>
   </div>
 
@@ -114,6 +114,12 @@
 
   // ----- Audio helpers -----
   function playAudio(filename, onEnd) {
+    // hard-stop any previous audio so they don't overlap
+    try {
+      audio.pause();
+      audio.currentTime = 0;
+    } catch (e) { /* ignore */ }
+    audio.onended = null; // clear stale callback before assigning
     audio.src = `${AUDIO_BASE}/${filename}.mp3`;
     audio.onended = onEnd || null;
     audio.play().catch(() => {
@@ -289,10 +295,9 @@
 
   function handleDrop(el, fragRect) {
     if (el.dataset.correct === '1') {
-      // Correct! absorb — don't wait for audio callback (in case it never fires)
+      // Correct! absorb. NO audio here — the syllable already played on pointerdown.
       el.classList.add('absorbed');
       trailParticles(fragRect);
-      playAudio(el.dataset.audio);
 
       // Apply fog reduction immediately, not after audio
       collectedCount++;
@@ -311,11 +316,9 @@
       return;
     }
     {
-      // Wrong fragment → wobble + return + audio
+      // Wrong fragment → wobble + support audio (the syllable itself already played on pointerdown)
       el.classList.add('wobble');
-      playAudio(el.dataset.audio, () => {
-        playAudio('support-mistake-1');
-      });
+      setTimeout(() => playAudio('support-mistake-1'), 350);
       setTimeout(() => {
         el.classList.remove('wobble');
         // animate back to original position
@@ -423,7 +426,7 @@
         setTimeout(() => {
           playAudio(`word-${currentWord.id}`, () => {
             buildFragments();
-            showInstruction('גָּרְרוּ אֶת הַחֲלָקִים לַבּוּעָה');
+            showInstruction('גָּרְרוּ אֶת הַחֲלָקִים — וְהַתְּמוּנָה תִּתְבָּהֵר!');
           });
         }, 500);
       }, 400);
