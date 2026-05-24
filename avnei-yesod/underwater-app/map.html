@@ -8,11 +8,16 @@
 
   <!-- ═══ First-time visitor redirect to onboarding (24.5.2026) ═══
        אם זאת כניסה ראשונה (אין רשומת onboarding ב-localStorage) — הפנייה
-       למסע הראשון. אפשר לדלג עם ?skip-onboarding=1 לבדיקה. -->
+       למסע הראשון. אפשר לדלג עם ?skip-onboarding=1 (פיילוטים) —
+       בחירה זו נשמרת בסשן הנוכחי כדי שניווט בין איים לא יקפיץ חזרה. -->
   <script>
     (function () {
       const params = new URLSearchParams(location.search);
-      if (params.get('skip-onboarding') === '1') return;
+      if (params.get('skip-onboarding') === '1') {
+        sessionStorage.setItem('avnei-yesod-skip-onboarding', '1');
+        return;
+      }
+      if (sessionStorage.getItem('avnei-yesod-skip-onboarding') === '1') return;
       if (!localStorage.getItem('avnei-yesod-onboarding')) {
         location.replace('onboarding.html');
       }
