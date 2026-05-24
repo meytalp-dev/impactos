@@ -139,13 +139,21 @@
   let demoRunning = false; // disables clicks during auto-demo
 
   // ----- Audio helpers -----
+  // Guarantees onEnd fires exactly once — on ended, error, or play-rejection.
+  // Without this, a single missing/corrupt MP3 silently freezes the whole game.
   function playAudio(filename, onEnd) {
+    let done = false;
+    const finish = () => { if (done) return; done = true; onEnd && onEnd(); };
+    audio.onended = finish;
+    audio.onerror = () => { console.warn('audio error:', filename); finish(); };
     audio.src = `${AUDIO_BASE}/${filename}.mp3`;
-    audio.onended = onEnd || null;
-    audio.play().catch(err => {
-      console.warn('audio play blocked:', err);
-      if (onEnd) setTimeout(onEnd, 800);
-    });
+    const p = audio.play();
+    if (p && p.catch) {
+      p.catch(err => {
+        console.warn('audio play blocked:', filename, err);
+        setTimeout(finish, 800);
+      });
+    }
   }
 
   function playSequence(filenames, onAllDone, gapMs = 250) {
@@ -544,11 +552,19 @@
   }
 
   // ----- Start flow -----
-  function start() {
+  async function start() {
     if (started) return;
     started = true;
     document.getElementById('tapToStart').classList.add('hidden');
-    // start with random word
+    // Guard: if init() hasn't finished loading WORDS, wait for it.
+    // Without this, tapping start before fetch completes throws and the screen freezes.
+    if (!WORDS.length) {
+      await loadWords();
+    }
+    if (!WORDS.length) {
+      showInstruction('שגיאת טעינה — נסי לרענן');
+      return;
+    }
     loadWord(Math.floor(Math.random() * WORDS.length));
   }
 

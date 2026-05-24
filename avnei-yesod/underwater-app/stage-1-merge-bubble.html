@@ -127,11 +127,15 @@
       audio.pause();
       audio.currentTime = 0;
     } catch (e) { /* ignore */ }
-    audio.onended = null; // clear stale callback before assigning
+    // Guarantees onEnd fires exactly once — on ended, error, or play-rejection.
+    let done = false;
+    const finish = () => { if (done) return; done = true; onEnd && onEnd(); };
+    audio.onended = finish;
+    audio.onerror = () => { console.warn('audio error:', filename); finish(); };
     audio.src = `${AUDIO_BASE}/${filename}.mp3`;
-    audio.onended = onEnd || null;
-    audio.play().catch(() => {
-      if (onEnd) setTimeout(onEnd, 800);
+    audio.play().catch(err => {
+      console.warn('audio play blocked:', filename, err);
+      setTimeout(finish, 800);
     });
   }
   function playSequence(filenames, onAllDone, gapMs = 350) {
@@ -485,10 +489,17 @@
     loadWord(currentWordIndex + 1);
   }
 
-  function start() {
+  async function start() {
     if (started) return;
     started = true;
     document.getElementById('tapToStart').classList.add('hidden');
+    if (!WORDS.length) {
+      await loadWords();
+    }
+    if (!WORDS.length) {
+      console.error('failed to load words');
+      return;
+    }
     loadWord(Math.floor(Math.random() * WORDS.length));
   }
 
