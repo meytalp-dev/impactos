@@ -813,6 +813,7 @@
 
   function renderAlphaBanner() {
     const bkt = state.bktSuggestion;
+    const debugInfo = buildDebugInfo();
 
     if (state.autoApplied) {
       const count = Object.keys(state.autoSuggestionsSnapshot).length;
@@ -834,7 +835,7 @@
           <div class="auto-icon">📋</div>
           <div class="auto-text">
             <strong>אין עדיין הצעה אוטומטית.</strong> ${escapeHtml(reason)}
-            כשהתלמידה תתרגל לפחות 10 פריטים באי 2 או אי 3 — המערכת תציע סימונים לרכיב זה.
+            <br>${debugInfo}
           </div>
         </div>
       `;
@@ -846,10 +847,36 @@
         <div class="auto-icon">🤖</div>
         <div class="auto-text">
           <strong>המערכת אספה ${bkt.event_count} אירועי תרגול</strong> ויכולה להציע ${suggestCount} סימונים לרכיב זה.
+          <br>${debugInfo}
           ${bkt.note ? '<br><span style="font-size:12px; opacity:0.85;">' + escapeHtml(bkt.note) + '</span>' : ''}
         </div>
         <button class="btn-apply" id="btn-apply-auto">החילי הצעה</button>
       </div>
+    `;
+  }
+
+  function buildDebugInfo() {
+    const studentId = state.currentStudent ? state.currentStudent.id : '?';
+    const currentInPicker = localStorage.getItem('avnei-yesod-current-student') || '(לא נבחרה)';
+    const bktState = window.AvneiBKT ? window.AvneiBKT.getStudentState(studentId) : null;
+    const i2 = bktState && bktState[2] ? bktState[2].attempts : 0;
+    const i3 = bktState && bktState[3] ? bktState[3].total_attempts : 0;
+    let i1 = 0;
+    try {
+      const m = JSON.parse(localStorage.getItem('avnei-yesod-island1-mastery') || '{}');
+      i1 = Object.keys(m).length;
+    } catch (e) {}
+
+    const matchIcon = currentInPicker === studentId ? '✅' : '⚠️';
+    const matchNote = currentInPicker === studentId
+      ? 'התלמידה הזו היא שמסומנת ב-picker — הדאטה אישית.'
+      : `<strong style="color:#c53030;">התלמידה ב-picker (${escapeHtml(currentInPicker)}) שונה מהתלמידה שפתחת כאן (${escapeHtml(studentId)})!</strong> משחקי הילדה במשחקונים נכתבים לתלמידה שב-picker, לא לזו שפתחת. אם רוצה לקבל הצעה — וודאי שמשחקים תחת אותה תלמידה.`;
+
+    return `
+      <span style="font-size:12px; opacity:0.85; line-height:1.7;">
+        <strong>מצב מפורט:</strong> ${matchIcon} ${matchNote}
+        <br>📊 דאטה לתלמידה זו: אי 1 = ${i1} מילים · אי 2 = ${i2} אירועי BKT · אי 3 = ${i3} אירועי BKT · <strong>סה"כ ${i1 + i2 + i3}</strong> (סף: 10)
+      </span>
     `;
   }
 
