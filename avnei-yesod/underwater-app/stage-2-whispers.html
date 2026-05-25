@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>ים השמועות · עומק הים המואר</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/whispers.css">
+</head>
+<body>
+
+  <!-- SVG defs — shared shell shape for back-of-card -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <radialGradient id="shellBackGrad" cx="35%" cy="30%" r="80%">
+        <stop offset="0%"  stop-color="#FFF9F4"/>
+        <stop offset="55%" stop-color="#FFD3D8"/>
+        <stop offset="100%" stop-color="#E27F66"/>
+      </radialGradient>
+      <symbol id="shellShape" viewBox="0 0 100 100">
+        <!-- Outer clam-shell silhouette -->
+        <path d="M 50 92
+                 C 18 92, 8 60, 14 38
+                 C 22 18, 50 8, 78 18
+                 C 96 32, 96 60, 84 78
+                 C 78 86, 64 92, 50 92 Z"
+              fill="url(#shellBackGrad)"
+              stroke="#C26A52"
+              stroke-width="2"/>
+        <!-- Radiating ribs -->
+        <g stroke="#C26A52" stroke-width="1.4" fill="none" opacity="0.55" stroke-linecap="round">
+          <path d="M 50 90 L 50 18"/>
+          <path d="M 50 90 L 32 26"/>
+          <path d="M 50 90 L 68 26"/>
+          <path d="M 50 90 L 18 46"/>
+          <path d="M 50 90 L 82 46"/>
+          <path d="M 50 90 L 22 68"/>
+          <path d="M 50 90 L 78 68"/>
+        </g>
+        <!-- Base hinge -->
+        <ellipse cx="50" cy="91" rx="9" ry="3.5" fill="#C26A52" opacity="0.7"/>
+        <!-- Tiny highlight -->
+        <ellipse cx="38" cy="34" rx="9" ry="5" fill="#FFFFFF" opacity="0.45"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <main class="whispers-scene">
+
+    <!-- Top bar -->
+    <header class="whispers-top-bar">
+      <a href="map.html" class="back-btn" aria-label="חזרה למפה">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <div class="round-counter" id="roundCounter">סיבוב 1/4</div>
+      <div style="width:44px"></div>
+    </header>
+
+    <!-- Stage area -->
+    <section class="whispers-stage">
+
+      <div class="whispers-hint-bar">
+        <div class="round-dots" id="roundDots" aria-hidden="true"></div>
+        <div class="whispers-hint-text" id="hintText">
+          בחרו שתי קונכיות שהמילה שלהן נשמעת באותו צליל בסוף
+        </div>
+        <button class="whispers-hint-speaker" id="hintSpeaker" aria-label="הקש לשמוע שוב את ההנחיה">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
+            <path d="M15.5 8.5a4 4 0 0 1 0 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+          </svg>
+          <span>הקש לשמוע שוב</span>
+        </button>
+      </div>
+
+      <!-- Shells grid — populated by JS -->
+      <div class="whispers-shells" id="shellsGrid" data-count="4" aria-label="קונכיות לזיווג"></div>
+
+      <!-- Noni in corner -->
+      <div class="whispers-noni-host" id="noniHost">
+        <div class="whispers-noni-bubble" id="noniBubble">אני אעזור!</div>
+        <img class="whispers-noni-img" id="noniImg" src="assets/noni-thinking.png" alt="נוני">
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Tap-to-start overlay -->
+  <div class="tap-to-start" id="tapToStart">
+    <h2>ים השמועות</h2>
+    <p>בקרקעית הים שוכבות קונכיות מסתוריות. כל קונכייה לוחשת מילה.<br><strong>מצאו את הזוגות שמסתיימים באותו צליל!</strong></p>
+    <button class="intro-speaker" id="introSpeaker" aria-label="שמע את ההסבר">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>הקש/י לשמוע את ההסבר</span>
+    </button>
+    <button class="start-btn" id="startBtn">בוא/י נתחיל</button>
+  </div>
+
+  <!-- Completion overlay -->
+  <div class="whispers-completion" id="completion">
+    <h2>כל הצלילים נפגשו!</h2>
+    <p>הקונכיות מצאו זו את זו — ים השמועות שקט וזוהר.</p>
+    <a href="map.html" class="btn-primary">חזרה למפה</a>
+  </div>
+
+  <!-- ===== Shared modules ===== -->
+  <script src="js/state.js"></script>
+  <script src="js/shared/audio.js"></script>
+  <script src="js/shared/event-logger.js" onerror="window.AvneiEventLogger = { log: function(){} }"></script>
+
+  <script>
+  // ============================================================
+  // ים השמועות · Whispers Memory · אי 2 P2
+  // מנגנון: memory-pair על עיצור-סוגר (closing phoneme)
+  // תואם משימה 2ב של ראמ"ה (4+/6 רף תקין)
+  // ============================================================
+
+  const ISLAND_ID = 2;
+  const GAME_ID = 'whispers';
+  const PEDAGOGY_PARAM = 'P2';
+
+  // ===== State =====
+  const state = {
+    data: null,
+    rounds: [],
+    idx: 0,
+    cards: [],       // current round cards: {word, phoneme_end, audio, flipped, matched}
+    selection: [],   // indices in state.cards (max 2)
+    mistakesInRound: 0,
+    totalMistakes: 0,
+    correctPairs: 0,
+    matchedInRound: 0,
+    busy: false,
+    sessionId: 'whp_' + Date.now(),
+  };
+
+  // ===== DOM refs =====
+  const $ = (id) => document.getElementById(id);
+  const elGrid     = $('shellsGrid');
+  const elCounter  = $('roundCounter');
+  const elDots     = $('roundDots');
+  const elHintText = $('hintText');
+  const elHintSpkr = $('hintSpeaker');
+  const elNoni     = $('noniHost');
+  const elNoniImg  = $('noniImg');
+  const elBubble   = $('noniBubble');
+
+  // ===== Utils =====
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function setNoniExpression(name) {
+    const map = {
+      idle:    'assets/noni-idle.png',
+      thinking:'assets/noni-thinking.png',
+      hint:    'assets/noni-surprised.png',
+      cheer:   'assets/noni-happy.png',
+    };
+    elNoniImg.src = map[name] || map.thinking;
+  }
+
+  function showNoniBubble(text) {
+    elBubble.textContent = text;
+    elBubble.classList.add('visible');
+    clearTimeout(showNoniBubble._t);
+    showNoniBubble._t = setTimeout(() => elBubble.classList.remove('visible'), 3000);
+  }
+
+  function hideNoniBubble() {
+    elBubble.classList.remove('visible');
+  }
+
+  function renderDots() {
+    elDots.innerHTML = '';
+    state.rounds.forEach((r, i) => {
+      const d = document.createElement('div');
+      d.className = 'round-dot';
+      if (i < state.idx) d.classList.add('correct');
+      else if (i === state.idx) d.classList.add('current');
+      elDots.appendChild(d);
+    });
+  }
+
+  function updateCounter() {
+    elCounter.textContent = `סיבוב ${state.idx + 1}/${state.rounds.length}`;
+  }
+
+  // ===== Build a round =====
+  function buildRoundCards(round) {
+    const wordsData = state.data.words;
+    const cards = round.cards.map(w => ({
+      word: w,
+      phoneme_end: wordsData[w].phoneme_end,
+      audio: wordsData[w].audio,
+      flipped: false,
+      matched: false,
+    }));
+    return shuffle(cards);
+  }
+
+  function renderRound() {
+    hideNoniBubble();
+    setNoniExpression('thinking');
+    elNoni.classList.add('pulsing');
+
+    const round = state.rounds[state.idx];
+    state.cards = buildRoundCards(round);
+    state.selection = [];
+    state.mistakesInRound = 0;
+    state.matchedInRound = 0;
+    state.busy = false;
+
+    elGrid.dataset.count = round.card_count;
+    elGrid.innerHTML = '';
+
+    state.cards.forEach((card, idx) => {
+      const cardEl = document.createElement('div');
+      cardEl.className = 'shell-card';
+      cardEl.dataset.idx = idx;
+      cardEl.style.animationDelay = (idx * 70) + 'ms';
+      cardEl.setAttribute('role', 'button');
+      cardEl.setAttribute('aria-label', `קונכייה ${idx + 1} — הקש לחשוף מילה`);
+      cardEl.innerHTML = `
+        <div class="shell-card-inner">
+          <div class="shell-face shell-face-back">
+            <svg class="shell-shape" viewBox="0 0 100 100" aria-hidden="true">
+              <use href="#shellShape"/>
+            </svg>
+          </div>
+          <div class="shell-face shell-face-front">
+            <div class="shell-word">${card.word}</div>
+          </div>
+        </div>
+      `;
+      cardEl.addEventListener('click', () => onCardTap(idx));
+      elGrid.appendChild(cardEl);
+    });
+
+    renderDots();
+    updateCounter();
+  }
+
+  function getCardEl(idx) {
+    return elGrid.querySelector(`.shell-card[data-idx="${idx}"]`);
+  }
+
+  // ===== Card tap handler =====
+  function onCardTap(idx) {
+    if (state.busy) return;
+    const card = state.cards[idx];
+    if (!card || card.matched || card.flipped) return;
+
+    AvneiAudio.unlock();
+    card.flipped = true;
+    state.selection.push(idx);
+    const el = getCardEl(idx);
+    el.classList.add('flipped');
+
+    // Play word audio
+    AvneiAudio.play(card.audio);
+
+    // If 2 cards selected — evaluate
+    if (state.selection.length === 2) {
+      state.busy = true;
+      const [i1, i2] = state.selection;
+      const c1 = state.cards[i1];
+      const c2 = state.cards[i2];
+      const isMatch = c1.phoneme_end === c2.phoneme_end;
+
+      // Wait briefly so child hears the 2 words before feedback
+      setTimeout(() => {
+        if (isMatch) handleMatch(i1, i2);
+        else handleMismatch(i1, i2);
+      }, 1100);
+    }
+  }
+
+  // ===== Match (correct pair) =====
+  function handleMatch(i1, i2) {
+    const c1 = state.cards[i1];
+    const c2 = state.cards[i2];
+    c1.matched = true; c2.matched = true;
+    getCardEl(i1).classList.add('matched');
+    getCardEl(i2).classList.add('matched');
+
+    setNoniExpression('cheer');
+    elNoni.classList.remove('pulsing');
+    showNoniBubble('יפה! אותו צליל בסוף!');
+
+    // Feedback audio: "מצאתם!" → phoneme-end-X
+    const phonemeKey = state.data.phoneme_end_audio[c1.phoneme_end];
+    playChain([
+      { key: 'whispers-feedback-correct-pair', delayAfter: 350 },
+      { key: phonemeKey, delayAfter: 0 },
+    ]);
+
+    spawnGlowParticles(getCardEl(i1));
+    spawnGlowParticles(getCardEl(i2));
+
+    state.matchedInRound++;
+    state.correctPairs++;
+    state.selection = [];
+
+    logEvent('pair_correct', {
+      is_correct: true,
+      pair: [c1.word, c2.word],
+      phoneme_end: c1.phoneme_end,
+      mistakes_in_round: state.mistakesInRound,
+    });
+
+    const round = state.rounds[state.idx];
+    if (state.matchedInRound >= round.pair_count) {
+      // round complete
+      setTimeout(advanceRound, 2200);
+    } else {
+      // continue this round
+      setTimeout(() => {
+        state.busy = false;
+        setNoniExpression('thinking');
+        elNoni.classList.add('pulsing');
+      }, 1900);
+    }
+  }
+
+  // ===== Mismatch (wrong pair) =====
+  function handleMismatch(i1, i2) {
+    state.mistakesInRound++;
+    state.totalMistakes++;
+    const c1 = state.cards[i1];
+    const c2 = state.cards[i2];
+
+    const el1 = getCardEl(i1);
+    const el2 = getCardEl(i2);
+    el1.classList.add('wrong');
+    el2.classList.add('wrong');
+
+    setNoniExpression('hint');
+    elNoni.classList.add('pulsing');
+
+    logEvent('pair_wrong', {
+      is_correct: false,
+      pair: [c1.word, c2.word],
+      phonemes: [c1.phoneme_end, c2.phoneme_end],
+      mistakes_in_round: state.mistakesInRound,
+    });
+
+    if (state.mistakesInRound === 1) {
+      // Mistake 1: gentle shake + revert
+      showNoniBubble('אופס, צלילי הסוף שונים. נסי שוב!');
+      setTimeout(() => revertSelection(), 1500);
+    } else if (state.mistakesInRound === 2) {
+      // Mistake 2: play the closing phoneme of each, then revert
+      showNoniBubble('הקשיבי לצליל בסוף של כל מילה');
+      AvneiAudio.play('whispers-hint-listen-to-ends');
+      const key1 = state.data.phoneme_end_audio[c1.phoneme_end];
+      const key2 = state.data.phoneme_end_audio[c2.phoneme_end];
+      setTimeout(() => {
+        playChain([
+          { key: key1, delayAfter: 800 },
+          { key: key2, delayAfter: 0 },
+        ]);
+      }, 1400);
+      setTimeout(() => revertSelection(), 4200);
+    } else {
+      // Mistake 3+: revert + glow the unmatched pair the player should consider
+      showNoniBubble('בואי נראה — אלו אותו צליל בסוף');
+      AvneiAudio.play('whispers-feedback-try-again');
+      highlightMatchingPair();
+      setTimeout(() => {
+        revertSelection();
+        removeAllHints();
+      }, 3200);
+    }
+  }
+
+  function revertSelection() {
+    state.selection.forEach(idx => {
+      const c = state.cards[idx];
+      if (c.matched) return;
+      c.flipped = false;
+      const el = getCardEl(idx);
+      el.classList.remove('flipped', 'wrong');
+    });
+    state.selection = [];
+    state.busy = false;
+    setNoniExpression('thinking');
+  }
+
+  function highlightMatchingPair() {
+    // Find any unmatched pair sharing a closing phoneme — glow them as a hint
+    const byPhoneme = {};
+    state.cards.forEach((c, idx) => {
+      if (c.matched) return;
+      (byPhoneme[c.phoneme_end] = byPhoneme[c.phoneme_end] || []).push(idx);
+    });
+    for (const p in byPhoneme) {
+      const idxs = byPhoneme[p];
+      if (idxs.length >= 2) {
+        getCardEl(idxs[0]).classList.add('hint-glow');
+        getCardEl(idxs[1]).classList.add('hint-glow');
+        return;
+      }
+    }
+  }
+
+  function removeAllHints() {
+    elGrid.querySelectorAll('.shell-card.hint-glow').forEach(el => el.classList.remove('hint-glow'));
+  }
+
+  // ===== Audio chain (sequential MP3 with delays) =====
+  function playChain(steps) {
+    let i = 0;
+    const next = () => {
+      if (i >= steps.length) return;
+      const step = steps[i++];
+      if (!step.key) { setTimeout(next, step.delayAfter || 0); return; }
+      AvneiAudio.play(step.key);
+      const a = AvneiAudio.preload(step.key);
+      const onDone = () => {
+        a.removeEventListener('ended', onDone);
+        a.removeEventListener('error', onDone);
+        setTimeout(next, step.delayAfter || 0);
+      };
+      a.addEventListener('ended', onDone);
+      a.addEventListener('error', onDone);
+    };
+    next();
+  }
+
+  // ===== Particles =====
+  function spawnGlowParticles(cardEl) {
+    if (!cardEl) return;
+    const rect = cardEl.getBoundingClientRect();
+    for (let i = 0; i < 5; i++) {
+      const p = document.createElement('div');
+      p.className = 'glow-particle';
+      const x = rect.left + rect.width * (0.25 + Math.random() * 0.5);
+      const y = rect.top + rect.height * (0.45 + Math.random() * 0.3);
+      p.style.left = x + 'px';
+      p.style.top = y + 'px';
+      p.style.animationDelay = (Math.random() * 0.2) + 's';
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 2500);
+    }
+  }
+
+  // ===== Confetti =====
+  function spawnConfetti(count) {
+    const container = document.getElementById('confettiLayer') || (() => {
+      const c = document.createElement('div');
+      c.id = 'confettiLayer';
+      c.className = 'confetti-layer';
+      document.body.appendChild(c);
+      return c;
+    })();
+    const colors = ['#FFF7C9', '#B8F2CF', '#A8E8FF', '#FFA98D', '#D9D2FF'];
+    for (let i = 0; i < count; i++) {
+      const piece = document.createElement('span');
+      piece.className = 'confetti-piece';
+      piece.style.left = Math.random() * 100 + 'vw';
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.animationDelay = (Math.random() * 0.8) + 's';
+      piece.style.animationDuration = (2.4 + Math.random() * 2.2) + 's';
+      piece.style.width = (6 + Math.random() * 8) + 'px';
+      piece.style.height = (10 + Math.random() * 14) + 'px';
+      piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+      container.appendChild(piece);
+      setTimeout(() => piece.remove(), 5500);
+    }
+  }
+
+  // ===== Round flow =====
+  function advanceRound() {
+    state.idx++;
+    if (state.idx >= state.rounds.length) {
+      finishGame();
+      return;
+    }
+    renderRound();
+  }
+
+  function finishGame() {
+    setNoniExpression('cheer');
+    elNoni.classList.remove('pulsing');
+    AvneiAudio.play('whispers-finale-complete');
+    spawnConfetti(60);
+
+    logEvent('game_complete', {
+      correct_pairs: state.correctPairs,
+      total_mistakes: state.totalMistakes,
+      total_rounds: state.rounds.length,
+    });
+
+    markQuestCompleted();
+
+    setTimeout(() => {
+      $('completion').classList.add('show');
+    }, 1600);
+  }
+
+  function markQuestCompleted() {
+    try {
+      const key = 'island2-quests:completed';
+      const completed = JSON.parse(localStorage.getItem(key) || '[]');
+      if (!completed.includes(GAME_ID)) {
+        completed.push(GAME_ID);
+        localStorage.setItem(key, JSON.stringify(completed));
+      }
+    } catch (e) { /* fail-safe */ }
+  }
+
+  // ===== Event logging =====
+  function logEvent(eventType, payload) {
+    try {
+      if (window.AvneiEventLogger && AvneiEventLogger.log) {
+        AvneiEventLogger.log({
+          session_id: state.sessionId,
+          activity_type: GAME_ID,
+          primary_island: ISLAND_ID,
+          pedagogy_param: PEDAGOGY_PARAM,
+          rama_task_alignment: 2,
+          peima_target: 1,
+          event_type: eventType,
+          round_id: state.rounds[state.idx]?.id,
+          ...payload,
+        });
+      }
+    } catch (e) { /* fail-safe */ }
+  }
+
+  // ===== Hint speaker button =====
+  elHintSpkr.addEventListener('click', () => {
+    AvneiAudio.unlock();
+    AvneiAudio.play('whispers-question-find-pairs');
+  });
+
+  // ===== Intro speaker =====
+  document.getElementById('introSpeaker').addEventListener('click', () => {
+    AvneiAudio.unlock();
+    const btn = document.getElementById('introSpeaker');
+    btn.classList.add('playing');
+    AvneiAudio.playSequence(['intro-whispers', 'intro-whispers-mission'], 800);
+    setTimeout(() => btn.classList.remove('playing'), 12000);
+  });
+
+  // ===== Load and start =====
+  async function loadAndStart() {
+    try {
+      const res = await fetch('data/island-02-whispers.json');
+      state.data = await res.json();
+      state.rounds = state.data.rounds;
+      renderRound();
+    } catch (e) {
+      console.error('Failed to load Whispers data:', e);
+    }
+  }
+
+  document.getElementById('startBtn').addEventListener('click', async () => {
+    AvneiAudio.unlock();
+    document.getElementById('tapToStart').classList.add('hidden');
+    await loadAndStart();
+  });
+
+  // ===== Reset support =====
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('reset') === '1') {
+    localStorage.removeItem('island2-quests:completed');
+    console.log('Island 2 whispers quest progress reset.');
+  }
+
+  </script>
+
+</body>
+</html>
