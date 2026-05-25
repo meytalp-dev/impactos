@@ -344,10 +344,127 @@ export const AssessmentsStore = {
   },
 };
 
+// ════════════════════════════════════════════════════════════════
+// suggestFromBKT — הצעה אוטומטית לרכיב 2 בלבד (גישה היברידית)
+// ════════════════════════════════════════════════════════════════
+//
+// קולן ממליצה על 3 כלי הערכה: שיח דבור, מבדק ראמ"ה (משימות 1-2), קריאה דיאלוגית.
+// מתוכם — רק "משימות 1-2 ממבדק ראמ"ה" (אותיות + פונולוגיה) ניתנות לדגימה אוטומטית
+// דרך משחקוני אי 2 + אי 3. שיח דבור וקריאה דיאלוגית דורשים תצפית של המורה.
+//
+// לכן: המערכת מציעה רק לרכיב 2 (ידע אלפביתי). רכיבים 1 (תקשורתית) ו-3 (ספר)
+// תמיד נשארים למילוי ידני של המורה.
+//
+// סף הצעה: 10+ אירועי תרגול באי 2 או אי 3 (תואם ל-Confidence Yellow ב-architecture-mvp).
+//
+// הערה אופרציונלית: ה-event-logger כותב כרגע כל אירוע ל-student_id קבוע = 'local'.
+// בעתיד (משימה E.18 — sync ל-Sheet) ייווצר קישור בין StudentsStore ל-events.
+// בינתיים — אם studentId מועבר אבל אין לו state ב-BKT, מנסה fallback ל-'local'.
+
+/**
+ * מציע סימונים אוטומטיים לרכיב 2 (ידע אלפביתי) על-סמך נתוני BKT + sub-BKT.
+ *
+ * @param {string} studentId - id התלמידה ב-StudentsStore (או 'local' לדמו)
+ * @returns {{
+ *   available: boolean,
+ *   suggestions?: Object<string, 1|2|3|4>,  // observation_id → profile_id
+ *   evidence?: Object<string, string>,       // observation_id → הסבר טקסטואלי
+ *   event_count?: number,
+ *   reason?: string,  // אם !available — למה
+ *   source_student_id?: string,
+ *   note?: string,
+ * }}
+ */
+export function suggestFromBKT(studentId) {
+  if (typeof window === 'undefined' || !window.AvneiBKT) {
+    return { available: false, reason: 'מנוע BKT לא נטען (יזמין בעתיד).' };
+  }
+
+  // Try the student's own id first; fallback to 'local' (current state of event-logger).
+  let sourceId = studentId;
+  let state = window.AvneiBKT.getStudentState(sourceId);
+  let hasData = state && (state[2] || state[3]);
+  if (!hasData && studentId !== 'local') {
+    sourceId = 'local';
+    state = window.AvneiBKT.getStudentState(sourceId);
+    hasData = state && (state[2] || state[3]);
+  }
+
+  const i2 = state && state[2];
+  const i3 = state && state[3];
+  const i2Attempts = (i2 && i2.attempts) || 0;
+  const i3Attempts = (i3 && i3.total_attempts) || 0;
+  const totalAttempts = i2Attempts + i3Attempts;
+
+  if (totalAttempts < 10) {
+    return {
+      available: false,
+      reason: `נאספו ${totalAttempts} אירועי תרגול עד כה (נדרשים 10+ כדי להציע).`,
+      event_count: totalAttempts,
+      source_student_id: sourceId,
+    };
+  }
+
+  const suggestions = {};
+  const evidence = {};
+
+  // alpha_1 — מודעות פונולוגית מאי 2 (BKT aggregate)
+  if (i2 && i2.attempts >= 5) {
+    const p = i2.pKnown;
+    if (p >= 0.85) suggestions.alpha_1 = 1;
+    else if (p >= 0.65) suggestions.alpha_1 = 2;
+    else if (p >= 0.40) suggestions.alpha_1 = 3;
+    // p < 0.40 → לא מציעים (אין תיאור פרופיל 4 לשורה זו במקור)
+    if (suggestions.alpha_1) {
+      evidence.alpha_1 = `BKT אי 2 = ${p.toFixed(2)} (${i2.attempts} ניסיונות)`;
+    }
+  }
+
+  // alpha_2 — ידע אותיות מ-Sub-BKT פר אות באי 3
+  if (i3 && i3.per_letter) {
+    const letters = Object.entries(i3.per_letter);
+    const practiced = letters.filter(([, st]) => st.attempts >= 3);
+    if (practiced.length >= 3) {
+      const known = practiced.filter(([, st]) => st.pKnown >= 0.70);
+      const ratio = known.length / practiced.length;
+      if (ratio >= 0.90) suggestions.alpha_2 = 1;
+      else if (ratio >= 0.65) suggestions.alpha_2 = 2;
+      else if (ratio >= 0.30) suggestions.alpha_2 = 3;
+      else suggestions.alpha_2 = 4;
+      evidence.alpha_2 = `${known.length}/${practiced.length} אותיות מתורגלות שולטת (BKT ≥ 0.70). הערה: רק 5 אותיות פעילות באי 3 כיום (מ/ק/ב/ר/ת) — היחס מתבסס עליהן בלבד עד שתבנה תבנית גנרית.`;
+    }
+  }
+
+  // alpha_3 — קשרי אות-צליל מ-aggregate אי 3
+  if (i3 && i3.total_attempts >= 5) {
+    const p = i3.aggregate_pKnown;
+    if (p >= 0.85) suggestions.alpha_3 = 1;
+    else if (p >= 0.55) suggestions.alpha_3 = 2;
+    // p < 0.55 → לא מציעים (טווח לא ברור בין 2 ל-3 במקור)
+    if (suggestions.alpha_3) {
+      evidence.alpha_3 = `BKT אי 3 (aggregate) = ${p.toFixed(2)} (${i3.total_attempts} ניסיונות)`;
+    }
+  }
+
+  // alpha_4 (ניצני קריאה) ו-alpha_5 (כתיב פונטי) לא ניתנים למדידה ממשחקוני אי 1-3 בלבד.
+  // נשארים תמיד למילוי ידני.
+
+  return {
+    available: true,
+    suggestions,
+    evidence,
+    event_count: totalAttempts,
+    source_student_id: sourceId,
+    note: sourceId === 'local' && sourceId !== studentId
+      ? 'הצעה זו מבוססת על דאטה מסשן ה-demo הכללי (\'local\') כי עוד אין קישור פר-תלמידה לאירועים. ייפתר במשימה E.18.'
+      : 'המערכת מציעה רק לרכיב "ידע אלפביתי". רכיבי שיח דבור ומפגש עם ספר דורשים תצפית של המורה.',
+  };
+}
+
 // Window-attached for non-module consumers (consistency with event-logger.js style)
 if (typeof window !== 'undefined') {
   window.AvneiProfileClassifier = {
     PROFILES, COMPONENTS, OBSERVATIONS,
-    classifyProfile, StudentsStore, AssessmentsStore,
+    classifyProfile, suggestFromBKT, StudentsStore, AssessmentsStore,
   };
 }

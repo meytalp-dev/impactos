@@ -210,6 +210,74 @@
   .obs-option.empty:hover { background: #f7fafc; border-color: #e2e8f0; }
   .obs-option .empty-note { font-size: 12px; font-style: italic; }
 
+  /* ─── Auto suggestion (BKT-based, רכיב 2 בלבד) ─── */
+  .auto-banner {
+    background: linear-gradient(135deg, #fefcbf 0%, #faf089 100%);
+    border-right: 4px solid #d69e2e;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 0 24px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .auto-banner .auto-icon { font-size: 28px; }
+  .auto-banner .auto-text { flex: 1; min-width: 200px; font-size: 14px; color: #5f370e; }
+  .auto-banner .auto-text strong { color: #744210; }
+  .auto-banner .btn-apply {
+    background: #d69e2e; color: white;
+    padding: 10px 18px; border: none; border-radius: 8px;
+    font-family: inherit; font-weight: 700; cursor: pointer; font-size: 14px;
+  }
+  .auto-banner .btn-apply:hover { background: #b7791f; }
+  .auto-banner.applied {
+    background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
+    border-right-color: #38a169;
+  }
+  .auto-banner.applied .auto-text { color: #22543d; }
+  .auto-banner.unavailable {
+    background: #f7fafc;
+    border-right-color: #cbd5e0;
+  }
+  .auto-banner.unavailable .auto-text { color: #4a5568; }
+
+  .obs-option.auto-suggested {
+    border-color: #d69e2e;
+    background: #fefcbf;
+  }
+  .obs-option.auto-suggested.selected {
+    border-color: #38a169;
+    background: #c6f6d5;
+  }
+  .auto-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    background: #d69e2e;
+    color: white;
+    padding: 1px 6px;
+    border-radius: 5px;
+    margin-right: 4px;
+  }
+  .obs-label-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .obs-label-row .obs-label { margin-bottom: 0; }
+  .obs-evidence {
+    font-size: 12px;
+    color: #744210;
+    background: #fefcbf;
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+
   /* ─── Free notes ─── */
   .notes-section textarea {
     width: 100%;
@@ -471,6 +539,12 @@
         סמני בכל שורה את התיאור שמתאים ביותר לתלמידה <strong id="rubric-name"></strong>.
         אפשר לדלג על שורות שעוד לא ראית את ההתנהגות הזו. בסיום — לחצי "חשבי פרופיל מומלץ".
       </p>
+      <p class="helper" style="background:#fefcbf; padding:10px 14px; border-radius:8px; border-right:3px solid #d69e2e; margin-top:10px;">
+        🤖 <strong>הצעה אוטומטית — רכיב 2 (ידע אלפביתי) בלבד.</strong>
+        כאשר התלמידה כבר תרגלה במערכת (10+ פריטים), המערכת תציע סימונים לרכיב זה על-סמך נתוני BKT.
+        רכיבי <strong>כשירות תקשורתית</strong> ו-<strong>מפגש עם ספר</strong> תמיד נשארים למילוי שלך —
+        הם דורשים תצפית של המורה ולא ניתנים למדידה אוטומטית.
+      </p>
     </div>
 
     <div id="components-container"><!-- 3 components render here --></div>
@@ -546,7 +620,7 @@
 <script type="module">
   import {
     PROFILES, COMPONENTS, OBSERVATIONS,
-    classifyProfile, StudentsStore, AssessmentsStore,
+    classifyProfile, suggestFromBKT, StudentsStore, AssessmentsStore,
   } from '../underwater-app/js/shared/profile-classifier.js';
 
   // ════════════ State ════════════
@@ -555,6 +629,9 @@
     observations: {},        // { obs_id: 1|2|3|4 }
     suggestion: null,        // result of classifyProfile()
     teacherChoice: null,     // 1|2|3|4 — locked when teacher clicks a decision button
+    bktSuggestion: null,     // result of suggestFromBKT() — for component 2 only
+    autoApplied: false,      // true after teacher clicks "החל הצעה"
+    autoSuggestionsSnapshot: {}, // {obs_id: profile_id} as suggested by BKT (for override tracking)
   };
 
   // ════════════ Screen switching ════════════
@@ -620,6 +697,9 @@
     state.observations = {};
     state.suggestion = null;
     state.teacherChoice = null;
+    state.autoApplied = false;
+    state.autoSuggestionsSnapshot = {};
+    state.bktSuggestion = suggestFromBKT(studentId);
 
     document.getElementById('rubric-name').textContent = state.currentStudent.name;
     document.getElementById('action-bar-name').textContent = state.currentStudent.name;
@@ -633,12 +713,23 @@
   function renderComponents() {
     const container = document.getElementById('components-container');
     const componentKeys = ['comm', 'alpha', 'book'];
+    const bkt = state.bktSuggestion;
+    const autoSuggestionsByObs = (bkt && bkt.available) ? bkt.suggestions : {};
 
     container.innerHTML = componentKeys.map(key => {
       const comp = COMPONENTS[key];
       const obsForComp = OBSERVATIONS.filter(o => o.component === key);
 
       const obsHtml = obsForComp.map(obs => {
+        const autoSug = autoSuggestionsByObs[obs.id];
+        const evidence = (bkt && bkt.evidence && bkt.evidence[obs.id]) || null;
+        const evidenceHtml = (state.autoApplied && evidence)
+          ? `<div class="obs-evidence">🤖 ${evidence}</div>`
+          : '';
+        const autoTag = (state.autoApplied && autoSug)
+          ? '<span class="auto-tag">הצעת המערכת</span>'
+          : '';
+
         const optsHtml = [1, 2, 3, 4].map(profileId => {
           const desc = obs.descriptions[profileId];
           if (desc === null) {
@@ -649,8 +740,11 @@
               </div>
             `;
           }
+          const isAutoSuggested = state.autoApplied && autoSug === profileId;
+          const classes = ['obs-option'];
+          if (isAutoSuggested) classes.push('auto-suggested');
           return `
-            <label class="obs-option" data-obs="${obs.id}" data-value="${profileId}">
+            <label class="${classes.join(' ')}" data-obs="${obs.id}" data-value="${profileId}">
               <input type="radio" name="${obs.id}" value="${profileId}">
               <span class="opt-tag t${profileId}">${PROFILES[profileId].name_he}</span>
               <div class="opt-desc">${desc}</div>
@@ -660,11 +754,21 @@
 
         return `
           <div class="observation">
-            <div class="obs-label">${obs.label}</div>
+            <div class="obs-label-row">
+              <div class="obs-label">${obs.label}</div>
+              ${autoTag}
+            </div>
+            ${evidenceHtml}
             <div class="obs-options">${optsHtml}</div>
           </div>
         `;
       }).join('');
+
+      // Banner for component 2 (alpha) only — based on bkt availability
+      let bannerHtml = '';
+      if (key === 'alpha') {
+        bannerHtml = renderAlphaBanner();
+      }
 
       return `
         <div class="component">
@@ -672,7 +776,10 @@
             <h3>${comp.name_he}</h3>
             <div class="comp-desc">${comp.description_he}</div>
           </div>
-          <div class="component-body">${obsHtml}</div>
+          <div class="component-body">
+            ${bannerHtml}
+            ${obsHtml}
+          </div>
         </div>
       `;
     }).join('');
@@ -695,6 +802,77 @@
         }
         updateProgress();
       });
+    });
+
+    // Attach "apply auto suggestion" handler if banner exists
+    const applyBtn = container.querySelector('#btn-apply-auto');
+    if (applyBtn) {
+      applyBtn.addEventListener('click', applyAutoSuggestion);
+    }
+  }
+
+  function renderAlphaBanner() {
+    const bkt = state.bktSuggestion;
+
+    if (state.autoApplied) {
+      const count = Object.keys(state.autoSuggestionsSnapshot).length;
+      return `
+        <div class="auto-banner applied">
+          <div class="auto-icon">✓</div>
+          <div class="auto-text">
+            <strong>הוחלו ${count} סימונים אוטומטיים</strong> לרכיב זה. עברי על כל שורה ושני אם משהו לא מתאים לתלמידה.
+            הסבר ההצעות מופיע מעל כל שורה.
+          </div>
+        </div>
+      `;
+    }
+
+    if (!bkt || !bkt.available) {
+      const reason = bkt ? bkt.reason : 'מנוע BKT לא זמין.';
+      return `
+        <div class="auto-banner unavailable">
+          <div class="auto-icon">📋</div>
+          <div class="auto-text">
+            <strong>אין עדיין הצעה אוטומטית.</strong> ${escapeHtml(reason)}
+            כשהתלמידה תתרגל לפחות 10 פריטים באי 2 או אי 3 — המערכת תציע סימונים לרכיב זה.
+          </div>
+        </div>
+      `;
+    }
+
+    const suggestCount = Object.keys(bkt.suggestions).length;
+    return `
+      <div class="auto-banner">
+        <div class="auto-icon">🤖</div>
+        <div class="auto-text">
+          <strong>המערכת אספה ${bkt.event_count} אירועי תרגול</strong> ויכולה להציע ${suggestCount} סימונים לרכיב זה.
+          ${bkt.note ? '<br><span style="font-size:12px; opacity:0.85;">' + escapeHtml(bkt.note) + '</span>' : ''}
+        </div>
+        <button class="btn-apply" id="btn-apply-auto">החילי הצעה</button>
+      </div>
+    `;
+  }
+
+  function applyAutoSuggestion() {
+    const bkt = state.bktSuggestion;
+    if (!bkt || !bkt.available) return;
+
+    // Apply each suggestion to state.observations (only if not already set by teacher)
+    for (const [obsId, profileId] of Object.entries(bkt.suggestions)) {
+      if (!state.observations[obsId]) {
+        state.observations[obsId] = profileId;
+      }
+      state.autoSuggestionsSnapshot[obsId] = profileId;
+    }
+    state.autoApplied = true;
+    renderComponents();
+    // Mark selected options visually after re-render
+    requestAnimationFrame(() => {
+      for (const [obsId, profileId] of Object.entries(state.observations)) {
+        const opt = document.querySelector(`[data-obs="${obsId}"][data-value="${profileId}"]`);
+        if (opt) opt.classList.add('selected');
+      }
+      updateProgress();
     });
   }
 
@@ -805,6 +983,15 @@
     const notes = document.getElementById('rubric-notes').value.trim();
     const isOverride = state.teacherChoice !== state.suggestion.profile;
 
+    // Track per-row overrides of BKT suggestions (for future tuning of the classifier)
+    const rowOverrides = {};
+    for (const [obsId, suggestedProfile] of Object.entries(state.autoSuggestionsSnapshot)) {
+      const finalValue = state.observations[obsId];
+      if (finalValue !== suggestedProfile) {
+        rowOverrides[obsId] = { auto: suggestedProfile, teacher: finalValue || null };
+      }
+    }
+
     AssessmentsStore.save(state.currentStudent.id, {
       observations: { ...state.observations },
       auto_suggestion: state.suggestion.profile,
@@ -815,6 +1002,10 @@
       counts: state.suggestion.counts,
       total_observed: state.suggestion.total_observed,
       notes: notes || null,
+      bkt_suggestions_applied: state.autoApplied ? state.autoSuggestionsSnapshot : null,
+      bkt_evidence: state.autoApplied && state.bktSuggestion ? state.bktSuggestion.evidence : null,
+      bkt_event_count: state.bktSuggestion ? state.bktSuggestion.event_count : null,
+      row_overrides: Object.keys(rowOverrides).length > 0 ? rowOverrides : null,
     });
 
     StudentsStore.updateProfile(state.currentStudent.id, state.teacherChoice);
