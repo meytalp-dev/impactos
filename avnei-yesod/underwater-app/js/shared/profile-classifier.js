@@ -380,14 +380,19 @@ export function suggestFromBKT(studentId) {
     return { available: false, reason: 'מנוע BKT לא נטען (יזמין בעתיד).' };
   }
 
-  // Try the student's own id first; fallback to 'local' (current state of event-logger).
-  let sourceId = studentId;
-  let state = window.AvneiBKT.getStudentState(sourceId);
-  let hasData = state && (state[2] || state[3]);
-  if (!hasData && studentId !== 'local') {
-    sourceId = 'local';
-    state = window.AvneiBKT.getStudentState(sourceId);
-    hasData = state && (state[2] || state[3]);
+  // קוראים רק את ה-state האישי של התלמידה.
+  // (לאחר A0.1 — event-logger כותב לפי avnei-yesod-current-student, אז אם יש דאטה היא אישית).
+  // 'local' = רק למצב דמו/אורחת כשאין picker.
+  const sourceId = studentId;
+  const state = window.AvneiBKT.getStudentState(sourceId);
+  const hasData = state && (state[2] || state[3]);
+  if (!hasData) {
+    return {
+      available: false,
+      reason: 'התלמידה עוד לא תרגלה במערכת (אין נתוני BKT אישיים).',
+      event_count: 0,
+      source_student_id: sourceId,
+    };
   }
 
   const i2 = state && state[2];
@@ -455,9 +460,7 @@ export function suggestFromBKT(studentId) {
     evidence,
     event_count: totalAttempts,
     source_student_id: sourceId,
-    note: sourceId === 'local' && sourceId !== studentId
-      ? 'הצעה זו מבוססת על דאטה מסשן ה-demo הכללי (\'local\') כי עוד אין קישור פר-תלמידה לאירועים. ייפתר במשימה E.18.'
-      : 'המערכת מציעה רק לרכיב "ידע אלפביתי". רכיבי שיח דבור ומפגש עם ספר דורשים תצפית של המורה.',
+    note: 'המערכת מציעה רק לרכיב "ידע אלפביתי". רכיבי שיח דבור ומפגש עם ספר דורשים תצפית של המורה.',
   };
 }
 

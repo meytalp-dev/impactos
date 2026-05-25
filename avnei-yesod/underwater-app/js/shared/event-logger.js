@@ -8,8 +8,19 @@ window.AvneiEventLogger = (function() {
 
   // session_id נוצר פעם אחת בטעינת הדף
   const SESSION_ID = 'sess-' + Date.now();
-  const STUDENT_ID = 'local';  // ב-pilot להחליף ל-real ID
   const ISLAND_ID_CURRENT = 3;
+
+  // student_id דינמי — נקרא מ-localStorage שנכתב על-ידי student-picker.html.
+  // אם אין — נופל ל-'local' (תאימות לאחור + מצב דמו).
+  // עודכן 26.5.2026 בעקבות A0.1 — בלי זה אי אפשר לחבר נתונים פר תלמידה.
+  const CURRENT_STUDENT_KEY = 'avnei-yesod-current-student';
+  function getStudentId() {
+    try {
+      return localStorage.getItem(CURRENT_STUDENT_KEY) || 'local';
+    } catch (e) {
+      return 'local';
+    }
+  }
 
   // מיפוי activity → primary_island_id (לפי תוצאות שאלה פדגוגית, 23.5.2026)
   // מבוסס על 22-islands-validated + pedagogy-verification (מקורות פנימיים מאומתים)
@@ -48,7 +59,7 @@ window.AvneiEventLogger = (function() {
   function logActivityResult(result) {
     const activity = result.activity_type;
     const evt = {
-      student_id:           STUDENT_ID,
+      student_id:           getStudentId(),
       session_id:           SESSION_ID,
       island_id_current:    ISLAND_ID_CURRENT,
       activity_type:        activity,

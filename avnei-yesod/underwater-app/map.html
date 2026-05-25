@@ -6,17 +6,39 @@
   <meta name="theme-color" content="#A8E8FF">
   <title>המפה · עומק הים המואר</title>
 
-  <!-- ═══ First-time visitor redirect to onboarding (24.5.2026) ═══
-       אם זאת כניסה ראשונה (אין רשומת onboarding ב-localStorage) — הפנייה
-       למסע הראשון. אפשר לדלג עם ?skip-onboarding=1 (פיילוטים) —
-       בחירה זו נשמרת בסשן הנוכחי כדי שניווט בין איים לא יקפיץ חזרה. -->
+  <!-- ═══ Entry flow (24.5.2026 + עודכן A0.1 — 26.5.2026) ═══
+       סדר הכניסה: student-picker → onboarding (פעם ראשונה) → map.
+       - אם אין current-student מוגדר → מפנה לבחירת תלמידה.
+         (חוץ מ-?skip-picker=1 או ?guest=1 לדמו/פיילוט).
+       - אם זאת כניסה ראשונה של אותה תלמידה → מפנה ל-onboarding.html (priors רכים).
+       - אחרת — נשאר במפה.
+       בחירות נשמרות ב-sessionStorage כדי שניווט בין איים לא יקפיץ חזרה. -->
   <script>
     (function () {
       const params = new URLSearchParams(location.search);
+
+      // אפשרות דמו: ?guest=1 → מתעדף 'local' ומדלג על picker
+      if (params.get('guest') === '1') {
+        localStorage.setItem('avnei-yesod-current-student', 'local');
+      }
+      // אפשרות פיילוט: ?skip-picker=1 → מאפשר להישאר ללא בחירה
+      if (params.get('skip-picker') === '1') {
+        sessionStorage.setItem('avnei-yesod-skip-picker', '1');
+      }
+      // אפשרות פיילוט: ?skip-onboarding=1 → מדלג על המסע
       if (params.get('skip-onboarding') === '1') {
         sessionStorage.setItem('avnei-yesod-skip-onboarding', '1');
+      }
+
+      // Step 1: דורש בחירת תלמידה
+      const hasStudent = !!localStorage.getItem('avnei-yesod-current-student');
+      const skipPicker = sessionStorage.getItem('avnei-yesod-skip-picker') === '1';
+      if (!hasStudent && !skipPicker) {
+        location.replace('student-picker.html?return=map.html');
         return;
       }
+
+      // Step 2: כניסה ראשונה של אותה תלמידה → המסע הראשון בים
       if (sessionStorage.getItem('avnei-yesod-skip-onboarding') === '1') return;
       if (!localStorage.getItem('avnei-yesod-onboarding')) {
         location.replace('onboarding.html');
@@ -393,8 +415,9 @@
         <span class="node-label">מפרץ הבועות המזמרות</span>
       </a>
 
-      <!-- אי 2 — שונית גלי הצליל (השונית האמצעית) -->
-      <a class="map-node" data-island-id="2" style="right: 50%; top: 53%;">
+      <!-- אי 2 — שונית גלי הצליל (השונית האמצעית) — מסך אינדקס עם 3 משחקונים
+           (twin-seaweeds + fish-schools + whispers · 27.5.2026 · F.22) -->
+      <a href="stage-2-island.html" class="map-node" data-island-id="2" data-vs-open="true" style="right: 50%; top: 53%;">
         <div class="node-dot">2</div>
         <span class="node-label">שונית גלי הצליל</span>
       </a>
