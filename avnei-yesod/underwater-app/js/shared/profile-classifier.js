@@ -399,7 +399,14 @@ export function suggestFromBKT(studentId) {
   const i3 = state && state[3];
   const i2Attempts = (i2 && i2.attempts) || 0;
   const i3Attempts = (i3 && i3.total_attempts) || 0;
-  const totalAttempts = i2Attempts + i3Attempts;
+
+  // אי 1 שומר ב-mastery.js נפרד (gloal, לא פר תלמידה כיום — מגבלה לפיילוט).
+  const i1Mastery = readJson('avnei-yesod-island1-mastery', {});
+  const i1Words = Object.entries(i1Mastery);
+  const i1AttemptedCount = i1Words.length;
+  const i1MasteredCount = i1Words.filter(([, games]) => Object.values(games).includes('mastered')).length;
+
+  const totalAttempts = i2Attempts + i3Attempts + i1AttemptedCount;
 
   if (totalAttempts < 10) {
     return {
@@ -413,16 +420,23 @@ export function suggestFromBKT(studentId) {
   const suggestions = {};
   const evidence = {};
 
-  // alpha_1 — מודעות פונולוגית מאי 2 (BKT aggregate)
+  // alpha_1 — מודעות פונולוגית. שילוב אי 1 (הברות) ואי 2 (פונמות) לפי קולן:
+  //   "מבצעים מניפולציות פונולוגיות ברמת הצירוף והפונמה" → טובה/מצוינת (מאי 2)
+  //   "מבצעים מניפולציות פונולוגיות בסיסיות ברמת ההברה והצירוף" → חלקית (אי 1 בלבד)
   if (i2 && i2.attempts >= 5) {
+    // יש דאטה מאי 2 — רמת פונמה. יכול להגיע ל"מצוינת".
     const p = i2.pKnown;
     if (p >= 0.85) suggestions.alpha_1 = 1;
     else if (p >= 0.65) suggestions.alpha_1 = 2;
     else if (p >= 0.40) suggestions.alpha_1 = 3;
-    // p < 0.40 → לא מציעים (אין תיאור פרופיל 4 לשורה זו במקור)
     if (suggestions.alpha_1) {
-      evidence.alpha_1 = `BKT אי 2 = ${p.toFixed(2)} (${i2.attempts} ניסיונות)`;
+      evidence.alpha_1 = `BKT אי 2 (פונמות) = ${p.toFixed(2)} (${i2.attempts} ניסיונות)`;
     }
+  } else if (i1AttemptedCount >= 5) {
+    // אין אי 2 אבל יש אי 1 — תקרה "חלקית" לפי קולן (הברה בלבד = לא הגיעה לפונמה).
+    const i1Ratio = i1MasteredCount / i1AttemptedCount;
+    suggestions.alpha_1 = i1Ratio >= 0.5 ? 3 : 4;
+    evidence.alpha_1 = `אי 1 (הברות) = ${i1MasteredCount}/${i1AttemptedCount} מילים נרכשו. אין דאטה מאי 2 (פונמות) — לפי קולן, מודעות פונולוגית ברמת הברה בלבד = "שליטה חלקית" לכל היותר.`;
   }
 
   // alpha_2 — ידע אותיות מ-Sub-BKT פר אות באי 3
@@ -461,6 +475,9 @@ export function suggestFromBKT(studentId) {
     event_count: totalAttempts,
     source_student_id: sourceId,
     note: 'המערכת מציעה רק לרכיב "ידע אלפביתי". רכיבי שיח דבור ומפגש עם ספר דורשים תצפית של המורה.',
+    i1_attempted: i1AttemptedCount,
+    i1_mastered: i1MasteredCount,
+    i1_is_global: i1AttemptedCount > 0,  // אי 1 mastery.js שומר גלובלית — בעיה ידועה
   };
 }
 
