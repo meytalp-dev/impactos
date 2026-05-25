@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>אבני יסוד — מעקב משימות (26.5.2026)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Heebo', system-ui, sans-serif;
+  background: #f5f7fa;
+  color: #1a202c;
+  line-height: 1.6;
+  padding: 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+header {
+  background: linear-gradient(135deg, #2c5282 0%, #4a90b8 100%);
+  color: white;
+  padding: 1.5rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(44, 82, 130, 0.15);
+  margin-bottom: 1.5rem;
+}
+header h1 { font-size: 1.6rem; margin-bottom: 0.3rem; }
+header .meta { font-size: 0.9rem; opacity: 0.9; }
+.overall-progress {
+  background: white;
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+.overall-progress .label { font-weight: 600; color: #2d3748; min-width: 140px; }
+.progress-bar {
+  flex: 1;
+  height: 14px;
+  background: #e2e8f0;
+  border-radius: 7px;
+  overflow: hidden;
+  min-width: 200px;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #38a169 0%, #48bb78 100%);
+  border-radius: 7px;
+  transition: width 0.3s ease;
+  width: 0%;
+}
+.overall-progress .count {
+  font-weight: 700;
+  color: #2c5282;
+  font-size: 1.1rem;
+  min-width: 100px;
+  text-align: left;
+}
+.controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #cbd5e0;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: #2d3748;
+  transition: all 0.15s;
+}
+button:hover { background: #edf6ff; border-color: #4a90b8; }
+button.danger { color: #c53030; }
+button.danger:hover { background: #fff5f5; border-color: #c53030; }
+section.phase {
+  background: white;
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+section.phase.new { border-right: 4px solid #ed8936; }
+section.phase.blocker { border-right: 4px solid #c53030; }
+section.phase.optional { border-right: 4px solid #a0aec0; }
+.phase-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.phase-title { font-size: 1.15rem; font-weight: 700; color: #2c5282; }
+.phase-title .new-tag {
+  background: #ed8936;
+  color: white;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  margin-left: 0.4rem;
+  font-weight: 600;
+}
+.phase-progress {
+  background: #edf6ff;
+  color: #2c5282;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.phase-progress.done {
+  background: #c6f6d5;
+  color: #22543d;
+}
+ul.tasks { list-style: none; }
+li.task {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #edf2f7;
+}
+li.task:last-child { border-bottom: none; }
+li.task input[type="checkbox"] {
+  margin-top: 0.3rem;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #38a169;
+  flex-shrink: 0;
+}
+li.task .task-content { flex: 1; }
+li.task .task-line {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+li.task .task-id {
+  font-weight: 700;
+  color: #2c5282;
+  font-size: 0.85rem;
+  background: #edf6ff;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  min-width: 38px;
+  text-align: center;
+}
+li.task .priority {
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+li.task .priority.p0 { background: #fed7d7; color: #9b2c2c; }
+li.task .priority.p1 { background: #feebc8; color: #9c4221; }
+li.task .priority.p2 { background: #c6f6d5; color: #22543d; }
+li.task .effort {
+  background: #e2e8f0;
+  color: #4a5568;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+li.task .task-name {
+  color: #2d3748;
+  font-size: 0.97rem;
+  margin-right: 0.3rem;
+}
+li.task.checked .task-name {
+  text-decoration: line-through;
+  color: #a0aec0;
+}
+li.task .new-marker {
+  background: #ed8936;
+  color: white;
+  padding: 0.05rem 0.35rem;
+  border-radius: 3px;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+li.task .note {
+  font-size: 0.82rem;
+  color: #718096;
+  margin-top: 0.2rem;
+  margin-right: 1.6rem;
+}
+.legend {
+  background: white;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: #4a5568;
+}
+.legend strong { color: #2d3748; }
+.footer {
+  text-align: center;
+  color: #718096;
+  font-size: 0.85rem;
+  margin-top: 2rem;
+  padding: 1rem;
+}
+.open-decision {
+  background: #fffaf0;
+  border-right: 3px solid #ed8936;
+  padding: 0.6rem 0.85rem;
+  border-radius: 6px;
+  margin: 0.75rem 0 0.75rem 0.5rem;
+  font-size: 0.88rem;
+  color: #7c2d12;
+}
+.copy-prompt-btn {
+  background: #edf6ff;
+  border: 1px solid #bee3f8;
+  color: #2c5282;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  font-family: inherit;
+  margin-right: 0.5rem;
+  transition: all 0.15s;
+}
+.copy-prompt-btn:hover {
+  background: #4a90b8;
+  color: white;
+  border-color: #4a90b8;
+}
+.copy-prompt-btn.copied {
+  background: #c6f6d5;
+  color: #22543d;
+  border-color: #38a169;
+}
+.in-progress-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-right: auto;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.in-progress-wrap:hover { background: #fffaf0; }
+.in-progress-check {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #ed8936;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  margin: 0;
+  transition: all 0.15s;
+}
+.in-progress-check:checked {
+  background: #ed8936;
+}
+.in-progress-check:checked::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.in-progress-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #9c4221;
+}
+li.task.in-progress {
+  background: linear-gradient(90deg, transparent 0%, #fffaf0 70%, #feebc8 100%);
+  border-radius: 6px;
+}
+li.task.in-progress .task-name::before {
+  content: '⏳ ';
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>אבני יסוד — מעקב משימות</h1>
+  <div class="meta">עודכן 26.5.2026 ערב · 39 משימות · פאזות A0 + A-I · סטטוס נשמר אוטומטית במחשב שלך</div>
+</header>
+
+<div class="overall-progress">
+  <span class="label">התקדמות כוללת:</span>
+  <div class="progress-bar"><div class="progress-bar-fill" id="overall-fill"></div></div>
+  <span class="count" id="overall-count">0 / 39</span>
+</div>
+
+<div class="controls">
+  <button onclick="expandAll()">פתח הכל</button>
+  <button onclick="collapseAll()">סגור הכל</button>
+  <button onclick="showOnlyOpen()">הצג רק פתוחות</button>
+  <button onclick="showAll()">הצג הכל</button>
+  <button class="danger" onclick="resetAll()">איפוס הכל</button>
+</div>
+
+<!-- ============== A0 ============== -->
+<section class="phase new" data-phase="A0">
+  <div class="phase-header">
+    <div class="phase-title">🆕 פאזה A0 — יישור לראמ"ה <span class="new-tag">חדש 26.5</span></div>
+    <span class="phase-progress" id="prog-A0">0 / 4</span>
+  </div>
+  <ul class="tasks">
+    <li class="task" data-phase="A0">
+      <input type="checkbox" data-id="A0.1">
+      <div class="task-content">
+        <div class="task-line">
+          <span class="task-id">A0.1</span>
+          <span class="priority p0">P0</span>
+          <span class="effort">M</span>
+          <span class="task-name">פרופיל אורייני ב-onboarding (4 רמות, ד"ר קולן 2025)</span>
+          <span class="new-marker">חדש</span>
+        </div>
+        <div class="note">מסך כניסה ראשון. 4 רמות: שליטה מצוינת / טובה / חלקית / פערים. קובע באיזה אי הילדה מתחילה.</div>
+      </div>
+    </li>
+    <li class="task" data-phase="A0">
+      <input type="checkbox" data-id="A0.2">
+      <div class="task-content">
+        <div class="task-line">
+          <span class="task-id">A0.2</span>
+          <span class="priority p0">P0</span>
+          <span class="effort">S</span>
+          <span class="task-name">שדות <code>rama_task_alignment</code> + <code>peima_target</code> ב-schema פריט</span>
+          <span class="new-marker">חדש</span>
+        </div>
+        <div class="note">תלות של A0.3 ו-21A. הצעד הראשון הקל ביותר.</div>
+      </div>
+    </li>
+    <li class="task" data-phase="A0">
+      <input type="checkbox" data-id="A0.3">
+      <div class="task-content">
+        <div class="task-line">
+          <span class="task-id">A0.3</span>
+          <span class="priority p0">P0</span>
+          <span class="effort">S</span>
+          <span class="task-name">קריטריון Mastery משולש (BKT + שטף + רף ראמ"ה)</span>
+          <span class="new-marker">חדש</span>
+        </div>
+        <div class="note">function checkMastery(student_id, island_id) → 3 תנאים יחד.</div>
+      </div>
+    </li>
+    <li class="task" data-phase="A0">
+      <input type="checkbox" data-id="A0.4">
+      <div class="task-content">
+        <div class="task-line">
+          <span class="task-id">A0.4</span>
+          <span class="priority p0">P0</span>
+          <span class="effort">M</span>
+          <span class="task-name">משחקון לעיצור-סוגר באי 2 (P2) — חוסם משימה 2 של ראמ"ה</span>
+          <span class="new-marker">חדש</span>
+        </div>
+      </div>
+    </li>
+  </ul>
+</section>
+
+<!-- ============== A ============== -->
+<section class="phase blocker" data-phase="A">
+  <div class="phase-header">
+    <div class="phase-title">פאזה A — תשתית מנוע</div>
+    <span class="phase-progress" id="prog-A">0 / 6</span>
+  </div>
+  <ul class="tasks">
+    <li class="task" data-phase="A"><input type="checkbox" data-id="A.1"><div class="task-content"><div class="task-line"><span class="task-id">1</span><span class="priority p0">P0</span><span class="effort">M</span><span class="task-name">החלפת BKT-per-island ב-BKT-per-strand (5 מודלים)</span></div><div class="open-decision">🟠 החלטה פתוחה: 5 סטרנדים או 8 מיומנויות ראמ"ה? המלצה: דואלי. ממתין לאישור מיטל.</div></div></li>
+    <li class="task" data-phase="A"><input type="checkbox" data-id="A.2"><div class="task-content"><div class="task-line"><span class="task-id">2</span><span class="priority p0">P0</span><span class="effort">S</span><span class="task-name">עדכון schema של פריט תרגול (כולל שדות ראמ"ה)</span></div></div></li>
+    <li class="task" data-phase="A"><input type="checkbox" data-id="A.3"><div class="task-content"><div class="task-line"><span class="task-id">3</span><span class="priority p0">P0</span><span class="effort">M</span><span class="task-name">בניית מודול EPA (3 צירים — Failure × Context × Task)</span></div></div></li>
+    <li class="task" data-phase="A"><input type="checkbox" data-id="A.4"><div class="task-content"><div class="task-line"><span class="task-id">4</span><span class="priority p0">P0</span><span class="effort">S</span><span class="task-name">Sub-BKT פר אות (22 בתוך סטרנד פונולוגיה)</span></div></div></li>
+    <li class="task" data-phase="A"><input type="checkbox" data-id="A.5"><div class="task-content"><div class="task-line"><span class="task-id">5</span><span class="priority p0">P0</span><span class="effort">S</span><span class="task-name">Cold-start protocol (3 ימים ראשונים)</span></div></div></li>
+    <li class="task" data-phase="A"><input type="checkbox" data-id="A.6"><div class="task-content"><div class="task-line"><span class="task-id">6</span><span class="priority p0">P0</span><span class="effort">M</span><span class="task-name">Confidence indicators (✅/🟡/⚫) בדשבורד</span></div></div></li>
+  </ul>
+</section>
+
+<!-- ============== B ============== -->
+<section class="phase blocker" data-phase="B">
+  <div class="phase-header">
+    <div class="phase-title">פאזה B — אינטרבנציות וקבוצות</div>
+    <span class="phase-progress" id="prog-B">0 / 4</span>
+  </div>
+  <ul class="tasks">
+    <li class="task" data-phase="B"><input type="checkbox" data-id="B.7"><div class="task-content"><div class="task-line"><span class="task-id">7</span><span class="priority p0">P0</span><span class="effort">M</span><span class="task-name">מאגר 5 אינטרבנציות named (לאי 3)</span></div><div class="note">קיים ב-docs/interventions/library-v1.md — לחבר לקוד.</div></div></li>
+    <li class="task" data-phase="B"><input type="checkbox" data-id="B.8"><div class="task-content"><div class="task-line"><span class="task-id">8</span><span class="priority p1">P1</span><span class="effort">M</span><span class="task-name">מנוע התאמת אינטרבנציה לדפוס EPA</span></div></div></li>
+    <li class="task" data-phase="B"><input type="checkbox" data-id="B.9"><div class="task-content"><div class="task-line"><span class="task-id">9</span><span class="priority p0">P0</span><span class="effort">L</span><span class="task-name">Group Suggestion Engine (4-5 קבוצות בוקר)</span></div></div></li>
+    <li class="task" data-phase="B"><input type="checkbox" data-id="B.10"><div class="task-content"><div class="task-line"><span class="task-id">10</span><span class="priority p1">P1</span><span class="effort">S</span><span class="task-name">שפת 3 תצוגות (מורה / הורה / מפקח)</span></div></div></li>
+  </ul>
+</section>
+
+<!-- ============== C ============== -->
+<section class="phase blocker" data-phase="C">
+  <div class="phase-header">
+    <div class="phase-title">פאזה C — Pack × BKT</div>
+    <span class="phase-progress" id="prog-C">0 / 3</span>
+  </div>
+  <ul class="tasks">
+    <li class="task" data-phase="C"><input type="checkbox" data-id="C.11"><div class="task-content"><div class="task-line"><span class="task-id">11</span><span class="priority p0">P0</span><span class="effort">M</span><span class="task-name">Pack schema (קובץ JSON פר חודש)</span></div></div></li>
+    <li class="task" data-phase="C"><input type="checkbox" data-id="C.12"><div class="task-content"><div class="task-line"><span class="task-id">12</span><span class="priority p0">P0</span><span class="effort">L</span><span class="task-name">מנוע Pack × BKT integration (item-selector)</span></div><div class="note">הלב של הדיפרנציאליות. בלי זה אין מערכת אדפטיבית.</div></div></li>
+    <li class="task" data-phase="C"><input type="checkbox" data-id="C.13"><div class="task-content"><div class="task-line"><span class="task-id">13</span><span class="priority p0">P0</span><span class="effort">M</span><span class="task-name">עדכון מאגר הפריטים לתמיכה בסינון (תיוג מלא)</span></div></div></li>
+  </ul>
+</section>
+
+<!-- ============== D ============== -->
+<section class="phase blocker" data-phase="D">
+  <div class="phase-header">
+    <div class="phase-title">פאזה D — תבנית גנרית</div>
+    <span class="phase-progress" id="prog-D">0 / 3</span>
+  </div>
+  <ul class="tasks">
+    <li class="task" data-phase="D"><input type="checkbox" data-id="D.14"><div class="task-content"><div class="task-line"><span class="task-id">14</span><span class="priority p1">P1</span><span class="effort">L</span><span class="task-name">חילוץ תבנית מ-5 משחקוני אי 3</span></div></div></li>
+    <li class="task" data-phase="D"><input type="checkbox" data-id="D.15"><div class="task-content"><div class="task-line"><span class="task-id">15</span><span class="priority p0">P0</span><span class="effort">M</span><span class="task-name">שכפול ל-17 האותיות החסרות באי 3 (5 קיימות)</span></div><div class="note">⬆️ עלה ל-P0 ב-26.5: חוסם משימה 1 ראמ"ה (18+/22).</div></div></li>
+    <li class="task" data-phase="D"><input type="checkbox" data-id="D.16"><div class="task-content"><div class="task-line"><span class="task-id">16</span><span class="priority p1">P1</span><span class="effort">L</span><span class="task-name">הגדרת תבניות לאיים 4-9 (סטרנד 1 + מורפולוגיה)</span></div></div></li>
+  </ul>
+</section>
+
+<!-- ============== E ============== -->
+<section class="phase blocker" data-phase="E">
+  <div class="phase-header">
+    <div class="phase-title">פאזה E — דאטה ומדידה</div>
+    <span class="phase-progress" id="prog-E">0 / 3</span>
+  </div>
+  <ul class="tasks">
+    <li class="task" data-phase="E"><input type="checkbox" data-id="E.17"><div class="task-content"><div class="task-line"><span class="task-id">17</span><span class="priority p0">P0</span><span class="effort">M</span><span class="task-name">עדכון Event Logger ל-7 תיוגים פר אירוע</span></div></div></li>
+    <li class="task" data-phase="E"><input type="checkbox" data-id="E.18"><div class="task-content"><div class="task-line"><span class="task-id">18</span><span class="priority p0">P0</span><span class="effort">M</span><span class="task-name">Data export ל-Google Sheet (Apps Script)</span></div></div></li>
+    <li class="task" data-phase="E"><input type="checkbox" data-id="E.19"><div class="task-content"><div class="task-line"><span class="task-id">19</span><span class="priority p1">P1</span><span class="effort">L</span><span class="task-name">Calibration פר משימת ראמ"ה (לא רק overall)</span></div></div></li>
+  </ul>
+</section>
+
+<!-- ============== F ============== -->
+<section class="phase" data-phase="F">
+  <div class="phase-header">
+    <div class="phase-title">פאזה F — מסכים נוספים</div>
+    <span class="phase-progress" id="prog-F">0 / 3</span>
+  </div>
+  <ul class="tasks">
+    <li class="task" data-phase="F"><input type="checkbox" data-id="F.20"><div class="task-content"><div class="task-line"><span class="task-id">20</span><span class="priority p1">P1</span><span class="effort">S</span><span class="task-name">מסך 3 island modes (Learning/Maintenance/Exposure)</span></div></div></li>
+    <li class="task" data-phase="F"><input type="checkbox" data-id="F.21"><div class="task-content"><div class="task-line"><span class="task-id">21</span><span class="priority p1">P1</span><span class="effort">M</span><span class="task-name">Specialist Flag (14 ימי אי-התקדמות)</span></div></div></li>
+    <li class="task" data-phase="F"><input type="checkbox" data-id="F.21A"><div class="task-content"><div class="task-line"><span class="task-id">21A</span><span class="priority p0">P0</span><span class="effort">M</span><span class="task-name">מסך מורה בשפת ראמ"ה (10 משימות + פעימה)</span><span class="new-marker">חדש</span></div></div></li>
+  </ul>
+</section>
+
+<!-- ============== G ============== -->
+<section class="phase optional" data-phase="G">
+  <div class="phase-header">
+    <div class="phase-title">פאזה G — מסמכים</div>
+    <span class="phase-progress" id="prog-G">0 / 3</span>
+  </div>
+  <ul class="tasks">
+    <li class="task" data-phase="G"><input type="checkbox" data-id="G.22"><div class="task-content"><div class="task-line"><span class="task-id">22</span><span class="priority p1">P1</span><span class="effort">S</span><span class="task-name">עדכון architecture-mvp.md לגרסה 2.0</span></div></div></li>
+    <li class="task" data-phase="G"><input type="checkbox" data-id="G.23"><div class="task-content"><div class="task-line"><span class="task-id">23</span><span class="priority p1">P1</span><span class="effort">S</span><span class="task-name">עדכון spec.html</span></div></div></li>
+    <li class="task" data-phase="G"><input type="checkbox" data-id="G.24"><div class="task-content"><div class="task-line"><span class="task-id">24</span><span class="priority p1">P1</span><span class="effort">S</span><span class="task-name">חיפוש גלובלי "מיומנות"/"skill" → "סטרנד"</span></div></div></li>
+  </ul>
+</section>
+
+<!-- ============== H ============== -->
+<section class="phase optional" data-phase="H">
+  <div class="phase-header">
+    <div class="phase-title">פאזה H — קוריקולום (אחרי פיילוט)</div>
+    <span class="phase-progress" id="prog-H">0 / 5</span>
+  </div>
+  <ul class="tasks">
+    <li class="task" data-phase="H"><input type="checkbox" data-id="H.25"><div class="task-content"><div class="task-line"><span class="task-id">25</span><span class="priority p2">P2</span><span class="effort">L</span><span class="task-name">משחקונים לאיים 4, 5, 6 (סטרנד 1)</span></div></div></li>
+    <li class="task" data-phase="H"><input type="checkbox" data-id="H.26"><div class="task-content"><div class="task-line"><span class="task-id">26</span><span class="priority p2">P2</span><span class="effort">L</span><span class="task-name">משחקונים לאיים 9, 10, 11 (מורפולוגיה)</span></div></div></li>
+    <li class="task" data-phase="H"><input type="checkbox" data-id="H.27"><div class="task-content"><div class="task-line"><span class="task-id">27</span><span class="priority p2">P2</span><span class="effort">L</span><span class="task-name">משחקונים לאיים 12-14 (שפה דבורה)</span></div></div></li>
+    <li class="task" data-phase="H"><input type="checkbox" data-id="H.28"><div class="task-content"><div class="task-line"><span class="task-id">28</span><span class="priority p2">P2</span><span class="effort">L</span><span class="task-name">משחקונים לאיים 15-18 (הבנת הנקרא)</span></div><div class="open-decision">🟠 איים 17, 18 מחוץ לסקופ ראמ"ה — להמליץ out_of_scope. ממתין לאישור מיטל.</div></div></li>
+    <li class="task" data-phase="H"><input type="checkbox" data-id="H.29"><div class="task-content"><div class="task-line"><span class="task-id">29</span><span class="priority p2">P2</span><span class="effort">L</span><span class="task-name">משחקונים לאיים 19-22 (כתיבה)</span></div><div class="open-decision">🟠 אי 22 (פסקה) מחוץ לסקופ ראמ"ה — להמליץ out_of_scope.</div></div></li>
+  </ul>
+</section>
+
+<!-- ============== I ============== -->
+<section class="phase optional" data-phase="I">
+  <div class="phase-header">
+    <div class="phase-title">פאזה I — אופציונלי / עתידי (אחרי 10/10)</div>
+    <span class="phase-progress" id="prog-I">0 / 4</span>
+  </div>
+  <ul class="tasks">
+    <li class="task" data-phase="I"><input type="checkbox" data-id="I.30"><div class="task-content"><div class="task-line"><span class="task-id">30</span><span class="priority p2">P2</span><span class="effort">L</span><span class="task-name">L1 transfer profiling (דוברי שפות אחרות)</span></div></div></li>
+    <li class="task" data-phase="I"><input type="checkbox" data-id="I.31"><div class="task-content"><div class="task-line"><span class="task-id">31</span><span class="priority p2">P2</span><span class="effort">L</span><span class="task-name">ASR integration (כשיבשיל בעברית)</span></div></div></li>
+    <li class="task" data-phase="I"><input type="checkbox" data-id="I.32"><div class="task-content"><div class="task-line"><span class="task-id">32</span><span class="priority p2">P2</span><span class="effort">L</span><span class="task-name">Spaced Repetition Leitner פר אות</span></div></div></li>
+    <li class="task" data-phase="I"><input type="checkbox" data-id="I.33"><div class="task-content"><div class="task-line"><span class="task-id">33</span><span class="priority p2">P2</span><span class="effort">L</span><span class="task-name">Peer Tutoring (PALS-K)</span></div></div></li>
+  </ul>
+</section>
+
+<div class="legend">
+  <strong>🆕 חדש 26.5 = נוסף בעקבות חידוד משה"ח+ראמ"ה</strong> ·
+  <strong>P0 = חוסם פיילוט</strong> · P1 = רצוי · P2 = אחרי פיילוט ·
+  <strong>S</strong> = עד שבוע · <strong>M</strong> = 1-3 שבועות · <strong>L</strong> = יותר מ-3 שבועות
+  <br>
+  🟠 <strong>החלטה פתוחה</strong> = ממתין לאישור מיטל לפני התחלת המשימה.
+  <br>
+  ⏳ <strong>בתהליך</strong> (כתום, בצד שמאל) = משימה שכבר התחלת אבל לא סיימת. סימון "בוצע" מבטל אוטומטית.
+</div>
+
+<div class="footer">
+  מצב סימונים נשמר אוטומטית במחשב שלך (localStorage). מסונכרן רק כאן.
+</div>
+
+<script>
+const STORAGE_KEY = 'avnei-yesod-tasks-2026-05-26';
+const PROGRESS_KEY = 'avnei-yesod-tasks-progress-2026-05-26';
+
+function loadState() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  } catch { return {}; }
+}
+
+function saveState(state) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function loadProgressState() {
+  try { return JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}'); }
+  catch { return {}; }
+}
+
+function saveProgressState(state) {
+  localStorage.setItem(PROGRESS_KEY, JSON.stringify(state));
+}
+
+function updateProgress() {
+  const phases = ['A0','A','B','C','D','E','F','G','H','I'];
+  let totalTasks = 0, totalDone = 0;
+
+  phases.forEach(phase => {
+    const tasks = document.querySelectorAll(`li.task[data-phase="${phase}"]`);
+    const done = document.querySelectorAll(`li.task[data-phase="${phase}"] input:checked`).length;
+    const total = tasks.length;
+    const el = document.getElementById('prog-' + phase);
+    if (el) {
+      el.textContent = `${done} / ${total}`;
+      el.classList.toggle('done', done === total && total > 0);
+    }
+    totalTasks += total;
+    totalDone += done;
+  });
+
+  const pct = totalTasks ? (totalDone / totalTasks * 100) : 0;
+  document.getElementById('overall-fill').style.width = pct + '%';
+  document.getElementById('overall-count').textContent = `${totalDone} / ${totalTasks}`;
+}
+
+function buildPromptForTask(li) {
+  const id = li.querySelector('input').dataset.id;
+  const name = li.querySelector('.task-name')?.textContent.trim() || '';
+  const priority = li.querySelector('.priority')?.textContent.trim() || '';
+  const effort = li.querySelector('.effort')?.textContent.trim() || '';
+  const note = li.querySelector('.note')?.textContent.trim() || '';
+  const decision = li.querySelector('.open-decision')?.textContent.trim() || '';
+
+  return `שיחה חדשה — סוכן עבודה לאבני יסוד · משימה ${id}
+
+קונטקסט: אבני יסוד = מערכת תרגול דיגיטלית-אדפטיבית לרכישת קריאה בעברית בכיתה א'. המסגרת הפדגוגית = משרד החינוך (תוכנית תשפ"ו, פרופ' שני) קובע את היעדים. ראמ"ה — כזרוע המדידה של משה"ח — בודקת אותם (10 משימות + 3 פעימות).
+
+המשימה שלך: ${id} (עדיפות: ${priority}, מאמץ: ${effort})
+${name}${note ? `\n\nהערה: ${note}` : ''}${decision ? `\n\nשים לב: ${decision}` : ''}
+
+מסמכים שחובה לקרוא לפני התחלת קוד:
+1. avnei-yesod/_handoff/orchestrator-handoff-2026-05-26-evening.md — סטטוס תזמורת
+2. avnei-yesod/_handoff/2026-05-26-partners-review-v3.md — המנוע המלא + תרחישים
+3. avnei-yesod/_handoff/2026-05-25-architecture-tasks.md — חפש את משימה ${id}
+4. avnei-yesod/_handoff/agent-bootstraps.md — פרטים נוספים אם המשימה שלך מופיעה שם
+5. זיכרון: avnei-yesod-master + project-avnei-yesod-architecture-mvp + project-avnei-yesod-pedagogy-integration
+
+אזהרות חזקות אסור-לחזור-עליהן:
+- Shatil & Share 2003 לא הציעו שלבים (זו הזיה — המאמר עוסק במנבאים בלבד)
+- Share & Bar-On 2018 = 3 פאזות (Triplex), לא 6 שלבים (6 שלבים שייכים למשה"ח)
+- "18 אותיות מ-22" = רף "תקין" של ראמ"ה, לא ממוצע אמפירי
+- AvriNeural בלבד לכל TTS חדש
+- PIL transparency + crop&center חובה על כל PNG מ-ChatGPT
+
+כללי עבודה:
+- לא להחליט פדגוגית באופן עצמאי — בספק לשאול את מיטל
+- לא לדחוף ל-git בלי אישור מפורש של מיטל
+- לא לעדכן מסמכי-אם (architecture-mvp.md, pedagogy-integration-framework.md, literacy-grade1-2-yearly.md) בלי אישור
+
+בסיום המשימה:
+- עדכן את ה-tracker: _handoff/2026-05-26-architecture-tasks-tracker.html (סמן ${id})
+- דווח למיטל סיכום של מה נעשה
+- חכה לאישור לפני git push
+
+עכשיו מיטל על המסך. תקרא קודם את המסמכים, ואז שאל מיטל אם יש שאלות לפני התחלת הקוד.`;
+}
+
+function attachCopyButtons() {
+  document.querySelectorAll('li.task').forEach(li => {
+    const taskLine = li.querySelector('.task-line');
+    if (!taskLine) return;
+    const btn = document.createElement('button');
+    btn.className = 'copy-prompt-btn';
+    btn.textContent = '📋 העתק פרומפט';
+    btn.title = 'העתק פרומפט לפתיחת שיחה חדשה עם סוכן למשימה זו';
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const text = buildPromptForTask(li);
+      try {
+        await navigator.clipboard.writeText(text);
+        btn.classList.add('copied');
+        btn.textContent = '✓ הועתק!';
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.textContent = '📋 העתק פרומפט';
+        }, 2000);
+      } catch {
+        // Fallback: select and prompt user
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        btn.textContent = '✓ הועתק!';
+        setTimeout(() => btn.textContent = '📋 העתק פרומפט', 2000);
+      }
+    });
+    taskLine.appendChild(btn);
+  });
+}
+
+function attachInProgressCheckboxes() {
+  const progressState = loadProgressState();
+  document.querySelectorAll('li.task').forEach(li => {
+    const doneCb = li.querySelector('input[type="checkbox"][data-id]');
+    if (!doneCb) return;
+    const id = doneCb.dataset.id;
+
+    const wrap = document.createElement('label');
+    wrap.className = 'in-progress-wrap';
+    wrap.title = 'בתהליך — סמני כדי לזכור איפה התחלת';
+
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.className = 'in-progress-check';
+    cb.dataset.progressId = id;
+
+    const lbl = document.createElement('span');
+    lbl.className = 'in-progress-label';
+    lbl.textContent = 'בתהליך';
+
+    if (progressState[id] && !doneCb.checked) {
+      cb.checked = true;
+      li.classList.add('in-progress');
+    }
+
+    cb.addEventListener('change', (e) => {
+      e.stopPropagation();
+      const s = loadProgressState();
+      s[id] = cb.checked;
+      saveProgressState(s);
+      li.classList.toggle('in-progress', cb.checked);
+    });
+
+    wrap.appendChild(cb);
+    wrap.appendChild(lbl);
+    li.appendChild(wrap);
+  });
+}
+
+function initCheckboxes() {
+  const state = loadState();
+  document.querySelectorAll('input[type="checkbox"][data-id]').forEach(cb => {
+    const id = cb.dataset.id;
+    if (state[id]) {
+      cb.checked = true;
+      cb.closest('li.task').classList.add('checked');
+    }
+    cb.addEventListener('change', () => {
+      const s = loadState();
+      s[cb.dataset.id] = cb.checked;
+      saveState(s);
+      const li = cb.closest('li.task');
+      li.classList.toggle('checked', cb.checked);
+      // אם המשימה הושלמה — לבטל "בתהליך" אוטומטית
+      if (cb.checked) {
+        const inProg = li.querySelector('.in-progress-check');
+        if (inProg && inProg.checked) {
+          inProg.checked = false;
+          li.classList.remove('in-progress');
+          const ps = loadProgressState();
+          ps[cb.dataset.id] = false;
+          saveProgressState(ps);
+        }
+      }
+      updateProgress();
+    });
+  });
+  attachCopyButtons();
+  attachInProgressCheckboxes();
+  updateProgress();
+}
+
+function expandAll() {
+  document.querySelectorAll('section.phase ul').forEach(ul => ul.style.display = '');
+}
+function collapseAll() {
+  document.querySelectorAll('section.phase ul').forEach(ul => ul.style.display = 'none');
+}
+function showOnlyOpen() {
+  document.querySelectorAll('li.task').forEach(li => {
+    li.style.display = li.classList.contains('checked') ? 'none' : '';
+  });
+}
+function showAll() {
+  document.querySelectorAll('li.task').forEach(li => li.style.display = '');
+}
+function resetAll() {
+  if (confirm('לאפס את כל הסימונים (בוצע + בתהליך)?')) {
+    saveState({});
+    saveProgressState({});
+    document.querySelectorAll('input[type="checkbox"][data-id]').forEach(cb => {
+      cb.checked = false;
+      cb.closest('li.task').classList.remove('checked');
+    });
+    document.querySelectorAll('.in-progress-check').forEach(cb => {
+      cb.checked = false;
+      cb.closest('li.task').classList.remove('in-progress');
+    });
+    updateProgress();
+  }
+}
+
+// Toggle phase by clicking header
+document.querySelectorAll('.phase-header').forEach(h => {
+  h.addEventListener('click', (e) => {
+    if (e.target.tagName === 'INPUT') return;
+    const ul = h.parentElement.querySelector('ul');
+    if (ul) ul.style.display = ul.style.display === 'none' ? '' : 'none';
+  });
+});
+
+initCheckboxes();
+</script>
+</body>
+</html>
