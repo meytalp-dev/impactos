@@ -7,6 +7,85 @@
 
 ---
 
+## A0.1 — פרופיל אורייני (כלי המורה) + suggestFromBKT
+
+**סטטוס:** 🟡 קוד נדחף ב-7 קומיטים · ממתין לאימות end-to-end ע"י מיטל
+**תאריך:** 2026-05-26 ערב
+**שיחה:** סוכן A0.1
+**קומיטים:**
+| commit | מה |
+|---|---|
+| `4b876a4` | engine/onboarding-profile.html + js/shared/profile-classifier.js — UI 3-מסכי + סיווג |
+| `299216e` | suggestFromBKT — הצעה אוטומטית מ-BKT לרכיב 2 (אלפא_1/2/3) |
+| `07c9af3` | underwater-app/student-picker.html + event-logger דינמי + map.html redirect |
+| `d57fad4` | הסרת onboarding.html מזרימת הכניסה |
+| `a5e41c8` | picker · שיפור empty-state |
+| `f99161f` | classifier · חיבור אי 1 (mastery.js) לפרופיל |
+| `c5cd49a` | onboarding-profile · debug panel בבאנר ההצעה |
+
+**הזרימה הסופית:**
+```
+1. מורה: engine/onboarding-profile.html → הוסיפי תלמידות לכיתה
+2. ילדה: map.html → picker → בוחרת את עצמה → משחקת
+3. event-logger כותב לפי localStorage['avnei-yesod-current-student']
+4. BKT שומר state נפרד פר תלמידה
+5. מורה: engine/onboarding-profile.html → פתחי תלמידה →
+   suggestFromBKT(id) → באנר צהוב 🤖 עם הצעה אישית
+6. מורה מאשרת/משנה → AssessmentsStore.save עם row_overrides
+```
+
+**החלטות פדגוגיות שנסגרו:**
+| החלטה | תוצאה |
+|---|---|
+| מי ממלא? | היברידי: מערכת מציעה לרכיב 2, מורה ידני ברכיבים 1+3 |
+| מתי? | המורה מתי שרוצה — אחרי 10+ אירועי תרגול. אין אבחון מחייב בהתחלה |
+| המסע הראשון בים? | הוצא מהזרימה — לא נחוץ אחרי הקלסיפיקטור החדש |
+| בתיקו בסיווג? | בוחר הפרופיל הזהיר (נמוך יותר) |
+| שורות שהמקור לא תיאר? | "לא תואר במפורש במקור" — לא להמציא |
+| סף הצעה? | 10+ אירועים (אי 1 mastery + BKT אי 2 + BKT אי 3) |
+
+**מיפוי alpha_1/2/3 לרכיב 2:**
+- **alpha_1 (מודעות פונולוגית):** רצף הברה→פונמה לפי קולן. יש BKT אי 2 → לפי הסתברות (יכול להגיע ל"מצוינת"). אין אי 2 אבל יש אי 1 → תקרה "חלקית" (הברה בלבד)
+- **alpha_2 (ידע אותיות):** יחס known/practiced ב-Sub-BKT אי 3
+- **alpha_3 (קשרי אות-צליל):** BKT אי 3 aggregate
+- **alpha_4 (ניצני קריאה), alpha_5 (כתיב פונטי):** אין מקור — נשאר ידני
+
+**🚨 לא נסגר — לבדוק מחר:**
+
+1. **אימות end-to-end:** מיטל ביקרה בכלי המורה אחרי משחק וכתבה "**לא מופיע**" (הבאנר הצהוב). debug panel נוסף ב-`c5cd49a` שיציג מצב מפורט (current-student תואם? ספירה פר אי). **לא התקבל משוב מה ה-panel הראה.** 4 תרחישים אפשריים:
+
+   | תרחיש | סימן ב-debug panel | פתרון |
+   |---|---|---|
+   | תלמידה ב-picker שונה מתלמידה שפתחה בכלי | ⚠️ אדום + שמות שונים | לבחור אותה תלמידה ב-picker |
+   | בחרה "אורחת" → current-student = 'local' | current-student = 'local' | לבחור תלמידה אמיתית |
+   | תלמידה נכונה, אבל פחות מ-10 אירועים | ✅ ירוק, סה"כ < 10 | לשחק עוד |
+   | הכל נכון, עדיין לא מופיע | ✅ ירוק, סה"כ ≥ 10 | באג אמיתי — לאבחן |
+
+2. **mastery.js לא פר-תלמידה (פער ארכיטקטוני):** `underwater-app/js/shared/mastery.js` שומר ב-`localStorage['avnei-yesod-island1-mastery']` **גלובלית, לא פר student_id**. שני ילדים על אותו טאבלט = ערבוב דאטה ברכיב 1. דגלתי `i1_is_global: true` בתשובת `suggestFromBKT` אבל ה-UI לא משתמש בו עדיין. **תיקון ~1 שעה:** עדכון mastery.js לקבל student_id.
+
+3. **שאר משחקונים:** לבדוק שאי 2 (twin-seaweeds, fish-schools, whispers) ומשחקוני אי 3 האחרים (rescue, house, trail, storm) כותבים ל-event-logger עם `island_id` נכון.
+
+4. **תזכורת בדשבורד המורה:** לא נבנתה — חלק ממשימה 21A. תזכורת אוטומטית "מאיה תרגלה 14 פריטים, אפשר לעשות פרופיל".
+
+**מה לעשות מחר (בסדר עדיפויות):**
+1. **5 דק':** לפתוח map.html → picker → לבחור תלמידה (לא אורחת!) → לשחק 5+ סיבובים באי 3.
+2. **2 דק':** לפתוח onboarding-profile → לפתוח אותה תלמידה → **לקרוא את ה-debug panel** ולשלוח לסוכן.
+3. **לפי המצב:** אם הבאנר הצהוב הופיע + הצעה הגיונית → 🎉 A0.1 אומת. עוברים למשימה הבאה (A0.3 / 21A / picker למשחקוני אי 3 האחרים). אם לא → לפי ה-debug, לתקן את הבעיה הספציפית.
+
+**הפעלה מקומית (אם Pages לא עלה):**
+```powershell
+cd c:/Users/meyta/Downloads/impactos/avnei-yesod
+python -m http.server 8765
+```
+- http://localhost:8765/underwater-app/map.html
+- http://localhost:8765/engine/onboarding-profile.html
+
+או דרך Pages: https://impact-os.app/avnei-yesod/underwater-app/map.html
+
+**ממתין ממיטל:** בדיקה מחר ע"פ המסלול למעלה.
+
+---
+
 ## A0.4 — משחקון "ים השמועות" (memory-pair לעיצור-סוגר באי 2)
 
 **סטטוס:** 🟡 קוד מוכן · ממתין לאימות מילים + push
