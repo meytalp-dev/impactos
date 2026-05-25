@@ -99,11 +99,12 @@
 **Output:** function `checkMastery(student_id, island_id)` שמחזיר true/false לפי 3 התנאים.
 **תלויות:** דורש מיפוי island → rama_task (חלק ממשימה A0.2).
 
-### A0.4 [P0/M] משחקון לעיצור-סוגר באי 2 (P2)
+### A0.4 [P0/M] משחקון לעיצור-סוגר באי 2 (P2) — ✅ הושלם 27.5.2026
 **מה:** משחקון חדש שמתרגל זיהוי צליל סוגר ("מה הצליל האחרון ב-ד**ג**?"). חוסם משימה 2 של ראמ"ה.
-**איפה:** `underwater-app/stage-2-final-sound.html` + נכסי אודיו (AvriNeural בלבד)
-**Output:** משחקון פעיל, 20 פריטי תרגול לפחות, מתעדכן ל-BKT וEPA.
+**איפה:** `underwater-app/stage-2-whispers.html` + `css/whispers.css` + `data/island-02-whispers.json` + 29 קבצי MP3 ב-`assets/audio/` (AvriNeural)
+**Output:** משחקון memory-pair פעיל, 30 מילים, 4 סיבובים, 5 סיומות continuants (מ/ן/ש/ר/ל). מתעדכן ל-localStorage `island2-quests:completed`, event logger כותב pair_correct/pair_wrong/game_complete.
 **הערה:** ההמלצה הפדגוגית — `curriculum/diagnostic-axes-by-island.md` סעיף אי 2 P2.
+**Commits:** `1916fb6` (קוד) · `562a11d` (29 MP3 + סקריפט TTS)
 
 ---
 
@@ -300,12 +301,13 @@
 **תלויות:** דורש שדה `rama_task_alignment` (A0.2) ו-Mastery משולש (A0.3).
 **🆕 26.5.2026:** משימה חדשה — קריטית כדי שהמורה תדבר בשפת המסגרת הרשמית, לא בשפה פנימית של אבני יסוד.
 
-### 🆕 22. [P1/M] דף אינדקס לאי 2 — מציג את 3 המשחקונים ופותח את האי במפה
+### 🆕 22. [P1/M] דף אינדקס לאי 2 — מציג את 3 המשחקונים ופותח את האי במפה — ✅ הושלם 27.5.2026
 **מה:** דף `stage-2-island.html` שמציג את 3 המשחקונים של אי 2 (whispers + twin-seaweeds + fish-schools) ומחבר את אי 2 ב-`map.html` (כיום נעול).
 **איפה:** `underwater-app/stage-2-island.html` (חדש) + עדכון `map.html` (הוספת `href` ו-`data-vs-open` לאי 2).
-**Output:** ילדה לוחצת על אי 2 במפה → דף אינדקס עם 3 כרטיסי משחקון בסדר פדגוגי → לחיצה על כרטיס פותחת את המשחקון.
-**תלויות:** A0.4 מוכן (27.5.2026 — `stage-2-whispers.html` קיים).
+**Output:** ילדה לוחצת על אי 2 במפה → דף אינדקס עם 3 כרטיסי משחקון בסדר פדגוגי (אצות → דגיגים → שמועות) → לחיצה על כרטיס פותחת את המשחקון. נעילה לפי localStorage `island2-quests:completed`.
+**תלויות:** A0.4 הושלם (27.5.2026 — `stage-2-whispers.html` חי).
 **🆕 27.5.2026:** משימה חדשה — תוצר נלווה ל-A0.4. בלי דף אינדקס, המשחקונים של אי 2 נגישים רק ב-URL ישיר ולא דרך המפה. דומה ל-`stage-3-island.html` (תבנית מוכרת).
+**Commits:** `7ad8e7b` (stage-2-island.html) · `07c9af3` (עדכון map.html — נכנס ב-commit של A0.1)
 
 ---
 
