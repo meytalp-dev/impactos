@@ -298,6 +298,103 @@ li.task.in-progress {
 li.task.in-progress .task-name::before {
   content: '⏳ ';
 }
+
+/* ============== TABS ============== */
+.tabs {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #e2e8f0;
+  flex-wrap: wrap;
+}
+.tab-btn {
+  padding: 0.65rem 1.2rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #4a5568;
+  border-radius: 8px 8px 0 0;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.15s;
+}
+.tab-btn:hover { background: #edf6ff; color: #2c5282; }
+.tab-btn.active {
+  color: #2c5282;
+  border-bottom-color: #4a90b8;
+  background: #f0f9ff;
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ============== MARKDOWN RENDERED CONTENT ============== */
+.md-content {
+  background: white;
+  padding: 1.5rem 2rem;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  line-height: 1.7;
+  color: #2d3748;
+}
+.md-content h1 { font-size: 1.6rem; color: #2c5282; margin-bottom: 0.75rem; border-bottom: 2px solid #4a90b8; padding-bottom: 0.5rem; }
+.md-content h2 { font-size: 1.25rem; color: #2c5282; margin: 1.5rem 0 0.6rem; border-right: 3px solid #4a90b8; padding-right: 0.6rem; }
+.md-content h3 { font-size: 1.05rem; color: #2d3748; margin: 1rem 0 0.4rem; }
+.md-content h4 { font-size: 0.95rem; color: #4a5568; margin: 0.75rem 0 0.3rem; }
+.md-content p { margin: 0.5rem 0; }
+.md-content ul, .md-content ol { padding-right: 1.5rem; margin: 0.4rem 0; }
+.md-content li { margin: 0.25rem 0; }
+.md-content code {
+  background: #edf2f7;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  font-family: 'Consolas', monospace;
+  font-size: 0.88em;
+  color: #c53030;
+  direction: ltr;
+  display: inline-block;
+}
+.md-content pre { background: #f7fafc; padding: 1rem; border-radius: 6px; overflow-x: auto; direction: ltr; }
+.md-content pre code { background: none; color: #2d3748; }
+.md-content table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+.md-content th { background: #edf2f7; padding: 0.5rem 0.75rem; text-align: right; font-weight: 700; }
+.md-content td { padding: 0.45rem 0.75rem; border-bottom: 1px solid #edf2f7; text-align: right; }
+.md-content blockquote { background: #f0f9ff; border-right: 3px solid #4a90b8; padding: 0.75rem 1rem; margin: 0.75rem 0; border-radius: 4px; }
+.md-content hr { border: none; border-top: 1px solid #e2e8f0; margin: 1.5rem 0; }
+.md-content strong { color: #1a365d; }
+
+.md-loading {
+  padding: 2rem;
+  text-align: center;
+  color: #718096;
+  font-style: italic;
+}
+.md-error {
+  background: #fff5f5;
+  border: 1px solid #feb2b2;
+  color: #9b2c2c;
+  padding: 1.25rem 1.5rem;
+  border-radius: 8px;
+}
+.md-error code { background: #fed7d7; color: #742a2a; }
+.md-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  justify-content: flex-end;
+}
+.md-actions a {
+  font-size: 0.85rem;
+  color: #2c5282;
+  text-decoration: none;
+  padding: 0.3rem 0.7rem;
+  background: white;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+}
+.md-actions a:hover { background: #edf6ff; border-color: #4a90b8; }
 </style>
 </head>
 <body>
@@ -312,6 +409,17 @@ li.task.in-progress .task-name::before {
   <div class="progress-bar"><div class="progress-bar-fill" id="overall-fill"></div></div>
   <span class="count" id="overall-count">0 / 40</span>
 </div>
+
+<!-- ============== TABS ============== -->
+<nav class="tabs" role="tablist">
+  <button class="tab-btn active" data-tab="tasks" role="tab">📋 משימות</button>
+  <button class="tab-btn" data-tab="log" role="tab">📝 יומן סוכנים</button>
+  <button class="tab-btn" data-tab="meytal" role="tab">👤 משימות שלי</button>
+  <button class="tab-btn" data-tab="commits" role="tab">🚀 דחיפה ל-git</button>
+</nav>
+
+<!-- ============== TAB: MESHIMOT ============== -->
+<div id="tab-tasks" class="tab-panel active">
 
 <div class="controls">
   <button onclick="expandAll()">פתח הכל</button>
@@ -530,10 +638,43 @@ li.task.in-progress .task-name::before {
   ⏳ <strong>בתהליך</strong> (כתום, בצד שמאל) = משימה שכבר התחלת אבל לא סיימת. סימון "בוצע" מבטל אוטומטית.
 </div>
 
+</div> <!-- end tab-tasks -->
+
+<!-- ============== TAB: AGENT LOG ============== -->
+<div id="tab-log" class="tab-panel">
+  <div class="md-actions">
+    <a href="agent-completion-log.md" target="_blank">✏️ ערוך את הקובץ</a>
+  </div>
+  <div id="md-log" class="md-content md-loaded" data-src="agent-completion-log.md">
+    <div class="md-loading">טוען יומן סוכנים...</div>
+  </div>
+</div>
+
+<!-- ============== TAB: MEYTAL PENDING ============== -->
+<div id="tab-meytal" class="tab-panel">
+  <div class="md-actions">
+    <a href="meytal-pending.md" target="_blank">✏️ ערוך את הקובץ</a>
+  </div>
+  <div id="md-meytal" class="md-content md-loaded" data-src="meytal-pending.md">
+    <div class="md-loading">טוען משימות שלי...</div>
+  </div>
+</div>
+
+<!-- ============== TAB: PENDING COMMITS ============== -->
+<div id="tab-commits" class="tab-panel">
+  <div class="md-actions">
+    <a href="pending-commits.md" target="_blank">✏️ ערוך את הקובץ</a>
+  </div>
+  <div id="md-commits" class="md-content md-loaded" data-src="pending-commits.md">
+    <div class="md-loading">טוען קומיטים ממתינים...</div>
+  </div>
+</div>
+
 <div class="footer">
   מצב סימונים נשמר אוטומטית במחשב שלך (localStorage). מסונכרן רק כאן.
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
 const STORAGE_KEY = 'avnei-yesod-tasks-2026-05-26';
 const PROGRESS_KEY = 'avnei-yesod-tasks-progress-2026-05-26';
@@ -613,10 +754,26 @@ ${name}${note ? `\n\nהערה: ${note}` : ''}${decision ? `\n\nשים לב: ${de
 - לא לדחוף ל-git בלי אישור מפורש של מיטל
 - לא לעדכן מסמכי-אם (architecture-mvp.md, pedagogy-integration-framework.md, literacy-grade1-2-yearly.md) בלי אישור
 
-בסיום המשימה:
-- עדכן את ה-tracker: _handoff/2026-05-26-architecture-tasks-tracker.html (סמן ${id})
-- דווח למיטל סיכום של מה נעשה
-- חכה לאישור לפני git push
+בסיום המשימה (חובה — אל תדלג):
+
+1. עדכן את ה-tracker: _handoff/2026-05-26-architecture-tasks-tracker.html (סמן ${id})
+
+2. הוסף בלוק חדש בראש _handoff/agent-completion-log.md (התבנית בסוף הקובץ). כלול:
+   - סטטוס (✅ הסתיים / 🟡 ממתין ל-X / ❌ נכשל)
+   - תאריך, שיחה (Cursor/VS Code/API), commit hash (או "טרם נדחף")
+   - רשימת קבצים שנוצרו/שונו
+   - שאלות פתוחות + מענה שקיבלת ממיטל
+
+3. אם המשימה דורשת **פעולה ידנית של מיטל** (TTS/AvriNeural, יצירת תמונה ב-ChatGPT, רישום ל-Sheet, החלטה פדגוגית, וכו'):
+   → הוסף בלוק בראש _handoff/meytal-pending.md לפי התבנית שבסוף הקובץ.
+   → אל תניח שמיטל תזכור — תיעוד מפורש חובה.
+
+4. אם יצרת קבצים חדשים שעוד לא ב-git:
+   → הוסף בלוק בראש _handoff/pending-commits.md לפי התבנית.
+   → סמן: ✅ מוכן ל-push / 🟡 דורש בדיקת מיטל / 🔴 לא לדחוף עדיין.
+   → אל תכלול בקבוצה לדחיפה אוטומטית: מסמכי-אם (architecture-mvp.md, pedagogy-integration-framework.md, literacy-grade1-2-yearly.md, llm-pitfalls.md) או פאקים חודשיים — אלה דורשים אישור ידני פר קובץ.
+
+5. דווח למיטל סיכום קצר וחכה לאישור לפני git push.
 
 עכשיו מיטל על המסך. תקרא קודם את המסמכים, ואז שאל מיטל אם יש שאלות לפני התחלת הקוד.`;
 }
@@ -776,6 +933,48 @@ document.querySelectorAll('.phase-header').forEach(h => {
 });
 
 initCheckboxes();
+
+// ============================================================
+// TABS — ניהול וטעינת MD
+// ============================================================
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tabId));
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+
+async function loadMd(container) {
+  const src = container.dataset.src;
+  if (!src) return;
+  try {
+    const response = await fetch(src);
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    const text = await response.text();
+    if (typeof marked === 'undefined') {
+      container.innerHTML = '<pre style="white-space:pre-wrap;direction:rtl;text-align:right;">' + text.replace(/</g, '&lt;') + '</pre>';
+    } else {
+      container.innerHTML = marked.parse(text);
+    }
+  } catch (e) {
+    container.innerHTML = `
+      <div class="md-error">
+        <strong>לא ניתן לטעון את <code>${src}</code></strong><br>
+        סביר שהדפדפן חוסם <code>fetch</code> על קבצים מקומיים (file://).
+        <br><br>
+        <strong>פתרון:</strong> פתחי את ה-tracker דרך GitHub Pages —
+        <a href="https://impact-os.app/avnei-yesod/_handoff/2026-05-26-architecture-tasks-tracker.html" target="_blank">לחצי כאן</a>.
+        או לחצי "✏️ ערוך את הקובץ" למעלה כדי לראות אותו ב-VS Code.
+        <br><br>
+        <small>שגיאה: ${e.message}</small>
+      </div>
+    `;
+  }
+}
+
+document.querySelectorAll('.md-loaded').forEach(loadMd);
 </script>
 </body>
 </html>
