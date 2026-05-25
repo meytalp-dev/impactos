@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>פרופיל אורייני · אבני יסוד · כלי למורה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { font-size: 16px; }
+  body {
+    font-family: 'Assistant', system-ui, sans-serif;
+    background: #f7fafc;
+    color: #1a2332;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 28px 18px 80px; }
+
+  /* ─── Header ─── */
+  header.top {
+    background: linear-gradient(135deg, #2c7a7b 0%, #4fd1c5 100%);
+    color: white;
+    padding: 28px 28px;
+    border-radius: 18px;
+    margin-bottom: 24px;
+  }
+  header.top h1 { font-size: 28px; margin-bottom: 6px; font-weight: 800; }
+  header.top .subtitle { font-size: 16px; opacity: 0.95; }
+  header.top .source-note {
+    margin-top: 10px;
+    font-size: 13px;
+    opacity: 0.85;
+    background: rgba(255,255,255,0.15);
+    padding: 6px 12px;
+    border-radius: 10px;
+    display: inline-block;
+  }
+
+  /* ─── Screen system ─── */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ─── Section / Card ─── */
+  .section {
+    background: white;
+    padding: 24px 28px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  }
+  .section h2 {
+    font-size: 22px;
+    margin-bottom: 14px;
+    color: #2c7a7b;
+    font-weight: 800;
+  }
+  .section .helper {
+    font-size: 14px;
+    color: #4a5568;
+    margin-bottom: 18px;
+  }
+
+  /* ─── Buttons ─── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    font-size: 16px;
+    font-weight: 700;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform .1s, box-shadow .15s;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary { background: #2c7a7b; color: white; }
+  .btn-primary:hover { background: #285e61; }
+  .btn-secondary { background: #edf2f7; color: #2d3748; }
+  .btn-secondary:hover { background: #e2e8f0; }
+  .btn-ghost { background: transparent; color: #2c7a7b; text-decoration: underline; padding: 8px 0; }
+
+  /* ─── Students table ─── */
+  table.students {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+  }
+  table.students th {
+    background: #edf2f7;
+    padding: 12px;
+    text-align: right;
+    font-weight: 700;
+    color: #2d3748;
+    font-size: 14px;
+  }
+  table.students td {
+    padding: 14px 12px;
+    border-bottom: 1px solid #edf2f7;
+  }
+  table.students tr:hover td { background: #f9fbfc; }
+  table.students .empty {
+    text-align: center;
+    padding: 32px;
+    color: #718096;
+  }
+  .profile-chip {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    color: white;
+  }
+  .profile-chip.profile-none { background: #cbd5e0; color: #4a5568; }
+
+  /* ─── New student form ─── */
+  .new-student {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .new-student input {
+    flex: 1;
+    min-width: 200px;
+    padding: 12px 14px;
+    font-size: 16px;
+    font-family: inherit;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    background: white;
+  }
+  .new-student input:focus { outline: none; border-color: #2c7a7b; }
+
+  /* ─── Rubric ─── */
+  .component {
+    background: white;
+    border-radius: 16px;
+    margin-bottom: 18px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  }
+  .component-header {
+    background: #2c7a7b;
+    color: white;
+    padding: 18px 24px;
+  }
+  .component-header h3 { font-size: 19px; font-weight: 800; margin-bottom: 4px; }
+  .component-header .comp-desc { font-size: 14px; opacity: 0.9; }
+  .component-body { padding: 12px 24px 24px; }
+
+  .observation {
+    border-top: 1px solid #edf2f7;
+    padding: 18px 0;
+  }
+  .observation:first-child { border-top: none; }
+  .observation .obs-label {
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: #2d3748;
+  }
+  .obs-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 10px;
+  }
+  .obs-option {
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    background: white;
+    transition: border-color .12s, background .12s;
+  }
+  .obs-option:hover { border-color: #cbd5e0; background: #fafbfc; }
+  .obs-option input[type="radio"] { display: none; }
+  .obs-option.selected {
+    border-color: #2c7a7b;
+    background: #e6fffa;
+  }
+  .obs-option .opt-tag {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+  }
+  .opt-tag.t1 { background: #c6f6d5; color: #1c4532; }
+  .opt-tag.t2 { background: #bee3f8; color: #1a365d; }
+  .opt-tag.t3 { background: #fefcbf; color: #5f370e; }
+  .opt-tag.t4 { background: #fed7d7; color: #63171b; }
+  .obs-option .opt-desc {
+    font-size: 14px;
+    color: #2d3748;
+    line-height: 1.45;
+  }
+  .obs-option.empty {
+    cursor: default;
+    background: #f7fafc;
+    color: #a0aec0;
+    border-style: dashed;
+  }
+  .obs-option.empty:hover { background: #f7fafc; border-color: #e2e8f0; }
+  .obs-option .empty-note { font-size: 12px; font-style: italic; }
+
+  /* ─── Free notes ─── */
+  .notes-section textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 14px;
+    font-family: inherit;
+    font-size: 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    resize: vertical;
+    line-height: 1.5;
+  }
+  .notes-section textarea:focus { outline: none; border-color: #2c7a7b; }
+
+  /* ─── Sticky action bar ─── */
+  .action-bar {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    padding: 16px 24px;
+    border-radius: 16px;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .action-bar .student-info {
+    font-size: 15px;
+    color: #4a5568;
+  }
+  .action-bar .student-info strong { color: #2c7a7b; font-size: 17px; }
+  .action-bar-progress {
+    font-size: 14px;
+    color: #718096;
+  }
+
+  /* ─── Result screen ─── */
+  .result-suggestion {
+    background: #e6fffa;
+    border: 2px solid #4fd1c5;
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .result-suggestion .label {
+    font-size: 14px;
+    color: #2c7a7b;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .result-suggestion .profile-name {
+    font-size: 32px;
+    font-weight: 800;
+    color: #1a2332;
+    margin-bottom: 12px;
+  }
+  .result-suggestion .explanation {
+    font-size: 15px;
+    color: #2d3748;
+    line-height: 1.6;
+  }
+  .result-breakdown {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin-top: 18px;
+  }
+  .breakdown-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .breakdown-card .bk-label {
+    font-size: 13px;
+    color: #718096;
+    margin-bottom: 6px;
+  }
+  .breakdown-card .bk-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: #2d3748;
+  }
+
+  .decision-section h3 {
+    font-size: 18px;
+    color: #2c7a7b;
+    margin-bottom: 12px;
+    font-weight: 800;
+  }
+  .decision-section .helper {
+    font-size: 14px;
+    color: #4a5568;
+    margin-bottom: 16px;
+  }
+  .decision-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+  }
+  .decision-btn {
+    padding: 18px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    background: white;
+    cursor: pointer;
+    text-align: center;
+    font-family: inherit;
+    transition: all .15s;
+  }
+  .decision-btn:hover { border-color: #4fd1c5; }
+  .decision-btn.is-suggestion { border-color: #4fd1c5; background: #f0fffc; }
+  .decision-btn .dec-num {
+    font-size: 14px;
+    color: #718096;
+    margin-bottom: 4px;
+  }
+  .decision-btn .dec-name {
+    font-size: 16px;
+    font-weight: 800;
+    color: #2d3748;
+  }
+  .decision-btn .dec-tag {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 8px;
+    background: #4fd1c5;
+    color: white;
+    font-weight: 700;
+  }
+
+  .override-reason {
+    margin-top: 16px;
+    display: none;
+  }
+  .override-reason.active { display: block; }
+  .override-reason label {
+    display: block;
+    font-size: 14px;
+    color: #4a5568;
+    margin-bottom: 8px;
+  }
+  .override-reason textarea {
+    width: 100%;
+    min-height: 70px;
+    padding: 12px;
+    font-family: inherit;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    resize: vertical;
+  }
+
+  .saved-success {
+    background: #c6f6d5;
+    color: #1c4532;
+    padding: 14px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-weight: 700;
+    display: none;
+  }
+  .saved-success.active { display: block; }
+
+  /* ─── History (previous assessments) ─── */
+  .history-list {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: #f7fafc;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+  .history-item .h-date { color: #718096; }
+  .history-item .h-override-tag {
+    font-size: 11px;
+    background: #fed7d7;
+    color: #63171b;
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-weight: 700;
+  }
+
+  /* ─── Footer note ─── */
+  .source-footer {
+    text-align: center;
+    font-size: 13px;
+    color: #718096;
+    margin-top: 30px;
+    padding: 16px;
+  }
+
+  @media (max-width: 600px) {
+    header.top { padding: 22px 18px; }
+    header.top h1 { font-size: 22px; }
+    .section { padding: 18px 16px; }
+    .component-body { padding: 12px 16px 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ════════════════ HEADER ════════════════ -->
+  <header class="top">
+    <h1>הפרופיל האורייני</h1>
+    <div class="subtitle">כלי תצפית למורה — מיפוי רכיבי האוריינות המוקדמת בכניסה לכיתה א'</div>
+    <span class="source-note">מקור: ד"ר לימור קולן, משה"ח · תשפ"ו</span>
+  </header>
+
+  <!-- ════════════════ SCREEN 1: STUDENTS LIST ════════════════ -->
+  <section class="screen active" id="screen-list">
+    <div class="section">
+      <h2>תלמידות בכיתה</h2>
+      <p class="helper">
+        הוסיפי תלמידה כדי להתחיל מיפוי. אפשר לחזור ולהוסיף הערכות נוספות לאותה תלמידה לאורך השנה —
+        קולן ממליצה לא להתבסס על אירוע יחיד.
+      </p>
+
+      <table class="students" id="students-table">
+        <thead>
+          <tr>
+            <th>שם</th>
+            <th>תאריך הוספה</th>
+            <th>פרופיל נוכחי</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="students-tbody">
+          <tr><td colspan="4" class="empty">עדיין לא הוספת תלמידות. התחילי למטה ↓</td></tr>
+        </tbody>
+      </table>
+
+      <div class="new-student">
+        <input type="text" id="new-student-name" placeholder="שם התלמידה (למשל: מאיה כהן)" autocomplete="off">
+        <button class="btn btn-primary" id="btn-add-student">הוסיפי תלמידה והתחילי מיפוי</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════ SCREEN 2: RUBRIC ════════════════ -->
+  <section class="screen" id="screen-rubric">
+    <div class="section">
+      <h2 id="rubric-title">מיפוי פרופיל אורייני</h2>
+      <p class="helper">
+        סמני בכל שורה את התיאור שמתאים ביותר לתלמידה <strong id="rubric-name"></strong>.
+        אפשר לדלג על שורות שעוד לא ראית את ההתנהגות הזו. בסיום — לחצי "חשבי פרופיל מומלץ".
+      </p>
+    </div>
+
+    <div id="components-container"><!-- 3 components render here --></div>
+
+    <div class="section notes-section">
+      <h2>הערות חופשיות</h2>
+      <p class="helper">תיעוד תצפיות נוספות, הקשר תרבותי-לשוני, שיקולים אישיים.</p>
+      <textarea id="rubric-notes" placeholder="לדוגמה: עברית כשפה שנייה (אם הילד מבית דובר רוסית), חודש בארץ ביולי תשפ"ו, מגלה עניין רב בספרים..."></textarea>
+    </div>
+
+    <div class="action-bar">
+      <div class="student-info">תלמידה: <strong id="action-bar-name">—</strong></div>
+      <div class="action-bar-progress" id="progress-counter">0 / 11 תצפיות סומנו</div>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn btn-secondary" id="btn-back-to-list">חזרה לרשימה</button>
+        <button class="btn btn-primary" id="btn-calculate">חשבי פרופיל מומלץ ←</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════ SCREEN 3: RESULT ════════════════ -->
+  <section class="screen" id="screen-result">
+    <div class="saved-success" id="saved-success">
+      ✓ הפרופיל נשמר לתלמידה <strong id="saved-name"></strong>
+    </div>
+
+    <div class="section">
+      <h2>תוצאת המיפוי</h2>
+      <p class="helper">תלמידה: <strong id="result-name"></strong></p>
+
+      <div class="result-suggestion" id="suggestion-card">
+        <div class="label">המלצה אוטומטית</div>
+        <div class="profile-name" id="suggested-profile">—</div>
+        <div class="explanation" id="suggestion-explanation">—</div>
+
+        <div class="result-breakdown" id="breakdown-container"><!-- per-component breakdown --></div>
+      </div>
+    </div>
+
+    <div class="section decision-section">
+      <h3>הקביעה שלך</h3>
+      <p class="helper">
+        ההמלצה האוטומטית מבוססת על ספירת התצפיות. את מכירה את התלמידה מעבר לרובריקה —
+        אם לדעתך הפרופיל אחר, סמני את הבחירה שלך. שתי הקביעות יישמרו (למידה עתידית של הכלי).
+      </p>
+      <div class="decision-grid" id="decision-grid"><!-- 4 buttons render here --></div>
+
+      <div class="override-reason" id="override-reason">
+        <label>לציין למה את חולקת על ההמלצה (אופציונלי):</label>
+        <textarea id="override-text" placeholder="לדוגמה: מכירה את הילדה מהגן — הקושי הפונולוגי הוא ספציפי, לא כללי..."></textarea>
+      </div>
+
+      <div style="margin-top: 22px; display: flex; gap: 10px; flex-wrap: wrap;">
+        <button class="btn btn-primary" id="btn-save-decision">שמרי הקביעה</button>
+        <button class="btn btn-secondary" id="btn-edit-rubric">חזרה לעריכת הרובריקה</button>
+        <button class="btn btn-ghost" id="btn-back-to-list-from-result">סיימתי — חזרה לרשימה</button>
+      </div>
+    </div>
+
+    <div class="section" id="history-section" style="display: none;">
+      <h2>הערכות קודמות לתלמידה זו</h2>
+      <p class="helper">קולן ממליצה לאסוף נתונים ממספר אירועי הערכה.</p>
+      <div class="history-list" id="history-list"></div>
+    </div>
+  </section>
+
+  <div class="source-footer">
+    מבוסס על: ד"ר לימור קולן, "הפרופיל האורייני — כלי להערכת רכיבי האוריינות המוקדמת בתחילת כיתה א'",
+    משרד החינוך, המזכירות הפדגוגית, אגף שפות — הפיקוח על הוראת העברית ביסודי, תשפ"ו.
+  </div>
+</div>
+
+<script type="module">
+  import {
+    PROFILES, COMPONENTS, OBSERVATIONS,
+    classifyProfile, StudentsStore, AssessmentsStore,
+  } from '../underwater-app/js/shared/profile-classifier.js';
+
+  // ════════════ State ════════════
+  const state = {
+    currentStudent: null,    // {id, name, ...}
+    observations: {},        // { obs_id: 1|2|3|4 }
+    suggestion: null,        // result of classifyProfile()
+    teacherChoice: null,     // 1|2|3|4 — locked when teacher clicks a decision button
+  };
+
+  // ════════════ Screen switching ════════════
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ════════════ Screen 1: students list ════════════
+  function renderStudentsList() {
+    const tbody = document.getElementById('students-tbody');
+    const students = StudentsStore.list();
+
+    if (students.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="empty">עדיין לא הוספת תלמידות. התחילי למטה ↓</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = students.map(s => {
+      const profileLabel = s.profile
+        ? `<span class="profile-chip" style="background:${PROFILES[s.profile].color}">${PROFILES[s.profile].name_he}</span>`
+        : '<span class="profile-chip profile-none">טרם נקבע</span>';
+      const dateLabel = new Date(s.entry_date).toLocaleDateString('he-IL');
+      return `
+        <tr>
+          <td><strong>${escapeHtml(s.name)}</strong></td>
+          <td>${dateLabel}</td>
+          <td>${profileLabel}</td>
+          <td>
+            <button class="btn btn-secondary" data-action="open" data-id="${s.id}">${s.profile ? 'הוסיפי הערכה' : 'התחילי מיפוי'}</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    tbody.querySelectorAll('[data-action="open"]').forEach(btn => {
+      btn.addEventListener('click', () => openStudent(btn.dataset.id));
+    });
+  }
+
+  document.getElementById('btn-add-student').addEventListener('click', () => {
+    const input = document.getElementById('new-student-name');
+    const name = input.value.trim();
+    if (!name) {
+      input.focus();
+      return;
+    }
+    const student = StudentsStore.add({ name });
+    input.value = '';
+    renderStudentsList();
+    openStudent(student.id);
+  });
+
+  document.getElementById('new-student-name').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('btn-add-student').click();
+  });
+
+  // ════════════ Screen 2: rubric ════════════
+  function openStudent(studentId) {
+    state.currentStudent = StudentsStore.get(studentId);
+    if (!state.currentStudent) return;
+    state.observations = {};
+    state.suggestion = null;
+    state.teacherChoice = null;
+
+    document.getElementById('rubric-name').textContent = state.currentStudent.name;
+    document.getElementById('action-bar-name').textContent = state.currentStudent.name;
+    document.getElementById('rubric-notes').value = '';
+
+    renderComponents();
+    updateProgress();
+    showScreen('screen-rubric');
+  }
+
+  function renderComponents() {
+    const container = document.getElementById('components-container');
+    const componentKeys = ['comm', 'alpha', 'book'];
+
+    container.innerHTML = componentKeys.map(key => {
+      const comp = COMPONENTS[key];
+      const obsForComp = OBSERVATIONS.filter(o => o.component === key);
+
+      const obsHtml = obsForComp.map(obs => {
+        const optsHtml = [1, 2, 3, 4].map(profileId => {
+          const desc = obs.descriptions[profileId];
+          if (desc === null) {
+            return `
+              <div class="obs-option empty" data-disabled="true">
+                <span class="opt-tag t${profileId}">${PROFILES[profileId].name_he}</span>
+                <div class="opt-desc empty-note">לא תואר במפורש במקור</div>
+              </div>
+            `;
+          }
+          return `
+            <label class="obs-option" data-obs="${obs.id}" data-value="${profileId}">
+              <input type="radio" name="${obs.id}" value="${profileId}">
+              <span class="opt-tag t${profileId}">${PROFILES[profileId].name_he}</span>
+              <div class="opt-desc">${desc}</div>
+            </label>
+          `;
+        }).join('');
+
+        return `
+          <div class="observation">
+            <div class="obs-label">${obs.label}</div>
+            <div class="obs-options">${optsHtml}</div>
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div class="component">
+          <div class="component-header">
+            <h3>${comp.name_he}</h3>
+            <div class="comp-desc">${comp.description_he}</div>
+          </div>
+          <div class="component-body">${obsHtml}</div>
+        </div>
+      `;
+    }).join('');
+
+    // Attach option click handlers
+    container.querySelectorAll('.obs-option:not(.empty)').forEach(opt => {
+      opt.addEventListener('click', (e) => {
+        e.preventDefault();
+        const obsId = opt.dataset.obs;
+        const value = parseInt(opt.dataset.value, 10);
+
+        // Toggle: clicking the same option clears it
+        if (state.observations[obsId] === value) {
+          delete state.observations[obsId];
+          opt.classList.remove('selected');
+        } else {
+          state.observations[obsId] = value;
+          container.querySelectorAll(`[data-obs="${obsId}"]`).forEach(o => o.classList.remove('selected'));
+          opt.classList.add('selected');
+        }
+        updateProgress();
+      });
+    });
+  }
+
+  function updateProgress() {
+    const total = OBSERVATIONS.length;
+    const marked = Object.keys(state.observations).length;
+    document.getElementById('progress-counter').textContent = `${marked} / ${total} תצפיות סומנו`;
+  }
+
+  document.getElementById('btn-back-to-list').addEventListener('click', () => {
+    renderStudentsList();
+    showScreen('screen-list');
+  });
+
+  document.getElementById('btn-calculate').addEventListener('click', () => {
+    if (Object.keys(state.observations).length === 0) {
+      alert('סמני לפחות תצפית אחת לפני שמחשבים פרופיל.');
+      return;
+    }
+    state.suggestion = classifyProfile(state.observations);
+    state.teacherChoice = state.suggestion.profile;
+    renderResult();
+    showScreen('screen-result');
+  });
+
+  // ════════════ Screen 3: result ════════════
+  function renderResult() {
+    const sug = state.suggestion;
+    document.getElementById('result-name').textContent = state.currentStudent.name;
+    document.getElementById('suggested-profile').textContent = PROFILES[sug.profile].name_he;
+    document.getElementById('suggested-profile').style.color = PROFILES[sug.profile].color;
+    document.getElementById('suggestion-explanation').textContent = sug.explanation;
+
+    // breakdown
+    const bkContainer = document.getElementById('breakdown-container');
+    const labels = { comm: 'כשירות תקשורתית', alpha: 'ידע אלפביתי', book: 'מפגש עם ספר' };
+    bkContainer.innerHTML = Object.keys(labels).map(key => {
+      const p = sug.breakdown[key];
+      const value = p ? PROFILES[p].name_he : 'לא סומן';
+      const color = p ? PROFILES[p].color : '#a0aec0';
+      return `
+        <div class="breakdown-card">
+          <div class="bk-label">${labels[key]}</div>
+          <div class="bk-value" style="color:${color}">${value}</div>
+        </div>
+      `;
+    }).join('');
+
+    // decision buttons
+    const grid = document.getElementById('decision-grid');
+    grid.innerHTML = [1, 2, 3, 4].map(p => {
+      const isSuggestion = p === sug.profile;
+      const isChosen = p === state.teacherChoice;
+      return `
+        <button class="decision-btn ${isChosen ? 'is-suggestion' : ''}" data-choice="${p}" style="${isChosen ? `border-color:${PROFILES[p].color}` : ''}">
+          <div class="dec-num">פרופיל ${p}</div>
+          <div class="dec-name" style="color:${PROFILES[p].color}">${PROFILES[p].name_he}</div>
+          ${isSuggestion ? '<span class="dec-tag">מומלץ אוטומטית</span>' : ''}
+        </button>
+      `;
+    }).join('');
+
+    grid.querySelectorAll('[data-choice]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.teacherChoice = parseInt(btn.dataset.choice, 10);
+        renderResult();  // re-render to update selection
+        const overrideBox = document.getElementById('override-reason');
+        if (state.teacherChoice !== sug.profile) {
+          overrideBox.classList.add('active');
+        } else {
+          overrideBox.classList.remove('active');
+        }
+      });
+    });
+
+    // hide saved success
+    document.getElementById('saved-success').classList.remove('active');
+
+    // history
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const history = AssessmentsStore.list(state.currentStudent.id);
+    const section = document.getElementById('history-section');
+    const list = document.getElementById('history-list');
+
+    if (history.length === 0) {
+      section.style.display = 'none';
+      return;
+    }
+    section.style.display = 'block';
+    list.innerHTML = history.slice().reverse().map(h => {
+      const dateStr = new Date(h.date).toLocaleDateString('he-IL');
+      const profileName = PROFILES[h.teacher_decision].name_he;
+      const overrideTag = h.teacher_override ? '<span class="h-override-tag">חרגה מההמלצה</span>' : '';
+      return `
+        <div class="history-item">
+          <span><strong>${profileName}</strong> ${overrideTag}</span>
+          <span class="h-date">${dateStr}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  document.getElementById('btn-save-decision').addEventListener('click', () => {
+    const overrideText = document.getElementById('override-text').value.trim();
+    const notes = document.getElementById('rubric-notes').value.trim();
+    const isOverride = state.teacherChoice !== state.suggestion.profile;
+
+    AssessmentsStore.save(state.currentStudent.id, {
+      observations: { ...state.observations },
+      auto_suggestion: state.suggestion.profile,
+      teacher_decision: state.teacherChoice,
+      teacher_override: isOverride,
+      override_reason: isOverride ? overrideText : null,
+      breakdown: state.suggestion.breakdown,
+      counts: state.suggestion.counts,
+      total_observed: state.suggestion.total_observed,
+      notes: notes || null,
+    });
+
+    StudentsStore.updateProfile(state.currentStudent.id, state.teacherChoice);
+
+    document.getElementById('saved-name').textContent = state.currentStudent.name;
+    document.getElementById('saved-success').classList.add('active');
+    renderHistory();
+  });
+
+  document.getElementById('btn-edit-rubric').addEventListener('click', () => {
+    showScreen('screen-rubric');
+  });
+
+  document.getElementById('btn-back-to-list-from-result').addEventListener('click', () => {
+    renderStudentsList();
+    showScreen('screen-list');
+  });
+
+  // ════════════ Utils ════════════
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // ════════════ Init ════════════
+  renderStudentsList();
+</script>
+</body>
+</html>

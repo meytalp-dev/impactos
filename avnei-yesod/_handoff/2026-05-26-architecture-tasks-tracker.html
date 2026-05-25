@@ -304,13 +304,13 @@ li.task.in-progress .task-name::before {
 
 <header>
   <h1>אבני יסוד — מעקב משימות</h1>
-  <div class="meta">עודכן 26.5.2026 ערב · 39 משימות · פאזות A0 + A-I · סטטוס נשמר אוטומטית במחשב שלך</div>
+  <div class="meta">עודכן 27.5.2026 · 40 משימות · פאזות A0 + A-I · סטטוס נשמר אוטומטית במחשב שלך</div>
 </header>
 
 <div class="overall-progress">
   <span class="label">התקדמות כוללת:</span>
   <div class="progress-bar"><div class="progress-bar-fill" id="overall-fill"></div></div>
-  <span class="count" id="overall-count">0 / 39</span>
+  <span class="count" id="overall-count">0 / 40</span>
 </div>
 
 <div class="controls">
@@ -329,7 +329,7 @@ li.task.in-progress .task-name::before {
   </div>
   <ul class="tasks">
     <li class="task" data-phase="A0">
-      <input type="checkbox" data-id="A0.1">
+      <input type="checkbox" data-id="A0.1" checked>
       <div class="task-content">
         <div class="task-line">
           <span class="task-id">A0.1</span>
@@ -338,7 +338,7 @@ li.task.in-progress .task-name::before {
           <span class="task-name">פרופיל אורייני ב-onboarding (4 רמות, ד"ר קולן 2025)</span>
           <span class="new-marker">חדש</span>
         </div>
-        <div class="note">מסך כניסה ראשון. 4 רמות: שליטה מצוינת / טובה / חלקית / פערים. קובע באיזה אי הילדה מתחילה.</div>
+        <div class="note">כלי תצפית למורה: <code>engine/onboarding-profile.html</code> + <code>js/shared/profile-classifier.js</code>. רובריקה דואלית (auto-suggestion + teacher override). 3 רכיבים, 11 שורות תצפית, ניסוחים מילוליים מ-PDF משה"ח. נבנה 26.5.2026.</div>
       </div>
     </li>
     <li class="task" data-phase="A0">
@@ -368,7 +368,7 @@ li.task.in-progress .task-name::before {
       </div>
     </li>
     <li class="task" data-phase="A0">
-      <input type="checkbox" data-id="A0.4">
+      <input type="checkbox" data-id="A0.4" checked>
       <div class="task-content">
         <div class="task-line">
           <span class="task-id">A0.4</span>
@@ -377,6 +377,7 @@ li.task.in-progress .task-name::before {
           <span class="task-name">משחקון לעיצור-סוגר באי 2 (P2) — חוסם משימה 2 של ראמ"ה</span>
           <span class="new-marker">חדש</span>
         </div>
+        <div class="note">🟢 קוד מוכן 27.5.2026 · stage-2-whispers.html · memory-pair, 4 סיבובים, 30 מילים, 5 סיומות continuants (מ/ן/ש/ר/ל). ממתין ל-33 קבצי MP3 מ-AvriNeural (8 מטא + 5 phoneme-end + 20 word) + אישור push.</div>
       </div>
     </li>
   </ul>
@@ -455,12 +456,25 @@ li.task.in-progress .task-name::before {
 <section class="phase" data-phase="F">
   <div class="phase-header">
     <div class="phase-title">פאזה F — מסכים נוספים</div>
-    <span class="phase-progress" id="prog-F">0 / 3</span>
+    <span class="phase-progress" id="prog-F">0 / 4</span>
   </div>
   <ul class="tasks">
     <li class="task" data-phase="F"><input type="checkbox" data-id="F.20"><div class="task-content"><div class="task-line"><span class="task-id">20</span><span class="priority p1">P1</span><span class="effort">S</span><span class="task-name">מסך 3 island modes (Learning/Maintenance/Exposure)</span></div></div></li>
     <li class="task" data-phase="F"><input type="checkbox" data-id="F.21"><div class="task-content"><div class="task-line"><span class="task-id">21</span><span class="priority p1">P1</span><span class="effort">M</span><span class="task-name">Specialist Flag (14 ימי אי-התקדמות)</span></div></div></li>
     <li class="task" data-phase="F"><input type="checkbox" data-id="F.21A"><div class="task-content"><div class="task-line"><span class="task-id">21A</span><span class="priority p0">P0</span><span class="effort">M</span><span class="task-name">מסך מורה בשפת ראמ"ה (10 משימות + פעימה)</span><span class="new-marker">חדש</span></div></div></li>
+    <li class="task" data-phase="F">
+      <input type="checkbox" data-id="F.22">
+      <div class="task-content">
+        <div class="task-line">
+          <span class="task-id">22</span>
+          <span class="priority p1">P1</span>
+          <span class="effort">M</span>
+          <span class="task-name">דף אינדקס לאי 2 — מציג את 3 המשחקונים (whispers + twin-seaweeds + dagigim) ופותח את האי במפה</span>
+          <span class="new-marker">חדש</span>
+        </div>
+        <div class="note">דומה למבנה של stage-3-island.html. תלות: A0.4 מוכן (27.5.2026). חוסם פתיחת אי 2 ל-MVP.</div>
+      </div>
+    </li>
   </ul>
 </section>
 
@@ -683,8 +697,15 @@ function attachInProgressCheckboxes() {
 
 function initCheckboxes() {
   const state = loadState();
+  let stateChanged = false;
   document.querySelectorAll('input[type="checkbox"][data-id]').forEach(cb => {
     const id = cb.dataset.id;
+    // אם ה-HTML מסמן כ-checked וה-state לא מכיל אותו — סנכרן ל-state
+    // (משימות שהושלמו מחוץ לסשן הדפדפן, כמו A0.4 שסומנה ב-HTML על-ידי סוכן עבודה)
+    if (cb.checked && state[id] === undefined) {
+      state[id] = true;
+      stateChanged = true;
+    }
     if (state[id]) {
       cb.checked = true;
       cb.closest('li.task').classList.add('checked');
@@ -709,6 +730,7 @@ function initCheckboxes() {
       updateProgress();
     });
   });
+  if (stateChanged) saveState(state);
   attachCopyButtons();
   attachInProgressCheckboxes();
   updateProgress();
