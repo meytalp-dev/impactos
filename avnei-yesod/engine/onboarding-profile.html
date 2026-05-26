@@ -858,9 +858,13 @@
   function buildDebugInfo() {
     const studentId = state.currentStudent ? state.currentStudent.id : '?';
     const currentInPicker = localStorage.getItem('avnei-yesod-current-student') || '(לא נבחרה)';
-    const bktState = window.AvneiBKT ? window.AvneiBKT.getStudentState(studentId) : null;
-    const i2 = bktState && bktState[2] ? bktState[2].attempts : 0;
-    const i3 = bktState && bktState[3] ? bktState[3].total_attempts : 0;
+    // קוראים BKT state ישירות מ-localStorage — הדף הזה לא טוען bkt.js כ-script tag.
+    // תיקון 27.5.2026: לפני כן הסתמכנו על window.AvneiBKT שלא היה זמין → תמיד 0.
+    let bktAll = {};
+    try { bktAll = JSON.parse(localStorage.getItem('avnei-bkt-v1') || '{}'); } catch (e) {}
+    const bktState = bktAll[studentId] || null;
+    const i2 = bktState && bktState[2] ? (bktState[2].attempts || 0) : 0;
+    const i3 = bktState && bktState[3] ? (bktState[3].total_attempts || 0) : 0;
     let i1 = 0;
     try {
       const m = JSON.parse(localStorage.getItem('avnei-yesod-island1-mastery') || '{}');

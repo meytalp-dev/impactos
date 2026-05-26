@@ -376,16 +376,14 @@ export const AssessmentsStore = {
  * }}
  */
 export function suggestFromBKT(studentId) {
-  if (typeof window === 'undefined' || !window.AvneiBKT) {
-    return { available: false, reason: 'מנוע BKT לא נטען (יזמין בעתיד).' };
-  }
-
-  // קוראים רק את ה-state האישי של התלמידה.
-  // (לאחר A0.1 — event-logger כותב לפי avnei-yesod-current-student, אז אם יש דאטה היא אישית).
-  // 'local' = רק למצב דמו/אורחת כשאין picker.
+  // קוראים את ה-state של BKT ישירות מ-localStorage — בלי תלות ב-window.AvneiBKT.
+  // הסיבה (תוקן 27.5.2026 באימות A0.1): profile-classifier נטען כ-ES module
+  // ב-engine/onboarding-profile.html שלא טוען את bkt.js, אז window.AvneiBKT היה undefined
+  // וההצעה לא הופיעה גם כשהיה מספיק דאטה. עכשיו הקריאה אוטרכית.
+  const allBktState = readJson('avnei-bkt-v1', {});
   const sourceId = studentId;
-  const state = window.AvneiBKT.getStudentState(sourceId);
-  const hasData = state && (state[2] || state[3]);
+  const state = allBktState[sourceId] || {};
+  const hasData = state[2] || state[3];
   if (!hasData) {
     return {
       available: false,

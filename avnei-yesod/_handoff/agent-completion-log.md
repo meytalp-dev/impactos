@@ -7,6 +7,35 @@
 
 ---
 
+## A0.1 — תיקון buggy של suggestFromBKT + debug panel (27.5.2026)
+
+**סטטוס:** ✅ הסתיים · אומת end-to-end ע"י מיטל · ממתין ל-push
+**תאריך:** 2026-05-27
+**שיחה:** Claude Code (סוכן תזמורת ב-VS Code · ort-presentation-builder)
+
+**בעיה שזוהתה באימות:**
+- מיטל הוסיפה תלמידה ("מיטל פלג"), שיחקה 25 פריטים באי 3 (5 פריטים × 5 אותיות), p=0.9987.
+- BKT engine רשם תקין (25 attempts). Event logger רשם תקין (25 events על התלמידה).
+- אבל ה-onboarding-profile הציג "אין עדיין הצעה אוטומטית · מנוע BKT לא נטען".
+- **שורש הבעיה:** `engine/onboarding-profile.html` לא טוען את `bkt.js` כ-script tag. רק את `profile-classifier.js` כ-ES module. `window.AvneiBKT` היה `undefined` ו-`suggestFromBKT()` יצא מיד בשורה 379.
+
+**התיקון (אופציה B מההמלצה):**
+| קובץ | שינוי |
+|---|---|
+| `underwater-app/js/shared/profile-classifier.js` | `suggestFromBKT()` קוראת BKT state ישירות מ-localStorage (`avnei-bkt-v1`) דרך `readJson()` — לא דורשת יותר `window.AvneiBKT` |
+| `engine/onboarding-profile.html` | `buildDebugInfo()` קוראת BKT state ישירות מ-localStorage — לא דורשת `window.AvneiBKT` |
+
+**אימות לאחר תיקון (צילום מיטל):**
+- ✅ דיבאג פאנל: "אי 3 = 25 אירועי BKT · סה"כ 25 (סף: 10)"
+- ✅ באנר צהוב: "המערכת אספה 25 אירועי תרגול ויכולה להציע 2 סימונים"
+- ✅ ידע אותיות: "שליטה מצוינת" (5/5 אותיות מתורגלות שולטת BKT ≥ 0.70)
+- ✅ קשרי אות-צליל: "שליטה מצוינת" (aggregate BKT = 1.00, 25 ניסיונות)
+- ✅ באנר ירוק אישור: "החלו 2 סימונים אוטומטיים"
+
+**הערה:** אופציה B (במקום A — להוסיף script tag ב-HTML) נבחרה כי profile-classifier הוא ES module עצמאי שאמור להיות autarki. אם בעתיד תוסיף קריאות אחרות ל-AvneiBKT מ-engine/, צריך לשקול אופציה A או C.
+
+---
+
 ## A0.3 — קריטריון Mastery משולש (BKT + שטף + רף ראמ"ה)
 
 **סטטוס:** ✅ הסתיים · ב-git · נבדק קצה-לקצה ע"י מיטל לפני push
