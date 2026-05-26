@@ -7,6 +7,54 @@
 
 ---
 
+## A0.2 — שדות `rama_task_alignment` + `peima_target` ב-schema פריט
+
+**סטטוס:** ✅ הסתיים · ב-git · ב-origin/main
+**תאריך:** 2026-05-26
+**שיחה:** Claude Code (VS Code · ort-presentation-builder)
+**קומיטים:**
+| commit | מה |
+|---|---|
+| `d5d9599` | A0.2 ליבה — item-schema.js + add-rama-tagging.py + 86 פריטים תוייגו ב-7 קבצי data |
+| `e00ec7d` | בונוס: חיזוק L3+L4 ב-island-03-items.json (Option D — מסיחי-מיקום) — 20 פריטים שונו |
+| `98a49e2` | תיקוני פידבק מיטל — חֲלוֹם→לֶחֶם, החלפת צָב↔כֶּלֶב בין L3 ו-L4 |
+
+**קבצים שנוצרו/שונו:**
+- `underwater-app/js/shared/item-schema.js` — חדש · `RAMA_TASKS` (10 משימות) · `PEIMAS` (3) · `validateRamaTagging` · `filterByRamaTask` · `filterByPeima`
+- `underwater-app/scripts/add-rama-tagging.py` — חדש · bulk tagging script ניתן להריץ מחדש בהוספת איים
+- `underwater-app/scripts/harden-l3-l4-distractors.py` — חדש · 20 פריטים L3+L4 לפי Option D
+- `underwater-app/data/island-01-words.json` — 15 מילים תוייגו (task=2, peima=1)
+- `underwater-app/data/island-02-fish-schools.json` — 8 רנדים תוייגו (task=2, peima=1)
+- `underwater-app/data/island-02-twin-seaweeds.json` — 8 רנדים תוייגו (task=2, peima=1)
+- `underwater-app/data/island-03-items.json` — 50 פריטים תוייגו (task=2, peima=1) + 20 שכתובי L3/L4
+- `underwater-app/data/island-03-find-letter.json` — 3 פריטים תוייגו (task=1, peima=1)
+- `underwater-app/data/island-03-letter-shape.json` — 2 פריטים תוייגו (task=1, peima=1)
+- `underwater-app/data/island-03-trace-paths.json` — meta-level תיוג (task=1, peima=1)
+- `_handoff/2026-05-26-A0.2-rama-tagging.md` — תיעוד החלטות מיפוי
+- `_handoff/2026-05-26-L3-L4-hardening.md` — תיעוד חיזוק L3+L4
+
+**עקרונות עיצוב שיושמו:**
+- `rama_task_alignment` כ-int יחיד (1-10) — single primary task, לא array
+- `peima_target` כ-int יחיד (1-3) עם בדיקת עקביות מול `TASK_TO_PEIMA`
+- שדות נוספים גם ב-meta של כל קובץ data (default) וגם פר-פריט (granular)
+- חיזוק L3+L4 לפי Option D = מסיחי-מיקום (האות-יעד באמצע/סוף מילה, לא בהתחלה) — תואם `perplexity-island2-mechanics-2026-05-23` שאסר זוגות קוליים בשלב מוקדם
+
+**שאלות פתוחות + מענה ממיטל:**
+1. ❓ `island-03-items.json` (hear-sound-choose-image) → task 1 או 2? → ✅ נשמר כ-2 (פונולוגית, לא קריאת שם אות)
+2. ❓ `trace-paths` → task 1 בלבד או גם task 9 (הכתבה)? → 🟡 נשמר כ-1, secondary לא נוסף
+3. ❓ שדה משני `rama_task_alignment_secondary`? → 🟡 לא נוסף — נחכה לדשבורד 21A לבדוק אם נחוץ
+4. ❓ L4 = 2 אפשרויות (50% ניחוש) → להעלות ל-4? → ✅ הועלה ל-4 עם מסיחי-מיקום
+5. ❓ בחירת מסיחים: זוגות קוליים? → ❌ נדחה כי סותר אימות קיים, אומצה אפשרות D (מסיחי-מיקום)
+6. ❓ חֲלוֹם / שָׁמַיִם / בַּקְבּוּק / צָב? → ✅ חֲלוֹם הוחלף ל-לֶחֶם; שאר 3 נשמרו; צָב הועבר ל-L3
+
+**מה זה פתח / ממתין לפעולה:**
+- ✅ **A0.3** (Mastery משולש) — יכול לקרוא `rama_task_alignment` כדי לבדוק רף ראמ"ה
+- ✅ **21A** (מסך מורה בשפת ראמ"ה) — יכול לחתוך לפי משימה ופעימה
+- ✅ **19** (calibration analytics) — דורש את השדה הזה לקורלציה פר-משימה
+- 🟡 ממתין לבדיקת מיטל בכיתה אמיתית של פריטי L3+L4 המחוזקים (האם 6yo באמת תופסת את "מתחיל ב-" מול "מכיל"?)
+
+---
+
 ## A0.1 — פרופיל אורייני (כלי המורה) + suggestFromBKT
 
 **סטטוס:** 🟡 קוד נדחף ב-7 קומיטים · ממתין לאימות end-to-end ע"י מיטל
