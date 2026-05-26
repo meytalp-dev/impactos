@@ -387,6 +387,10 @@
     markQuestCompleted('rescue');
     elCompletion.classList.add('show');
     spawnConfetti(40);
+    // A0.3 — mastery משולש לאי כולו
+    if (window.AvneiMasteryCheck) {
+      AvneiMasteryCheck.checkAndShowIslandCelebration(null, ISLAND_ID);
+    }
   }
 
   // Quest tracking — stage-3-island.html reads island3-quests:completed

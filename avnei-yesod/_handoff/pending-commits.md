@@ -1,165 +1,200 @@
 # קומיטים ממתינים — אבני יסוד
-**נוצר:** 26.5.2026 · אחרי קומיט `bb8754a` (סגירת 5 סטרנדים)
+**עודכן:** 27.5.2026 · אחרי `git fetch` · HEAD = `9791c38` (RTL fix בצדף)
 
 ---
 
-## איך עוברים על המסמך
+## ✅ קבוצה G — A0.3 · Mastery משולש (נדחפה 27.5.2026)
 
-לכל קבוצה למטה — תגידי אחת מהשתיים:
-- **"דחוף עכשיו"** → קלוד יוצר קומיט נפרד לקבוצה ודוחף.
-- **"השאר"** → לא נוגעים. הקבצים נשארים על העץ.
+**קבצים שנדחפו (8):**
+- `underwater-app/js/shared/mastery-check.js` (חדש)
+- `underwater-app/stage-3-shell.html` · `stage-3-house.html` · `stage-3-storm.html` · `stage-3-trail-resh.html` · `stage-3-rescue.html` · `js/rescue-controller.js` — script tag + hook
+- `underwater-app/teacher-live.html` — סקציה 6 + CSS + renderMasteryStatus + תיקון STATE_KEY ('avnei-state-v1' → 'underwater-app:v1' דרך state.js)
+- `_handoff/2026-05-26-architecture-tasks-tracker.html` — A0.3 ✅
 
-קבוצות מסומנות 🔴 לא יוצעו לדחיפה. הן מחכות להחלטה ידנית פר קובץ.
-
-**סיכום ספירה:** 11 קבצים מעודכנים + 108 קבצים לא מנוהלים. מתוכם 70 PNG של אי 3.
-
----
-
-## קבוצה 1 — 🟢 אי 2 · שונית גלי הצליל (whispers)
-
-**קבצים (3):**
-- `underwater-app/data/island-02-whispers.json`
-- `underwater-app/css/whispers.css`
-- `underwater-app/stage-2-whispers.html`
-
-**תיאור:** משחקון memory-pair באי 2 (5 עיצורי-סוגר continuants, 30 מילים, 4 סיבובים). אומת פדגוגית ב-26.5.2026 (חתימת מיטל פלג בקובץ הדאטה: `"אומת פדגוגית 26.5.2026 — מיטל פלג"`).
-
-**מצב:** ✅ מוכן
-
-**המלצתי:** push עכשיו · קומיט יחיד.
+**הערה:** התיקון STATE_KEY שתוכנן כקומיט נפרד נכלל בקומיט הזה — בלעדיו A0.3 לא רץ (SyntaxError על הצהרה כפולה). באג צד-בונוס שתוקן: סקציות 1-5 ב-teacher-live שהציגו "אין נתונים" — עכשיו עובדות.
 
 ---
 
-## קבוצה 2 — 🟢 A0.1 · onboarding profile + classifier
+## 📌 כבר ב-git — 13 קומיטים מאז `bb8754a` (לא לדחוף שוב)
 
-**קבצים (2):**
-- `engine/onboarding-profile.html`
-- `underwater-app/js/shared/profile-classifier.js`
+מאז שהתחלנו את הסקירה הזו, 13 קומיטים נוספים נדחפו ל-`main`:
 
-**תיאור:** משימה A0.1 — מסך פרופיל אורייני בכניסה + מסווג ל-4 רמות (קולן, משה"ח 2025). תשתית למיון "באיזה אי הילדה מתחילה".
+| Hash | תיאור | קבצים שהיו ב"ממתינים" |
+|---|---|---|
+| `bb8754a` | partners doc v3 — 5 סטרנדים *(שלי)* | partners-review-v3.md |
+| `4b876a4` | A0.1 · פרופיל אורייני ב-onboarding | onboarding-profile.html, profile-classifier.js |
+| `1916fb6` | A0.4 · משחקון ים השמועות (יצירה ראשונית) | whispers.css, stage-2-whispers.html |
+| `299216e` | A0.1 · הצעה אוטומטית מ-BKT | — |
+| `2338b2c` | tracker + 3 docs | architecture-tasks-tracker.html, agent-completion-log.md, meytal-pending.md, pending-commits.md |
+| `07c9af3` | A0.1 · student-picker | — |
+| `7ad8e7b` | F.22 · דף אינדקס לאי 2 | — |
+| `d57fad4` | A0.1 · הסרת onboarding.html | — |
+| `a5e41c8` | A0.1 · picker empty-state | — |
+| `0faa5ec` | A0.4 · whispers JSON fix *(שלי)* | island-02-whispers.json |
+| `562a11d` | A0.4 · 29 MP3 AvriNeural | — |
+| `f99161f` | A0.1 · classifier ↔ mastery.js | — |
+| `1556c4f` | tracker · A0.4 note (29 MP3) | — |
+| `942f148` | architecture-tasks.md — A0.4 + F.22 ✅ | _handoff/2026-05-25-architecture-tasks.md |
+| `c5cd49a` | A0.1 · debug panel | (יצר את 2026-05-26-a0-1-handoff.md — מוטמע ב-log) |
+| `f7b2406` | tracker · הוראות פרומפט מעודכנות | _handoff/2026-05-26-architecture-tasks-tracker.html |
+| `e00ec7d` | **L3+L4 hardening (אפשרות D)** | **island-03-items.json + harden-l3-l4-distractors.py = קבוצה E** |
+| `d48d6f8` | **אי 3 · 70 PNG + CSS** *(שלי)* | **כל קבוצה A** |
 
-**מצב:** ✅ מוכן (לפי דירוג העדיפויות שלך).
-
-**המלצתי:** push עכשיו · קומיט יחיד.
+**מסקנה:** קבוצות 1, 2, A, E נסגרו במלואן. נשארו B (handoff docs), C (research+library+vocab+ארכיון), D (🟡), F (🔴).
 
 ---
 
-## קבוצה 3 — 🟢 אסטים PNG של אי 3 + CSS אנדרווטר
+## איך עוברים על המסמך (flow מעודכן)
+
+1. **את מאשרת קבוצה ספציפית** ("דחוף קבוצה X").
+2. **אני עושה `git fetch + sanity check`** (אם עברו >10 דק' מהסקירה).
+3. **אני דוחף את הקבוצה הזו בלבד** וחוזר עם hash.
+4. **את עוברת לקבוצה הבאה** — לא חזרה לסריקה מחדש.
+
+קבוצות מסומנות 🔴 לא יוצעו לדחיפה.
+
+---
+
+## קבוצה A — 🟢 אי 3 · 70 PNG + 3 CSS (ready)
 
 **קבצים (73):**
-- 70 PNG ב-`engine/content/images/island-03/` (balon, banana, bayit, kof, mem, resh, tet ועוד — 70 אסטים)
-- 3 CSS מעודכנים: `underwater-app/css/{house-quest,shell-quest,stage-3}.css`
+- 70 PNG ב-`engine/content/images/island-03/` *(אסטים PIL crop+center)*
+- `underwater-app/css/house-quest.css` *(M)*
+- `underwater-app/css/shell-quest.css` *(M)*
+- `underwater-app/css/stage-3.css` *(M)*
 
-**תיאור:** האסטים שיצרת ב-ChatGPT ועברו PIL crop+center. ה-CSS עודכן בהתאם (probably positioning של האסטים החדשים). הקבצים כבר משולבים במשחקונים החיים של אי 3 (`stage-3-house.html`, `stage-3-trail-resh.html`, `stage-3-rescue.html` וכו').
+**מצב:** ✅ ready.
 
-**מצב:** ✅ מוכן.
-
-**המלצתי:** push עכשיו · קומיט יחיד גדול. (קומיט אחד הגיוני כי האסטים וה-CSS משלימים זה את זה.)
+**הודעת קומיט:** `אבני יסוד · אי 3 · 70 PNG (PIL crop+center) + CSS`
 
 ---
 
-## קבוצה 4 — 🟢 _handoff · מסמכי תיעוד פנימי
+## קבוצה B — 🟢 handoff docs (תיעוד פנימי)
 
 **קבצים (7):**
-- `_handoff/agent-completion-log.md` *(חדש)*
-- `_handoff/agent-bootstraps.md` *(חדש)*
-- `_handoff/2026-05-26-engine-tech-brief.md` *(חדש)*
-- `_handoff/orchestrator-handoff-2026-05-25-evening.md` *(חדש)*
-- `_handoff/2026-05-22-letters-review.md` *(חדש)*
-- `_handoff/2026-05-26-architecture-tasks-tracker.html` *(מעודכן)*
-- `_handoff/2026-05-26-partners-review-v3.html` *(מעודכן — תואם ל-MD שכבר נדחף ב-`bb8754a`)*
 
-**תיאור:** מסמכי handoff/לוג/tracker. לא משפיעים על המוצר עצמו — תיעוד פנימי.
+*חדשים:*
+- `_handoff/agent-bootstraps.md`
+- `_handoff/2026-05-26-engine-tech-brief.md`
+- `_handoff/orchestrator-handoff-2026-05-25-evening.md`
+- `_handoff/2026-05-22-letters-review.md`
 
-**מצב:** ✅ מוכן.
+*מעודכנים:*
+- `_handoff/2026-05-26-partners-review-v3.html` *(תיקון רנדור — תואם ל-MD ב-`bb8754a`)*
+- `_handoff/2026-05-25-architecture-tasks.md` *(חדש מאז סריקה קודמת)*
+- `_handoff/2026-05-26-architecture-tasks-tracker.html` *(שונה שוב אחרי `1556c4f` — שווה הצצה מהירה לפני push)*
 
-**המלצתי:** push עכשיו · קומיט יחיד. (חשוב במיוחד לדחוף את ה-v3.html כי הוא תואם את ה-MD שכבר ב-main.)
+**מצב:** ✅ ready (עם הסתייגות קלה על ה-tracker).
+
+**הודעת קומיט:** `אבני יסוד · handoff docs — bootstraps + tech-brief + רנדור v3 + tasks`
 
 ---
 
-## קבוצה 5 — 🟡 spec/index/research/demo + טיוטות שותפים ישנות
+## קבוצה C — 🟢 Research + KB sources + Library + Vocab + ארכיון שותפים
 
-**קבצים (16):**
+**קבצים (19):**
 
-*מעודכנים:*
-- `README.md`
-- `index.html`
-- `spec.html`
-- `curriculum/vocab-bank.json`
+*חדשים — research/blueprint (4):*
+- `curriculum/blueprint/islands/island-1-research.md`
+- `curriculum/blueprint/islands/island-2-research.md`
+- `curriculum/blueprint/islands/island-3-research.md`
+- `curriculum/blueprint/islands/island-2-parameters-proposal.md`
 
-*חדשים — demo:*
-- `engine/demo-day2/{index.html, student-view.html, teacher-dashboard.html, day2-state.json}`
+*חדשים — knowledge-base sources (6):*
+- `curriculum/knowledge-base/sources/22-islands-validated-2026-05-21.json`
+- `curriculum/knowledge-base/sources/perplexity-island1-interventions-validation-2026-05-25.json`
+- `curriculum/knowledge-base/sources/perplexity-island1-parameters-validation-2026-05-25.json`
+- `curriculum/knowledge-base/sources/perplexity-island2-parameters-validation-2026-05-24.json`
+- `curriculum/knowledge-base/sources/perplexity-island4-parameters-validation-2026-05-25.json`
+- `curriculum/knowledge-base/sources/perplexity-island5-parameters-validation-2026-05-25.json`
+- `curriculum/knowledge-base/sources/perplexity-island9-parameters-validation-2026-05-25.json`
 
-*חדשים — research/blueprint:*
-- `curriculum/blueprint/islands/{island-1-research, island-2-research, island-3-research, island-2-parameters-proposal}.md`
-- `curriculum/diagnostic-axes-by-island.md`
-- `curriculum/open-questions-for-experts.md`
+*(שים לב: 6 קבצים תקפים. `perplexity-shatil-share-2003-validation` ב-🔴 כי `_INVALIDATED: true`.)*
+
+*חדשים — interventions library (2):*
 - `docs/interventions/library-v1.md`
 - `docs/interventions/library-v1-island1.md`
 
-*חדשים — טיוטות שותפים שהוחלפו:*
-- `_handoff/2026-05-25-partners-review.{md,html,pdf}`
-- `_handoff/2026-05-26-partners-review-v2.{md,html}`
+*חדשים — open questions (1):*
+- `curriculum/open-questions-for-experts.md`
 
-**תיאור:** ערבוב. ה-spec/README/index עודכנו (לא ראיתי את ה-diff). ה-research mds במסלול blueprint — תיעוד מחקרי שמלווה את הבנייה. demo-day2 = ויזואלי לדמו של היום השני (לא בטוח אם תואם את ההחלטה החדשה של 5 סטרנדים). הטיוטות הישנות של שותפים — הוחלפו ב-v3.
+*מעודכן — vocab (1):*
+- `curriculum/vocab-bank.json`
 
-**מצב:** 🟡 בדיקה נדרשת. סיבות:
-- ה-research mds **לא נסרקו** — ייתכן שמצטטים את "6 שלבי בר-און" השגוי.
-- demo-day2/teacher-dashboard.html — ייתכן שמציג שפה ישנה (סטרנדים בלבד, בלי שכבת ראמ"ה).
-- ה-`spec.html` הוא מסמך משני שעודכן — לפי ה-memory, ב"סתירה" architecture-mvp.md גובר. כדאי לוודא שהעדכון תואם.
-- הטיוטות הישנות של שותפים — לארכיון או להשמטה?
+*חדשים — ארכיון שותפים v1/v2 (5):*
+- `_handoff/2026-05-25-partners-review.md`
+- `_handoff/2026-05-25-partners-review.html`
+- `_handoff/2026-05-25-partners-review.pdf`
+- `_handoff/2026-05-26-partners-review-v2.md`
+- `_handoff/2026-05-26-partners-review-v2.html`
 
-**המלצתי:** push אחרי שמיטל סוקרת לפחות את:
-1. `demo-day2/teacher-dashboard.html` (האם השפה תואמת 5 סטרנדים + 3 שכבות תצוגה?)
-2. אחד מה-research mds (לוודא שלא מצטט "6 שלבי בר-און")
-3. החלטה על הטיוטות הישנות של השותפים (להשאיר לארכיון או למחוק)
+**מצב:** ✅ ready (נסרק לבר-און — נקי).
 
-אם רוצה — אוכל לפצל את הקבוצה הזו לתת-קבוצות ולסרוק תוכן מעמיק.
+**הודעת קומיט:** `אבני יסוד · research + KB sources + interventions library + vocab + ארכיון v1/v2`
 
 ---
 
-## קבוצה 6 — 🔴 דורש בדיקה ידנית של מיטל
+## קבוצה D — 🟡 README + index + demo-day2 (מינוח ישן)
 
-**אסור לדחוף בלי אישור פר קובץ. סיבות מפורטות למטה.**
+**קבצים (6):**
+- `README.md` *(M — "9 מיומנויות")*
+- `index.html` *(M — "9 מיומנויות")*
+- `engine/demo-day2/index.html`
+- `engine/demo-day2/student-view.html`
+- `engine/demo-day2/teacher-dashboard.html` *(BKT per-island)*
+- `engine/demo-day2/day2-state.json`
 
-### 6א — מסמכי-אם (4 קבצים)
-- `architecture-mvp.md` *(מעודכן)*
-- `curriculum/literacy-grade1-2-yearly.md` *(מעודכן)*
-- `curriculum/llm-pitfalls.md` *(חדש)*
-- `curriculum/pedagogy-integration-framework.md` *(חדש)*
+**מצב:** 🟡 לא לדחוף עד שמסמכי-האם מעודכנים. הדמו והעמודים מציגים מינוח ישן (9 מיומנויות / BKT per-island).
 
-**למה 🔴:** הנחיה שלך — מסמכי-אם דורשים אישור פר קובץ. גם אם השינויים נראים "קוסמטיים" — שינוי במסמך-אם משנה את מקור האמת לכל הסוכנים הבאים.
+---
 
-### 6ב — פאקים חודשיים שמצטטים בר-און (7 קבצים)
-- `curriculum/packs/grade1-tashpaz/september.json`
-- `curriculum/packs/grade1-tashpaz/october.json`
-- `curriculum/packs/grade1-tashpaz/november.json`
-- `curriculum/packs/grade1-tashpaz/december.json`
-- `curriculum/packs/grade1-tashpaz/january.json`
-- `curriculum/packs/grade1-tashpaz/february.json`
-- `curriculum/packs/grade1-tashpaz/march.json`
+## קבוצה E — 🟡 island-03-items.json + script (פעילים)
 
-**למה 🔴:** **כל 7 הפאקים מכילים את המילה "בר-און"** (אומת ב-grep). חלקם — ככל הנראה כולם — מצטטים את "6 שלבי בר-און" השגוי שעודכן ב-`llm-pitfalls`. דורשים תיקון לפני push.
+**קבצים (2):**
+- `underwater-app/data/island-03-items.json` *(M — **את פתחת ב-IDE**, אולי פעיל)*
+- `underwater-app/scripts/harden-l3-l4-distractors.py` *(?? — סקריפט שמרכך מסיחים, כנראה רץ על items.json)*
 
-### 6ג — Validation JSON שסומן INVALIDATED (1 קובץ)
-- `curriculum/knowledge-base/sources/perplexity-shatil-share-2003-validation-2026-05-25.json` — מכיל `"_INVALIDATED": true` בשורה 2.
+**מצב:** 🟡 לא ברור אם יציבים. ה-JSON פתוח ב-IDE שלך. שווה לוודא לפני push.
 
-**למה 🔴:** הקובץ עצמו הכריז על עצמו לא-תקף. צריך החלטה: למחוק (וגם להוסיף ל-.gitignore?) או לשמור כראיה היסטורית עם הסבר.
+---
+
+## קבוצה F — 🔴 דורש בדיקה ידנית של מיטל
+
+### F1 — מסמכי-אם (4)
+- `architecture-mvp.md` *(M)*
+- `curriculum/literacy-grade1-2-yearly.md` *(M)*
+- `curriculum/llm-pitfalls.md` *(??)*
+- `curriculum/pedagogy-integration-framework.md` *(??)*
+
+### F2 — מצטטים "בר-און" (2 קבצים, 5 מופעים)
+- `spec.html` *(M — שורות 613, 1829, 1907)*
+- `curriculum/diagnostic-axes-by-island.md` *(?? — שורות 29, 85)*
+
+### F3 — פאקים חודשיים שמצטטים בר-און (7)
+- `curriculum/packs/grade1-tashpaz/{september,october,november,december,january,february,march}.json`
+
+### F4 — INVALIDATED (1)
+- `curriculum/knowledge-base/sources/perplexity-shatil-share-2003-validation-2026-05-25.json` *(`"_INVALIDATED": true`)*
+
+---
+
+## בעיה היסטורית (לא בסקופ עכשיו)
+
+`curriculum/knowledge-base/sources/world-systems-comparison.json` שורה 340 — tracked, מצטט "6 שלבי בר-און". תיקון בעתיד.
 
 ---
 
 ## סיכום כמותי
 
-| קבוצה | קבצים | סטטוס | המלצה |
-|---|---|---|---|
-| 1 — whispers | 3 | ✅ | push |
-| 2 — onboarding A0.1 | 2 | ✅ | push |
-| 3 — אסטי island-03 + CSS | 73 | ✅ | push |
-| 4 — handoff docs | 7 | ✅ | push |
-| 5 — spec/research/demo | 16 | 🟡 | בדיקה |
-| 6 — מסמכי-אם + פאקים + INVALIDATED | 12 | 🔴 | ידני |
-| **סה"כ** | **113** | | |
-
----
-
-**ממתינה להחלטה שלך, קבוצה-קבוצה.**
+| קבוצה | קבצים | סטטוס |
+|---|---|---|
+| A — אי 3 PNG + CSS | 73 | ✅ ready |
+| B — handoff docs | 7 | ✅ ready |
+| C — research + KB sources + library + vocab + ארכיון | 19 | ✅ ready |
+| D — README + index + demo-day2 | 6 | 🟡 אחרי master |
+| E — island-03-items + script | 2 | 🟡 אישור |
+| F1 — מסמכי-אם | 4 | 🔴 |
+| F2 — בר-און | 2 | 🔴 |
+| F3 — פאקים | 7 | 🔴 |
+| F4 — INVALIDATED | 1 | 🔴 |
+| **סה"כ ממתין** | **121** | |

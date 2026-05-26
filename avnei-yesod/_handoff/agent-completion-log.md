@@ -7,6 +7,72 @@
 
 ---
 
+## A0.3 — קריטריון Mastery משולש (BKT + שטף + רף ראמ"ה)
+
+**סטטוס:** ✅ הסתיים · ב-git · נבדק קצה-לקצה ע"י מיטל לפני push
+**תאריך:** 2026-05-27
+**שיחה:** Claude Code (סוכן תזמורת ב-VS Code · ort-presentation-builder)
+**Commit:** ייכתב לאחר push
+
+**רקע:** מיטל הקצתה את A0.3 לסוכן מקביל בשיחה אחרת. כשהסוכן ההוא התחיל לשאול הרבה שאלות פתוחות, מיטל הפסיקה אותו והעבירה את המשימה לסוכן הנוכחי שכבר היה רחוק יותר (כתב את mastery-check.js לאחר ש-4 שאלות פדגוגיות מרכזיות נסגרו).
+
+**קבצים שנוצרו/שונו:**
+- `underwater-app/js/shared/mastery-check.js` (חדש · 376 שורות) — `ISLAND_TO_RAMA` (9 איים) · `checkMastery` · `checkAndShowIslandCelebration` עם overlay + קונפטי + אודיו · `getClosedIslands` · `markIslandClosed` · אירוע `island_closed` ל-event-logger
+- `underwater-app/stage-3-shell.html` — script tag + קריאה ל-checkAndShowIslandCelebration ב-showCompletion
+- `underwater-app/stage-3-house.html` — אותו דבר
+- `underwater-app/stage-3-storm.html` — אותו דבר
+- `underwater-app/stage-3-trail-resh.html` — אותו דבר
+- `underwater-app/stage-3-rescue.html` — script tag בלבד (חיבור בקובץ controller)
+- `underwater-app/js/rescue-controller.js` — קריאה ל-checkAndShowIslandCelebration ב-showCompletion
+- `underwater-app/teacher-live.html` — סקציה חדשה "6. אבני יסוד נסגרות" + CSS + renderMasteryStatus() + טעינה של state.js + bkt.js + event-logger.js + mastery-check.js
+- `_handoff/2026-05-26-architecture-tasks-tracker.html` — A0.3 ✅
+
+**עקרונות עיצוב שיושמו:**
+- **לא להחליף את `bkt.js`** — bkt.js עדיין מתעדכן אוטומטית מאירועים ומחזיק את ה-mastery הפנימי שלו. mastery-check.js מוסיף שכבה עליונה עם רף ראמ"ה כתנאי שלישי.
+- **סשן = יום** (לא session_id) — לפי החלטה פדגוגית של מיטל. מינ' 5 פריטים תקפים ביום כדי שהיום ייחשב לסשן.
+- **3 התנאים מודלים בנפרד** — `conditions.bkt`, `conditions.fluency`, `conditions.rama` — לדשבורד מורה ולדיבאג.
+- **אנטי-חגיגה כפולה** — `localStorage['avnei-yesod-closed-islands']` שומר פר-תלמידה.
+- **JS inline-style ל-overlay** — לפי [[feedback-css-to-js-inline-fallback]].
+- **`fluency_source: 'rama-derived' | 'internal'`** — שקיפות לכל סף שטף.
+
+**4 ההחלטות הפדגוגיות שאישרה מיטל לפני שכתבתי קוד:**
+1. **9 איים פעילים** — `ISLAND_TO_RAMA` מכסה איים 1-9. איים 7-9 מסומנים `rama_task: null` עד החלטה.
+2. **MVP + חגיגה לילדה** — overlay מלא-מסך עם נוני רוקד + 60 חלקיקי קונפטי פסטל + אודיו + כפתור "המשך".
+3. **שטף — סף פר אי, גזור מראמ"ה איפה שניתן:**
+   - איים 1-3 (פעימה 1) — ראמ"ה לא נותנת זמן ⇒ ספים פנימיים: 5/4/4 שנ'
+   - אי 4 (ניקוד) → רף ראמ"ה 90÷45 = **2.0שנ'**
+   - אי 5 (מילים מוכרות) → 70÷20 = **3.5שנ'**
+   - אי 6 (שטף) → 195÷77 = **2.5שנ'**
+   - איים 7-9 → 4.0שנ' default פנימי, TBD
+4. **סשן = יום (YYYY-MM-DD מקומי), עם ≥5 פריטים תקפים.** שני הימים-תקפים האחרונים חייבים שניהם להיות מתחת לסף השטף. פערי ימי לא-משחק או סשנים-לא-תקפים מותרים.
+
+**שאלות פתוחות + מענה:**
+1. ❓ MVP proxy לרף "18+/22 אותיות" באי 3 → 🟡 **מטופל זמנית.** כל 5 האותיות המתורגלות (ת,מ,ר,ב,ק) חייבות ב-p ≥ 0.85. השדה `note_for_full_22` מסביר איך לעבור לסף המוחלט כשיתווספו 22.
+2. ❓ baseline לאי 2 (5+/6 פותח · 4+/6 סוגר) → 🟡 **proxy זמני:** accuracy ratio ≥ 0.83 + מינ' 12 ניסיונות. כש-`activity_variant` יבחין בין פותח/סוגר במפורש — לעבור לבדיקה ספציפית פר תת-משימה.
+3. ❓ ספי שטף לאיים 7-9 → 🔴 **TBD פדגוגית.** נשמרו כ-default 4.0שנ' עד אישור מיטל.
+
+**מה זה פתח להמשך:**
+- ✅ A0.3 → 21A (מסך מורה בשפת ראמ"ה): סקציה 6 ב-teacher-live היא הבסיס למסך 21A המורחב.
+- ✅ A0.3 → E.19 (calibration): אירוע `island_closed` עם BKT/fluency/rama metadata = הקלט ל-calibration מול ציוני ראמ"ה אמיתיים.
+
+**ממתין ממיטל (בעדיפות):**
+1. **בדיקת flow קצה-לקצה ב-Pages או מקומית:** map.html → picker → תלמידה אמיתית → 5+ פריטים באי 3 ביום שונה משני הימים האחרונים → teacher-live → סקציה 6 → לוודא שמופיע "קרוב" או "נסגר" בהתאם.
+2. **החלטה על baseline פר אי 7-9** (TBD פדגוגית — לא חוסם MVP, רק את האיים האלה).
+3. **אישור push** של כל הקבצים שצוינו.
+
+**✅ באג צד שתוקן בקומיט הזה (נדרש ל-A0.3):**
+- `underwater-app/teacher-live.html` הצהיר `const STATE_KEY = 'avnei-state-v1';` — והתנגש ב-`const STATE_KEY = 'underwater-app:v1';` שב-state.js (שנטען על-ידי A0.3). התנגשות זו גרמה ל-SyntaxError ש**עצר את כל הקוד שאחריו** → סקציה 6 הופיעה ריקה גם אחרי תיקון render(). הפתרון: הסרת ההצהרה הכפולה — הקובץ משתמש כעת ב-STATE_KEY מ-state.js. בונוס: סקציות 1-5 שהציגו "אין נתונים" גם כשיש (בגלל המפתח השגוי) עכשיו עובדות נכון.
+
+**הפעלה לבדיקה מקומית:**
+```powershell
+cd c:/Users/meyta/Downloads/impactos/avnei-yesod
+python -m http.server 8765
+```
+- http://localhost:8765/underwater-app/map.html → picker → תלמידה אמיתית → 5+ סיבובים באי 3
+- http://localhost:8765/underwater-app/teacher-live.html → סקציה 6 (מטה)
+
+---
+
 ## A0.2 — שדות `rama_task_alignment` + `peima_target` ב-schema פריט
 
 **סטטוס:** ✅ הסתיים · ב-git · ב-origin/main

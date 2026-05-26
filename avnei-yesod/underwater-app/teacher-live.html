@@ -204,6 +204,82 @@
   .yearly-plan-cta .title { font-size: 16px; font-weight: 800; margin-bottom: 2px; }
   .yearly-plan-cta .subtitle { font-size: 13px; opacity: 0.95; }
   .yearly-plan-cta .arrow { font-size: 22px; }
+
+  /* A0.3 — סטטוס Mastery משולש */
+  .mastery-island {
+    background: #f0f9ff;
+    padding: 16px 18px;
+    border-radius: 12px;
+    border-right: 5px solid #5cb6d4;
+    margin-bottom: 12px;
+  }
+  .mastery-island.closed {
+    background: linear-gradient(135deg, #c6f6d5 0%, #f0fff4 100%);
+    border-right-color: #38a169;
+  }
+  .mastery-island.cold {
+    background: #f7fafc;
+    border-right-color: #cbd5e0;
+    opacity: 0.7;
+  }
+  .mastery-island .island-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 10px;
+    font-weight: 700;
+    color: #1a5a7a;
+    font-size: 17px;
+    flex-wrap: wrap;
+  }
+  .mastery-island .island-num {
+    background: #5cb6d4; color: white;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 800;
+  }
+  .mastery-island.closed .island-num { background: #38a169; }
+  .mastery-island .rama-tag {
+    font-size: 12px; padding: 2px 10px;
+    background: #e3f2fd; color: #1a5a7a;
+    border-radius: 10px; font-weight: 600;
+  }
+  .mastery-island.closed .rama-tag { background: #c6f6d5; color: #22543d; }
+  .mastery-island .status-badge {
+    margin-right: auto;
+    font-size: 14px; font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 10px;
+  }
+  .mastery-island .status-badge.met { background: #38a169; color: white; }
+  .mastery-island .status-badge.partial { background: #ecc94b; color: #744210; }
+  .mastery-island .status-badge.not-met { background: #fed7d7; color: #742a2a; }
+  .mastery-island .status-badge.cold { background: #edf2f7; color: #4a5568; }
+  .mastery-conditions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .cond {
+    background: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .cond .cond-label { color: #718096; font-size: 11px; margin-bottom: 2px; }
+  .cond .cond-value { font-weight: 700; color: #1a2332; }
+  .cond.ok .cond-value::before { content: '✓ '; color: #38a169; }
+  .cond.fail .cond-value::before { content: '✗ '; color: #c53030; }
+  .cond.cold .cond-value::before { content: '○ '; color: #a0aec0; }
+  .mastery-reason {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 8px;
+    font-size: 13px;
+    color: #4a5568;
+    font-style: italic;
+  }
 </style>
 </head>
 <body>
@@ -278,14 +354,30 @@
   </thead><tbody></tbody></table>
 </div>
 
+<!-- 6. סטטוס Mastery משולש (A0.3) — BKT + שטף + רף ראמ"ה -->
+<div class="section">
+  <h2><span class="num">6</span>אבני יסוד נסגרות — מבדק ראמ"ה</h2>
+  <p style="color:#4a5568; font-size:14px; margin-bottom:14px;">
+    אי "נסגר" רק כששלושה תנאים מתקיימים יחד: דיוק BKT ≥ סף · שטף עומד · ביצוע תקין במשימת ראמ"ה המקבילה.
+  </p>
+  <div id="masteryStatus"></div>
+</div>
+
 <div class="section" style="text-align: center;">
   <button class="clear" onclick="clearAllData()">נקה את כל הנתונים (לא ניתן לחזור)</button>
 </div>
 
 </div>
 
+<!-- A0.3 — תלויות ל-Mastery משולש -->
+<script src="js/state.js"></script>
+<script src="js/shared/bkt.js"></script>
+<script src="js/shared/event-logger.js"></script>
+<script src="js/shared/mastery-check.js"></script>
+
 <script>
-const STATE_KEY = 'avnei-state-v1';
+// STATE_KEY מוצהר ב-state.js כ-'underwater-app:v1' (המפתח האמיתי שבו state.js כותב).
+// קודם הופיע כאן 'avnei-state-v1' — באג שגרם לסקציות 1-5 להציג "אין נתונים" גם כשיש.
 
 function loadState() {
   try {
@@ -318,6 +410,9 @@ function render() {
   const sessions = new Set(events.map(e => e.session_id));
   document.getElementById('totalSessions').textContent = sessions.size + ' סשנים';
   document.getElementById('totalFlags').textContent = flags.length + ' דגלים';
+
+  // Section 6 (Mastery) — לרוץ בלי תלות ב-events, כי mastery-check.js קורא ממקור עצמאי
+  renderMasteryStatus();
 
   // Section 1: summary
   if (events.length === 0) {
@@ -405,6 +500,120 @@ function render() {
       <td>${e.hint_used ? 'כן' : '—'}</td>
     </tr>
   `).join('');
+
+}
+
+// ============================================================
+// A0.3 — Mastery משולש: BKT + שטף + רף ראמ"ה
+// ============================================================
+function getCurrentStudentId() {
+  try { return localStorage.getItem('avnei-yesod-current-student') || 'local'; }
+  catch (e) { return 'local'; }
+}
+
+function fmtCondValue(condResult, kind) {
+  if (!condResult) return { cls: 'cold', text: '—' };
+  if (condResult.value === null || condResult.value === undefined) {
+    return { cls: 'cold', text: 'טרם תורגל' };
+  }
+  if (kind === 'bkt') {
+    const v = (condResult.value * 100).toFixed(0) + '%';
+    return { cls: condResult.ok ? 'ok' : 'fail', text: `p=${v}` };
+  }
+  if (kind === 'fluency') {
+    const sec = (condResult.value / 1000).toFixed(1);
+    const days = condResult.valid_days_count || 0;
+    return { cls: condResult.ok ? 'ok' : 'fail', text: `${sec}שנ' · ${days} ימים` };
+  }
+  if (kind === 'rama') {
+    if (condResult.source === 'no_rama_task') {
+      return { cls: 'cold', text: 'אין משימת ראמ"ה' };
+    }
+    if (condResult.source === 'island3_proxy_mvp') {
+      const c = condResult.above_threshold_count || 0;
+      const total = condResult.total_letters_in_mvp || 0;
+      return { cls: condResult.ok ? 'ok' : 'fail', text: `${c}/${total} אותיות` };
+    }
+    return { cls: condResult.ok ? 'ok' : 'fail', text: condResult.ok ? 'תקין' : 'לא תקין' };
+  }
+  return { cls: 'cold', text: '—' };
+}
+
+function renderMasteryStatus() {
+  const container = document.getElementById('masteryStatus');
+  if (!container || !window.AvneiMasteryCheck) {
+    if (container) container.innerHTML = '<div class="empty">המודול AvneiMasteryCheck לא נטען.</div>';
+    return;
+  }
+
+  const studentId = getCurrentStudentId();
+  const islandIds = Object.keys(AvneiMasteryCheck.ISLAND_TO_RAMA)
+    .map(Number)
+    .sort((a, b) => a - b);
+
+  // קופסה עליונה — מי התלמידה הנוכחית
+  let html = `<div style="font-size:13px; color:#4a5568; margin-bottom:14px;">
+    תלמידה נוכחית: <strong>${studentId === 'local' ? 'מצב דמו (local)' : studentId}</strong>
+    · ${AvneiMasteryCheck.getClosedIslands(studentId).length} איים נסגרו
+  </div>`;
+
+  html += islandIds.map(islandId => {
+    const result = AvneiMasteryCheck.checkMastery(studentId, islandId);
+    const ramaSpec = AvneiMasteryCheck.ISLAND_TO_RAMA[islandId];
+    const bktInfo = fmtCondValue(result.conditions.bkt, 'bkt');
+    const flInfo  = fmtCondValue(result.conditions.fluency, 'fluency');
+    const ramaInfo = fmtCondValue(result.conditions.rama, 'rama');
+
+    // קביעת מצב כללי
+    let status, statusClass, statusLabel;
+    const condsMet = [
+      result.conditions.bkt && result.conditions.bkt.ok,
+      result.conditions.fluency && result.conditions.fluency.ok,
+      result.conditions.rama && result.conditions.rama.ok,
+    ].filter(Boolean).length;
+
+    const noData = result.conditions.bkt && result.conditions.bkt.value === null;
+
+    if (result.met) {
+      status = 'closed'; statusClass = 'met'; statusLabel = '✓ נסגר';
+    } else if (noData) {
+      status = 'cold'; statusClass = 'cold'; statusLabel = 'טרם תורגל';
+    } else if (condsMet >= 2) {
+      status = ''; statusClass = 'partial'; statusLabel = `קרוב — ${condsMet}/3`;
+    } else {
+      status = ''; statusClass = 'not-met'; statusLabel = `${condsMet}/3 תנאים`;
+    }
+
+    return `
+      <div class="mastery-island ${status}">
+        <div class="island-head">
+          <span class="island-num">${islandId}</span>
+          <span>אי ${islandId}</span>
+          <span class="rama-tag">
+            ${ramaSpec.rama_task ? `משימה ${ramaSpec.rama_task} · ` : ''}${ramaSpec.rama_task_name}
+          </span>
+          <span class="status-badge ${statusClass}">${statusLabel}</span>
+        </div>
+        <div class="mastery-conditions">
+          <div class="cond ${bktInfo.cls}">
+            <div class="cond-label">BKT (סף ${(ramaSpec.accuracy_threshold_pKnown * 100).toFixed(0)}%)</div>
+            <div class="cond-value">${bktInfo.text}</div>
+          </div>
+          <div class="cond ${flInfo.cls}">
+            <div class="cond-label">שטף (סף ${ramaSpec.fluency_threshold_seconds}שנ' · ${ramaSpec.fluency_source === 'rama-derived' ? 'מראמ"ה' : 'פנימי'})</div>
+            <div class="cond-value">${flInfo.text}</div>
+          </div>
+          <div class="cond ${ramaInfo.cls}">
+            <div class="cond-label">רף ראמ"ה</div>
+            <div class="cond-value">${ramaInfo.text}</div>
+          </div>
+        </div>
+        ${result.reason && !result.met ? `<div class="mastery-reason">${result.reason}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = html;
 }
 
 render();
