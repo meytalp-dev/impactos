@@ -1,5 +1,44 @@
 # קומיטים ממתינים — אבני יסוד
-**עודכן:** 27.5.2026 · אחרי `git fetch` · HEAD = `9791c38` (RTL fix בצדף)
+**📌 A1 נסגר 27.5.2026** · 3 קבוצות נדחפו (A · B · C). 2 נשארות חסומות על החלטות פדגוגיות (D · F).
+**עדכון ולא קובץ חי** — לעדכונים עתידיים, צרו קובץ חדש מתוארך.
+
+---
+
+## סיכום A1
+
+| קבוצה | קבצים | Hash | תאריך |
+|---|---|---|---|
+| A — אי 3 · 70 PNG + CSS | 73 | `d48d6f8` | 26.5.2026 |
+| B — handoff docs | 7 | `57778d8` | 26.5.2026 לילה |
+| C — research + KB + library + vocab + ארכיון (+DEPRECATED) | 20 | `e3715bf` | 27.5.2026 |
+| **סה"כ** | **100** | | |
+
+**נשאר פתוח (חסום על החלטות):**
+- D 🟡 — 6 קבצים (README/index/demo-day2) — ממתין לעדכון מסמכי-אם
+- F 🔴 — 14 קבצים (מסמכי-אם + בר-און + פאקים + INVALIDATED) — דורש החלטות פר-קובץ
+
+---
+
+## ✅ קבוצה C — Research + KB sources + Library + Vocab + ארכיון v1/v2 (נדחפה 27.5.2026)
+
+**Commit:** `e3715bf` · 20 קבצים
+
+**מה נכלל:**
+- 4 research mds ב-`curriculum/blueprint/islands/`
+- 7 KB sources תקפים *(`22-islands-validated` + 6 perplexity validations)*
+- 2 קבצי `docs/interventions/library-v1*.md`
+- `curriculum/open-questions-for-experts.md`
+- `curriculum/vocab-bank.json`
+- 5 ארכיון v1/v2 *(2026-05-25 md+html+pdf · 2026-05-26-v2 md+html)* — **עם באנרי DEPRECATED** המפנים ל-v3
+
+**מה לא נכלל (נשאר ב-F4 🔴):**
+- `perplexity-shatil-share-2003-validation-2026-05-25.json` *(_INVALIDATED:true)*
+
+---
+
+## ✅ קבוצה B — handoff docs (נדחפה 26.5.2026 לילה)
+
+**Commit:** `57778d8` · 7 קבצים (כולל מחיקת `2026-05-26-a0-1-handoff.md` ומיזוגו ל-agent-completion-log.md)
 
 ---
 
