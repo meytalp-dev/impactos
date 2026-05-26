@@ -82,7 +82,7 @@ NEW_OPTIONS = {
     "i03-מ-l4-01": [
         opt("מַפְתֵּחַ", "🔑", "images/island-03/mafteach.png", correct=True, category="nouns_objects"),
         opt("שֶׁמֶשׁ", "☀️", category="nouns_nature"),                  # מ באמצע
-        opt("חֲלוֹם", "💭", category="nouns_abstract"),                # מ בסוף
+        opt("לֶחֶם", "🍞", category="nouns_food"),                      # מ בסוף — החליף את חֲלוֹם (קונקרטי יותר)
         opt("סֵפֶר", "📖", category="nouns_objects"),                   # safe random
     ],
     "i03-מ-l4-02": [
@@ -119,7 +119,7 @@ NEW_OPTIONS = {
     # ============ ב (/b/) ============
     "i03-ב-l3-01": [
         opt("בֻּבָּה", "🪆", "images/island-03/buba.png", correct=True, category="nouns_objects"),
-        opt("כֶּלֶב", "🐕", category="nouns_animals"),                   # ב בסוף
+        opt("צָב", "🐢", category="nouns_animals"),                     # ב בסוף — מיטל אישרה גם ל-L3
         opt("שֶׁמֶשׁ", "☀️", category="nouns_nature"),                  # safe random
     ],
     "i03-ב-l3-02": [
@@ -136,7 +136,7 @@ NEW_OPTIONS = {
     "i03-ב-l4-02": [
         opt("בֹּהֶן", "👍", "images/island-03/bohen.png", correct=True, category="nouns_body"),
         opt("כּוֹכָב", "⭐", category="nouns_nature"),                   # ב בסוף
-        opt("צָב", "🐢", category="nouns_animals"),                     # ב בסוף
+        opt("כֶּלֶב", "🐕", category="nouns_animals"),                   # ב בסוף — עבר מ-l3-01 (צָב הוחלף לשם)
         opt("נְמָלָה", "🐜", category="nouns_animals"),                  # safe random
     ],
 
