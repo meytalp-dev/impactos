@@ -4,6 +4,27 @@
 
 ---
 
+## 🟡 קבוצה P — D.15 v2 שלב D · קבוצת צדפים (4 אותיות)
+
+**סטטוס:** 🟡 ממתין לאישור מיטל ידני / push (אחרי שלב C)
+**תאריך:** 2026-05-27 לילה
+**17 קבצים** (16 חדשים + 1 שינוי + 3 handoff updates)
+
+| # | קובץ | סטטוס | הערה |
+|---|---|---|---|
+| 1 | `scripts/generate-shells-audio-d15.py` | **חדש** | 8 MP3 בהרצה אחת |
+| 2-9 | `assets/audio/{intro,find}-{samekh,ayin,tzadi,tet}.mp3` | **8 חדשים** | AvriNeural |
+| 10-13 | `data/island-03-letters/{samekh,ayin,tzadi,tet}.json` | **4 חדשים** | tap-all/pick/memory/sort · theme:shells |
+| 14-17 | `stage-3-{samekh,ayin,tzadi,tet}.html` | **4 חדשים** | מבוססים על HTMLs מ-C (cp+edit letterKey+ucLetter) |
+| + | `stage-3-island.html` | שינוי | קבוצת צדפים `built:true` עם שמות מותאמים פר מכניקה |
+| + | `_handoff/{agent-completion-log,meytal-pending,pending-commits}.md` | שינוי | תיעוד |
+
+**24/24 sanity tests.** לא נגעו ב-engine או mechanics — שכפול נטו של תבנית C.
+
+**משמעות:** 12 מ-17 אותיות D.15 חיות (4 בועות + 4 כוכבים + 4 צדפים). נשארו 5 דגים (שלב E).
+
+---
+
 ## ✅ קבוצה O — D.15 v2 שלב C · קבוצת כוכבים (נדחפה 27.5 לילה · `326b55c`)
 
 **סטטוס:** ✅ נדחפה (לפני בדיקה ידנית של מיטל — אישרה push קודם → שלב D הבא)
