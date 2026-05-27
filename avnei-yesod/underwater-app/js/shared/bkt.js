@@ -1,19 +1,54 @@
 // ============================================================
 // shared/bkt.js — מנוע Bayesian Knowledge Tracing
-// מבוסס: architecture-mvp.md §4 + §3
-// קלט: events מ-event-logger.js · פלט: p(שולט) פר-תלמיד.ה × פר-אי
-// localStorage key: avnei-bkt-v1
+// מבוסס: architecture-mvp.md §4 + partners-review-v3 §4א-ב
+// קלט: events מ-event-logger.js · פלט: p(שולט) פר-תלמיד.ה × פר-סטרנד + פר-אי
+// localStorage keys (dual-write):
+//   avnei-bkt-v1         — legacy per-island state (נשמר חי, מקור-אמת למי שכבר עובד מולו)
+//   avnei-bkt-strand-v1  — new per-strand state (5 BKT-ים פר ילדה — partners-review-v3 §11)
 //
 // עדכון 23.5.2026 — 4 פערים ארכיטקטוניים נסגרו:
 // פער 1: sub-BKT פר-אות באי 3 (5 אותיות במקום BKT-אי אחד)
 // פער 2: recommendInitialTier — התאמת רמה לפי BKT/profile
 // פער 4: setInitialState — חיבור אבחון פתיחה ל-BKT
 // פער 3: ראה architecture-mvp.md §3.4 (תיעוד פאק vs BKT)
+//
+// עדכון 27.5.2026 — משימה A.1: BKT-per-strand (5 מודלים)
+//   • הוספת ISLAND_TO_STRAND (מבוסס 22-islands-validated strands_distribution)
+//   • dual-write: כל event מעדכן את שני המפתחות (legacy + strand)
+//   • sub-BKT per_letter ממשיך לחיות תחת island 3 (legacy) + תחת strand 1 (חדש)
+//   • API חיצוני נשמר 1:1 ל-backwards-compat עם A0.1, A0.3, event-logger
+//   • API חדש: getStrandState · getStrandMastery · getPerLetterState · ISLAND_TO_STRAND
 // ============================================================
 
 window.AvneiBKT = (function() {
 
-  const STORAGE_KEY = 'avnei-bkt-v1';
+  // ---- Storage keys — dual-write ----
+  const STORAGE_KEY = 'avnei-bkt-v1';                // legacy per-island (נשמר חי)
+  const STORAGE_KEY_STRAND = 'avnei-bkt-strand-v1';  // new per-strand
+
+  // ---- Strands — partners-review-v3 §4א ----
+  const STRAND_IDS = [1, 2, 3, 4, 5];
+  const STRAND_NAMES = Object.freeze({
+    1: 'phonology',              // פונולוגיה (אותיות, פונמות, הברות)
+    2: 'morphology',             // מורפולוגיה (שורש, בניין, ריבוי)
+    3: 'oral_language',          // שפה דבורה (אוצר, תחביר דבור)
+    4: 'reading_comprehension',  // קריאה והבנה
+    5: 'writing',                // כתיבה (הכתבה והבעה)
+  });
+
+  // ISLAND_TO_STRAND — לפי curriculum/knowledge-base/sources/22-islands-validated-2026-05-21.json
+  // strand_1_phonology_decoding:    [1, 2, 3, 4, 5, 6, 7, 8]
+  // strand_2_morphology_function:   [9, 10, 11]
+  // strand_3_oral_language:         [12, 13, 14]
+  // strand_4_reading_comprehension: [15, 16, 17, 18]
+  // strand_5_writing:               [19, 20, 21, 22]
+  const ISLAND_TO_STRAND = Object.freeze({
+    1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1,
+    9: 2, 10: 2, 11: 2,
+    12: 3, 13: 3, 14: 3,
+    15: 4, 16: 4, 17: 4, 18: 4,
+    19: 5, 20: 5, 21: 5, 22: 5,
+  });
 
   // ---- פרמטרים ברירת מחדל ----
   const DEFAULT_PARAMS = {
@@ -35,12 +70,36 @@ window.AvneiBKT = (function() {
     9: { pL0: 0.10, pT: 0.10, pG: 0.20, pS: 0.10 },
   };
 
+  // Per-strand params — ברירות מחדל. ילדים מגיעים עם פערים שונים בכל סטרנד:
+  //   strand 1 (phonology):    pL0=0.12 — תואם לממוצע איים 1-3 הקיימים
+  //   strand 2 (morphology):   pL0=0.10 — דורש הוראה מפורשת, לא ידע מולד
+  //   strand 3 (oral):         pL0=0.30 — ילדה בכיתה א' כבר מגיעה עם שפה דבורה רחבה
+  //   strand 4 (reading):      pL0=0.10 — הבנת הנקרא דורשת קריאה רהוטה
+  //   strand 5 (writing):      pL0=0.08 — הכתבה והבעה הקשה ביותר
+  // ייקבעו סופית בפאזה A.6 (Confidence indicators).
+  const PARAMS_PER_STRAND = {
+    1: { pL0: 0.12, pT: 0.15, pG: 0.22, pS: 0.07 },
+    2: { pL0: 0.10, pT: 0.12, pG: 0.20, pS: 0.08 },
+    3: { pL0: 0.30, pT: 0.15, pG: 0.25, pS: 0.10 },
+    4: { pL0: 0.10, pT: 0.10, pG: 0.20, pS: 0.05 },
+    5: { pL0: 0.08, pT: 0.10, pG: 0.15, pS: 0.08 },
+  };
+
   const FLUENCY_THRESHOLD_MS = {
     3: 5000,
     4: 6000,
     6: 3000,
     7: 8000,
     8: 2000,
+  };
+
+  // ספים פר-סטרנד (חדש 27.5.2026 — TBD פדגוגית, נשמרים רכים עד A.6 + 21A)
+  const FLUENCY_THRESHOLD_PER_STRAND_MS = {
+    1: 4000,   // פונולוגיה — מהיר
+    2: 6000,   // מורפולוגיה — מתון
+    3: 8000,   // שפה דבורה — איטי (חשיבה לקסיקלית)
+    4: 5000,   // קריאה והבנה
+    5: 10000,  // כתיבה — איטי ביותר
   };
 
   const MASTERY_THRESHOLD = 0.90;
@@ -50,7 +109,7 @@ window.AvneiBKT = (function() {
   const ISLANDS_WITH_SUB_BKT = [3];  // איים שמשתמשים ב-sub-BKT פר-אות
 
   // ============================================================
-  // ניהול state
+  // ניהול state — שני stores (dual-write)
   // ============================================================
   function loadState() {
     try {
@@ -63,6 +122,19 @@ window.AvneiBKT = (function() {
   function saveState(state) {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
     catch (e) { console.warn('BKT save failed:', e); }
+  }
+
+  function loadStrandStateRaw() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY_STRAND);
+      if (!raw) return {};
+      return JSON.parse(raw);
+    } catch (e) { return {}; }
+  }
+
+  function saveStrandStateRaw(state) {
+    try { localStorage.setItem(STORAGE_KEY_STRAND, JSON.stringify(state)); }
+    catch (e) { console.warn('BKT strand save failed:', e); }
   }
 
   function emptyIslandRecord(islandId) {
@@ -100,6 +172,34 @@ window.AvneiBKT = (function() {
       lastSessionId: null,
       masteryAchievedAt: null,
     };
+  }
+
+  function emptyStrandRecord(strandId) {
+    const params = PARAMS_PER_STRAND[strandId] || DEFAULT_PARAMS;
+    const rec = {
+      pKnown: params.pL0,
+      attempts: 0,
+      correct: 0,
+      wrong: 0,
+      responseTimesMs: [],
+      sessionsAtMastery: 0,
+      lastSessionId: null,
+      masteryAchievedAt: null,
+      per_island_attempts: {},  // כמה ניסיונות הגיעו מכל אי בסטרנד — לדיבאג ולקליברציה
+    };
+    // sub-BKT per_letter חי תחת strand 1 (פונולוגיה) — mirror של island-3.per_letter
+    if (strandId === 1) {
+      rec.per_letter = {};
+      ISLAND_3_LETTERS.forEach(l => {
+        rec.per_letter[l] = {
+          pKnown: params.pL0,
+          attempts: 0, correct: 0, wrong: 0,
+          responseTimesMs: [],
+          masteryAchievedAt: null,
+        };
+      });
+    }
+    return rec;
   }
 
   function getStudentState(studentId) {
@@ -147,6 +247,14 @@ window.AvneiBKT = (function() {
 
   function hasGoodFluency(times, islandId) {
     const threshold = FLUENCY_THRESHOLD_MS[islandId];
+    if (!threshold) return true;
+    const med = median(times.slice(-20));
+    if (med === null) return false;
+    return med <= threshold;
+  }
+
+  function hasGoodStrandFluency(times, strandId) {
+    const threshold = FLUENCY_THRESHOLD_PER_STRAND_MS[strandId];
     if (!threshold) return true;
     const med = median(times.slice(-20));
     if (med === null) return false;
@@ -272,13 +380,94 @@ window.AvneiBKT = (function() {
   }
 
   // ============================================================
-  // הפונקציה הראשית — קולטת event
+  // עדכון Strand (חדש — A.1, 27.5.2026)
+  // ============================================================
+  function ingestStrandEvent(strandState, studentId, evt) {
+    const islandId = evt.primary_island_id;
+    const strandId = ISLAND_TO_STRAND[islandId];
+    if (!strandId) return null;
+
+    if (!strandState[studentId]) strandState[studentId] = {};
+    if (!strandState[studentId][strandId]) {
+      strandState[studentId][strandId] = emptyStrandRecord(strandId);
+    }
+    const strand = strandState[studentId][strandId];
+    const params = PARAMS_PER_STRAND[strandId] || DEFAULT_PARAMS;
+
+    strand.attempts++;
+    if (evt.is_correct) strand.correct++;
+    else strand.wrong++;
+
+    // ספירת ניסיונות פר-אי לטובת קליברציה ודיבאג
+    if (!strand.per_island_attempts[islandId]) strand.per_island_attempts[islandId] = 0;
+    strand.per_island_attempts[islandId]++;
+
+    if (typeof evt.response_time_ms === 'number' && evt.response_time_ms > 0) {
+      strand.responseTimesMs.push(evt.response_time_ms);
+      if (strand.responseTimesMs.length > 100) {
+        strand.responseTimesMs = strand.responseTimesMs.slice(-100);
+      }
+    }
+
+    strand.pKnown = bktUpdate(strand.pKnown, evt.is_correct === true, params);
+
+    // sub-BKT פר-אות — רק עבור אי 3 (mirror של island.per_letter, חי תחת strand 1)
+    if (islandId === 3 && evt.target_letter && strand.per_letter && strand.per_letter[evt.target_letter]) {
+      const ls = strand.per_letter[evt.target_letter];
+      ls.attempts++;
+      if (evt.is_correct) ls.correct++;
+      else ls.wrong++;
+      if (typeof evt.response_time_ms === 'number' && evt.response_time_ms > 0) {
+        ls.responseTimesMs.push(evt.response_time_ms);
+        if (ls.responseTimesMs.length > 100) {
+          ls.responseTimesMs = ls.responseTimesMs.slice(-100);
+        }
+      }
+      ls.pKnown = bktUpdate(ls.pKnown, evt.is_correct === true, PARAMS_PER_ISLAND[3]);
+      if (!ls.masteryAchievedAt &&
+          ls.pKnown >= MASTERY_THRESHOLD &&
+          hasGoodStrandFluency(ls.responseTimesMs, 1)) {
+        ls.masteryAchievedAt = Date.now();
+      }
+    }
+
+    // יציבות + mastery ברמת סטרנד
+    if (evt.session_id && evt.session_id !== strand.lastSessionId) {
+      if (strand.pKnown >= MASTERY_THRESHOLD && hasGoodStrandFluency(strand.responseTimesMs, strandId)) {
+        strand.sessionsAtMastery++;
+      } else {
+        strand.sessionsAtMastery = 0;
+      }
+      strand.lastSessionId = evt.session_id;
+    }
+
+    if (
+      !strand.masteryAchievedAt &&
+      strand.pKnown >= MASTERY_THRESHOLD &&
+      hasGoodStrandFluency(strand.responseTimesMs, strandId) &&
+      strand.sessionsAtMastery >= 2
+    ) {
+      strand.masteryAchievedAt = Date.now();
+    }
+
+    return {
+      strand_id: strandId,
+      strand_name: STRAND_NAMES[strandId],
+      pKnown: strand.pKnown,
+      attempts: strand.attempts,
+      masteryAchieved: !!strand.masteryAchievedAt,
+    };
+  }
+
+  // ============================================================
+  // הפונקציה הראשית — קולטת event (dual-write)
   // ============================================================
   function ingestEvent(evt) {
     const studentId = evt.student_id || 'local';
     const islandId  = evt.primary_island_id;
     if (!islandId) return null;
 
+    // ---- 1) Legacy per-island (מקור-אמת ל-A0.3 mastery-check + A0.1 reads) ----
     const state = loadState();
     if (!state[studentId]) state[studentId] = {};
     if (!state[studentId][islandId]) {
@@ -287,15 +476,27 @@ window.AvneiBKT = (function() {
         : emptyIslandRecord(islandId);
     }
 
-    let result;
+    let islandResult;
     if (ISLANDS_WITH_SUB_BKT.includes(islandId)) {
-      result = ingestIsland3Event(state, studentId, evt);
+      islandResult = ingestIsland3Event(state, studentId, evt);
     } else {
-      result = ingestRegularIslandEvent(state, studentId, islandId, evt);
+      islandResult = ingestRegularIslandEvent(state, studentId, islandId, evt);
     }
-
     saveState(state);
-    return result;
+
+    // ---- 2) New per-strand (לקריאה ע"י 21A, A.6, calibration עתידי) ----
+    const strandState = loadStrandStateRaw();
+    const strandResult = ingestStrandEvent(strandState, studentId, evt);
+    saveStrandStateRaw(strandState);
+
+    // החזרה — שדות ישנים נשמרים, וגם strand info מצורף ל-callers חדשים
+    if (!islandResult) return null;
+    if (strandResult) {
+      islandResult.strand_id = strandResult.strand_id;
+      islandResult.strand_pKnown = strandResult.pKnown;
+      islandResult.strand_masteryAchieved = strandResult.masteryAchieved;
+    }
+    return islandResult;
   }
 
   // ============================================================
@@ -341,6 +542,9 @@ window.AvneiBKT = (function() {
     }
 
     saveState(state);
+
+    // הערה: setInitialState משפיע רק על island state (legacy). strand state ימשיך מ-pL0 ברירת-מחדל
+    // ויתעדכן רק מ-events. אבחון פתיחה לסטרנד = אחריות עתידית של A.5 / cold-start.
     return island;
   }
 
@@ -461,15 +665,100 @@ window.AvneiBKT = (function() {
   }
 
   function reset(studentId) {
+    // ניקוי בשני המפתחות לאותה ילדה
     const state = loadState();
     if (studentId) delete state[studentId];
     else state[studentId || 'local'] = {};
     saveState(state);
+
+    const strandState = loadStrandStateRaw();
+    if (studentId) delete strandState[studentId];
+    else strandState[studentId || 'local'] = {};
+    saveStrandStateRaw(strandState);
   }
 
-  function dump() { return loadState(); }
+  function dump() {
+    return {
+      island: loadState(),    // legacy
+      strand: loadStrandStateRaw(),  // חדש
+    };
+  }
+
+  // ============================================================
+  // API חדש — per-strand (A.1, 27.5.2026)
+  // ============================================================
+  function getStrandState(studentId, strandId) {
+    const allStrands = loadStrandStateRaw();
+    if (!allStrands[studentId]) allStrands[studentId] = {};
+    if (!allStrands[studentId][strandId]) {
+      allStrands[studentId][strandId] = emptyStrandRecord(strandId);
+    }
+    return allStrands[studentId][strandId];
+  }
+
+  function getStudentStrands(studentId) {
+    const allStrands = loadStrandStateRaw();
+    if (!allStrands[studentId]) return {};
+    return allStrands[studentId];
+  }
+
+  function checkStrandMastery(studentId, strandId) {
+    const strand = getStrandState(studentId, strandId);
+    const threshold = FLUENCY_THRESHOLD_PER_STRAND_MS[strandId];
+    const fluencyOk = hasGoodStrandFluency(strand.responseTimesMs, strandId);
+    const pOk = strand.pKnown >= MASTERY_THRESHOLD;
+    const consolidationOk = strand.sessionsAtMastery >= 2;
+
+    const result = {
+      strand_id: strandId,
+      strand_name: STRAND_NAMES[strandId],
+      mastered: !!strand.masteryAchievedAt,
+      pKnown: strand.pKnown,
+      pOk, fluencyOk, consolidationOk,
+      attempts: strand.attempts,
+      median_response_time_ms: median(strand.responseTimesMs.slice(-20)),
+      per_island_attempts: strand.per_island_attempts || {},
+      reason: pOk && fluencyOk && consolidationOk ? 'mastered'
+        : !pOk ? `p(שולטת)=${strand.pKnown.toFixed(2)} — דורש > ${MASTERY_THRESHOLD}`
+        : !fluencyOk ? `שטף איטי — דורש < ${threshold}ms`
+        : `דורש שני סשנים רצופים בסף — כרגע ${strand.sessionsAtMastery}`,
+    };
+
+    // עבור strand 1 — לחשוף גם per_letter
+    if (strandId === 1 && strand.per_letter) {
+      const lettersStatus = {};
+      Object.keys(strand.per_letter).forEach(l => {
+        const ls = strand.per_letter[l];
+        lettersStatus[l] = {
+          pKnown: ls.pKnown,
+          mastered: ls.masteryAchievedAt !== null,
+          attempts: ls.attempts,
+          accuracy: ls.attempts > 0 ? ls.correct / ls.attempts : null,
+        };
+      });
+      result.per_letter = lettersStatus;
+    }
+
+    return result;
+  }
+
+  // proxy לתאימות לאחור: A0.1 (suggestFromBKT) קורא per_letter מ-state[3].
+  // הפונקציה הזו חושפת את per_letter מ-strand 1 (המקור-אמת החדש) עם fallback ל-legacy island 3.
+  function getPerLetterState(studentId) {
+    const allStrands = loadStrandStateRaw();
+    if (allStrands[studentId] && allStrands[studentId][1] && allStrands[studentId][1].per_letter) {
+      return allStrands[studentId][1].per_letter;
+    }
+    // fallback ל-legacy
+    const state = loadState();
+    if (state[studentId] && state[studentId][3] && state[studentId][3].per_letter) {
+      return state[studentId][3].per_letter;
+    }
+    return null;
+  }
 
   return {
+    // ---- Legacy API (תאימות 1:1 ל-A0.1, A0.3, event-logger, test-bkt) ----
     ingestEvent,
     setInitialState,        // פער 4
     recommendInitialTier,   // פער 2
@@ -479,6 +768,14 @@ window.AvneiBKT = (function() {
     getWeakLettersIn3,      // פער 1 — חשיפת אותיות חלשות
     reset,
     dump,
+
+    // ---- API חדש — per-strand (A.1) ----
+    getStrandState,
+    getStudentStrands,
+    checkStrandMastery,
+    getPerLetterState,
+
+    // ---- קבועים (legacy) ----
     ISLAND_3_LETTERS,
     ISLANDS_WITH_SUB_BKT,
     PARAMS_PER_ISLAND,
@@ -487,5 +784,14 @@ window.AvneiBKT = (function() {
     FLUENCY_THRESHOLD_MS,
     PROFILE_TIER_MAP,
     PREREQS,
+
+    // ---- קבועים חדשים (per-strand) ----
+    STRAND_IDS,
+    STRAND_NAMES,
+    ISLAND_TO_STRAND,
+    PARAMS_PER_STRAND,
+    FLUENCY_THRESHOLD_PER_STRAND_MS,
+    STORAGE_KEY,
+    STORAGE_KEY_STRAND,
   };
 })();
