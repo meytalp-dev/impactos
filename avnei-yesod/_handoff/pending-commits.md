@@ -4,6 +4,86 @@
 
 ---
 
+## 🟢 קבוצה L — F.21A-spec + D.15-spec · 2 מסמכי spec (27.5.2026 ערב)
+
+**סטטוס:** 🟢 מוכן ל-push אחרי אישור מיטל · 2 מסמכים עיצוביים, ללא קוד
+**תאריך:** 2026-05-27 ערב
+**Commit:** טרם נדחף
+**2 קבצים חדשים + 3 handoff updates · חבילה אחת**
+
+| # | קובץ | סטטוס שינוי | הערה |
+|---|---|---|---|
+| 1 | `_handoff/2026-05-27-F21A-ux-spec.md` | **חדש** (~700 שורות) | wireframe + UX spec מלא ל-F.21A · 12 סקציות + 2 נספחים · 5 החלטות UX סגורות עם מיטל · 7 use cases · מיפוי API → UI · 12 acceptance criteria |
+| 2 | `_handoff/2026-05-27-d15-spec.md` | **חדש** (~170 שורות) | spec מלא ל-D.15 (שכפול ל-17 אותיות באי 3) · נכתב ע"י סוכן D.14 לפני סגירה · P0 חוסם פיילוט · 4 קבוצות נושאיות סגורות (בועות/כוכבים/צדפים/דגים) · אומדן 12-15 שעות לסוכן ביצוע |
+| + | `_handoff/2026-05-26-architecture-tasks-tracker.html` | שינוי קל | הוספת שורת `F.21A-spec ✅` לפני שורת `F.21A` בפאזה F · עדכון "מוכן להתחיל" · header 40 → 41 משימות |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש בראש | תיעוד F.21A-spec |
+| + | `_handoff/pending-commits.md` | בלוק חדש בראש (זה) | הקבוצה הזו |
+
+**מהות התוצר:**
+מסמך spec שיחסום את שלב הקוד של F.21A. סוכן הקוד יקבל פרומפט שמצביע על המסמך כקריאה חובה. כל ההחלטות העיצוביות-עליונות סגורות; הקוד יישם בלבד.
+
+**יחס לקבוצות שכבר נדחפו / ממתינות (I=A.1, H=A.3, K=A.4):**
+- F.21A-spec לא נגעה בקבצי קוד כלל (רק markdown + HTML של tracker)
+- אין חפיפת קבצים → אין קונפליקט merge עם A.1/A.3/A.4/D.14
+- A.4 (קבוצה K, ממתינה ל-push) — F.21A-spec **קוראת ב-§5** את ה-API של A.4 (`getLetterMasteryDistribution`, `getLetterState`) כפונקציות מצופות; אם A.4 נדחפת **אחרי** L → אין בעיה (ה-API קיים בקוד גם אם לא ב-main בעת קריאת ה-spec). הסדר אינו קריטי.
+
+**🎯 פונקציה חדשה שמסומנת ב-spec לבנייה בשלב הקוד:**
+`AvneiMasteryCheck.checkRamaTaskStatus(studentId, ramaTaskId)` — הרחבה של `mastery-check.js` הקיים. חתימה מלאה בסעיף 5 של ה-spec. סוכן הקוד יבנה אותה כחלק מ-F.21A.
+
+**לא חוסם דבר נוסף:** קבוצה L היא תיעוד, לא קוד. ניתן לדחוף ללא תלות במצב של K, J, או כל קבוצה אחרת.
+
+**לפני push (חובה — סביבת ריבוי-סוכנים):**
+```
+git fetch origin && git status
+```
+
+**הצעת message לקומיט (HEREDOC):**
+```
+F.21A-spec · wireframe + UX spec למסך מורה בשפת ראמ"ה
+
+מסמך עיצובי שחוסם את שלב הקוד של F.21A. F.21A נשארת
+פתוחה ב-tracker; F.21A-spec נסגרת כשורה נפרדת (פיצול
+שמיטל אישרה כדי לתעד ש"מוכן להתחיל" קוד).
+
+5 החלטות UX שנסגרו עם מיטל לפני כתיבת ה-spec:
+  - מבנה תצוגה ראשי = טבלה (תלמידות × משימות, צבע פר תא)
+  - View ראשי = 2 כפתורים שווי-משקל בכניסה
+  - רמת פירוט פר תלמידה = הכל + Confidence indicators
+  - תצוגת פעימה = Daily mode + Snapshot mode (toggle)
+  - פרטיות = URL נפרד (teacher-rama.html) + PIN בsessionStorage
+
+תוצרים:
+  spec יחיד: 12 סקציות + 2 נספחים
+  4 ASCII mockups: Class View · Student View · Snapshot · PIN Gate
+  7 use cases מתועדים
+  מיפוי data → UI מלא לכל אלמנט במסך
+  12 acceptance criteria לסוכן הקוד
+  פונקציה חדשה מצוינת לבנייה: checkRamaTaskStatus
+
+נגזרים מ-spec ל-handoff:
+  5 שאלות פתוחות שעוד דורשות אישור מיטל לפני קוד
+  (תחילת פעימה 1 · PIN default · inline vs קובץ נפרד · ...)
+  
+לא נגעו: teacher-live.html, mastery-check.js, כל js/shared.
+F.21A יחיה כקובץ חדש teacher-rama.html (לא inline replace).
+```
+
+**מסלול בדיקה ידנית של מיטל לפני אישור push:**
+1. קריאה של `_handoff/2026-05-27-F21A-ux-spec.md` מקצה לקצה
+2. אישור שה-wireframes ב-§3 משקפים את הכוונה
+3. אישור שהפיצול ל-`F.21A-spec ✅` + `F.21A ⏳` הוא הצורה הרצויה ב-tracker
+
+**🟢 כל 5 השאלות הפתוחות נסגרו ב-27.5.2026 ערב:**
+1. ✅ פעימה 1 = 1.9.2026
+2. ✅ PIN cosmetic לפיילוט
+3. ✅ `teacher-rama.html` קובץ נפרד (לא inline replace)
+4. ✅ checkRamaTaskStatus aggregation = Min (החלש מנצח)
+5. ✅ Practice gap = Downgrade Confidence (לא BKT) · 0-7 ✅ · 7-14 🟡 · 14+ 🟡 + אזהרה בולטת
+
+ה-spec עודכן בהתאם (§9 + §10). סוכן קוד יכול להתחיל מיד אחרי push.
+
+---
+
 ## ✅ קבוצה K — A.4 · Sub-BKT פר 22 אותיות (נדחפה 27.5 ערב · `1582a96`)
 
 **סטטוס:** ✅ נדחפה ל-origin/main · 53/53 smoke tests עברו
@@ -84,35 +164,42 @@ python -m http.server 8765
 
 ---
 
-## 🟡 קבוצה J — D.14 · חילוץ תבנית גנרית מ-5 משחקוני אי 3
+## 🟡 קבוצה J — D.14 · חילוץ תבנית גנרית מ-5 משחקוני אי 3 (עודכן 27.5.2026 ערב)
 
 **סטטוס:** 🟡 דורש בדיקת מיטל ידנית ב-demo לפני push
-**תאריך:** 2026-05-27
-**8 קבצים חדשים + 1 שונה + 3 handoff updates · חבילה אחת · לא לפצל**
+**תאריך:** 2026-05-27 (עודכן ערב — Full C נבחר)
+**12 קבצים חדשים + 1 שונה + 4 handoff updates · חבילה אחת · לא לפצל**
 
 | # | קובץ | סטטוס שינוי | הערה |
 |---|---|---|---|
-| 1 | `underwater-app/js/templates/game-shell.js` | חדש (217 שורות) | shell משותף · `AvneiGameShell.start(config)` |
-| 2 | `underwater-app/js/templates/mechanic-tap-all.js` | חדש (184 שורות) | plug-in מ-storm/trail · `window.AvneiMechanics['tap-all']` |
+| 1 | `underwater-app/js/templates/game-shell.js` | חדש (~225 שורות) | shell משותף · `AvneiGameShell.start(config)` · תומך ב-`inGamePromptAudioKey` |
+| 2 | `underwater-app/js/templates/mechanic-tap-all.js` | חדש (~195 שורות) | plug-in מ-storm/trail · `window.AvneiMechanics['tap-all']` · משתמש ב-`inGamePromptAudioKey` |
 | 3 | `underwater-app/js/templates/mechanic-pick.js` | חדש (172 שורות) | plug-in מ-rescue · `window.AvneiMechanics['pick']` |
 | 4 | `underwater-app/js/templates/mechanic-quest.js` | חדש (171 שורות) | plug-in מ-shell/house · משתמש ב-js/activities/* קיימים |
-| 5 | `underwater-app/css/game-shell.css` | חדש (243 שורות) | סגנונות משותפים + 2 mechanics + confetti/kisses canonical |
-| 6 | `underwater-app/data/island-03-letters/_schema.md` | חדש | סכמת JSON פר-אות + 22 letter-keys + המלצות mechanic |
-| 7 | `underwater-app/data/island-03-letters/shin.json` | חדש | קובץ demo (אות ש) להוכחת מקצה לקצה |
+| 5 | `underwater-app/css/game-shell.css` | חדש (~310 שורות) | sgylonot משותפים + 2 mechanics + confetti/kisses + `.intro-speaker` + `.start-btn` + bubbles theme |
+| 6 | `underwater-app/data/island-03-letters/_schema.md` | חדש | סכמת JSON פר-אות + **Full C: 4 קבוצות נושאיות מאושרות** + חלוקת 17 אותיות |
+| 7 | `underwater-app/data/island-03-letters/shin.json` | חדש | קובץ demo (אות ש) · נושא "בועות" · `theme: "bubbles"` |
 | 8 | `underwater-app/stage-3-template-demo.html` | חדש | HTML demo שטוען shin.json ומריץ את התבנית |
-| 9 | `underwater-app/js/shared/audio.js` | שינוי קל | `LETTER_TO_SOUND_FILE` מ-5 ל-22 אותיות (תוספת בלבד) |
+| 9 | `underwater-app/scripts/generate-shin-demo-audio.py` | חדש | סקריפט edge-tts לייצור 3 קבצי MP3 לאות ש |
+| 10 | `underwater-app/assets/audio/intro-shin-quest.mp3` | חדש | AvriNeural · "נוני מצא בועות זוהרות בים..." |
+| 11 | `underwater-app/assets/audio/intro-shin-mission.mp3` | חדש | AvriNeural · "בואו תקישו על כל הבועות עם האות שין..." |
+| 12 | `underwater-app/assets/audio/find-shin.mp3` | חדש | AvriNeural · "מצאו את כל הבועות עם האות שין בים." (in-game) |
+| 13 | `underwater-app/js/shared/audio.js` | שינוי קל | `LETTER_TO_SOUND_FILE` מ-5 ל-22 אותיות (תוספת בלבד) |
 | + | `_handoff/2026-05-26-architecture-tasks-tracker.html` | שינוי קל | D.14 ✅ |
-| + | `_handoff/agent-completion-log.md` | בלוק חדש בראש | תיעוד D.14 |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש בראש | תיעוד D.14 + עדכון 27.5 ערב על Full C |
+| + | `_handoff/meytal-pending.md` | בלוק חדש בראש | בדיקת demo + אישור ויזואל "כוכבים" של D.15 |
+| + | `_handoff/2026-05-27-d15-spec.md` | **חדש (קובץ חדש)** | ספק מלא ל-D.15 — 4 קבוצות, סדר בנייה, שורות אודיו, SVG inline guidelines |
 | + | `_handoff/pending-commits.md` | בלוק חדש בראש (זה) | הקבוצה הזו |
 
-**יחס לקבוצות I (A.1) ו-H (A.3) שכבר נדחפו:**
-- D.14 לא נגעה בקבצי הליבה של A.1/A.3 (bkt.js, epa.js, event-logger.js, mastery-check.js, profile-classifier.js)
+**יחס לקבוצות שכבר נדחפו / ממתינות (I=A.1, H=A.3, K=A.4):**
+- D.14 לא נגעה בקבצי הליבה (bkt.js, epa.js, event-logger.js, mastery-check.js, profile-classifier.js)
 - D.14 רק קוראת את ה-API שלהן (`AvneiBKT.*`, `AvneiEPA.ingestEvent`, `AvneiEventLogger.logActivityResult`, `AvneiMasteryCheck.checkAndShowIslandCelebration`)
-- אין חפיפת קבצים → אין קונפליקט merge
+- אין חפיפת קבצים → אין קונפליקט merge עם A.1/A.3/A.4
+
+**🎯 החלטה אסטרטגית של D.15 נסגרה במהלך בדיקת D.14:** Full C — 4 קבוצות נושאיות (🫧בועות / ⭐כוכבים / 🐚צדפים / 🐟דגים), חלוקת 17 אותיות אושרה ע"י מיטל. הספק המלא ב-`_handoff/2026-05-27-d15-spec.md`.
 
 **לא לדחוף עדיין כי:**
 - 🟡 demo (`stage-3-template-demo.html`) דורש סבב בדיקה ידנית של מיטל מקצה לקצה לפני push (5-10 דק')
-- 🟡 שאלה פדגוגית פתוחה: איזה mechanic לכל אחת מ-17 האותיות החסרות? (זה D.15 — לא חוסם D.14, אבל ראוי להבהיר לפני שהקוד מתקבע)
 - ⚠️ ייתכן שתידרש התאמה אם הבדיקה הידנית מגלה רגרסיה ב-5 המשחקונים הקיימים (לא צפוי — התבנית אדיטיבית — אבל worth verifying)
 
 **לפני push (חובה — סביבת ריבוי-סוכנים):**
@@ -122,31 +209,34 @@ git fetch origin && git status
 
 **הצעת message לקומיט (HEREDOC):**
 ```
-D.14 — חילוץ תבנית גנרית מ-5 משחקוני אי 3
+D.14 — חילוץ תבנית גנרית מ-5 משחקוני אי 3 + spec ל-D.15
 
-ארכיטקטורה "בסיס משותף + 3 plug-ins" שאישרה מיטל לפני קוד:
+ארכיטקטורה "בסיס משותף + 3 plug-ins" (שאישרה מיטל לפני קוד):
 
   game-shell.js   — overlay + top-bar + noni + audio + completion
-                    + finale + mastery hook (זהה לכל 5 הקיימים)
+                    + finale + mastery hook
+  mechanic-tap-all  — N tiles, T targets (storm + trail extracted)
+  mechanic-pick     — N rounds × M pods   (rescue extracted)
+  mechanic-quest    — polymorphic stages  (shell + house extracted)
 
-  mechanic-tap-all  — N tiles, T targets, free-order tap
-                      (extracted from storm + trail-resh)
-  mechanic-pick     — N rounds × M pods, 1 correct per round
-                      (extracted from rescue)
-  mechanic-quest    — 5 polymorphic activities from js/activities/*
-                      (extracted from shell + house)
+8 קבצי קוד חדשים + 1 שינוי ל-audio.js (LETTER_TO_SOUND_FILE
+מ-5 ל-22 אותיות, כל sound-X.mp3 כבר קיים ב-AvriNeural).
 
-8 קבצים חדשים + 1 שינוי קל ל-audio.js (LETTER_TO_SOUND_FILE
-מורחב ל-22 אותיות — כל sound-X.mp3 כבר קיים ב-AvriNeural).
+Demo: stage-3-template-demo.html טוען shin.json ומריץ tap-all
+על אות ש. 3 קבצי MP3 חדשים (intro-quest + intro-mission +
+find-shin) נוצרו דרך scripts/generate-shin-demo-audio.py.
+
+מהלך הבדיקה הציף 3 גילויים שנשמרו לזיכרון:
+  - AvriNeural קורא קמץ-קטן כ-"kal" → כותבים "כֹּל" בחולם
+  - ניסוח טבעי לבני 6: "ה-X עם האות Y", לא "X-י Y"
+  - ילד בן 6 לא קורא → אודיו חייב לומר משימה מלאה
+
+החלטת אסטרטגיה ל-D.15 הוסכמה במהלך הבדיקה: Full C — 4
+קבוצות נושאיות (בועות/כוכבים/צדפים/דגים), 17 האותיות חולקו.
+ספק מלא ב-_handoff/2026-05-27-d15-spec.md.
 
 5 המשחקונים הקיימים (shell/house/rescue/trail-resh/storm) לא
 נגעו. התבנית אדיטיבית בלבד.
-
-Demo: stage-3-template-demo.html טוען data/island-03-letters/
-shin.json ומריץ tap-all על אות ש (12 אריחים, 5 ש׳-ים). אומת
-ידנית ע"י מיטל לפני push.
-
-חוסם את D.15 (שכפול ל-17 אותיות) — שכרגע יכול להתחיל.
 ```
 
 **מסלול בדיקה ידנית שמיטל מבצעת לפני אישור push:**
