@@ -23,6 +23,20 @@
 - ❌ Share & Bar-On 2018 = 3 פאזות (Triplex), לא 6 שלבים. 6 שלבים שייכים למשה"ח (סינתזה)
 - ❌ "18 אותיות מ-22" = רף "תקין" של ראמ"ה, לא ממוצע אמפירי
 
+### ⚠️ קבצים DEPRECATED — לא לבסס עליהם תוכן (עודכן 27.5.2026)
+הקבצים הבאים הם **גרסה 1.0** של הארכיטקטורה (מבוססת "9 מיומנויות"). הם נשארים ב-repo לצרכי המשכיות ויזואלית, אבל **אינם מקור-אמת**:
+- `spec.html` (טיוטה ויזואלית v1) — מכיל banner DEPRECATED בראש
+- `index.html` · `README.md` — מתארים 9 מיומנויות
+- `sales/presentation-municipal.html` · `sales/proposal-municipal.html` · `sales/proposal-onepager.html` · `partners-qa.html` — מצגות מכירה ישנות
+- `engine/demo.html` · `engine/diagnostic.html` · `engine/pedagogy-grade1.html` — engine ישן
+- `curriculum/pedagogy-master.md` · `curriculum/literacy-grade1-2-yearly.html` — תיעוד פדגוגי ישן
+
+**מקורות-אמת מעודכנים (חובה לבסס עליהם):**
+- `architecture-mvp.md` — ארכיטקטורה (5 סטרנדים + BKT + EPA + sub-BKT פר אות)
+- `curriculum/pedagogy-integration-framework.md` — מסגרת פדגוגית v2.3
+- `curriculum/literacy-grade1-2-yearly.md` — תוכנית שנתית (עם הבהרה "9 מיומנויות = תיעוד פדגוגי, המערכת = 5 BKT-ים")
+- `curriculum/llm-pitfalls.md` — תיעוד 3 הטעויות (Shatil/Bar-On/18 אותיות)
+
 ### כללי עבודה גלובליים
 - לא להחליט פדגוגית באופן עצמאי — בספק לשאול את מיטל
 - לא לדחוף ל-git בלי אישור מפורש של מיטל
