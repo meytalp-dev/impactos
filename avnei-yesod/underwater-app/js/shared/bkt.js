@@ -18,6 +18,16 @@
 //   • sub-BKT per_letter ממשיך לחיות תחת island 3 (legacy) + תחת strand 1 (חדש)
 //   • API חיצוני נשמר 1:1 ל-backwards-compat עם A0.1, A0.3, event-logger
 //   • API חדש: getStrandState · getStrandMastery · getPerLetterState · ISLAND_TO_STRAND
+//
+// עדכון 27.5.2026 ערב — משימה A.4: Sub-BKT פר אות, הרחבה מ-5 ל-22
+//   • ALL_HEBREW_LETTERS_22 — סדר אלפבתי קנוני (תואם data/island-03-letters/_schema.md מ-D.14)
+//   • per_letter מאותחל ל-22 אותיות גם תחת strand 1 (חדש) וגם תחת island 3 (legacy)
+//   • מיגרציה: state קיים עם 5 אותיות מתרחב אוטומטית ל-22 בלי לאבד נתונים
+//   • ingestEvent מקבל אותיות חדשות (ש/ל/א וכו') — כבר לא מסומנות "לא חוקיות"
+//   • ISLAND_3_LETTERS נשמר = 5 (האותיות עם משחקון פעיל) — מספיק ל-mastery של אי 3 ב-MVP
+//     כש-D.15 ישלים את 17 המשחקונים — לעדכן ל-22 גם כאן
+//   • API חדש לחשיפה ל-21A (מסך מורה) ול-D.15:
+//     getLetterState · getWeakestLetters · getLetterMasteryDistribution
 // ============================================================
 
 window.AvneiBKT = (function() {
@@ -105,8 +115,21 @@ window.AvneiBKT = (function() {
   const MASTERY_THRESHOLD = 0.90;
 
   // אי 3 = sub-BKT פר אות (פער 1)
-  const ISLAND_3_LETTERS = ['ת', 'מ', 'ר', 'ב', 'ק'];  // MVP: 5 אותיות. בעתיד 22.
+  // ISLAND_3_LETTERS = 5 אותיות עם משחקון פעיל היום (מ/ק/ב/ר/ת).
+  // משמש בלוגיקת mastery של אי 3 (A0.3 mastery-check ידרוש את כולן) — נשמר ב-5 עד D.15.
+  const ISLAND_3_LETTERS = ['ת', 'מ', 'ר', 'ב', 'ק'];
   const ISLANDS_WITH_SUB_BKT = [3];  // איים שמשתמשים ב-sub-BKT פר-אות
+
+  // A.4 — כל 22 האותיות לסטרנד 1 (per_letter). סדר אלפבתי קנוני (תואם D.14 _schema.md).
+  // משמש לאתחול ה-per_letter ולחישוב distribution / weakest. עצמאי מ-ISLAND_3_LETTERS.
+  const ALL_HEBREW_LETTERS_22 = Object.freeze([
+    'א','ב','ג','ד','ה','ו','ז','ח','ט','י','כ',
+    'ל','מ','נ','ס','ע','פ','צ','ק','ר','ש','ת',
+  ]);
+
+  // ספי distribution פר-אות (A.4) — תואם getWeakLettersIn3 הקיים (>= 3 attempts, p < 0.70).
+  const LETTER_WEAK_THRESHOLD = 0.70;
+  const LETTER_MIN_ATTEMPTS_FOR_BUCKET = 3;
 
   // ============================================================
   // ניהול state — שני stores (dual-write)
@@ -151,10 +174,11 @@ window.AvneiBKT = (function() {
     };
   }
 
+  // A.4: per_letter מאותחל ל-22 אותיות (לא רק 5). aggregate ממשיך לפעול על אותיות שתורגלו.
   function emptyIsland3Record() {
     const params = PARAMS_PER_ISLAND[3];
     const per_letter = {};
-    ISLAND_3_LETTERS.forEach(l => {
+    ALL_HEBREW_LETTERS_22.forEach(l => {
       per_letter[l] = {
         pKnown: params.pL0,
         attempts: 0,
@@ -174,6 +198,28 @@ window.AvneiBKT = (function() {
     };
   }
 
+  // A.4: ensureAllLettersIn — מיגרציה non-destructive.
+  // ילדה עם state קיים (5 אותיות בלבד) מקבלת את 17 החסרות עם pL0 ברירת מחדל.
+  // ערכי האותיות הקיימות נשמרים ללא שינוי (attempts/pKnown/responseTimesMs/masteryAchievedAt).
+  function ensureAllLettersIn(perLetter, pL0) {
+    if (!perLetter || typeof perLetter !== 'object') return false;
+    let changed = false;
+    ALL_HEBREW_LETTERS_22.forEach(l => {
+      if (!perLetter[l]) {
+        perLetter[l] = {
+          pKnown: pL0,
+          attempts: 0,
+          correct: 0,
+          wrong: 0,
+          responseTimesMs: [],
+          masteryAchievedAt: null,
+        };
+        changed = true;
+      }
+    });
+    return changed;
+  }
+
   function emptyStrandRecord(strandId) {
     const params = PARAMS_PER_STRAND[strandId] || DEFAULT_PARAMS;
     const rec = {
@@ -187,10 +233,11 @@ window.AvneiBKT = (function() {
       masteryAchievedAt: null,
       per_island_attempts: {},  // כמה ניסיונות הגיעו מכל אי בסטרנד — לדיבאג ולקליברציה
     };
-    // sub-BKT per_letter חי תחת strand 1 (פונולוגיה) — mirror של island-3.per_letter
+    // sub-BKT per_letter חי תחת strand 1 (פונולוגיה).
+    // A.4: 22 אותיות (לא רק 5). pL0 = params.pL0 של strand 1 (0.12).
     if (strandId === 1) {
       rec.per_letter = {};
-      ISLAND_3_LETTERS.forEach(l => {
+      ALL_HEBREW_LETTERS_22.forEach(l => {
         rec.per_letter[l] = {
           pKnown: params.pL0,
           attempts: 0, correct: 0, wrong: 0,
@@ -214,6 +261,16 @@ window.AvneiBKT = (function() {
       student[islandId] = ISLANDS_WITH_SUB_BKT.includes(islandId)
         ? emptyIsland3Record()
         : emptyIslandRecord(islandId);
+    }
+    // A.4: מיגרציה — אי 3 עם 5 אותיות בלבד מתרחב ל-22.
+    if (islandId === 3 && student[islandId].per_letter) {
+      const params = PARAMS_PER_ISLAND[3];
+      if (ensureAllLettersIn(student[islandId].per_letter, params.pL0)) {
+        const state = loadState();
+        if (!state[studentId]) state[studentId] = {};
+        state[studentId][islandId] = student[islandId];
+        saveState(state);
+      }
     }
     return student[islandId];
   }
@@ -268,13 +325,15 @@ window.AvneiBKT = (function() {
     const island = state[studentId][3];
     const letter = evt.target_letter;
 
-    // אם אין letter — לא אפשרי לעדכן sub-BKT. עדכון aggregate בלבד.
-    if (!letter || !ISLAND_3_LETTERS.includes(letter)) {
+    // A.4: כל אחת מ-22 האותיות תקפה לעדכון sub-BKT. אם חסרה — מתחזקים אוטומטית.
+    if (!letter || !ALL_HEBREW_LETTERS_22.includes(letter)) {
       console.warn('BKT island 3: event without valid target_letter', evt);
       return null;
     }
 
     const params = PARAMS_PER_ISLAND[3];
+    // מיגרציה בטוחה: אם state ישן ללא 22 האותיות — להרחיב.
+    ensureAllLettersIn(island.per_letter, params.pL0);
     const letterState = island.per_letter[letter];
 
     letterState.attempts++;
@@ -393,6 +452,11 @@ window.AvneiBKT = (function() {
     }
     const strand = strandState[studentId][strandId];
     const params = PARAMS_PER_STRAND[strandId] || DEFAULT_PARAMS;
+
+    // A.4: מיגרציה non-destructive ל-strand 1 — 22 אותיות (אם state ישן עם 5 בלבד).
+    if (strandId === 1 && strand.per_letter) {
+      ensureAllLettersIn(strand.per_letter, params.pL0);
+    }
 
     strand.attempts++;
     if (evt.is_correct) strand.correct++;
@@ -516,18 +580,27 @@ window.AvneiBKT = (function() {
 
     // עדכון pL0 פר-אות באי 3 (תומך גם בלי opts.pL0 כללי)
     if (ISLANDS_WITH_SUB_BKT.includes(islandId) && opts.per_letter) {
+      const updatedLetters = [];
       Object.entries(opts.per_letter).forEach(([letter, pL0]) => {
         if (island.per_letter[letter] && typeof pL0 === 'number') {
           island.per_letter[letter].pKnown = pL0;
+          updatedLetters.push(letter);
         }
       });
-      const all = Object.values(island.per_letter);
-      island.aggregate_pKnown = all.reduce((s, l) => s + l.pKnown, 0) / all.length;
+      // A.4: aggregate על האותיות שהוזנו במפורש (לא על כל 22 — אחרת 17 ב-pL0 ידללו את הממוצע).
+      // אם לא הוזן כלום — נשמר ערך קודם.
+      if (updatedLetters.length > 0) {
+        const sum = updatedLetters.reduce((s, l) => s + island.per_letter[l].pKnown, 0);
+        island.aggregate_pKnown = sum / updatedLetters.length;
+      }
     }
     // עדכון pL0 אחיד (אם סופק)
     else if (typeof opts.pL0 === 'number' && opts.pL0 >= 0 && opts.pL0 <= 1) {
       if (ISLANDS_WITH_SUB_BKT.includes(islandId)) {
-        ISLAND_3_LETTERS.forEach(l => island.per_letter[l].pKnown = opts.pL0);
+        // A.4: pL0 אחיד מוחל על כל 22 האותיות.
+        ALL_HEBREW_LETTERS_22.forEach(l => {
+          if (island.per_letter[l]) island.per_letter[l].pKnown = opts.pL0;
+        });
         island.aggregate_pKnown = opts.pL0;
       } else {
         island.pKnown = opts.pL0;
@@ -693,7 +766,47 @@ window.AvneiBKT = (function() {
     if (!allStrands[studentId][strandId]) {
       allStrands[studentId][strandId] = emptyStrandRecord(strandId);
     }
+    // A.4: מיגרציה non-destructive ל-strand 1 בקריאה.
+    if (strandId === 1 && allStrands[studentId][strandId].per_letter) {
+      const params = PARAMS_PER_STRAND[1] || DEFAULT_PARAMS;
+      const expanded = ensureAllLettersIn(allStrands[studentId][strandId].per_letter, params.pL0);
+      // Backfill חד-פעמי: ילדות לפני A.1 שיש להן דאטה ב-island 3 אבל strand 1 ריק.
+      const backfilled = backfillStrand1FromIsland3(studentId, allStrands);
+      if (expanded || backfilled) {
+        saveStrandStateRaw(allStrands);
+      }
+    }
     return allStrands[studentId][strandId];
+  }
+
+  // A.4: backfill חד-פעמי — מעתיק per_letter מ-island 3 (legacy) ל-strand 1 (חדש)
+  // לאותיות שב-strand 1 הן attempts=0 וב-island 3 יש להן attempts > 0.
+  // נדרש לילדות שהיו במערכת לפני A.1 (יש להן רק avnei-bkt-v1, לא avnei-bkt-strand-v1).
+  // אחרי backfill, ingestEvent של A.1 (dual-write) יעדכן את שניהם בלי לדרוס.
+  function backfillStrand1FromIsland3(studentId, allStrands) {
+    const state = loadState();
+    if (!state[studentId] || !state[studentId][3] || !state[studentId][3].per_letter) return false;
+    if (!allStrands[studentId] || !allStrands[studentId][1] || !allStrands[studentId][1].per_letter) return false;
+    const strand1 = allStrands[studentId][1];
+    const islandPerLetter = state[studentId][3].per_letter;
+    let changed = false;
+    ALL_HEBREW_LETTERS_22.forEach(l => {
+      const islandLs = islandPerLetter[l];
+      const strandLs = strand1.per_letter[l];
+      if (!islandLs || !strandLs) return;
+      if ((strandLs.attempts || 0) === 0 && (islandLs.attempts || 0) > 0) {
+        strand1.per_letter[l] = {
+          pKnown: islandLs.pKnown,
+          attempts: islandLs.attempts,
+          correct: islandLs.correct || 0,
+          wrong: islandLs.wrong || 0,
+          responseTimesMs: (islandLs.responseTimesMs || []).slice(),
+          masteryAchievedAt: islandLs.masteryAchievedAt || null,
+        };
+        changed = true;
+      }
+    });
+    return changed;
   }
 
   function getStudentStrands(studentId) {
@@ -744,17 +857,127 @@ window.AvneiBKT = (function() {
 
   // proxy לתאימות לאחור: A0.1 (suggestFromBKT) קורא per_letter מ-state[3].
   // הפונקציה הזו חושפת את per_letter מ-strand 1 (המקור-אמת החדש) עם fallback ל-legacy island 3.
+  // A.4: בודק קיום של state לפני יצירה (אין side-effect לתלמידה לא-קיימת).
+  //      אם יש דאטה, getStrandState יבצע backfill מ-island 3 + מיגרציה ל-22 אותיות.
   function getPerLetterState(studentId) {
     const allStrands = loadStrandStateRaw();
-    if (allStrands[studentId] && allStrands[studentId][1] && allStrands[studentId][1].per_letter) {
-      return allStrands[studentId][1].per_letter;
-    }
-    // fallback ל-legacy
     const state = loadState();
-    if (state[studentId] && state[studentId][3] && state[studentId][3].per_letter) {
-      return state[studentId][3].per_letter;
+    const hasStrand = !!(allStrands[studentId] && allStrands[studentId][1] && allStrands[studentId][1].per_letter);
+    const hasIsland = !!(state[studentId] && state[studentId][3] && state[studentId][3].per_letter);
+    if (!hasStrand && !hasIsland) return null;
+
+    if (hasStrand) {
+      // קוראים דרך getStrandState — backfill + ensureAllLettersIn ירוצו.
+      const strand1 = getStrandState(studentId, 1);
+      return strand1 && strand1.per_letter ? strand1.per_letter : null;
     }
-    return null;
+    // fallback ל-legacy island 3 (אין strand state כלל — ילדה לפני A.1)
+    const params = PARAMS_PER_ISLAND[3];
+    if (ensureAllLettersIn(state[studentId][3].per_letter, params.pL0)) {
+      saveState(state);
+    }
+    return state[studentId][3].per_letter;
+  }
+
+  // ============================================================
+  // API חדש — Sub-BKT פר-אות (A.4, 27.5.2026 ערב)
+  // ============================================================
+
+  // letterStateInternal — קריאה מ-strand 1 (קנוני) עם fallback ל-island 3 (legacy).
+  // החזרת null אם לאות אין רשומה בכלל (לא אמור לקרות אחרי מיגרציה).
+  function _resolvePerLetter(studentId) {
+    return getPerLetterState(studentId);
+  }
+
+  // getLetterState — מצב BKT מלא עבור אות בודדת.
+  // מחזיר null אם אין דאטה לתלמידה או אם האות אינה ב-22 הקנוניות.
+  function getLetterState(studentId, letter) {
+    if (!ALL_HEBREW_LETTERS_22.includes(letter)) return null;
+    const perLetter = _resolvePerLetter(studentId);
+    if (!perLetter || !perLetter[letter]) return null;
+    const ls = perLetter[letter];
+    return {
+      letter,
+      pKnown: ls.pKnown,
+      attempts: ls.attempts || 0,
+      correct: ls.correct || 0,
+      wrong: ls.wrong || 0,
+      accuracy: (ls.attempts > 0) ? (ls.correct / ls.attempts) : null,
+      median_response_time_ms: median((ls.responseTimesMs || []).slice(-20)),
+      mastered: ls.masteryAchievedAt !== null && ls.masteryAchievedAt !== undefined,
+      masteryAchievedAt: ls.masteryAchievedAt || null,
+    };
+  }
+
+  // getWeakestLetters — n האותיות החלשות ביותר, ממוין pKnown עולה.
+  // ברירת מחדל: רק אותיות עם attempts >= LETTER_MIN_ATTEMPTS_FOR_BUCKET (3).
+  // {includeUntouched: true} → כולל אותיות שלא תורגלו (pKnown = pL0).
+  // F.21A ו-D.15 יוכלו לבחור.
+  function getWeakestLetters(studentId, n, opts) {
+    const limit = (typeof n === 'number' && n > 0) ? n : 3;
+    const options = opts || {};
+    const includeUntouched = options.includeUntouched === true;
+    const perLetter = _resolvePerLetter(studentId);
+    if (!perLetter) return [];
+
+    const entries = ALL_HEBREW_LETTERS_22
+      .map(letter => {
+        const ls = perLetter[letter];
+        if (!ls) return null;
+        const attempts = ls.attempts || 0;
+        if (!includeUntouched && attempts < LETTER_MIN_ATTEMPTS_FOR_BUCKET) return null;
+        // אותיות שכבר נשלטו — לא "חלשות".
+        if (ls.masteryAchievedAt) return null;
+        return {
+          letter,
+          pKnown: ls.pKnown,
+          attempts,
+          accuracy: attempts > 0 ? (ls.correct / attempts) : null,
+        };
+      })
+      .filter(Boolean);
+
+    entries.sort((a, b) => a.pKnown - b.pKnown);
+    return entries.slice(0, limit);
+  }
+
+  // getLetterMasteryDistribution — חתך 4 דליים לדשבורד F.21A.
+  //   mastered:    masteryAchievedAt !== null
+  //   in_progress: attempts >= 3 AND pKnown >= LETTER_WEAK_THRESHOLD (0.70) AND לא mastered
+  //   weak:        attempts >= 3 AND pKnown < LETTER_WEAK_THRESHOLD
+  //   untouched:   attempts < 3
+  // סך 4 הקבוצות = 22.
+  function getLetterMasteryDistribution(studentId) {
+    const perLetter = _resolvePerLetter(studentId);
+    const dist = {
+      mastered: 0,
+      in_progress: 0,
+      weak: 0,
+      untouched: 0,
+      by_bucket: { mastered: [], in_progress: [], weak: [], untouched: [] },
+      total: ALL_HEBREW_LETTERS_22.length,
+    };
+    if (!perLetter) {
+      // אין דאטה כלל — כל 22 ב-untouched.
+      dist.untouched = ALL_HEBREW_LETTERS_22.length;
+      dist.by_bucket.untouched = ALL_HEBREW_LETTERS_22.slice();
+      return dist;
+    }
+    ALL_HEBREW_LETTERS_22.forEach(letter => {
+      const ls = perLetter[letter];
+      if (!ls) { dist.untouched++; dist.by_bucket.untouched.push(letter); return; }
+      const attempts = ls.attempts || 0;
+      if (ls.masteryAchievedAt) {
+        dist.mastered++; dist.by_bucket.mastered.push(letter);
+      } else if (attempts < LETTER_MIN_ATTEMPTS_FOR_BUCKET) {
+        dist.untouched++; dist.by_bucket.untouched.push(letter);
+      } else if (ls.pKnown < LETTER_WEAK_THRESHOLD) {
+        dist.weak++; dist.by_bucket.weak.push(letter);
+      } else {
+        dist.in_progress++; dist.by_bucket.in_progress.push(letter);
+      }
+    });
+    return dist;
   }
 
   return {
@@ -775,6 +998,11 @@ window.AvneiBKT = (function() {
     checkStrandMastery,
     getPerLetterState,
 
+    // ---- API חדש — Sub-BKT פר-אות 22 (A.4) ----
+    getLetterState,
+    getWeakestLetters,
+    getLetterMasteryDistribution,
+
     // ---- קבועים (legacy) ----
     ISLAND_3_LETTERS,
     ISLANDS_WITH_SUB_BKT,
@@ -793,5 +1021,10 @@ window.AvneiBKT = (function() {
     FLUENCY_THRESHOLD_PER_STRAND_MS,
     STORAGE_KEY,
     STORAGE_KEY_STRAND,
+
+    // ---- קבועים חדשים (A.4) ----
+    ALL_HEBREW_LETTERS_22,
+    LETTER_WEAK_THRESHOLD,
+    LETTER_MIN_ATTEMPTS_FOR_BUCKET,
   };
 })();

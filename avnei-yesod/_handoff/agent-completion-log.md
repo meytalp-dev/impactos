@@ -7,6 +7,196 @@
 
 ---
 
+## A.4 — Sub-BKT פר 22 אותיות (הרחבה מ-5 ל-22 בסטרנד פונולוגיה)
+
+**סטטוס:** ✅ הסתיים · קוד כתוב + 2 בדיקות עברו (53/53 בחדש + 0 רגרסיה בישן) · ממתין לאישור push
+**תאריך:** 2026-05-27 ערב
+**שיחה:** Claude Code (Opus 4.7 · VS Code · ort-presentation-builder)
+**Commit:** טרם נדחף
+
+**מה נעשה:**
+`underwater-app/js/shared/bkt.js` הורחב כך ש-Sub-BKT פר-אות מכסה את כל 22 האותיות העבריות (עד עכשיו רק 5: מ/ק/ב/ר/ת — מ-5 המשחקונים הקיימים). זה אבן-בסיס ל-F.21A (מסך מורה בשפת ראמ"ה — צריך להראות חולשה פר אות) ול-D.15 (שכפול ל-17 אותיות באי 3 — כל אות צריכה sub-BKT משלה).
+
+**אסטרטגיה — הרחבה ב-3 שכבות (state + ingest + API):**
+
+| החלטה | תוצאה |
+|---|---|
+| **רשימת 22 אותיות** | קבוע חדש `ALL_HEBREW_LETTERS_22` — סדר אלפבתי קנוני, תואם בדיוק את `data/island-03-letters/_schema.md` של D.14 (אותו מקור אמת — מנע פיצול עתידי) |
+| **pL0/pT/pG/pS פר אות** | אישור מיטל לפני קוד: **ברירת מחדל אחידה** (0.12 ב-strand 1, 0.10 ב-island 3 PARAMS_PER_ISLAND[3]). אין דאטה אמפירי לפיצול כרגע; הפיצול דחוי לכיול אחרי פיילוט |
+| **ISLAND_3_LETTERS = 5** | נשאר במצב הקיים. mastery של "אי 3 נסגר" עדיין דורש את 5 האותיות עם משחקון פעיל. כש-D.15 ישלים את 17 המשחקונים — לעדכן ל-22 גם כאן |
+| **מיגרציה non-destructive** | פונקציה `ensureAllLettersIn(perLetter, pL0)` נקראת ב-getIslandState/getStrandState/getPerLetterState/ingestIsland3Event. ילדות עם state ישן (5 אותיות) מקבלות 17 נוספות בלי לאבד נתונים קיימים |
+| **Backfill strand 1 ← island 3** | פונקציה `backfillStrand1FromIsland3` — לילדות שהיו במערכת לפני A.1 (יש להן רק `avnei-bkt-v1`, לא `avnei-bkt-strand-v1`). מועתק חד-פעמי כשהן נכנסות ל-strand 1 הפעם הראשונה |
+| **side-effect-free reads** | `getPerLetterState` בודק קיום ב-localStorage לפני קריאה ל-getStrandState (שיוצר state). תלמידה לא-קיימת → null, לא state ריק |
+
+**API חדש שנחשף:**
+
+```js
+AvneiBKT.getLetterState(studentId, letter)
+  // → {letter, pKnown, attempts, correct, wrong, accuracy, median_response_time_ms, mastered, masteryAchievedAt}
+  // → null אם האות לא ב-22 או אם אין דאטה לתלמידה
+
+AvneiBKT.getWeakestLetters(studentId, n=3, opts={includeUntouched: false})
+  // → [{letter, pKnown, attempts, accuracy}, ...]  ממוין pKnown עולה (החלש ראשון)
+  // ברירת מחדל: רק אותיות תורגלו (attempts ≥ 3) ושלא נשלטו
+  // {includeUntouched: true} → כולל אותיות לא-תורגלו (לדשבורד F.21A "מה לא נגעו בו עדיין")
+
+AvneiBKT.getLetterMasteryDistribution(studentId)
+  // → {mastered, in_progress, weak, untouched, by_bucket: {...}, total: 22}
+  // לכל דלי גם רשימת האותיות. סך הקבוצות = 22 תמיד.
+  // הגדרות:
+  //   mastered:    masteryAchievedAt !== null
+  //   in_progress: attempts ≥ 3 AND pKnown ≥ 0.70 AND לא mastered
+  //   weak:        attempts ≥ 3 AND pKnown < 0.70
+  //   untouched:   attempts < 3
+
+AvneiBKT.ALL_HEBREW_LETTERS_22              // קבוע — סדר א..ת
+AvneiBKT.LETTER_WEAK_THRESHOLD              // 0.70
+AvneiBKT.LETTER_MIN_ATTEMPTS_FOR_BUCKET     // 3 (תואם getWeakLettersIn3 הקיים)
+```
+
+**קבצים שנוצרו/שונו:**
+
+| קובץ | שינוי |
+|---|---|
+| `underwater-app/js/shared/bkt.js` | הרחבה — נוספו `ALL_HEBREW_LETTERS_22`, `LETTER_WEAK_THRESHOLD`, `LETTER_MIN_ATTEMPTS_FOR_BUCKET`, `ensureAllLettersIn`, `backfillStrand1FromIsland3`, `getLetterState`, `getWeakestLetters`, `getLetterMasteryDistribution`. שונה: `emptyIsland3Record` (22), `emptyStrandRecord` strand 1 (22), `getIslandState`/`getStrandState`/`getPerLetterState` (מיגרציה+backfill), `ingestIsland3Event` (קבל את 22), `setInitialState` (aggregate על האותיות שהוזנו) |
+| `underwater-app/scripts/test-bkt-letters.js` | חדש · 12 בלוקי-בדיקה · 53 assertions · 12 תרחישים (אתחול 22, ingest על אות חדשה, getWeakest ברירת-מחדל+includeUntouched, distribution, validation, backwards compat A0.1+checkMastery, מיגרציה non-destructive, dual-write) |
+| `_handoff/2026-05-26-architecture-tasks-tracker.html` | A.4 ✅ + עדכון טבלת "מוכן להתחיל" |
+
+**קבצים שלא נגעתי בהם (לפי כללי ריבוי-סוכנים):**
+- `epa.js` (A.3), `event-logger.js` (A.3 הוסיף לו), `mastery-check.js` (A0.3), `profile-classifier.js` (A0.1)
+- `js/templates/*`, `css/game-shell.css`, `audio.js` (D.14 רץ במקביל)
+- כל stage-*.html
+
+**בדיקות שעברו:**
+
+1. **`scripts/test-bkt.js`** (test legacy A.1+פערים — לא נגעתי בו) — כל 4 הפערים עוברים זהים: sub-BKT פר-אות באי 3 · setInitialState · per-letter cold-start · recommendInitialTier. `Noa pre-set per letter aggregate = 52.0%` (זהה לפני A.4, אחרי תיקון setInitialState aggregate שיחושב על האותיות שהוזנו במפורש, לא על כל 22).
+
+2. **`scripts/test-bkt-letters.js`** (חדש · 53 assertions ב-12 בלוקים):
+   - 22 אותיות מאותחלות נכון ב-island 3 וב-strand 1 (8/8)
+   - ingestEvent על ש (אות חדשה) — לא מחזיר null, sub-BKT מתעדכן (5/5)
+   - getWeakestLetters ברירת מחדל — רק תורגלו (3/3)
+   - getWeakestLetters includeUntouched — כולל לא-תורגלו (2/2)
+   - getLetterMasteryDistribution — 4 דליים מסתכמים ל-22 (4/4)
+   - getLetterState — input validation, null על תלמידה לא-קיימת (2/2)
+   - A0.1 backwards compat — Object.entries(per_letter) עוד עובד 1:1 (5/5)
+   - checkMastery legacy — per_letter עם 5 ISLAND_3_LETTERS שמור (3/3)
+   - מיגרציה non-destructive — state ישן עם 5 → 22, ערכים קיימים נשמרים (8/8)
+   - ingestEvent על אות חדשה אחרי מיגרציה — לא דורס דאטה קיים (4/4)
+   - Dual-write — שני המפתחות מתעדכנים (3/3)
+   - קבועים חשופים (6/6)
+   - **סיכום: 53/53 ✅**
+
+**עקרונות עיצוב שיושמו:**
+- **A0.1 + A0.3 לא נשברים.** `Object.entries(per_letter)` עם `.filter(attempts >= 3)` עובד 1:1 — A0.1 פשוט רואה 22 entries במקום 5, וה-17 הלא-תורגלות פליטרות החוצה. checkMastery עדיין משתמש ב-ISLAND_3_LETTERS=5 ל-mastery של אי 3 (A0.3 ידרוש את 5).
+- **AvneiBKT.ALL_HEBREW_LETTERS_22 חשוף לציבור** — D.14's `_schema.md` משתמש בסדר זה. עתידי D.15/F.21A — לא לכתוב את 22 האותיות אלא לקרוא מהקבוע (single source of truth).
+- **מיגרציה אוטומטית בכל קריאה** — `ensureAllLettersIn` רץ ב-getIslandState/getStrandState/ingestIsland3Event/getPerLetterState. אין צורך ב-script מיגרציה חיצוני.
+- **Backfill חד-פעמי** — `backfillStrand1FromIsland3` רץ ב-getStrandState. ילדות לפני A.1 (יש להן רק island state) מקבלות mirror ל-strand 1 בקריאה הראשונה.
+- **getPerLetterState נעדף strand 1 על island 3** (אחרי backfill) — strand 1 הוא המקור-אמת החדש (A.1).
+- **side-effect-free reads** — getLetterState/getWeakestLetters/getLetterMasteryDistribution לא יוצרים state חדש לתלמידה לא-קיימת. מחזירים null/dist ריק.
+
+**שאלות פדגוגיות + מענה ממיטל (לפני קוד):**
+
+1. ❓ pL0/pT/pG/pS פר אות — האם שונים מ-strand 1 default? → ✅ **ברירת מחדל אחידה**. אין דאטה אמפירי לפיצול. אחרי פיילוט נכייל לפי דאטה אמיתי.
+2. ❓ getWeakestLetters — האם לכלול אותיות שלא תורגלו עדיין? → ✅ **flag opt-in**. ברירת מחדל = רק `attempts ≥ 3` (תואם partners-review §6). `{includeUntouched: true}` למי שצריך — F.21A או D.15 עשויים להשתמש.
+3. ❓ Smoke test — קובץ קבוע או אינליין? → ✅ **קובץ קבוע `scripts/test-bkt-letters.js` + git**. נדרש לרגרסיה ב-22 אותיות + לעתיד (D.15, F.21A, פיילוט).
+
+**שאלות שלא נשאלו ונסגרו פנימית (כי לא קריטיות פדגוגית):**
+- ספי mastery distribution (`LETTER_WEAK_THRESHOLD=0.70`, `LETTER_MIN_ATTEMPTS_FOR_BUCKET=3`) — תואם `getWeakLettersIn3` הקיים מ-A.1 (לפני שינוי). שמרני.
+- Backfill — לא נשאל אם זה רצוי, אבל אחרת ילדות עם state לפני A.1 לא יראו את הדאטה ב-API החדש. בחירה טכנית, לא פדגוגית.
+- `setInitialState` — תוקן: aggregate מחושב על האותיות שהוזנו במפורש (`updatedLetters`), לא על כל 22. שמרני — Noa aggregate נשאר 52% כמו לפני A.4.
+
+**מה זה פתח להמשך:**
+- ✅ **F.21A** (מסך מורה בשפת ראמ"ה) — עכשיו יכול לקרוא `getLetterMasteryDistribution(student)` כדי להציג "X ילדות שולטות 18+/22" + `getWeakestLetters` לתת רשימה למורה. תיאום עם A.1+A.3 — שלושתם פתוחים.
+- ✅ **D.15** (שכפול ל-17 אותיות באי 3) — כל אות חדשה כבר תקבל sub-BKT אוטומטית (ingestEvent יזהה את האות, ensureAllLettersIn יוודא קיום). D.14 חתם את ה-template, A.4 חתם את ה-tracking — D.15 יכולה להתחיל.
+- ✅ **E.19** (calibration) — getLetterMasteryDistribution.by_bucket.mastered.length מעניק עוגן ל"מבדק ראמ"ה משימה 1 — האם 18+/22 ילדות שולטות?"
+
+**ממתין ממיטל (בעדיפות):**
+1. **אישור push** של bkt.js + scripts/test-bkt-letters.js + tracker.html.
+2. **בדיקה ידנית (אופציונלי):** map.html → picker → תלמידה אמיתית → DevTools console:
+   ```js
+   AvneiBKT.getLetterMasteryDistribution(localStorage.getItem('avnei-yesod-current-student'))
+   // צפוי: {mastered: 5 (אם סגרו את אי 3), in_progress: 0, weak: 0, untouched: 17, total: 22}
+   AvneiBKT.getWeakestLetters(localStorage.getItem('avnei-yesod-current-student'), 5)
+   // צפוי: רשימה ריקה אם כל 5 השליטו, או מצביעות לחלשות
+   AvneiBKT.getLetterState(localStorage.getItem('avnei-yesod-current-student'), 'מ')
+   // צפוי: {letter: 'מ', pKnown: ~1.00, attempts: ~10, mastered: true, ...}
+   ```
+3. **אם נמצא קונפליקט עם D.14 או A.3 בדחיפה:** `git fetch origin` לפני push — D.14 עוד לא נדחף, A.3 כן.
+
+**הערה אופרציונלית:** הסוכן השני שעובד על D.14 (תבנית גנרית) — לא נגעתי ב-`js/templates/*`, `css/game-shell.css`, או `audio.js`. הסכמה של D.14 (`_schema.md`) משתמשת באותה רשימת 22 אותיות — אם D.14 דוחף ראשון, רשימת ALL_HEBREW_LETTERS_22 שלי תואמת לחלוטין.
+
+---
+
+## D.14 — חילוץ תבנית גנרית מ-5 משחקוני אי 3
+
+**סטטוס:** 🟡 קוד מוכן · ממתין לבדיקה ידנית ב-demo + אישור push
+**תאריך:** 2026-05-27
+**שיחה:** Claude Code (Opus 4.7 · VS Code · ort-presentation-builder)
+**Commit:** טרם נדחף
+
+**אסטרטגיה מאושרת ע"י מיטל לפני שכתבתי קוד (4 החלטות):**
+1. ארכיטקטורה = **"בסיס משותף + 3 plug-ins"** — game-shell.js נושא overlay+top-bar+noni+audio+completion+mastery hook; כל ז'אנר משחקון נשאר קובץ נפרד אבל קטן יותר
+2. פלט = **קובץ HTML פר אות** (לא URL פרמטרי)
+3. אסטים = **תבנית גנרית + slot ל-hero PNG אופציונלי** (לא חוסם D.15 על אסטים)
+4. דאטה = **קובץ JSON פר אות** ב-`data/island-03-letters/<letter>.json`
+
+**3 הז'אנרים שזוהו ב-5 המשחקונים הקיימים:**
+
+| ז'אנר | משחקונים מקור | מאפיין |
+|---|---|---|
+| **quest** (5-stage polymorphic) | shell (מ) · house (ב) | 5 שלבים שונים מ-`js/activities/*` |
+| **pick** (round-based) | rescue (ק) | 5 סיבובים × 4 פודים, 1 נכון פר סיבוב |
+| **tap-all** (single-screen) | trail-resh (ר) · storm (ת) | 12 אריחים, 5 מטרות, סדר חופשי |
+
+**קבצים שנוצרו (8 חדשים):**
+- `underwater-app/js/templates/game-shell.js` — shell משותף (217 שורות) · API: `AvneiGameShell.start(config)`
+- `underwater-app/js/templates/mechanic-tap-all.js` — plug-in מ-storm/trail (184 שורות) · רושם תחת `window.AvneiMechanics['tap-all']`
+- `underwater-app/js/templates/mechanic-pick.js` — plug-in מ-rescue (172 שורות) · `window.AvneiMechanics['pick']`
+- `underwater-app/js/templates/mechanic-quest.js` — plug-in מ-shell/house (171 שורות) · משתמש ב-`js/activities/*` הקיימים
+- `underwater-app/css/game-shell.css` — סגנונות משותפים (243 שורות) · `.unit-counter`, `.shell-slots`, `.tap-tile`, `.pick-pod`, confetti, kisses
+- `underwater-app/data/island-03-letters/_schema.md` — סכמת הדאטה פר אות + מיפוי 22 letter-keys
+- `underwater-app/data/island-03-letters/shin.json` — קובץ demo (אות ש) להוכחת מקצה לקצה
+- `underwater-app/stage-3-template-demo.html` — HTML demo שטוען את shin.json ומריץ את התבנית
+
+**קבצים שנוגעים (1 קיים):**
+- `underwater-app/js/shared/audio.js` — הרחבת `LETTER_TO_SOUND_FILE` מ-5 ל-22 אותיות (תוספת בלבד, לא משבר את 5 המשחקונים הקיימים — כל `sound-X.mp3` כבר קיים ב-AvriNeural)
+
+**קבצים שלא נגעתי בהם (לפי כללי ריבוי-סוכנים):**
+- `bkt.js`, `epa.js`, `event-logger.js`, `mastery-check.js`, `profile-classifier.js` — שייכים ל-A.1/A.3 שרצים במקביל
+- 5 קבצי HTML המשחקונים הקיימים (shell/rescue/house/trail-resh/storm) — נשארים כלשונם, התבנית **אדיטיבית בלבד**
+
+**עקרונות עיצוב שיושמו:**
+- התבנית **לא משבשת את 5 הקיימים** — הם ממשיכים לעבוד כקודם
+- 3 ה-plug-ins רושמים את עצמם ב-`window.AvneiMechanics[name]`, ה-shell בוחר לפי `config.mechanic`
+- שמירה על הקונבנציות מ-23.5.2026: 5 הבעות נוני, feedback bubble מוסתר, support model 3-שלבי (visual → hint → press-here), `INTER_ROUND_DELAY_MS=2400`
+- שימוש ב-`activity_type` קיימים ב-event-logger (`'storm-quest'`, `'rescue'`) כדי לא לדרוש שינוי ב-event-logger.js (קובץ אסור)
+- `markQuestCompleted` כותב ל-`island3-quests:completed` כמו 5 הקיימים → stage-3-island.html יראה את המשחקון החדש אוטומטית
+- `AvneiMasteryCheck.checkAndShowIslandCelebration(null, 3)` נקרא בסיום, כמו 5 הקיימים — מתחבר ל-A0.3
+
+**שאלות פתוחות + מענה ממיטל (4 ענתה בהתחלה לפני קוד):**
+1. ❓ ז'אנר אחד או יותר? → ✅ **בסיס משותף + 3 plug-ins**
+2. ❓ קובץ HTML פר אות, או פרמטרי? → ✅ **קובץ פר אות**
+3. ❓ אסטים? → ✅ **גנרי + slot ל-hero PNG אופציונלי**
+4. ❓ דאטה? → ✅ **JSON פר אות ב-`data/island-03-letters/`**
+
+**שאלות פתוחות שעוד אין להן תשובה (לא חוסמות D.14 — חוסמות D.15):**
+- 🔴 **איזה mechanic לכל אחת מ-17 האותיות?** דורש החלטה פדגוגית של מיטל לפני D.15. הוספתי ל-`_schema.md` המלצות ראשוניות (לא הוכרעו).
+- 🟡 קבצי `intro-<letter-key>-quest.mp3` ו-`finale-<letter-key>-*.mp3` — אין AvriNeural לכל 17 האותיות. התבנית מסתדרת בלעדיהם (מנגנת `sound-X.mp3` כברירת מחדל), אבל הסיום פחות דרמטי. דורש החלטה מ-D.15.
+- 🟡 אי החלפת mechanic-quest ל-letterShape/findLetter — קבצי הדאטה הקיימים (`island-03-items.json` וכו') מסוננים לפי `letter_in_focus`, ויש פריטים רק ל-5 האותיות הקיימות. למשחקון quest על אות חדשה נדרשת הרחבת הדאטה — חוסם בחירת quest mechanic לאות חדשה.
+
+**מה זה פתח / ממתין לפעולה:**
+- ✅ D.15 יכולה להתחיל — יש לה shell + 3 mechanics + schema לעבוד מולם
+- 🟡 דרוש החלטה פדגוגית פר אות לפני D.15 (איזה mechanic)
+- 🟡 דרושות הקלטות AvriNeural פר אות אם רוצים intro+finale דרמטיים (אחרת התבנית סבלנית)
+
+**בדיקת ידנית ל-demo שאני מציע למיטל לעשות (5 דק'):**
+1. שרת מקומי: `cd c:/Users/meyta/Downloads/impactos/avnei-yesod/underwater-app && python -m http.server 8765`
+2. פתח: `http://localhost:8765/stage-3-template-demo.html`
+3. צפוי: overlay "מסע השמש" → לחצי "בוא/י נתחיל" → 12 אריחים בים (5 ש׳, 7 דיסטרקטורים) → הקש על כל ה-ש׳-ים → אנימציות → completion
+4. ?reset=1 מנקה localStorage לטעימה חוזרת
+
+---
+
 ## A.1 — BKT-per-strand (5 מודלים) · dual-write + compat layer
 
 **סטטוס:** ✅ הסתיים · קוד כתוב + 2 בדיקות עברו · ממתין לאישור push

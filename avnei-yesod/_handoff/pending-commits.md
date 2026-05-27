@@ -4,6 +4,165 @@
 
 ---
 
+## ✅ קבוצה K — A.4 · Sub-BKT פר 22 אותיות (הרחבה מ-5 ל-22 בסטרנד פונולוגיה)
+
+**סטטוס:** ✅ מוכן ל-push · 53/53 smoke tests עברו · ממתין רק לאישור מיטל
+**תאריך:** 2026-05-27 ערב
+**1 קובץ שונה + 1 חדש + 2 handoff updates · חבילה אחת**
+
+| # | קובץ | סטטוס שינוי | הערה |
+|---|---|---|---|
+| 1 | `underwater-app/js/shared/bkt.js` | שינוי מרכזי | הרחבה ל-22 אותיות · API חדש: getLetterState · getWeakestLetters · getLetterMasteryDistribution · מיגרציה אוטומטית + backfill מ-island 3 |
+| 2 | `underwater-app/scripts/test-bkt-letters.js` | חדש (~220 שורות) | 12 בלוקי-בדיקה · 53 assertions · רגרסיה ל-22 אותיות + backwards compat A0.1/A0.3 + מיגרציה non-destructive |
+| + | `_handoff/2026-05-26-architecture-tasks-tracker.html` | שינוי קל | A.4 ✅ · checkbox checked + עדכון טבלת "מוכן להתחיל" |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש בראש | תיעוד A.4 |
+| + | `_handoff/pending-commits.md` | בלוק חדש בראש (זה) | הקבוצה הזו |
+
+**יחס לקבוצות שכבר נדחפו (A.1 = `b4c0145`, A.3 = `3c063bb`):**
+- A.4 משנה רק את `bkt.js` (קובץ של A.1 בלעדית) — לא קונפליקט עם A.3
+- A.4 שומר 1:1 את ה-API של A.1 — `getStudentState`, `getIslandState`, `checkMastery`, `getStrandState`, `getStudentStrands`, `checkStrandMastery`, `getPerLetterState`, `setInitialState`, `recommendInitialTier` — כולם ממשיכים לעבוד
+- A.4 לא נגע ב-`epa.js`/`event-logger.js`/`mastery-check.js`/`profile-classifier.js`
+
+**יחס ל-D.14 (טרם נדחפה — קבוצה J):**
+- D.14 הגדירה 22 letter-keys ב-`data/island-03-letters/_schema.md`. A.4 משתמש בדיוק באותה רשימת 22 אותיות (`ALL_HEBREW_LETTERS_22`) — single source of truth
+- אין חפיפת קבצים → אין קונפליקט merge
+
+**לא חוסם דבר נוסף:** A.4 פותח את F.21A (יכולה לקרוא `getLetterMasteryDistribution`) ואת D.15 (כל אות חדשה כבר מקבלת sub-BKT אוטומטית).
+
+**לפני push (חובה — סביבת ריבוי-סוכנים):**
+```
+git fetch origin && git status
+```
+
+**הצעת message לקומיט (HEREDOC):**
+```
+A.4 — Sub-BKT פר 22 אותיות בסטרנד פונולוגיה
+
+הרחבה מ-5 אותיות (מ/ק/ב/ר/ת — 5 המשחקונים הקיימים) ל-22
+האותיות העבריות. ALL_HEBREW_LETTERS_22 הוא הרשימה הקנונית
+היחידה — תואם בדיוק את data/island-03-letters/_schema.md
+של D.14.
+
+3 API חדשים נחשפים:
+  getLetterState(studentId, letter)
+  getWeakestLetters(studentId, n=3, {includeUntouched?})
+  getLetterMasteryDistribution(studentId)
+    → 4 דליים: mastered / in_progress / weak / untouched
+
+מיגרציה non-destructive: state ישן עם 5 אותיות מתרחב
+אוטומטית ל-22 בקריאה הראשונה. ערכי הניסיונות והנשלטות
+הקיימים נשמרים. Backfill חד-פעמי מ-island 3 ל-strand 1
+לילדות שהיו במערכת לפני A.1.
+
+API חיצוני נשמר 1:1 — A0.1 (suggestFromBKT), A0.3
+(mastery-check), event-logger ממשיכים לעבוד.
+
+ISLAND_3_LETTERS עדיין = 5: mastery של "אי 3 נסגר"
+דורש 5 משחקונים פעילים. ייעדכן ל-22 כש-D.15 ישלים את
+17 המשחקונים החסרים.
+
+Smoke tests:
+  scripts/test-bkt.js          — 4/4 פערים A.1 עוברים זהים
+  scripts/test-bkt-letters.js  — 53/53 חדשים עוברים
+```
+
+**מסלול בדיקה ידנית (אופציונלי — smoke tests מספיקים):**
+```
+cd c:/Users/meyta/Downloads/impactos/avnei-yesod
+python -m http.server 8765
+```
+1. `http://localhost:8765/underwater-app/map.html` → picker → תלמידה אמיתית
+2. שחק 2-3 משחקונים באי 3
+3. DevTools console:
+   ```js
+   AvneiBKT.getLetterMasteryDistribution(localStorage.getItem('avnei-yesod-current-student'))
+   AvneiBKT.getWeakestLetters(localStorage.getItem('avnei-yesod-current-student'), 5)
+   AvneiBKT.getLetterState(localStorage.getItem('avnei-yesod-current-student'), 'מ')
+   ```
+   צפוי: distribution מציג mastered + untouched (17), getLetterState על מ עם attempts ו-pKnown אמיתיים
+
+---
+
+## 🟡 קבוצה J — D.14 · חילוץ תבנית גנרית מ-5 משחקוני אי 3
+
+**סטטוס:** 🟡 דורש בדיקת מיטל ידנית ב-demo לפני push
+**תאריך:** 2026-05-27
+**8 קבצים חדשים + 1 שונה + 3 handoff updates · חבילה אחת · לא לפצל**
+
+| # | קובץ | סטטוס שינוי | הערה |
+|---|---|---|---|
+| 1 | `underwater-app/js/templates/game-shell.js` | חדש (217 שורות) | shell משותף · `AvneiGameShell.start(config)` |
+| 2 | `underwater-app/js/templates/mechanic-tap-all.js` | חדש (184 שורות) | plug-in מ-storm/trail · `window.AvneiMechanics['tap-all']` |
+| 3 | `underwater-app/js/templates/mechanic-pick.js` | חדש (172 שורות) | plug-in מ-rescue · `window.AvneiMechanics['pick']` |
+| 4 | `underwater-app/js/templates/mechanic-quest.js` | חדש (171 שורות) | plug-in מ-shell/house · משתמש ב-js/activities/* קיימים |
+| 5 | `underwater-app/css/game-shell.css` | חדש (243 שורות) | סגנונות משותפים + 2 mechanics + confetti/kisses canonical |
+| 6 | `underwater-app/data/island-03-letters/_schema.md` | חדש | סכמת JSON פר-אות + 22 letter-keys + המלצות mechanic |
+| 7 | `underwater-app/data/island-03-letters/shin.json` | חדש | קובץ demo (אות ש) להוכחת מקצה לקצה |
+| 8 | `underwater-app/stage-3-template-demo.html` | חדש | HTML demo שטוען shin.json ומריץ את התבנית |
+| 9 | `underwater-app/js/shared/audio.js` | שינוי קל | `LETTER_TO_SOUND_FILE` מ-5 ל-22 אותיות (תוספת בלבד) |
+| + | `_handoff/2026-05-26-architecture-tasks-tracker.html` | שינוי קל | D.14 ✅ |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש בראש | תיעוד D.14 |
+| + | `_handoff/pending-commits.md` | בלוק חדש בראש (זה) | הקבוצה הזו |
+
+**יחס לקבוצות I (A.1) ו-H (A.3) שכבר נדחפו:**
+- D.14 לא נגעה בקבצי הליבה של A.1/A.3 (bkt.js, epa.js, event-logger.js, mastery-check.js, profile-classifier.js)
+- D.14 רק קוראת את ה-API שלהן (`AvneiBKT.*`, `AvneiEPA.ingestEvent`, `AvneiEventLogger.logActivityResult`, `AvneiMasteryCheck.checkAndShowIslandCelebration`)
+- אין חפיפת קבצים → אין קונפליקט merge
+
+**לא לדחוף עדיין כי:**
+- 🟡 demo (`stage-3-template-demo.html`) דורש סבב בדיקה ידנית של מיטל מקצה לקצה לפני push (5-10 דק')
+- 🟡 שאלה פדגוגית פתוחה: איזה mechanic לכל אחת מ-17 האותיות החסרות? (זה D.15 — לא חוסם D.14, אבל ראוי להבהיר לפני שהקוד מתקבע)
+- ⚠️ ייתכן שתידרש התאמה אם הבדיקה הידנית מגלה רגרסיה ב-5 המשחקונים הקיימים (לא צפוי — התבנית אדיטיבית — אבל worth verifying)
+
+**לפני push (חובה — סביבת ריבוי-סוכנים):**
+```
+git fetch origin && git status
+```
+
+**הצעת message לקומיט (HEREDOC):**
+```
+D.14 — חילוץ תבנית גנרית מ-5 משחקוני אי 3
+
+ארכיטקטורה "בסיס משותף + 3 plug-ins" שאישרה מיטל לפני קוד:
+
+  game-shell.js   — overlay + top-bar + noni + audio + completion
+                    + finale + mastery hook (זהה לכל 5 הקיימים)
+
+  mechanic-tap-all  — N tiles, T targets, free-order tap
+                      (extracted from storm + trail-resh)
+  mechanic-pick     — N rounds × M pods, 1 correct per round
+                      (extracted from rescue)
+  mechanic-quest    — 5 polymorphic activities from js/activities/*
+                      (extracted from shell + house)
+
+8 קבצים חדשים + 1 שינוי קל ל-audio.js (LETTER_TO_SOUND_FILE
+מורחב ל-22 אותיות — כל sound-X.mp3 כבר קיים ב-AvriNeural).
+
+5 המשחקונים הקיימים (shell/house/rescue/trail-resh/storm) לא
+נגעו. התבנית אדיטיבית בלבד.
+
+Demo: stage-3-template-demo.html טוען data/island-03-letters/
+shin.json ומריץ tap-all על אות ש (12 אריחים, 5 ש׳-ים). אומת
+ידנית ע"י מיטל לפני push.
+
+חוסם את D.15 (שכפול ל-17 אותיות) — שכרגע יכול להתחיל.
+```
+
+**מסלול בדיקה ידנית שמיטל מבצעת לפני אישור push:**
+1. `cd c:/Users/meyta/Downloads/impactos/avnei-yesod/underwater-app`
+2. `python -m http.server 8765` (או `npx serve`)
+3. פתח `http://localhost:8765/stage-3-template-demo.html`
+4. צפוי:
+   - overlay "מסע השמש"
+   - מקיש על intro-speaker → לא משמיע (אין `intro-shin-*.mp3`) — זה תקין כברירת מחדל
+   - לוחץ "בוא/י נתחיל"
+   - 12 אריחים בים, 5 מהם עם ש׳
+   - מקיש על כל ה-ש׳-ים בכל סדר → כל אחד מואר, נוני שמח, מונה עולה
+   - אחרי 5 → finale עם confetti+kisses + completion overlay
+5. בדיקת רגרסיה ב-5 הקיימים (חוזרים למפה ומשחקים shell/storm — לא אמורים להשתבש)
+
+---
+
 ## ✅ קבוצה I — A.1 · BKT-per-strand (נדחפה 27.5.2026 · `b4c0145`)
 
 **2 קבצים · ממתין לאישור מיטל:**
