@@ -24,14 +24,18 @@
 - ❌ "18 אותיות מ-22" = רף "תקין" של ראמ"ה, לא ממוצע אמפירי
 
 ### ⚠️ קבצים DEPRECATED — לא לבסס עליהם תוכן (עודכן 27.5.2026 לילה)
-הקבצים הבאים הם **גרסה 1.0** של הארכיטקטורה (מבוססת "9 מיומנויות"). הם נשארים ב-repo לצרכי המשכיות ויזואלית, אבל **אינם מקור-אמת**:
+הקבצים הבאים הם **גרסה 1.0** של הארכיטקטורה (מבוססת "9 מיומנויות"). **רובם הועברו לארכיון** (27.5.2026 לילה) — `avnei-yesod/_archive/v1-legacy/`:
 
-**מצגות וויזואלים ישנים:**
-- `spec.html` (טיוטה ויזואלית v1) — מכיל banner DEPRECATED בראש
-- `index.html` · `README.md` — מתארים 9 מיומנויות
-- `sales/presentation-municipal.html` · `sales/proposal-municipal.html` · `sales/proposal-onepager.html` · `partners-qa.html` — מצגות מכירה ישנות
-- `engine/demo.html` · `engine/diagnostic.html` · `engine/pedagogy-grade1.html` — engine ישן
-- `curriculum/pedagogy-master.md` · `curriculum/literacy-grade1-2-yearly.html` — תיעוד פדגוגי ישן
+**🗄️ ארכוב מלא ב-`_archive/v1-legacy/` (לא לקרוא אלא אם נחוץ היסטורית):**
+- `_archive/v1-legacy/sales/` — 5 קבצים (presentation/proposal-municipal/onepager/pricing-summary + 2 PDF)
+- `_archive/v1-legacy/partners-qa.html`
+- `_archive/v1-legacy/engine/` — 3 קבצים (demo.html · diagnostic.html · pedagogy-grade1.html)
+- `_archive/v1-legacy/curriculum/` — 2 קבצים (pedagogy-master.md · literacy-grade1-2-yearly.html)
+- ראה [`_archive/v1-legacy/README.md`](../_archive/v1-legacy/README.md) להסבר מלא
+
+**נשארו במקום עם banner DEPRECATED:**
+- `spec.html` — מקושר ממקומות רבים, banner צהוב בראש מסביר ומפנה למסמכי-אם
+- `index.html` · `README.md` — **עודכנו 27.5 לילה** ל-5 סטרנדים (לא DEPRECATED יותר)
 
 **🆕 קוד פעיל באפליקציה — אבל ארכיטקטורת v1, לא לבסס דשבורד חדש:**
 - `underwater-app/teacher-live.html` — דשבורד מורה v1 (פר-משחקון, 5 אותיות, בלי BKT-per-strand). **מסך מורה חדש מתוכנן כ-`teacher-rama.html`** לפי `_handoff/2026-05-27-F21A-ux-spec.md`. אם סוכן מתבקש לבנות "דשבורד מורה" — חובה לקרוא את ה-spec של F.21A קודם.
