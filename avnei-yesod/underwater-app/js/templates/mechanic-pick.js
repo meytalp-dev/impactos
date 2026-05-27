@@ -1,13 +1,20 @@
 // ============================================================
 // templates/mechanic-pick.js — Round-based pick-correct mechanic
 //
-// Extracted from stage-3-rescue.html (אות ק). The mechanic runs N rounds.
-// In each round M pods are shown, exactly one carries the target letter
-// and the rest carry distractors. The child taps the correct one →
-// onUnitWon. Wrong taps animate the pod and progress the scaffold.
-// After N correct rounds → onComplete.
+// בכל סבב מוצגים podsPerRound bubbles, רק אחת עם האות-יעד. הילד
+// מקיש על הנכון → onUnitWon. אחרי total סבבים נכונים → onComplete.
 //
-// Support model — same as mechanic-tap-all:
+// D.15 v2 update (27.5.2026):
+//   - השמיע ההוראה במשחק עוברת מ-playLetterSound ל-inGamePromptAudioKey
+//     (find-<letter-key>.mp3 — אותו דפוס כמו tap-all)
+//   - תשובה נכונה: צליל-אות → 220ms → שבח רנדומלי מתוך
+//     praise-yofi/metzuyan/mealeh (pick-without-replacement)
+//   - cancelPendingPraise למניעת overlap בהקשות מהירות
+//
+// תאימות אחור: stage-3-rescue.html (משחקון אמנותי לאות ק) משתמש בקוד
+// משלו, לא ב-mechanic זה — שינוי כאן לא משפיע עליו.
+//
+// Support model — זהה ל-mechanic-tap-all:
 //   wrong-1: visual sway only
 //   wrong-2: hint-glow on correct pod + play letter sound
 //   wrong-3+: keep hint-glow + play 'press-here.mp3'
@@ -18,7 +25,7 @@ window.AvneiMechanics = window.AvneiMechanics || {};
 window.AvneiMechanics['pick'] = (function () {
 
   const INTER_ROUND_DELAY_MS = 2400;
-  const FEEDBACK_AUDIO = ['exactly', 'great', 'right'];
+  const PRAISE_POOL = ['praise-yofi', 'praise-metzuyan', 'praise-mealeh'];
 
   function shuffle(arr) {
     const a = arr.slice();
@@ -35,6 +42,16 @@ window.AvneiMechanics['pick'] = (function () {
     const distractors = (opts.distractors || []).filter(d => d !== letter);
     const cfg         = opts.mechanicConfig || {};
     const podsPerRound = cfg.podsPerRound || 4;
+    const inGamePromptKey = opts.inGamePromptAudioKey || null;
+
+    function playPromptOrLetterSound() {
+      if (!window.AvneiAudio) return;
+      if (inGamePromptKey) {
+        AvneiAudio.play(inGamePromptKey);
+      } else {
+        AvneiAudio.playLetterSound(letter);
+      }
+    }
 
     root.innerHTML = '';
     root.classList.add('mechanic-pick');
@@ -50,14 +67,59 @@ window.AvneiMechanics['pick'] = (function () {
       locked: false,
       hintTimer: null,
       lastShownAt: Date.now(),
+      availablePraises: PRAISE_POOL.slice(),
+      praiseTimer: null,
+      praiseCleanup: null,
     };
 
-    function pickFeedback() {
-      return FEEDBACK_AUDIO[Math.floor(Math.random() * FEEDBACK_AUDIO.length)];
+    function pickNextPraise() {
+      if (state.availablePraises.length === 0) {
+        state.availablePraises = PRAISE_POOL.slice();
+      }
+      const idx = Math.floor(Math.random() * state.availablePraises.length);
+      return state.availablePraises.splice(idx, 1)[0];
+    }
+
+    function cancelPendingPraise() {
+      if (state.praiseTimer) { clearTimeout(state.praiseTimer); state.praiseTimer = null; }
+      if (state.praiseCleanup) { state.praiseCleanup(); state.praiseCleanup = null; }
+    }
+
+    function playRightHitAudio(isLastRound) {
+      if (!window.AvneiAudio) return;
+      cancelPendingPraise();
+
+      const letterKey = (AvneiAudio.LETTER_TO_SOUND_FILE || {})[letter];
+
+      // בסבב האחרון — רק צליל-אות (ה-finale ינגן שבח+אנימציה ייחודית)
+      if (isLastRound) {
+        if (letterKey) AvneiAudio.play(letterKey);
+        return;
+      }
+
+      if (!letterKey) {
+        AvneiAudio.play(pickNextPraise());
+        return;
+      }
+
+      AvneiAudio.play(letterKey);
+      const letterAudio = AvneiAudio.preload(letterKey);
+      const praise = pickNextPraise();
+      const onLetterEnded = () => {
+        if (state.praiseCleanup) state.praiseCleanup();
+        state.praiseCleanup = null;
+        state.praiseTimer = setTimeout(() => {
+          AvneiAudio.play(praise);
+          state.praiseTimer = null;
+        }, 220);
+      };
+      letterAudio.addEventListener('ended', onLetterEnded, { once: true });
+      state.praiseCleanup = () => letterAudio.removeEventListener('ended', onLetterEnded);
     }
 
     function buildRound() {
       if (state.hintTimer) { clearTimeout(state.hintTimer); state.hintTimer = null; }
+      cancelPendingPraise();
       area.innerHTML = '';
       state.locked = false;
       state.attempts = 0;
@@ -88,7 +150,7 @@ window.AvneiMechanics['pick'] = (function () {
       state.lastShownAt = Date.now();
       if (window.AvneiNoni) AvneiNoni.setState('idle');
       if (window.AvneiAudio && AvneiAudio.isUnlocked && AvneiAudio.isUnlocked()) {
-        setTimeout(() => AvneiAudio.playLetterSound(letter), 300);
+        setTimeout(playPromptOrLetterSound, 300);
       }
       state.hintTimer = setTimeout(triggerHint, 9000);
     }
@@ -100,12 +162,13 @@ window.AvneiMechanics['pick'] = (function () {
       area.querySelectorAll('.pick-pod[data-target="true"]').forEach(p => {
         p.classList.add('hint-glow');
       });
-      if (window.AvneiAudio) AvneiAudio.playLetterSound(letter);
+      playPromptOrLetterSound();
     }
 
     function handleTap(pod) {
       if (state.locked) return;
       if (state.hintTimer) { clearTimeout(state.hintTimer); state.hintTimer = null; }
+      cancelPendingPraise();
 
       const isCorrect = (pod.dataset.target === 'true');
       const responseTime = Date.now() - state.lastShownAt;
@@ -134,7 +197,10 @@ window.AvneiMechanics['pick'] = (function () {
     function onCorrect(pod) {
       pod.classList.add('picked');
       if (window.AvneiNoni) AvneiNoni.setState('cheer');
-      if (window.AvneiAudio) AvneiAudio.play(pickFeedback());
+
+      const isLastRound = (state.wins + 1) >= total;
+      playRightHitAudio(isLastRound);
+
       if (typeof addPearl === 'function') addPearl(1);
 
       opts.onUnitWon && opts.onUnitWon(state.wins);
@@ -175,6 +241,7 @@ window.AvneiMechanics['pick'] = (function () {
     return {
       unmount() {
         if (state.hintTimer) clearTimeout(state.hintTimer);
+        cancelPendingPraise();
         root.innerHTML = '';
         root.classList.remove('mechanic-pick');
       },

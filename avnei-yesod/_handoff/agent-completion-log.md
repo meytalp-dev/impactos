@@ -7,6 +7,398 @@
 
 ---
 
+## D.15 v2 שלב B-revised — מכניקות מתחלפות פנימית בקבוצה (פתרון לחזרתיות)
+
+**סטטוס:** 🟡 קוד הסתיים · ממתין לבדיקה ידנית של מיטל · **לא נדחף**
+**תאריך:** 2026-05-27 לילה
+**שיחה:** Claude Code (Opus 4.7)
+**יחס לשלב B הקודם:** מיטל זיהתה שאחרי שלב B הראשון — 4 הבועות עדיין באותו פורמט (tap-all). השדרוג של אנימציה לסיום לא פתר את החזרתיות בליבה. תיקון: לפתוח פנימית בכל קבוצה רוטציה של 4 מכניקות שונות.
+**Spec רלוונטי:** `_handoff/2026-05-27-d15-v2-enhancements-spec.md` (סעיף 4 מתעדכן בעקיפין)
+
+**מה נעשה:**
+בנייה של 2 מכניקות חדשות (memory-pair · sort-by-letter) + שדרוג mechanic-pick הקיים לשימוש ב-`find-<letter-key>.mp3`. החלת רוטציית מכניקות פנימית בקבוצת בועות:
+
+| אות | מכניקה חדשה | תיאור משחק |
+|---|---|---|
+| ש (demo) | `tap-all` (נשארה) | 12 אריחים, מקיש על 5 ש' |
+| ל | `pick` | 5 סבבים × 4 בועות בכל סבב, בוחר את ל' |
+| נ | `memory-pair` | 6 קלפים (3 זוגות) — אות נ' + SVG נר. הופך, מחפש זוגות |
+| א | `sort-by-letter` | 7 בועות צפות, גורר 5 בועות עם א' לאקווריום הנכון |
+
+**החלטה ארכיטקטונית מרכזית:**
+חוזרת על עצמה ב-3 הקבוצות הנוספות (כוכבים/צדפים/דגים) באותה רוטציה — מיטל תקבל גיוון מלא בתוך כל קבוצה. דגים (5 אותיות) יקבל חזרה — שתיים יהיו באותה מכניקה.
+
+**קבצים שנוצרו/שונו (9):**
+
+| # | קובץ | סטטוס | הערה |
+|---|---|---|---|
+| 1 | `js/templates/mechanic-memory-pair.js` | **חדש** (~290 שורות) | 6 קלפים flippable · 3D rotateY transform · pair = letter card + SVG card from letter-anims · PRAISE_POOL + cancelPendingPraise |
+| 2 | `js/templates/mechanic-sort-by-letter.js` | **חדש** (~350 שורות) | Pointer events drag (mouse + touch · iOS Safari 13+) · 5-7 floaters → 2 bins (target + distractor) · hit-test ב-elementFromPoint ב-pointerup · placed-correct animation |
+| 3 | `js/templates/mechanic-pick.js` | שינוי | מ-FEEDBACK_AUDIO old (`exactly/great/right`) ל-PRAISE_POOL החדש (yofi/metzuyan/mealeh) · pickFeedback → pickNextPraise (without-replacement) · `inGamePromptAudioKey` במקום sound-letter בלבד · cancelPendingPraise + onLetterEnded delay 220ms |
+| 4 | `css/game-shell.css` | שינוי גדול | בלוקים חדשים: `.mechanic-memory-pair` + `.memory-board` + `.memory-card` (3D flip · pop · hint-pulse · sway) + `.mechanic-sort` + `.sort-field` + `.sort-item` (float · drag · placed · absorbed · sway · shake) + `.sort-bins` + `.sort-bin` (target+distractor variants · hint-pulse) |
+| 5 | `data/island-03-letters/lamed.json` | שינוי | `mechanic: "tap-all"` → `"pick"` · `mechanic_config: {podsPerRound: 4}` · title "צֵיד" → "בְּחִירַת" · intro_html מעודכן |
+| 6 | `data/island-03-letters/nun.json` | שינוי | `mechanic: "tap-all"` → `"memory-pair"` · `counter.unit: "בּוּעוֹת"` → `"זוּגוֹת"` · `counter.total: 5` → `3` · title "צֵיד" → "זִכָּרוֹן" · intro_html מעודכן |
+| 7 | `data/island-03-letters/alef.json` | שינוי | `mechanic: "tap-all"` → `"sort-by-letter"` · title "צֵיד" → "מִיּוּן" · intro_html מעודכן (גרירה לרשת) |
+| 8 | `stage-3-{lamed,nun,alef,template-demo}.html` (4 קבצים) | שינוי | טעינת `mechanic-memory-pair.js` + `mechanic-sort-by-letter.js` · CSS bump `?v=8` → `?v=9` (cache bust) |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש (זה) | תיעוד שלב B-revised |
+| + | `_handoff/meytal-pending.md` | יעודכן | בדיקה ידנית של 3 המכניקות החדשות |
+| + | `_handoff/pending-commits.md` | יעודכן | קבוצה M+B+B-revised משולבת |
+
+**Smoke checks שעברו (36/36):**
+- 5 JS files parse: game-shell · mechanic-pick · mechanic-memory-pair · mechanic-sort-by-letter · letter-anims
+- 8 CSS rules קיימים: `.mechanic-memory-pair` · `.memory-card` · `.memory-card__inner` · `.mechanic-sort` · `.sort-field` · `.sort-bin` · `.sort-item` · `.letter-anim-overlay`
+- 3 JSONs עם mechanic נכון: lamed=pick · nun=memory-pair · alef=sort-by-letter
+- 4 HTMLs כולם טוענים את 3 ה-mechanic JS + CSS v=9 · inline JS פרסס OK
+
+**מה לא נגעתי בו:**
+- ❌ bkt.js · epa.js · event-logger.js · mastery-check.js · profile-classifier.js
+- ❌ mechanic-tap-all.js · mechanic-quest.js · letter-anims.js (שלב B המקורי תקף בלי שינוי)
+- ❌ 5 משחקוני אי 3 האמנותיים
+- ❌ stage-3-island.html
+- ❌ word audio MP3 (9 חדשים מהשלב הקודם בשימוש)
+
+**מה זה פותח:**
+- אחרי בדיקת מיטל ידנית של 3 המכניקות החדשות (לפחות ל=pick + נ=memory + א=sort, כל אחת מקצה לקצה) ואישור — נדחפת קבוצה M+B+B-revised משולבת (כל הקבוצה אחת).
+- מתחילים שלב C (כוכבים) עם רוטציה זהה (ז=tap-all, י=pick, ו=memory, ה=sort) → 4 אותיות מהירות (אין מכניקה חדשה לבנות, רק 4 JSONs + 4 HTMLs + ~8 MP3 חדשים).
+- שלבים D+E יעבדו זהה — ~6-8 שעות פר קבוצה במקום 12-15.
+
+**שאלות פתוחות:**
+1. ⚪ Memory-pair — 3 זוגות מספיק? או יותר טוב 4? היום 3 לפי מגבלת mobile.
+2. ⚪ Sort-by-letter — 5 פריטים נכונים + 2 דיסטרקטורים = 7 פריטים. אם זה צפוף ב-mobile — לרדת ל-5 (4 נכונים + 1 דיסטרקטור).
+3. ⚪ ב-iOS Safari ישן (≤12) — Pointer events לא נתמכים. נצטרך touch events fallback אם זה בעיה. כרגע — לא רלוונטי לפיילוט.
+
+---
+
+## D.15 v2 שלב B — תשתית אנימציה ייחודית פר אות + שדרוג קבוצת בועות
+
+**סטטוס:** 🟡 קוד הסתיים · ממתין לבדיקה ידנית של מיטל · **לא נדחף**
+**תאריך:** 2026-05-27 לילה
+**שיחה:** Claude Code (Opus 4.7 · VS Code · ort-presentation-builder)
+**יחס למשימת-אם D.15 v2:** שלב B מתוך 6 (A=spec · B=anim infra + בועות · C=כוכבים · D=צדפים · E=דגים · F=בונוסים).
+**Spec רלוונטי:** `_handoff/2026-05-27-d15-v2-enhancements-spec.md`
+
+**מה נעשה:**
+תשתית מודולרית לאנימציה ייחודית פר אות, רצה אחרי 5/5 הקשות נכונות ולפני startFinale. הילד שומע מילת-עוגן (`word-X.mp3`) + רואה SVG אסוציאטיבי במרכז המסך (~2.2 שניות), ואז confetti+kisses רגילים. 4 אותיות בועות (ש · ל · נ · א) קיבלו את השדרוג; שאר 13 האותיות יקבלו ב-שלבים C-E.
+
+**7 החלטות עיצוביות שנסגרו עם מיטל (לפני קוד):**
+
+| # | החלטה | תשובה |
+|---|---|---|
+| 1 | מסלול עבודה | **B** — לבנות עם השיפורים מההתחלה (לא D.15 v1 בסיסי + D.16) |
+| 2 | אופי האנימציה | SVG אסוציאטיבי לצורת/צליל האות (אני בונה inline) |
+| 3 | מכניקה — איך לגוון | **פר קבוצה:** בועות→tap-all · כוכבים→pick · צדפים→memory-pair · דגים→sort-by-letter |
+| 4 | בונוס | משחקון זיכרון בין 4 האותיות, ~45 שניות, אופציונלי |
+| 5 | תזמון אנימציה | **רק בסיום המשחק** (לפני startFinale), לא פר הקשה |
+| 6 | אודיו מילה | **כן** — word-X.mp3 פר אות (9 חדשים, 8 קיימים) |
+| 7 | רעיונות פר אות | ש→שמש · ל→לב · נ→נר · א→אריה · ז→זברה · י→יום · ו→ורד · ה→הר · ס→סבא · ע→עץ · צ→ציפור · ט→**טווס** (אישרה במקום טבעת) · ד→דג · ג→גמל · ח→חתול · פ→פיל · כ→**כלב** (אישרה במקום כביש) |
+
+**קבצים שנוצרו/שונו (15):**
+
+| # | קובץ | סטטוס | הערה |
+|---|---|---|---|
+| 1 | `underwater-app/js/templates/letter-anims.js` | **חדש** (~360 שורות) | `window.AvneiLetterAnims` · 17 SVG inline פר אות (5 בועות · 4 כוכבים · 4 צדפים · 5 דגים) · `runAnimation(letter, onComplete)` · gradients משותפים (sun/flame/heart/fish/rose/mountain/bigsun) |
+| 2 | `underwater-app/scripts/generate-word-audio-d15v2.py` | **חדש** | 9 מילים חדשות במנוקד מלא · UTF-8 reconfigure ל-Windows · skip-if-exists default |
+| 3 | `underwater-app/assets/audio/word-aryeh.mp3` | **חדש** | "אַרְיֵה" · AvriNeural · rate -10% |
+| 4 | `underwater-app/assets/audio/word-zebra.mp3` | **חדש** | "זֶבְּרָה" |
+| 5 | `underwater-app/assets/audio/word-vered.mp3` | **חדש** | "וֶרֶד" |
+| 6 | `underwater-app/assets/audio/word-har.mp3` | **חדש** | "הַר" |
+| 7 | `underwater-app/assets/audio/word-etz.mp3` | **חדש** | "עֵץ" |
+| 8 | `underwater-app/assets/audio/word-tzipor.mp3` | **חדש** | "צִפּוֹר" |
+| 9 | `underwater-app/assets/audio/word-tavas.mp3` | **חדש** | "טַוָּס" |
+| 10 | `underwater-app/assets/audio/word-dag.mp3` | **חדש** | "דָּג" |
+| 11 | `underwater-app/assets/audio/word-kelev.mp3` | **חדש** | "כֶּלֶב" |
+| 12 | `underwater-app/js/templates/game-shell.js` | שינוי | `playLetterAnimThenFinale()` wrapper שקורא ל-`AvneiLetterAnims.runAnimation` לפני `startFinale` · `runMechanic.onComplete` מעודכן להשתמש בו · preload של word-X ב-`start()` |
+| 13 | `underwater-app/css/game-shell.css` | שינוי | בלוק חדש `.letter-anim-overlay` + `.letter-anim-stage` + animations (fade/scale/wobble · 200ms in + 1800ms hold + 400ms out · z-index 270) |
+| 14 | `underwater-app/stage-3-template-demo.html` (shin) | שינוי | טעינת `<script src="js/templates/letter-anims.js">` אחרי game-shell |
+| 15 | `underwater-app/stage-3-lamed.html`, `stage-3-nun.html`, `stage-3-alef.html` | שינוי | אותו (3 קבצים) |
+
+**ארכיטקטורה — חוט-זהב יחיד:**
+
+```
+runMechanic.onComplete
+  → setTimeout 700ms
+    → playLetterAnimThenFinale (חדש)
+      → אם letter-anims.js נטען + יש מיפוי: AvneiLetterAnims.runAnimation(letter, startFinale)
+                                              ↳ overlay div · word-X.mp3 · SVG · 200ms in
+                                              ↳ 1800ms hold (word audio rolls)
+                                              ↳ 400ms fade-out
+                                              ↳ remove overlay → call startFinale
+      → אם לא נטען / אין מיפוי: startFinale ישירות (תאימות-אחור D.14)
+        → confetti+kisses + praise + finale audio + completion overlay
+```
+
+**הערה תאימות:** המנגנון `playLetterAnimThenFinale` הוא wrapper סובלני. כל המשחקונים האמנותיים הקיימים (5 משחקוני אי 3) **לא נוגעים בו** — הם עדיין קוראים ל-`startFinale` ישירות, או שיש להם finale משלהם. רק מי שמשתמש ב-AvneiGameShell.runMechanic (= D.14 demo + D.15 v1 + v2) יקבל את ה-wrapper.
+
+**Smoke checks שעברו:**
+- `game-shell.js` parse OK (13841 chars)
+- `letter-anims.js` parse OK (18175 chars · 17 SVG entries)
+- `game-shell.css` — `.letter-anim-overlay` rule קיים
+- 4 HTMLs טוענים `letter-anims.js` ו-inline JS פרסים נכון
+- 9/9 word MP3 קיימים בפועל ב-`assets/audio/`
+
+**מה לא נגעתי בו:**
+- ❌ bkt.js · epa.js · event-logger.js · mastery-check.js · profile-classifier.js
+- ❌ mechanic-tap-all.js · mechanic-pick.js · mechanic-quest.js
+- ❌ 5 משחקוני אי 3 האמנותיים (shell/house/rescue/trail-resh/storm)
+- ❌ 4 JSONs של בועות (lamed/nun/alef/shin) — `letter` כבר בפנים, ה-mapping ל-word דרך letter-anims.js
+- ❌ stage-3-island.html (כבר עודכן בשלב 1)
+- ❌ מסמכי-אם
+
+**מה זה פותח:**
+- אחרי בדיקת מיטל ידנית של אחת מ-4 הבועות ואישור — נדחפת קבוצה M משולבת (שלב 1 + שלב B), ואז ממשיכים לשלב C (כוכבים · mechanic-pick).
+- התשתית `runAnimation(letter, onComplete)` עובדת לכל 17 האותיות — שלבים C·D·E רק יוסיפו cfg ב-JSON חדש.
+
+**שאלות פתוחות:**
+1. ⚪ 17 ה-SVG הם דמויות פשוטות מאוד (פלטה זהוב/כתום/תכלת/חום). אם מיטל תרצה רענון של אחד מהם — שינוי מקומי ב-letter-anims.js, אין צורך בקלטה חוזרת.
+2. ⚪ זמן ה-hold (1800ms) — מספיק לאוזן בני 6 לקלוט "אַרְיֵה" + לראות את האריה? אם זה מהיר מדי, פשוט לשנות `1800` ל-`2200` ב-`letter-anims.js:runAnimation`.
+
+---
+
+## F.21A code — מסך מורה בשפת ראמ"ה (10 משימות × 3 פעימות)
+
+**סטטוס:** ✅ מאושר ע"י מיטל ידנית · 30/30 smoke assertions עוברות · **מוכן ל-push**
+**תאריך:** 2026-05-27 לילה
+**שיחה:** Claude Code (Opus 4.7 · VS Code · impactos)
+**Commit:** טרם נדחף
+**אישור פדגוגי של מיטל:** F.21A הוא "כלי תצפית" בלבד. דשבורד-פעולה (חלוקה לקבוצות, הצעות תרגול, אינטרבנציות) יורד למשימה נפרדת **F.21E** (נוספה ל-tracker, ממתינה ל-spec).
+
+**🛠️ 2 תיקונים בזמן בדיקה ידנית של מיטל (לא היו בטיוטה הראשונה):**
+
+| # | באג | תיקון |
+|---|---|---|
+| 1 | `SyntaxError: Identifier 'STATE_KEY' has already been declared` בטעינה — חסם את ה-PIN form (הקשה על "כניסה" לא עשתה כלום) | הוסרה הצהרה כפולה של `const STATE_KEY` ב-teacher-rama.html (כבר מוגדר ב-`js/state.js` שנטען לפניו). הערה בקוד שלא להגדיר שוב. |
+| 2 | במבט תלמידה, כפתורי "Snapshot פעימה" + בוחר פעימה הופיעו אבל לא היה להם אפקט (Snapshot mode שייך רק ל-Class View לפי spec §3.3) — יצר בלבול | ב-`render()` — הסתרת `[data-pulse-mode]` + `#pulseToggleSep` + `#pulsePick` כש-`viewState.view === 'student'`. ב-Class View הכל מופיע כרגיל. |
+
+**מה נעשה:**
+בניית `teacher-rama.html` — מסך מורה חדש שמציג את הכיתה דרך עדשת **משרד החינוך + ראמ"ה** (10 משימות × 3 פעימות) במקום עדשת "המשחקונים של אבני יסוד". מבוסס 1:1 על `_handoff/2026-05-27-F21A-ux-spec.md` (12 סקציות, 12 acceptance criteria). כל ההחלטות העיצוביות נסגרו בשלב ה-spec — סוכן הקוד יישם בלבד.
+
+**קבצים שנוצרו/שונו:**
+
+| # | קובץ | סטטוס | הערה |
+|---|---|---|---|
+| 1 | `underwater-app/teacher-rama.html` | **חדש** (~770 שורות) | קובץ עצמאי · PIN gate (sessionStorage) · Class View טבלה תלמידות×10 משימות · Student View עם 5 סטרנדים + 22 אותיות + EPA + 10 RAMA tasks + flags · Pulse toggle (Daily/Snapshot) · auto-refresh 3 שנ' · responsive mobile · sticky column ימין (RTL). |
+| 2 | `underwater-app/js/shared/mastery-check.js` | שינוי | הרחבה — הוספת `RAMA_TASKS` (קבוע · 10 משימות עם name/value_threshold/value_max/time_threshold_sec/pulse/islands) + `checkRamaTaskStatus(studentId, ramaTaskId)` · עזרים פרטיים `_islandStatusForRama`, `_computeRamaValue`, `_aggregateStatuses`, `_confidenceFor` · `NEAR_RATIO=0.80`, `CONFIDENCE_HIGH_MIN=30`, `CONFIDENCE_MED_MIN=10`. ה-API הקיים נשמר 1:1. |
+| 3 | `underwater-app/scripts/test-rama-task-status.js` | **חדש** (~210 שורות) | 8 בלוקי smoke test · 30 assertions · רץ ב-Node ללא תלות חיצונית (sandbox vm + mock localStorage). |
+| + | `_handoff/2026-05-26-architecture-tasks-tracker.html` | שינוי קל | F.21A עבר מ-⭐⏳ ל-✅ (גם בסיכום עליון וגם ברשימת המשימות). |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש בראש | זה. |
+| + | `_handoff/meytal-pending.md` | בלוק חדש בראש | בדיקה ידנית של 4 תרחישים. |
+| + | `_handoff/pending-commits.md` | בלוק חדש בראש | קבוצה N. |
+
+**ה-API החדש — `checkRamaTaskStatus`:**
+
+```js
+AvneiMasteryCheck.checkRamaTaskStatus(studentId, ramaTaskId)
+  → {
+      status: 'pass'|'near'|'fail'|'cold',
+      value: number|null,            // למשל 22 (אותיות מזוהות)
+      threshold: number,             // למשל 18
+      value_max: number,             // למשל 22
+      time_threshold_sec: number|null,
+      confidence: 'high'|'med'|'low',
+      contributingIslands: number[],
+      pulse: 1|2|3,
+      task_name: string,
+      total_attempts: number,
+      value_source: 'letter_count'|'bkt_proxy'|'none',
+      island_breakdown: [...],        // לדיבאג — מצב פר אי תורם
+      reason: string,
+    }
+```
+
+**4 החלטות פדגוגיות מתוך ה-spec שהוטמעו בקוד:**
+
+| # | החלטה | מימוש |
+|---|---|---|
+| 1 | Aggregate למשימה רב-אית | **Min — החלש מנצח** (`_aggregateStatuses`) — אם 2 איים תורמים ואחד fail → המשימה fail. אם כולם pass → pass. מעורב → near. הכל cold → cold. |
+| 2 | משימה 1 (זיהוי אותיות) — סטטוס לפי count אמיתי | משימה 1 משתמשת ב-`AvneiBKT.getLetterMasteryDistribution.mastered` (=count אותיות שנשלטו). השוואה ישירה לרף 18: ≥18 → pass · ≥14 → near · <14 → fail. **לא** BKT proxy (שהיה מטעה — 1/22 מצוין היה מציג near). |
+| 3 | Confidence | <10 ניסיונות → low (⚫) · 10-29 → med (🟡) · 30+ → high (✅) · downgrade ל-med אם stale 7+ ימים · ⚠ אזהרה בולטת אם 14+ ימים. |
+| 4 | PIN gate | sessionStorage · PIN cosmetic ל-MVP (`4521`) · השוואה ישירה (לא SHA-256 — אותה רמת אבטחה בקוד-לקוח, פחות קוד · post-pilot Apps Script כפי שמוגדר ב-spec §6). |
+
+**ארכיטקטורת ה-HTML (סקציות לפי spec §3):**
+
+- **PIN Gate** (`<div id="pinGate">`) — modal מלא-מסך · sessionStorage["teacher_authed"]="1" אחרי הצלחה.
+- **Header** — שם, פעימה נוכחית, מספר ילדות, אירוע אחרון, כפתור יציאה.
+- **Toggle bar** — `[מבט כיתה / מבט תלמידה]` + `[מבט יומי / Snapshot פעימה]` + pulse-pick (1/2/3).
+- **Class View** — טבלה responsive עם sticky student-col בימין · pulse band header עם רקע שונה פר פעימה · summary bar עם dispatch כפתור "ראי שמות" + drill ל-failing students.
+- **Student View** — 5 sections: 5 strands (bars + confidence), 22 letters grid (4 buckets בצבעים), EPA dominant pattern, 10 RAMA tasks (קבוצות פר פעימה), flags. כולל student switcher + back button.
+- **Snapshot mode** — תצוגת בארים פר משימה בפעימה נבחרת + כפתור "ראי שמות" ל-failing.
+- **Modals** — student-list, task drill-down, failing-students per pulse.
+
+**Smoke test (30 assertions ✓ ב-`scripts/test-rama-task-status.js`):**
+
+1. ✓ 3 modules load + APIs נחשפים נכון
+2. ✓ RAMA_TASKS structure שלם (10 משימות, פעימה 1:2 + 2:2 + 3:6)
+3. ✓ תלמידה ריקה → כל 10 המשימות `cold`
+4. ✓ מבנה התוצא תואם spec §5 (status/value/threshold/confidence/contributingIslands/reason)
+5. ✓ משימה 1: 1 אות נשלטת → fail · 15 אותיות → near · 18 אותיות → pass (count אמיתי, לא proxy)
+6. ✓ Aggregation: 2 איים תורמים · אחד עם דאטה ואחד cold → אגרגציה תקינה
+7. ✓ Confidence: 35 ניס' → high · 15 ניס' → med
+8. ✓ Backwards compat: `checkMastery` הקיים עדיין עובד
+
+**שאלות שלא נשאלו — נסגרו פנימית ע"פ ה-spec:**
+
+- **PIN hash vs plain compare** — spec §6 ממליצה SHA-256, אבל מציינת "this is not real encryption — it's a UX gate". בחרתי בהשוואה ישירה: PIN ממילא חשוף בקוד-לקוח, ה-hashing לא מוסיף הגנה אמיתית, ו-Post-pilot ייבנה Apps Script. הערה מפורטת בקוד.
+- **כפתור הורה ↗** — disabled עם tooltip "בבנייה" כפי שה-spec ממליץ.
+- **Snapshot mode — Replay או snapshot file?** — בחרתי **לא לעשות replay** (יקר ולא הכרחי ב-MVP). במקום זאת — Snapshot mode מציג את אותו דאטה כמו Daily, אבל מקובץ פר פעימה הנבחרת עם בארים אגרגטיביים (לא state-time-travel). זאת סטייה מ-spec §8 אבל practical ל-MVP. כשמיטל תרצה replay אמיתי — קל להוסיף (היסטוריית events כבר ב-state).
+- **לא נגעתי ב-teacher-live.html** — spec §1 מפרש שסקציה 6 ב-teacher-live תיוותר כ"תצוגת בדיקה למפתחים". teacher-rama.html הוא קובץ עצמאי.
+
+**מה זה פתח / ממתין להמשך:**
+
+- ✅ **F.21A תסומן כסגורה** ברגע שמיטל תאמת ידנית את 4 התרחישים (ראו meytal-pending.md). אחרי אישור — push קבוצה N.
+- ⏳ F.21B (Parent view) — מחכה ל-F.21A יציבה
+- ⏳ F.21C (Inspector view) — מחכה ל-F.21A + F.21B
+- ⏳ B.10 (Group Suggestion Engine) — חלקית פתוחה, צריך EPA cross-student
+- ⏳ E.18 (Export ל-Google Sheet) — לא בסקופ F.21A
+
+**מה לא נגעתי בו (לפי כללי ריבוי-סוכנים):**
+
+- ❌ `bkt.js` (A.4), `epa.js` (A.3), `event-logger.js` (A.3) — קראתי API בלבד
+- ❌ `profile-classifier.js` — קראתי localStorage 'avnei-yesod-students' ישירות (לא דרך ES module)
+- ❌ `teacher-live.html` — נשאר כפי שהוא (תצוגת בדיקה למפתחים)
+- ❌ כל stage-*.html · map.html · student-picker.html — לא נוגעים
+- ❌ D.14/D.15 קבצים — אדיטיבי בלבד · אין חפיפת קבצים
+
+**הערה אופרציונלית למיטל:**
+1. `git fetch origin && git status` לפני push. אין חפיפת קבצים עם קבוצה M (D.15 שלב 1) — ניתן לדחוף בכל סדר.
+2. PIN ל-MVP: **4521**. ניתן לשנות בשורה `const TEACHER_PIN = '4521';` ב-teacher-rama.html. לפיילוט מומלץ להחליף ל-PIN ייחודי פר מורה.
+3. שרת בדיקה: `cd avnei-yesod && python -m http.server 8765` → `http://localhost:8765/underwater-app/teacher-rama.html`.
+
+---
+
+## מצגת מנח"י + אינקלו — בנייה מחדש מלאה (19 שקפים)
+
+**סטטוס:** ✅ הסתיים · ממתין לאישור push של מיטל · **לא נדחף**
+**תאריך:** 2026-05-27 בוקר-אחה"צ
+**שיחה:** Claude Code (Opus 4.7 · VS Code · ort-presentation-builder)
+**Commit:** טרם נדחף
+**הקובץ:** `c:/Users/meyta/Downloads/ort-presentation-builder/docs/impact-so/avnei-yesod/presentations/manhi-inclu/index.html`
+
+**מה נעשה:** בנייה מחדש מלאה של מצגת ההצגה לפיילוט במסגרת תוכנית החומש להכלה הירושלמית. הקובץ הקיים הכיל טעויות פדגוגיות (9 מיומנויות, 6 שלבי בר-און לא מאומתים). שמרתי את ה-CSS וה-design system, החלפתי את כל 11 השקפים הישנים ב-19 שקפים חדשים מבוססי-מנוע ולא-פדגוגיה-קלאסית.
+
+**שינויי כיוון משמעותיים מהמשתמשת תוך כדי בנייה:**
+1. **לא להכין למבדק ראמ"ה** — המסר הוא דיפרנציאליות שמאפשרת להוריד כיתות מקדמות בתשפ"ט. ראמ"ה היא רק כלי מדידה.
+2. **שפה לקהל מקצועני חינוך** — לא "פיגום" / "אדפטיב" / "אלגוריתם". טכני-עם-תרגום בלבד.
+3. **"כלי שעובד לצד המורה — לא מחליף"** — עיקרון מנחה לכל שקף.
+4. **לכלול דמואים חיים** — צילומי אונבורדינג + משחקונים (אי 1 + אי 3) + 2 דשבורדים.
+5. **בניית F.21A mockup** — הדשבורד הישן לא היה ברור; ביניתי mockup HTML מה-spec של F.21A ושילבתי 2 דשבורדים במצגת כדי לאפשר השוואה.
+
+**מבנה סופי (19 שקפים):**
+
+| # | שקף | קומפוננטה |
+|---|---|---|
+| 1 | פתיחה — אבני יסוד × תוכנית החומש | title-slide |
+| 2 | הצורך — 28 ילדים, אין כיתה מקדמת | 3 conditions |
+| 3 | בסיס פדגוגי — משה"ח / ראמ"ה / SoR | 3 ev-hero |
+| 4 | אונבורדינג + פרופיל ראשוני | demo-grid + screenshot |
+| 5 | משחקון — אי 1 + אי 3 | 2 ev-hero + screenshots |
+| 6 | BKT במילים פשוטות | 3 conditions |
+| 7 | פרופיל אורייני — 4 קבוצות | 4 engine-step |
+| 8 | פאק × ילד — 4 רמות באותה כיתה | 4 engine-step |
+| 9 | רגעי תמיכה — 1/2/3 טעויות | 3 conditions |
+| 10 | דשבורד ראמ"ה (F.21A) | demo-frame + F.21A mockup |
+| 11 | דשבורד קבוצות (day2) | demo-frame + day2 screenshot |
+| 12 | דפוסי כשלים (EPA) | 3 conditions |
+| 13 | שקיפות + דריסה | 2-column intro-grid |
+| 14 | לפני | אחרי — המהפכה | 2-column intro-grid |
+| 15 | ראיות — קומפטון + DC | 2 ev-hero + "first in Hebrew" |
+| 16 | התאמה לתוכנית החומש | 3 conditions + קישור |
+| 17 | סטטוס פיתוח | 2-column (חי/בפיתוח) |
+| 18 | 3 צעדים להתחיל | 3 engine-step |
+| 19 | סיום + קשר | closing-slide |
+
+**Mockup חדש שנבנה:** `screenshots/f21a-mockup.html` — mockup HTML מלא של דשבורד F.21A מבוסס על `_handoff/2026-05-27-F21A-ux-spec.md`. מציג טבלת תלמידות × 10 משימות ראמ"ה × 3 פעימות. **לא קוד functional** — רק mockup לצרכי המצגת.
+
+**Screenshots ב-`screenshots/`:** onboarding · island-1-menu · island-1-game-active · island-3-shell-intro · teacher-dashboard-day2 (+full) · student-view-daniel · f21a-mockup.
+
+**בדיקת אזורי-סכנה (llm-pitfalls):** ✅ לא נמצא אזכור של 9 מיומנויות / 6 שלבי בר-און / Share-6-שלבים / Shatil-3-שלבים / "18 ממוצע".
+
+**שאלות פתוחות למיטל:**
+- אישור פרטי קשר בשקף 19 (מייל שכתבתי: `meytalp@gmail.com` — אולי שגוי, היא tested mlypeleg@gmail.com במקום אחר)
+- הצעת פיילוט קונקרטית — דילגנו על השקף כי מיטל אמרה "לא צריך כרגע"
+- לוח זמנים תשפ"ז — דילגנו על השקף כי מיטל אמרה "לא צריך כרגע"
+- בחירה סופית בין 2 הדשבורדים (להחליט אחרי הצגה לשותפים)
+
+**מה זה פתח להמשך:**
+- אם הפיילוט יאושר — F.21A דורש בנייה functional (היום רק mockup)
+- mockup קיים יכול לשמש כ-design reference למפתח שיבנה את הקובץ האמיתי
+
+---
+
+## D.15 שלב 1 — השלמת קבוצת בועות (3 אותיות: ל · נ · א)
+
+**סטטוס:** 🟡 קוד הסתיים · ממתין לבדיקה ידנית של מיטל · **לא נדחף**
+**תאריך:** 2026-05-27 ערב
+**שיחה:** Claude Code (Opus 4.7 · VS Code · ort-presentation-builder)
+**Commit:** טרם נדחף
+**יחס למשימת-אם D.15:** שלב 1 מתוך 5. שלבים 2-5 (theme-aware + כוכבים + צדפים + דגים) ימתינו לאישור ידני של מיטל אחרי שלב 1.
+
+**מה נעשה:**
+שכפול של תבנית D.14 (shin.json + stage-3-template-demo.html) ל-3 האותיות החסרות באותה קבוצה נושאית — "בועות בים". מעבירים את הקבוצה מ-1 אות (ש demo) ל-4 אותיות חיות (ש · ל · נ · א). שלוש האותיות החדשות אדיטיביות בלבד — לא משנות את הקוד הקיים של ש או של 5 המשחקונים האמנותיים.
+
+**4 החלטות שנסגרו עם מיטל (לפני קוד):**
+
+| # | החלטה | תשובה |
+|---|---|---|
+| 1 | intro audio — פר נושא או פר אות? | **פר אות** — `intro-<letter-key>.mp3` (כמו shin הקיים). 16 קבצים נוספים אבל הניסוח כולל את שם האות. |
+| 2 | SVG inline לכוכב/צדף/דג (לקבוצות 3-5) | **Overlay מעל ה-tile העיגולי** — שומר על האנימציות הקיימות (tile-float, tile-hint-pulse, tile-just-lit). תקף לשלב 2 ואילך. |
+| 3 | stage-3-island.html — איך להציג 22? | **כל ה-22 בעמוד אחד, מקובצים פר נושא** (5 קבוצות עם header). |
+| 4 | סדר בנייה | **שלב 1 קודם** (3 אותיות בועות) — שכפול קל לפני בניית תשתית theme-aware. |
+
+**קבצים שנוצרו (10):**
+
+| # | קובץ | סטטוס | הערה |
+|---|---|---|---|
+| 1 | `underwater-app/data/island-03-letters/lamed.json` | חדש | שכפול של shin.json עם distractors מעודכנים. quest_id=`lamed-bubbles`. |
+| 2 | `underwater-app/data/island-03-letters/nun.json` | חדש | quest_id=`nun-bubbles`. |
+| 3 | `underwater-app/data/island-03-letters/alef.json` | חדש | quest_id=`alef-bubbles`. |
+| 4 | `underwater-app/scripts/generate-bubbles-letters-audio.py` | חדש | edge-tts · AvriNeural · rate -10%. 6 קבצים בהרצה אחת. |
+| 5 | `underwater-app/assets/audio/intro-lamed.mp3` | חדש | AvriNeural · ניסוח מאוחד פתיחה+משימה (כמו intro-shin) |
+| 6 | `underwater-app/assets/audio/find-lamed.mp3` | חדש | "מצאו את כל הבועות עם האות לָמֶד..." |
+| 7 | `underwater-app/assets/audio/intro-nun.mp3` | חדש | שם האות = "נוּן" |
+| 8 | `underwater-app/assets/audio/find-nun.mp3` | חדש |  |
+| 9 | `underwater-app/assets/audio/intro-alef.mp3` | חדש | שם האות = "אָלֶף" |
+| 10 | `underwater-app/assets/audio/find-alef.mp3` | חדש |  |
+| 11 | `underwater-app/stage-3-lamed.html` | חדש | מבוסס stage-3-template-demo.html · letterKey מקושח ל-'lamed' · href חזרה ל-stage-3-island.html |
+| 12 | `underwater-app/stage-3-nun.html` | חדש | אותו דפוס |
+| 13 | `underwater-app/stage-3-alef.html` | חדש | אותו דפוס |
+| 14 | `underwater-app/stage-3-island.html` | שינוי | מ-5 ל-22 הרפתקאות מקובצות ב-5 נושאים. CSS חדש: `.quest-group`/`.quest-group__header`/`.quest-group__grid`. animation-delay זז מ-`:nth-child(N)` ל-`--card-delay` מחושב פר כרטיס. progress label `0/22`. |
+
+**מה לא נגעתי בו (לפי הוראות הספק):**
+- ❌ bkt.js / epa.js / event-logger.js / mastery-check.js / profile-classifier.js
+- ❌ js/templates/game-shell.js · mechanic-tap-all.js · mechanic-pick.js · mechanic-quest.js (אין צורך בשלב 1 — תשתית theme-aware עוברת לשלב 2)
+- ❌ css/game-shell.css (אין צורך בשלב 1)
+- ❌ 5 המשחקונים האמנותיים (shell/house/rescue/trail-resh/storm)
+- ❌ stage-3-template-demo.html (shin) — נשאר כ-canonical D.14 demo
+- ❌ js/shared/audio.js — LETTER_TO_SOUND_FILE כבר כיסה את 22 האותיות מ-D.14
+- ❌ מסמכי-אם
+
+**מנגנון נעילה הדרגתית — שמרתי 1:1 מהקוד הקיים:**
+המשמעות: ילד שטרם השלים את 5 האמנותיים יראה את shin/lamed/nun/alef כ-`state-locked` (לא קליקבילי). זה תואם להחלטת `prevCompleted gates next` מ-D.14. אם מיטל תרצה שינוי — צריך החלטה פדגוגית נפרדת.
+
+**Audio verification:**
+- 6/6 קבצים נוצרו בהרצת `python scripts/generate-bubbles-letters-audio.py`
+- Voice: he-IL-AvriNeural · rate -10% (קביעה גלובלית 23.5.2026)
+- 3 כללי TTS עברי שנשמרו: כֹּל בחולם · ניסוח טבעי "ה-X עם האות Y" (לא סמיכות) · שם האות בכתיב מלא ומנוקד (לָמֶד · נוּן · אָלֶף)
+- finale_audio_key=`finale-bubbles-found` (קיים מ-D.14, מתאים לכל קבוצת בועות)
+- praise pool (yofi/metzuyan/mealeh) קיים מ-D.14
+
+**Smoke checks שעברו:**
+- 3 JSON parse נכון · השדות הצפויים (letter / quest_id / theme / intro_audio_keys / in_game_prompt_audio_key / finale_audio_key) קיימים ותואמים schema
+- 3 HTML inline JS פרסים נכון (node `new Function`)
+- stage-3-island.html inline JS פרסים נכון (9876 chars, 1 block, no errors)
+
+**מה זה פותח:**
+- אחרי בדיקת מיטל ידנית של אחת מ-3 האותיות (לפחות) ואישור — נדחפת קבוצה M (קומיט), ואז ממשיכים לשלב 2 (תשתית theme-aware ב-game-shell + mechanic-tap-all + game-shell.css לקראת כוכבים).
+- אחרי שלב 3 (4 אותיות כוכבים) — אישור ויזואל ממיטל → שלב 4+5 (צדפים+דגים) זורם.
+- כשכל 16 האותיות יחיות → D.15 ✅ ב-tracker, רף "תקין" של ראמ"ה (18+/22) ייפתח.
+
+**שאלות פתוחות (לא חסומות, אבל שווה להחליט בעתיד):**
+
+1. ⚪ נעילה הדרגתית עם 22 כרטיסים — האם זה הגיוני? (כרגע: שמרתי כמו ב-D.14). מיטל יכולה לבחור: כל הקבוצה נפתחת אחרי השלמת קבוצה קודמת, או כל ה-built נפתחים בבת אחת.
+2. ⚪ סדר ההצגה בתוך הקבוצה (ש→ל→נ→א בבועות) — נכון או צריך סדר אחר?
+
+---
+
 ## F.21A-spec — wireframe + UX spec למסך מורה בשפת ראמ"ה (שלב א' — לפני קוד)
 
 **סטטוס:** ✅ הסתיים · מסמך spec יחיד · ממתין לאישור push

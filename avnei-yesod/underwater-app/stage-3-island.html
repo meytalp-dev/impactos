@@ -72,11 +72,39 @@
       line-height: 1.5;
     }
 
-    /* ===== Quests grid ===== */
+    /* ===== Quests groups + grid =====
+       D.15: 22 משחקונים מקובצים פר נושא. כל קבוצה היא section עם
+       כותרת קטנה ו-grid של כרטיסים. layout responsive זהה ל-D.14.
+       ============================================================ */
     .quests-container {
       max-width: 880px;
       margin: 0 auto;
       padding: 16px 16px 40px;
+    }
+    .quest-group {
+      margin-bottom: clamp(20px, 4vw, 32px);
+    }
+    .quest-group__header {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: clamp(8px, 2vw, 14px);
+      padding: 0 4px;
+    }
+    .quest-group__title {
+      font-size: clamp(16px, 3.4vw, 20px);
+      font-weight: 800;
+      color: var(--text-main);
+      margin: 0;
+      letter-spacing: 0.01em;
+    }
+    .quest-group__count {
+      font-size: clamp(12px, 2.4vw, 14px);
+      color: var(--text-soft);
+      font-weight: 600;
+    }
+    .quest-group__grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: clamp(14px, 3vw, 22px);
@@ -106,12 +134,8 @@
       cursor: pointer;
       opacity: 0;
       animation: card-rise 700ms cubic-bezier(.34,1.56,.64,1) forwards;
+      animation-delay: var(--card-delay, 200ms);
     }
-    .quest-card:nth-child(1) { animation-delay: 200ms; }
-    .quest-card:nth-child(2) { animation-delay: 320ms; }
-    .quest-card:nth-child(3) { animation-delay: 440ms; }
-    .quest-card:nth-child(4) { animation-delay: 560ms; }
-    .quest-card:nth-child(5) { animation-delay: 680ms; }
 
     @keyframes card-rise {
       from { opacity: 0; transform: translateY(20px) scale(0.94); }
@@ -183,6 +207,7 @@
     .quest-card.state-current {
       animation: card-rise 700ms cubic-bezier(.34,1.56,.64,1) forwards,
                  current-glow 2.6s ease-in-out infinite 1s;
+      animation-delay: var(--card-delay, 200ms), 1s;
     }
     @keyframes current-glow {
       0%, 100% {
@@ -374,12 +399,12 @@
   </header>
 
   <div class="island-header">
-    <h1 class="island-title">אי 3 · אלמוגי האותיות</h1>
-    <p class="island-subtitle">חמש הרפתקאות, חמש אותיות. תפתרו אחת בכל פעם — וכל הרפתקה תתבהר.</p>
+    <h1 class="island-title">אִי 3 · אַלְמוֹגֵי הָאוֹתִיּוֹת</h1>
+    <p class="island-subtitle">22 הַרְפַּתְקָאוֹת, 22 אוֹתִיּוֹת. תִּפְתְּרוּ אַחַת בְּכֹל פַּעַם — וְכֹל הַרְפַּתְקָה תִּתְבַּהֵר.</p>
   </div>
 
   <main class="quests-container" id="questsContainer">
-    <!-- 5 quest cards inserted by JS -->
+    <!-- 5 groups × cards inserted by JS -->
   </main>
 
   <div class="progress-bar">
@@ -398,58 +423,79 @@
   // stage-3-island.html — מסך פתיחה של אי 3
   //
   // החלטה ארכיטקטונית 23.5.2026: משחקון פר אות.
-  // סדר חשיפה פדגוגי (אומת בפרפלקסיטי): מ → ב → ר → ק → ת
+  // 22 משחקונים מקובצים פר נושא (D.15, 27.5.2026):
+  //   ⭐ אמנותיים  (5) — מ/ב/ר/ק/ת — סדר פדגוגי
+  //   🫧 בועות בים  (4) — ש/ל/נ/א
+  //   ⭐ כוכבי הים  (4) — ז/י/ו/ה (טרם נבנו)
+  //   🐚 צדפי החוף  (4) — ס/ע/צ/ט (טרם נבנו)
+  //   🐟 להקת הדגים (5) — ד/ג/ח/פ/כ (טרם נבנו)
+  //
   // ראה: project-avnei-yesod-pedagogy-one-game-per-letter
+  //      project-avnei-yesod-d14-template-theme-decision
   // ============================================================
 
-  // 5 המשחקונים בסדר הפדגוגי הקבוע
-  const QUESTS = [
+  // 5 קבוצות. הסדר בתוך כל קבוצה הוא סדר ההצגה והנעילה ההדרגתית.
+  const GROUPS = [
     {
-      id: 'shell',
-      letter: 'מ',
-      name: 'הצדף הקסום',
-      tagline: 'חמישה מפתחות לצדף',
-      href: 'stage-3-shell.html',
-      souvenir: 'אלמוג אות זוהר',
-      built: true,
+      key: 'artisanal',
+      title: 'הַרְפַּתְקָאוֹת אַמְנוּתִיּוֹת',
+      quests: [
+        { id: 'shell',  letter: 'מ', name: 'הַצֶּדֶף הַקָּסוּם',  tagline: 'חֲמִשָּׁה מַפְתְּחוֹת לַצֶּדֶף', href: 'stage-3-shell.html',      souvenir: 'אלמוג אות זוהר',   built: true },
+        { id: 'house',  letter: 'ב', name: 'הַבַּיִת שֶׁל נוֹנִי', tagline: 'חָמֵשׁ לִבְנֵי אַלְמוֹג',      href: 'stage-3-house.html',      souvenir: 'בית-אלמוג ב׳',     built: true },
+        { id: 'trail',  letter: 'ר', name: 'שְׁבִיל הַחֲזָרָה',   tagline: 'אַבְנֵי שְׁבִיל זוֹהֲרוֹת',  href: 'stage-3-trail-resh.html', souvenir: 'אבן שביל זוהרת',  built: true },
+        { id: 'rescue', letter: 'ק', name: 'הַצָּלַת הַדָּגִים',  tagline: 'אֲצוֹת, דָּגִיגִים, חוֹפֶשׁ', href: 'stage-3-rescue.html',     souvenir: null,                built: true },
+        { id: 'storm',  letter: 'ת', name: 'הַסְּעָרָה וְהָאוֹר', tagline: 'הַיָּם זוֹהֵר שׁוּב',         href: 'stage-3-storm.html',      souvenir: 'אלמוג אור',         built: true },
+      ],
     },
     {
-      id: 'house',
-      letter: 'ב',
-      name: 'הבית של נוני',
-      tagline: 'חמש לבני אלמוג',
-      href: 'stage-3-house.html',
-      souvenir: 'בית-אלמוג ב׳',
-      built: true,
+      key: 'bubbles',
+      title: 'בּוּעוֹת בַּיָּם',
+      quests: [
+        // shin הוא ה-canonical demo של D.14 (stage-3-template-demo.html).
+        // ה-quest_id ב-shin.json = "shin-demo" — לכן כאן id תואם.
+        // הרוטציה: ש=tap-all · ל=pick · נ=memory-pair · א=sort-by-letter
+        { id: 'shin-demo',     letter: 'ש', name: 'צֵיד הַבּוּעוֹת · ש',   tagline: 'הַקִּישׁוּ עַל בּוּעוֹת ש',     href: 'stage-3-template-demo.html', souvenir: 'בּוּעָה זוֹהֶרֶת', built: true },
+        { id: 'lamed-bubbles', letter: 'ל', name: 'בְּחִירַת הַבּוּעוֹת · ל', tagline: 'בִּחֲרוּ אֶת הַבּוּעָה עִם ל', href: 'stage-3-lamed.html',         souvenir: 'בּוּעַת לֵב',     built: true },
+        { id: 'nun-bubbles',   letter: 'נ', name: 'זִכָּרוֹן הַבּוּעוֹת · נ', tagline: 'מִצְאוּ זוּגוֹת עִם נ',         href: 'stage-3-nun.html',           souvenir: 'בּוּעַת נֵר',     built: true },
+        { id: 'alef-bubbles',  letter: 'א', name: 'מִיּוּן הַבּוּעוֹת · א',   tagline: 'גָּרְרוּ בּוּעוֹת א לָרֶשֶׁת',  href: 'stage-3-alef.html',          souvenir: 'בּוּעַת אַרְיֵה', built: true },
+      ],
     },
     {
-      id: 'trail',
-      letter: 'ר',
-      name: 'שביל החזרה',
-      tagline: 'אבני שביל זוהרות',
-      href: 'stage-3-trail-resh.html',
-      souvenir: 'אבן שביל זוהרת',
-      built: true,
+      key: 'stars',
+      title: 'כּוֹכְבֵי הַיָּם',
+      quests: [
+        { id: 'zayin-stars', letter: 'ז', name: 'אוֹסֶף הַכּוֹכָבִים · ז', tagline: 'כּוֹכָבִים זוֹהֲרִים בַּיָּם', built: false },
+        { id: 'yud-stars',   letter: 'י', name: 'אוֹסֶף הַכּוֹכָבִים · י', tagline: 'כּוֹכָבִים זוֹהֲרִים בַּיָּם', built: false },
+        { id: 'vav-stars',   letter: 'ו', name: 'אוֹסֶף הַכּוֹכָבִים · ו', tagline: 'כּוֹכָבִים זוֹהֲרִים בַּיָּם', built: false },
+        { id: 'hey-stars',   letter: 'ה', name: 'אוֹסֶף הַכּוֹכָבִים · ה', tagline: 'כּוֹכָבִים זוֹהֲרִים בַּיָּם', built: false },
+      ],
     },
     {
-      id: 'rescue',
-      letter: 'ק',
-      name: 'הצלת הדגים',
-      tagline: 'אצות, דגיגים, חופש',
-      href: 'stage-3-rescue.html',
-      souvenir: null, // לא רושם souvenir עדיין — דורש עדכון מסוכן rescue
-      built: true,
+      key: 'shells',
+      title: 'צִדְפֵי הַחוֹף',
+      quests: [
+        { id: 'samekh-shells', letter: 'ס', name: 'צֵיד הַצְּדָפִים · ס', tagline: 'צְדָפִים זוֹהֲרִים עַל הַחוֹף', built: false },
+        { id: 'ayin-shells',   letter: 'ע', name: 'צֵיד הַצְּדָפִים · ע', tagline: 'צְדָפִים זוֹהֲרִים עַל הַחוֹף', built: false },
+        { id: 'tzadi-shells',  letter: 'צ', name: 'צֵיד הַצְּדָפִים · צ', tagline: 'צְדָפִים זוֹהֲרִים עַל הַחוֹף', built: false },
+        { id: 'tet-shells',    letter: 'ט', name: 'צֵיד הַצְּדָפִים · ט', tagline: 'צְדָפִים זוֹהֲרִים עַל הַחוֹף', built: false },
+      ],
     },
     {
-      id: 'storm',
-      letter: 'ת',
-      name: 'הסערה והאור',
-      tagline: 'הים זוהר שוב',
-      href: 'stage-3-storm.html',
-      souvenir: 'אלמוג אור',
-      built: true,
+      key: 'fish',
+      title: 'לְהָקַת הַדָּגִים',
+      quests: [
+        { id: 'dalet-fish', letter: 'ד', name: 'לְהָקַת הַדָּגִים · ד', tagline: 'דָּגִים זוֹהֲרִים בַּיָּם', built: false },
+        { id: 'gimel-fish', letter: 'ג', name: 'לְהָקַת הַדָּגִים · ג', tagline: 'דָּגִים זוֹהֲרִים בַּיָּם', built: false },
+        { id: 'het-fish',   letter: 'ח', name: 'לְהָקַת הַדָּגִים · ח', tagline: 'דָּגִים זוֹהֲרִים בַּיָּם', built: false },
+        { id: 'pey-fish',   letter: 'פ', name: 'לְהָקַת הַדָּגִים · פ', tagline: 'דָּגִים זוֹהֲרִים בַּיָּם', built: false },
+        { id: 'kaf-fish',   letter: 'כ', name: 'לְהָקַת הַדָּגִים · כ', tagline: 'דָּגִים זוֹהֲרִים בַּיָּם', built: false },
+      ],
     },
   ];
+
+  // רשימה שטוחה לחישובי total/completed/gating
+  const QUESTS = GROUPS.flatMap(g => g.quests);
+  const TOTAL_QUESTS = QUESTS.length; // 22
 
   const QUESTS_STORAGE_KEY = 'island3-quests:completed';
 
@@ -479,65 +525,89 @@
     return 'locked';
   }
 
+  function buildQuestCard(quest, globalIndex, state) {
+    const isClickable = (state === 'current' || state === 'completed') && quest.href;
+    const el = document.createElement(isClickable ? 'a' : 'div');
+    el.className = `quest-card state-${state}`;
+    if (isClickable) el.href = quest.href;
+    el.setAttribute('aria-label', `${quest.name} - אות ${quest.letter}`);
+    // animation-delay מחושב פר כרטיס במקום nth-child קשיח
+    const delayMs = 200 + (globalIndex * 60);
+    el.style.setProperty('--card-delay', delayMs + 'ms');
+
+    let topRightHtml = `<div class="quest-number">${globalIndex + 1}</div>`;
+    let topLeftHtml = '';
+    if (state === 'completed') {
+      topLeftHtml = `
+        <div class="completed-check" aria-label="הושלם">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M5 13l4 4 10-10" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>`;
+    } else if (state === 'locked') {
+      topLeftHtml = `
+        <div class="lock-icon" aria-label="נעול">
+          <svg viewBox="0 0 24 24" fill="none">
+            <rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/>
+            <path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="2.2" fill="none"/>
+          </svg>
+        </div>`;
+    } else if (state === 'coming-soon') {
+      topLeftHtml = `<div class="coming-badge">בְּקָרוֹב</div>`;
+    }
+
+    el.innerHTML = `
+      ${topRightHtml}
+      ${topLeftHtml}
+      <div class="quest-letter" aria-hidden="true">${quest.letter}</div>
+      <div class="quest-info">
+        <div class="quest-name">${quest.name}</div>
+        <div class="quest-tagline">${quest.tagline || ''}</div>
+      </div>
+    `;
+    return el;
+  }
+
   function renderQuests() {
     const container = document.getElementById('questsContainer');
     container.innerHTML = '';
 
-    let prevCompleted = true; // First quest is always available
+    let prevCompleted = true; // נעילה הדרגתית — הקבוצה הראשונה נפתחת מההתחלה
     let completedCount = 0;
+    let globalIndex = 0;
 
-    QUESTS.forEach((quest, i) => {
-      const state = getQuestState(quest, prevCompleted);
-      if (state === 'completed') completedCount++;
+    GROUPS.forEach(group => {
+      const section = document.createElement('section');
+      section.className = `quest-group quest-group--${group.key}`;
 
-      const isClickable = (state === 'current' || state === 'completed') && quest.href;
-      const el = document.createElement(isClickable ? 'a' : 'div');
-      el.className = `quest-card state-${state}`;
-      if (isClickable) el.href = quest.href;
-      el.setAttribute('aria-label', `${quest.name} - אות ${quest.letter}`);
-
-      let topRightHtml = `<div class="quest-number">${i + 1}</div>`;
-      let topLeftHtml = '';
-      if (state === 'completed') {
-        topLeftHtml = `
-          <div class="completed-check" aria-label="הושלם">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M5 13l4 4 10-10" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>`;
-      } else if (state === 'locked') {
-        topLeftHtml = `
-          <div class="lock-icon" aria-label="נעול">
-            <svg viewBox="0 0 24 24" fill="none">
-              <rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/>
-              <path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="2.2" fill="none"/>
-            </svg>
-          </div>`;
-      } else if (state === 'coming-soon') {
-        topLeftHtml = `<div class="coming-badge">בקרוב</div>`;
-      }
-
-      el.innerHTML = `
-        ${topRightHtml}
-        ${topLeftHtml}
-        <div class="quest-letter" aria-hidden="true">${quest.letter}</div>
-        <div class="quest-info">
-          <div class="quest-name">${quest.name}</div>
-          <div class="quest-tagline">${quest.tagline}</div>
-        </div>
+      const header = document.createElement('header');
+      header.className = 'quest-group__header';
+      header.innerHTML = `
+        <h2 class="quest-group__title">${group.title}</h2>
+        <span class="quest-group__count">${group.quests.length} הַרְפַּתְקָאוֹת</span>
       `;
+      section.appendChild(header);
 
-      container.appendChild(el);
+      const grid = document.createElement('div');
+      grid.className = 'quest-group__grid';
 
-      // Set up for next iteration: this quest's completion gates the next
-      prevCompleted = (state === 'completed');
+      group.quests.forEach(quest => {
+        const state = getQuestState(quest, prevCompleted);
+        if (state === 'completed') completedCount++;
+        grid.appendChild(buildQuestCard(quest, globalIndex, state));
+        prevCompleted = (state === 'completed');
+        globalIndex++;
+      });
+
+      section.appendChild(grid);
+      container.appendChild(section);
     });
 
-    // Progress bar
-    const pct = Math.round((completedCount / QUESTS.length) * 100);
+    // Progress bar — 22 הרפתקאות
+    const pct = Math.round((completedCount / TOTAL_QUESTS) * 100);
     document.getElementById('progressFill').style.width = pct + '%';
     document.getElementById('progressLabel').textContent =
-      completedCount + '/' + QUESTS.length + ' הרפתקאות';
+      completedCount + '/' + TOTAL_QUESTS + ' הַרְפַּתְקָאוֹת';
   }
 
   // Pearl counter (state.js renders automatically on DOMContentLoaded,

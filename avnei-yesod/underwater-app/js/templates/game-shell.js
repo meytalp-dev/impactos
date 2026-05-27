@@ -141,6 +141,10 @@ window.AvneiGameShell = (function () {
     }
   }
 
+  // ה-finale המקורי — confetti + kisses + praise → finale audio → completion.
+  // ב-D.15 v2 התווסף runLetterAnim *לפני* הפונקציה הזו (אם letter-anims.js נטען
+  // ויש מיפוי לאות). הוא משחק word-X.mp3 + מציג SVG אסוציאטיבי ~2.2 שניות,
+  // ואז קורא ל-startFinale הזה.
   function startFinale() {
     const elNoni = document.getElementById('noniImg');
     if (elNoni) {
@@ -165,6 +169,20 @@ window.AvneiGameShell = (function () {
     }
     // המתנה מספיק זמן לכל הרצף לרוץ (praise ~700ms + finale ~2.5s + רוויה)
     setTimeout(showCompletion, 4000);
+  }
+
+  // D.15 v2 wrapper — אם letter-anims.js נטען (window.AvneiLetterAnims),
+  // משחקת אנימציה ייחודית פר אות + word-X.mp3, ואז קוראת ל-startFinale.
+  // אם לא נטען (תאימות אחורנית) — מדלג ישר ל-startFinale.
+  function playLetterAnimThenFinale() {
+    if (window.AvneiLetterAnims && activeConfig && activeConfig.letter) {
+      const anim = AvneiLetterAnims.getAnimForLetter(activeConfig.letter);
+      if (anim) {
+        AvneiLetterAnims.runAnimation(activeConfig.letter, startFinale);
+        return;
+      }
+    }
+    startFinale();
   }
 
   function markQuestCompleted(questId) {
@@ -218,6 +236,11 @@ window.AvneiGameShell = (function () {
       ['praise-yofi', 'praise-metzuyan', 'praise-mealeh'].forEach(k => AvneiAudio.preload(k));
       const soundFile = (AvneiAudio.LETTER_TO_SOUND_FILE || {})[config.letter];
       if (soundFile) AvneiAudio.preload(soundFile);
+      // D.15 v2 — preload של word-X.mp3 לאנימציה האסוציאטיבית פר אות
+      if (window.AvneiLetterAnims) {
+        const anim = AvneiLetterAnims.getAnimForLetter(config.letter);
+        if (anim && anim.wordKey) AvneiAudio.preload(anim.wordKey);
+      }
     }
 
     const titleEl = document.querySelector('#tapToStart h2');
@@ -312,7 +335,10 @@ window.AvneiGameShell = (function () {
         customAnim(idx);
       },
       onComplete: () => {
-        setTimeout(startFinale, 700);
+        // D.15 v2: playLetterAnimThenFinale wraps startFinale עם אנימציה
+        // ייחודית פר אות (אם letter-anims.js נטען). תאימות-אחור: אם לא נטען
+        // — מדלג ישר ל-startFinale (התנהגות זהה ל-D.14).
+        setTimeout(playLetterAnimThenFinale, 700);
       },
     });
   }
