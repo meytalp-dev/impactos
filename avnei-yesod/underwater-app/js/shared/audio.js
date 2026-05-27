@@ -11,9 +11,15 @@ window.AvneiAudio = (function() {
   let unlocked = false;
 
   // מיפוי אות → שם קובץ צליל (לא שם אות)
+  // הורחב 27.5.2026 ל-22 אותיות כדי לתמוך בתבנית D.14 (כל קבצי sound-X.mp3
+  // קיימים ב-AvriNeural מעוצמת המאגר הקיים — לא נוצרו קבצים חדשים כאן)
   const LETTER_TO_SOUND_FILE = {
-    'ת': 'sound-tav', 'מ': 'sound-mem', 'ר': 'sound-resh',
-    'ב': 'sound-bet', 'ק': 'sound-qof'
+    'א': 'sound-alef',  'ב': 'sound-bet',   'ג': 'sound-gimel', 'ד': 'sound-dalet',
+    'ה': 'sound-hey',   'ו': 'sound-vav',   'ז': 'sound-zayin', 'ח': 'sound-het',
+    'ט': 'sound-tet',   'י': 'sound-yud',   'כ': 'sound-kaf',   'ל': 'sound-lamed',
+    'מ': 'sound-mem',   'נ': 'sound-nun',   'ס': 'sound-samekh','ע': 'sound-ayin',
+    'פ': 'sound-pey',   'צ': 'sound-tzadi', 'ק': 'sound-qof',   'ר': 'sound-resh',
+    'ש': 'sound-shin',  'ת': 'sound-tav'
   };
 
   // מיפוי אות → שם קובץ שם-אות (לוריאציה B של letter-shape)

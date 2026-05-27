@@ -11,6 +11,11 @@ from pathlib import Path
 
 import edge_tts
 
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+except Exception:
+    pass
+
 VOICE = "he-IL-AvriNeural"
 ROOT = Path(__file__).parent.parent
 OUT_DIR = ROOT / "assets" / "audio"
@@ -19,7 +24,7 @@ OUT_DIR = ROOT / "assets" / "audio"
 # 17 צלילי אותיות (לכל האותיות שאינן MVP) + 4 פרזות מערכת
 FILES_TO_REGENERATE = {
     # פרזות מערכת — בשימוש פעיל
-    "good":       "כָּל הַכָּבוֹד!",
+    "good":       "כֹּל הַכָּבוֹד!",
     "try-again":  "בּוֹאִי נְנַסֶּה שׁוּב",
     "what-letter": "אֵיזוֹ אוֹת?",
     "what-sound":  "אֵיזֶה צְלִיל?",

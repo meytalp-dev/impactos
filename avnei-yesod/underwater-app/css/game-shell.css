@@ -1,0 +1,406 @@
+/* ============================================================
+   game-shell.css — styles for the D.14 template
+   (used by stage-3 letter mini-games built on AvneiGameShell)
+
+   Depends on tokens.css + components.css + stage-3.css for the shared
+   layout (.top-bar, .tap-to-start, .completion, .noni-fixed). This file
+   adds:
+     - .unit-counter (top-bar slot)
+     - .shell-slots (header strip showing collected units)
+     - .mechanic-tap-all + .tap-field + .tap-tile
+     - .mechanic-pick + .pick-area + .pick-pod
+     - .confetti-layer / .kisses-layer (canonical copy — also exists in
+       shell-quest.css/storm-quest.css for the artisanal games)
+
+   Color tokens come from tokens.css; if a token is missing the rule
+   provides a soft fallback so the template renders.
+   ============================================================ */
+
+/* ===== Start overlay — speaker + start button (canonical) ====
+   Extracted from house-quest.css / journey-quest.css so the template
+   doesn't depend on any per-game CSS file.
+   ============================================================ */
+.intro-speaker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--coral, #FFA98D);
+  color: #FFFFFF;
+  font-size: 17px;
+  font-weight: 700;
+  padding: 12px 22px;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius-pill, 999px);
+  box-shadow: 0 8px 20px rgba(255, 169, 141, 0.5);
+  animation: speaker-pulse 1.8s ease-in-out infinite;
+}
+.intro-speaker svg { width: 26px; height: 26px; flex-shrink: 0; }
+.intro-speaker:active { transform: scale(0.96); }
+.intro-speaker.playing { animation: speaker-active 0.5s ease-in-out infinite; }
+@keyframes speaker-pulse {
+  0%, 100% { box-shadow: 0 8px 20px rgba(255, 169, 141, 0.5),
+                         0 0 0 0 rgba(255, 169, 141, 0.6); }
+  50%      { box-shadow: 0 8px 20px rgba(255, 169, 141, 0.5),
+                         0 0 0 14px rgba(255, 169, 141, 0); }
+}
+@keyframes speaker-active {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.05); }
+}
+
+.start-btn {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(180deg, #73D9D1 0%, #4FB8C9 100%);
+  color: #FFFFFF;
+  font-family: 'Heebo', sans-serif;
+  font-weight: 800;
+  font-size: clamp(17px, 4vw, 20px);
+  padding: 14px 32px;
+  border-radius: var(--radius-pill, 999px);
+  box-shadow: 0 10px 22px rgba(38, 80, 92, 0.28);
+  transition: transform 160ms ease;
+}
+.start-btn:hover { transform: translateY(-2px); }
+.start-btn:active { transform: scale(0.96); }
+
+/* ===== Top-bar counter (per-quest) ============================ */
+.unit-counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
+  color: #26505C;
+  font-size: clamp(14px, 3.5vw, 18px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+.unit-counter .uc-letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #FFE7A8 0%, #FFA98D 100%);
+  color: #fff;
+  font-weight: 900;
+  font-size: 20px;
+}
+
+/* ===== Quest header — host for the slot strip ================
+   ב-demo: אין hero ויזואלי, רק שורת slots. ממוקם מתחת ל-top-bar (z:50).
+   המשחקונים האמנותיים מגדירים .quest-header בעצמם (house-quest.css וכו')
+   ולא טוענים game-shell.css — אין קונפליקט.
+   ============================================================ */
+.quest-header {
+  position: fixed;
+  top: clamp(64px, 9vh, 84px);
+  left: 0;
+  right: 0;
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  pointer-events: none;
+}
+.quest-header > * { pointer-events: auto; }
+
+/* ===== Slot strip (collected-units indicator) ================= */
+.shell-slots {
+  display: flex;
+  gap: clamp(8px, 2vw, 14px);
+  justify-content: center;
+  padding: clamp(4px, 1.5vw, 10px) 0;
+}
+.shell-slot {
+  width: clamp(36px, 9vw, 56px);
+  height: clamp(36px, 9vw, 56px);
+  border-radius: 50%;
+  border: 2px dashed rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 320ms cubic-bezier(.34,1.56,.64,1),
+              background 320ms ease,
+              border-color 320ms ease;
+}
+.shell-slot.filled {
+  background: linear-gradient(180deg, #FFE7A8 0%, #FFA98D 100%);
+  border-color: #fff;
+  transform: scale(1.08);
+  box-shadow: 0 0 14px rgba(255,169,141,0.55);
+}
+.shell-slot.filled::after {
+  content: '';
+  width: 60%;
+  height: 60%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff 0%, rgba(255,255,255,0) 60%);
+}
+
+/* ===== Mechanic: tap-all =====================================
+   Each tile = an "ocean bubble" — circular, glassy radial gradient,
+   floating bob. Reliably laid out in a 4×3 grid regardless of viewport
+   (mobile, tablet, desktop). On very narrow phones it collapses to 3×4.
+
+   IMPORTANT: .game-area in stage-3.css applies asymmetric padding
+   (huge right-padding to clear Noni). For tap-all we override with
+   absolute-position fill + balanced padding so the grid sits centered.
+   Noni stays on top via its own z-index in .noni-fixed.
+   ============================================================ */
+.mechanic-tap-all {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* top padding מספיק לפנות את top-bar (52px) + .quest-header slot strip (~80px נוסף) */
+  padding: clamp(140px, 22vh, 180px) clamp(16px, 4vw, 32px) clamp(20px, 4vh, 40px);
+  box-sizing: border-box;
+  pointer-events: auto;
+}
+.tap-field {
+  display: grid;
+  grid-template-columns: repeat(4, clamp(64px, 14vw, 110px));
+  grid-auto-rows: clamp(64px, 14vw, 110px);
+  gap: clamp(12px, 2.5vw, 26px);
+  padding: clamp(8px, 3vw, 24px);
+  box-sizing: border-box;
+  justify-content: center;
+  align-content: center;
+}
+@media (max-width: 480px) {
+  .tap-field {
+    grid-template-columns: repeat(3, clamp(64px, 22vw, 96px));
+    grid-auto-rows: clamp(64px, 22vw, 96px);
+  }
+}
+
+.tap-tile {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  width:  100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%,
+              rgba(255, 255, 255, 0.55) 0%,
+              rgba(168, 232, 255, 0.85) 45%,
+              rgba(115, 217, 209, 0.95) 100%);
+  border: 2.5px solid rgba(255, 255, 255, 0.65);
+  box-shadow:
+    0 6px 16px rgba(38, 80, 92, 0.32),
+    inset 0 -8px 16px rgba(38, 80, 92, 0.18),
+    inset 0 6px 14px rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  animation: tile-float 3.6s ease-in-out infinite;
+  transition: filter 240ms ease, opacity 240ms ease;
+}
+.tap-tile:nth-child(3n)   { animation-delay: -0.6s; }
+.tap-tile:nth-child(3n+1) { animation-delay: -1.2s; }
+.tap-tile:nth-child(3n+2) { animation-delay: -1.8s; }
+.tap-tile:active { transform: scale(0.94); }
+.tap-tile__letter {
+  font-family: 'Heebo', sans-serif;
+  font-weight: 900;
+  font-size: clamp(28px, 7vw, 40px);
+  color: #1A4E5A;
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+  text-shadow: 0 1px 3px rgba(255,255,255,0.85),
+               0 0 8px rgba(168,232,255,0.5);
+}
+@keyframes tile-float {
+  0%, 100% { transform: translateY(0)   rotate(-1deg); }
+  50%      { transform: translateY(-6px) rotate(2deg);  }
+}
+
+/* LIT — after the child taps the correct letter */
+.tap-tile.lit {
+  animation: tile-float 3.6s ease-in-out infinite,
+             tile-just-lit 0.7s cubic-bezier(.34,1.56,.64,1);
+  filter: drop-shadow(0 0 14px rgba(255, 224, 122, 0.95))
+          drop-shadow(0 0 28px rgba(255, 169, 141, 0.6));
+  background: radial-gradient(circle at 35% 30%,
+              #FFFFFF 0%,
+              #FFF7C9 25%,
+              #FFE07A 65%,
+              #FFA98D 100%);
+  border-color: #FFFFFF;
+  cursor: default;
+  pointer-events: none;
+}
+.tap-tile.lit .tap-tile__letter {
+  color: #6B4A1F;
+  text-shadow: 0 1px 2px rgba(255,255,255,0.95);
+}
+@keyframes tile-just-lit {
+  0%   { transform: scale(1)    rotate(0); }
+  60%  { transform: scale(1.3)  rotate(-8deg); }
+  100% { transform: scale(1)    rotate(0); }
+}
+
+.tap-tile.hint-glow {
+  animation: tile-float 3.6s ease-in-out infinite,
+             tile-hint-pulse 1.4s ease-in-out infinite;
+  border-color: #FFE07A;
+}
+@keyframes tile-hint-pulse {
+  0%,100% { box-shadow:
+    0 6px 16px rgba(38, 80, 92, 0.32),
+    inset 0 -8px 16px rgba(38, 80, 92, 0.18),
+    inset 0 6px 14px rgba(255, 255, 255, 0.4),
+    0 0 0 0 rgba(255,224,122,0);
+  }
+  50%     { box-shadow:
+    0 6px 16px rgba(38, 80, 92, 0.32),
+    inset 0 -8px 16px rgba(38, 80, 92, 0.18),
+    inset 0 6px 14px rgba(255, 255, 255, 0.4),
+    0 0 0 14px rgba(255,224,122,0.55);
+  }
+}
+
+.tap-tile.wrong-sway {
+  animation: tile-float 3.6s ease-in-out infinite,
+             tile-sway 600ms ease-in-out;
+}
+@keyframes tile-sway {
+  0%,100% { transform: translateX(0); }
+  20%     { transform: translateX(-8px) rotate(-3deg); }
+  50%     { transform: translateX(8px)  rotate(3deg); }
+  80%     { transform: translateX(-4px) rotate(-1deg); }
+}
+
+/* ===== Mechanic: pick ======================================== */
+.mechanic-pick { width: 100%; height: 100%; }
+.pick-area {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(10px, 3vw, 22px);
+  padding: clamp(10px, 4vw, 28px);
+  box-sizing: border-box;
+  align-content: center;
+}
+@media (max-width: 480px) {
+  .pick-area { grid-template-columns: repeat(2, 1fr); }
+}
+.pick-pod {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  aspect-ratio: 1;
+  border-radius: 50% 50% 45% 45% / 60% 60% 40% 40%;
+  background: linear-gradient(180deg, #A8E8FF 0%, #73D9D1 50%, #FFA98D 100%);
+  border: 3px solid rgba(255,255,255,0.7);
+  box-shadow: inset 0 -10px 20px rgba(255, 169, 141, 0.3),
+              0 8px 22px rgba(38,80,92,0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Heebo', sans-serif;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(38,80,92,0.45);
+  transition: transform 220ms cubic-bezier(.34,1.56,.64,1),
+              opacity 220ms ease;
+}
+.pick-pod:hover { transform: translateY(-3px) scale(1.04); }
+.pick-pod:active { transform: scale(0.96); }
+.pick-pod__letter {
+  font-size: clamp(36px, 9vw, 64px);
+  line-height: 1;
+}
+.pick-pod.picked {
+  animation: pod-pop 700ms cubic-bezier(.34,1.56,.64,1) forwards;
+  cursor: default;
+}
+@keyframes pod-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.2) rotate(-4deg); }
+  100% { transform: scale(0.6); opacity: 0.3; }
+}
+.pick-pod.hint-glow {
+  animation: pod-hint-pulse 1.4s ease-in-out infinite;
+  border-color: #FFE07A;
+}
+@keyframes pod-hint-pulse {
+  0%,100% { box-shadow: inset 0 -10px 20px rgba(255, 169, 141, 0.3),
+                        0 0 0 0 rgba(255,224,122,0); }
+  50%     { box-shadow: inset 0 -10px 20px rgba(255, 169, 141, 0.3),
+                        0 0 0 14px rgba(255,224,122,0.5); }
+}
+.pick-pod.wrong-sway { animation: pod-sway 700ms ease-in-out; }
+@keyframes pod-sway {
+  0%,100% { transform: translateX(0); }
+  20%     { transform: translateX(-10px) rotate(-3deg); }
+  50%     { transform: translateX(10px)  rotate(3deg); }
+  80%     { transform: translateX(-5px)  rotate(-1deg); }
+}
+
+/* ===== Confetti + kisses (canonical copy used by the template) === */
+.confetti-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 280;
+  overflow: hidden;
+}
+.confetti-piece {
+  position: absolute;
+  top: -20px;
+  border-radius: 2px;
+  animation: shell-confetti-fall linear forwards;
+}
+@keyframes shell-confetti-fall {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0.4; }
+}
+.kisses-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 285;
+  overflow: hidden;
+}
+.kiss-heart {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  animation: shell-kiss-rise 3.2s ease-out forwards;
+  filter: drop-shadow(0 4px 8px rgba(255, 107, 157, 0.5));
+}
+.kiss-heart svg { width: 100%; height: 100%; }
+@keyframes shell-kiss-rise {
+  0%   { transform: translateY(0) translateX(0)   scale(0.5) rotate(0deg);  opacity: 0; }
+  15%  { transform: translateY(-30px) translateX(10px) scale(1)   rotate(-8deg); opacity: 1; }
+  60%  { transform: translateY(-50vh) translateX(40px) scale(1.1) rotate(8deg);  opacity: 1; }
+  100% { transform: translateY(-90vh) translateX(-20px) scale(0.7) rotate(-12deg); opacity: 0; }
+}
+
+/* ===== Noni dance state (matches the 5 existing games) ========= */
+.noni-fixed.dancing {
+  animation: noni-dance 0.9s ease-in-out infinite;
+}
+@keyframes noni-dance {
+  0%,100% { transform: translateY(0)   rotate(-4deg) scale(1.0); }
+  25%     { transform: translateY(-10px) rotate(6deg)  scale(1.05); }
+  50%     { transform: translateY(0)   rotate(-6deg) scale(1.0); }
+  75%     { transform: translateY(-8px) rotate(4deg)  scale(1.05); }
+}

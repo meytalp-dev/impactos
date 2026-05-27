@@ -11,6 +11,12 @@ from pathlib import Path
 
 import edge_tts
 
+# קונסול Windows cp1252 לא מקודד עברית — מאלצים UTF-8 על stdout
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+except Exception:
+    pass
+
 VOICE_HILA = "he-IL-HilaNeural"   # אישה (לא בשימוש — Avri מדויק יותר בעברית)
 VOICE_AVRI = "he-IL-AvriNeural"   # גבר — קול ברירת מחדל
 VOICE = VOICE_AVRI
@@ -30,9 +36,9 @@ FEEDBACK_LINES = {
     "press-here": "הַקֵּשׁ פֹּה",
     "look-here": "הִסְתַּכֵּל פֹּה",
     "lets-find": "בּוֹאוּ נִמְצָא יַחַד",
-    "great": "כָּל הַכָּבוֹד",
+    "great": "כֹּל הַכָּבוֹד",
     "stage-done": "סִיַּמְתָּ אֶת הָאוֹת! מַמְשִׁיכִים",
-    "all-done": "סִיַּמְתָּ אֶת כָּל הָאוֹתִיּוֹת. יְפֶהפֶה",
+    "all-done": "סִיַּמְתָּ אֶת כֹּל הָאוֹתִיּוֹת. יְפֶהפֶה",
 }
 
 
@@ -45,9 +51,9 @@ async def gen(text: str, filename: str):
     try:
         tts = edge_tts.Communicate(text, VOICE, rate="-10%")
         await tts.save(str(out))
-        return f"OK   {filename}: {text}"
+        return f"OK   {filename}"
     except Exception as e:
-        return f"FAIL {filename}: {text} ({type(e).__name__})"
+        return f"FAIL {filename} ({type(e).__name__})"
 
 
 async def main():

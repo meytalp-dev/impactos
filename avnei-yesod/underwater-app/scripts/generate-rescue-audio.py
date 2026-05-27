@@ -21,7 +21,7 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 RESCUE_LINES = {
     "intro-rescue-quest-qof":   "נוֹנִי שָׁמַע דָּגִיגִים בּוֹכִים. הֵם תְּקוּעִים בְּתוֹךְ אֲצוֹת בַּיָּם.",
     "intro-rescue-mission-qof": "רַק אֲצוֹת עִם הָאוֹת קוּף אֶפְשָׁר לִפְתֹּחַ. בּוֹאוּ נַצִּיל אֶת כֻּלָּם!",
-    "finale-rescue-saved":      "הִצַּלְתֶּם אֶת כָּל הַדָּגִים! יוֹפִי גָּדוֹל!",
+    "finale-rescue-saved":      "הִצַּלְתֶּם אֶת כֹּל הַדָּגִים! יוֹפִי!",
 }
 
 FORCE = "--force" in sys.argv
