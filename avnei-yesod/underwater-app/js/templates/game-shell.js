@@ -318,9 +318,13 @@ window.AvneiGameShell = (function () {
       console.error('AvneiGameShell: unknown mechanic', config.mechanic);
       return;
     }
+    // D.15 v2 F1.1 — להעביר theme ל-mechanic. ה-mechanic מוסיף
+    // theme-X class על ה-root, וה-CSS עוטף את הצורה הויזואלית
+    // (bubble/star/shell/fish) בהתאם.
     handler.mount(root, {
       letter:        config.letter,
       questId:       config.questId,
+      theme:         config.theme || 'bubbles',
       distractors:   config.distractors || [],
       total:         config.counter.total,
       mechanicConfig: config.mechanicConfig || {},

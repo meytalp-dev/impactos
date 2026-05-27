@@ -59,6 +59,9 @@ window.AvneiMechanics['tap-all'] = (function () {
 
     root.innerHTML = '';
     root.classList.add('mechanic-tap-all');
+    // D.15 v2 F1.1 — theme class (bubbles/stars/shells/fish) — CSS עוטף את
+    // הצורה הויזואלית של ה-tile בהתאם.
+    if (opts.theme) root.classList.add('theme-' + opts.theme);
 
     const field = document.createElement('div');
     field.className = 'tap-field';

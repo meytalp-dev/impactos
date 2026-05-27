@@ -52,6 +52,7 @@ window.AvneiMechanics['sort-by-letter'] = (function () {
 
     root.innerHTML = '';
     root.classList.add('mechanic-sort');
+    if (opts.theme) root.classList.add('theme-' + opts.theme);
 
     // === מבנה DOM ===
     // .sort-field שדה צף · .sort-bins למטה (2 רשתות אקווריום)

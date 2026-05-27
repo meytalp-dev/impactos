@@ -701,6 +701,97 @@
   100% { transform: translateY(-90vh) translateX(-20px) scale(0.7) rotate(-12deg); opacity: 0; }
 }
 
+/* ===== Theme variants (D.15 v2 F1.1) ========================
+   צורות ויזואליות לפי נושא — כוכב/צדף/דג מחליפים את הבועה ב-tile,
+   ה-pod, ה-sort-item, וקלפי memory. ה-CSS משתמש ב-SVG inline
+   כ-background-image (data URI) כדי לא לגעת במבנה ה-DOM —
+   האנימציות הקיימות (tile-float, hint-pulse, tile-just-lit וכו')
+   ממשיכות לעבוד.
+
+   ה-class theme-X מתווסף ע"י ה-mechanic ל-root (.mechanic-tap-all
+   וכו'). CSS משתמש ב-cascade selector: .theme-stars .tap-tile.
+   ============================================================ */
+
+/* כוכב 5-קצוות זהוב */
+.theme-stars .tap-tile,
+.theme-stars .pick-pod,
+.theme-stars .sort-item {
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><radialGradient id='s' cx='50%25' cy='40%25'><stop offset='0%25' stop-color='%23FFF8DC'/><stop offset='60%25' stop-color='%23FFD60A'/><stop offset='100%25' stop-color='%23FF9500'/></radialGradient></defs><polygon points='50,8 61,38 93,38 67,57 78,90 50,71 22,90 33,57 7,38 39,38' fill='url(%23s)' stroke='%23FFFFFF' stroke-width='2.5' stroke-linejoin='round'/></svg>") no-repeat center / contain;
+  border: none;
+  box-shadow: 0 6px 16px rgba(255, 169, 0, 0.4),
+              0 2px 6px rgba(0,0,0,0.15);
+}
+.theme-stars .tap-tile.lit {
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><radialGradient id='sl' cx='50%25' cy='40%25'><stop offset='0%25' stop-color='%23FFFFFF'/><stop offset='40%25' stop-color='%23FFE066'/><stop offset='100%25' stop-color='%23FF6B35'/></radialGradient></defs><polygon points='50,5 62,37 96,37 68,57 79,93 50,73 21,93 32,57 4,37 38,37' fill='url(%23sl)' stroke='%23FFFFFF' stroke-width='3' stroke-linejoin='round'/></svg>") no-repeat center / contain !important;
+  filter: drop-shadow(0 0 18px rgba(255, 215, 0, 0.95))
+          drop-shadow(0 0 32px rgba(255, 140, 0, 0.7));
+}
+.theme-stars .tap-tile__letter,
+.theme-stars .pick-pod__letter,
+.theme-stars .sort-item__letter {
+  color: #4A2700;
+  text-shadow: 0 1px 2px rgba(255, 248, 220, 0.95),
+               0 0 6px rgba(255, 215, 0, 0.6);
+}
+
+/* צדף ורוד עם חריצים */
+.theme-shells .tap-tile,
+.theme-shells .pick-pod,
+.theme-shells .sort-item {
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='sh' x1='50%25' y1='10%25' x2='50%25' y2='100%25'><stop offset='0%25' stop-color='%23FFE4E1'/><stop offset='50%25' stop-color='%23FFB6C1'/><stop offset='100%25' stop-color='%23DB7093'/></linearGradient></defs><path d='M50,12 Q88,18 90,55 Q85,82 50,90 Q15,82 10,55 Q12,18 50,12 Z' fill='url(%23sh)' stroke='%23FFFFFF' stroke-width='2.5'/><path d='M50,12 L50,90 M30,16 Q40,55 38,87 M70,16 Q60,55 62,87 M20,28 Q30,55 28,82 M80,28 Q70,55 72,82' stroke='%23FFFFFF' stroke-width='1.2' opacity='0.5' fill='none'/></svg>") no-repeat center / contain;
+  border: none;
+  box-shadow: 0 6px 16px rgba(219, 112, 147, 0.35),
+              0 2px 6px rgba(0,0,0,0.15);
+}
+.theme-shells .tap-tile.lit {
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='shl' x1='50%25' y1='10%25' x2='50%25' y2='100%25'><stop offset='0%25' stop-color='%23FFFFFF'/><stop offset='50%25' stop-color='%23FFE7A8'/><stop offset='100%25' stop-color='%23FFA94D'/></linearGradient></defs><path d='M50,10 Q90,16 92,55 Q87,84 50,92 Q13,84 8,55 Q10,16 50,10 Z' fill='url(%23shl)' stroke='%23FFFFFF' stroke-width='3'/></svg>") no-repeat center / contain !important;
+  filter: drop-shadow(0 0 18px rgba(255, 169, 141, 0.9));
+}
+.theme-shells .tap-tile__letter,
+.theme-shells .pick-pod__letter,
+.theme-shells .sort-item__letter {
+  color: #6B2949;
+  text-shadow: 0 1px 2px rgba(255, 228, 225, 0.9);
+}
+
+/* דג כתום עם זנב */
+.theme-fish .tap-tile,
+.theme-fish .pick-pod,
+.theme-fish .sort-item {
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='fi' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23FFE4B5'/><stop offset='50%25' stop-color='%23FFA94D'/><stop offset='100%25' stop-color='%23FF6B35'/></linearGradient></defs><ellipse cx='42' cy='50' rx='32' ry='22' fill='url(%23fi)' stroke='%23FFFFFF' stroke-width='2.5'/><polygon points='74,50 95,32 95,68' fill='%23FF6B35' stroke='%23FFFFFF' stroke-width='2'/><circle cx='32' cy='45' r='3.5' fill='%23FFFFFF'/><circle cx='32' cy='45' r='2' fill='%23000000'/><path d='M55,40 Q60,38 62,42' stroke='%23D44A1F' stroke-width='1.5' fill='none'/></svg>") no-repeat center / contain;
+  border: none;
+  box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4),
+              0 2px 6px rgba(0,0,0,0.15);
+}
+.theme-fish .tap-tile.lit {
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='fil' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23FFFFFF'/><stop offset='50%25' stop-color='%23FFE066'/><stop offset='100%25' stop-color='%23FF6B35'/></linearGradient></defs><ellipse cx='42' cy='50' rx='34' ry='24' fill='url(%23fil)' stroke='%23FFFFFF' stroke-width='3'/><polygon points='75,50 96,30 96,70' fill='%23FF8C42' stroke='%23FFFFFF' stroke-width='2.5'/></svg>") no-repeat center / contain !important;
+  filter: drop-shadow(0 0 18px rgba(255, 224, 122, 0.95))
+          drop-shadow(0 0 28px rgba(255, 107, 53, 0.7));
+}
+.theme-fish .tap-tile__letter,
+.theme-fish .pick-pod__letter,
+.theme-fish .sort-item__letter {
+  color: #5A2200;
+  font-size: clamp(24px, 6vw, 32px);
+  /* האות מוצבת קצת ימינה במרכז הגוף של הדג (לא בזנב) */
+  margin-left: -8%;
+  text-shadow: 0 1px 2px rgba(255, 248, 220, 0.95);
+}
+
+/* memory-card — שכבת תמונה משתנה לפי theme (רק ב-front) */
+.theme-stars .memory-card__front {
+  background: linear-gradient(180deg, #FFF8DC 0%, #FFD60A 100%);
+  border-color: #FF9500;
+}
+.theme-shells .memory-card__front {
+  background: linear-gradient(180deg, #FFE4E1 0%, #FFB6C1 100%);
+  border-color: #DB7093;
+}
+.theme-fish .memory-card__front {
+  background: linear-gradient(180deg, #FFE4B5 0%, #FFA94D 100%);
+  border-color: #FF6B35;
+}
+
 /* ===== Letter-anim overlay (D.15 v2) ============================
    אנימציה ייחודית פר אות, רצה אחרי 5/5 הקשות נכונות ולפני startFinale.
    מציגה SVG אסוציאטיבי במרכז המסך + מנגנת word-X.mp3.

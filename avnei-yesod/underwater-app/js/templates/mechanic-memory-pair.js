@@ -64,6 +64,7 @@ window.AvneiMechanics['memory-pair'] = (function () {
 
     root.innerHTML = '';
     root.classList.add('mechanic-memory-pair');
+    if (opts.theme) root.classList.add('theme-' + opts.theme);
 
     const board = document.createElement('div');
     board.className = 'memory-board';
@@ -208,9 +209,14 @@ window.AvneiMechanics['memory-pair'] = (function () {
       el.classList.add('flipped');
       el.classList.remove('hint-glow');
 
-      // משחק קצר של "קליק" — צליל-אות כששני סוגי הקלפים
+      // F1.4 — קליק על קלף: אות → sound-letter · תמונה → word-X (כדי
+      // שהילד ילמד את המילה האסוציאטיבית, לא יחזור על שם האות).
       if (window.AvneiAudio) {
-        AvneiAudio.playLetterSound(letter);
+        if (el.dataset.cardType === 'image' && assocWordKey) {
+          AvneiAudio.play(assocWordKey);
+        } else {
+          AvneiAudio.playLetterSound(letter);
+        }
       }
 
       if (state.first === null) {
@@ -219,9 +225,12 @@ window.AvneiMechanics['memory-pair'] = (function () {
         return;
       }
 
-      // הקלף השני — בדיקת התאמה
-      const isMatch = (state.first.dataset.pairId === el.dataset.pairId) &&
-                      (state.first.dataset.cardType !== el.dataset.cardType);
+      // F1.4 — שינוי לוגיקת match. הזוגות בעיצוב הזה זהים ויזואלית (כל
+      // letter-cards = אותה אות, כל image-cards = אותו SVG). לכן ה-match
+      // הוא לא לפי pairId אלא לפי "שני סוגי קלפים שונים" — letter + image.
+      // התוצאה הפדגוגית: הילד צריך להפוך אות+תמונה (בכל סדר) = זוג. גם
+      // אם לא זוכר איפה — שתי הפיכות = זוג בערך תמיד אחרי 1-2 ניסיונות.
+      const isMatch = (state.first.dataset.cardType !== el.dataset.cardType);
       const responseTime = Date.now() - state.lastShownAt;
 
       if (window.AvneiEventLogger) {

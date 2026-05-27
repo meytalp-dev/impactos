@@ -24,7 +24,10 @@ window.AvneiMechanics = window.AvneiMechanics || {};
 
 window.AvneiMechanics['pick'] = (function () {
 
-  const INTER_ROUND_DELAY_MS = 2400;
+  // 2800ms — מספיק זמן לכל הרצף לרוץ: צליל-אות (~700ms) → 220ms דממה
+  // → שבח רנדומלי (יופי 600ms / מצוין 800ms / מעולה ~1100ms) → buffer.
+  // היה 2400ms וגרם ל-cutoff של "מעולה" (F1.3 fix · 27.5).
+  const INTER_ROUND_DELAY_MS = 2800;
   const PRAISE_POOL = ['praise-yofi', 'praise-metzuyan', 'praise-mealeh'];
 
   function shuffle(arr) {
@@ -55,6 +58,7 @@ window.AvneiMechanics['pick'] = (function () {
 
     root.innerHTML = '';
     root.classList.add('mechanic-pick');
+    if (opts.theme) root.classList.add('theme-' + opts.theme);
 
     const area = document.createElement('div');
     area.className = 'pick-area';
@@ -119,7 +123,9 @@ window.AvneiMechanics['pick'] = (function () {
 
     function buildRound() {
       if (state.hintTimer) { clearTimeout(state.hintTimer); state.hintTimer = null; }
-      cancelPendingPraise();
+      // ⚠️ F1.3 — לא לבטל praise פה. ה-INTER_ROUND_DELAY הגדול דואג לכך
+      // שה-praise מסתיים לפני buildRound; ביטול ב-handleTap עוזב מקרים שבהם
+      // הילד מקיש על tile בסבב חדש לפני שה-praise הקודם גמר.
       area.innerHTML = '';
       state.locked = false;
       state.attempts = 0;
@@ -149,7 +155,10 @@ window.AvneiMechanics['pick'] = (function () {
 
       state.lastShownAt = Date.now();
       if (window.AvneiNoni) AvneiNoni.setState('idle');
-      if (window.AvneiAudio && AvneiAudio.isUnlocked && AvneiAudio.isUnlocked()) {
+      // F1.3 — להשמיע find-X רק בסבב הראשון. בסבבים הבאים — הילד כבר ידע
+      // את ההוראה, ו-play() ב-currentAudio יבטל את ה-praise שעוד באוויר.
+      // אם הילד תקוע — auto-hint אחרי 9 שניות ינגן את ההוראה שוב.
+      if (state.roundIdx === 0 && window.AvneiAudio && AvneiAudio.isUnlocked && AvneiAudio.isUnlocked()) {
         setTimeout(playPromptOrLetterSound, 300);
       }
       state.hintTimer = setTimeout(triggerHint, 9000);
