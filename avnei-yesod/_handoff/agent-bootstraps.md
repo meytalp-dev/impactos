@@ -197,6 +197,100 @@
 
 ---
 
+## 🚀 סוכן 4 — משימה D.15: שכפול ל-17 אותיות באי 3 (P0 · M · חוסם פיילוט)
+
+**רמת קושי:** M (12-15 שעות, מומלץ לפצל לסשנים)
+**עדיפות:** P0 (חוסם פיילוט — חוסם רף "תקין" של 18+/22 אותיות במבדק ראמ"ה)
+**תלות:** D.14 ✅ (התבנית הגנרית קיימת ב-`js/templates/`, demo חי ב-`stage-3-template-demo.html`)
+
+### הקונטקסט
+D.14 בנתה shell + 3 mechanics + demo (אות ש, נושא בועות). D.15 משלימה ל-22 אותיות באי 3 (5 אמנותיים קיימים + 16 חדשים) דרך **4 קבוצות נושאיות** שאישרה מיטל ב-27.5.
+
+### החלוקה הסגורה ל-4 קבוצות
+
+| נושא | אותיות | counter.unit | finale audio key |
+|---|---|---|---|
+| 🫧 בועות בים *(ש כבר חי)* | ש · ל · נ · א | בּוּעוֹת | finale-bubbles-found |
+| ⭐ כוכבי הים | ז · י · ו · ה | כּוֹכָבִים | finale-stars-collected |
+| 🐚 צדפי החוף | ס · ע · צ · ט | צְדָפִים | finale-shells-opened |
+| 🐟 להקת הדגים | ד · ג · ח · פ · כ | דָּגִים | finale-fish-gathered |
+
+נשאר לבנייה: 16 משחקונים (ש כבר חי).
+
+### מסמכים שחובה לקרוא לפני קוד
+1. **`_handoff/2026-05-27-d15-spec.md`** — הספק המלא של D.15 (מסמך-האם)
+2. `data/island-03-letters/_schema.md` — סכמת JSON + מדיניות 4 הנושאים
+3. `data/island-03-letters/shin.json` — תבנית-מאסטר להעתקה
+4. `_handoff/orchestrator-handoff-2026-05-27-evening.md` (+ חדש יותר אם יש)
+5. זיכרון:
+   - `project-avnei-yesod-d14-template-theme-decision` (Full C + חלוקה)
+   - `feedback-tts-hebrew-niqud-pitfalls` (3 כללי TTS עברי)
+   - `feedback-avnei-yesod-correct-answer-audio-pattern` (דפוס B)
+   - `feedback-avnei-yesod-visible-text-niqud` (ניקוד מלא בכל טקסט)
+   - `feedback-image-generation-meytal-task` (SVG inline כן, PNG לא)
+
+### סדר בנייה (לעצור אחרי כל שלב לאישור מיטל)
+
+1. **השלמת קבוצת בועות** (3 אותיות: ל·נ·א) — שכפול קל של shin.json
+2. **תשתית theme-aware** — שדה `theme` ב-JSON → game-shell → mechanic. SVG inline פר נושא ב-game-shell.css (כוכב/צדף/דג — לא PNG)
+3. **קבוצת כוכבים** (4 אותיות: ז·י·ו·ה) → **לעצור · אישור ויזואל ממיטל**
+4. **צדפים** (4 אותיות)
+5. **דגים** (5 אותיות)
+
+### יצירת קבצים פר אות
+
+1. `data/island-03-letters/<letter-key>.json` — בסיס shin.json, להחליף: `letter`, `letter_key`, `quest_id`, `distractors`, `theme`, `intro_audio_keys` (קובץ אחד מאוחד), `in_game_prompt_audio_key`, `finale_audio_key`, `title` (מנוקד), `intro_html` (מנוקד), `completion` (מנוקד)
+2. `stage-3-<letter-key>.html` — בסיס stage-3-template-demo.html
+3. MP3 פר אות: `find-<letter-key>.mp3` בלבד
+4. MP3 פר קבוצה (פעם אחת): `intro-<theme>.mp3` + `finale-<theme>-X.mp3`
+
+**Mechanic לכל 16 האותיות החדשות = tap-all בלבד.**
+
+### אזהרות חזקות אסור-לחזור-עליהן
+
+- AvriNeural בלבד · rate `-10%`
+- **כֹּל** בחולם (לא כָּל בקמץ-קטן — AvriNeural קורא "kal")
+- **"יוֹפִי" בלבד** (לא "יוֹפִי גָּדוֹל" — "גָּדוֹל" מבוטא רע)
+- "הָאוֹת X" + "הַ-נושא עם הָאוֹת" (לא "אַלְמוּגֵי X" — סמיכות אקדמית לא מובנת לבני 6)
+- **כל טקסט גלוי = מנוקד** (title/counter/intro/completion/aria/כפתורים)
+- **intro = קובץ MP3 אחד מאוחד פר נושא** (לא 2). iOS Safari לא מאפשר רצף audio אחרי setTimeout/onended
+- אחרי הקשה נכונה: רק צליל-אות + שבח רנדומלי (praise-yofi/metzuyan/mealeh, pick-without-replacement). **לא מילה** — word_pool שייך רק למכניקות עם תמונות
+- במעבר בין אודיו: `addEventListener('ended', ...)` ולא `playSequence` (לא עוצר אודיו קודם)
+
+### אסור לגעת ב-
+
+- `bkt.js`, `epa.js`, `event-logger.js`, `mastery-check.js`, `profile-classifier.js`
+- 5 משחקוני אי 3 האמנותיים: stage-3-shell/house/rescue/trail-resh/storm.html
+- stage-3-template-demo.html (נשאר כ-canonical demo של D.14)
+- מסמכי-אם בלי אישור פר-קובץ (architecture-mvp/literacy-grade1-2-yearly/pedagogy-integration-framework/llm-pitfalls)
+
+### עדכון נדרש: map + island index
+
+`stage-3-island.html` צריך לכלול את כל 22 הכרטיסים אחרי D.15. לקרוא איך הוא בנוי כיום לפני שינוי.
+
+### קריטריון סיום
+
+- [ ] 16 קבצי JSON חדשים ב-`data/island-03-letters/`
+- [ ] 16 קבצי HTML חדשים בשורש underwater-app
+- [ ] ~25 קבצי MP3 חדשים (intro פר נושא × 4 + find פר אות × 17 + finale פר נושא × 4)
+- [ ] 3 SVG inline חדשים (stars/shells/fish) ב-`game-shell.css`
+- [ ] שדה `theme` ב-game-shell.js + mechanic-tap-all.js
+- [ ] stage-3-island.html מציג את כל 22 הכרטיסים
+- [ ] localStorage `island3-quests:completed` מתעדכן לכל אות
+- [ ] רגרסיה ב-5 הקיימים — בלי שבר
+- [ ] `rama_task_alignment: 1` + `peima_target: 1` בכל JSON חדש
+- [ ] tracker.html ✅ D.15
+- [ ] בלוק חדש ב-agent-completion-log.md
+- [ ] קבוצה חדשה ב-pending-commits.md (סמן 🟡)
+
+### בסיום
+
+1. דווחי למיטל סיכום + מה לבדוק
+2. ⚠️ לפני git push: `git fetch origin && git status`
+3. אם הויזואל של "כוכבים" (שלב 3) נסגר אצל מיטל — להמשיך לצדפים+דגים. אם לא — איטרציה עד אישור.
+
+---
+
 ## הוספת bootstraps נוספים
 ככל שמיטל תאשר משימות נוספות מהמסלול הקריטי — נוסיף סוכנים נוספים כאן.
 המסלול הקריטי: A0.2 → A0.3 → A0.4 → A.1-6 → B → C → ...
