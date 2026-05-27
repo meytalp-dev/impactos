@@ -626,6 +626,173 @@ window.AvneiMasteryCheck = (function () {
   }
 
   // ============================================================
+  // F.21A — checkRamaTaskStatus (per RAMA task, NOT per island)
+  // ============================================================
+  // נדרש ע"י F.21A: סוכן UI שמציג את הכיתה דרך עדשת משה"ח/ראמ"ה
+  // (10 משימות × 3 פעימות) במקום עדשת האיים הפנימיים.
+  //
+  // checkMastery עובד פר אי. כאן עובדים פר משימת ראמ"ה — שיכולה לכלול 1+ איים.
+  // אסטרטגיית aggregate: Min — החלש מנצח (פדגוגית-קונסרבטיבית, אישור מיטל 27.5.2026).
+  //   אם 2 איים תורמים למשימה ואחד fail — המשימה fail.
+  //   אם כולם pass — pass. אם מעורב pass+near — near. אם הכל cold — cold.
+  //
+  // איים מחוץ ל-MVP (11, 12, 13, 15, 16, 17, 19, 20) → אין להם entry ב-ISLAND_TO_RAMA →
+  // checkMastery מחזיר {met:false, reason:'מחוץ ל-MVP'} → נטופלים כ-'cold' כאן.
+  // ============================================================
+
+  // RAMA_TASKS — 10 משימות × פעימה × איים תורמים × רף מספרי
+  // מקור: spec F.21A נספח A. רפים: ramah-task-spec official 2014 + partners-review-v3 §3.
+  const RAMA_TASKS = Object.freeze({
+    1:  { name: 'זיהוי שמות אותיות',         value_threshold: 18, value_max: 22, time_threshold_sec: null, pulse: 1, islands: [3]      },
+    2:  { name: 'מודעות פונולוגית',           value_threshold: 5,  value_max: 6,  time_threshold_sec: null, pulse: 1, islands: [2]      },
+    3:  { name: 'הבנת טקסט מושמע',           value_threshold: 7,  value_max: 10, time_threshold_sec: null, pulse: 2, islands: [13, 15] },
+    4:  { name: 'מודעות לשונית',              value_threshold: 16, value_max: 22, time_threshold_sec: null, pulse: 2, islands: [11]     },
+    5:  { name: 'קריאת 45 צירופים מנוקדים',  value_threshold: 38, value_max: 45, time_threshold_sec: 90,   pulse: 3, islands: [4, 5]   },
+    6:  { name: 'קריאת 20 מילים מוכרות',     value_threshold: 18, value_max: 20, time_threshold_sec: 70,   pulse: 3, islands: [6, 12]  },
+    7:  { name: 'קריאת 20 לא-מוכרות',         value_threshold: 14, value_max: 20, time_threshold_sec: 100,  pulse: 3, islands: [6, 7]   },
+    8:  { name: 'קריאת סיפור 77 מילים',       value_threshold: 69, value_max: 77, time_threshold_sec: 195,  pulse: 3, islands: [8, 16]  },
+    9:  { name: 'הכתבה',                       value_threshold: 21, value_max: 30, time_threshold_sec: null, pulse: 3, islands: [19, 20] },
+    10: { name: 'הבנת הנקרא',                  value_threshold: 10, value_max: 12, time_threshold_sec: null, pulse: 3, islands: [16, 17] },
+  });
+
+  // ספי "near" — כמה אחוז מהרף נחשב "קרוב". §9 ב-spec: 80%-99% = near, <80% = fail.
+  const NEAR_RATIO = 0.80;
+
+  // ספי confidence מבוססי attempts. §7 ב-spec.
+  const CONFIDENCE_HIGH_MIN = 30;
+  const CONFIDENCE_MED_MIN  = 10;
+
+  function _islandTotalAttempts(studentId, islandId) {
+    if (!window.AvneiBKT) return 0;
+    try {
+      const island = AvneiBKT.getIslandState(studentId, islandId);
+      if (island.total_attempts !== undefined) return island.total_attempts; // island 3
+      return island.attempts || 0;
+    } catch (e) { return 0; }
+  }
+
+  // מצב אי בודד עבור משימת ראמ"ה — מבוסס על checkMastery הקיים + תרגום ל-pass/near/fail/cold.
+  function _islandStatusForRama(studentId, islandId, ramaTaskSpec) {
+    if (!ISLAND_TO_RAMA[islandId]) {
+      // אי מחוץ ל-MVP (11, 12, 13, 15, 16, 17, 19, 20) — אין proxy בכלל.
+      return { islandId, status: 'cold', value: null, attempts: 0, met: false, reason: 'אי מחוץ ל-MVP' };
+    }
+    const m = checkMastery(studentId, islandId);
+    const attempts = _islandTotalAttempts(studentId, islandId);
+    const bktV = m.conditions.bkt && (typeof m.conditions.bkt.value === 'number') ? m.conditions.bkt.value : null;
+
+    let status;
+    if (m.met) {
+      status = 'pass';
+    } else if (bktV === null || attempts === 0) {
+      status = 'cold';
+    } else {
+      // בשעה ש-pKnown יושב על סקאלת 0..1, הרף המספרי של המשימה הוא value_threshold/value_max.
+      // למשל משימה 1: 18/22 = 0.818. ביצוע "near" = ≥ 80% מ-0.818 ≈ 0.654.
+      const taskRatio = ramaTaskSpec.value_threshold / ramaTaskSpec.value_max;
+      const nearCutoff = taskRatio * NEAR_RATIO;
+      status = bktV >= nearCutoff ? 'near' : 'fail';
+    }
+
+    return { islandId, status, value: bktV, attempts, met: m.met, reason: m.reason };
+  }
+
+  // ערך מספרי "כמה ענתה נכון" עבור משימת ראמ"ה — מותאם פר משימה.
+  // משימה 1 (אי 3): mastered letters out of 22 (דאטה אמיתית, לא proxy).
+  // משימה 2 (אי 2): correct / total ניסיונות * 6 (proxy).
+  // אחרות: BKT pKnown * value_max מעוגל (proxy).
+  function _computeRamaValue(studentId, ramaTaskSpec, islandResults) {
+    // משימה 1 — ספירת אותיות שנשלטו (real data ב-MVP)
+    if (ramaTaskSpec.islands.length === 1 && ramaTaskSpec.islands[0] === 3 && window.AvneiBKT) {
+      try {
+        const dist = AvneiBKT.getLetterMasteryDistribution(studentId);
+        return { value: dist.mastered, source: 'letter_count' };
+      } catch (e) { /* fall through */ }
+    }
+    // ברירת מחדל — לקחת את ה-min(bkt value) בין האיים התורמים, להכפיל ב-value_max
+    const valid = islandResults.filter(r => typeof r.value === 'number');
+    if (valid.length === 0) return { value: null, source: 'none' };
+    const minP = Math.min.apply(null, valid.map(r => r.value));
+    return { value: Math.round(minP * ramaTaskSpec.value_max), source: 'bkt_proxy' };
+  }
+
+  function _aggregateStatuses(islandResults) {
+    if (islandResults.length === 0) return 'cold';
+    if (islandResults.every(r => r.status === 'cold')) return 'cold';
+    // החלש מנצח: fail > near > pass (cold לא משנה אם יש דאטה חלקית)
+    if (islandResults.some(r => r.status === 'fail')) return 'fail';
+    if (islandResults.some(r => r.status === 'near')) return 'near';
+    if (islandResults.every(r => r.status === 'pass' || r.status === 'cold')) {
+      // pass רק אם יש לפחות אי אחד שעבר (אחרת cold)
+      return islandResults.some(r => r.status === 'pass') ? 'pass' : 'cold';
+    }
+    return 'near';
+  }
+
+  function _confidenceFor(totalAttempts) {
+    if (totalAttempts >= CONFIDENCE_HIGH_MIN) return 'high';
+    if (totalAttempts >= CONFIDENCE_MED_MIN)  return 'med';
+    return 'low';
+  }
+
+  function checkRamaTaskStatus(studentId, ramaTaskId) {
+    studentId = studentId || 'local';
+    const spec = RAMA_TASKS[ramaTaskId];
+    if (!spec) {
+      return {
+        status: 'cold', value: null, threshold: null,
+        confidence: 'low', contributingIslands: [], pulse: null,
+        reason: `משימה ${ramaTaskId} לא קיימת ב-RAMA_TASKS`,
+      };
+    }
+
+    const islandResults = spec.islands.map(id => _islandStatusForRama(studentId, id, spec));
+    const { value, source } = _computeRamaValue(studentId, spec, islandResults);
+    const totalAttempts = islandResults.reduce((s, r) => s + (r.attempts || 0), 0);
+    const confidence = _confidenceFor(totalAttempts);
+
+    // Status derivation:
+    //   • source='letter_count' (משימה 1) — ספירה אמיתית של אותיות שנשלטו. נשווה ישירות
+    //     ל-value_threshold. זה נכון פדגוגית יותר מ-BKT proxy כי 1 אות מצוינת מתוך 22
+    //     אינה "near 18/22" — היא בבירור fail.
+    //   • אחרת — aggregate סטטוסי האיים התורמים (החלש מנצח, §10 ב-spec).
+    let status;
+    if (source === 'letter_count' && typeof value === 'number') {
+      if (totalAttempts === 0) {
+        status = 'cold';
+      } else if (value >= spec.value_threshold) {
+        status = 'pass';
+      } else if (value >= spec.value_threshold * NEAR_RATIO) {
+        status = 'near';
+      } else {
+        status = 'fail';
+      }
+    } else {
+      status = _aggregateStatuses(islandResults);
+    }
+
+    const reasonParts = islandResults.map(r =>
+      `אי ${r.islandId}: ${r.status}${typeof r.value === 'number' ? ` (p=${r.value.toFixed(2)})` : ''}`
+    );
+
+    return {
+      status,
+      value,
+      threshold: spec.value_threshold,
+      value_max: spec.value_max,
+      time_threshold_sec: spec.time_threshold_sec,
+      confidence,
+      contributingIslands: spec.islands.slice(),
+      pulse: spec.pulse,
+      task_name: spec.name,
+      total_attempts: totalAttempts,
+      value_source: source,
+      island_breakdown: islandResults,
+      reason: reasonParts.join(' · '),
+    };
+  }
+
+  // ============================================================
   // API
   // ============================================================
   return {
@@ -637,5 +804,11 @@ window.AvneiMasteryCheck = (function () {
     ISLAND_TO_RAMA,
     MIN_ITEMS_PER_SESSION_DAY,
     REQUIRED_CONSECUTIVE_SESSIONS,
+    // ---- F.21A — RAMA task lens ----
+    checkRamaTaskStatus,
+    RAMA_TASKS,
+    NEAR_RATIO,
+    CONFIDENCE_HIGH_MIN,
+    CONFIDENCE_MED_MIN,
   };
 })();
