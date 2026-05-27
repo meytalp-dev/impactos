@@ -10,8 +10,23 @@
 ```
 את/ה סוכן עבודה לפרויקט "אבני יסוד" — מערכת תרגול דיגיטלית-אדפטיבית לרכישת קריאה בעברית בכיתה א'.
 
-הריפו: meytalp-dev/impactos · נתיב מקומי: c:/Users/meyta/Downloads/impactos/avnei-yesod/
 מנהלת הפיתוח: מיטל פלג.
+
+### 📍 איפה אתה עובד — חובה לאמת לפני כל פעולה
+
+**ריפו:** `meytalp-dev/impactos`
+**נתיב מקומי:** `c:/Users/meyta/Downloads/impactos/avnei-yesod/`
+
+⚠️ **לא** ב-`ort-presentation-builder`. **לא** ב-`Downloads/edura`. **לא** בריפו אחר.
+
+לפני כל פעולה ראשונה:
+```bash
+cd c:/Users/meyta/Downloads/impactos && git fetch origin && git status
+```
+
+אם `pwd` לא מתחיל ב-`c:/Users/meyta/Downloads/impactos` — **עצור ותתריע למיטל**.
+
+כל הקבצים שמוזכרים במסמך הזה (architecture-mvp.md, F.21A-spec, agent-bootstraps.md, וכו') הם **תחת `impactos/avnei-yesod/`**, לא תחת ריפו אחר.
 
 ### המסגרת הפדגוגית (חידוד 26.5.2026 ערב — חובה לזכור!)
 - משרד החינוך (תוכנית תשפ"ו, פרופ' שני) קובע את היעדים
@@ -299,6 +314,122 @@ D.14 בנתה shell + 3 mechanics + demo (אות ש, נושא בועות). D.15 
 1. דווחי למיטל סיכום + מה לבדוק
 2. ⚠️ לפני git push: `git fetch origin && git status`
 3. אם הויזואל של "כוכבים" (שלב 3) נסגר אצל מיטל — להמשיך לצדפים+דגים. אם לא — איטרציה עד אישור.
+
+---
+
+## 🚀 סוכן 5 — משימה F.21A code: מסך מורה בשפת ראמ"ה (P0 · M · חוסם פיילוט)
+
+**רמת קושי:** M (8-12 שעות) · **עדיפות:** P0 (deliverable מרכזי ללקוחות B2B)
+**תלות:** A.1 ✅ · A.3 ✅ · A.4 ✅ · A0.3 ✅ — **כולן ב-origin, ה-API מוכן**
+
+### 📍 איפה אתה עובד
+
+**ריפו:** `meytalp-dev/impactos`
+**נתיב מקומי:** `c:/Users/meyta/Downloads/impactos/avnei-yesod/`
+
+⚠️ **לא** ב-`ort-presentation-builder`. **לא** ב-`Downloads/edura`.
+
+לפני כל פעולה:
+```bash
+cd c:/Users/meyta/Downloads/impactos && git fetch origin && git status
+```
+
+### המשימה
+
+בניית קובץ HTML חדש `underwater-app/teacher-rama.html` — דשבורד מורה שמציג כיתה בשפת **10 משימות ראמ"ה × 3 פעימות**, לא בשפת המשחקונים הפנימיים.
+
+זה **לא מחליף** את `teacher-live.html` הקיים — שניהם חיים זה לצד זה. teacher-live נשאר כ-"view דיאגנוסטי", teacher-rama הוא ה-deliverable למורה.
+
+### מסמך-אם חובה לקרוא ראשון (לפני קוד)
+
+**`_handoff/2026-05-27-F21A-ux-spec.md`** (~544 שורות, 12 סעיפים + 2 נספחים)
+
+הוא מכיל wireframes ASCII, מיפוי data→UI, behavior specs ל-Confidence indicators ול-Pulse toggle, ו-Acceptance Criteria מלאים.
+
+### 5 החלטות UX שנסגרו (לא לפתוח מחדש)
+
+| # | פריט | החלטה |
+|---|---|---|
+| 1 | מבנה תצוגה ראשי | טבלה (תלמידות × משימות, צבע פר תא) |
+| 2 | `checkRamaTaskStatus` aggregation | **Min** — החלש מבין הסטרנדים מנצח (קונסרבטיבי) |
+| 3 | תחילת פעימה 1 | **1.9.2026** |
+| 4 | PIN | cosmetic לפיילוט (4521). מיטל תחלק ידנית. |
+| 5 | inline או קובץ נפרד? | **קובץ נפרד** `teacher-rama.html` |
+
+### API חדש שאתה בונה — `checkRamaTaskStatus`
+
+זה הגרעין. הוא **לא קיים היום**. יש `checkMastery(studentId, islandId)` פר-אי — אבל F.21A דורש פר-משימת-ראמ"ה (אחת ל-1+ איים).
+
+**חתימה:**
+```js
+AvneiMasteryCheck.checkRamaTaskStatus(studentId, ramaTaskId)
+  → { status: 'pass'|'near'|'fail'|'cold',
+      value: 22, threshold: 18,
+      confidence: 'high'|'med'|'low',
+      contributingIslands: [3, ...],
+      reason: 'BKT 92%, fluency steady, 22/22 letters above threshold' }
+```
+
+**מימוש:**
+- iterate על האיים המתאימים ב-`ISLAND_TO_RAMA` (כבר קיים ב-`mastery-check.js`)
+- aggregation = **Min** (החלש מנצח)
+- `cold` אם פחות מ-10 ניסיונות בסטרנד הרלוונטי
+- threshold מ-spec משימת ראמ"ה — ראה נספח A ב-spec
+- `near` = 80-99% מהרף (ניתן לכייל בפיילוט)
+- מיקום: **הרחבה** של `js/shared/mastery-check.js` (לא קובץ חדש)
+
+### Privacy Gate
+
+- PIN client-side, `sessionStorage`, hash SHA-256 hard-coded
+- ראה §6 ב-spec — implementation מוצע כבר כתוב שם
+- **אין link** ל-`teacher-rama.html` משום מסך תלמידה (חוסם דליפה ב-pilot)
+
+### קבצים שאתה יוצר/משנה
+
+| קובץ | סטטוס | מה |
+|---|---|---|
+| `underwater-app/teacher-rama.html` | **חדש** | המסך המלא |
+| `underwater-app/js/shared/mastery-check.js` | **הרחבה** | + `checkRamaTaskStatus` |
+| `underwater-app/js/components/rama-status-view.js` | חדש (אופציונלי) | מודולריזציה אם ה-HTML גדל מעל ~800 שורות |
+
+### אסור לגעת ב-
+
+- `bkt.js`, `epa.js`, `event-logger.js`, `profile-classifier.js`
+- 5 משחקוני אי 3 הקיימים (`stage-3-shell/house/rescue/trail-resh/storm.html`)
+- `teacher-live.html` (נשאר כפי שהוא — DEPRECATED אבל לא מוסר)
+- מסמכי-אם (architecture-mvp / literacy-grade1-2-yearly / pedagogy-integration-framework / llm-pitfalls / F21A-spec עצמו) בלי אישור פר-קובץ ממיטל
+
+### אזהרות אסור-לחזור-עליהן
+
+- ❌ לא להוסיף שורה "9 מיומנויות" בשום מקום בקוד או UI — הסקופ הוא **5 סטרנדים BKT**
+- ❌ לא לציין "6 שלבי Share & Bar-On" — אלה משה"ח, לא Share
+- ❌ לא לקבל החלטות פדגוגיות עצמאיות (סיווג near/fail/pass לפי spec — אבל שינוי סף = שואלים את מיטל)
+- ❌ לא לדחוף ל-git בלי אישור מפורש ממיטל
+- RTL מלא — sticky column **בימין** (לא בשמאל)
+
+### Acceptance Criteria (מ-§12 ב-spec)
+
+- [ ] `teacher-rama.html` קיים, רץ ללא שגיאות JS
+- [ ] PIN gate חוסם כניסה. PIN נכון → גישה
+- [ ] Class View — כל הילדות, 10 עמודות משימה, ביטחון פר תלמידה
+- [ ] Pulse toggle — Daily ↔ Snapshot
+- [ ] לחיצה על שם תלמידה → Student View
+- [ ] Student View — 5 strands + 22 letters + EPA + 10 RAMA tasks
+- [ ] Confidence indicators (✅🟡⚫) בכל המקומות הרלוונטיים
+- [ ] רענון 3 שניות (זהה ל-teacher-live)
+- [ ] RTL מלא, sticky column מימין
+- [ ] מובייל — גלילה אופקית עם sticky
+- [ ] **אין** קישור ל-teacher-rama משום מסך תלמידה
+- [ ] `checkRamaTaskStatus` קיים, מחזיר ערכים לפי §5
+- [ ] בדיקה ידנית עם 3 הפרסונות (מאיה/נועה/שירה)
+
+### בסיום
+
+1. עדכן את ה-tracker: `_handoff/2026-05-26-architecture-tasks-tracker.html` (שורה 455 — F.21A ⭐ → ✅)
+2. הוסף בלוק חדש **בראש** `_handoff/agent-completion-log.md` לפי התבנית
+3. הוסף קבוצה חדשה ב-`_handoff/pending-commits.md` 🟡 ("F.21A code — ממתין לאישור push ממיטל")
+4. דווח למיטל: "F.21A code מוכן. 3 פרסונות לבדיקה: `teacher-rama.html?demo=1`. ממתין לאישור push."
+5. **אל תדחוף לפני אישור.**
 
 ---
 
