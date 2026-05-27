@@ -88,6 +88,16 @@ window.AvneiEventLogger = (function() {
       }
     }
 
+    // עדכון EPA אוטומטי (משימה A.3 · 27.5.2026) — סופר טעויות על 3 צירים.
+    // פעיל רק על is_correct=false. שכבה נפרדת מ-BKT, לא תלויה בו.
+    if (window.AvneiEPA) {
+      try {
+        AvneiEPA.ingestEvent(evt);
+      } catch (e) {
+        console.warn('EPA update failed:', e);
+      }
+    }
+
     return evt;
   }
 

@@ -4,6 +4,107 @@
 
 ---
 
+## 🟢 קבוצה I — A.1 · BKT-per-strand (27.5.2026 · סוכן Claude Code · ✅ מוכן ל-push)
+
+**2 קבצים · ממתין לאישור מיטל:**
+
+| # | קובץ | סטטוס שינוי | הערה |
+|---|---|---|---|
+| 1 | `underwater-app/js/shared/bkt.js` | שיכתוב | dual-write + compat layer + API חדש פר-strand |
+| 2 | `_handoff/2026-05-26-architecture-tasks-tracker.html` | שינוי קל | A.1 ✅ |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש בראש | תיעוד A.1 |
+| + | `_handoff/pending-commits.md` | בלוק חדש בראש (זה) | הקבוצה הזו |
+
+**יחס לקבוצה H (A.3 EPA):**
+- A.3 שינה את `event-logger.js` (12 שורות). אני לא נגעתי שם — אין קונפליקט.
+- A.3 קורא ל-`AvneiBKT.ingestEvent` כרגיל; ה-dual-write שלי בולע את ה-event בשני המקומות.
+- ניתן לדחוף את שתי הקבוצות בנפרד או יחד. סדר: H או I — לא משנה.
+
+**לפני push (חובה — סביבת ריבוי-סוכנים):**
+```
+git fetch origin && git status
+```
+
+**הצעת message לקומיט (HEREDOC):**
+```
+A.1 — BKT-per-strand (5 מודלים) · dual-write + compat layer
+
+bkt.js שוכתב כך שמנוע BKT מחזיק 5 BKT-ים פר ילדה (סטרנד),
+בנוסף ל-state ה-per-island הקיים. API חיצוני נשמר 1:1 — A0.1
+(suggestFromBKT) ו-A0.3 (mastery-check) ממשיכים לעבוד בלי שינוי.
+
+Dual-write storage:
+  avnei-bkt-v1         (legacy per-island — נשמר חי)
+  avnei-bkt-strand-v1  (חדש per-strand — 5 BKT-ים פר ילדה)
+
+API חדש:
+  getStrandState, getStudentStrands, checkStrandMastery,
+  getPerLetterState (compat layer ל-A0.1),
+  ISLAND_TO_STRAND, STRAND_NAMES, PARAMS_PER_STRAND,
+  FLUENCY_THRESHOLD_PER_STRAND_MS.
+
+מיפוי (מ-22-islands-validated):
+  strand 1 phonology    -> איים 1-8
+  strand 2 morphology   -> איים 9-11
+  strand 3 oral         -> איים 12-14
+  strand 4 reading      -> איים 15-18
+  strand 5 writing      -> איים 19-22
+
+per_letter ב-island 3 ממשיך לחיות (legacy) + mirror תחת strand 1.
+2 בדיקות עברו: test-bkt.js הקיים + smoke test פר-strand.
+```
+
+**אזהרה:** לא לערבב עם פאקים חודשיים / מסמכי-אם — אלה דורשים אישור פר-קובץ (F4 🔴).
+
+---
+
+## 🟢 קבוצה H — A.3 · מודול EPA (27.5.2026 · סוכן Claude Code · ✅ מוכן ל-push)
+
+**12 קבצים · אחד חבילה אחת · לא לפצל:**
+
+| # | קובץ | סטטוס שינוי | הערה |
+|---|---|---|---|
+| 1 | `underwater-app/js/shared/epa.js` | חדש (234 שורות) | מודול EPA — `window.AvneiEPA` |
+| 2 | `underwater-app/js/shared/event-logger.js` | שינוי קל (12 שורות) | בלוק `if (window.AvneiEPA)` אחרי בלוק BKT |
+| 3 | `underwater-app/stage-3-shell.html` | שורה אחת | `<script src="js/shared/epa.js">` |
+| 4 | `underwater-app/stage-3-house.html` | שורה אחת | אותו דבר |
+| 5 | `underwater-app/stage-3-storm.html` | שורה אחת | אותו דבר |
+| 6 | `underwater-app/stage-3-rescue.html` | שורה אחת | אותו דבר |
+| 7 | `underwater-app/stage-3-trail-resh.html` | שורה אחת | אותו דבר |
+| 8 | `underwater-app/stage-3.html` | שורה אחת | אותו דבר |
+| 9 | `underwater-app/stage-2-whispers.html` | שורה אחת | אותו דבר |
+| 10 | `underwater-app/stage-2-twin-seaweeds.html` | שורה אחת | אותו דבר |
+| 11 | `underwater-app/stage-2-fish-schools.html` | שורה אחת | אותו דבר |
+| 12 | `underwater-app/teacher-live.html` | שורה אחת | אותו דבר |
+| + | `_handoff/2026-05-26-architecture-tasks-tracker.html` | שינוי קל | A.3 ✅ |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש בראש | תיעוד A.3 |
+| + | `_handoff/pending-commits.md` | בלוק חדש בראש | הקבוצה הזו |
+
+**הצעת message לקומיט (HEREDOC):**
+```
+A.3 — מודול EPA (Error Pattern Analysis) · 3 צירים
+
+ספירה תיאורית של טעויות פר ילדה×אי×אות על 3 צירים אורתוגונליים:
+- failure (Shape/Sound/Name/Direction)
+- context (isolation/initial/medial/final/font)
+- task (recognition/find/name/write)
+
+מודול חדש js/shared/epa.js בלי לגעת ב-bkt.js או 5 הדגלים האוטומטיים.
+נקרא מ-event-logger.js אחרי AvneiBKT.ingestEvent, פעיל רק על is_correct=false.
+threshold default 40% (Direction 30% override) לפי partners-review-v3 §6.
+MIN_FAILURES_FOR_PATTERN=3 למניעת רעש על מדגם זעיר.
+
+API: ingestEvent · getEPA · getDominantPattern · dump · reset
+localStorage key נפרד: avnei-epa-v1
+נצרך עתידית ע"י B.8 (intervention matcher), B.9 (group suggester), 21A.
+
+14 smoke tests עברו ב-Node לפני push.
+```
+
+**אזהרה:** לא לערבב עם פאקים חודשיים / מסמכי-אם — אלה דורשים אישור פר-קובץ (F4 🔴).
+
+---
+
 ## סיכום A1
 
 | קבוצה | קבצים | Hash | תאריך |
