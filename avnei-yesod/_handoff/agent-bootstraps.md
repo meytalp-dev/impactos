@@ -636,6 +636,132 @@ function exportToCSV(events) {
 
 ---
 
+## 🚀 סוכן 8 — משימות C.11 + C.12 + C.13: Pack × BKT Integration (P0 · L · לב הדיפרנציאליות)
+
+**רמת קושי:** L (10-14 שעות, 3 משימות צמודות) · **עדיפות:** P0 (לב הדיפרנציאליות של אבני יסוד)
+**תלות:** A.1 ✅ · A.4 ✅ · A0.2 ✅ · D.14 ✅ · F.21A ✅ — כולן ב-origin
+
+### 📍 איפה אתה עובד
+
+**ריפו:** `meytalp-dev/impactos`
+**נתיב מקומי:** `c:/Users/meyta/Downloads/impactos/avnei-yesod/`
+
+⚠️ **לא** ב-`ort-presentation-builder`. **לא** ב-`Downloads/edura`.
+
+לפני כל פעולה:
+```bash
+cd c:/Users/meyta/Downloads/impactos && git fetch origin && git status
+```
+
+### מסמך-אם חובה לקרוא ראשון (לפני קוד)
+
+**`_handoff/2026-05-28-C11-C12-C13-pack-bkt-spec.md`** (~400 שורות, 9 סעיפים + דוגמאות JSON מלאות)
+
+הוא מכיל:
+- §3 schema של Pack JSON + 2 דוגמאות (letters-focused + strand-focused)
+- §4 API מלא של `pack-bkt-bridge.js` (8 פונקציות) + קוד מומלץ ל-`selectTierForStudent`
+- §5 schema לפריט + `validate-pack.js`
+- §6 UI Integration ב-teacher-rama (Section 5 + עמודת Tier)
+- §7 Acceptance Criteria — 18 פריטים מדויקים
+
+**אל תתחיל לכתוב קוד לפני שקראת את כל ה-spec.**
+
+### 3 ההחלטות הסגורות (מ-§2 ב-spec)
+
+| # | החלטה |
+|---|---|
+| 1 | Pack **דו-מצבי** — `focus_mode: "letters"` או `"strand"` |
+| 2 | **Tier 4 = 70% ישן + 30% חדש** (חיזוק עמוק) |
+| 3 | **אוטומטי + מורה רואה ויכולה להחליף ידנית** (override ב-localStorage) |
+
+### TIER_THRESHOLDS (לא לשנות)
+
+```
+p < 0.30        → Tier 1
+0.30 ≤ p < 0.60 → Tier 2
+0.60 ≤ p < 0.85 → Tier 3
+p ≥ 0.85        → Tier 4
+```
+
+לחשוף כ-`AvneiPackBridge.TIER_THRESHOLDS` (יש לכייל בפיילוט — לא בסקופ שלך).
+
+### סדר ביצוע מומלץ (מ-§9)
+
+1. **C.11** — Pack schema + 2 dummy packs (`september-2026.json` letters-focused + `january-2026.json` strand-focused) + `_schema.md`
+2. **C.13** — Item tagging ב-2 ה-packs + `validate-pack.js`
+3. **C.12** — `pack-bkt-bridge.js` + `test-pack-bridge.js` (15+ assertions)
+4. **UI** — Section 5 ב-Student View ב-teacher-rama.html + עמודת Tier ב-Class View
+5. **בדיקה ידנית** — 3 פרסונות (מאיה Tier 4 manual, נועה Tier 3 auto, שירה Tier 1 cold)
+
+### קבצים שאתה יוצר/משנה
+
+| קובץ | סטטוס | מה |
+|---|---|---|
+| `curriculum/packs/grade1-tashpaz/september-2026.json` | חדש | Pack letters-focused (ש·ל·נ·א) |
+| `curriculum/packs/grade1-tashpaz/january-2026.json` | חדש | Pack strand-focused (מודעות פונולוגית) |
+| `curriculum/packs/_schema.md` | חדש | תיעוד schema |
+| `underwater-app/js/shared/pack-bkt-bridge.js` | חדש | ~300 שורות, 8 פונקציות API |
+| `underwater-app/scripts/validate-pack.js` | חדש | CLI validator |
+| `underwater-app/scripts/test-pack-bridge.js` | חדש | בדיקות אוטומטיות |
+| `underwater-app/teacher-rama.html` | **הרחבה** | Section 5 + עמודת Tier (זהירות — סוכן 5 אולי עוד פעיל על A.5) |
+
+### ⚠️ קריטי — תיאום עם סוכנים פעילים
+
+**סוכן 5 עובד על A.5 (cold-start) ב-`teacher-rama.html` במקביל אליך.** לפני שאתה נוגע ב-`teacher-rama.html`:
+
+1. `git fetch origin && git pull origin main`
+2. בדוק אם A.5 כבר נדחף (חיפוש ב-`pending-commits.md` "A.5" → סטטוס)
+3. אם A.5 עוד לא נדחף — תיידע את מיטל ושאל אם להמתין או להתחיל מ-C.11+C.12 (לא UI)
+
+### אסור לגעת ב-
+
+- `bkt.js`, `epa.js`, `mastery-check.js`, `event-logger.js`, `profile-classifier.js` (קוראים בלבד)
+- 22 קבצי משחקונים (stage-3-*.html) — קריאה ל-`getItemsForStudent` היא post-MVP
+- מסמכי-אם (architecture-mvp / literacy-grade1-2-yearly / pedagogy-integration-framework / llm-pitfalls)
+- ה-spec עצמו (`2026-05-28-C11-C12-C13-pack-bkt-spec.md`)
+
+### אזהרות
+
+- ❌ **לא להמציא תוכן ל-2 ה-packs** — הם dummy לבדיקה. שדה `items` יכול להיות עם 5-10 פריטים בסיסיים בלבד. **התוכן האמיתי = מיטל כותבת ידנית בקצב שלה**
+- ❌ **לא לשנות TIER_THRESHOLDS** — חושף בלבד, לא משנה (כיול = פיילוט)
+- ❌ **לא לבנות auto-classification** של פריט לטיר (manual בלבד — § 5.1)
+- ❌ **לא לקרוא ל-`getItemsForStudent` מתוך משחקון** — זה C.14 עתידי, לא בסקופ
+- ❌ **לא לדחוף ל-git בלי אישור מפורש ממיטל**
+- RTL מלא ב-UI
+- שמות פונקציות באנגלית, comments בעברית
+
+### Acceptance Criteria (קצר — המלא ב-§7 של ה-spec)
+
+**C.11:**
+- [ ] 2 packs dummy (letters + strand)
+- [ ] `_schema.md` תיעוד
+- [ ] `validate-pack.js` עובד
+
+**C.12:**
+- [ ] `pack-bkt-bridge.js` — 8 פונקציות API
+- [ ] cold-start → Tier 1 + reason
+- [ ] override flow עובד (set+get+clear)
+- [ ] `test-pack-bridge.js` — 15+ assertions ירוקות
+
+**C.13:**
+- [ ] manual tagging ב-2 ה-packs
+- [ ] schema לפריט מתועד
+
+**UI:**
+- [ ] Section 5 ב-Student View — Tier + reason + confidence + 4 כפתורי override
+- [ ] עמודת Tier בטבלת Class View — עם ⚙ ל-manual
+- [ ] לחיצת override שומרת ל-localStorage + רענון מיידי
+
+### בסיום
+
+1. עדכן tracker: ✅ C.11 + ✅ C.12 + ✅ C.13 ב-`_handoff/2026-05-26-architecture-tasks-tracker.html`
+2. הוסף בלוק חדש בראש `_handoff/agent-completion-log.md`
+3. הוסף קבוצה חדשה ב-`_handoff/pending-commits.md` 🟡 ("C.11+C.12+C.13 — ממתין לאישור push")
+4. דווח: "C.11+C.12+C.13 מוכן. 2 packs לדוגמה + bridge + UI. ממתין לאישור push."
+5. **אל תדחוף לפני אישור.**
+
+---
+
 ## הוספת bootstraps נוספים
 ככל שמיטל תאשר משימות נוספות מהמסלול הקריטי — נוסיף סוכנים נוספים כאן.
 המסלול הקריטי: A0.2 → A0.3 → A0.4 → A.1-6 → B → C → ...
