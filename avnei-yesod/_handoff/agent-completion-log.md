@@ -7,6 +7,107 @@
 
 ---
 
+## B.7 — Targeted Reading Interventions (משלים את F.21A — "פתחי קבוצת תמיכה" עובדת)
+
+**סטטוס:** ✅ קוד + 78/78 בדיקות אוטומטיות · **ממתין לבדיקה ידנית של מיטל ואז push**
+**תאריך:** 2026-05-28
+**שיחה:** Claude Code (Opus 4.7 · VS Code · impactos)
+**Commit:** טרם נדחף
+**יחס:** מימוש 1:1 של `_handoff/2026-05-28-B7-interventions-spec.md` (10 סעיפים, 8 acceptance criteria). 5 ההחלטות שאישרה מיטל ב-28.5 (5 דפוסים · 3-4 ילדות · 10-15 דק' · 5 שלבי script · Hybrid Preview+PDF) הוטמעו ללא שינוי.
+
+**מה נעשה:**
+
+**1. 5 קבצי JSON ב-`underwater-app/interventions/` (חדשים):**
+- `phonological.json` — מודעות פונולוגית (פירוק/הרכבת פונמות).
+- `letter-knowledge.json` — ידיעת אותיות (זוגות מתבלבלות: מ↔ם, נ↔ן וכו').
+- `decoding.json` — פענוח לפי הקשר (תחילה/אמצע/סוף).
+- `fluency.json` — שטף קריאה (יעד ≤25 שנ' / 10 מילים).
+- `letter-cluster.json` — חיזוק 3 אותיות חלשות פר ילדה (מ-`getLetterMasteryDistribution`).
+- כל קובץ: 5 שלבים (Hook → Model → Guided → Independent → Success Check) לפי Rosenshine 2012 + I do/We do/You do (Pearson & Gallagher 1983).
+- Placeholders `{letter_a}`, `{letter_b}`, `{example_a}`, `{personalized_letters}` שמתמלאים פר-קבוצה ב-`interpolateScript`.
+
+**2. `js/shared/interventions.js` (חדש · ~580 שורות):**
+- `loadScript(patternId)` · `preloadAll()` — Sync XHR לדפדפן · `fs` ל-Node · cache.
+- `detectForStudent(studentId, ctx)` — 5 detectors:
+  - **Phonological:** EPA `failure='Sound'` ≥ 10 + `error_rate` ≥ 30%.
+  - **Letter Knowledge:** עוברת על `CONFUSED_PAIRS` (9 זוגות). שתי האותיות עם sub-BKT < 0.40 + attempts ≥ 3.
+  - **Decoding:** `getDominantPattern(studentId, islandId, 0.65)` עם `axis='context'`, value≠'isolation'.
+  - **Fluency:** `median(strand 1)` > class P75 + accuracy ≥ 70%.
+  - **Letter Cluster:** `getLetterMasteryDistribution(studentId).weak ≥ 3`.
+- `detectGroupTriggers(students)` — class-level. 3+ ילדות עם דפוס משותף. עבור Letter Knowledge — bucket פר זוג. עבור Decoding — bucket פר position. `confidence` מאוגד (high אם כולן high; med אם 66%+ med-or-better; אחרת low).
+- `interpolateScript(script, groupCommonDetails, studentDetails)` — מילוי placeholders ב-deep clone. תומך ב-letter_a/letter_b/personalized_letters/personalized_first_letter/target_letter.
+- `recordIntervention(studentIds, patternId, payload)` — שמירה ב-`avnei-interventions-v1` (localStorage). אותה רשומה נשמרת תחת כל אחת מהילדות בקבוצה (לפי spec §6.3).
+- `getInterventionsFor(studentId)` · `resetInterventions(studentId?)`.
+- **9 זוגות פדגוגיים-ידועים ב-`CONFUSED_PAIRS`:** מ↔ם · נ↔ן · כ↔ך · פ↔ף · צ↔ץ · ב↔פ · ה↔ח · ד↔ר · ז↔ו (אישרה מיטל 28.5).
+
+**3. UI Integration ב-`teacher-rama.html`:**
+- **CSS חדש (~210 שורות):** `.iv-banners-wrap` · `.iv-banner` (gradient כתום) · `.iv-modal-backdrop` + `.iv-modal` · `.iv-stage` · print stylesheet (`@media print` + `body.iv-printing`).
+- **Class View — banners:** `<div id="interventionTriggers">` מעל הטבלה. `renderInterventionTriggers(students)` קוראת `detectGroupTriggers` ומציגה banner פר קבוצה: אייקון + שם דפוס + ילדות + ביטחון + כפתור "📋 פתחי קבוצת תמיכה".
+- **Modal preview:** `openInterventionModal(groupIdx)` פותח modal עם title + meta tags (משך/גודל/תדירות/Tier) + goal + history + students card + materials + 5 שלבים + evidence + 3 כפתורי פעולה. סגירה: ×, ESC, click outside.
+- **Snapshot של group ב-closure:** מנגנון תיקון לאוטו-refresh (3 שנ' מ-F.21A): callbacks משתמשים ב-`snapshotGroup` (לא ב-`_activeGroups[idx]`) — אם re-render משנה את הקאש, הכפתורים עדיין יעבדו על ה-group המקורי.
+- **השעיית re-render בזמן modal:** `renderInterventionTriggers` מדלגת על update אם `[data-iv-modal]` קיים — נמנעת ריצה חוזרת של `detectGroupTriggers` שעלולה לדפוק את אינטראקציית המורה.
+
+**4. PDF Export — `window.print()` (ללא ספריות חיצוניות):**
+- `printInterventionGroup(group)` מרנדר ל-`<div id="iv-print-area">` (סמוי), מוסיף `body.iv-printing`, קורא `window.print()` אחרי 60ms. דיאלוג הדפסה של הדפדפן מאפשר "Save as PDF" — תוצר נטיבי, RTL+ניקוד עברי מושלמים, A4 מובטח.
+- print stylesheet משאיר רק את `#iv-print-area` בדף.
+
+**5. Success Check + תיעוד:**
+- `promptInterventionDoneForGroup(group)` — 3 prompts מהירים (success_check, duration_minutes, teacher_note).
+- שומר ב-`state.interventions` לפי spec §6.3: `date`, `pattern`, `pattern_details`, `group_size`, `group_students`, `duration_minutes`, `success_check`, `teacher_note`. עבור Letter Cluster — נשמר גם `per_student_letters` (האותיות פר ילדה).
+- אחרי שמירה — `render()` נקרא, וההיסטוריה תופיע ב-modal הבאה (`📅 ביצוע אחרון:`).
+
+**6. `scripts/test-interventions.js` (חדש · ~410 שורות):**
+- 10 בלוקים · **78/78 assertions ✓**.
+- API surface (13) · loadScript מ-fs (21) · Phonological detector (6) · Letter Knowledge (5) · Decoding (4) · Fluency (4) · Letter Cluster (4) · detectGroupTriggers (5) · interpolateScript (5) · recordIntervention + storage (11).
+- Mock environment: `localStorage` + `AvneiBKT` (getLetterState/getStrandState/getLetterMasteryDistribution) + `AvneiEPA` (getEPA/getDominantPattern).
+
+**5 ההחלטות שהוטמעו (מ-spec §2):**
+| # | פריט | תשובה |
+|---|---|---|
+| 1 | 5 דפוסים | Phonological / Letter Knowledge / Decoding / Fluency / Letter-cluster |
+| 2 | גודל קבוצה | 3-4 (`INTERVENTION_DEFAULTS.minGroupSize=3`) |
+| 3 | משך | 10-15 דק' × 4-5 ימים שבועיים |
+| 4 | מבנה script | 5 שלבים (Rosenshine 2012 + Gersten 2009 + I do/We do/You do) |
+| 5 | פורמט תצוגה | Hybrid — Modal preview + `window.print()` (במקום jsPDF — בלי תלויות, RTL+ניקוד נטיביים) |
+
+**2 החלטות שנסגרו ע"י סוכן 9 בתחילת השיחה (אישור מיטל בזמן השיחה):**
+- **PDF approach:** `window.print()` עם print CSS (במקום jsPDF+html2canvas — 0 תלויות, RTL+ניקוד מושלמים).
+- **Letter Knowledge logic:** רשימה hard-coded של 9 זוגות פדגוגיים (`CONFUSED_PAIRS`). אם 2 האותיות בזוג כלשהו עם sub-BKT<0.40 → היא נכנסת לקבוצה.
+
+**אסור היה לגעת — לא נגעתי:**
+- `bkt.js` · `epa.js` · `mastery-check.js` · `event-logger.js` · `profile-classifier.js` · `pack-bkt-bridge.js` (קוראים בלבד)
+- 22 stage-3-*.html · onboarding · 5 packs קיימים
+- מסמכי-אם (`architecture-mvp.md` · `pedagogy-integration-framework.md` · `literacy-grade1-2-yearly.md` · `llm-pitfalls.md`)
+- spec עצמו (`2026-05-28-B7-interventions-spec.md`)
+
+**יחס לקבוצות שכבר נדחפו/ממתינות:**
+- ✅ A.3 (EPA `54e00ec`) — קוראים בלבד דרך `AvneiEPA.getEPA` + `getDominantPattern`.
+- ✅ A.4 (Sub-BKT 22 letters `54e00ec`) — קוראים בלבד דרך `getLetterState` · `getLetterMasteryDistribution`.
+- ✅ F.21A (`54e00ec`) — מרחיב את `teacher-rama.html` ב-Class View. אדיטיבי לחלוטין, ה-render flow הקיים נשמר 1:1.
+- ✅ A.5 Cold-start (`a171a74`) — לא נגעתי. ה-banners של B.7 מופיעים מעל הכותרת של הטבלה — לא בקונפליקט.
+- ✅ C.11+C.12+C.13 (`ea81ce6`) — לא נגעתי בקוד שלהן. ה-modals נפרדים (`tier-modal` vs `iv-modal`).
+- 🟡 קבוצה U (C.12B — סוכן 11, ממתין לדחיפה) — אין חפיפת קבצים מעבר ל-`teacher-rama.html` (שינויים אדיטיביים בשני המקרים).
+- 🟡 קבוצה S (E.17+E.18) — אין חפיפת קבצים.
+- 🟡 B.8 (Intervention matcher) — ה-API שלי חושף `recordIntervention` + `getInterventionsFor` שיכולים לשמש את B.8 לעתיד. לא בסקופ.
+
+**🎯 פונקציות חדשות שנחשפות:**
+`window.AvneiInterventions` עם 8 פונקציות + 4 constants:
+- `loadScript` · `preloadAll` · `detectForStudent` · `detectGroupTriggers` · `interpolateScript` · `recordIntervention` · `getInterventionsFor` · `resetInterventions`.
+- `PATTERN_IDS` (frozen array of 5) · `CONFUSED_PAIRS` (frozen 9 pairs) · `STORAGE_KEY` · `INTERVENTION_DEFAULTS`.
+- שמורה לעתיד: B.8 (matcher) · B.9 (group suggester) · F.21E (action dashboard).
+
+**שאלות פתוחות:**
+- **תוכן 5 ה-scripts:** המבנה מוטמע 1:1 מ-spec §5, אבל התוכן הפדגוגי נחשב טמפלייט-ראשוני. מיטל / צוות פדגוגי יכולים לערוך את ה-JSON ישירות בקצב שלהם (אין שינוי קוד נדרש).
+- **`target_letter` ב-Decoding:** אינטרפלציה ל-`{target_letter}` בברירת מחדל = "ל". כדאי לאפשר למורה לבחור אות יעד דרך UI עתידי (לא בסקופ B.7).
+- **`teacherFlags` cold-start gating:** A.5 משתיקה flags ב-cold-start. ה-banners של B.7 לא משתיקות — אולי לבחון אם להוסיף סינון דומה לתלמידות שלא יצאו מ-cold-start (P1 לפיילוט).
+
+**מה זה פתח להמשך:**
+- **B.8 (Intervention Matcher)** — מוכן לבנייה. ה-API של `detectGroupTriggers` מספק כל מה שצריך.
+- **B.9 (Group Suggestion Engine)** — יכול להבנות מעל `_activeGroups` + cross-pattern analysis.
+- **F.21E (Teacher action dashboard)** — `state.interventions` כעת מתמלא — אפשר להציג היסטוריית אינטרבנציות פר תלמידה.
+
+---
+
 ## C.11 + C.12 + C.13 — Pack × BKT Integration (לב הדיפרנציאליות)
 
 **סטטוס:** ✅ קוד + 75/75 בדיקות עוברות · **ממתין לבדיקה ידנית של מיטל ואז push**

@@ -4,6 +4,143 @@
 
 ---
 
+## 🟡 קבוצה V — B.7 Targeted Reading Interventions (חוויית מורה — משלים את F.21A)
+
+**סטטוס:** 🟡 ממתין לבדיקה ידנית של מיטל ואז push
+**תאריך:** 2026-05-28
+**7 קבצים חדשים + 2 שינויים + 3 handoff updates · חבילה אחת**
+
+| # | קובץ | סטטוס | הערה |
+|---|---|---|---|
+| 1 | `underwater-app/interventions/phonological.json` | **חדש** | מודעות פונולוגית · 5 שלבים (Rosenshine/Pearson&Gallagher) |
+| 2 | `underwater-app/interventions/letter-knowledge.json` | **חדש** | ידיעת אותיות · placeholders {letter_a}{letter_b}{example_a}{example_b}{distinction} |
+| 3 | `underwater-app/interventions/decoding.json` | **חדש** | פענוח לפי הקשר (תחילה/אמצע/סוף) · placeholder {target_letter} |
+| 4 | `underwater-app/interventions/fluency.json` | **חדש** | שטף קריאה (≤25 שנ' / 10 מילים) |
+| 5 | `underwater-app/interventions/letter-cluster.json` | **חדש** | חיזוק 3 אותיות חלשות פר ילדה · placeholders {personalized_letters}{personalized_first_letter} |
+| 6 | `underwater-app/js/shared/interventions.js` | **חדש** (~580 שורות) | 8 פונקציות API + 4 constants · 5 detectors + group aggregation + interpolateScript + storage |
+| 7 | `underwater-app/scripts/test-interventions.js` | **חדש** (~410 שורות) | 10 בלוקים · **78/78 assertions ✓** |
+| 8 | `underwater-app/teacher-rama.html` | שינוי | script tag חדש (`interventions.js?v=1`) + ~210 CSS lines + `<div id="interventionTriggers">` ב-Class View + `<div id="iv-print-area">` בסוף body + ~310 JS lines (5 פונקציות UI חדשות) |
+| + | `_handoff/2026-05-26-architecture-tasks-tracker.html` | שינוי קל | B.7 ⏳ → ✅ ב-2 מקומות (סיכום + רשימת משימות) |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש בראש | תיעוד B.7 מלא (5 החלטות שהוטמעו, API חדש, יחס לקבוצות אחרות) |
+| + | `_handoff/pending-commits.md` | בלוק חדש בראש (זה) | הקבוצה הזו |
+
+**מהות התוצר:**
+B.7 משלים את F.21A — הכפתור "פתחי קבוצת תמיכה" במסך מורה כעת **עובד בפועל**. F.21A יודע להציג איזו תלמידה לא תקינה, B.7 יודע לזהות 3+ ילדות עם דפוס שגיאה משותף ולתת למורה script פדגוגי מוכן להדפסה (Tier-2 RTI). זה רגע חשוב — מהפך מ"דשבורד שמראה בעיות" ל"דשבורד שמציע פעולה ספציפית מבוססת מחקר".
+
+**יחס לקבוצות שכבר נדחפו / ממתינות:**
+- ✅ A.3 (EPA) · A.4 (Sub-BKT) · F.21A (`54e00ec`) — קוראים בלבד את ה-API שלהן. לא נגעתי בקבצים.
+- ✅ A.5 (`a171a74`) — אין חפיפה. ה-banners של B.7 מעל הטבלה, לא בקונפליקט עם cold-start banner.
+- ✅ C.11+C.12+C.13 (`ea81ce6`) — לא נגעתי. ה-modals נפרדים (`tier-modal` vs `iv-modal`). עמודת Tier ב-Class View נשארה כפי שהיא.
+- 🟡 קבוצה U (C.12B — סוכן 11) — אין חפיפת קבצים מעבר ל-`teacher-rama.html` (שינויים אדיטיביים בשני המקרים).
+- 🟡 קבוצה S (E.17+E.18) — אין חפיפת קבצים.
+
+**🎯 פונקציות חדשות שנחשפות:**
+`window.AvneiInterventions` עם 8 פונקציות + 4 constants. שמורה לעתיד: B.8 (matcher) · B.9 (group suggester) · F.21E (action dashboard).
+
+**אסור לגעת ב- (לא נגעתי):**
+- `bkt.js` · `epa.js` · `mastery-check.js` · `event-logger.js` · `profile-classifier.js` · `pack-bkt-bridge.js` (קוראים בלבד)
+- 22 stage-3-*.html · onboarding · 5 packs קיימים
+- מסמכי-אם (architecture-mvp / pedagogy-integration-framework / literacy-grade1-2-yearly / llm-pitfalls)
+- spec עצמו (`2026-05-28-B7-interventions-spec.md`)
+
+**מה לבדוק לפני push (10-15 דקות):**
+
+1. שרת: `cd avnei-yesod && python -m http.server 8765`
+2. `http://localhost:8765/underwater-app/teacher-rama.html` — PIN `4521`
+3. **רגרסיה Class View:** עמודות + Tier + Cold-start badges עדיין מתפקדים (כל ה-features מ-F.21A/A.5/C.11-C.13 לא נשברו).
+4. **B.7 banners — לבחון אם מופיעים:**
+   - אם יש דאטה אמיתי של 3+ ילדות עם דפוס משותף — banner יופיע מעל הטבלה.
+   - אם אין — אין banner. זה תקין (הקבוצה לא מספיק "פצועה" עדיין לאינטרבנציה).
+   - לבדיקה זריזה: צרי 3 תלמידות + ב-localStorage הזריקי דאטה ל-BKT שיוצר טריגר (לדוגמה: 3 ילדות עם מ+ם < 0.40, או 3 ילדות עם sub-BKT.weak ≥ 3).
+5. **לחיצה על "📋 פתחי קבוצת תמיכה":**
+   - Modal נפתח עם title + ילדות + 5 שלבים מוצגים.
+   - Placeholders מולאו אוטומטית (לדוגמה במ↔ם, ה-`{letter_a}` מוחלף ב-"מ").
+6. **כפתור "📥 הורד / הדפסה ל-PDF":**
+   - דיאלוג הדפסה של הדפדפן נפתח.
+   - תצוגה מקדימה: דף אחד עם title + מטרה + ילדות + חומרים + 5 שלבים. RTL נכון, ניקוד שלם.
+   - "Save as PDF" של Chrome/Edge נותן PDF נטיבי.
+7. **כפתור "✓ סמני שביצעתי היום":**
+   - 3 prompts (success_check, duration, note).
+   - אחרי השמירה — modal נסגר ויוצר אירוע ב-localStorage:
+   ```js
+   JSON.parse(localStorage['avnei-interventions-v1'])
+   ```
+   צריך להציג record פר ילדה בקבוצה.
+8. **טסטים אוטומטיים:**
+   ```bash
+   node avnei-yesod/underwater-app/scripts/test-interventions.js
+   # → 78/78 ✅
+   ```
+
+**שאלות פתוחות:**
+- **תוכן 5 ה-scripts:** המבנה 1:1 מ-spec, אבל התוכן יכול להיערך פדגוגית פר-קובץ-JSON ע"י מיטל בקצב שלה (אין שינוי קוד נדרש).
+- **`target_letter` ב-Decoding:** ברירת מחדל = "ל". בעתיד אפשר להוסיף UI לבחירה.
+- **cold-start gating:** A.5 משתיקה flags. ה-banners של B.7 כרגע לא משתיקות אצל cold-start — אם רוצים, P1 קל לסינון.
+
+**לפני push (חובה — סביבת ריבוי-סוכנים):**
+```
+git fetch origin && git status
+```
+
+**הצעת message לקומיט (HEREDOC):**
+```
+B.7 — Targeted Reading Interventions (5 דפוסים · Tier-2 RTI)
+
+מימוש 1:1 של _handoff/2026-05-28-B7-interventions-spec.md
+(10 סעיפים, 8 acceptance criteria). 5 ההחלטות של מיטל (28.5) הוטמעו 1:1.
+
+5 קבצי JSON ב-underwater-app/interventions/:
+  phonological / letter-knowledge / decoding / fluency / letter-cluster
+  כל אחד: 5 שלבים (Hook → Model → Guided → Independent → Success Check)
+  Rosenshine 2012 + Pearson & Gallagher 1983 (I do/We do/You do)
+  Placeholders: {letter_a}{letter_b}{example_a}{example_b}{distinction}
+                {personalized_letters}{personalized_first_letter}{target_letter}
+
+js/shared/interventions.js (~580 שורות):
+  loadScript · preloadAll (sync XHR/fs · cache)
+  detectForStudent — 5 detectors (Phonological/LetterKnowledge/Decoding/Fluency/LetterCluster)
+  detectGroupTriggers — class-level (3+ ילדות עם דפוס משותף)
+    Letter Knowledge — bucket פר זוג מ-CONFUSED_PAIRS (9 פדגוגיים)
+    Decoding — bucket פר position
+    Fluency — class P75 baseline
+    Letter Cluster — אישי (אותיות פר ילדה)
+  interpolateScript — deep clone + מילוי {placeholders}
+  recordIntervention / getInterventionsFor / resetInterventions
+  state.interventions ב-localStorage (avnei-interventions-v1)
+
+UI ב-teacher-rama.html (אדיטיבי בלבד):
+  ~210 שורות CSS (banners + modal + 5-stage cards + print stylesheet)
+  Class View — div#interventionTriggers מעל הטבלה
+    renderInterventionTriggers(students) → detectGroupTriggers + banners
+    banner: אייקון + שם דפוס + ילדות + ביטחון + "📋 פתחי קבוצת תמיכה"
+  openInterventionModal — preview עם 5 שלבים + meta + materials + history
+  קבוצה captured ב-closure (snapshotGroup) — עמיד לאוטו-refresh
+  re-render banners מושעה כש-modal פתוח (מונע השמטת reference)
+
+PDF — window.print() עם print stylesheet (0 תלויות):
+  printInterventionGroup → #iv-print-area + body.iv-printing + window.print()
+  RTL+ניקוד עברי נטיביים · A4 מובטח · "Save as PDF" של הדפדפן
+
+Success Check + תיעוד:
+  promptInterventionDoneForGroup → 3 prompts קצרים
+  שומר ב-localStorage: date / pattern / pattern_details / group_size /
+    group_students / duration_minutes / success_check / teacher_note
+  per_student_letters עבור Letter Cluster
+
+scripts/test-interventions.js — 78/78 assertions ✓
+  10 בלוקים — API surface · loadScript מ-fs · 5 detectors בנפרד ·
+  detectGroupTriggers · interpolateScript · recordIntervention + storage
+  Mock: localStorage + AvneiBKT + AvneiEPA
+
+לא נגעתי: bkt.js / epa.js / mastery-check.js / event-logger.js /
+profile-classifier.js / pack-bkt-bridge.js / 22 stage-3-*.html /
+5 packs קיימים / מסמכי-אם.
+
+Spec ב-_handoff/2026-05-28-B7-interventions-spec.md.
+```
+
+---
+
 ## 🟡 קבוצה T — C.11+C.12+C.13 (Pack × BKT Integration · לב הדיפרנציאליות)
 
 **סטטוס:** 🟡 ממתין לבדיקה ידנית של מיטל ואז push
