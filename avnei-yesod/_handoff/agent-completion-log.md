@@ -7,6 +7,99 @@
 
 ---
 
+## 🎼 Orchestrator — סגירת יום 28.5.2026 ערב + Pre-Pilot Roadmap
+
+**סטטוס:** ✅ סוף יום · 15+ commits ב-origin · המסלול הראשון נסגר · Roadmap למסלול 2 נכתב
+**תאריך:** 2026-05-28 ערב (סוף סשן מסיבי)
+**שיחה:** סוכן תזמורת (Claude Code · Opus 4.7 · VS Code · impactos)
+
+### 15 commits של היום ב-origin (סדר כרונולוגי)
+
+| # | hash | מי | מה |
+|---|---|---|---|
+| 1 | `ea81ce6` | סוכן 8 | C.11+C.12+C.13 — Pack × BKT Integration |
+| 2 | `6743b89` | תזמורת | ארכוב 11 packs v0.1 (9 מיומנויות DEPRECATED) |
+| 3 | `9578194` | סוכן 11 | C.12B — Weakness Targeting Engine |
+| 4 | `0dbbf4e` | סוכן 9 | B.7 — Targeted Reading Interventions |
+| 5 | `f8fe4f4` | סוכן 12 | C.12C — Tier model rev1 → rev2 |
+| 6 | `93dbd4a` | סוכן 10 | MOY-Lite — תשתית diagnostic |
+| 7 | `7a70a03` | סוכן 12 | MOY-Lite — 3 תיקוני UX |
+| 8 | `fc4b5b7` | תזמורת | סיכום ערב + B.7 verification PASS + תיקון קישורים שאוּרכבו |
+| 9 | `bf258b5` | סוכן 13 | Finding A ✅ + Finding B ניסיון (לא פתר) |
+| 10 | `3ef476b` | סוכן 15 | Finding B fix — setTimeout(boot, 0) |
+| 11 | `31c9f00` | סוכן 14 | MOY × B.7 link — logic |
+| 12 | `1d11f14` | סוכן 16 | MOY × B.7 UI — badge + group banner |
+| 13 | `a831a62` | סוכן 17 | B.8 — Intervention Matcher (logic) |
+| 14 | `9605470` | סוכן 18 | B.9 — Group Suggestion Engine (logic + UI) |
+| 15 | (הזה) | תזמורת | סגירת יום + Roadmap |
+
+### מנועים חיים אחרי היום
+
+- **BKT-per-strand · EPA · sub-BKT · cold-start · mastery משולש** (סוכנים 1-6, פעימה 1)
+- **Pack × BKT + Weakness Targeting + Tier=רמה (rev2)** (8, 11, 12)
+- **B.7 Interventions + verified Playwright** (9 + verification)
+- **MOY-Lite + UX fixes + verified ידנית מיטל** (10, 12, 28.5 ערב)
+- **MOY × B.7 link (logic + UI)** (14, 16)
+- **B.8 Intervention Matcher** (17)
+- **B.9 Group Suggestion Engine** (18)
+- **F.21A teacher-rama (תצפית)** (קודם 27.5)
+- **22 משחקוני אי 3** (D.15)
+- **Event Logger + Data Export** (E.17, E.18)
+
+### Verification status
+
+- **B.7** — 🟢 PASS Playwright (28.5 ערב, verification agent)
+  - Finding A (Letter Cluster placeholders) — ✅ closed (סוכן 13)
+  - Finding B (TDZ F5 refresh) — 🟡 ניסיון של 13 לא הספיק. סוכן 15 הוסיף `setTimeout(boot, 0)`. **ממתין לאימות ידני סופי של מיטל.**
+- **MOY-Lite** — 🟢 PASS verified ידנית (28.5 ערב, מיטל). 3 תיקוני UX אחרי בדיקה ב-`7a70a03`.
+
+### תוכן ידני — התקדמות מפתיעה
+
+ה-Roadmap קבע ש-60 MOY items זה "תוכן ידני שלי בקצב שלי" (שלב 2). **בפועל — סוכן פדגוגי בקרב מיטל + ChatGPT הכינו 60 items מאושרים פדגוגית!**
+- `_handoff/2026-05-28-MOY-items-approved-60.json` — 60 items
+- `_handoff/2026-05-28-MOY-code-agent-prompt.md` — bootstrap לסוכן קוד שיכתוב ל-`engine/moy-items.json`
+- חסר: 6 קטעי AvriNeural (מיטל מפיקה)
+
+### Roadmap למסלול הבא
+
+`_handoff/2026-05-28-pre-pilot-roadmap.md` — 5 שלבים מתשתית קוד לפיילוט אמיתי:
+1. סגירת קצוות הקוד (F.21E spec→code · Finding B real fix · A.5 variants · EOY)
+2. תוכן ידני (60 MOY ✓, 40 packs, 5 scripts, 6 audio)
+3. בדיקת flow E2E
+4. Pilot soft launch (כיתה אחת, 4-5 ילדות)
+5. Post-pilot (Calibration, B.10, F.20, F.21, D.16)
+
+**7 שאלות פתוחות לאישור מיטל** מופיעות ב-Roadmap §❓.
+
+### 📋 פעולות תזמורת בcommit הזה
+
+1. ✅ עדכון `tracker.html`:
+   - statistics callout — "המסלול הראשון נסגר" + link ל-Roadmap
+   - MOY entry — verified ידנית + 60 items approved
+2. ✅ עדכון `agent-completion-log.md` (הבלוק הזה)
+3. ✅ הוספת `_handoff/2026-05-28-pre-pilot-roadmap.md` (untracked → tracked)
+
+### 🔜 ממתינים לאישור פר-קובץ ממיטל
+
+לא נכלל בcommit הזה (untracked של מיטל):
+- `_handoff/2026-05-28-MOY-items-approved-60.json` (60 items של מיטל + סוכן פדגוגי)
+- `_handoff/2026-05-28-MOY-code-agent-prompt.md`
+- 7 קבצי planning ב-`grade1-tashpaz/{month}.json`
+- `engine/demo-day2/`
+- `curriculum/knowledge-base/sources/perplexity-shatil-share-2003-validation-2026-05-25.json`
+
+מומלץ לדחוף את 2 קבצי MOY-items + MOY-code-agent-prompt ב-commit נפרד (מיטל) — הם תוצרים פדגוגיים יקרי-ערך.
+
+### Bootstrap לסוכן תזמורת בסשן הבא (29.5.2026)
+
+ראה Roadmap §Bootstrap.
+
+### יום מסיבי
+
+15+ commits · 11+ סוכנים פעילים · 3 verification cycles · 1 verification PASS · 60 MOY items מאושרים פדגוגית · 5 שלבי Roadmap מוגדרים. **יום ענק.**
+
+---
+
 ## B.9 — Group Suggestion Engine (logic + UI)
 
 **סטטוס:** ✅ הסתיים — 77/77 חדש + 426/426 רגרסיה = 503/503 ✓ · ממתין לאישור push
