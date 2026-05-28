@@ -4,6 +4,116 @@
 
 ---
 
+## 🟢 קבוצה Z3 — B.8 Intervention Matcher (logic only · ללא UI)
+
+**סטטוס:** 🟢 הסתיים — 350/350 ✓ (57 חדש + 293 רגרסיה) · ממתין לאישור push
+**תאריך:** 2026-05-28 ערב (סוכן 17 · אחרי סוכן 16)
+**2 קבצים חדשים + 3 handoff updates · חבילה קטנה (~530 שורות net · אפס שינוי בקוד קיים)**
+
+| # | קובץ | סטטוס | הערה |
+|---|---|---|---|
+| 1 | `underwater-app/js/shared/intervention-matcher.js` | **חדש** (~250 שורות) | logic only · `AvneiInterventionMatcher.matchForStudent(sid)` → `{pattern_id, confidence, source: 'epa'\|'moy'\|'combined', reason, details}` · `matchForGroup(sids[])` → `{pattern_id, students_matched, common_evidence}` · צורך `AvneiInterventions.detectForStudent` (B.7) + `AvneiAssessments.getMOYStatus(sid).suggested_intervention` (סוכן 14) · priority מ-`moy-intervention-map.json` (fallback פנימי) · "EPA wins on conflict, bump on agreement". |
+| 2 | `underwater-app/scripts/test-intervention-matcher.js` | **חדש** (~280 שורות) | 15 בלוקים · **57 assertions ✓** · Mock של `AvneiInterventions` + `AvneiAssessments`. |
+| + | `_handoff/2026-05-26-architecture-tasks-tracker.html` | שינוי קל | B.8 ☐ → ✅ ב-3 מקומות (סקירה ✅ + רשימה חסומה + פאזה B). |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש בראש | תיעוד B.8 מלא. |
+| + | `_handoff/pending-commits.md` | בלוק חדש בראש (זה) | הקבוצה הזו. |
+
+**מהות התוצר:**
+B.8 הוא **logic-only matcher** שמאחד 2 סיגנלים שכבר קיימים ב-codebase: (1) EPA-based triggers דרך `AvneiInterventions.detectForStudent` (סוכן 9 כבר ממפה EPA→B.7), ו-(2) MOY-based suggestion דרך `AvneiAssessments.getMOYStatus(sid).suggested_intervention` (סוכן 14). מחזיר patternId יחיד פר תלמידה לפי priority list מאושרת (`letter_knowledge > letter_cluster > decoding > fluency > phonological`) + שילוב חכם כש-שני הסיגנלים קיימים. **לא נוגע ב-UI** — סבב B.9/F.21E.
+
+**יחס לקבוצות שכבר נדחפו / ממתינות:**
+
+- ✅ סוכן 9 (B.7 · `0dbbf4e`) — `AvneiInterventions.detectForStudent` נצרך בלבד. לא נגעתי ב-`interventions.js`.
+- ✅ סוכן 10 (MOY-Lite · `93dbd4a` + `7a70a03`) — `getMOYStatus` נצרך בלבד.
+- ✅ סוכן 14 (MOY × B.7 link · `31c9f00`) — צורך את `suggested_intervention` שהוא מוסיף. `loadInterventionMap` נצרך לקריאת priority list (fallback פנימי במאצ'ר זהה לדיפולט שלו).
+- ✅ סוכן 15 (`3ef476b` Finding B fix) — אין חפיפה.
+- ✅ סוכן 16 (`1d11f14` UI badge) — אין חפיפה (לא נגעתי ב-`teacher-rama.html`).
+- 🟡 B.9 (Group Suggestion Engine · עתידי) — יבנה על `matchForGroup`.
+- 🟡 F.21E (Action Dashboard · עתידי) — יחבר ל-UI את `matchForStudent`/`matchForGroup`.
+
+**🎯 פונקציות חדשות שנחשפות:**
+- `AvneiInterventionMatcher.matchForStudent(studentId)` → `{pattern_id, confidence, source, reason, details}` או `null`
+- `AvneiInterventionMatcher.matchForGroup(studentIds[])` → `{pattern_id, students_matched, common_evidence}` או `null`
+- `AvneiInterventionMatcher.PRIORITY` (frozen) · `PATTERN_NAMES_HE` · `_pickBestByPriority` · `_bumpConfidence` · `_getActivePriority`
+
+**אסור לגעת ב- (לא נגעתי):**
+
+- `assessments.js` · `interventions.js` · `epa.js` · `bkt.js` · `mastery-check.js` · `event-logger.js` · `pack-bkt-bridge.js` · `profile-classifier.js` (קריאה בלבד)
+- `interventions/*.json` (5 קבצים) · `moy-intervention-map.json` (קריאה בלבד)
+- `teacher-rama.html` · `moy-screener.html` · `screener.html` · `data-export.html`
+- 22 `stage-3-*.html` · 7 planning packs · 2 dummy packs · onboarding
+- 7 untracked `curriculum/packs/grade1-tashpaz/{month}.json` + `engine/demo-day2/` + `perplexity-shatil-share-2003-validation-2026-05-25.json` (תוכן של מיטל)
+- מסמכי-אם + B.7 spec
+
+**מה לבדוק לפני push (3 דקות — אוטומטי בלבד · אין UI חדש):**
+
+```powershell
+cd c:\Users\meyta\Downloads\impactos\avnei-yesod\underwater-app
+
+# 1. הטסט החדש
+node scripts/test-intervention-matcher.js
+# → 57/57 ✓
+
+# 2. רגרסיות — 5 ה-suites המאומתים ממשיכים ירוקים
+node scripts/test-moy-intervention-link.js   # → 51/51
+node scripts/test-moy-assessments.js         # → 51/51
+node scripts/test-interventions.js           # → 78/78
+node scripts/test-pack-bridge.js             # → 75/75
+node scripts/test-weakness-targeting.js      # → 38/38
+
+# סה"כ: 350/350 ✓
+```
+
+**אין UI לבדיקה ידנית — logic only.** סבב UI יבוא ב-B.9/F.21E.
+
+**אזהרות שמורות:**
+
+- ❌ שום API ציבורי קיים לא נשבר — קובץ חדש בלבד.
+- 🟢 fallback פנימי ל-`DEFAULT_PRIORITY` אם `loadInterventionMap` נכשל — זהה ל-`moy-intervention-map.json`.
+- 🟢 robustness: אם `AvneiInterventions.detectForStudent` זורק — fall back ל-MOY בלבד (לא crash).
+
+**הצעת message לקומיט (HEREDOC):**
+
+```
+B.8 — Intervention Matcher (logic only · ללא UI)
+
+החלק החסר בין "יש בעיה" (EPA/MOY) ל"איזה intervention" (B.7):
+מנוע מאחד שיודע לקחת תלמידה / קבוצה ולהחזיר patternId יחיד +
+source + confidence + reason.
+
+API חדש (window.AvneiInterventionMatcher):
+  matchForStudent(sid) → {pattern_id, confidence, source, reason, details}
+  matchForGroup(sids[]) → {pattern_id, students_matched, common_evidence}
+  PRIORITY · PATTERN_NAMES_HE · _pickBestByPriority · _bumpConfidence
+
+עקרונות מהבריף:
+  - לא משכפלים מיפוי EPA→B.7 — צורכים את AvneiInterventions
+    .detectForStudent שכבר עושה את העבודה
+  - EPA preference: כש-EPA+MOY → 'combined'. אם מסכימים → bump
+    (low→med, med→high). אם לא מסכימים → EPA wins על pattern.
+  - priority נטענת מ-AvneiAssessments.loadInterventionMap (fallback פנימי)
+  - robustness: Interventions זורק → fall back ל-MOY בלבד; אין → null
+
+קבצים:
+  underwater-app/js/shared/intervention-matcher.js (חדש · ~250 שורות)
+  underwater-app/scripts/test-intervention-matcher.js (חדש · ~280 שורות)
+    15 בלוקים · 57/57 ✓ · Mock של AvneiInterventions + AvneiAssessments
+
+לא נגעתי: assessments.js / interventions.js / epa.js / bkt.js /
+moy-intervention-map.json / interventions/*.json / teacher-rama.html /
+22 משחקונים / 7 untracked packs / engine/demo-day2/.
+
+אימות: 350/350 ✓
+  test-intervention-matcher.js (חדש) — 57/57
+  test-moy-intervention-link.js (רגרסיה) — 51/51
+  test-moy-assessments.js (רגרסיה) — 51/51
+  test-interventions.js (רגרסיה) — 78/78
+  test-pack-bridge.js (רגרסיה) — 75/75
+  test-weakness-targeting.js (רגרסיה) — 38/38
+```
+
+---
+
 ## 🟢 קבוצה Z2 — MOY × B.7 link (Smart hybrid · suggest+queue · after attempt 2 fail)
 
 **סטטוס:** 🟢 הסתיים — 293/293 ✓ (51 חדש + 242 רגרסיה) · ממתין לבדיקה ידנית של מיטל ואז push

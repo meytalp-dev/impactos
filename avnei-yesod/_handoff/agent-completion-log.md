@@ -7,6 +7,150 @@
 
 ---
 
+## B.8 — Intervention Matcher (logic only, ללא UI)
+
+**סטטוס:** ✅ הסתיים — 57/57 חדש + 293/293 רגרסיה = 350/350 ✓ · ממתין לאישור push
+**תאריך:** 2026-05-28 ערב (אחרי סוכן 16)
+**שיחה:** סוכן 17 (Claude Code · Opus 4.7 · VS Code · impactos)
+**Commit:** טרם נדחף
+**יחס:** השלמת B.8 — החלק החסר בין "אני יודעת שיש בעיה" (EPA/MOY) ל-"אני יודעת איזה intervention" (B.7). B.7 (סוכן 9) מספק 5 scripts פדגוגיים. MOY × B.7 link (סוכן 14) חיבר MOY-Lite ל-B.7 ברמת תלמידה בודדת אחרי 2 fails. B.8 מאחד את 2 הסיגנלים (EPA + MOY) ופותח את ה-API ל-B.9 (Group Suggestion Engine) ו-F.21E (Action Dashboard) — בלי לגעת ב-UI.
+
+**עקרון מנחה (הוראת מיטל מהבריף):** "logic only · אסור לגעת ב-UI". `interventions.js` כבר עושה את מיפוי EPA→B.7 patterns (`_detectPhonological`/`_detectLetterKnowledge`/...) — B.8 צורך אותו ולא משכפל מיפוי. גם `assessments.js` נצרך בלבד.
+
+**API החדש (`window.AvneiInterventionMatcher`):**
+
+```js
+matchForStudent(studentId) → {
+  pattern_id: 'phonological' | 'letter_knowledge' | 'decoding' | 'fluency' | 'letter_cluster',
+  confidence: 'high' | 'med' | 'low',
+  source:     'epa' | 'moy' | 'combined',
+  reason:     string,           // הסבר עברי קצר למורה
+  details:    { epa?, moy? }    // לדיבאג + UI עתידי
+} | null
+
+matchForGroup(studentIds[]) → {
+  pattern_id,
+  students_matched: [{ studentId, source, confidence }, ...],
+  common_evidence: {
+    total_checked,
+    matched_count,
+    by_source: { epa, moy, combined }
+  }
+} | null
+
+// + PRIORITY · PATTERN_NAMES_HE · _pickBestByPriority · _bumpConfidence · _getActivePriority
+```
+
+**ההחלטות שנגזרו מהבריף:**
+
+1. **מקור priority** — נטען מ-`AvneiAssessments.loadInterventionMap().epa_bkt_pattern_priority` בזמן ריצה; fallback ל-`DEFAULT_PRIORITY` פנימי (`letter_knowledge > letter_cluster > decoding > fluency > phonological`) — תואם 1:1 ל-`moy-intervention-map.json`.
+2. **EPA preference (הוראה מהבריף):** "אם שניהם → combine (preference: EPA על MOY)" — מיושם כך: כש-EPA + MOY קיימים → `source='combined'`, pattern נקבע לפי EPA. אם הם **מסכימים** על אותו patternId → bump-up ל-confidence (low→med, med→high, high→high). אם הם **לא מסכימים** → EPA wins על pattern, confidence נשאר של EPA, ב-reason מצוין שגוברים על MOY.
+3. **fluency כמעט לא יופיע מהמאצ'ר** — `detectForStudent` דורש `classP75` (לא קיים פר-תלמידה). זה תקין: fluency נמצא נמוך ב-priority. אם וכאשר B.9 יקרא ל-`matchForGroup` עם רשימה — אפשר יהיה לחשב class P75 ולהעביר ל-detector. בסקופ B.8 — לא נדרש.
+4. **לא משכפלים מיפוי EPA→B.7:** המאצ'ר *לא* קורא ל-`AvneiEPA.getDominantPattern` ישירות. הוא צורך את `AvneiInterventions.detectForStudent` שכבר עושה את העבודה (5 detectors). זה מונע drift בין שני מקומות בקוד שמחזיקים את אותו מיפוי.
+5. **רובוסטיות:** אם `AvneiInterventions.detectForStudent` זורק → נתפס בשקט, מתבצע fallback ל-MOY בלבד. אם אין משתי השכבות — `null` נקי (לא crash).
+
+**קבצים שונו:**
+
+| # | קובץ | סוג | תיאור |
+|---|---|---|---|
+| 1 | `underwater-app/js/shared/intervention-matcher.js` | **חדש** (~250 שורות) | logic only · `matchForStudent` + `matchForGroup` + helpers. ייצוא `window.AvneiInterventionMatcher` + `module.exports` ל-Node. |
+| 2 | `underwater-app/scripts/test-intervention-matcher.js` | **חדש** (~280 שורות) | 15 בלוקים · **57 assertions ✓** · Mock של `AvneiInterventions` + `AvneiAssessments`. בודק: API surface · EPA only · MOY only · agreement (bump) · disagreement (EPA wins) · null על אין-משתיהם · priority list · loadInterventionMap הצרכה · robustness (throw) · matchForGroup common pattern · matchForGroup null · matchForGroup tie-break ע"י priority · _bumpConfidence · _pickBestByPriority. |
+| + | `_handoff/2026-05-26-architecture-tasks-tracker.html` | שינוי קל | B.8 ☐ → ✅ ב-3 מקומות (סקירה ✅ + רשימה חסומה + פאזה B). |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש (זה) | תיעוד B.8 מלא. |
+| + | `_handoff/pending-commits.md` | בלוק חדש בראש | קבוצה חדשה Z3. |
+
+**מה לא בסקופ (בהוראת מיטל):**
+
+- ❌ UI ב-`teacher-rama.html` — סבב נפרד (B.9 / F.21E).
+- ❌ שינויים ב-`assessments.js` / `interventions.js` / `epa.js` / `bkt.js` — קריאה בלבד.
+- ❌ שינויים ב-`interventions/*.json` (5 קבצים) — content של מיטל.
+- ❌ שינויים ב-`moy-intervention-map.json` — קריאה בלבד.
+- ❌ 22 משחקוני אי 3.
+- ❌ 7 untracked `curriculum/packs/grade1-tashpaz/{month}.json` + `engine/demo-day2/` + `perplexity-shatil-share-2003-validation-2026-05-25.json`.
+
+**אימות:**
+
+- ✅ **57/57 חדש** (`test-intervention-matcher.js`) — 15 בלוקים, כולל אגרסיביים (interventions throw → fall back ל-MOY · matchForGroup על input לא תקין · tie-break ע"י priority).
+- ✅ **51/51** `test-moy-assessments.js` (רגרסיה — סוכן 10 לא נשבר)
+- ✅ **78/78** `test-interventions.js` (רגרסיה — סוכן 9 לא נשבר)
+- ✅ **75/75** `test-pack-bridge.js` (רגרסיה — C.12 לא נשבר)
+- ✅ **38/38** `test-weakness-targeting.js` (רגרסיה — C.12B לא נשבר)
+- ✅ **51/51** `test-moy-intervention-link.js` (רגרסיה — סוכן 14 לא נשבר)
+- **סה"כ 350/350 ✓** (Node tests).
+- ✅ 5 ה-suites הוותיקים (`test-bkt` · `test-bkt-letters` 53/0 · `test-rama-task-status` · `test-cold-start` · `test-event-logger-fields`) — ירוקים גם הם.
+
+**יחס לסוכנים שכבר נדחפו / ממתינים:**
+
+- ✅ סוכן 9 (B.7 · `0dbbf4e`) — `AvneiInterventions.detectForStudent` נצרך בלבד. לא נגעתי ב-`interventions.js` ולא ב-5 ה-JSONs.
+- ✅ סוכן 10 (MOY-Lite · `93dbd4a`+`7a70a03`) — `AvneiAssessments.getMOYStatus` נצרך בלבד. לא נגעתי ב-`assessments.js`.
+- ✅ סוכן 14 (MOY × B.7 link · `31c9f00`) — צורך את `suggested_intervention` שהם הוסיפו. לא נגעתי בלוגיקה שלהם. ה-priority list ב-`moy-intervention-map.json` נטענה דרך `loadInterventionMap` (הם יצרו את ה-loader) — אם נכשל, `DEFAULT_PRIORITY` פנימי במאצ'ר זהה.
+- ✅ סוכן 16 (UI badge · `1d11f14`) — לא חופף. ה-UI שלהם קורא ל-`getMOYStatus(sid).suggested_intervention` ישירות, לא צריך את ה-matcher. B.8 יוכל להתחבר ל-UI הזה בסבב הבא (B.9/F.21E).
+- 🟡 פתוח: B.9 (Group Suggestion Engine) — יבנה על `matchForGroup`. B.10 (3 תצוגות). F.21E (Action Dashboard).
+
+**ממתין:**
+
+- אישור push ממיטל (אין UI לבדיקה ידנית — logic only).
+- בדיקה אופציונלית ב-DevTools Console אחרי טעינת `teacher-rama.html`:
+  ```js
+  // אם יש תלמידה עם דאטה — אמור להחזיר match או null
+  window.AvneiInterventionMatcher.matchForStudent('stu-noa')
+  // group על 3 ילדות
+  window.AvneiInterventionMatcher.matchForGroup(['stu-noa','stu-maya','stu-shira'])
+  ```
+  (דורש שה-script tag של `intervention-matcher.js` יוּסף ל-`teacher-rama.html` בסבב UI — לא בסקופ B.8.)
+
+**הצעת message לקומיט (HEREDOC):**
+
+```
+B.8 — Intervention Matcher (logic only · ללא UI)
+
+החלק החסר בין "יש בעיה" (EPA/MOY) ל"איזה intervention" (B.7):
+מנוע מאחד שיודע לקחת תלמידה / קבוצה ולהחזיר patternId יחיד +
+source + confidence + reason.
+
+API חדש (window.AvneiInterventionMatcher):
+  matchForStudent(sid) → {pattern_id, confidence, source, reason, details}
+  matchForGroup(sids[]) → {pattern_id, students_matched, common_evidence}
+  PRIORITY · PATTERN_NAMES_HE · _pickBestByPriority · _bumpConfidence
+
+עקרונות מהבריף:
+  - לא משכפלים מיפוי EPA→B.7 — צורכים את AvneiInterventions
+    .detectForStudent שכבר עושה את העבודה
+  - EPA preference: כש-EPA+MOY → 'combined'. אם מסכימים → bump
+    (low→med, med→high). אם לא מסכימים → EPA wins על pattern.
+  - priority נטענת מ-AvneiAssessments.loadInterventionMap (fallback פנימי)
+  - robustness: Interventions זורק → fall back ל-MOY בלבד; אין → null
+
+קבצים:
+  underwater-app/js/shared/intervention-matcher.js (חדש · ~250 שורות)
+  underwater-app/scripts/test-intervention-matcher.js (חדש · ~280 שורות)
+    15 בלוקים · 57/57 ✓ · Mock של AvneiInterventions + AvneiAssessments
+
+לא נגעתי: assessments.js / interventions.js / epa.js / bkt.js /
+moy-intervention-map.json / interventions/*.json / teacher-rama.html /
+22 משחקונים / 7 untracked packs / engine/demo-day2/.
+
+אימות: 350/350 ✓
+  test-intervention-matcher.js (חדש) — 57/57
+  test-moy-intervention-link.js (רגרסיה) — 51/51
+  test-moy-assessments.js (רגרסיה) — 51/51
+  test-interventions.js (רגרסיה) — 78/78
+  test-pack-bridge.js (רגרסיה) — 75/75
+  test-weakness-targeting.js (רגרסיה) — 38/38
+```
+
+**אסור לגעת ב- (לא נגעתי):**
+
+- `assessments.js` · `interventions.js` · `epa.js` · `bkt.js` · `mastery-check.js` · `event-logger.js` · `pack-bkt-bridge.js` · `profile-classifier.js` (קריאה בלבד)
+- `interventions/*.json` (5 קבצים)
+- `moy-intervention-map.json` (קריאה בלבד)
+- `teacher-rama.html` · `moy-screener.html` · `screener.html` · `data-export.html`
+- 22 `stage-3-*.html` + onboarding + 7 planning packs + 2 dummy packs
+- 7 untracked `curriculum/packs/grade1-tashpaz/{month}.json` + `engine/demo-day2/` + `perplexity-shatil-share-2003-validation-2026-05-25.json` (תוכן של מיטל)
+- מסמכי-אם + spec B.7
+
+---
+
 ## MOY × B.7 link — חיבור MOY-Lite fail → B.7 intervention suggestion
 
 **סטטוס:** ✅ הסתיים — 51/51 חדש + 242/242 רגרסיה = 293/293 ✓ · ממתין לאישור push
