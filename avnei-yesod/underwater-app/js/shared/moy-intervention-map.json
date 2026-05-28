@@ -1,0 +1,61 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "date": "2026-05-28",
+    "agent": "Claude Opus 4.7 (סוכן 14)",
+    "specs": [
+      "_handoff/2026-05-28-MOY-diagnostic-spec.md",
+      "_handoff/2026-05-28-B7-interventions-spec.md"
+    ],
+    "approved_by": "מיטל פלג",
+    "approval_date": "2026-05-28",
+    "purpose": "Mapping פדגוגי מ-MOY-Lite fail → B.7 intervention pattern. נצרך ע\"י assessments.js → getSuggestedInterventionForAssessment."
+  },
+  "decisions": {
+    "mapping_strategy": {
+      "code": "C",
+      "name": "Smart hybrid",
+      "description": "1) אם לתלמידה יש EPA/sub-BKT pattern קיים — הצע את זה (מדויק). 2) אחרת — phonological כברירת מחדל עם תווית 'התאמה חלקית'.",
+      "rationale": "אף אחד מ-5 הדפוסים של B.7 לא מטפל ישירות במשימות 3+4 של MOY. C מנצל סיגנלים קיימים מ-EPA/sub-BKT — מדויק יותר מ-direct map."
+    },
+    "single_student_strategy": {
+      "code": "γ",
+      "name": "Suggest + queue",
+      "description": "ההצעה נשמרת ב-state.assessments[studentId].suggested_intervention מיד. F.21A יציג אותה למורה רק כשמצטברות 3+ תלמידות עם אותו patternId. תלמידה בודדת = badge 'ממתינה לקבוצה' ב-Student View.",
+      "rationale": "B.7 הוא Tier-2 RTI קבוצתי (3-4 ילדות) — לא יחיד. שמירה ל-state + המתנה ל-group≥3 שומרת על הסטנדרט המחקרי."
+    },
+    "timing": {
+      "trigger": "after_second_attempt_fail",
+      "description": "ההצעה מחושבת ונשמרת רק אחרי attempts.length>=2 AND latest_status==='fail'. אחרי attempt 1 fail — רק next_review_due (5 שבועות) ללא הצעת intervention.",
+      "rationale": "spec MOY §6: 'אם attempt 2 גם fail — שקלי הפנייה למומחה שילוב'. עד אז המורה מבצעת repeat טבעי. הצעת B.7 = signal חזק יותר אחרי 2 כשלונות."
+    },
+    "ui_surfaces": [
+      "teacher_rama_student_view_section_6",
+      "f21a_class_view_when_group_3_plus"
+    ]
+  },
+  "task_to_pattern": {
+    "task_3": {
+      "name_he": "הבנת טקסט מושמע",
+      "rama_threshold": "7/10",
+      "default_pattern": "phonological",
+      "match_quality": "partial",
+      "notice_he": "MOY משימה 3 (הבנת טקסט מושמע) — נכשלה פעמיים. phonological awareness הוא הקרוב ביותר ב-B.7 (בסיס לעיבוד שפה דבורה), אבל יכול להיות גם אוצר מילים — שאין לו אינטרבנציה ייעודית. בדקי גם דפוסי EPA אחרים."
+    },
+    "task_4": {
+      "name_he": "מודעות לשונית",
+      "rama_threshold": "16/22",
+      "default_pattern": "phonological",
+      "match_quality": "partial",
+      "notice_he": "MOY משימה 4 (מודעות לשונית — סדר מילים · יחסי משמעות · מבנה משפט) — נכשלה פעמיים. phonological awareness הוא הבסיס המשותף, אבל מודעות לשונית רחבה יותר (גם syntax/morphology). בדקי גם מבנה משפט + יחסי מילים."
+    }
+  },
+  "epa_bkt_pattern_priority": [
+    "letter_knowledge",
+    "letter_cluster",
+    "decoding",
+    "fluency",
+    "phonological"
+  ],
+  "priority_rationale": "letter_knowledge ראשון = הכי פעולתי (זוג ספציפי). letter_cluster שני = 3 אותיות חלשות מזוהות. decoding שלישי = context pattern. fluency רביעי = יחסית רחב. phonological אחרון מבין הקיימים — מועבר רק כשאין אחרים."
+}

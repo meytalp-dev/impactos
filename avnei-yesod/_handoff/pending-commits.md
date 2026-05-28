@@ -4,6 +4,141 @@
 
 ---
 
+## 🟢 קבוצה Z2 — MOY × B.7 link (Smart hybrid · suggest+queue · after attempt 2 fail)
+
+**סטטוס:** 🟢 הסתיים — 293/293 ✓ (51 חדש + 242 רגרסיה) · ממתין לבדיקה ידנית של מיטל ואז push
+**תאריך:** 2026-05-28 ערב (סוכן 14 · אחרי סוכן 15)
+**2 קבצים חדשים + 1 שינוי קוד + 3 handoff updates · חבילה קטנה (~440 שורות net)**
+
+| # | קובץ | סטטוס | הערה |
+|---|---|---|---|
+| 1 | `underwater-app/js/shared/moy-intervention-map.json` | **חדש** (~55 שורות) | תיעוד 4 החלטות מיטל (Smart hybrid + queue + attempt 2 + UI שניהם) + priority list (letter_knowledge > letter_cluster > decoding > fluency > phonological) + notice_he פר משימה. נטען sync ע"י assessments.js עם fallback ל-DEFAULT_MAP פנימי. |
+| 2 | `underwater-app/js/shared/assessments.js` | שינוי (+~140 שורות) | `loadInterventionMap()` (XHR+fs+cache) · `_tryEpaBktSuggestion(studentId, priority)` (קורא ל-AvneiInterventions.detectForStudent אם זמין) · `_computeSuggestionFromRec(rec, studentId, taskId?)` · public `getSuggestedInterventionForAssessment(studentId, taskId?)` · auto-save ב-`recordMOYAttempt` אם attempts.length≥2 AND latest=='fail' · `suggested_intervention` חשוף ב-`getMOYStatus`. |
+| 3 | `underwater-app/scripts/test-moy-intervention-link.js` | **חדש** (~260 שורות) | 11 בלוקים · **51 assertions ✓** · Mock localStorage + AvneiInterventions (mock אופציונלי שמאפשר לבדוק גם fallback וגם EPA hit). |
+| + | `_handoff/2026-05-26-architecture-tasks-tracker.html` | שינוי קל | +שורה בסקירה ✅ + +task חדש ב-פאזה F ("MOY × B.7 link") |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש בראש | תיעוד MOY × B.7 link מלא |
+| + | `_handoff/pending-commits.md` | בלוק חדש בראש (זה) | הקבוצה הזו |
+
+**מהות התוצר:**
+חיבור פדגוגי בין 2 משימות שכבר היו ב-origin: MOY-Lite (סוכן 10 · `93dbd4a`) מודד תלמידה ב-attempts; B.7 (סוכן 9 · `0dbbf4e`) מספק 5 scripts ל-Tier-2 RTI קבוצתי. עד הסבב הזה — תלמידה שנכשלה ב-MOY קיבלה `next_review_due` (5 שבועות) אבל **אף הצעת אינטרבנציה לא נשמרה**. עכשיו: אחרי 2 כשלונות, `state.assessments[sid].suggested_intervention` מתמלא אוטומטית עם patternId + source + match_quality + notice — מוכן ל-UI להציג ב-Student View + לסכם ל-group≥3 ב-F.21A.
+
+**יחס לקבוצות שכבר נדחפו / ממתינות:**
+
+- ✅ סוכן 10 (MOY-Lite · `93dbd4a` + `7a70a03`) — `recordMOYAttempt` נשמר 1:1 (תוסף קטן + 4 שורות). `getMOYStatus` נשמר 1:1 (additive שדה אחד).
+- ✅ סוכן 9 (B.7 · `0dbbf4e`) — `AvneiInterventions.detectForStudent` נקרא בלבד. לא נגעתי ב-`interventions.js` ולא ב-5 ה-JSONs.
+- 🟡 קבוצה Z (סוכן 15 — F.21A Finding B `setTimeout(boot, 0)`) — חופף ב-`_handoff/` files בלבד (3 docs). **לא חופף ב-`teacher-rama.html`** — לא נגעתי. אם Z נדחפה ראשונה: `git pull --rebase` + פתור merge conflicts ב-3 docs בשמירת שתי התרומות.
+- 🟡 קבוצה Y (סוכן 13 — Finding A + ניסיון Finding B) — חופף ב-3 docs. אותו טיפול.
+- 🟡 קבוצה X (סוכן 10 — MOY-Lite) — נדחפה כבר (`93dbd4a` + `7a70a03`). אין חפיפת קוד; אני מרחיב את `assessments.js` שכבר ב-origin.
+- 🟡 קבוצות W/V/U/T/S/R — אין חפיפת קוד. רק 3 docs.
+
+**🎯 פונקציות חדשות שנחשפות:**
+- `AvneiAssessments.getSuggestedInterventionForAssessment(studentId, taskId?)` → `{patternId, source, match_quality, based_on_failed_tasks, details?, notice?, confidence, generated_at}` או `null`
+- `AvneiAssessments.loadInterventionMap()` → המפה המאושרת (cached)
+- `state.assessments.moy[sid].suggested_intervention` נוסף ל-schema (additive — קוד ישן שלא מכיר את השדה לא יישבר).
+
+**אסור לגעת ב- (לא נגעתי):**
+
+- `engine/moy-screener.html` (auto-trigger ב-`recordMOYAttempt` עושה את העבודה)
+- `underwater-app/teacher-rama.html` (סוכן 13/15 פעיל; UI badge בסבב הבא)
+- `interventions.js` · `bkt.js` · `epa.js` · `mastery-check.js` · `event-logger.js` · `profile-classifier.js` · `pack-bkt-bridge.js`
+- `interventions/*.json` (5 קבצים)
+- 22 stage-3-*.html · 7 planning packs · 2 dummy packs · `screener.html`
+- 7 untracked `curriculum/packs/grade1-tashpaz/{month}.json` + `engine/demo-day2/` + `perplexity-shatil-share-2003-validation-2026-05-25.json` (תוכן של מיטל)
+- מסמכי-אם + 2 ה-specs
+
+**מה לבדוק לפני push (5-7 דקות — בעיקר אוטומטי):**
+
+```powershell
+cd c:\Users\meyta\Downloads\impactos\avnei-yesod\underwater-app
+
+# 1. הטסט החדש
+node scripts/test-moy-intervention-link.js
+# → 51/51 ✓
+
+# 2. רגרסיות — 4 ה-suites המאומתים של סוכן 15 ממשיכים ירוקים
+node scripts/test-moy-assessments.js          # → 51/51 ✓
+node scripts/test-interventions.js            # → 78/78 ✓
+node scripts/test-pack-bridge.js              # → 75/75 ✓
+node scripts/test-weakness-targeting.js       # → 38/38 ✓
+
+# סה"כ: 293/293 ✓
+```
+
+**בדיקה ידנית (אופציונלי · 3 דקות · מאמת auto-save ב-localStorage):**
+
+1. שרת: `cd avnei-yesod && python -m http.server 8765`
+2. `http://localhost:8765/engine/moy-screener.html?student=stu-test`
+3. ענה לא נכון על כל השאלות (task 3+4) → "סיימת!".
+4. DevTools → Console:
+   ```js
+   JSON.parse(localStorage['underwater-app:assessments']).moy['stu-test']
+   ```
+   - אחרי attempt 1: `attempts.length===1`, `suggested_intervention===null`.
+5. רענן + הריץ שוב את ה-screener (attempt 2). ענה לא נכון שוב.
+6. DevTools → Console — אותה שאילתה:
+   - אחרי attempt 2: `attempts.length===2`, `latest_status==='fail'`, **`suggested_intervention === { patternId: 'phonological', source: 'moy_default_fallback', match_quality: 'partial', based_on_failed_tasks: ['task_3','task_4'], notice: '...', confidence: 'low', generated_at: <ts> }`**.
+   - אם לתלמידה גם יש EPA pattern → `patternId` יכול להיות `letter_knowledge` (וכו') + `source='epa_bkt_pattern'` + `match_quality='good'`.
+
+**אזהרות שמורות:**
+
+- ❌ אין UI חדש — לא נדרשת רגרסיה ב-teacher-rama.
+- ❌ אסור לשלב moy-screener.html — auto-trigger דרך `recordMOYAttempt` מספיק.
+- ❌ אסור להציג את ה-suggestion לתלמידה — רק למורה (spec MOY §5.3: "אסור להציג ציון לילדה").
+- 🟢 שום API ציבורי לא נשבר — additive שדה אחד ב-`getMOYStatus` (פונקציות ישנות שלא מכירות אותו פשוט יתעלמו).
+- 🟢 fallback: אם `moy-intervention-map.json` לא נטען (קובץ חסר), DEFAULT_MAP פנימי מבטיח שהלוגיקה ממשיכה לעבוד.
+
+**הצעת message לקומיט (HEREDOC):**
+
+```
+MOY × B.7 link — חיבור MOY-Lite fail → B.7 intervention suggestion
+
+4 ההחלטות של מיטל (28.5.2026) הוטמעו 1:1:
+  Mapping = (C) Smart hybrid — EPA/sub-BKT pattern אם קיים,
+            אחרת phonological עם תווית partial + notice ייעודי
+  Single↔Group = (γ) Suggest + queue —
+            state.assessments[sid].suggested_intervention נשמר מיד;
+            F.21A יציג רק כש-group≥3 (Tier-2 RTI נשמר)
+  Timing = רק אחרי attempt 2 fail (spec MOY §6 — שני כשלונות)
+  UI = שניהם — Student View (badge) + F.21A Class View (group action)
+
+קוד:
+  moy-intervention-map.json (חדש · ~55 שורות) — החלטות מאושרות
+    + priority list (letter_knowledge > letter_cluster > decoding >
+    fluency > phonological) + notice_he פר task_3/task_4.
+  assessments.js (+~140 שורות):
+    loadInterventionMap() — sync XHR/fs+cache · fallback DEFAULT_MAP
+    _tryEpaBktSuggestion(sid, priority) — קורא AvneiInterventions
+      .detectForStudent ובוחר best לפי priority list
+    _computeSuggestionFromRec(rec, sid, taskId?) — ליבת ההחלטה
+    getSuggestedInterventionForAssessment(sid, taskId?) — public API
+    recordMOYAttempt: אחרי 2 fails — חישוב + שמירה אוטומטית
+    getMOYStatus: חושף suggested_intervention ב-return
+
+test-moy-intervention-link.js (חדש · ~260 שורות):
+  11 בלוקים · 51/51 ✓ · Mock localStorage + AvneiInterventions
+  אופציונלי (לבדוק גם fallback וגם EPA hit נפרדים).
+
+לא נגעתי: moy-screener.html (auto-trigger ב-recordMOYAttempt עובד) /
+teacher-rama.html (סוכן 13/15 פעיל; UI badge בסבב הבא) /
+interventions.js / bkt.js / epa.js / mastery-check.js /
+event-logger.js / pack-bkt-bridge.js / interventions/*.json /
+22 stage-3-*.html / 7 packs / מסמכי-אם / 2 specs.
+
+אימות: 293/293 ✓
+  test-moy-intervention-link.js (חדש) — 51/51
+  test-moy-assessments.js (רגרסיה) — 51/51
+  test-interventions.js (רגרסיה) — 78/78
+  test-pack-bridge.js (רגרסיה) — 75/75
+  test-weakness-targeting.js (רגרסיה) — 38/38
+
+Specs ב-_handoff/:
+  2026-05-28-MOY-diagnostic-spec.md (סוכן 10 הבסיס)
+  2026-05-28-B7-interventions-spec.md (סוכן 9 הבסיס)
+  moy-intervention-map.json (החלטות סוכן 14 — אישרה מיטל)
+```
+
+---
+
 ## 🟢 קבוצה Z — F.21A Finding B נסגר (setTimeout(boot, 0))
 
 **סטטוס:** 🟢 Finding B ✅ closed — ממתין לבדיקה ידנית של מיטל (F5 על מסך מאומת)
