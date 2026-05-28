@@ -4,6 +4,147 @@
 
 ---
 
+## 🟡 קבוצה T — C.11+C.12+C.13 (Pack × BKT Integration · לב הדיפרנציאליות)
+
+**סטטוס:** 🟡 ממתין לבדיקה ידנית של מיטל ואז push
+**תאריך:** 2026-05-28
+**7 קבצים חדשים + 1 שינוי + 3 handoff updates · חבילה אחת**
+
+| # | קובץ | סטטוס | הערה |
+|---|---|---|---|
+| 1 | `curriculum/packs/grade1-tashpaz/september-2026.json` | **חדש** | Pack letters-focused (ש·ל·נ·א) · 4 tiers · 20 items dummy |
+| 2 | `curriculum/packs/grade1-tashpaz/january-2026.json` | **חדש** | Pack strand-focused (מודעות פונולוגית) · 4 tiers · 13 items dummy |
+| 3 | `curriculum/packs/_schema.md` | **חדש** (~150 שורות) | תיעוד schema מלא (8 סעיפים) · כולל הסבר על היחס ל-7 ה-planning packs הקיימים |
+| 4 | `underwater-app/js/shared/pack-bkt-bridge.js` | **חדש** (~370 שורות) | 8 פונקציות API + 2 constants · sync XHR לדפדפן · fs ל-Node · localStorage override |
+| 5 | `underwater-app/scripts/validate-pack.js` | **חדש** (~210 שורות) | CLI: `node validate-pack.js [file]` · 7 שכבות validation · exit 0/1/2 |
+| 6 | `underwater-app/scripts/test-pack-bridge.js` | **חדש** (~290 שורות) | 16 בלוקי טסט · **75/75 assertions** עוברות |
+| 7 | `underwater-app/teacher-rama.html` | שינוי | script tag + ~175 CSS lines (+50 ל-modal) + 9 helpers JS + Class View column (sticky) + Student View Section 5 + **Tier modal** (תיקון 28.5) |
+| + | `_handoff/2026-05-26-architecture-tasks-tracker.html` | שינוי קל | C.11+C.12+C.13 ✅ × 4 שורות (3 בפאזה C + 1 ב-"מוכן להתחיל") |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש בראש | תיעוד מלא (3 ההחלטות שהוטמעו, קבצים, יחס ל-A.5, שאלות פתוחות) |
+| + | `_handoff/pending-commits.md` | בלוק חדש בראש (זה) | הקבוצה הזו |
+
+**מהות התוצר:**
+לב הדיפרנציאליות של אבני יסוד. עד עכשיו ה-BKT/EPA זרמו פנימה ויצרו ציון, אבל **אף אחד לא בחר תוכן אדפטיבי** — כל ילדה קיבלה את אותה חוויה. C.11+C.12+C.13 בונה את החיבור: Pack JSON (מה נלמד החודש) × BKT (איפה הילדה) → **Tier אישי** (איזה תוכן מתאים לה). + UI שמורה רואה ויכולה לדרוס.
+
+**יחס לקבוצות שכבר נדחפו / ממתינות:**
+- ✅ A.1 / A.3 / A.4 — bridge רק *קורא* את ה-API (`getStudentStrands` · `getLetterState`). לא נגעתי בקבצים.
+- ✅ A.5 (`a171a74`) — bootstrap הזהיר על חפיפה ב-`teacher-rama.html`, בפועל A.5 נדחף לפני שהתחלתי. Section 5 שלי נוסף אחרי Section 4 (RAMA tasks); עמודת Tier נוספה בלי לשבור את `coldStartFor` הקיים.
+- ✅ E.17+E.18 (`49df726`) — לא נגעתי ב-event-logger / data-export.
+- ✅ F.21A (`54e00ec`) — `teacher-rama.html` הורחב, ה-API הקיים נשמר 1:1.
+- ❌ D.15 (`e36a916`) — תחום שונה (assets/audio/stage-3-*).
+- 🟡 קבוצה S (E.17+E.18) — אין חפיפת קבצים.
+
+**🎯 פונקציות חדשות שנחשפות:**
+`window.AvneiPackBridge` עם 8 פונקציות + 2 constants. שמורה לעתיד: C.14 (קריאה ממשחקון), F.21E (דשבורד פעולה — Tier בקבוצות).
+
+**אסור לגעת ב- (לא נגעתי):**
+- `bkt.js` · `epa.js` · `mastery-check.js` · `event-logger.js` · `profile-classifier.js` (קוראים בלבד)
+- 22 קבצי משחקונים `stage-3-*.html` — קריאה ל-`getItemsForStudent` היא post-MVP (C.14)
+- 7 ה-planning packs הקיימים (`september.json`, וכו') — לפי החלטת מיטל (28.5): "לבנות חדשים לצד הקיימים"
+- מסמכי-אם (architecture-mvp / pedagogy-integration-framework / literacy-grade1-2-yearly / llm-pitfalls)
+- spec עצמו (`2026-05-28-C11-C12-C13-pack-bkt-spec.md`)
+
+**מה לבדוק לפני push (10 דקות — כולל סבב 1):**
+
+1. שרת: `cd avnei-yesod && python -m http.server 8765`
+2. `http://localhost:8765/underwater-app/teacher-rama.html` — PIN `4521`
+3. **Class View — sticky (תיקון באג 1):** ודאי עמודת "Tier" בין "תלמידה" ל-"מ1". **גללי אופקית** — Tier נשארת מימין יחד עם תלמידה (לא נופלת שמאלה).
+4. **Class View — modal (תיקון באג 2):** לחצי על תא Tier של נועה (למשל) → **modal עם פרטים מלאים**: Tier badge גדול, reason, confidence, 4 כפתורי override, "× בטל".
+   - סגירה: כפתור ×, ESC, או לחיצה מחוץ.
+   - לחיצה על "Tier 4" ב-modal → ⚙ מופיע בתא + modal נסגר אוטומטית.
+5. **Student View — Section 5:** לחצי על שם תלמידה → Section 5 בתחתית. כפתורי override + "× בטל" עובדים גם כאן.
+6. **3 פרסונות (חובה):**
+   - מאיה — Tier 4 ידני (דרך modal או Student View) → ⚙ ב-Class View + source=manual.
+   - נועה — אוטומטי לפי דאטה (סביר 2-3).
+   - שירה — תלמידה חדשה ללא דאטה → Tier 1 + source=cold-start.
+7. **רגרסיה:** Class table עדיין מתפקדת (10 משימות ראמ"ה), badge "חדשה" של A.5 עדיין מופיע, EPA + 22 letters עובדים.
+8. **טסטים אוטומטיים:**
+   ```bash
+   node avnei-yesod/underwater-app/scripts/test-pack-bridge.js
+   # → 75/75 ✅
+   node avnei-yesod/underwater-app/scripts/validate-pack.js
+   # → 2/2 ✅
+   ```
+
+**🐞 תיקוני סבב 1 (פידבק מיטל 28.5 · אחרי בדיקת Class View ראשונה):**
+
+| # | באג | תיקון |
+|---|---|---|
+| 1 | עמודת Tier לא sticky — נופלת שמאלה בגלילה אופקית | CSS: `position: sticky; right: 140px; z-index: 3` ב-`.tier-col` ו-`z-index: 2` ב-`td.tier-cell`. `right: 140px` תואם ל-`min-width` של `student-col`. רקעים מפורשים פר tier (1/2/3/4/cold) ימשיכו לעבוד — לא יציצו שכבות מתחת. |
+| 2 | reason לא נגיש (title attr לא עובד במובייל) | Modal מלא בלחיצה על `td.tier-cell`. בנוי בדינמיקה (innerHTML זהה ל-`renderPackSection`): Tier badge גדול + reason + pKnown + confidence + 4 כפתורי override + "× בטל". סגירה: כפתור ×, ESC, click outside. אחרי override → re-render + close. **title attr נשמר** כ-tooltip מהיר ב-hover ל-desktop. |
+
+**קוד התיקונים (5 שינויים ב-`teacher-rama.html`):**
+1. CSS — sticky על tier-col + tier-cell + `cursor:pointer` + `:hover` filter (~10 שורות נוספות)
+2. CSS — `.tier-modal-backdrop` + `.tier-modal` + `.tm-head` + `.tm-close` + `.tm-body` (~50 שורות חדשות)
+3. JS — `tierCellHtml(decision, studentId)` עכשיו עם `data-student` attr + הוספת "לחיצה לפרטים" ל-title
+4. JS — `openTierModal(studentId)` + `closeTierModal()` + `_tierModalEscHandler` (~110 שורות חדשות)
+5. JS — click handler ב-renderClassView מזהה `tier-cell` ופותח modal (3 שורות נוספות)
+
+**שאלות פתוחות:**
+- **בחירת pack לפיילוט:** `currentPackId()` קבוע ל-`september-2026`. אם רוצה לבדוק strand-focused (january-2026), לשנות ידנית בקוד או לבקש toggle UI (תוספת קטנה).
+- **תוכן ה-packs:** dummy items לפי הנחיית ה-spec. התוכן האמיתי = מיטל כותבת ידנית בקצב שלה.
+
+**לפני push (חובה — סביבת ריבוי-סוכנים):**
+```
+git fetch origin && git status
+```
+
+**הצעת message לקומיט (HEREDOC):**
+```
+C.11+C.12+C.13 — Pack × BKT Integration (לב הדיפרנציאליות)
+
+מימוש 1:1 של _handoff/2026-05-28-C11-C12-C13-pack-bkt-spec.md
+(9 סעיפים, 18 AC items). 3 ההחלטות של מיטל (28.5) הוטמעו 1:1.
+
+C.11 — Pack Schema + 2 dummy packs:
+  curriculum/packs/grade1-tashpaz/september-2026.json
+    (letters-focused · 4 אותיות בועות · 4 tiers · 20 items)
+  curriculum/packs/grade1-tashpaz/january-2026.json
+    (strand-focused · 3 skills פונולוגיים · 4 tiers · 13 items)
+  curriculum/packs/_schema.md (~150 שורות, 8 סעיפים)
+
+C.12 — pack-bkt-bridge.js (~370 שורות):
+  8 פונקציות API: loadPack · preloadPack · loadCurrentPack ·
+    selectTierForStudent · getItemsForStudent · overrideTier ·
+    clearOverride
+  2 constants: TIER_THRESHOLDS (0.30/0.60/0.85, frozen) ·
+    STRAND_NAMES (1-5)
+  letters-focused — ממוצע על letters_in_focus דרך getLetterState
+  strand-focused — לפי getStudentStrands()[primary_strand]
+  Cold-start: letters <5 attempts פר אות · strand <10 → Tier 1
+  Override ב-localStorage (`pack-overrides`)
+  Sync XHR לדפדפן · fs ל-Node · preloadPack async fallback
+
+C.13 — Item tagging + validate-pack.js:
+  Item schema: item_id · tier · type · letter|skill · mechanic ·
+    source_letter · challenge · rama_task_alignment · peima_target
+  scripts/validate-pack.js — CLI · 7 שכבות validation · exit 0/1/2
+
+UI ב-teacher-rama.html:
+  Class View — עמודת Tier אחרי "תלמידה" (4 צבעים + ⚙ ל-manual)
+  Student View — Section 5: Tier badge גדול + reason + confidence
+    + 4 כפתורי override + "× בטל" כשמשתמשים manual
+  ~125 שורות CSS חדשות · 7 helpers JS חדשים
+  currentPackId() קבוע ל-september-2026 בפיילוט
+
+75/75 smoke assertions ב-scripts/test-pack-bridge.js:
+  16 בלוקים — API surface · constants · pickTier 4 גבולות ·
+  loadPack מ-fs · cold-start (letters+strand) · partial data ·
+  full data · few attempts · medium attempts · high attempts ·
+  override flow (set+read+clear) · validation · getItemsForStudent ·
+  fallbacks (no pack · no AvneiBKT) · edge cases.
+
+2/2 packs validate-pack ✓.
+
+לא נגעתי: bkt.js / epa.js / mastery-check.js / event-logger.js /
+profile-classifier.js / 22 stage-3-*.html / 7 planning packs קיימים
+(החלטת מיטל 28.5: "לבנות חדשים לצד הקיימים") / מסמכי-אם.
+
+Spec ב-_handoff/2026-05-28-C11-C12-C13-pack-bkt-spec.md (6d5a47d).
+```
+
+---
+
 ## 🟡 קבוצה S — E.17 + E.18 (Event Logger ל-3 שדות + Data Export CSV)
 
 **סטטוס:** 🟡 ממתין לאישור push ממיטל (5 דק' בדיקה)

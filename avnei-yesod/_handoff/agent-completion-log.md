@@ -7,6 +7,90 @@
 
 ---
 
+## C.11 + C.12 + C.13 — Pack × BKT Integration (לב הדיפרנציאליות)
+
+**סטטוס:** ✅ קוד + 75/75 בדיקות עוברות · **ממתין לבדיקה ידנית של מיטל ואז push**
+**תאריך:** 2026-05-28
+**שיחה:** Claude Code (Opus 4.7 · VS Code · impactos)
+**Commit:** טרם נדחף
+**יחס:** ה-spec של C.11+C.12+C.13 נדחף ב-`6d5a47d` (28.5 בוקר). הקוד מבוסס 1:1 על spec — כל ההחלטות נסגרו לפני קוד.
+
+**מה נעשה:**
+
+**C.11 — Pack Schema + 2 dummy packs:**
+- `curriculum/packs/grade1-tashpaz/september-2026.json` — letters-focused (ש·ל·נ·א, primary_strand=1), 4 tiers עם 5+4+4+7 items.
+- `curriculum/packs/grade1-tashpaz/january-2026.json` — strand-focused (מודעות פונולוגית, 3 skills), primary_strand=1.
+- `curriculum/packs/_schema.md` — תיעוד schema מלא (8 סעיפים, כולל קשר ל-7 ה-planning packs הקיימים).
+
+**C.12 — pack-bkt-bridge.js (~370 שורות):**
+- 8 פונקציות API: `loadPack` · `preloadPack` (async) · `loadCurrentPack` · `selectTierForStudent` · `getItemsForStudent` · `overrideTier` · `clearOverride` + 2 constants `TIER_THRESHOLDS` (frozen) · `STRAND_NAMES`.
+- `selectTierForStudent`: בדיקת override קודם, אחרת auto. letters-focused — ממוצע על `letters_in_focus` דרך `getLetterState(studentId, letter)` (A.4). strand-focused — לפי `getStudentStrands(studentId)[primary_strand]` (A.1).
+- ספים: 0.30/0.60/0.85 (גלויים ב-`TIER_THRESHOLDS`).
+- Cold-start: `letters` — אם פחות מ-5 ניסיונות פר אות. `strand` — אם פחות מ-10 ניסיונות בסטרנד. → Tier 1 + reason ברור.
+- Confidence: `letters` — `high` אם כל האותיות עם דאטה, אחרת `med`. `strand` — `high` אם ≥30 attempts, אחרת `med`.
+- Override ב-localStorage (`pack-overrides`): `{[studentId]: {[packId]: {tier, date, author}}}`.
+- Loading: synchronous XHR בדפדפן (פיילוט) + `fs` ב-Node (טסטים) + `preloadPack` async fallback.
+
+**C.13 — Item Tagging + validate-pack.js:**
+- Item schema: `item_id` · `tier` · `type` (`new`|`review`) · `letter|skill` · `mechanic` · `source_letter` (אם review) · `challenge` · `rama_task_alignment` · `peima_target`.
+- `scripts/validate-pack.js` — CLI: `node validate-pack.js [filename]` או בלי ארגומנט (כל ה-execution packs). בודק 7 שכבות: pack-level, focus_mode mutual exclusion, primary_strand range, tiers 4 keys, items_distribution sum, per-item required fields, mechanic/type/range enums. exit codes: 0/1/2.
+
+**UI Integration ב-teacher-rama.html:**
+- Class View — עמודת Tier חדשה (אחרי "תלמידה", לפני "מ1"), צבע פר tier (1=אדום, 2=צהוב, 3=כחול, 4=ירוק), ⚙ אם manual override.
+- Student View — Section 5 אחרי 10 RAMA tasks. כולל: pack title + focus_line + Tier badge גדול עם label עברית (בסיסי/ליבה/מתקדם/מאסטר+) + reason + source/confidence + 4 כפתורי override (1·2·3·4) + "× בטל override" כשיש manual.
+- CSS חדש (~125 שורות): `.tier-col` · `.tier-cell` (4 צבעים + cold) · `.pack-section` · `.pack-tier-display` · `.pack-override` עם כפתורים.
+- `currentPackId()` קבוע לפיילוט ל-`september-2026` (post-pilot: UI לבחירה / loadCurrentPack).
+
+**3 ההחלטות מ-spec הוטמעו 1:1:**
+
+| # | החלטה | יישום |
+|---|---|---|
+| 1 | Pack דו-מצבי | `focus_mode: "letters" \| "strand"` נאכף ב-validate-pack + ב-selectTierForStudent |
+| 2 | Tier 4 = 70% ישן + 30% חדש | `items_distribution: {new: 0.3, review: 0.7}` ב-tier 4 של september-2026 + validate בודק סכום=1.0 |
+| 3 | Auto + manual override | `selectTierForStudent` בודק override קודם → `source: 'manual'`; אחרת auto. UI מציג ⚙ ו-"× בטל" |
+
+**קבצים שנוצרו/שונו:**
+
+| # | קובץ | סטטוס | הערה |
+|---|---|---|---|
+| 1 | `curriculum/packs/grade1-tashpaz/september-2026.json` | **חדש** | letters-focused, 4 tiers, 20 items |
+| 2 | `curriculum/packs/grade1-tashpaz/january-2026.json` | **חדש** | strand-focused, 4 tiers, 13 items |
+| 3 | `curriculum/packs/_schema.md` | **חדש** | תיעוד schema מלא (~150 שורות) |
+| 4 | `underwater-app/js/shared/pack-bkt-bridge.js` | **חדש** (~370 שורות) | 8 פונקציות API + cache + override |
+| 5 | `underwater-app/scripts/validate-pack.js` | **חדש** (~210 שורות) | CLI validator (CLI + module exports) |
+| 6 | `underwater-app/scripts/test-pack-bridge.js` | **חדש** (~290 שורות) | 16 בלוקי טסט · **75/75 assertions** עוברות |
+| 7 | `underwater-app/teacher-rama.html` | שינוי | script tag + ~125 CSS lines + helpers (`currentPackId`, `getActivePack`, `tierDecisionFor`, `TIER_LABELS`, `tierCellHtml`, `renderPackSection`, `attachPackOverrideHandlers`) + Class View column + Student View Section 5 |
+| + | `_handoff/2026-05-26-architecture-tasks-tracker.html` | שינוי | C.11+C.12+C.13 ✅ + checkboxes |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש בראש (זה) | תיעוד |
+| + | `_handoff/pending-commits.md` | בלוק חדש בראש | קבוצה חדשה 🟡 |
+
+**יחס ל-A.5 (סוכן 5 · `a171a74`):**
+- ה-bootstrap הזהיר שסוכן 5 עובד במקביל על `teacher-rama.html`. בפועל A.5 נדחף לפני שהתחלתי (`a171a74`).
+- שילבתי עם הקוד הקיים — `coldStartFor(stu.id)` שכבר היה ב-Class View נשאר 1:1. Section 5 שלי נוסף **אחרי** Section 4 RAMA tasks.
+- אין חפיפת קוד עם A.5 — נגעתי רק בקטעים שלא A.5 לא נגעה בהם.
+
+**שאלות פתוחות:**
+- **בחירת pack לפיילוט:** קבעתי `currentPackId()` → `september-2026`. אם מיטל רוצה לבדוק strand-focused (january-2026), לשנות ידנית ב-קוד או לבקש toggle UI.
+- **תוכן ה-packs:** dummy (5-10 items פר tier) לפי הנחיית ה-spec. התוכן האמיתי = מיטל כותבת ידנית בקצב שלה. אין לי דעה איזה mechanic מתאים לאיזה item.
+- **TIER_THRESHOLDS:** 0.30/0.60/0.85 הם הצעה ראשונית. יש לכייל בפיילוט (לא בסקופ C.11/12/13).
+
+**מה זה פתח להמשך:**
+- C.14 עתידי — קריאה ל-`getItemsForStudent` מתוך משחקון (כדי שילדה בפועל תקבל פריטים מהטיר שלה).
+- תוכן אמיתי ל-11 packs (ספט-יוני) — מיטל / צוות פדגוגי.
+- post-pilot — Tier transition animations, auto-classification של פריטים.
+- כיול thresholds לפי תוצאות פיילוט.
+
+**לפני push (מיטל):**
+1. שרת ב-`avnei-yesod/`: `python -m http.server 8765`
+2. פתחי `http://localhost:8765/underwater-app/teacher-rama.html` עם PIN `4521`.
+3. **Class View:** ודאי שעמודת "Tier" מופיעה אחרי "תלמידה" + צבעים שונים פר תלמידה.
+4. **Student View:** לחצי על שם תלמידה → גללי לתחתית → ודאי **Section 5 "📦 Pack חודשי"** עם Tier badge + reason + 4 כפתורי override.
+5. **3 פרסונות:** מאיה (override ל-Tier 4 ידני), נועה (אוטומטי Tier 3 לפי דאטה), שירה (cold-start → Tier 1).
+6. **רגרסיה:** ודאי שכל הסקציות הקיימות עובדות (5 strands, 22 letters, EPA, 10 RAMA tasks, A.5 badge).
+7. אם הכל תקין — אישור push.
+
+---
+
 ## E.17 + E.18 — Event Logger ל-3 שדות + Data Export (CSV)
 
 **סטטוס:** ✅ קוד + 23/23 בדיקות עוברות · **ממתין לאישור push**

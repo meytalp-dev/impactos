@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>Seed Personas — בדיקת C.11+C.12+C.13</title>
+<style>
+  body { font-family: 'Assistant', system-ui, sans-serif; max-width: 720px; margin: 30px auto; padding: 20px; background: #f7fafc; color: #1a2332; }
+  h1 { color: #2c7a7b; margin-bottom: 6px; }
+  p.sub { color: #4a5568; margin-bottom: 22px; }
+  .card { background: white; padding: 18px 22px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 14px; }
+  .card h3 { margin-bottom: 6px; }
+  .card .meta { font-size: 13px; color: #718096; margin-bottom: 8px; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 24px 0; }
+  button { background: #2c7a7b; color: white; border: 0; padding: 10px 22px; border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+  button:hover { background: #234e52; }
+  button.danger { background: #c53030; }
+  button.danger:hover { background: #9b2c2c; }
+  button.secondary { background: #cbd5e0; color: #1a2332; }
+  pre.log { background: #1a2332; color: #4fd1c5; padding: 14px 18px; border-radius: 10px; font-size: 12px; max-height: 320px; overflow: auto; direction: ltr; text-align: left; }
+  .ok { color: #38a169; }
+  .err { color: #e53e3e; }
+  a.link { display: inline-block; margin-top: 14px; color: #2c7a7b; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<h1>🌱 Seed Personas</h1>
+<p class="sub">יצירת 3 תלמידות בדיקה ל-C.11+C.12+C.13 — מאיה (Tier 4 manual) · נועה (Tier 3 auto) · שירה (Tier 1 cold).</p>
+
+<div class="card">
+  <h3>👶 שירה כהן <span style="color:#a0aec0; font-size:14px;">— Tier 1 (cold-start)</span></h3>
+  <div class="meta">תלמידה חדשה · entry_date: היום · 0 אירועים</div>
+  <div>צפי ב-teacher-rama: Tier 1 + source=cold-start + badge "חדשה"</div>
+</div>
+
+<div class="card">
+  <h3>🧒 נועה לוי <span style="color:#3182ce; font-size:14px;">— Tier 3 (auto)</span></h3>
+  <div class="meta">entry_date: 10 ימים אחורה · 40 אירועים · 4 אותיות ש·ל·נ·א ב-pKnown ~0.70</div>
+  <div>צפי ב-teacher-rama: Tier 3 auto + confidence=high (4/4 letters)</div>
+</div>
+
+<div class="card">
+  <h3>👧 מאיה אברהם <span style="color:#38a169; font-size:14px;">— Tier 4 (manual)</span></h3>
+  <div class="meta">entry_date: 14 ימים אחורה · 60 אירועים · 4 אותיות ב-pKnown ~0.90 · override ידני ל-Tier 4</div>
+  <div>צפי ב-teacher-rama: Tier 4 manual (⚙) + confidence=high</div>
+</div>
+
+<div class="actions">
+  <button id="btnSeed">🌱 Seed את 3 הפרסונות</button>
+  <button id="btnStatus" class="secondary">📊 הצג סטטוס נוכחי</button>
+  <button id="btnDebug" class="secondary">🔍 הצג localStorage גולמי</button>
+  <button id="btnClear" class="danger">🗑️ נקה הכל</button>
+</div>
+
+<pre class="log" id="log">— לחצי על "Seed" כדי להתחיל —</pre>
+
+<a href="../teacher-rama.html" class="link">← פתחי teacher-rama.html אחרי seed</a>
+
+<!-- טעינת מודולים -->
+<script src="../js/state.js"></script>
+<script src="../js/shared/bkt.js"></script>
+<script src="../js/shared/event-logger.js"></script>
+<script src="../js/shared/pack-bkt-bridge.js"></script>
+
+<script>
+'use strict';
+
+const STUDENTS_KEY = 'avnei-yesod-students';
+const STATE_KEY_FALLBACK = 'underwater-app:v1';  // למקרה שאין state.js
+
+const log = document.getElementById('log');
+function logLine(text, cls) {
+  const line = document.createElement('div');
+  if (cls) line.className = cls;
+  line.textContent = text;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+}
+function clearLog() { log.innerHTML = ''; }
+
+// ============================================================
+// פרסונות
+// ============================================================
+
+const PERSONAS = [
+  {
+    id: 'shira-cohen',
+    name: 'שירה כהן',
+    entry_days_ago: 0,           // היום → cold-start (< 3 days)
+    events: [],                  // אין דאטה
+    override_tier: null
+  },
+  {
+    id: 'noa-levi',
+    name: 'נועה לוי',
+    entry_days_ago: 10,
+    events: generateEvents({ letters: ['ש', 'ל', 'נ', 'א'], pTarget: 0.70, perLetter: 10 }),
+    override_tier: null
+  },
+  {
+    id: 'maya-avraham',
+    name: 'מאיה אברהם',
+    entry_days_ago: 14,
+    events: generateEvents({ letters: ['ש', 'ל', 'נ', 'א'], pTarget: 0.90, perLetter: 15 }),
+    override_tier: 4
+  }
+];
+
+// generateEvents — מייצר אירועים סינתטיים שמובילים ל-pKnown יעד
+function generateEvents({ letters, pTarget, perLetter }) {
+  const evts = [];
+  // ל-pTarget גבוה — רוב האירועים נכונים. נחשב יחס הצלחה אמפירי שיתקרב לערך הזה.
+  // BKT params: pT=0.20, pG=0.20, pS=0.10. אחרי N אירועים, pKnown יציב סביב accuracy.
+  const accuracy = pTarget;  // קירוב מספיק טוב לפיילוט
+  for (const letter of letters) {
+    for (let i = 0; i < perLetter; i++) {
+      const is_correct = Math.random() < accuracy;
+      evts.push({
+        student_id: null,        // יתמלא בהמשך
+        primary_island_id: 3,
+        target_letter: letter,
+        is_correct: is_correct,
+        response_time_ms: 1500 + Math.floor(Math.random() * 1500),
+        ts: Date.now() - Math.floor(Math.random() * 7 * 24 * 60 * 60 * 1000)
+      });
+    }
+  }
+  return evts;
+}
+
+// ============================================================
+// פעולות
+// ============================================================
+
+function getStudents() {
+  try { return JSON.parse(localStorage.getItem(STUDENTS_KEY) || '[]'); }
+  catch (e) { return []; }
+}
+function setStudents(arr) {
+  localStorage.setItem(STUDENTS_KEY, JSON.stringify(arr));
+}
+
+async function seedAll() {
+  clearLog();
+  logLine('🌱 מתחיל seed...', 'ok');
+
+  if (!window.AvneiBKT) {
+    logLine('❌ AvneiBKT לא נטען', 'err');
+    return;
+  }
+  if (!window.AvneiPackBridge) {
+    logLine('❌ AvneiPackBridge לא נטען', 'err');
+    return;
+  }
+
+  // ---- 0. Preload packs (נתיב יחסי שונה מ-teacher-rama כי seed-personas ב-subdir) ----
+  for (const packId of ['september-2026', 'january-2026']) {
+    if (AvneiPackBridge.loadPack(packId)) {
+      logLine('   • Pack ' + packId + ': כבר ב-cache');
+      continue;
+    }
+    try {
+      const res = await fetch('../../curriculum/packs/grade1-tashpaz/' + packId + '.json');
+      if (res.ok) {
+        const pack = await res.json();
+        AvneiPackBridge._setPackCache(packId, pack);
+        logLine('   • Pack ' + packId + ' נטען מ-fetch ✓', 'ok');
+      } else {
+        logLine('   ❌ Pack ' + packId + ': HTTP ' + res.status, 'err');
+      }
+    } catch (e) {
+      logLine('   ❌ Pack ' + packId + ': ' + e.message, 'err');
+    }
+  }
+
+  // 1. שמירת התלמידות — merge עם קיימות (לא דורסים תלמידות אחרות כמו "מיטל פלג")
+  const existing = getStudents();
+  const existingIds = new Set(existing.map(s => s.id));
+  for (const p of PERSONAS) {
+    const entryDate = new Date(Date.now() - p.entry_days_ago * 24 * 60 * 60 * 1000);
+    const record = {
+      id: p.id,
+      name: p.name,
+      entry_date: entryDate.toISOString(),
+      entry_profile: 3
+    };
+    if (existingIds.has(p.id)) {
+      // עדכון
+      const idx = existing.findIndex(s => s.id === p.id);
+      existing[idx] = record;
+    } else {
+      existing.push(record);
+    }
+  }
+  setStudents(existing);
+  logLine('✅ ' + PERSONAS.length + ' פרסונות נשמרו/עודכנו (' + existing.length + ' סה"כ ב-localStorage)', 'ok');
+
+  // 2. אתחול strand state פר תלמידה — קריטי כדי ש-ingestEvent יעדכן per_letter
+  //    הקריאה ל-getStrandState(studentId, 1) מבצעת ensureAllLettersIn ל-22 אותיות
+  for (const p of PERSONAS) {
+    try {
+      // setInitialState מאתחל island state. getStrandState אחר כך מאתחל strand+per_letter.
+      AvneiBKT.setInitialState(p.id, 3, { tier: 2 });
+      AvneiBKT.getStrandState(p.id, 1);  // warmup → strand 1 + per_letter ל-22 אותיות
+      logLine('   • ' + p.name + ': state מאותחל ✓');
+    } catch (e) {
+      logLine('   ❌ ' + p.name + ' init: ' + e.message, 'err');
+    }
+  }
+
+  // 3. הזרמת אירועים פר תלמידה
+  for (const p of PERSONAS) {
+    if (p.events.length === 0) {
+      logLine('   • ' + p.name + ': 0 אירועים (cold)');
+      continue;
+    }
+    let ok = 0;
+    for (const evt of p.events) {
+      const fullEvt = Object.assign({}, evt, { student_id: p.id });
+      try {
+        AvneiBKT.ingestEvent(fullEvt);
+        ok++;
+      } catch (e) {
+        logLine('   ❌ אירוע נכשל: ' + e.message, 'err');
+      }
+    }
+    logLine('   • ' + p.name + ': ' + ok + '/' + p.events.length + ' אירועים נטמעו');
+  }
+
+  // 4. override ידני (רק מאיה)
+  for (const p of PERSONAS) {
+    if (p.override_tier) {
+      const ok = AvneiPackBridge.overrideTier(p.id, 'september-2026', p.override_tier);
+      logLine('   • ' + p.name + ': override → Tier ' + p.override_tier + (ok ? ' ✓' : ' ✗'), ok ? 'ok' : 'err');
+    }
+  }
+
+  logLine('');
+  logLine('🎯 בדיקה אוטומטית — letter states + Tier decisions:', 'ok');
+  for (const p of PERSONAS) {
+    // הצגת pKnown פר אות (debug)
+    if (p.id !== 'shira-cohen') {  // לשירה אין דאטה
+      const letters = ['ש', 'ל', 'נ', 'א'];
+      const states = letters.map(l => {
+        const ls = AvneiBKT.getLetterState(p.id, l);
+        return ls ? (l + '=' + ls.pKnown.toFixed(2) + '/' + ls.attempts) : (l + '=null');
+      });
+      logLine('   ' + p.name + ' letters: ' + states.join(' · '));
+    }
+    const d = AvneiPackBridge.selectTierForStudent(p.id, 'september-2026');
+    const dataInfo = (d.pKnown !== undefined) ? ' p=' + d.pKnown.toFixed(2) : '';
+    logLine('     → Tier ' + d.tier + ' · ' + d.source + ' · ' + d.confidence + dataInfo);
+  }
+
+  logLine('');
+  logLine('✅ Seed הושלם. פתחי teacher-rama.html (Ctrl+F5 לרענון מלא).', 'ok');
+}
+
+function showStatus() {
+  clearLog();
+  logLine('📊 סטטוס נוכחי:', 'ok');
+  logLine('');
+
+  const students = getStudents();
+  logLine('תלמידות (' + students.length + '):');
+  for (const s of students) {
+    const d = window.AvneiPackBridge
+      ? AvneiPackBridge.selectTierForStudent(s.id, 'september-2026')
+      : null;
+    const tierInfo = d ? ' → Tier ' + d.tier + ' (' + d.source + ')' : '';
+    logLine('   • ' + s.name + ' [' + s.id + ']' + tierInfo);
+  }
+
+  if (window.AvneiBKT) {
+    logLine('');
+    logLine('BKT events קיימים:');
+    try {
+      const state = JSON.parse(localStorage.getItem('underwater-app:v1') || '{}');
+      const eventCount = (state.events || []).length;
+      logLine('   • סה"כ ' + eventCount + ' events ב-state.events');
+    } catch (e) {
+      logLine('   ❌ ' + e.message, 'err');
+    }
+  }
+}
+
+function clearAll() {
+  if (!confirm('בטוחה? פעולה זו תמחק את כל התלמידות + ה-state + ה-overrides.')) return;
+  clearLog();
+  localStorage.removeItem(STUDENTS_KEY);
+  localStorage.removeItem('underwater-app:v1');
+  localStorage.removeItem('avnei-yesod-strands');
+  localStorage.removeItem('pack-overrides');
+  logLine('🗑️  נוקה: students + state + strands + pack-overrides', 'ok');
+}
+
+function showDebug() {
+  clearLog();
+  logLine('🔍 כל ה-localStorage (מפתחות + 200 תווים ראשונים פר ערך):', 'ok');
+  logLine('');
+  if (localStorage.length === 0) {
+    logLine('   (ריק — אין שום מפתח)', 'err');
+    return;
+  }
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    const v = localStorage.getItem(k) || '';
+    const preview = v.length > 200 ? v.slice(0, 200) + '... (' + v.length + ' תווים)' : v;
+    logLine(k + ' = ' + preview);
+    logLine('');
+  }
+  logLine('--- בודקים גישה ל-modules: ---', 'ok');
+  logLine('window.AvneiBKT: ' + (window.AvneiBKT ? 'נטען ✓' : 'חסר ✗'));
+  logLine('window.AvneiPackBridge: ' + (window.AvneiPackBridge ? 'נטען ✓' : 'חסר ✗'));
+  logLine('window.AvneiEventLogger: ' + (window.AvneiEventLogger ? 'נטען ✓' : 'חסר ✗'));
+}
+
+document.getElementById('btnSeed').addEventListener('click', seedAll);
+document.getElementById('btnStatus').addEventListener('click', showStatus);
+document.getElementById('btnDebug').addEventListener('click', showDebug);
+document.getElementById('btnClear').addEventListener('click', clearAll);
+
+// catch global errors so מיטל can see them
+window.addEventListener('error', (e) => {
+  logLine('❌ JS Error: ' + (e.message || e), 'err');
+});
+
+// auto-status בכניסה
+window.addEventListener('DOMContentLoaded', showStatus);
+</script>
+</body>
+</html>
