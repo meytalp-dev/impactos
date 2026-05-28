@@ -1068,6 +1068,119 @@ AvneiBKT.getWeakLetters = function(studentId, options = {}) {
 
 ---
 
+## 🚀 סוכן 12 — משימת C.12C: עדכון Tier model ב-Dummy Packs מ-rev1 ל-rev2 (P2 · S · ניקוי קצוות)
+
+**רמת קושי:** S (1-2 שעות) · **עדיפות:** P2 (לא חוסם פיילוט, אבל סוגר את הקצוות של Tier=רמה)
+**תלות:** סוכן 11 (C.12B) חייב לדחוף **לפני** שאתה מתחיל (כדי שלא יהיה conflict ב-`pack-bkt-bridge.js` או `_schema.md`).
+
+### 📍 איפה אתה עובד
+
+**ריפו:** `meytalp-dev/impactos`
+**נתיב מקומי:** `c:/Users/meyta/Downloads/impactos/avnei-yesod/`
+
+⚠️ **לא** ב-`ort-presentation-builder`. **לא** ב-`Downloads/edura`.
+
+לפני כל פעולה:
+```bash
+cd c:/Users/meyta/Downloads/impactos && git fetch origin && git status
+```
+
+### 🎯 המשימה בקצרה
+
+סוכן 8 בנה את ה-dummy packs לפי **rev1** (Tier = תוכן: Tier 1 = אותיות מאיים קודמים). אבל ה-spec המעודכן הוא **rev2** (Tier = רמה של אותו תוכן). המשימה: לעדכן את 2 ה-JSON של dummy packs כדי שיתאימו ל-rev2, **בלי לשנות את הקוד**.
+
+### מסמך-אם חובה לקרוא ראשון
+
+**`_handoff/2026-05-28-C11-C12-C13-pack-bkt-spec-rev2.md`** — במיוחד §3 (Pack Schema), §9 (Tier model מעודכן), §11 (מה מבוטל מ-rev1)
+
+### מה לעדכן ב-`september-2026.json`
+
+**עיקרון:** כל ה-tiers משתמשים ב-**אותן אותיות** (`ש · ל · נ · א`). מה שמשתנה זה ה-**מכניקה** וה-**רמה**.
+
+| Tier | מכניקה | מאפיינים | רמת קושי |
+|---|---|---|---|
+| 1 | `tap-all` בלבד | 1 אות בכל סשן · audio prompts תכופים · אין distractors | הכי קל |
+| 2 | `tap-all` + `pick` | 2 אותיות מעורבות · 1 distractor פר פריט | ביניים |
+| 3 | `pick` + `memory-pair` | 4 אותיות + ניקוד · מילים שלמות | מאתגר |
+| 4 | `memory-pair` + `sort-by-letter` | 4 אותיות + discrimination (ש vs ם) · mixed | הכי מאתגר |
+
+### מה להסיר (rev2 §11)
+
+מבוטל מ-rev1 — להסיר מכל פריט:
+- ❌ `items_distribution: { new: 0.3, review: 0.7 }` ב-Tier 4
+- ❌ `type: "review"` בפריט
+- ❌ `source_letter` בפריט
+- ❌ `source_island` בפריט
+
+### מה לוודא שיש (rev2 §3-4)
+
+לכל פריט:
+- ✅ `item_id` (unique)
+- ✅ `tier` (1-4)
+- ✅ `letter` או `word` (אות הפאק)
+- ✅ `mechanic` (tap-all / pick / memory-pair / sort-by-letter)
+- ✅ `letters_involved: ["ש"]` (נוסף על-ידי סוכן 11)
+- ✅ `rama_task_alignment: 1`
+- ✅ `peima_target: 1`
+
+לפאק ככלל:
+- ✅ `allows_weakness_targeting: false` (ספטמבר — אין היסטוריה קודמת)
+
+### מבנה מומלץ — Tier 1 בספטמבר (דוגמה)
+
+```json
+"1": {
+  "name": "בסיסי",
+  "description": "זיהוי בודד של ש·ל·נ·א — מכניקה הכי קלה, ללא distractors",
+  "target_population": "פערים משמעותיים (p<0.30)",
+  "items": [
+    { "item_id": "pack9-t1-shin-01", "tier": 1, "letter": "ש", "mechanic": "tap-all", "challenge": "no-distractors", "letters_involved": ["ש"], "rama_task_alignment": 1, "peima_target": 1 },
+    { "item_id": "pack9-t1-shin-02", "tier": 1, "letter": "ש", "mechanic": "tap-all", "challenge": "no-distractors", "letters_involved": ["ש"], "rama_task_alignment": 1, "peima_target": 1 },
+    { "item_id": "pack9-t1-lamed-01", "tier": 1, "letter": "ל", "mechanic": "tap-all", "challenge": "no-distractors", "letters_involved": ["ל"], "rama_task_alignment": 1, "peima_target": 1 },
+    { "item_id": "pack9-t1-nun-01", "tier": 1, "letter": "נ", "mechanic": "tap-all", "challenge": "no-distractors", "letters_involved": ["נ"], "rama_task_alignment": 1, "peima_target": 1 },
+    { "item_id": "pack9-t1-alef-01", "tier": 1, "letter": "א", "mechanic": "tap-all", "challenge": "no-distractors", "letters_involved": ["א"], "rama_task_alignment": 1, "peima_target": 1 }
+  ]
+}
+```
+
+### מה לעדכן ב-`january-2026.json`
+
+January הוא **strand-focused** (מודעות פונולוגית), לא letters. המבנה שונה:
+- כל פריט מכיל `skill` במקום `letter`
+- Tier 1-4 משתנים ב-**רמת קושי של אותה מודעות**, לא ב-skills שונים
+- שמור על `focus_mode: "strand"` + `allows_weakness_targeting: false`
+
+**עיקרון זהה:** Tier 1 = מודעות פונולוגית בסיסית (פותח). Tier 4 = מודעות מתקדמת (deletion, blending).
+
+### אסור לגעת ב-
+
+- `pack-bkt-bridge.js` — קוד נשאר כפי שהוא
+- `bkt.js`, `epa.js`, `event-logger.js`, `mastery-check.js`
+- `teacher-rama.html`
+- `validate-pack.js` (אלא אם validation נכשל — אז תיקון מינימלי)
+- מסמכי-אם
+
+### Acceptance Criteria
+
+- [ ] `september-2026.json` תוכן Tier 1-4 משקף "אותן אותיות, רמה שונה"
+- [ ] `january-2026.json` תוכן Tier 1-4 משקף "אותה skill, רמה שונה"
+- [ ] שדות מבוטלים הוסרו (`items_distribution`, `type:review`, `source_letter`, `source_island`)
+- [ ] `letters_involved` קיים בכל פריט (כפי שסוכן 11 הוסיף)
+- [ ] `allows_weakness_targeting: false` ב-2 ה-packs
+- [ ] `validate-pack.js` עובר בלי שגיאות על 2 ה-packs
+- [ ] `test-pack-bridge.js` של סוכן 8 — עדיין 75/75 ירוק
+- [ ] `test-weakness-targeting.js` של סוכן 11 — עדיין ירוק
+
+### בסיום
+
+1. עדכן tracker: ✅ C.12C
+2. בלוק חדש ב-`_handoff/agent-completion-log.md`
+3. קבוצה חדשה ב-`_handoff/pending-commits.md` 🟡 ("C.12C — עדכון Tier model ב-dummy packs · ממתין לאישור push")
+4. דווח: "C.12C מוכן. dummy packs עכשיו תואמים ל-rev2 (Tier=רמה). כל הבדיקות הקיימות עוברות. ממתין לאישור push."
+5. **אל תדחוף לפני אישור.**
+
+---
+
 ## הוספת bootstraps נוספים
 ככל שמיטל תאשר משימות נוספות מהמסלול הקריטי — נוסיף סוכנים נוספים כאן.
 המסלול הקריטי: A0.2 → A0.3 → A0.4 → A.1-6 → B → C → ...
