@@ -139,7 +139,7 @@ function validateItem(item, tierKey, pack, ctx, errors) {
   // required fields
   if (!item.item_id) errors.push(`${ctx}: item_id חסר`);
   if (item.tier === undefined) errors.push(`${ctx}: tier חסר`);
-  if (item.type === undefined) errors.push(`${ctx}: type חסר`);
+  // C.12C (rev2): שדה `type` הוסר — Tier=רמה במקום Tier=תוכן (אין יותר new/review דיכוטומיה)
   if (!item.mechanic) errors.push(`${ctx}: mechanic חסר`);
   if (item.rama_task_alignment === undefined || item.rama_task_alignment === null) {
     errors.push(`${ctx}: rama_task_alignment חסר (A0.2)`);
@@ -201,17 +201,12 @@ function validateItem(item, tierKey, pack, ctx, errors) {
     }
   }
 
-  // focus_mode-conditional fields
+  // focus_mode-conditional fields (rev2: type field הוסר — בודקים לפי letter/skill בלבד)
   if (pack.focus_mode === 'letters') {
-    if (item.type === 'new') {
-      if (!item.letter) {
-        errors.push(`${ctx}: letter חסר (type=new ב-letters-focused)`);
-      } else if (Array.isArray(pack.letters_in_focus) && !pack.letters_in_focus.includes(item.letter)) {
-        errors.push(`${ctx}: letter "${item.letter}" לא ב-letters_in_focus (${pack.letters_in_focus.join(',')})`);
-      }
-    }
-    if (item.type === 'review' && !item.source_letter) {
-      errors.push(`${ctx}: source_letter חסר (type=review)`);
+    if (!item.letter) {
+      errors.push(`${ctx}: letter חסר (letters-focused pack)`);
+    } else if (Array.isArray(pack.letters_in_focus) && !pack.letters_in_focus.includes(item.letter)) {
+      errors.push(`${ctx}: letter "${item.letter}" לא ב-letters_in_focus (${pack.letters_in_focus.join(',')})`);
     }
   } else if (pack.focus_mode === 'strand') {
     if (!item.skill) {

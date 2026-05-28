@@ -7,6 +7,193 @@
 
 ---
 
+## C.12C — עדכון Tier model ב-Dummy Packs (rev1 → rev2 · ניקוי קצוות)
+
+**סטטוס:** ✅ קוד + 113 בדיקות אוטומטיות · **ממתין לאישור push ממיטל**
+**תאריך:** 2026-05-28 ערב
+**שיחה:** סוכן 12 (Claude Code · Opus 4.7 · VS Code · impactos)
+**Commit:** טרם נדחף
+**יחס:** מימוש 1:1 של `_handoff/2026-05-28-C11-C12-C13-pack-bkt-spec-rev2.md` §3 + §9 + §11. ה-spec הסופי (rev2) שונה מ-rev1 שאליו סוכן 8 בנה את ה-dummy packs. C.12C מסנכרן את ה-data למודל הסופי. **לא קוד — רק dummy data + תיקון validator מינימלי.**
+
+**מה נעשה:**
+
+**1. `curriculum/packs/grade1-tashpaz/september-2026.json` (שינוי גדול — rev1 → rev2):**
+
+עיקרון rev2: **כל ה-tiers משתמשים באותן 4 אותיות (ש·ל·נ·א)**. מה שמשתנה זה ה-**מכניקה** וה-**רמה**.
+
+| Tier | מכניקה | מאפיינים | רמת קושי |
+|---|---|---|---|
+| 1 | `tap-all` בלבד | 1 אות בכל סשן · audio prompts תכופים · אין distractors | הכי קל |
+| 2 | `tap-all` + `pick` | 2 אותיות מעורבות · 1 distractor פר פריט | ביניים |
+| 3 | `pick` + `memory-pair` | 4 אותיות + ניקוד · מילים שלמות (שֶׁמֶש · לָבָן · נְמָלָה · אַרְיֵה) | מאתגר |
+| 4 | `memory-pair` + `sort-by-letter` | 4 אותיות + discrimination (ש vs ם · ש vs שׂ · נ vs ן) · mixed | הכי מאתגר |
+
+- 19 פריטים סה"כ (T1=5, T2=5, T3=4, T4=5).
+- כל פריט: `item_id` · `tier` · `letter` · `mechanic` · `challenge` · `letters_involved:[letter]` · `rama_task_alignment:1` · `peima_target:1`.
+- חלק מ-T3/T4 כוללים גם `word` (מילה שלמה מנוקדת).
+- T4 כולל `challenge` מפורט: `discrimination-shin-vs-mem-sofit` · `discrimination-shin-vs-sin` · `discrimination-nun-vs-nun-sofit` · `mixed-letters`.
+
+**2. `curriculum/packs/grade1-tashpaz/january-2026.json` (שינוי גדול — rev1 → rev2):**
+
+עיקרון: **Tier 1-4 משתנים ברמת הקושי של אותה מודעות פונולוגית**, לא ב-skills שונים בצורה אקראית. סדר ההתקדמות פדגוגי:
+
+| Tier | sub_skill | מאפיינים |
+|---|---|---|
+| 1 | מודעות פותח בלבד | no-distractors · מילים קצרות ומוכרות |
+| 2 | מודעות פותח + סוגר | with-distractor |
+| 3 | הברות (חלוקה · ספירה · התאמה) | with-niqud |
+| 4 | פונמות (isolation · deletion · blending) | רמה גבוהה ביותר במודעות פונולוגית |
+
+- 13 פריטים סה"כ (T1=3, T2=3, T3=3, T4=4).
+- כל פריט: `item_id` · `tier` · `skill` · `sub_skill` · `mechanic` · `challenge` · `letters_involved:[]` · `rama_task_alignment:2` · `peima_target:1-2`.
+- `focus_mode:"strand"` + `strand_breakdown` עם 3 skills + weights (נשמר 1:1).
+
+**3. `underwater-app/scripts/validate-pack.js` (שינוי מינימלי · 2 בלוקים):**
+
+ה-validator נכשל אחרי השינויים כי דרש `type` שבוטל ב-rev2. תיקון מינימלי לפי אישור bootstrap:
+- הוסרה חובת `item.type` (שורה 142 לשעבר). השדה עדיין נבדק ל-enum אם קיים, אבל אופציונלי.
+- ב-`focus_mode:letters` — דרוש `item.letter` ישירות (לא רק כש-`type==='new'`). check של `pack.letters_in_focus` נשמר.
+- הוסרה דרישת `item.source_letter` (כי `type:review` בוטל).
+- strand mode לא השתנה.
+
+**מה הוסר (§11 — מבוטל מ-rev1):**
+- ❌ `items_distribution: { new: 0.3, review: 0.7 }` ב-Tier 4 (לא רלוונטי — Tier=רמה, לא תוכן).
+- ❌ `type: "review"` / `type: "new"` בפריט (כל הפריטים שייכים לפאק הנוכחי).
+- ❌ `source_letter` בפריט (אין אותיות מאיים קודמים בפאק).
+- ❌ `source_island` (לא היה בקבצים, מצויין ל-completeness).
+
+**מה נשמר (מ-C.12B):**
+- ✅ `letters_involved` בכל פריט (סוכן 11 הוסיף, נשמר 1:1).
+- ✅ `allows_weakness_targeting: false` בשני ה-packs (ספטמבר=פאק ראשון אין היסטוריה; ינואר=strand-focused אין letters לטרגט).
+
+**Metadata חדש בשני ה-packs:**
+- `schema_version: "2.0"` (קודם `"1.0"`).
+- `tier_model: "rev2 — Tier=רמה (..)"`.
+- `spec_ref: "_handoff/2026-05-28-C11-C12-C13-pack-bkt-spec-rev2.md"`.
+- `updated_at: "2026-05-28"`.
+
+**יחס לקבוצות שכבר נדחפו/ממתינות:**
+- ✅ קבוצה T (C.11+C.12+C.13 · `ea81ce6`) — לא דרסתי קוד. ה-packs שיניתי שונים בתכולה אבל אותו schema. `getItemsForStudent` של C.12 ממשיך להחזיר את ה-tier הנכון.
+- ✅ קבוצה U (C.12B · ממתין לדחיפה) — `letters_involved` שסוכן 11 הוסיף נשמר. `allows_weakness_targeting:false` נשמר. 38/38 של test-weakness-targeting ממשיכים לעבור.
+- ✅ קבוצה V (B.7) — אין חפיפת קבצים. ה-banners של B.7 לא תלויים בתוכן ה-packs (פועלים על BKT/EPA).
+- 🟡 סוכן 10 (MOY-Lite · ממתין לדחיפה) — אין חפיפת קבצים. MOY עובד על teacher-rama.html ו-MOY engine; C.12C על curriculum data.
+- 🟡 קבוצה S (E.17+E.18) — אין חפיפת קבצים.
+
+**אסור היה לגעת — לא נגעתי:**
+- `pack-bkt-bridge.js` · `bkt.js` · `epa.js` · `mastery-check.js` · `event-logger.js` · `profile-classifier.js` · `interventions.js`
+- `teacher-rama.html`
+- 22 stage-3-*.html
+- 7 ה-planning packs של מיטל (september.json/october.json/november.json/december.json/january.json/february.json/march.json — **בלי** suffix "-2026" — אלה תכנון של מיטל לא רלוונטי ל-execution).
+- מסמכי-אם (כולל spec rev2 עצמו).
+
+**בדיקות אוטומטיות (113 assertions עוברים):**
+- `validate-pack.js` ✓ 2/2 packs תקפים.
+- `test-pack-bridge.js` ✓ 75/75 (C.12 רגרסיה).
+- `test-weakness-targeting.js` ✓ 38/38 (C.12B רגרסיה).
+
+**שאלות פתוחות:**
+- **תוכן ה-dummy items:** המבנה לפי spec, אבל התוכן הפדגוגי הוא טמפלייט-ראשוני (לדוגמה: בחירת המילים `שֶׁמֶש · לָבָן · נְמָלָה · אַרְיֵה` ב-T3). מיטל יכולה לערוך את התוכן הפדגוגי בקצב שלה (אין שינוי קוד נדרש).
+- **גודל פאק:** 19 ו-13 פריטים. רגיל לפאק חודשי? כנראה אצטרך להגדיל לפני הפיילוט (אבל בסקופ C.12C זה לא נדרש — dummy לטסטים).
+
+---
+
+## MOY-Lite — Middle of Year Diagnostic (תשתית · משימות 3+4)
+
+**סטטוס:** ✅ קוד + 51/51 בדיקות אוטומטיות · **ממתין לבדיקה ידנית של מיטל ואז push**
+**תאריך:** 2026-05-28
+**שיחה:** סוכן 10 (Claude Code · Opus 4.7 · VS Code · impactos)
+**Commit:** טרם נדחף
+**יחס:** מימוש 1:1 של `_handoff/2026-05-28-MOY-diagnostic-spec.md` (9 סעיפים, 11 acceptance criteria). 4 ההחלטות שאישרה מיטל ב-28.5 הוטמעו ללא שינוי.
+
+**מה נעשה:**
+
+**1. `js/shared/assessments.js` (חדש · ~220 שורות):**
+- `recordMOYAttempt(studentId, results, opts?)` — שומר ל-`state.assessments.moy[sid].attempts[]`. מחשב `overall_status` (pass/near/fail) + מעדכן `next_review_due = +5 שבועות` אם fail (spec §6).
+- `getMOYStatus(studentId)` → `{ measured, latest_status, attempts[], next_review_due, last_attempt }`.
+- `getDueAssessments(now?)` — סורק את כל הילדות, מחזיר רשימה של `[{studentId, type:'moy', due_date}]` שעבר ה-`next_review_due` שלהן (למיטל לדעת מי מצריכה חזרה).
+- `statusFor(score, threshold)` + `enrichResults(rawResults)` — helpers.
+- `resetForStudent(studentId, type?)` — Debug.
+- `TASK_THRESHOLDS` — `task_3: 7/10`, `task_4: 16/22` (ספי ראמ"ה מ-`madrich-mivdak-kriah-grade1.txt`).
+- `STORAGE_KEY = 'underwater-app:assessments'` — **נפרד** מ-`underwater-app:v1` (שבו events). דרישה ארכיטקטונית של החלטה 4: "תוצאות נשמרות איפה? state.assessments נפרד (לא ב-events)".
+- Module dual-export (browser `window.AvneiAssessments` + Node `module.exports`).
+
+**2. `engine/moy-screener.html` (חדש · ~430 שורות):**
+- מסך תלמידה בלבד. **לא** דורש PIN — היא רצה אחרי שהמורה הפעילה אותה.
+- Welcome screen → טסק 3 (קטע + 3 שאלות dummy) → טסק 4 (3 שאלות dummy) → סיום.
+- Audio: AvriNeural בלבד (mp3 מתחת ל-`engine/audio/moy/...`). אם קובץ חסר → fallback להצגת טקסט + הודעת "קובץ האודיו לא נמצא".
+- **לא מציג ציון לילדה** — רק "מצוין, סיימת! חזרי לכיתה." (spec §5.3).
+- בלחיצה על אופציה: אין feedback "נכון/לא נכון" (evaluation, לא תרגול).
+- `?student=<id>` — בלי id, נופל ל-`local`.
+- Debug: `window.__moy.session()` · `window.__moy.finishNow()`.
+
+**3. `engine/moy-items.json` (חדש):**
+- **2-3 dummy items פר משימה** — לבדיקת תשתית בלבד.
+- משימה 3: 1 קטע (יוסי בגן) + 3 שאלות הבנה.
+- משימה 4: 3 שאלות מודעות לשונית (סדר מילים · ניגוד · קטגוריה).
+- אזהרה ב-`_meta`: "⚠️ 2-3 dummy items בלבד לבדיקת תשתית. תוכן מלא (60 פריטים + 6 קטעי שמע) — של מיטל. אסור להשתמש כפריטי תרגול (זיהום BKT)."
+
+**4. Section 6 ב-`teacher-rama.html` Student View (~140 שורות CSS + ~115 JS):**
+- מסך מורה מציג: סטטוס (`שולטת היטב` / `קרובה לרף` / `צריכה תרגול` / `לא נמדד עדיין`) — **שפה פשוטה, לא טכנית** (לפי [memory feedback]: F.21E ושאר מסכים = "שורה תחתונה", לא BKT/sub-BKT/EPA).
+- Status badge עם אייקון + צבע פר סטטוס (4 וריאנטים: not-measured/pass/near/fail).
+- Tasks summary: "משימה 3 (הבנת טקסט): עברה (8/10) · משימה 4 (מודעות לשונית): קרובה (15/22)".
+- Banner של `next_review_due`: בצהוב אם עתידי, באדום אם הגיע מועד.
+- **אזהרה דועקת**: "⚠️ MOY-Lite הוא תרגול, לא תחליף למבדק ראמ"ה הרשמי. המבדק הרשמי 1-on-1 פרטני..." (spec §5.1).
+- 2 כפתורים: `📋 הפעילי MOY-Lite` (פעיל, מנווט ל-`../engine/moy-screener.html?student=<id>`) + `📖 פתחי PDF ראמ"ה (בקרוב)` (disabled, לא בסקופ).
+- אם יש 2+ ניסיונות — מציג היסטוריה (תאריך + תוצאה פר ניסיון).
+- script tag חדש: `js/shared/assessments.js?v=1`.
+
+**5. `scripts/test-moy-assessments.js` (חדש · ~250 שורות):**
+- 10 בלוקים · **51/51 assertions ✓**.
+- API surface (10) · statusFor + enrichResults (9) · pass case (6) · fail + repeat (2) · not-measured (3) · getDueAssessments (5) · 2 attempts/repeat (4) · בידוד מ-events (7) · resetForStudent (2) · Validation errors (3).
+- Mock localStorage + vm sandbox (מימיק לפי `test-cold-start.js`).
+- בדיקה מפורשת ש-`recordMOYAttempt` **לא** נוגעת ב-`underwater-app:v1` (state.events).
+
+**4 ההחלטות שהוטמעו (spec §2):**
+
+| # | פריט | מה נעשה |
+|---|---|---|
+| 1 | MOY הרשמי = 1-on-1 ראמ"ה. MOY-Lite = תלמידה לבד | אזהרה בולטת ב-Section 6. UI אין PIN — נכון לתלמידה. |
+| 2 | חלון ינו-פבר גמיש פר ילדה | מצוין ב-Section 6 head. אין אכיפת תאריך — המורה מחליטה. |
+| 3 | fail → B.7 + repeat 5-6 שבועות | `next_review_due = +5 weeks` אחרי fail. UI banner של mat moyi שני. (חיבור ל-B.7 — שלב הבא, B.7 כבר קיים כסוכן 9). |
+| 4 | תוצאות נשמרות איפה? state.assessments נפרד | `STORAGE_KEY = 'underwater-app:assessments'` (לא `underwater-app:v1`). מאומת בבדיקות אוטומטיות. |
+
+**מה לא בסקופ (לפי spec §8):**
+- ❌ EOY-Lite — תלוי במשימות 5-10 שעוד לא בנויות.
+- ❌ 60 פריטי תוכן מלאים — של מיטל, לא של סוכן הקוד.
+- ❌ PDF print — post-pilot.
+- ❌ Apps Script — E.18B עתידי.
+
+**אסור היה לגעת — לא נגעתי:**
+- `bkt.js` · `epa.js` · `mastery-check.js` · `event-logger.js` · `pack-bkt-bridge.js` · `interventions.js` · `state.js` (קוראים בלבד)
+- 22 stage-3-*.html · onboarding · 5 packs · `engine/screener.html` (BOY הקיים)
+- מסמכי-אם (`architecture-mvp.md` · `pedagogy-integration-framework.md` · `literacy-grade1-2-yearly.md`)
+
+**יחס לסוכנים אחרים שעבדו במקביל / קודם:**
+- ✅ A.1 / A.3 / A.4 / A.5 / F.21A · B.7 (`0dbbf4e`) — קוראים בלבד.
+- ✅ C.11+C.12+C.13 (`ea81ce6`) + C.12B (`9578194`) — Section 6 שלי **אחרי** Section 5 (Pack), בלי קונפליקט. הוספתי script tag חדש (`assessments.js?v=1`) אחרי `interventions.js?v=1` — אין דריסה.
+- 🟡 סוכן 12 (C.12C, פעיל במקביל) — עובד על packs JSONs (`curriculum/packs/grade1-tashpaz/september-2026.json` + `january-2026.json`). **אין חפיפת קבצי קוד.** אם נדחף ראשון — אעשה `git pull --rebase`. רק handoff files (tracker / agent-completion-log / pending-commits) עלולים להתנגש — שמירת שתי התרומות.
+
+**🎯 פונקציות חדשות שנחשפות:**
+`window.AvneiAssessments` עם 7 פונקציות + 3 constants. שמורות לעתיד: BOY/EOY API, F.21E (action dashboard), G.X (parent-view).
+
+**מה לבדוק לפני push (10-15 דקות):**
+1. `cd avnei-yesod && python -m http.server 8765`
+2. `http://localhost:8765/underwater-app/teacher-rama.html` — PIN `4521` → בחרי Student View → גלגלי לקטע "📋 הערכת אמצע שנה (MOY)".
+3. **רגרסיה Student View:** סטרנדים, אותיות, EPA, RAMA tasks, Pack Section עדיין מתפקדים (לא נגעתי בהם).
+4. לחצי **"📋 הפעילי MOY-Lite"** → נטענת `moy-screener.html` → "התחילי" → שאלת dummy (אם אין mp3 ראית fallback טקסט) → המשיכי עד "מצוין, סיימת" → "חזרה למסך המורה".
+5. חזרה ל-teacher-rama → Section 6 עכשיו מציג סטטוס + Tasks summary + אולי `next_review_due` banner אם fail.
+6. **Console (DevTools):** `AvneiAssessments.getMOYStatus('<id>')` — לוודא שהמבנה תקין.
+7. בדיקה: `cd underwater-app && node scripts/test-moy-assessments.js` → 51/51 ✓.
+8. **רגרסיה:** `node scripts/test-cold-start.js && node scripts/test-interventions.js && node scripts/test-pack-bridge.js && node scripts/test-weakness-targeting.js` — כל הבדיקות הקיימות עדיין ירוקות.
+
+**שאלות פתוחות / השלמות עתידיות:**
+- 60 פריטים מלאים — של מיטל.
+- 6 קטעי שמע AvriNeural — של מיטל (פנייה ל-`generate-audio.py` עם prompts).
+- חיבור B.7 — Section 6 כיום מציג רק סטטוס; שלב הבא: כש-fail → להציע אינטרבנציה רלוונטית (`AvneiInterventions.detectForStudent`).
+- `due_date` notification — UI ב-Class View ("⏰ נועה ממתינה ל-MOY שני, היה לפני 3 ימים") — עתידי.
+
+---
+
 ## B.7 — Targeted Reading Interventions (משלים את F.21A — "פתחי קבוצת תמיכה" עובדת)
 
 **סטטוס:** ✅ קוד + 78/78 בדיקות אוטומטיות · **ממתין לבדיקה ידנית של מיטל ואז push**
