@@ -933,6 +933,141 @@ cd c:/Users/meyta/Downloads/impactos && git fetch origin && git status
 
 ---
 
+## 🚀 סוכן 11 — משימת C.12B: Weakness Targeting Engine (P0 · M · incremental על rev1)
+
+**רמת קושי:** M (4-6 שעות) · **עדיפות:** P0 (חוסר זה = "Tier system" אבל לא דיפרנציאלי אמיתי)
+**תלות:** סוכן 8 חייב לדחוף קבוצה T (rev1 — Pack × BKT bridge בסיסי) **לפני** שאתה מתחיל.
+
+### 📍 איפה אתה עובד
+
+**ריפו:** `meytalp-dev/impactos`
+**נתיב מקומי:** `c:/Users/meyta/Downloads/impactos/avnei-yesod/`
+
+⚠️ **לא** ב-`ort-presentation-builder`. **לא** ב-`Downloads/edura`.
+
+לפני כל פעולה:
+```bash
+cd c:/Users/meyta/Downloads/impactos && git fetch origin && git status
+```
+
+### 🎯 המשימה בקצרה
+
+מוסיף **Weakness Targeting layer** מעל ה-Pack × BKT bridge שסוכן 8 בנה. **לא דורס** את הקוד הקיים — מוסיף יכולת חדשה.
+
+**מה הוא עושה:** ילדה שיצאה מספטמבר עם sub-BKT(מ)=0.32 — בנובמבר בפאק חיריק, המערכת מעדיפה מילים שמכילות מ (מָיִם, מָלֵא) על-פני מילים אחרות (גִיר, קִיר).
+
+### מסמך-אם חובה לקרוא ראשון
+
+**`_handoff/2026-05-28-C11-C12-C13-pack-bkt-spec-rev2.md`** (~370 שורות) — revision של ה-spec המקורי
+
+במיוחד:
+- §5 — Bridge API החדש (`selectItemsForStudent` + `getWeakLetters`)
+- §6 — שינויים נדרשים בקוד הקיים של סוכן 8 (תפקיד שלך)
+- §4 — Item Schema החדש (`letters_involved`)
+
+**שים לב:** ה-spec הקיים `2026-05-28-C11-C12-C13-pack-bkt-spec.md` (rev1) **לא מתבטל**. אתה מוסיף **layer** מעליו — לא דורס. rev2 §11 מציין מה מבוטל מ-rev1 (`items_distribution`, `type:review`, `source_letter`, `source_island`).
+
+### 7 ההחלטות הסגורות (rev2 §2)
+
+| # | פריט | החלטה |
+|---|---|---|
+| 1 | Tier model | Tier = **רמה של אותו תוכן** (לא תוכן שונה) |
+| 2 | Max weak letters | **Top-3** הכי חלשות |
+| 3 | Threshold | **p < 0.40** |
+| 4 | Min attempts | **5+** |
+| 5 | TARGETED_RATIO פר Tier | **30% / 70% / 75% / 70%** |
+| 6 | שדה ב-item | **`letters_involved`** (רחב — כל האותיות במילה) |
+| 7 | הפעלה | **אוטומטית** — לפי `allows_weakness_targeting` flag |
+
+### מה לבנות (סדר מומלץ)
+
+#### שלב 1 — `bkt.js` הרחבה (1-1.5 שעות)
+הוסף `AvneiBKT.getWeakLetters(studentId, options)`:
+```js
+AvneiBKT.getWeakLetters = function(studentId, options = {}) {
+  const { threshold = 0.40, minAttempts = 5, max = 3 } = options;
+  const dist = getLetterMasteryDistribution(studentId);
+  return Object.entries(dist)
+    .filter(([letter, data]) => data.pKnown < threshold && data.attempts >= minAttempts)
+    .sort((a, b) => a[1].pKnown - b[1].pKnown)  // מהחלשה ביותר
+    .slice(0, max)
+    .map(([letter]) => letter);
+};
+```
+
+#### שלב 2 — `pack-bkt-bridge.js` עדכון (2 שעות)
+- **שינוי שם:** `getItemsForStudent` → `selectItemsForStudent` (שמור backward-compat: alias מ-getItemsForStudent ל-selectItemsForStudent)
+- **הוסף constants:**
+  ```js
+  const WEAKNESS_THRESHOLD = 0.40;
+  const MIN_ATTEMPTS_FOR_WEAK = 5;
+  const MAX_WEAK_LETTERS_TARGETED = 3;
+  const TARGETED_RATIO = { 1: 0.30, 2: 0.70, 3: 0.75, 4: 0.70 };
+  ```
+- **לוגיקת weakness targeting:**
+  - אם `pack.allows_weakness_targeting !== true` → החזרה רגילה (כל הפריטים)
+  - אם `weakLetters.length === 0` → החזרה רגילה
+  - אחרת: סינון 2 קבוצות (targeted + general), interleave לפי drill-sandwich
+
+#### שלב 3 — Packs קיימים (30 דק')
+עדכן את 2 ה-dummy packs של סוכן 8:
+- `curriculum/packs/grade1-tashpaz/september-2026.json` → הוסף `"allows_weakness_targeting": false`
+- `curriculum/packs/grade1-tashpaz/january-2026.json` → הוסף `"allows_weakness_targeting": false`
+- **כל פריט קיים** → הוסף `letters_involved: ["X"]` (האות של הפריט, או כל האותיות במילה אם יש)
+
+#### שלב 4 — `validate-pack.js` עדכון (30 דק')
+- בדוק שאם `allows_weakness_targeting: true` → כל item מכיל `letters_involved` non-empty
+- בדוק ש-`letters_involved` הוא array של letters מ-22 (א-ת)
+
+#### שלב 5 — `_schema.md` עדכון (15 דק')
+תיעוד `letters_involved` + `allows_weakness_targeting` + Constants
+
+#### שלב 6 — בדיקות חדשות `test-weakness-targeting.js` (1-1.5 שעות)
+- ילדה ללא weak letters → `selectItemsForStudent` מחזיר רגיל
+- ילדה עם 1 weak letter → 70% מהפריטים מטורגטים
+- ילדה עם 5 weak letters → רק top-3 משמשים
+- threshold=0.40 עובד (0.39 = weak, 0.41 = strong)
+- min_attempts=5 עובד
+- `allows_weakness_targeting: false` → תמיד החזרה רגילה
+- Backwards compat: `getItemsForStudent` alias עדיין עובד
+
+### ⚠️ קריטי — מה לא לעשות
+
+- ❌ **אל תשנה את ה-Tier model הקיים** (rev1 → rev2). זה משימה נפרדת (C.12C עתידי) ואין סיבה להעמיס עליך.
+- ❌ **אל תדרוס את הקוד של סוכן 8** — `selectTierForStudent`, `overrideTier`, `getOverride` נשארים כמו שהם
+- ❌ **אל תדרוס את ה-UI ב-teacher-rama.html** — לא תפקידך
+- ❌ **אל תכתוב תוכן פדגוגי חדש** — ה-dummy packs ישארו כפי שהם, רק עם `letters_involved` נוסף
+- ❌ **לא לדחוף בלי אישור מפורש**
+
+### אסור לגעת ב-
+
+- `bkt.js` — רק הוספה של `getWeakLetters`, לא שינוי של פונקציות קיימות
+- `epa.js`, `event-logger.js`, `mastery-check.js`, `profile-classifier.js`
+- `teacher-rama.html`
+- 22 משחקוני stage-3-*.html
+- מסמכי-אם
+
+### Acceptance Criteria
+
+- [ ] `AvneiBKT.getWeakLetters` מיוצא ב-bkt.js
+- [ ] `selectItemsForStudent` ב-pack-bkt-bridge.js
+- [ ] Constants חשופים (`WEAKNESS_THRESHOLD`, `TARGETED_RATIO`, ...)
+- [ ] 2 packs מעודכנים: `allows_weakness_targeting` + `letters_involved` בכל item
+- [ ] `validate-pack.js` בודק את 2 השדות החדשים
+- [ ] `test-weakness-targeting.js` — 12+ assertions ירוקות
+- [ ] Backwards compat: כל הבדיקות הקיימות (75/75 של סוכן 8) עדיין ירוקות
+- [ ] `_schema.md` מעודכן
+
+### בסיום
+
+1. עדכן tracker: ✅ C.12B
+2. בלוק חדש ב-`_handoff/agent-completion-log.md`
+3. קבוצה חדשה ב-`_handoff/pending-commits.md` 🟡 ("C.12B Weakness Targeting — ממתין לאישור push")
+4. דווח: "C.12B מוכן. ל-bridge יש עכשיו weakness targeting. Test suite 87+/87 ירוק. ממתין לאישור push."
+5. **אל תדחוף לפני אישור.**
+
+---
+
 ## הוספת bootstraps נוספים
 ככל שמיטל תאשר משימות נוספות מהמסלול הקריטי — נוסיף סוכנים נוספים כאן.
 המסלול הקריטי: A0.2 → A0.3 → A0.4 → A.1-6 → B → C → ...
