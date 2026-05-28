@@ -1,6 +1,6 @@
-# Pack JSON Schema — C.11 + C.13
+# Pack JSON Schema — C.11 + C.13 + C.12B
 
-**גרסה:** 1.0 · **תאריך:** 28.5.2026 · **משימה:** C.11 (Pack schema) + C.13 (Item tagging)
+**גרסה:** 1.1 · **תאריך:** 28.5.2026 ערב · **משימה:** C.11 (Pack schema) + C.13 (Item tagging) + C.12B (Weakness Targeting)
 
 > מסמך זה מתעד את ה-schema הרשמי של Pack JSON ב-`curriculum/packs/grade1-tashpaz/*.json`.
 > Pack = יחידת תוכן חודשית (11 פאקים בשנת תשפ"ז, ספט-יוני, ללא יולי-אוג).
@@ -48,6 +48,7 @@
 | `letters_in_focus` | array \| null | **חובה** אם `focus_mode=letters` |
 | `strand_breakdown` | object \| null | **חובה** אם `focus_mode=strand` |
 | `tiers` | object | חייב להכיל 4 keys: `"1"`, `"2"`, `"3"`, `"4"` |
+| `allows_weakness_targeting` | boolean | **C.12B** — האם ה-bridge יפעיל targeting של weak letters. ברירת מחדל: `false` (לבטיחות). |
 
 ### 2.1 — `focus_mode: "letters"`
 
@@ -158,6 +159,47 @@ p ≥ 0.85        → Tier 4
 | שדה | סוג | הסבר |
 |---|---|---|
 | `challenge` | string | `"with-niqud"` וכו' — מודיפיירים למכניקה |
+| `letters_involved` | array of strings | **C.12B** — כל האותיות העבריות המופיעות בפריט (אות בודדת או רשימת מילים). חובה אם `pack.allows_weakness_targeting=true`. |
+
+### 4.4 — `letters_involved` (C.12B)
+
+**מטרה:** מאפשר ל-bridge לבחור פריטים שמטרגטים את האותיות החלשות של תלמידה בפאקים שבהם `allows_weakness_targeting=true`.
+
+**ערכים מותרים:** אותיות מ-22 הקנוניות (`א ב ג ד ה ו ז ח ט י כ ל מ נ ס ע פ צ ק ר ש ת`). אותיות סופיות (ך/ם/ן/ף/ץ) **לא** נכללות — תיוג לפי האות הבסיסית.
+
+**הנחיות תיוג:**
+- פריט "אות ש בודדת" → `["ש"]`
+- פריט "מילה מָיִם" → `["מ", "י"]` (כל האותיות הלא-ניקוד)
+- פריט בלי אותיות בעברית (skill-based: "פונמה", "הברה") → `[]`
+
+**מתי חובה:** כש-pack מסומן `allows_weakness_targeting: true`, כל פריט חייב `letters_involved` עם לפחות איבר אחד (`validate-pack.js` יחזיר שגיאה אחרת).
+
+---
+
+---
+
+## §4.5 — Weakness Targeting Constants (C.12B)
+
+נחשפים ב-`AvneiPackBridge` (קריאה בלבד · כיול בפיילוט):
+
+```
+WEAKNESS_THRESHOLD       = 0.40     // pKnown < 0.40 → אות חלשה
+MIN_ATTEMPTS_FOR_WEAK    = 5        // לפחות 5 ניסיונות פר אות (cold-start guard)
+MAX_WEAK_LETTERS_TARGETED= 3        // top-N (Cowan 2001 + IES Foorman 2016)
+TARGETED_RATIO = {
+  1: 0.30,  // Tier 1 — overload protection
+  2: 0.70,  // drill-sandwich
+  3: 0.75,
+  4: 0.70
+}
+```
+
+`AvneiBKT.getWeakLetters(studentId, {threshold, minAttempts, max})` מחזיר array של שמות אותיות, ממוין מהחלשה ביותר.
+
+`AvneiPackBridge.selectItemsForStudent(studentId, packId)`:
+- אם `pack.allows_weakness_targeting === false` → מחזיר את כל ה-items של ה-tier (התנהגות קודמת)
+- אם `true` ויש weak letters → מסנן לפי `TARGETED_RATIO[tier]` עם drill-sandwich interleaving (לא צמודים)
+- `getItemsForStudent` נשמר כ-alias ל-`selectItemsForStudent` (backward-compat)
 
 ---
 

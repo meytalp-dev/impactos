@@ -22,6 +22,11 @@ const VALID_MECHANICS = ['tap-all', 'pick', 'memory-pair', 'sort-by-letter'];
 const VALID_FOCUS_MODES = ['letters', 'strand'];
 const VALID_TYPES = ['new', 'review'];
 const REQUIRED_TIER_KEYS = ['1', '2', '3', '4'];
+// C.12B — 22 אותיות עברית קנוניות (תואם bkt.js ALL_HEBREW_LETTERS_22)
+const ALL_HEBREW_LETTERS_22 = [
+  'א','ב','ג','ד','ה','ו','ז','ח','ט','י','כ',
+  'ל','מ','נ','ס','ע','פ','צ','ק','ר','ש','ת'
+];
 
 const PACKS_DIR = path.resolve(__dirname, '..', '..', 'curriculum', 'packs', 'grade1-tashpaz');
 
@@ -78,6 +83,11 @@ function validatePack(pack, fileName) {
   // ---- primary_strand ----
   if (pack.primary_strand !== undefined && (pack.primary_strand < 1 || pack.primary_strand > 5)) {
     errors.push(`pack.primary_strand: ${pack.primary_strand} (צריך 1-5)`);
+  }
+
+  // ---- allows_weakness_targeting (C.12B) ----
+  if (pack.allows_weakness_targeting !== undefined && typeof pack.allows_weakness_targeting !== 'boolean') {
+    errors.push(`pack.allows_weakness_targeting: ערך לא תקין (חייב boolean, קיבל ${typeof pack.allows_weakness_targeting})`);
   }
 
   // ---- tiers structure ----
@@ -165,6 +175,29 @@ function validateItem(item, tierKey, pack, ctx, errors) {
   if (item.peima_target !== undefined && item.peima_target !== null) {
     if (item.peima_target < 1 || item.peima_target > 3) {
       errors.push(`${ctx}: peima_target=${item.peima_target} מחוץ לטווח 1-3`);
+    }
+  }
+
+  // C.12B — letters_involved
+  // - אם pack.allows_weakness_targeting === true: חובה non-empty array, וכל איבר ב-22 הקנוניות.
+  // - אחרת: אופציונלי. אם קיים, חייב להיות array (יכול להיות ריק) וכל איבר ב-22.
+  if (pack.allows_weakness_targeting === true) {
+    if (!Array.isArray(item.letters_involved) || item.letters_involved.length === 0) {
+      errors.push(`${ctx}: letters_involved חסר/ריק — חובה כש-pack.allows_weakness_targeting=true`);
+    } else {
+      const invalid = item.letters_involved.filter(l => !ALL_HEBREW_LETTERS_22.includes(l));
+      if (invalid.length > 0) {
+        errors.push(`${ctx}: letters_involved כולל אותיות לא תקינות: ${invalid.join(',')} (צריך מ-22 הקנוניות)`);
+      }
+    }
+  } else if (item.letters_involved !== undefined) {
+    if (!Array.isArray(item.letters_involved)) {
+      errors.push(`${ctx}: letters_involved חייב להיות array (קיבל ${typeof item.letters_involved})`);
+    } else {
+      const invalid = item.letters_involved.filter(l => !ALL_HEBREW_LETTERS_22.includes(l));
+      if (invalid.length > 0) {
+        errors.push(`${ctx}: letters_involved כולל אותיות לא תקינות: ${invalid.join(',')} (צריך מ-22 הקנוניות)`);
+      }
     }
   }
 

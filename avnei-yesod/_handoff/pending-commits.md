@@ -31,7 +31,7 @@ B.7 משלים את F.21A — הכפתור "פתחי קבוצת תמיכה" במ
 - ✅ A.3 (EPA) · A.4 (Sub-BKT) · F.21A (`54e00ec`) — קוראים בלבד את ה-API שלהן. לא נגעתי בקבצים.
 - ✅ A.5 (`a171a74`) — אין חפיפה. ה-banners של B.7 מעל הטבלה, לא בקונפליקט עם cold-start banner.
 - ✅ C.11+C.12+C.13 (`ea81ce6`) — לא נגעתי. ה-modals נפרדים (`tier-modal` vs `iv-modal`). עמודת Tier ב-Class View נשארה כפי שהיא.
-- 🟡 קבוצה U (C.12B — סוכן 11) — אין חפיפת קבצים מעבר ל-`teacher-rama.html` (שינויים אדיטיביים בשני המקרים).
+- 🟡 קבוצה U (C.12B) — אין חפיפת קבצים (קבוצה U רק שינתה pack-bkt-bridge.js + teacher-rama.html ב-renderClassView/Section 5, B.7 הוסיפה רק מעל ה-table).
 - 🟡 קבוצה S (E.17+E.18) — אין חפיפת קבצים.
 
 **🎯 פונקציות חדשות שנחשפות:**
@@ -138,6 +138,72 @@ profile-classifier.js / pack-bkt-bridge.js / 22 stage-3-*.html /
 
 Spec ב-_handoff/2026-05-28-B7-interventions-spec.md.
 ```
+
+---
+
+## 🟡 קבוצה U — C.12B Weakness Targeting (incremental על קבוצה T)
+
+**סטטוס:** 🟡 ממתין לבדיקה ידנית של מיטל ואז push
+**תאריך:** 2026-05-28 ערב
+**4 קבצים שונו + 1 קובץ חדש + 3 handoff updates · חבילה אחת קטנה · תלוי בקבוצה T (ea81ce6 כבר ב-origin)**
+
+| # | קובץ | סטטוס | הערה |
+|---|---|---|---|
+| 1 | `underwater-app/js/shared/bkt.js` | שינוי | +`getWeakLetters(studentId, options)` חדש (~30 שורות) — top-N אותיות חלשות עם threshold + minAttempts + max. ייצוא ב-API. |
+| 2 | `underwater-app/js/shared/pack-bkt-bridge.js` | שינוי | +4 constants (`WEAKNESS_THRESHOLD`=0.40 · `MIN_ATTEMPTS_FOR_WEAK`=5 · `MAX_WEAK_LETTERS_TARGETED`=3 · `TARGETED_RATIO`={1:0.30,2:0.70,3:0.75,4:0.70}). +`selectItemsForStudent` עם drill-sandwich (`_interleaveDrill`). `getItemsForStudent` נשמר כ-alias (backward-compat). |
+| 3 | `curriculum/packs/grade1-tashpaz/september-2026.json` | שינוי | `+allows_weakness_targeting:false` + `letters_involved` ב-20 פריטים |
+| 4 | `curriculum/packs/grade1-tashpaz/january-2026.json` | שינוי | `+allows_weakness_targeting:false` + `letters_involved:[]` ב-13 פריטים (strand-mode, אין אותיות) |
+| 5 | `underwater-app/scripts/validate-pack.js` | שינוי | +const `ALL_HEBREW_LETTERS_22`. בדיקת `allows_weakness_targeting` boolean. בדיקת `letters_involved`: חובה כש-flag=true, array תקין אחרת. |
+| 6 | `curriculum/packs/_schema.md` | שינוי | גרסה 1.1: §2 +שדה pack, §4.3 +שדה item, §4.4 תיוג, §4.5 constants. |
+| 7 | `underwater-app/scripts/test-weakness-targeting.js` | **חדש** (~290 שורות) | 14 בלוקי טסט · **38/38 assertions** עוברות. Part A (`getWeakLetters`) · Part B (`selectItemsForStudent`) · Part C (Constants). |
+| + | `_handoff/2026-05-26-architecture-tasks-tracker.html` | שינוי קל | +שורת `C.12B` בפאזה C (עם תיאור מלא) |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש בראש | תיעוד מלא (7 ההחלטות, קבצים, רגרסיות, שאלות פתוחות) |
+| + | `_handoff/pending-commits.md` | בלוק חדש בראש (זה) | הקבוצה הזו |
+
+**מהות התוצר:**
+מה שעד עכשיו היה "Tier system" יבש (כל ילדה ב-Tier 2 מקבלת אותם פריטים) הופך ל-**דיפרנציאלי אמיתי**. ילדה שיצאה מספטמבר עם `sub-BKT(מ)=0.32` תקבל בנובמבר (פאק חיריק, `allows_weakness_targeting:true`) 70% מהפריטים שמכילים מ — מָיִם, מָלֵא — במקום מילים אקראיות.
+
+**יחס לקבוצות שכבר נדחפו / ממתינות:**
+- ✅ קבוצה T (C.11+C.12+C.13 · `ea81ce6`) — בסיס. **לא דרסתי קוד שלה.** רק הוספתי layer.
+- ✅ A.4 (`getLetterMasteryDistribution`/`getPerLetterState`) — `getWeakLetters` משתמש ב-`_resolvePerLetter` הפנימי שכבר עבד פר-אות עם backfill מ-island 3.
+- 🟡 קבוצה S (E.17+E.18) — אין חפיפת קבצים.
+
+**🎯 פונקציות חדשות שנחשפות:**
+- `AvneiBKT.getWeakLetters(studentId, {threshold, minAttempts, max})` → `string[]`
+- `AvneiPackBridge.selectItemsForStudent(studentId, packId)` → array of items (כולל Weakness Targeting)
+- `AvneiPackBridge.{WEAKNESS_THRESHOLD, MIN_ATTEMPTS_FOR_WEAK, MAX_WEAK_LETTERS_TARGETED, TARGETED_RATIO}`
+
+**אסור לגעת ב- (לא נגעתי):**
+- `epa.js` · `mastery-check.js` · `event-logger.js` · `profile-classifier.js`
+- `teacher-rama.html` (UI ל-Weakness Targeting = post-MVP, לפי הבריף)
+- 22 קבצי משחקונים `stage-3-*.html`
+- Tier model rev1 הקיים (לפי הבריף: rev2 = C.12C עתידי, לא בסקופ C.12B)
+- מסמכי-אם
+- spec rev2 עצמו
+
+**מה לבדוק לפני push (5 דקות — בדיקה אוטומטית בלבד, אין UI חדש):**
+
+```bash
+cd c:/Users/meyta/Downloads/impactos/avnei-yesod
+
+# 1. Smoke test חדש של C.12B
+node underwater-app/scripts/test-weakness-targeting.js
+# → 38/38 ✅
+
+# 2. רגרסיה — C.12 עדיין ירוק
+node underwater-app/scripts/test-pack-bridge.js
+# → 75/75 ✅
+
+# 3. רגרסיה — BKT letters (A.4) עדיין ירוק
+node underwater-app/scripts/test-bkt-letters.js
+# → 53/0 ✅
+
+# 4. Validation על 2 ה-packs המעודכנים
+node underwater-app/scripts/validate-pack.js
+# → 2/2 תקפים ✅
+```
+
+**אין UI חדש לבדיקה ידנית** — `selectItemsForStudent` עדיין לא נקרא ממשחקון (זה C.14 עתידי). ה-API מוכן לקריאה ע"י המשחקונים בשלב הבא.
 
 ---
 

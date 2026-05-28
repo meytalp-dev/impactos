@@ -941,6 +941,35 @@ window.AvneiBKT = (function() {
     return entries.slice(0, limit);
   }
 
+  // getWeakLetters — Top-N אותיות חלשות לפי threshold ב-pKnown ו-minAttempts.
+  // משמש את C.12B (Weakness Targeting Engine ב-pack-bkt-bridge).
+  // ברירות מחדל: threshold=0.40, minAttempts=5, max=3.
+  // החזרה: array של מחרוזות (שמות אותיות), ממוין מהחלשה ביותר.
+  // שונה מ-getWeakestLetters (שמחזיר objects ולא מסנן ב-threshold) ומ-getWeakLettersIn3
+  // (שעובד רק על 5 האותיות הקנוניות באי 3).
+  function getWeakLetters(studentId, options) {
+    const opts = options || {};
+    const threshold = typeof opts.threshold === 'number' ? opts.threshold : 0.40;
+    const minAttempts = typeof opts.minAttempts === 'number' ? opts.minAttempts : 5;
+    const max = typeof opts.max === 'number' ? opts.max : 3;
+
+    const perLetter = _resolvePerLetter(studentId);
+    if (!perLetter) return [];
+
+    const candidates = [];
+    ALL_HEBREW_LETTERS_22.forEach(letter => {
+      const ls = perLetter[letter];
+      if (!ls) return;
+      const attempts = ls.attempts || 0;
+      if (attempts < minAttempts) return;
+      if (ls.pKnown >= threshold) return;
+      candidates.push({ letter, pKnown: ls.pKnown });
+    });
+
+    candidates.sort((a, b) => a.pKnown - b.pKnown);
+    return candidates.slice(0, max).map(c => c.letter);
+  }
+
   // getLetterMasteryDistribution — חתך 4 דליים לדשבורד F.21A.
   //   mastered:    masteryAchievedAt !== null
   //   in_progress: attempts >= 3 AND pKnown >= LETTER_WEAK_THRESHOLD (0.70) AND לא mastered
@@ -1002,6 +1031,9 @@ window.AvneiBKT = (function() {
     getLetterState,
     getWeakestLetters,
     getLetterMasteryDistribution,
+
+    // ---- API חדש — Weakness Targeting (C.12B) ----
+    getWeakLetters,
 
     // ---- קבועים (legacy) ----
     ISLAND_3_LETTERS,

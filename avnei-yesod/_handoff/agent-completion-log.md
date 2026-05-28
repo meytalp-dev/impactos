@@ -85,8 +85,7 @@
 - ✅ A.4 (Sub-BKT 22 letters `54e00ec`) — קוראים בלבד דרך `getLetterState` · `getLetterMasteryDistribution`.
 - ✅ F.21A (`54e00ec`) — מרחיב את `teacher-rama.html` ב-Class View. אדיטיבי לחלוטין, ה-render flow הקיים נשמר 1:1.
 - ✅ A.5 Cold-start (`a171a74`) — לא נגעתי. ה-banners של B.7 מופיעים מעל הכותרת של הטבלה — לא בקונפליקט.
-- ✅ C.11+C.12+C.13 (`ea81ce6`) — לא נגעתי בקוד שלהן. ה-modals נפרדים (`tier-modal` vs `iv-modal`).
-- 🟡 קבוצה U (C.12B — סוכן 11, ממתין לדחיפה) — אין חפיפת קבצים מעבר ל-`teacher-rama.html` (שינויים אדיטיביים בשני המקרים).
+- ✅ C.11+C.12+C.13 (`ea81ce6`) + C.12B (ממתין לדחיפה) — לא נגעתי בקוד שלהן. ה-modals נפרדים (`tier-modal` vs `iv-modal`).
 - 🟡 קבוצה S (E.17+E.18) — אין חפיפת קבצים.
 - 🟡 B.8 (Intervention matcher) — ה-API שלי חושף `recordIntervention` + `getInterventionsFor` שיכולים לשמש את B.8 לעתיד. לא בסקופ.
 
@@ -105,6 +104,95 @@
 - **B.8 (Intervention Matcher)** — מוכן לבנייה. ה-API של `detectGroupTriggers` מספק כל מה שצריך.
 - **B.9 (Group Suggestion Engine)** — יכול להבנות מעל `_activeGroups` + cross-pattern analysis.
 - **F.21E (Teacher action dashboard)** — `state.interventions` כעת מתמלא — אפשר להציג היסטוריית אינטרבנציות פר תלמידה.
+
+---
+
+## C.12B — Weakness Targeting Engine (layer מעל Pack × BKT bridge)
+
+**סטטוס:** ✅ קוד + 38/38 בדיקות חדשות + 75/75 רגרסיה ירוקות · **ממתין לבדיקה ידנית של מיטל ואז push**
+**תאריך:** 2026-05-28 ערב
+**שיחה:** Claude Code (Opus 4.7 · VS Code · impactos)
+**Commit:** טרם נדחף
+**יחס לקבוצה T:** סוכן 8 דחף את ה-base ב-`ea81ce6` (rev1). C.12B הוא incremental layer מעליו לפי spec rev2 (`2026-05-28-C11-C12-C13-pack-bkt-spec-rev2.md`). **לא דרסתי** קוד קיים — רק הוספתי.
+
+**מה נעשה:**
+
+**1. `AvneiBKT.getWeakLetters` חדש ב-`bkt.js`:**
+- חתימה: `getWeakLetters(studentId, options)` עם defaults `{threshold:0.40, minAttempts:5, max:3}`.
+- מחזיר array של שמות אותיות (לא objects), ממוין מהחלשה ביותר.
+- שונה מ-`getWeakestLetters` (שמחזיר objects, לא מסנן ב-threshold) ומ-`getWeakLettersIn3` (5 אותיות בלבד) — אלה נשמרו כפי שהיו.
+- משתמש ב-`_resolvePerLetter` הקיים (`getPerLetterState` עם backfill מ-island 3 + מיגרציה ל-22).
+
+**2. `pack-bkt-bridge.js` — `selectItemsForStudent` + constants:**
+- שינוי שם: `getItemsForStudent` → `selectItemsForStudent` עם לוגיקת Weakness Targeting. `getItemsForStudent` נשמר כ-alias (backward-compat ל-75/75 בדיקות C.12 + לכל קריאה קיימת).
+- Constants חדשים נחשפים: `WEAKNESS_THRESHOLD`=0.40 · `MIN_ATTEMPTS_FOR_WEAK`=5 · `MAX_WEAK_LETTERS_TARGETED`=3 · `TARGETED_RATIO`={1:0.30, 2:0.70, 3:0.75, 4:0.70} (frozen).
+- אלגוריתם: אם `pack.allows_weakness_targeting !== true` → רגיל. אחרת — משוך top-3 weak letters, סנן ל-2 קבוצות, drill-sandwich interleave לפי `TARGETED_RATIO[tier]`.
+- Fallbacks: אם אין targeted פריטים בכלל ב-tier הזה → רגיל. אם יש פחות מ-targetCount targeted → מילוי מ-general (בלי כפילויות).
+
+**3. Item schema מורחב + 2 packs מעודכנים:**
+- שדה חדש בפאק: `allows_weakness_targeting: boolean` (ברירת מחדל `false`).
+- שדה חדש בפריט: `letters_involved: string[]` (האותיות העבריות הלא-ניקוד בפריט).
+- `september-2026.json` + `january-2026.json` — `allows_weakness_targeting: false` (פאקים ראשונים, אין היסטוריה מקודם) + `letters_involved` בכל פריט (september: שם האות; january strand-mode: `[]`).
+
+**4. `validate-pack.js` מעודכן:**
+- בודק `allows_weakness_targeting` הוא boolean (אם קיים).
+- בודק `letters_involved`: חובה non-empty כש-`allows_weakness_targeting: true`; אם קיים בלי הדגל — חייב array (יכול ריק); כל איבר חייב להיות מ-22 הקנוניות (`ALL_HEBREW_LETTERS_22`).
+- שתי ה-packs עוברות `validate-pack.js` ✓.
+
+**5. תיעוד `_schema.md` הורחב:**
+- גרסה 1.1. סעיף חדש §4.4 (`letters_involved` הנחיות תיוג: אות בודדת/מילה/skill ללא אותיות).
+- סעיף חדש §4.5 (Weakness Targeting Constants — מקור פדגוגי + פילוסופיה).
+- הוספת `allows_weakness_targeting` ב-§2 (טבלת שדות חובה ברמת ה-pack).
+
+**6. בדיקות חדשות `test-weakness-targeting.js`:**
+- 14 בלוקים · **38/38 assertions ירוקות**.
+- **Part A** (`AvneiBKT.getWeakLetters`): API surface · cold (no data) · threshold ברירת מחדל · גבול קשיח (0.39 vs 0.40 vs 0.41) · minAttempts · Top-3 cap · custom options.
+- **Part B** (`AvneiPackBridge.selectItemsForStudent`): `allows_weakness_targeting=false` → רגיל · `weakLetters=[]` → רגיל · Tier 2 ratio 70% · multi-weak (top-3 ratio applied) · drill-sandwich interleaving · backward-compat alias.
+- **Part C** (Constants): כל 4 הקבועים החדשים נחשפים בערכים הנכונים + frozen.
+- **רגרסיה:** `test-pack-bridge.js` עדיין 75/75 (אקספטמנס קריטריון בריף).
+
+**7 ההחלטות מ-spec rev2 §2 הוטמעו 1:1:**
+
+| # | החלטה | יישום |
+|---|---|---|
+| 1 | Tier = רמה של אותו תוכן | לא נגעתי ב-Tier model הקיים (C.12C עתידי) — לפי הנחיה מפורשת בבריף |
+| 2 | Max weak letters לטרגט | `MAX_WEAK_LETTERS_TARGETED = 3` בלבד (Cowan + Foorman + Wanzek) |
+| 3 | Threshold | `WEAKNESS_THRESHOLD = 0.40` |
+| 4 | Min attempts | `MIN_ATTEMPTS_FOR_WEAK = 5` |
+| 5 | TARGETED_RATIO פר Tier | `{1:0.30, 2:0.70, 3:0.75, 4:0.70}` frozen |
+| 6 | שדה ב-item | `letters_involved: string[]` (כל האותיות הלא-ניקוד) |
+| 7 | הפעלה | אוטומטית — לפי `pack.allows_weakness_targeting: boolean` |
+
+**קבצים שנוצרו/שונו:**
+
+| # | קובץ | סטטוס | הערה |
+|---|---|---|---|
+| 1 | `underwater-app/js/shared/bkt.js` | שינוי | +`getWeakLetters` (~30 שורות) + ייצוא ב-API |
+| 2 | `underwater-app/js/shared/pack-bkt-bridge.js` | שינוי | +constants (~15) +`_shuffle`/`_interleaveDrill`/`_itemMatchesWeakLetters` (~50) +`selectItemsForStudent` (~70) + alias + עדכון API export + עדכון header comment |
+| 3 | `curriculum/packs/grade1-tashpaz/september-2026.json` | שינוי | `+allows_weakness_targeting:false` + `letters_involved` ב-20 פריטים |
+| 4 | `curriculum/packs/grade1-tashpaz/january-2026.json` | שינוי | `+allows_weakness_targeting:false` + `letters_involved:[]` ב-13 פריטים (strand-mode) |
+| 5 | `underwater-app/scripts/validate-pack.js` | שינוי | +`ALL_HEBREW_LETTERS_22` const + בדיקת `allows_weakness_targeting` boolean + בדיקת `letters_involved` (חובה אם הדגל true, array אחרת) |
+| 6 | `curriculum/packs/_schema.md` | שינוי | גרסה 1.1: §2 +שדה pack, §4.3 +שדה item, §4.4 §4.5 חדשים |
+| 7 | `underwater-app/scripts/test-weakness-targeting.js` | **חדש** (~290 שורות) | 14 בלוקי טסט · **38/38 assertions** |
+| + | `_handoff/2026-05-26-architecture-tasks-tracker.html` | שינוי | +שורת `C.12B` בפאזה C |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש בראש (זה) | תיעוד |
+| + | `_handoff/pending-commits.md` | בלוק חדש בראש | קבוצה חדשה 🟡 |
+
+**רגרסיות שעברו:**
+- `test-pack-bridge.js` (C.12): 75/75 ✓ (Backwards compat acceptance criterion מהבריף)
+- `test-bkt-letters.js` (A.4): 53/0 ✓
+- `validate-pack.js` על 2 ה-packs המעודכנים: 2/2 ✓
+
+**שאלות פתוחות:**
+- **packs עתידיים (נובמבר+):** האם להעלות את `allows_weakness_targeting` ל-`true`? לא בסקופ C.12B — מיטל תחליט פר-פאק עם התוכן.
+- **UI ב-teacher-rama:** ה-bridge יודע למה הוא בחר פריטים מסוימים (כי האות מ של נועה חלשה), אבל ה-UI הקיים לא מציג את זה. החלטה למורה: להוסיף הסבר ב-Section 5 (post-pilot) או לא.
+- **calibration:** WEAKNESS_THRESHOLD=0.40 ו-MIN_ATTEMPTS_FOR_WEAK=5 הם הצעה ראשונית. יש לכייל בפיילוט (לא בסקופ).
+- **Spec rev2 §5.2 שגיאה:** ה-spec כתב `getWeakLetters` שמשתמש ב-`getLetterMasteryDistribution` — אבל הפונקציה הזו מחזירה buckets (`{mastered, in_progress, weak, untouched, by_bucket, total}`), לא map פר-אות. כתבתי גרסה שמשתמשת ב-`_resolvePerLetter` (פנימי ל-bkt.js) שמיישמת את אותה סמנטיקה. **לציין למיטל** — מאומת לפי הבדיקות.
+
+**מה זה פתח להמשך:**
+- C.12C (עתידי) — Tier model rev2 (Tier = רמה של אותו תוכן). יחייב שינוי ב-2 ה-packs (Tier 1 לא יהיה review של אותיות מקודם, אלא רמה בסיסית של ש·ל·נ·א).
+- C.14 — קריאה ל-`selectItemsForStudent` מתוך משחקון. עכשיו ה-API מוכן עם targeting.
+- packs נובמבר ואילך — תוכן אמיתי + `allows_weakness_targeting: true`.
 
 ---
 

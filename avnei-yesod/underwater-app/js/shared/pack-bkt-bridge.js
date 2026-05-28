@@ -1,27 +1,33 @@
 // ============================================================================
-// pack-bkt-bridge.js — C.12 (Pack × BKT Integration)
+// pack-bkt-bridge.js — C.12 (Pack × BKT Integration) + C.12B (Weakness Targeting)
 // ============================================================================
 //
-// המשימה (28.5.2026 · spec: _handoff/2026-05-28-C11-C12-C13-pack-bkt-spec.md §4):
+// המשימה (28.5.2026 · spec: _handoff/2026-05-28-C11-C12-C13-pack-bkt-spec.md §4
+//          + revision: _handoff/2026-05-28-C11-C12-C13-pack-bkt-spec-rev2.md §5):
 //   חיבור פאק חודשי (curriculum/packs/grade1-tashpaz/<month>-<year>.json)
 //   למצב BKT/Sub-BKT של תלמידה → בחירת Tier אוטומטית (1-4).
 //   המורה רואה ב-teacher-rama ויכולה להחליף ידנית (override ב-localStorage).
+//   C.12B מוסיף layer: Weakness Targeting — בפאקים שמותרים, עדיפים פריטים
+//   שמכילים אותיות חלשות מפאקים קודמים (top-3, p<0.40, attempts≥5).
 //
 // API (נחשף ב-window.AvneiPackBridge):
-//   loadPack(packId)                          → pack object (cache or load)
-//   loadCurrentPack(date)                     → pack של החודש הנוכחי (או null)
-//   selectTierForStudent(studentId, packId)   → { tier, reason, source, confidence, pKnown? }
-//   getItemsForStudent(studentId, packId)     → array of items מהטיר המתאים
-//   overrideTier(studentId, packId, tier)     → boolean (success)
-//   clearOverride(studentId, packId)          → boolean
-//   TIER_THRESHOLDS                            → קבועי גבולות (קריאה בלבד)
-//   STRAND_NAMES                               → מיפוי 1-5 לשם בעברית
+//   loadPack(packId)                              → pack object (cache or load)
+//   loadCurrentPack(date)                         → pack של החודש הנוכחי (או null)
+//   selectTierForStudent(studentId, packId)       → { tier, reason, source, confidence, pKnown? }
+//   selectItemsForStudent(studentId, packId)      → array of items (כולל weakness targeting אם מותר)
+//   getItemsForStudent(studentId, packId)         → alias ל-selectItemsForStudent (backward-compat)
+//   overrideTier(studentId, packId, tier)         → boolean (success)
+//   clearOverride(studentId, packId)              → boolean
+//   TIER_THRESHOLDS                                → קבועי גבולות (קריאה בלבד)
+//   STRAND_NAMES                                   → מיפוי 1-5 לשם בעברית
+//   WEAKNESS_THRESHOLD · MIN_ATTEMPTS_FOR_WEAK     → ספי targeting (C.12B)
+//   MAX_WEAK_LETTERS_TARGETED · TARGETED_RATIO     → קבועי בחירת פריטים (C.12B)
 //
 // תלויות:
-//   window.AvneiBKT (A.1/A.4) — getStudentStrands · getLetterMasteryDistribution
+//   window.AvneiBKT (A.1/A.4/C.12B) — getStudentStrands · getLetterState · getWeakLetters
 //   localStorage  (override persistence)
 //
-// טסטים: scripts/test-pack-bridge.js
+// טסטים: scripts/test-pack-bridge.js · scripts/test-weakness-targeting.js
 // ============================================================================
 
 (function () {
@@ -56,6 +62,21 @@
 
   const OVERRIDE_KEY = 'pack-overrides';
   // schema: { [studentId]: { [packId]: { tier, date, author } } }
+
+  // ========== C.12B — Weakness Targeting Constants ==========
+  // מקור: spec rev2 §2 + §5.3. ניתנים לכיול בפיילוט (לא בסקופ C.12B).
+  const WEAKNESS_THRESHOLD = 0.40;          // אות נחשבת חלשה אם pKnown < 0.40
+  const MIN_ATTEMPTS_FOR_WEAK = 5;          // ספים cold-start: לפחות 5 ניסיונות פר אות
+  const MAX_WEAK_LETTERS_TARGETED = 3;      // top-N — מבוסס Cowan + Foorman + Wanzek
+  // TARGETED_RATIO פר Tier — drill-sandwich (MacQuarrie/Burns/Cepeda)
+  // Tier 1 — פחות (overload protection לילדות עם פערים)
+  // Tier 2/3/4 — drill-sandwich 70-75%
+  const TARGETED_RATIO = Object.freeze({
+    1: 0.30,
+    2: 0.70,
+    3: 0.75,
+    4: 0.70
+  });
 
   // נתיב יחסי לדפדפן · נתיב מוחלט ל-Node (לטסטים)
   const PACKS_RELATIVE_PATH = '../curriculum/packs/grade1-tashpaz/';
@@ -303,14 +324,132 @@
   }
 
   // ==========================================================================
-  // getItemsForStudent
+  // selectItemsForStudent (C.12B) — בחירת פריטים עם Weakness Targeting
   // ==========================================================================
+  //
+  // לוגיקה:
+  //   1. בוחרים Tier (selectTierForStudent)
+  //   2. אם pack.allows_weakness_targeting === false (או חסר) → מחזירים את כל ה-items של ה-tier
+  //   3. אם אין weak letters לתלמידה → מחזירים את כל ה-items של ה-tier
+  //   4. אחרת: מסננים ל-2 קבוצות (targeted = items שמכילים weak letters · general = השאר)
+  //      ובונים מערך לפי TARGETED_RATIO[tier] עם drill-sandwich interleave.
+  //
+  // ה-pool תמיד מכיל בדיוק |items| פריטים — אם אין מספיק targeted/general,
+  // מתמלאים מהקבוצה השנייה (בלי כפילויות מעבר ל-pool המקורי).
 
-  function getItemsForStudent(studentId, packId) {
+  function _shuffle(arr) {
+    const out = arr.slice();
+    for (let i = out.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const tmp = out[i]; out[i] = out[j]; out[j] = tmp;
+    }
+    return out;
+  }
+
+  // _interleaveDrill — שזירת targeted ו-general לפי תבנית drill-sandwich.
+  // לא צמודים — תיתן לתלמידה גירויים מעורבים (Bjork desirable difficulties).
+  // אלגוריתם פשוט: שזירה לפי ratio של אורכי המערכים.
+  function _interleaveDrill(targeted, general) {
+    const result = [];
+    const tLen = targeted.length;
+    const gLen = general.length;
+    const total = tLen + gLen;
+    if (total === 0) return result;
+
+    let ti = 0, gi = 0;
+    // יחס תור פר צעד — שומר על פיזור בהתבסס על אורך מבוקש
+    for (let i = 0; i < total; i++) {
+      const tRemaining = tLen - ti;
+      const gRemaining = gLen - gi;
+      if (tRemaining === 0) {
+        result.push(general[gi++]);
+      } else if (gRemaining === 0) {
+        result.push(targeted[ti++]);
+      } else {
+        // מעדיף את הקבוצה עם יחס נותר גבוה יותר ביחס לתוכן המקורי
+        const tShare = tRemaining / tLen;
+        const gShare = gRemaining / gLen;
+        if (tShare >= gShare) {
+          result.push(targeted[ti++]);
+        } else {
+          result.push(general[gi++]);
+        }
+      }
+    }
+    return result;
+  }
+
+  function _itemMatchesWeakLetters(item, weakLetters) {
+    const involved = Array.isArray(item.letters_involved) ? item.letters_involved : null;
+    if (!involved || involved.length === 0) return false;
+    for (const w of weakLetters) {
+      if (involved.includes(w)) return true;
+    }
+    return false;
+  }
+
+  function selectItemsForStudent(studentId, packId) {
     const decision = selectTierForStudent(studentId, packId);
     const pack = loadPack(packId);
     if (!pack || !pack.tiers || !pack.tiers[String(decision.tier)]) return [];
-    return pack.tiers[String(decision.tier)].items || [];
+    const items = pack.tiers[String(decision.tier)].items || [];
+    if (items.length === 0) return [];
+
+    // 1. פאק לא מתיר targeting — חזרה רגילה
+    if (!pack.allows_weakness_targeting) return items;
+
+    // 2. משוך top-N weak letters
+    const bkt = (typeof window !== 'undefined' && window.AvneiBKT) ||
+                (typeof global !== 'undefined' && global.AvneiBKT) || null;
+    if (!bkt || typeof bkt.getWeakLetters !== 'function') return items;
+
+    const weakLetters = bkt.getWeakLetters(studentId, {
+      threshold: WEAKNESS_THRESHOLD,
+      minAttempts: MIN_ATTEMPTS_FOR_WEAK,
+      max: MAX_WEAK_LETTERS_TARGETED
+    });
+
+    if (!weakLetters || weakLetters.length === 0) return items;
+
+    // 3. סנן ל-2 קבוצות
+    const targetedPool = items.filter(i => _itemMatchesWeakLetters(i, weakLetters));
+    const generalPool  = items.filter(i => !_itemMatchesWeakLetters(i, weakLetters));
+
+    // אם אין פריטים מטורגטים בכלל ב-tier הזה — חזרה רגילה
+    if (targetedPool.length === 0) return items;
+
+    // 4. בחירת אחוזים פר Tier
+    const ratio = TARGETED_RATIO[decision.tier];
+    if (typeof ratio !== 'number') return items;
+
+    const totalItems = items.length;
+    let targetCount = Math.round(totalItems * ratio);
+    let generalCount = totalItems - targetCount;
+
+    // הגן על מקרה שאין מספיק פריטים בקבוצה אחת — שאר ימולא מהשנייה
+    const tAvail = targetedPool.length;
+    const gAvail = generalPool.length;
+    if (targetCount > tAvail) {
+      generalCount += (targetCount - tAvail);
+      targetCount = tAvail;
+    }
+    if (generalCount > gAvail) {
+      targetCount += (generalCount - gAvail);
+      generalCount = gAvail;
+    }
+    // clamp לבטיחות (לא יותר מהזמין)
+    if (targetCount > tAvail) targetCount = tAvail;
+    if (generalCount > gAvail) generalCount = gAvail;
+
+    const chosenTargeted = _shuffle(targetedPool).slice(0, targetCount);
+    const chosenGeneral  = _shuffle(generalPool).slice(0, generalCount);
+
+    return _interleaveDrill(chosenTargeted, chosenGeneral);
+  }
+
+  // getItemsForStudent — alias ל-selectItemsForStudent (backward-compat לטסטים ולקריאות קיימות)
+  function getItemsForStudent(studentId, packId) {
+    return selectItemsForStudent(studentId, packId);
   }
 
   // ==========================================================================
@@ -369,15 +508,23 @@
     preloadPack: preloadPack,
     loadCurrentPack: loadCurrentPack,
     selectTierForStudent: selectTierForStudent,
-    getItemsForStudent: getItemsForStudent,
+    selectItemsForStudent: selectItemsForStudent,    // C.12B
+    getItemsForStudent: getItemsForStudent,          // backward-compat alias
     overrideTier: overrideTier,
     clearOverride: clearOverride,
     TIER_THRESHOLDS: TIER_THRESHOLDS,
     STRAND_NAMES: STRAND_NAMES,
+    // C.12B constants:
+    WEAKNESS_THRESHOLD: WEAKNESS_THRESHOLD,
+    MIN_ATTEMPTS_FOR_WEAK: MIN_ATTEMPTS_FOR_WEAK,
+    MAX_WEAK_LETTERS_TARGETED: MAX_WEAK_LETTERS_TARGETED,
+    TARGETED_RATIO: TARGETED_RATIO,
     // helpers לטסטים — לא חלק מה-public API:
     _setPackCache: _setPackCache,
     _clearCache: _clearCache,
-    _pickTier: pickTier
+    _pickTier: pickTier,
+    _interleaveDrill: _interleaveDrill,
+    _itemMatchesWeakLetters: _itemMatchesWeakLetters
   };
 
   if (typeof window !== 'undefined') {
