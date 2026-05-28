@@ -762,6 +762,177 @@ p ≥ 0.85        → Tier 4
 
 ---
 
+## 🚀 סוכן 9 — משימת B.7: Targeted Reading Interventions (P0 · M · חוויית מורה)
+
+**רמת קושי:** M (8-12 שעות) · **עדיפות:** P0 (משלים את F.21A — "פתחי קבוצת תמיכה" תעבוד באמת)
+**תלות:** A.3 ✓ · A.4 ✓ · F.21A ✓ — כולן ב-origin
+
+### 📍 איפה אתה עובד
+
+**ריפו:** `meytalp-dev/impactos`
+**נתיב מקומי:** `c:/Users/meyta/Downloads/impactos/avnei-yesod/`
+
+⚠️ **לא** ב-`ort-presentation-builder`. **לא** ב-`Downloads/edura`.
+
+לפני כל פעולה:
+```bash
+cd c:/Users/meyta/Downloads/impactos && git fetch origin && git status
+```
+
+### מסמך-אם חובה לקרוא ראשון
+
+**`_handoff/2026-05-28-B7-interventions-spec.md`** (~340 שורות, 10 סעיפים)
+
+מכיל: 5 דפוסים מעודכנים (Phonological / Letter Knowledge / Decoding / Fluency / Letter-cluster) · 5 שלבי script (Rosenshine 2012) · UI integration ב-teacher-rama · 8 מקורות מאומתים (IES Foorman 2016 + NRP 2000 + Wanzek 2003 + Elbaum 2000 וכו').
+
+### 5 ההחלטות הסגורות (28.5)
+
+| # | פריט | תשובה |
+|---|---|---|
+| 1 | 5 דפוסים | Phonological / Letter Knowledge / Decoding / Fluency / Letter-cluster |
+| 2 | גודל קבוצה | 3-4 ילדות |
+| 3 | משך | 10-15 דק' × 4-5 ימים שבועיים |
+| 4 | מבנה script | 5 שלבים (Hook → Model → Guided → Independent → Success Check) |
+| 5 | פורמט | Hybrid — Modal preview + PDF export |
+
+### ⚠️ קריטי — תיאום עם סוכן 8
+
+**סוכן 8 (C.11+C.12+C.13) עובד על `teacher-rama.html` במקביל אליך.** לפני שאתה נוגע ב-`teacher-rama.html`:
+1. `git fetch origin && git pull origin main`
+2. בדוק אם סוכן 8 כבר דחף (חיפוש "C.11" ב-`pending-commits.md`)
+3. אם סוכן 8 עוד לא דחף — תיידע את מיטל ושאל אם להמתין
+
+### קבצים שאתה יוצר/משנה
+
+| קובץ | סטטוס | מה |
+|---|---|---|
+| `js/shared/interventions.js` | חדש | API + trigger detection |
+| `interventions/phonological.json` | חדש | script פר דפוס |
+| `interventions/letter-knowledge.json` | חדש | script פר דפוס |
+| `interventions/decoding.json` | חדש | script פר דפוס |
+| `interventions/fluency.json` | חדש | script פר דפוס |
+| `interventions/letter-cluster.json` | חדש | script פר דפוס |
+| `underwater-app/teacher-rama.html` | **הרחבה** | Modal preview + trigger banners |
+| `scripts/test-interventions.js` | חדש | בדיקות אוטומטיות |
+
+### אזהרות
+
+- ❌ לא להמציא תוכן פדגוגי — הצמד ל-templates ב-§5 של ה-spec
+- ❌ לא לשנות EPA או sub-BKT — קריאה בלבד
+- ❌ לא לדחוף בלי אישור
+- PDF export: jsPDF + עברית RTL (BIDI-safe)
+- 5.5 (Letter-cluster) — אותיות מותאמות פר ילדה דרך `getLetterMasteryDistribution()`
+
+### Acceptance Criteria (מ-§7 ב-spec)
+
+- [ ] 5 JSON files פר דפוס
+- [ ] `interventions.js` API
+- [ ] EPA + sub-BKT triggers ב-F.21A מציעים אינטרבנציה
+- [ ] Modal preview + כפתור PDF
+- [ ] PDF בעברית קריאה (RTL, BIDI-safe)
+- [ ] `state.interventions` תיעוד פר תלמידה
+- [ ] בדיקה ידנית: 3 דפוסים שונים
+
+### בסיום
+
+1. עדכן tracker: ✅ B.7
+2. בלוק חדש ב-agent-completion-log.md
+3. קבוצה חדשה ב-pending-commits.md 🟡
+4. דווח: "B.7 מוכן. ממתין לאישור push."
+5. **אל תדחוף לפני אישור.**
+
+---
+
+## 🚀 סוכן 10 — משימת MOY: Middle of Year Diagnostic (P0 · M · חוסם פיילוט בפעימה 2)
+
+**רמת קושי:** M (6-8 שעות) · **עדיפות:** P0 (חוסם פיילוט בינואר-פברואר)
+**תלות:** A.1 ✓ · A.3 ✓ · A.4 ✓ · A.5 ✓ · F.21A ✓ — כולן ב-origin
+
+### 📍 איפה אתה עובד
+
+**ריפו:** `meytalp-dev/impactos`
+**נתיב מקומי:** `c:/Users/meyta/Downloads/impactos/avnei-yesod/`
+
+⚠️ **לא** ב-`ort-presentation-builder`. **לא** ב-`Downloads/edura`.
+
+לפני כל פעולה:
+```bash
+cd c:/Users/meyta/Downloads/impactos && git fetch origin && git status
+```
+
+### מסמך-אם חובה לקרוא ראשון
+
+**`_handoff/2026-05-28-MOY-diagnostic-spec.md`** (~310 שורות, 9 סעיפים)
+
+מכיל: 4 החלטות סגורות · MOY-Lite אינטראקטיבי (לא תחליף למבדק 1-on-1 הרשמי) · `state.assessments` schema · חוקי repeat 5-6 שבועות (לפי `madrich-mivdak-kriah-grade1.txt:247`).
+
+### 4 ההחלטות הסגורות (28.5)
+
+| # | פריט | תשובה |
+|---|---|---|
+| 1 | מי מנהלת? | MOY הרשמי = 1-on-1 (ראמ"ה). MOY-Lite שלנו = התלמידה לבד, עצמאי |
+| 2 | מתי? | חלון ינו-פבר, גמיש פר ילדה |
+| 3 | אם נכשלת? | תיעוד + B.7 + repeat 5-6 שבועות |
+| 4 | תוצאות נשמרות איפה? | `state.assessments` נפרד (לא ב-events) |
+
+### ⚠️ קריטי — תיאום עם סוכן 8 ו-9
+
+שלושתכם נוגעים ב-`teacher-rama.html`:
+- סוכן 8 — Section 5 (Pack × Tier)
+- סוכן 9 — Modal של אינטרבנציות
+- אתה (סוכן 10) — Section 6 (MOY status)
+
+**לפני שאתה נוגע ב-teacher-rama:**
+1. `git fetch origin && git pull origin main`
+2. וודא ש-C.11+C.12+C.13 + B.7 כבר דחפו
+3. אם לא — בקש ממיטל להמתין או שאל אילו סוכנים פעילים
+
+### קבצים שאתה יוצר/משנה
+
+| קובץ | סטטוס | מה |
+|---|---|---|
+| `engine/moy-screener.html` | חדש | UI התלמידה |
+| `js/shared/assessments.js` | חדש | API: recordMOYAttempt, getMOYStatus, getDueAssessments |
+| `engine/moy-items.json` | חדש | 2-3 dummy items פר משימה (משימה 3 + 4) |
+| `underwater-app/teacher-rama.html` | **הרחבה** | Section 6 — סטטוס MOY + טריגר הפעלה |
+| `scripts/test-moy-assessments.js` | חדש | בדיקות אוטומטיות |
+
+### Item Pool — חוק ראמ"ה קריטי
+
+**⚠️ פריטי MOY-Lite חייבים להיות שונים מפריטי תרגול רגיל!** (לפי ראמ"ה — שימוש בפריטי המבדק כתרגול "יפגע במידת הדיוק"). סוכן הקוד יבנה 2-3 dummy items. **תוכן מלא של 60 פריטים = משימה פדגוגית של מיטל**, לא בסקופ שלך.
+
+### אזהרות
+
+- ❌ לא להציג ציון לתלמידה (זה evaluation, לא תרגול)
+- ❌ לא להשתמש בפריטי תרגול רגילים
+- ❌ לא לערבב assessments עם events רגילים — שני localStorage keys שונים
+- ❌ לא לדחוף בלי אישור
+- AvriNeural בלבד לאודיו (כל המשימות מבוססות שמיעה)
+- RTL מלא
+
+### Acceptance Criteria (מ-§7 ב-spec)
+
+- [ ] `engine/moy-screener.html` רץ ללא שגיאות
+- [ ] `state.assessments` schema פעיל, נשמר ל-localStorage נפרד
+- [ ] משימה 3 (הבנת טקסט מושמע) עובדת עם 2-3 dummy items
+- [ ] משימה 4 (מודעות לשונית) עובדת עם 2-3 dummy items
+- [ ] Audio AvriNeural נטען
+- [ ] לא מציג ציון לילדה — רק "סיימת"
+- [ ] Section 6 ב-teacher-rama Student View — סטטוס + כפתור + אזהרה "לא תחליף למבדק הרשמי"
+- [ ] חוקי repeat: `next_review_due = +5 שבועות` אם fail
+- [ ] API: `recordMOYAttempt` · `getMOYStatus` · `getDueAssessments`
+- [ ] `test-moy-assessments.js` — 10+ assertions
+
+### בסיום
+
+1. עדכן tracker: ✅ MOY (קבוצה חדשה בטראקר — "U" או "V")
+2. בלוק חדש ב-agent-completion-log.md
+3. קבוצה חדשה ב-pending-commits.md 🟡
+4. דווח: "MOY-Lite מוכן. 2-3 dummy items. ממתין לאישור push + תוכן מלא ממיטל."
+5. **אל תדחוף לפני אישור.**
+
+---
+
 ## הוספת bootstraps נוספים
 ככל שמיטל תאשר משימות נוספות מהמסלול הקריטי — נוסיף סוכנים נוספים כאן.
 המסלול הקריטי: A0.2 → A0.3 → A0.4 → A.1-6 → B → C → ...
