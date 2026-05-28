@@ -237,7 +237,7 @@ window.AvneiSoundMatch = (function() {
     AvneiFeedback.successBurst(card);
     _correctCount++;
 
-    // דיווח event לפריט
+    // דיווח event לפריט (E.17 28.5 — sound-match רץ ב-shell/house = אי 3)
     const item = _items[_idx];
     const result = {
       activity_type: ACTIVITY_TYPE,
@@ -251,6 +251,8 @@ window.AvneiSoundMatch = (function() {
       hint_used: _hintUsed,
       auto_hint_triggered: _autoHintTriggered,
       noni_guidance_used: _noniGuidanceUsed,
+      rama_task_alignment: (typeof item.rama_task_alignment === 'number') ? item.rama_task_alignment : 1,
+      peima_target:        (typeof item.peima_target === 'number') ? item.peima_target : 1,
     };
     AvneiEventLogger.logActivityResult(result);
     _onItemComplete(result);

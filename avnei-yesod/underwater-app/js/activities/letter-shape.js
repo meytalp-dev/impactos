@@ -296,6 +296,10 @@ window.AvneiLetterShape = (function() {
       hint_used: _hintUsed,
       auto_hint_triggered: _autoHintTriggered,
       noni_guidance_used: _noniGuidanceUsed,
+      // E.17 (28.5) — תיוג ראמ"ה: shell/house = אי 3 = משימה 1 פעימה 1.
+      // אם פריט נושא במפורש את השדות (item-schema.js) → לבחור אותם.
+      rama_task_alignment: (typeof item.rama_task_alignment === 'number') ? item.rama_task_alignment : 1,
+      peima_target:        (typeof item.peima_target === 'number') ? item.peima_target : 1,
     };
     AvneiEventLogger.logActivityResult(result);
     _onItemComplete(result);

@@ -504,6 +504,10 @@ window.AvneiTracePath = (function() {
       hint_used: _hintUsed,
       auto_hint_triggered: _autoHintTriggered,
       noni_guidance_used: _noniGuidanceUsed,
+      // E.17 (28.5) — trace-path רץ ב-shell/house = אי 3 = משימה 1 פעימה 1
+      // (יזוז ל-rama_task=null באי 19/כתיבה כשתופיע פעילות לאי 19).
+      rama_task_alignment: 1,
+      peima_target: 1,
     };
     AvneiEventLogger.logActivityResult(result);
     _onItemComplete(result);

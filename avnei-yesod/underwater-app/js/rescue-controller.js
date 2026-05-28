@@ -152,7 +152,7 @@
 
     const isCorrect = pod.dataset.correct === 'true';
 
-    // לוגינג לתובנות מורה (23.5.2026)
+    // לוגינג לתובנות מורה (23.5.2026 · E.17 28.5)
     if (window.AvneiEventLogger) {
       AvneiEventLogger.logActivityResult({
         activity_type: 'rescue',
@@ -163,6 +163,8 @@
         attempts: isCorrect ? (state.attempts + 1) : (state.attempts + 1),
         response_time_ms: null,
         hint_used: state.attempts >= 1,
+        rama_task_alignment: 1,
+        peima_target: 1,
       });
     }
 

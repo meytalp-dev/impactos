@@ -7,6 +7,87 @@
 
 ---
 
+## E.17 + E.18 — Event Logger ל-3 שדות + Data Export (CSV)
+
+**סטטוס:** ✅ קוד + 23/23 בדיקות עוברות · **ממתין לאישור push**
+**תאריך:** 2026-05-28
+**שיחה:** Claude Code (Opus 4.7 · VS Code · impactos)
+**Commit:** טרם נדחף
+**יחס:** E.17 משלים את A0.2 (השדות פר-פריט) ע"י דחיפה שלהם לכל אירוע. E.18 הופך את הדאטה לזמין למיטל בפיילוט (CSV → Excel/Sheet). ביחד = "הפיילוט מייצר דאטה שאפשר לנתח".
+
+**מה נעשה:**
+
+**E.17 — 3 שדות חדשים באירוע:**
+- `strand_id` — אוטומטי דרך `ISLAND_TO_STRAND[ISLAND_ID_CURRENT]` (22 איים → 5 סטרנדים, מקור: `architecture-mvp.md` §1).
+- `rama_task_alignment` + `peima_target` — מועברים מהפריט (`result.rama_task_alignment` / `result.peima_target`) דרך game-shell ל-4 mechanics, או hardcoded `1,1` ב-9 call sites ישירים (כולם אי 3 = משימה 1 פעימה 1).
+- אירועים ישנים בלי השדות → `null` (backwards compat).
+
+**E.18 — `data-export.html`:**
+- PIN gate זהה ל-`teacher-rama.html` (PIN `4521`, אותו `sessionStorage` key).
+- 6 פילטרים: תלמידה / טווח תאריכים / פעימה / משימת ראמ"ה / סטטוס (✓ + ✗).
+- Summary: 4 אריחים (count + טווח תאריכים + accuracy + median ms).
+- Table preview: 10 שורות אחרונות (10 עמודות עיקריות).
+- CSV עם **BOM** (`'﻿'`) — Excel קורא עברית נכון.
+- 2 כפתורים: הורד CSV / העתק ל-clipboard.
+- 20 עמודות בייצוא (כל שדות האירוע).
+- **אין** קישור ל-data-export מ-teacher-rama (גישה רק דרך URL ישיר — privacy gate נוספת).
+
+**6 החלטות סגורות (ב-bootstrap) הוטמעו 1:1:**
+
+| # | פריט | יישום |
+|---|---|---|
+| 1 | `strand_id` אוטומטי | `ISLAND_TO_STRAND[ISLAND_ID_CURRENT]` ב-event-logger — אין שינוי במשחקונים |
+| 2 | `rama_task_alignment` / `peima_target` מהפריט | `result.X` ב-logActivityResult; game-shell קורא גם מ-`_meta` של JSON ל-D.15 |
+| 3 | CSV ראשון (Apps Script דחוי) | `data-export.html` עם BOM + 20 עמודות; הערה `// TODO: E.18B — Apps Script POST` |
+| 4 | קובץ נפרד | `data-export.html` — לא נגעתי ב-`teacher-rama.html` |
+| 5 | אותו PIN gate | `TEACHER_PIN = '4521'`, אותו `SESSION_AUTH_KEY = 'teacher_authed'` |
+| 6 | רק המורה רואה | PIN gate + אין קישור ממסך תלמידה |
+
+**קבצים שנוצרו/שונו:**
+
+| # | קובץ | סטטוס | הערה |
+|---|---|---|---|
+| 1 | `underwater-app/js/shared/event-logger.js` | שינוי | `ISLAND_TO_STRAND` map (22 → 5, `Object.freeze`) + 3 שדות חדשים ב-`logActivityResult` + ייצוא ב-public API |
+| 2 | `underwater-app/js/templates/game-shell.js` | שינוי | קריאת `rama_task_alignment` + `peima_target` מ-config (שורש או `_meta`, fallback ל-1,1) והעברה ל-mechanic ב-opts |
+| 3 | `underwater-app/js/templates/mechanic-tap-all.js` | שינוי 2 שורות | העברת השדות מ-opts ל-`logActivityResult` |
+| 4 | `underwater-app/js/templates/mechanic-pick.js` | שינוי 2 שורות | אותו דבר |
+| 5 | `underwater-app/js/templates/mechanic-memory-pair.js` | שינוי 2 שורות | אותו דבר |
+| 6 | `underwater-app/js/templates/mechanic-sort-by-letter.js` | שינוי 2 שורות | אותו דבר |
+| 7 | `underwater-app/stage-3-storm.html` | שינוי 2 בלוקים | hardcode 1,1 ב-2 קריאות (correct + wrong) |
+| 8 | `underwater-app/stage-3-trail-resh.html` | שינוי בלוק | hardcode 1,1 |
+| 9 | `underwater-app/stage-3-dalet.html` | שינוי בלוק | hardcode 1,1 (D.15 dalet) |
+| 10 | `underwater-app/js/rescue-controller.js` | שינוי בלוק | hardcode 1,1 (stage-3-rescue.html) |
+| 11 | `underwater-app/js/activities/letter-shape.js` | שינוי בלוק | מהפריט עם fallback ל-1,1 |
+| 12 | `underwater-app/js/activities/find-letter.js` | שינוי בלוק | אותו דבר |
+| 13 | `underwater-app/js/activities/sound-match.js` | שינוי בלוק | אותו דבר |
+| 14 | `underwater-app/js/activities/trace-path.js` | שינוי בלוק | hardcode 1,1 (טרם נחשף לאי 19) |
+| 15 | `underwater-app/scripts/test-event-logger-fields.js` | **חדש** (~155 שורות) | 5 בלוקי בדיקה · 23 assertions — כולם ✓ |
+| 16 | `underwater-app/data-export.html` | **חדש** (~430 שורות) | מסך מלא: PIN gate · 6 פילטרים · 4 summary tiles · table preview · CSV+BOM · clipboard |
+| + | `_handoff/2026-05-26-architecture-tasks-tracker.html` | שינוי קל | E.17 ☐ → ✅ + E.18 ☐ → ✅ + העברה לקטגוריה "הסתיים" |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש בראש | זה. |
+| + | `_handoff/pending-commits.md` | בלוק חדש בראש | קבוצה P |
+
+**מה לבדוק (5 דקות):**
+
+1. **`teacher-rama.html`** — לוודא שלא נשבר (לא נגעתי ב-PIN gate שם, רק קוראים ממנו את המודל).
+2. **`underwater-app/stage-3-storm.html`** — לשחק סשן קצר. ב-DevTools → `JSON.parse(localStorage['underwater-app:v1']).events` → לוודא ש-3 שדות חדשים מופיעים בכל אירוע (`strand_id=1`, `rama_task_alignment=1`, `peima_target=1`).
+3. **`underwater-app/data-export.html`** — לפתוח, להזין PIN `4521`, לוודא שהפילטרים עובדים. ללחוץ "הורד CSV". לפתוח ב-Excel — עברית קריאה (BOM שם).
+4. **"העתק ל-clipboard"** — להדביק ל-Google Sheet ולראות שהעמודות מסתדרות.
+5. **בדיקות אוטומטיות:** `node avnei-yesod/underwater-app/scripts/test-event-logger-fields.js` → 23 ✅.
+
+**שאלות פתוחות (ממתינות לתשובה):**
+
+1. **trace-path.js** — מוגדר עם `rama_task_alignment: 1, peima_target: 1` (אי 3). כשתופיע פעילות באי 19 (כתיבה) — נצטרך לשנות ל-`rama_task_alignment: 9` (הכתבה, פעימה 3) או ל-null. כרגע ב-MVP הוא רץ ב-shell/house = אי 3. **לאישור:** האם להשאיר 1,1 לעת עתה?
+2. **`mvp_letter_count_proxy`** — ב-`mastery-check.js` קיים מנגנון 22-letter proxy לאי 3. ה-`strand_id` הנוכחי לא מתחשב באות הספציפית. כשתופיע F.21B (sub-BKT פר-אות בדשבורד), ייתכן שנרצה גם `letter_id` באירוע — לא בסקופ E.17.
+
+**מה זה פתח להמשך:**
+
+- **F.21A (כבר חי)** ייהנה מ-`strand_id` ב-events לחישובי `checkRamaTaskStatus` מדויקים יותר (אם תרצה לשנות מ-`primary_island_id` ל-`strand_id` ב-aggregation).
+- **E.18B** (Apps Script POST ל-Google Sheet) — כתוב כ-`// TODO` ב-`data-export.html`. לא בסקופ הפיילוט הראשון, אבל פתוח.
+- **כיול thresholds** — אחרי הפיילוט יהיו ~1,000+ אירועים עם 3 השדות החדשים. אפשר להפעיל ניתוח Apps Script / Python ולכייל את ה-`accuracy_threshold_pKnown` ו-`fluency_threshold_seconds` ב-`ISLAND_TO_RAMA`.
+
+---
+
 ## A.5 — Cold-start Protocol (3 ימים + 30 ניסיונות · שילוב)
 
 **סטטוס:** ✅ קוד + UI הסתיימו · 24/24 smoke assertions עוברות · **ממתין לאישור push**

@@ -192,6 +192,8 @@ window.AvneiMechanics['pick'] = (function () {
           attempts: state.attempts + 1,
           response_time_ms: isCorrect ? responseTime : null,
           hint_used: state.attempts >= 1,
+          rama_task_alignment: opts.rama_task_alignment,
+          peima_target:        opts.peima_target,
         });
       }
 

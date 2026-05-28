@@ -4,6 +4,67 @@
 
 ---
 
+## 🟡 קבוצה S — E.17 + E.18 (Event Logger ל-3 שדות + Data Export CSV)
+
+**סטטוס:** 🟡 ממתין לאישור push ממיטל (5 דק' בדיקה)
+**תאריך:** 2026-05-28
+**16 קבצים (2 חדשים · 14 שינויים · 3 handoff updates) · חבילה אחת**
+
+| # | קובץ | סטטוס שינוי | הערה |
+|---|---|---|---|
+| 1 | `underwater-app/js/shared/event-logger.js` | שינוי (~25 שורות) | `ISLAND_TO_STRAND` map (22 → 5, `Object.freeze`) + 3 שדות חדשים ב-`logActivityResult` (`strand_id` אוטומטי, `rama_task_alignment` ו-`peima_target` מ-result) + ייצוא ב-public API |
+| 2 | `underwater-app/js/templates/game-shell.js` | שינוי (~15 שורות) | שליפת `rama_task_alignment` + `peima_target` מ-config (שורש או `_meta`, fallback ל-1,1) והעברה ל-mechanic ב-opts |
+| 3 | `underwater-app/js/templates/mechanic-tap-all.js` | שינוי 2 שורות | העברת השדות מ-opts ל-`logActivityResult` |
+| 4 | `underwater-app/js/templates/mechanic-pick.js` | שינוי 2 שורות | אותו דבר |
+| 5 | `underwater-app/js/templates/mechanic-memory-pair.js` | שינוי 2 שורות | אותו דבר |
+| 6 | `underwater-app/js/templates/mechanic-sort-by-letter.js` | שינוי 2 שורות | אותו דבר |
+| 7 | `underwater-app/stage-3-storm.html` | שינוי 2 בלוקים | hardcode 1,1 ב-2 קריאות (correct + wrong) |
+| 8 | `underwater-app/stage-3-trail-resh.html` | שינוי בלוק | hardcode 1,1 |
+| 9 | `underwater-app/stage-3-dalet.html` | שינוי בלוק | hardcode 1,1 (D.15 dalet) |
+| 10 | `underwater-app/js/rescue-controller.js` | שינוי בלוק | hardcode 1,1 (`stage-3-rescue.html`) |
+| 11 | `underwater-app/js/activities/letter-shape.js` | שינוי בלוק | מהפריט עם fallback ל-1,1 (shell/house) |
+| 12 | `underwater-app/js/activities/find-letter.js` | שינוי בלוק | אותו דבר |
+| 13 | `underwater-app/js/activities/sound-match.js` | שינוי בלוק | אותו דבר |
+| 14 | `underwater-app/js/activities/trace-path.js` | שינוי בלוק | hardcode 1,1 (עוד לא נחשף לאי 19) |
+| 15 | `underwater-app/scripts/test-event-logger-fields.js` | **חדש** (~155 שורות) | 5 בלוקי בדיקה · **23 assertions עוברות** · ISLAND_TO_STRAND mapping + שדות חדשים + backwards compat |
+| 16 | `underwater-app/data-export.html` | **חדש** (~430 שורות) | PIN gate (זהה ל-teacher-rama) · 6 פילטרים · 4 summary tiles · table preview · CSV+BOM · clipboard |
+| + | `_handoff/2026-05-26-architecture-tasks-tracker.html` | שינוי קל | E.17 ☐ → ✅ + E.18 ☐ → ✅ + העברה לקטגוריה "הסתיים" |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש בראש | תיעוד E.17+E.18 (6 החלטות שהוטמעו, 20 שדות באירוע, 23/23 בדיקות) |
+| + | `_handoff/pending-commits.md` | בלוק חדש בראש (זה) | הקבוצה הזו |
+
+**מהות התוצר:**
+E.17 דוחף 3 תיוגים קריטיים לכל אירוע פעילות (`strand_id` אוטומטי לפי `ISLAND_TO_STRAND` mapping של 22→5, ו-`rama_task_alignment` + `peima_target` מהפריט). E.18 הופך את הדאטה הזו לזמינה למורה דרך `data-export.html` — מסך עצמאי עם PIN gate, פילטרים מלאים, ו-CSV עם BOM ל-Excel. ביחד: "הפיילוט מייצר דאטה מתויגת שאפשר לנתח".
+
+**יחס לקבוצות שכבר נדחפו / ממתינות:**
+- ✅ A0.2 (`rama_task_alignment` + `peima_target` פר-פריט) — E.17 מסיים את ה-loop ע"י דחיפת השדות גם לאירועים
+- ✅ A.1 / A.3 / A.4 — לא נגעתי. רק קורא אינדיקציה ל-BKT דרך `appendEvent` (כמו קודם)
+- ✅ F.21A (`teacher-rama.html`) — לא נגעתי בקובץ. רק *קוראים* ממנו את ה-PIN gate
+- ⏳ קבוצה R (A.5 Cold-start) — חופפת ב-`teacher-rama.html` אבל לא בקבצים שלי. אין קונפליקט
+- ❌ אין חפיפת קבצים עם D.14/D.15 — תחום שונה (audio + UI)
+
+**מה לבדוק לפני push (5 דקות):**
+
+1. **`teacher-rama.html`** — לפתוח עם PIN `4521`, לוודא שלא נשבר (אף שינוי לא בקובץ הזה).
+2. **`stage-3-storm.html`** או **`stage-3-dalet.html`** — לשחק סשן קצר.
+3. **DevTools → Console:**
+   ```js
+   JSON.parse(localStorage['underwater-app:v1']).events.slice(-1)[0]
+   ```
+   לוודא שמופיעים: `strand_id: 1`, `rama_task_alignment: 1`, `peima_target: 1`.
+4. **`data-export.html`** — לפתוח, PIN `4521`, ללחוץ "הורד CSV", לפתוח ב-Excel — עברית קריאה (BOM).
+5. **בדיקות אוטומטיות:** `node avnei-yesod/underwater-app/scripts/test-event-logger-fields.js` → 23 ✅.
+
+**שאלות פתוחות:**
+- **`trace-path.js`** מוגדר 1,1 (אי 3). אם תופיע פעילות באי 19 (כתיבה) — נצטרך לשנות. כרגע OK.
+- **`mvp_letter_count_proxy`** — לא בסקופ E.17. אם נוסיף `letter_id` באירוע בעתיד (F.21B) — תהיה התאמה נחוצה.
+
+**לפני push (חובה — סביבת ריבוי-סוכנים):**
+```
+git fetch origin && git status
+```
+
+---
+
 ## 🟡 קבוצה R — A.5 Cold-start Protocol
 
 **סטטוס:** 🟡 דורש בדיקת מיטל ידנית לפני push (5-8 דק')

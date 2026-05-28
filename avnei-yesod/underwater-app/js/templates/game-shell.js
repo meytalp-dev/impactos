@@ -318,6 +318,20 @@ window.AvneiGameShell = (function () {
       console.error('AvneiGameShell: unknown mechanic', config.mechanic);
       return;
     }
+    // E.17 (28.5.2026) — שליפת rama_task_alignment + peima_target מה-JSON.
+    // shin.json (D.14) שמר אותם תחת _meta, JSONs ל-D.15 יכולים לשים בשורש —
+    // נתמוך בשניהם. אי 3 → ברירת מחדל 1,1 (משימה 1 פעימה 1) למקרה שחסר.
+    const ramaTaskAlignment = (typeof config.rama_task_alignment === 'number')
+      ? config.rama_task_alignment
+      : (config._meta && typeof config._meta.rama_task_alignment === 'number')
+        ? config._meta.rama_task_alignment
+        : 1;
+    const peimaTarget = (typeof config.peima_target === 'number')
+      ? config.peima_target
+      : (config._meta && typeof config._meta.peima_target === 'number')
+        ? config._meta.peima_target
+        : 1;
+
     // D.15 v2 F1.1 — להעביר theme ל-mechanic. ה-mechanic מוסיף
     // theme-X class על ה-root, וה-CSS עוטף את הצורה הויזואלית
     // (bubble/star/shell/fish) בהתאם.
@@ -329,6 +343,9 @@ window.AvneiGameShell = (function () {
       total:         config.counter.total,
       mechanicConfig: config.mechanicConfig || {},
       inGamePromptAudioKey: config.inGamePromptAudioKey || null,
+      // E.17 — מועברים ל-logActivityResult בכל מכניקה
+      rama_task_alignment: ramaTaskAlignment,
+      peima_target:        peimaTarget,
       // הערה: wordPool לא מועבר ל-tap-all/pick (דפוס B — אותיות בלבד).
       // אם בעתיד נוסיף מכניקה עם תמונות (sound-match וכו') — כאן הוא יחזור.
       onUnitWon: (idx) => {

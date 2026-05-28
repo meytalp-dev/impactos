@@ -51,6 +51,21 @@ window.AvneiEventLogger = (function() {
     'shell':        [],
   };
 
+  // ============================================================
+  // ISLAND_TO_STRAND — מיפוי 22 איים ל-5 סטרנדים (E.17, 28.5.2026)
+  // ============================================================
+  // מקור: architecture-mvp.md §1 (טבלת 5 הסטרנדים → איים שייכים).
+  // strand_id: 1=פונולוגיה+דקודינג, 2=מורפולוגיה, 3=שפה דבורה+אוצר,
+  //            4=קריאה+הבנת הנקרא, 5=כתיבה.
+  // נצרך ל-checkRamaTaskStatus (F.21A) ול-data-export (E.18).
+  const ISLAND_TO_STRAND = Object.freeze({
+    1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1,   // סטרנד 1
+    9: 2, 10: 2, 11: 2,                                // סטרנד 2
+    12: 3, 13: 3, 14: 3,                               // סטרנד 3
+    15: 4, 16: 4, 17: 4, 18: 4,                        // סטרנד 4
+    19: 5, 20: 5, 21: 5, 22: 5,                        // סטרנד 5
+  });
+
   // result = {
   //   activity_type, activity_variant, item_id, target_letter,
   //   supportLevel, is_correct, attempts, response_time_ms,
@@ -69,6 +84,13 @@ window.AvneiEventLogger = (function() {
       supportLevel:         result.supportLevel || 1,
       primary_island_id:    PRIMARY_ISLAND[activity] || null,
       secondary_island_ids: SECONDARY_ISLANDS[activity] || [],
+      // E.17 (28.5.2026) — 3 שדות לתיוג ראמ"ה/סטרנד:
+      //   strand_id — מיפוי אוטומטי מ-island_id_current (לא דורש שינוי במשחקונים)
+      //   rama_task_alignment / peima_target — מועברים מהפריט דרך result
+      // אירועים ישנים בלי השדות → null (backwards-compat).
+      strand_id:            ISLAND_TO_STRAND[ISLAND_ID_CURRENT] || null,
+      rama_task_alignment:  (typeof result.rama_task_alignment === 'number') ? result.rama_task_alignment : null,
+      peima_target:         (typeof result.peima_target === 'number') ? result.peima_target : null,
       is_correct:           result.is_correct === true,
       attempts:             typeof result.attempts === 'number' ? result.attempts : 0,
       response_time_ms:     typeof result.response_time_ms === 'number' ? result.response_time_ms : null,
@@ -187,5 +209,6 @@ window.AvneiEventLogger = (function() {
     SESSION_ID,
     PRIMARY_ISLAND,
     SECONDARY_ISLANDS,
+    ISLAND_TO_STRAND,
   };
 })();
