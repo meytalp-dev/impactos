@@ -7,6 +7,65 @@
 
 ---
 
+## 🎼 Orchestrator — סיכום סוף יום 28.5.2026 ערב
+
+**סטטוס:** ✅ סגירת יום · 5 commits ב-origin · 4 סוכני קוד דחפו · 1 commit תזמורת · 1 verification PASS · 2 findings פתוחים
+**תאריך:** 2026-05-28 ערב
+**שיחה:** סוכן תזמורת (Claude Code · Opus 4.7 · VS Code · impactos)
+
+### 5 commits של היום ב-origin
+
+| # | hash | מה | מי |
+|---|---|---|---|
+| 1 | `93dbd4a` | MOY-Lite — תשתית diagnostic (משימות 3+4) | סוכן 10 |
+| 2 | `f8fe4f4` | C.12C — Tier model rev2 (אותו תוכן, רמה שונה) | סוכן 12 |
+| 3 | `9578194` | C.12B — Weakness Targeting Engine | סוכן 11 |
+| 4 | `0dbbf4e` | B.7 — Targeted Reading Interventions | סוכן 9 |
+| 5 | `6743b89` | ארכוב 11 packs v0.1 → `_archive/v1-legacy/` | תזמורת |
+
+### B.7 Verification — Playwright headless
+
+✅ **PASS** (28.5 ערב, verification agent חיצוני) — Banner Class View · Modal 5 שלבים · ESC + click-outside · localStorage persistence per-student · PDF print (3410 chars) · 78/78 unit tests עוברים על HEAD החדש.
+
+### 🐛 2 Findings פתוחים — לסוכן 13
+
+**Finding A — placeholders ב-Letter Cluster intervention** (חומרה 🟡 בינוני)
+- **מקור:** B.7 (commit `0dbbf4e`, סוכן 9)
+- **תופעה:** Modal Materials list + HOOK + INDEPENDENT stages מציגים `{personalized_letters}` ו-`{personalized_first_letter}` כטקסט מילולי. גם ב-PDF.
+- **שורש:** `openInterventionModal` / `printInterventionGroup` מעבירות רק `groupCommonDetails` ל-`interpolateScript`. ב-Letter Cluster, האותיות הן per-student → `groupCommonDetails` ריק → placeholders ברמת ה-script לא ממולאים. כרטיסי הילדות מציגים נכון ("ז · ח · ט"), אבל טקסט ה-script נראה לא מקצועי.
+- **תיקון מוצע:** ~10 שורות — pre-compute top-3 most-shared letters across the group, pass as `studentDetails`.
+- **קבצים:** `underwater-app/teacher-rama.html` (`openInterventionModal`, `printInterventionGroup`)
+
+**Finding B — TDZ ב-F.21A** (חומרה 🟡 בינוני · pre-existing מ-`54e00ec`)
+- **מקור:** F.21A (commit `54e00ec`, מ-27.5.2026 לילה)
+- **תופעה:** Refresh של דף `teacher-rama.html` כשמשתמש כבר אומת (`sessionStorage auth=1`) → `Cannot access 'viewState' before initialization`. כל ה-Main content נשאר ריק (טבלה, banners, הכל).
+- **שורש:** PIN-bypass path קורא ל-`boot()` synchronously בתוך IIFE בשורה ~1057, אבל `const viewState` / `const STUDENTS_KEY` declarations הם בשורות ~1098+. TDZ classic.
+- **Workaround נוכחי:** clear sessionStorage (המורה לא תדע).
+- **תיקון מוצע:** העברת `boot()` מתחת לdeclarations, או declarative initialization של viewState/STUDENTS_KEY מוקדם יותר.
+- **קבצים:** `underwater-app/teacher-rama.html` (~שורות 1057-1100)
+
+### 📋 פעולות תזמורת בcommit הזה
+
+1. ✅ עדכון `tracker.html` — B.7 סומן verification PASS · 2 findings מצוינים
+2. ✅ עדכון agent-completion-log (הבלוק הזה) — סיכום היום + findings
+3. ✅ תיקון תיעוד שבור: קישורים ב-`literacy-grade1-2-yearly.md:145-154` ובt-`sources_used` של 3 קבצי planning (`grade1-tashpaz/{september,october,november}.json`) — הקבצים שהיו מוזכרים אוּרכבו ב-`6743b89` ל-`_archive/v1-legacy/curriculum/packs/`
+
+### 🔜 Pending לסוכן 13 (מחר)
+
+- תיקון Finding A — ~10 שורות (B.7)
+- תיקון Finding B — TDZ refactor (F.21A)
+- שני התיקונים יחד = bundle אחד. אומדן: 30-60 דק'.
+- **לא להפעיל לפני שמיטל בודקת MOY ידנית** (כדי לא לאסוף עוד שינויים ל-teacher-rama בהתקלות).
+
+### Pending תוכן ידני של מיטל (לא בסקופ קוד)
+
+- 40 פריטים אמיתיים ל-`september-2026.json` (פעימה 1)
+- 60 פריטי MOY-Lite (משימות 3+4)
+- 5 scripts אינטרבנציה — תוכן פדגוגי מעמיק
+- 7 packs planning (`grade1-tashpaz/{month}.json`) — עוד untracked, ממתינים להחלטה מי כותב items
+
+---
+
 ## C.12C — עדכון Tier model ב-Dummy Packs (rev1 → rev2 · ניקוי קצוות)
 
 **סטטוס:** ✅ קוד + 113 בדיקות אוטומטיות · **ממתין לאישור push ממיטל**
