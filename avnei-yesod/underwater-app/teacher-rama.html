@@ -722,6 +722,37 @@
     border-radius: 6px;
     margin-top: 4px;
   }
+  /* MOY × B.7 link (סוכן 16 · 28.5.2026) — "ממתינה לקבוצה" badge ב-Student View */
+  .moy-suggest-badge {
+    background: #fff7ed;
+    border-right: 4px solid #f97316;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-top: 10px;
+    color: #7c2d12;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .moy-suggest-badge .msb-line1 {
+    font-weight: 700; color: #9a3412;
+    margin-bottom: 2px;
+  }
+  .moy-suggest-badge .msb-line1 strong { color: #7c2d12; }
+  .moy-suggest-badge .msb-line2 {
+    color: #9a3412; font-size: 12.5px;
+  }
+  /* MOY-sourced banner ב-Class View — כתום מובחן מ-iv-banner (כהרגיל ענברי) */
+  .iv-banner.iv-banner-moy {
+    background: linear-gradient(135deg, #ffedd5 0%, #fdba74 100%);
+    border-right-color: #ea580c;
+  }
+  .iv-banner.iv-banner-moy .iv-desc { color: #7c2d12; }
+  .iv-banner.iv-banner-moy .iv-desc .iv-pattern { color: #7c2d12; font-weight: 800; }
+  .iv-banner.iv-banner-moy .iv-desc .iv-group-info { color: #9a3412; }
+  .iv-banner.iv-banner-moy button.iv-open-modal {
+    background: #ea580c;
+  }
+  .iv-banner.iv-banner-moy button.iv-open-modal:hover { background: #c2410c; }
 
   /* Flags */
   .flag-card {
@@ -1138,6 +1169,7 @@
 
 <!-- ============ CLASS VIEW ============ -->
 <div id="classView">
+  <div id="moyInterventionBanners" class="iv-banners-wrap"></div>
   <div id="interventionTriggers" class="iv-banners-wrap"></div>
   <div class="section">
     <h2>טבלת כיתה — תלמידות × 10 משימות ראמ"ה</h2>
@@ -1461,6 +1493,7 @@ function renderClassView() {
   const body = document.getElementById('classViewBody');
   const students = getAllStudents();
   const ivWrap = document.getElementById('interventionTriggers');
+  const moyWrap = document.getElementById('moyInterventionBanners');
 
   if (students.length === 0) {
     body.innerHTML = `<div class="empty">
@@ -1471,11 +1504,14 @@ function renderClassView() {
     </div>`;
     document.getElementById('classLegend').innerHTML = '';
     if (ivWrap) ivWrap.innerHTML = '';
+    if (moyWrap) moyWrap.innerHTML = '';
     return;
   }
 
   // B.7 — Intervention triggers (groups של 3+ ילדות עם דפוס משותף)
   renderInterventionTriggers(students);
+  // MOY × B.7 link (סוכן 16) — banner נפרד מעל, כשיש 3+ עם suggested_intervention
+  renderMOYInterventionBanners(students);
 
   if (viewState.pulseMode === 'snapshot') {
     body.innerHTML = renderSnapshotView(students);
@@ -2133,6 +2169,29 @@ function renderMOYSection(studentId) {
     }
   }
 
+  // MOY × B.7 link (סוכן 16) — badge "ממתינה לקבוצה" כשיש suggested_intervention
+  // ספירת תלמידות אחרות עם אותו patternId כדי להראות "ממתינה לעוד X תלמידות"
+  let suggestBadge = '';
+  if (status.suggested_intervention && status.suggested_intervention.patternId) {
+    const pid = status.suggested_intervention.patternId;
+    const patternLabel = moyPatternLabel(pid);
+    const total = countStudentsWithMOYPattern(pid);
+    let line2;
+    if (total >= 3) {
+      line2 = `📋 קבוצה מוכנה לפתיחה — ${total} תלמידות עם דפוס דומה (ראי "מבט כיתה")`;
+    } else {
+      const need = 3 - total;
+      const word = need === 1 ? 'תלמידה' : 'תלמידות';
+      line2 = `ממתינה לעוד ${need} ${word} עם דפוס דומה`;
+    }
+    suggestBadge = `
+      <div class="moy-suggest-badge">
+        <div class="msb-line1">💡 מתאימה לקבוצת תרגול ב<strong>${escapeHtml(patternLabel)}</strong></div>
+        <div class="msb-line2">${escapeHtml(line2)}</div>
+      </div>
+    `;
+  }
+
   // Tasks summary (when measured)
   let tasksLine = '';
   if (status.measured && status.last_attempt) {
@@ -2186,6 +2245,8 @@ function renderMOYSection(studentId) {
         </div>
 
         ${dueBanner}
+
+        ${suggestBadge}
 
         <div class="moy-warning">
           ⚠️ <strong>MOY-Lite הוא תרגול, לא תחליף למבדק ראמ"ה הרשמי.</strong>
@@ -2402,6 +2463,113 @@ function renderInterventionTriggers(students) {
       openInterventionModal(Number(btn.dataset.groupIdx));
     });
   });
+}
+
+// ============================================================
+// MOY × B.7 link (סוכן 16 · 28.5.2026)
+// תוויות עברית פשוטה למורה (לפי spec של מיטל) — לא BKT/EPA טכני.
+// הבדל מ-IV_PATTERN_LABELS: המפה הזו "שורה תחתונה" קצרה ל-MOY context.
+// ============================================================
+const MOY_PATTERN_LABELS_HE = {
+  phonological:     'מודעות פונולוגית',
+  letter_knowledge: 'זיהוי אותיות',
+  decoding:         'פענוח',
+  fluency:          'שטף קריאה',
+  letter_cluster:   'צירופי אותיות'
+};
+
+function moyPatternLabel(patternId) {
+  return MOY_PATTERN_LABELS_HE[patternId] || patternId;
+}
+
+// כמה תלמידות במצב MOY suggested_intervention עם patternId זהה (כולל הנוכחית).
+function countStudentsWithMOYPattern(patternId) {
+  if (!window.AvneiAssessments || !patternId) return 0;
+  const students = getAllStudents();
+  let n = 0;
+  for (let i = 0; i < students.length; i++) {
+    const st = AvneiAssessments.getMOYStatus(students[i].id);
+    if (st && st.suggested_intervention && st.suggested_intervention.patternId === patternId) {
+      n++;
+    }
+  }
+  return n;
+}
+
+// Banner כתום ב-Class View כשמצטברות 3+ תלמידות עם אותו patternId מ-MOY.
+// נכתב מעל ה-iv-banners הקיימים (DOM order). אם EPA כבר מצא קבוצה — לא מחליפים.
+function renderMOYInterventionBanners(students) {
+  const wrap = document.getElementById('moyInterventionBanners');
+  if (!wrap) return;
+  if (!window.AvneiAssessments) { wrap.innerHTML = ''; return; }
+  // אם modal פתוח — דלגי על re-render (לא לפגוע ב-snapshotGroup של iv-modal)
+  if (document.querySelector('[data-iv-modal]')) return;
+
+  // קיבוץ ילדות לפי patternId
+  const groups = {};
+  for (let i = 0; i < students.length; i++) {
+    const s = students[i];
+    const moy = AvneiAssessments.getMOYStatus(s.id);
+    const sug = moy && moy.suggested_intervention;
+    if (!sug || !sug.patternId) continue;
+    const pid = sug.patternId;
+    if (!groups[pid]) groups[pid] = [];
+    groups[pid].push({
+      id: s.id,
+      name: s.name || s.id,
+      details: sug.details || {}
+    });
+  }
+
+  const readyPatterns = Object.keys(groups).filter(p => groups[p].length >= 3);
+  if (readyPatterns.length === 0) { wrap.innerHTML = ''; return; }
+
+  const html = readyPatterns.map(pid => {
+    const stus = groups[pid];
+    const label = moyPatternLabel(pid);
+    const names = stus.map(s => s.name).join(', ');
+    return `<div class="iv-banner iv-banner-moy" data-moy-pattern="${escapeHtml(pid)}">
+      <span class="iv-icon">📋</span>
+      <div class="iv-desc">
+        <span>קבוצה מוכנה לפתיחה (מתוך MOY-Lite) — </span>
+        <span class="iv-pattern">${stus.length} תלמידות צריכות תרגול ב${escapeHtml(label)}</span>
+        <span class="iv-group-info">${escapeHtml(names)}</span>
+      </div>
+      <button type="button" class="iv-open-modal" data-moy-open-pattern="${escapeHtml(pid)}">📋 פתחי קבוצת תמיכה</button>
+    </div>`;
+  }).join('');
+
+  wrap.innerHTML = html;
+
+  wrap.querySelectorAll('button[data-moy-open-pattern]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const pid = btn.dataset.moyOpenPattern;
+      openMOYInterventionGroup(pid, groups[pid]);
+    });
+  });
+}
+
+// בונה virtualGroup ב-shape של _activeGroups, דוחף ופותח modal קיים של B.7.
+// אותו modal — ה-handlers שם משתמשים ב-snapshotGroup, אז שינויים ל-_activeGroups
+// אחרי הפתיחה לא יפגעו ב-modal הפתוח.
+function openMOYInterventionGroup(patternId, stus) {
+  if (!patternId || !stus || stus.length === 0) return;
+  // מנע כפילות: אם כבר קיים virtualGroup לאותו pattern — השתמשי בו
+  let idx = _activeGroups.findIndex(g => g && g._moySourced && g.patternId === patternId);
+  if (idx === -1) {
+    const first = stus[0];
+    const virtualGroup = {
+      patternId: patternId,
+      students: stus,
+      groupCommonDetails: (first && first.details) ? first.details : {},
+      confidence: 'low',
+      _moySourced: true
+    };
+    _activeGroups.push(virtualGroup);
+    idx = _activeGroups.length - 1;
+  }
+  openInterventionModal(idx);
 }
 
 // Letter Cluster — top-3 most-shared weak letters across the group (לטקסט הסקריפט בלבד; כרטיסי
