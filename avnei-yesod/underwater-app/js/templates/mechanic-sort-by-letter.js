@@ -217,8 +217,20 @@ window.AvneiMechanics['sort-by-letter'] = (function () {
 
       const onPointerDown = (e) => {
         if (item.dataset.placed === 'true') return;
-        // משחק צליל-אות בלחיצה ראשונית — אסוציאציה לקול
-        if (window.AvneiAudio) AvneiAudio.playLetterSound(letter);
+        // 28.5 fix — sound-X מבטא את שם האות עם בלבול ("פא"="pa", "כָּף").
+        // במקום זה, נשמיע מילה אסוציאטיבית מ-letter-anims (פִּיל/אַרְיֵה וכו')
+        // שזה ברור ומשמש כעוגן פדגוגי. fallback ל-letter sound אם אין anim.
+        if (window.AvneiAudio) {
+          let played = false;
+          if (window.AvneiLetterAnims) {
+            const anim = AvneiLetterAnims.getAnimForLetter(letter);
+            if (anim && anim.wordKey) {
+              AvneiAudio.play(anim.wordKey);
+              played = true;
+            }
+          }
+          if (!played) AvneiAudio.playLetterSound(letter);
+        }
 
         item.setPointerCapture(e.pointerId);
         const rect = item.getBoundingClientRect();
@@ -283,6 +295,8 @@ window.AvneiMechanics['sort-by-letter'] = (function () {
           attempts: state.misses + 1,
           response_time_ms: isCorrect ? responseTime : null,
           hint_used: state.misses >= 1,
+          rama_task_alignment: opts.rama_task_alignment,
+          peima_target:        opts.peima_target,
         });
       }
 

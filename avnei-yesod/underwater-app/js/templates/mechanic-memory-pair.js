@@ -43,13 +43,19 @@ window.AvneiMechanics['memory-pair'] = (function () {
     const totalPairs  = opts.total || 3;
     const inGamePromptKey = opts.inGamePromptAudioKey || null;
 
-    // קבלת ה-SVG והמילה האסוציאטיבית מ-letter-anims.js
+    // F1+ (28.5) — תמיכה ב-imagePool. אם letter-anims מספק imagePool של
+    // 3+ תמונות (אות ח: חתול/חלב/חום) — לכל זוג ניתנת תמונה שונה.
+    // אם אין imagePool — fallback לתמונה היחידה (svg + wordKey).
+    let imagePool = null;   // רשימה של {svg, wordKey} - אחד פר זוג
     let assocSvg = null, assocWordKey = null;
     if (window.AvneiLetterAnims) {
       const anim = AvneiLetterAnims.getAnimForLetter(letter);
       if (anim) {
         assocSvg = anim.svg;
         assocWordKey = anim.wordKey;
+        if (Array.isArray(anim.imagePool) && anim.imagePool.length >= 1) {
+          imagePool = anim.imagePool;
+        }
       }
     }
 
@@ -71,11 +77,13 @@ window.AvneiMechanics['memory-pair'] = (function () {
     root.appendChild(board);
 
     // בניית הקלפים: totalPairs זוגות × 2 = totalPairs*2 קלפים.
-    // בכל זוג: קלף-אות + קלף-תמונה. אותה אות בכל הזוגות (חיזוק זיהוי).
+    // אות = זהה בכל זוג. תמונה = ייחודית פר זוג אם imagePool קיים.
     const cards = [];
     for (let i = 0; i < totalPairs; i++) {
       cards.push({ type: 'letter', pairId: i });
-      cards.push({ type: 'image',  pairId: i });
+      const imgIdx = imagePool ? (i % imagePool.length) : 0;
+      const img = imagePool ? imagePool[imgIdx] : { svg: assocSvg, wordKey: assocWordKey };
+      cards.push({ type: 'image', pairId: i, svg: img.svg, wordKey: img.wordKey });
     }
     const arranged = shuffle(cards);
 
@@ -148,11 +156,16 @@ window.AvneiMechanics['memory-pair'] = (function () {
         el.dataset.cardType = card.type;
         el.dataset.matched = 'false';
         el.dataset.idx = String(idx);
+        // wordKey פר תמונה — מאוחסן ב-dataset לשליפה ב-handleTap
+        if (card.type === 'image' && card.wordKey) {
+          el.dataset.wordKey = card.wordKey;
+        }
         el.setAttribute('aria-label', card.type === 'letter'
           ? 'קלף עם האות ' + letter
           : 'קלף עם תמונה');
 
         // צד-אחורי (גנרי) + צד-קדמי (תוכן)
+        const imgSvg = card.svg || assocSvg;
         el.innerHTML = `
           <div class="memory-card__inner">
             <div class="memory-card__back">
@@ -164,8 +177,8 @@ window.AvneiMechanics['memory-pair'] = (function () {
             <div class="memory-card__front">
               ${card.type === 'letter'
                 ? `<span class="memory-card__letter">${letter}</span>`
-                : (assocSvg
-                    ? `<div class="memory-card__svg">${assocSvg}</div>`
+                : (imgSvg
+                    ? `<div class="memory-card__svg">${imgSvg}</div>`
                     : `<span class="memory-card__fallback">★</span>`)
               }
             </div>
@@ -209,11 +222,13 @@ window.AvneiMechanics['memory-pair'] = (function () {
       el.classList.add('flipped');
       el.classList.remove('hint-glow');
 
-      // F1.4 — קליק על קלף: אות → sound-letter · תמונה → word-X (כדי
-      // שהילד ילמד את המילה האסוציאטיבית, לא יחזור על שם האות).
+      // F1.4 + 28.5 — קליק על קלף: אות → sound-letter · תמונה → word-X
+      // (פר-תמונה, מ-dataset.wordKey שמוגדר בעת הבנייה לפי imagePool).
       if (window.AvneiAudio) {
-        if (el.dataset.cardType === 'image' && assocWordKey) {
-          AvneiAudio.play(assocWordKey);
+        if (el.dataset.cardType === 'image') {
+          const wk = el.dataset.wordKey || assocWordKey;
+          if (wk) AvneiAudio.play(wk);
+          else AvneiAudio.playLetterSound(letter);
         } else {
           AvneiAudio.playLetterSound(letter);
         }
@@ -243,6 +258,8 @@ window.AvneiMechanics['memory-pair'] = (function () {
           attempts: state.attempts + 1,
           response_time_ms: isMatch ? responseTime : null,
           hint_used: false,
+          rama_task_alignment: opts.rama_task_alignment,
+          peima_target:        opts.peima_target,
         });
       }
 

@@ -313,7 +313,55 @@ window.AvneiLetterAnims = (function () {
           fill="#FF6B9D" stroke="#E91E63" stroke-width="1.5"/>
   `);
 
+  // ===== Extra SVGs לפי בקשת מיטל (ח · ג עברו לגל) =====
+  // חלב — כוס חלב לבן
+  const CHALAV_SVG = svg(`
+    <rect x="65" y="55" width="70" height="110" rx="6" fill="#FFFFFF" stroke="#7BB3E5" stroke-width="3"/>
+    <rect x="60" y="48" width="80" height="14" rx="2" fill="#E8F1FA" stroke="#7BB3E5" stroke-width="2.5"/>
+    <ellipse cx="100" cy="62" rx="32" ry="4" fill="#FFFFFF" stroke="#7BB3E5" stroke-width="1.5"/>
+    <ellipse cx="100" cy="70" rx="22" ry="3" fill="#E8F1FA"/>
+    <text x="100" y="115" text-anchor="middle" font-family="Rubik,Heebo,sans-serif" font-weight="900" font-size="22" fill="#5C9DBA">חָלָב</text>
+    <circle cx="78" cy="100" r="3" fill="#FFFFFF" opacity="0.8"/>
+    <circle cx="120" cy="135" r="2.5" fill="#FFFFFF" opacity="0.7"/>
+  `);
+
+  // חום — גוש שוקולד בצבע חום
+  const CHUM_SVG = svg(`
+    <defs>
+      <linearGradient id="anim-choco" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#A0683E"/>
+        <stop offset="100%" stop-color="#5C3D1F"/>
+      </linearGradient>
+    </defs>
+    <rect x="40" y="55" width="120" height="80" rx="10" fill="url(#anim-choco)" stroke="#3A2A18" stroke-width="3"/>
+    <line x1="80" y1="55" x2="80" y2="135" stroke="#3A2A18" stroke-width="2.5"/>
+    <line x1="120" y1="55" x2="120" y2="135" stroke="#3A2A18" stroke-width="2.5"/>
+    <line x1="40" y1="95" x2="160" y2="95" stroke="#3A2A18" stroke-width="2.5"/>
+    <text x="100" y="155" text-anchor="middle" font-family="Rubik,Heebo,sans-serif" font-weight="900" font-size="22" fill="#FFFFFF" stroke="#5C3D1F" stroke-width="0.8">חוּם</text>
+  `);
+
+  // גל — גל מים תכלת (חלופה ל-גמל לאות ג')
+  const GAL_SVG = svg(`
+    <defs>
+      <linearGradient id="anim-wave" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#A8E8FF"/>
+        <stop offset="60%" stop-color="#4FB8C9"/>
+        <stop offset="100%" stop-color="#1F6BA0"/>
+      </linearGradient>
+    </defs>
+    <path d="M10 130 Q40 60 80 100 Q120 140 150 90 Q170 60 190 100 L190 180 L10 180 Z"
+          fill="url(#anim-wave)" stroke="#FFFFFF" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M30 110 Q60 80 90 100" stroke="#FFFFFF" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.7"/>
+    <path d="M120 90 Q150 60 180 80" stroke="#FFFFFF" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.7"/>
+    <circle cx="60" cy="95" r="5" fill="#FFFFFF" opacity="0.85"/>
+    <circle cx="140" cy="75" r="4" fill="#FFFFFF" opacity="0.8"/>
+    <circle cx="170" cy="60" r="3" fill="#FFFFFF" opacity="0.7"/>
+  `);
+
   // ===== ANIMS map =====
+  // wordKey + svg = יחיד (לאנימציית סיום).
+  // imagePool = רשימה של 3 תמונות אסוציאטיביות לאות, משמש ב-memory-pair
+  // כדי שלכל זוג תהיה תמונה שונה (לפי בקשת מיטל 28.5).
   const ANIMS = {
     'ש': { wordKey: 'word-shemesh', svg: SHIN },
     'ל': { wordKey: 'word-lev',     svg: LAMED },
@@ -330,9 +378,15 @@ window.AvneiLetterAnims = (function () {
     'צ': { wordKey: 'word-tzipor',  svg: TZADI },
     'ט': { wordKey: 'word-tavas',   svg: TET },
 
-    'ד': { wordKey: 'word-dag',     svg: DALET },
-    'ג': { wordKey: 'word-gamal',   svg: GIMEL },
-    'ח': { wordKey: 'word-chatul',  svg: HET },
+    'ד': { wordKey: 'word-dagig',   svg: DALET },
+    'ג': { wordKey: 'word-gal',     svg: GAL_SVG },
+    'ח': { wordKey: 'word-chatul',  svg: HET,
+           imagePool: [
+             { svg: HET,        wordKey: 'word-chatul' },
+             { svg: CHALAV_SVG, wordKey: 'word-chalav' },
+             { svg: CHUM_SVG,   wordKey: 'word-chum'   },
+           ]
+         },
     'פ': { wordKey: 'word-pil',     svg: PEY },
     'כ': { wordKey: 'word-kelev',   svg: KAF },
   };

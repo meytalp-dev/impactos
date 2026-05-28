@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/stage-3.css">
-  <link rel="stylesheet" href="css/game-shell.css?v=11">
+  <link rel="stylesheet" href="css/game-shell.css?v=12">
   <link rel="stylesheet" href="css/fish-deep-quest.css?v=1">
 </head>
 <body>
@@ -92,11 +92,14 @@
   const TOTAL_TARGETS = 5;
   const DISTRACTORS = ['ש', 'ת', 'מ', 'ר', 'ב', 'ק', 'נ'];
 
-  function fishSvg(letter, glowing) {
-    const bodyColor = glowing ? '#FFA94D' : '#456578';
-    const tailColor = glowing ? '#FF6B35' : '#2F4858';
-    const letterColor = glowing ? '#4A2200' : '#1A2C38';
-    const stroke = glowing ? '#FFFFFF' : '#1A2C38';
+  // mode: 'neutral' (כל הדגיגים זהים, לפני הקשה) · 'glowing' (אחרי הקשה נכונה,
+  // לפני שעף ללהקה). מאלץ את הילד לקרוא את האות במקום להסתמך על צבע.
+  function fishSvg(letter, mode) {
+    const glowing = mode === 'glowing' || mode === true;
+    const bodyColor = glowing ? '#FFA94D' : '#5BA5C9';
+    const tailColor = glowing ? '#FF6B35' : '#3D8AA8';
+    const letterColor = glowing ? '#4A2200' : '#FFFFFF';
+    const stroke = '#FFFFFF';
     return `<svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
       <ellipse cx="55" cy="40" rx="40" ry="26" fill="${bodyColor}" stroke="${stroke}" stroke-width="2.5"/>
       <polygon points="95,40 118,18 118,62" fill="${tailColor}" stroke="${stroke}" stroke-width="2.5"/>
@@ -104,8 +107,9 @@
       <circle cx="42" cy="32" r="3" fill="#000000"/>
       <path d="M68,28 Q74,26 76,32" stroke="${tailColor}" stroke-width="1.8" fill="none"/>
       <text x="58" y="50" text-anchor="middle"
-            font-family="Rubik, Heebo, sans-serif" font-weight="900" font-size="24"
-            fill="${letterColor}" style="direction:rtl;unicode-bidi:isolate;">${letter}</text>
+            font-family="Rubik, Heebo, sans-serif" font-weight="900" font-size="26"
+            fill="${letterColor}" stroke="${glowing ? 'none' : 'rgba(255,255,255,0.4)'}" stroke-width="0.5"
+            style="direction:rtl;unicode-bidi:isolate;">${letter}</text>
     </svg>`;
   }
 
@@ -146,12 +150,14 @@
       const isTarget = (ltr === TARGET_LETTER);
       const fish = document.createElement('button');
       fish.type = 'button';
-      fish.className = 'fish-floater ' + (isTarget ? 'glowing' : 'dim');
+      // 28.5 — כל הדגיגים זהים ויזואלית (neutral). הילדה חייבת לקרוא את האות.
+      // אחרי הקשה נכונה — הדגיג מקבל classes glowing + collected ועף ללהקה.
+      fish.className = 'fish-floater';
       fish.dataset.letter = ltr;
       fish.dataset.target = isTarget ? 'true' : 'false';
       fish.dataset.idx = String(idx);
       fish.setAttribute('aria-label', 'דגיג עם האות ' + ltr);
-      fish.innerHTML = fishSvg(ltr, isTarget);
+      fish.innerHTML = fishSvg(ltr, 'neutral');
       // פיזור — נוני בימין, מותירים לו 25% רוחב
       const xPercent = 8 + (col * 17) + (Math.random() * 4 - 2);
       const yPercent = 8 + (row * 28) + (Math.random() * 6 - 3);
@@ -200,6 +206,8 @@
         attempts: state.attempts + 1,
         response_time_ms: isCorrect ? responseTime : null,
         hint_used: state.attempts >= 1,
+        rama_task_alignment: 1,
+        peima_target: 1,
       });
     }
 
@@ -226,6 +234,9 @@
     const rect = fish.getBoundingClientRect();
     spawnGlowBurst(rect.left + rect.width/2, rect.top + rect.height/2);
 
+    // הדגיג נדלק לכתום (mode=glowing) רגע לפני שעף — חיזוק חזותי
+    // לאישור "מצאת!" וקישור לאות הזוהרת בלהקה.
+    fish.innerHTML = fishSvg(fish.dataset.letter, 'glowing');
     fish.classList.add('collected');
     setTimeout(() => fish.remove(), 800);
     setTimeout(() => addToSchool(), 400);
