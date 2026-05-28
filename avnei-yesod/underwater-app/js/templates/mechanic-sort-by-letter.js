@@ -217,20 +217,9 @@ window.AvneiMechanics['sort-by-letter'] = (function () {
 
       const onPointerDown = (e) => {
         if (item.dataset.placed === 'true') return;
-        // 28.5 fix — sound-X מבטא את שם האות עם בלבול ("פא"="pa", "כָּף").
-        // במקום זה, נשמיע מילה אסוציאטיבית מ-letter-anims (פִּיל/אַרְיֵה וכו')
-        // שזה ברור ומשמש כעוגן פדגוגי. fallback ל-letter sound אם אין anim.
-        if (window.AvneiAudio) {
-          let played = false;
-          if (window.AvneiLetterAnims) {
-            const anim = AvneiLetterAnims.getAnimForLetter(letter);
-            if (anim && anim.wordKey) {
-              AvneiAudio.play(anim.wordKey);
-              played = true;
-            }
-          }
-          if (!played) AvneiAudio.playLetterSound(letter);
-        }
+        // 28.5 v2 — מיטל ביקשה: לא להגיד word-X בגרירה ולא sound-X.
+        // הילד שמע find-X בהתחלה ויודע מה לחפש. אם תקוע — auto-hint
+        // אחרי 9 שניות ינגן את ההוראה שוב.
 
         item.setPointerCapture(e.pointerId);
         const rect = item.getBoundingClientRect();
