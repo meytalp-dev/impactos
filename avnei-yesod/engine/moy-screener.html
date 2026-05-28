@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOY-Lite · אבני יסוד · אמצע שנה</title>
+<meta name="description" content="MOY-Lite — כלי עזר אינטראקטיבי למשימות 3+4. לא תחליף למבדק ראמ&quot;ה הרשמי.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Rubik:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --indigo: #4F46E5;
+  --indigo-deep: #3730A3;
+  --violet: #8B5CF6;
+  --violet-deep: #6D28D9;
+  --lavender-light: #DDD6FE;
+  --bg-ocean: linear-gradient(180deg, #c7e9ff 0%, #7cc4ff 60%, #4a9ce8 100%);
+  --bg-card: #FFFFFF;
+  --text: #1E1B4B;
+  --text-2: #475569;
+  --line: #E5E7EB;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Heebo', sans-serif;
+  background: var(--bg-ocean);
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { font-family: 'Rubik', sans-serif; line-height: 1.2; }
+button { font-family: inherit; cursor: pointer; }
+
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 20px 60px;
+}
+
+.card {
+  background: var(--bg-card);
+  border-radius: 20px;
+  padding: 32px 28px;
+  box-shadow: 0 20px 50px rgba(30,27,75,0.18);
+  border: 1px solid rgba(255,255,255,0.6);
+}
+
+.welcome h1 {
+  font-size: 26px;
+  font-weight: 900;
+  margin-bottom: 6px;
+  color: var(--indigo-deep);
+}
+.welcome .sub {
+  font-size: 14px;
+  color: var(--text-2);
+  margin-bottom: 22px;
+}
+.noni-bubble {
+  background: linear-gradient(135deg, #FEF3C7, #FCE7F3);
+  border-radius: 16px;
+  padding: 18px 22px;
+  margin: 18px 0;
+  position: relative;
+  font-size: 18px;
+  line-height: 1.55;
+  border: 2px solid #FBBF24;
+}
+.noni-bubble::before {
+  content: "🐠";
+  position: absolute;
+  top: -16px;
+  right: 14px;
+  font-size: 28px;
+  background: #fff;
+  padding: 2px 6px;
+  border-radius: 50%;
+}
+
+.audio-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 0;
+}
+.audio-btn {
+  background: linear-gradient(135deg, var(--indigo), var(--violet));
+  color: #fff;
+  border: none;
+  padding: 14px 22px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 16px;
+  box-shadow: 0 6px 14px rgba(139,92,246,0.3);
+}
+.audio-btn:hover { transform: translateY(-1px); }
+.audio-btn:disabled { opacity: 0.55; cursor: default; transform: none; }
+
+.audio-missing {
+  font-size: 13px;
+  color: #92400e;
+  background: #FEF3C7;
+  border: 1px dashed #f59e0b;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 8px;
+}
+
+.options {
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+}
+.option-btn {
+  display: block;
+  width: 100%;
+  text-align: right;
+  background: #F9FAFB;
+  border: 2px solid #E5E7EB;
+  border-radius: 14px;
+  padding: 16px 20px;
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--text);
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.option-btn:hover { border-color: var(--violet); background: #F5F3FF; }
+.option-btn:disabled { opacity: 0.7; cursor: default; }
+.option-btn.selected {
+  border-color: var(--indigo);
+  background: var(--lavender-light);
+}
+
+.progress {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255,255,255,0.55);
+  border-radius: 12px;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--indigo-deep);
+  font-weight: 700;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--indigo), var(--violet));
+  color: #fff;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 17px;
+  box-shadow: 0 6px 18px rgba(139,92,246,0.4);
+  margin-top: 18px;
+}
+.btn-primary:hover { transform: translateY(-2px); }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--violet-deep);
+  border: 1px solid var(--violet);
+  padding: 10px 22px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+.task-pill {
+  display: inline-block;
+  background: #FEF3C7;
+  color: #78350f;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+
+.done-card {
+  text-align: center;
+}
+.done-icon {
+  font-size: 64px;
+  margin: 12px 0;
+}
+.done-card h2 {
+  color: var(--indigo-deep);
+  font-size: 28px;
+  margin-bottom: 6px;
+}
+.done-card .sub {
+  color: var(--text-2);
+  font-size: 15px;
+  margin-bottom: 20px;
+}
+
+.error-card {
+  background: #FEE2E2;
+  border: 1px solid #FECACA;
+  color: #7F1D1D;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 16px;
+  font-size: 14px;
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <!-- Welcome -->
+  <div id="screen-welcome" class="card welcome">
+    <span class="task-pill">MOY · אמצע שנה</span>
+    <h1>נתחיל הערכת אמצע שנה</h1>
+    <div class="sub">תלמיד.ה: <span id="studentNameDisplay">—</span></div>
+
+    <div class="noni-bubble">
+      היי! אני <strong>נוני</strong> 🐠
+      <br>
+      היום נעשה ביחד שתי משימות קצרות — נקשיב לסיפור ונענה על שאלות, ואחר כך נחשוב על מילים. <strong>לחצי על "התחילי" כשאת מוכנה.</strong>
+    </div>
+
+    <div class="audio-row">
+      <button class="audio-btn" id="welcomeAudioBtn">🔊 השמיעי את ההסבר</button>
+    </div>
+
+    <button class="btn-primary" id="startBtn">▶ התחילי</button>
+  </div>
+
+  <!-- Task running -->
+  <div id="screen-task" class="card" style="display:none;">
+    <div class="progress">
+      <span id="taskLabel">משימה</span>
+      <span id="progressLabel">0 / 0</span>
+    </div>
+
+    <div id="passagePanel" style="display:none;">
+      <div class="noni-bubble">
+        🔊 הקשיבי טוב לסיפור הקצר. אחר כך נשאל אותך שאלות עליו.
+      </div>
+      <div class="audio-row">
+        <button class="audio-btn" id="passagePlayBtn">▶ נגן את הסיפור</button>
+      </div>
+      <div id="passageAudioMissing" class="audio-missing" style="display:none;">
+        ⚠️ קובץ האודיו לא נמצא. הצוות יעלה אותו בקרוב.
+        <br><em id="passageFallbackText" style="display:block; margin-top:6px; color:#1E1B4B;"></em>
+      </div>
+      <button class="btn-secondary" id="passageDoneBtn">הקשבתי, המשך לשאלות ←</button>
+    </div>
+
+    <div id="questionPanel" style="display:none;">
+      <div class="audio-row">
+        <button class="audio-btn" id="questionAudioBtn">🔊 השמיעי את השאלה</button>
+      </div>
+      <h2 id="questionText" style="margin-top:14px;"></h2>
+      <div class="options" id="optionsContainer"></div>
+    </div>
+
+    <div id="taskError" class="error-card" style="display:none;"></div>
+  </div>
+
+  <!-- Done -->
+  <div id="screen-done" class="card done-card" style="display:none;">
+    <div class="done-icon">🌟</div>
+    <h2>מצוין, סיימת!</h2>
+    <div class="sub">כל הכבוד על העבודה היפה. חזרי לכיתה.</div>
+    <button class="btn-primary" id="backToTeacherBtn">חזרה למסך המורה ←</button>
+  </div>
+</div>
+
+<script src="../underwater-app/js/shared/assessments.js"></script>
+<script>
+'use strict';
+
+// ============================================================
+// MOY-Lite Screener · סוכן 10 · 28.5.2026
+// ============================================================
+// ⚠️ אסור להציג ציון לתלמידה (evaluation, לא תרגול).
+// אסור לערבב את הפריטים האלה עם תרגול רגיל (זיהום BKT).
+// ============================================================
+
+const AUDIO_BASE = 'audio/'; // קבצי AvriNeural של engine קיימים תחת engine/audio/...
+const MOY_AUDIO_PREFIX = AUDIO_BASE + 'moy/'; // ייעודי ל-MOY (יוצר ב-deploy של מיטל)
+
+// ====== URL params ======
+const urlParams = new URLSearchParams(location.search);
+const STUDENT_ID = urlParams.get('student') || 'local';
+
+// ====== State ======
+const session = {
+  studentId: STUDENT_ID,
+  studentName: '',
+  itemsBank: null,
+  taskOrder: ['task_3', 'task_4'],
+  currentTaskIdx: 0,
+  currentQuestionIdx: 0,
+  passageShown: false,
+  results: {
+    task_3: { score: 0, items: [] },
+    task_4: { score: 0, items: [] },
+  },
+  currentAudio: null,
+};
+
+// ====== Helpers ======
+
+function $(id) { return document.getElementById(id); }
+function show(id) { $(id).style.display = ''; }
+function hide(id) { $(id).style.display = 'none'; }
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// טעינת שם תלמידה (אם קיים ב-Students store) — לא חוסם, רק תצוגה
+function loadStudentName(studentId) {
+  try {
+    const raw = localStorage.getItem('avnei-yesod-students');
+    if (!raw) return studentId;
+    const arr = JSON.parse(raw);
+    const found = (arr || []).find(s => s.id === studentId);
+    return (found && found.name) || studentId;
+  } catch (e) {
+    return studentId;
+  }
+}
+
+// audio playback — AvriNeural (mp3) בלבד. אם קובץ חסר → fallback ל-text + הודעה.
+// audioUrl יחסי לשורש engine/ (לדוגמה: assets/audio/moy/passage-001.mp3)
+function playAudio(audioUrl, onError) {
+  return new Promise((resolve) => {
+    if (!audioUrl) { resolve(false); return; }
+    try {
+      if (session.currentAudio) {
+        try { session.currentAudio.pause(); } catch (e) {}
+      }
+      const a = new Audio(audioUrl);
+      session.currentAudio = a;
+      a.addEventListener('ended', () => resolve(true), { once: true });
+      a.addEventListener('error', () => {
+        if (onError) onError();
+        resolve(false);
+      }, { once: true });
+      a.play().catch(() => {
+        if (onError) onError();
+        resolve(false);
+      });
+    } catch (e) {
+      if (onError) onError();
+      resolve(false);
+    }
+  });
+}
+
+// ====== Load items bank ======
+
+async function loadItems() {
+  try {
+    const res = await fetch('moy-items.json');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return await res.json();
+  } catch (e) {
+    console.error('Failed to load moy-items.json', e);
+    return null;
+  }
+}
+
+// ====== Init ======
+
+async function init() {
+  session.studentName = loadStudentName(session.studentId);
+  $('studentNameDisplay').textContent = session.studentName;
+
+  session.itemsBank = await loadItems();
+  if (!session.itemsBank) {
+    $('startBtn').disabled = true;
+    $('startBtn').textContent = '⚠️ קובץ הפריטים לא נטען';
+    return;
+  }
+
+  $('welcomeAudioBtn').addEventListener('click', () => {
+    // הסבר נוני — אם קובץ קיים. אחרת — אין דבר (הטקסט מוצג בבועה).
+    playAudio(MOY_AUDIO_PREFIX + 'noni-welcome.mp3');
+  });
+  $('startBtn').addEventListener('click', startTasks);
+  $('passagePlayBtn').addEventListener('click', playCurrentPassage);
+  $('passageDoneBtn').addEventListener('click', () => showQuestion());
+  $('questionAudioBtn').addEventListener('click', playCurrentQuestionAudio);
+  $('backToTeacherBtn').addEventListener('click', () => {
+    location.href = '../underwater-app/teacher-rama.html';
+  });
+}
+
+// ====== Task lifecycle ======
+
+function startTasks() {
+  hide('screen-welcome');
+  show('screen-task');
+  session.currentTaskIdx = 0;
+  session.currentQuestionIdx = 0;
+  enterCurrentTask();
+}
+
+function currentTaskKey() {
+  return session.taskOrder[session.currentTaskIdx];
+}
+
+function enterCurrentTask() {
+  const tKey = currentTaskKey();
+  if (!tKey) { finishAll(); return; }
+
+  const task = session.itemsBank[tKey];
+  if (!task) {
+    showTaskError('משימה חסרה במאגר הפריטים (' + tKey + ')');
+    return;
+  }
+
+  $('taskLabel').textContent = (tKey === 'task_3' ? 'משימה 3 · הבנת טקסט מושמע' : 'משימה 4 · מודעות לשונית');
+  session.currentQuestionIdx = 0;
+  session.passageShown = false;
+
+  if (tKey === 'task_3') {
+    // task 3 = passage + questions
+    showPassage();
+  } else {
+    // task 4 = רק שאלות
+    showQuestion();
+  }
+}
+
+function showPassage() {
+  const tKey = currentTaskKey();
+  if (tKey !== 'task_3') { showQuestion(); return; }
+  const passage = (session.itemsBank.task_3.passages || [])[0];
+  if (!passage) { showQuestion(); return; }
+
+  $('progressLabel').textContent = 'הקשבה ראשונה';
+  hide('questionPanel');
+  show('passagePanel');
+  $('passageAudioMissing').style.display = 'none';
+  session.passageShown = true;
+}
+
+async function playCurrentPassage() {
+  const tKey = currentTaskKey();
+  if (tKey !== 'task_3') return;
+  const passage = (session.itemsBank.task_3.passages || [])[0];
+  if (!passage) return;
+
+  $('passagePlayBtn').disabled = true;
+  const ok = await playAudio(passage.audio_url, () => {
+    // קובץ חסר → fallback טקסט
+    $('passageAudioMissing').style.display = '';
+    $('passageFallbackText').textContent = passage.passage_text_fallback || '';
+  });
+  if (!ok) {
+    $('passageAudioMissing').style.display = '';
+    $('passageFallbackText').textContent = passage.passage_text_fallback || '';
+  }
+  $('passagePlayBtn').disabled = false;
+}
+
+function showQuestion() {
+  hide('passagePanel');
+  show('questionPanel');
+
+  const tKey = currentTaskKey();
+  const questions = currentQuestionList();
+  if (!questions || session.currentQuestionIdx >= questions.length) {
+    nextTaskOrFinish();
+    return;
+  }
+
+  const total = questions.length;
+  $('progressLabel').textContent = (session.currentQuestionIdx + 1) + ' / ' + total;
+
+  const q = questions[session.currentQuestionIdx];
+  $('questionText').textContent = q.text || q.instruction_text || '';
+
+  // Options
+  const container = $('optionsContainer');
+  container.innerHTML = '';
+  (q.options || []).forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.type = 'button';
+    btn.textContent = opt.text;
+    btn.addEventListener('click', () => onAnswer(opt.id));
+    container.appendChild(btn);
+  });
+}
+
+function currentQuestionList() {
+  const tKey = currentTaskKey();
+  if (tKey === 'task_3') {
+    const passage = (session.itemsBank.task_3.passages || [])[0];
+    return passage ? (passage.questions || []) : [];
+  }
+  if (tKey === 'task_4') {
+    return session.itemsBank.task_4.questions || [];
+  }
+  return [];
+}
+
+async function playCurrentQuestionAudio() {
+  const list = currentQuestionList();
+  const q = list[session.currentQuestionIdx];
+  if (!q) return;
+  const url = q.audio_url || q.instruction_audio;
+  if (!url) return;
+  $('questionAudioBtn').disabled = true;
+  await playAudio(url);
+  $('questionAudioBtn').disabled = false;
+}
+
+function onAnswer(optionId) {
+  const tKey = currentTaskKey();
+  const list = currentQuestionList();
+  const q = list[session.currentQuestionIdx];
+  if (!q) return;
+
+  // disable all + visual select
+  document.querySelectorAll('#optionsContainer .option-btn').forEach(btn => {
+    btn.disabled = true;
+    if (btn.textContent === (q.options.find(o => o.id === optionId) || {}).text) {
+      btn.classList.add('selected');
+    }
+  });
+
+  const isCorrect = (optionId === q.correct);
+  if (isCorrect) session.results[tKey].score += 1;
+  session.results[tKey].items.push({
+    q_id: q.q_id,
+    chosen: optionId,
+    correct: q.correct,
+    is_correct: isCorrect,
+    ts: Date.now(),
+  });
+
+  // אין feedback מיידי (evaluation, לא תרגול)
+  // מתקדמים אחרי השהיה קלה (לסגירת אנימציית-בחירה)
+  setTimeout(() => {
+    session.currentQuestionIdx++;
+    showQuestion();
+  }, 450);
+}
+
+function nextTaskOrFinish() {
+  session.currentTaskIdx++;
+  if (session.currentTaskIdx >= session.taskOrder.length) {
+    finishAll();
+  } else {
+    enterCurrentTask();
+  }
+}
+
+function finishAll() {
+  // שמירה ל-state.assessments דרך AvneiAssessments.recordMOYAttempt
+  if (window.AvneiAssessments) {
+    try {
+      AvneiAssessments.recordMOYAttempt(session.studentId, {
+        task_3: { score: session.results.task_3.score },
+        task_4: { score: session.results.task_4.score },
+      });
+    } catch (e) {
+      console.warn('recordMOYAttempt failed:', e);
+    }
+  } else {
+    console.warn('AvneiAssessments not loaded — תוצאה לא נשמרה');
+  }
+
+  hide('screen-task');
+  show('screen-done');
+  // ⚠️ לא מציגים ציון לתלמידה. רק "סיימת".
+}
+
+function showTaskError(msg) {
+  const el = $('taskError');
+  el.textContent = msg;
+  el.style.display = '';
+}
+
+// ====== Boot ======
+document.addEventListener('DOMContentLoaded', init);
+
+// ====== Debug ======
+window.__moy = {
+  session: () => session,
+  finishNow: finishAll,
+};
+</script>
+</body>
+</html>

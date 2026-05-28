@@ -600,6 +600,129 @@
     background: #fed7aa;
   }
 
+  /* ===== Section 6 — MOY (סוכן 10 · 28.5.2026) ===== */
+  .moy-section {
+    background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+    border: 1px solid #5eead4;
+    border-radius: 12px;
+    padding: 16px 20px;
+  }
+  .moy-section .moy-head {
+    display: flex; align-items: baseline; gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .moy-section .moy-title {
+    font-size: 16px; font-weight: 800; color: #115e59;
+  }
+  .moy-section .moy-window {
+    color: #134e4a; font-size: 13px;
+  }
+  .moy-status-display {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    align-items: center;
+    padding: 12px 14px;
+    background: white;
+    border-radius: 10px;
+    margin: 10px 0;
+  }
+  .moy-status-display .status-badge {
+    font-size: 22px;
+    font-weight: 900;
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    line-height: 1;
+  }
+  .moy-status-display .status-badge.status-not-measured {
+    background: #e2e8f0; color: #475569;
+  }
+  .moy-status-display .status-badge.status-pass {
+    background: #d1fae5; color: #064e3b;
+  }
+  .moy-status-display .status-badge.status-near {
+    background: #fef3c7; color: #78350f;
+  }
+  .moy-status-display .status-badge.status-fail {
+    background: #fee2e2; color: #7f1d1d;
+  }
+  .moy-status-display .moy-details {
+    font-size: 13px; color: #1a2332;
+  }
+  .moy-status-display .moy-details .moy-reason {
+    color: #4a5568; margin-bottom: 2px; font-weight: 600;
+  }
+  .moy-status-display .moy-details .moy-tasks {
+    font-size: 12px; color: #475569;
+    margin-top: 4px;
+  }
+  .moy-warning {
+    background: #fef3c7;
+    border-right: 4px solid #f59e0b;
+    color: #78350f;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+  .moy-warning strong { color: #92400e; }
+  .moy-due-banner {
+    background: #fee2e2;
+    border-right: 4px solid #dc2626;
+    color: #7f1d1d;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    margin-top: 8px;
+  }
+  .moy-actions {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 12px; flex-wrap: wrap;
+  }
+  .moy-actions .btn-moy {
+    background: linear-gradient(135deg, #14b8a6, #0d9488);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-family: inherit; font-weight: 700; font-size: 14px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(20,184,166,0.3);
+    text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .moy-actions .btn-moy:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(20,184,166,0.4);
+  }
+  .moy-actions .btn-moy-pdf {
+    background: white;
+    color: #115e59;
+    border: 1.5px solid #5eead4;
+    padding: 9px 16px;
+    border-radius: 999px;
+    font-family: inherit; font-weight: 700; font-size: 13px;
+    text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .moy-actions .btn-moy-pdf:hover { background: #f0fdfa; }
+  .moy-attempts-list {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #475569;
+  }
+  .moy-attempts-list .attempt-row {
+    padding: 6px 10px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 6px;
+    margin-top: 4px;
+  }
+
   /* Flags */
   .flag-card {
     background: #fef5e7; border-right: 4px solid #ed8936;
@@ -1039,6 +1162,7 @@
 <script src="js/shared/mastery-check.js"></script>
 <script src="js/shared/pack-bkt-bridge.js?v=1"></script>
 <script src="js/shared/interventions.js?v=1"></script>
+<script src="js/shared/assessments.js?v=1"></script>
 
 <script>
 // ============================================================
@@ -1796,6 +1920,8 @@ function renderStudentView() {
 
     ${renderPackSection(stu.id)}
 
+    ${renderMOYSection(stu.id)}
+
     ${flagsRaw.length > 0 ? `<div class="section"><h2>דגלים פעילים</h2>${flagsHtml}</div>` : ''}
   `;
 
@@ -1948,6 +2074,128 @@ function attachPackOverrideHandlers(studentId) {
       render();
     });
   }
+}
+
+// ============================================================
+// Section 6 — MOY status (סוכן 10 · 28.5.2026)
+// ============================================================
+// מסמך-אם: _handoff/2026-05-28-MOY-diagnostic-spec.md §5.1
+// המסך מציג סטטוס + כפתור הפעלה + אזהרה "לא תחליף למבדק הרשמי".
+// השפה — פשוטה ("שולטת היטב" / "קרובה לרף" / "צריכה תרגול"), לא טכנית
+// (לפי feedback memory: teacher-rama יוצא ב-"שורה תחתונה", לא BKT/Sub-BKT).
+// ============================================================
+
+const MOY_STATUS_LABELS = {
+  'not-measured': { icon: '🟡', text: 'לא נמדד עדיין', cls: 'status-not-measured', reason: 'הילדה לא ביצעה MOY-Lite. מומלץ ינואר-פברואר.' },
+  'pass':         { icon: '✓',  text: 'שולטת היטב',     cls: 'status-pass',          reason: 'הילדה עברה את הרף בכל המשימות.' },
+  'near':         { icon: '~',  text: 'קרובה לרף',      cls: 'status-near',          reason: 'הילדה קרובה אבל לא שם. שווה תרגול ממוקד.' },
+  'fail':         { icon: '!',  text: 'צריכה תרגול',     cls: 'status-fail',          reason: 'הילדה לא עברה. נדרשת אינטרבנציה + חזרה בעוד 5-6 שבועות.' },
+  'unknown':      { icon: '?',  text: 'לא ברור',         cls: 'status-not-measured',  reason: 'נתונים חסרים.' },
+};
+
+// תרגום task_X status → טקסט פשוט למורה
+function moyTaskLabel(taskKey) {
+  return taskKey === 'task_3' ? 'משימה 3 (הבנת טקסט)' : (taskKey === 'task_4' ? 'משימה 4 (מודעות לשונית)' : taskKey);
+}
+
+function moyTaskStatusText(s) {
+  return s === 'pass' ? 'עברה' : s === 'near' ? 'קרובה' : s === 'fail' ? 'לא עברה' : '—';
+}
+
+function moyFormatDateHe(ts) {
+  if (!ts) return '—';
+  try {
+    return new Date(ts).toLocaleDateString('he-IL', { day: 'numeric', month: 'short', year: 'numeric' });
+  } catch (e) { return '—'; }
+}
+
+function renderMOYSection(studentId) {
+  if (!window.AvneiAssessments) {
+    return '<div class="section"><h2>📋 הערכת אמצע שנה (MOY)</h2><div class="empty">AvneiAssessments לא נטען.</div></div>';
+  }
+
+  const status = AvneiAssessments.getMOYStatus(studentId);
+  const lbl = MOY_STATUS_LABELS[status.latest_status] || MOY_STATUS_LABELS['unknown'];
+
+  // Banner of "next review due" if relevant
+  let dueBanner = '';
+  if (status.next_review_due) {
+    const now = Date.now();
+    if (now >= status.next_review_due) {
+      dueBanner = `<div class="moy-due-banner">⏰ הגיע מועד העברה חוזרת (היה ${moyFormatDateHe(status.next_review_due)})</div>`;
+    } else {
+      dueBanner = `<div class="moy-due-banner" style="background:#fef3c7; border-right-color:#f59e0b; color:#78350f;">🗓 העברה חוזרת מתוכננת ל-${moyFormatDateHe(status.next_review_due)}</div>`;
+    }
+  }
+
+  // Tasks summary (when measured)
+  let tasksLine = '';
+  if (status.measured && status.last_attempt) {
+    const parts = [];
+    ['task_3', 'task_4'].forEach(tk => {
+      const t = status.last_attempt[tk];
+      if (t) parts.push(`${moyTaskLabel(tk)}: ${moyTaskStatusText(t.status)} (${t.score}/${t.max})`);
+    });
+    if (parts.length > 0) tasksLine = '<div class="moy-tasks">' + parts.map(escapeHtml).join(' · ') + '</div>';
+  }
+
+  // Attempts history (if > 1)
+  let attemptsHtml = '';
+  if (status.measured && status.attempts.length > 1) {
+    attemptsHtml = '<div class="moy-attempts-list"><strong>היסטוריה:</strong>';
+    status.attempts.forEach((a, idx) => {
+      attemptsHtml += `<div class="attempt-row">העברה ${idx + 1} · ${moyFormatDateHe(a.date)} · ${escapeHtml(moyTaskStatusText(a.overall_status))}</div>`;
+    });
+    attemptsHtml += '</div>';
+  }
+
+  // Encoded studentId for the link
+  const launchUrl = '../engine/moy-screener.html?student=' + encodeURIComponent(studentId);
+
+  // Status icon — מילולית: לתלמיד.ה לא מציגים ציון. רק למורה.
+  const statusBadgeHtml = `<div class="status-badge ${lbl.cls}">${escapeHtml(lbl.icon)}</div>`;
+
+  // Reason — אם נמדד, נציג גם תאריך
+  let reasonLine = escapeHtml(lbl.reason);
+  if (status.measured && status.last_attempt) {
+    reasonLine += ` <span style="color:#64748b;">(נמדד ${escapeHtml(moyFormatDateHe(status.last_attempt.date))})</span>`;
+  }
+
+  const buttonLabel = status.measured ? 'העבירי שוב' : 'הפעילי MOY-Lite';
+
+  return `
+    <div class="section">
+      <h2>📋 הערכת אמצע שנה (MOY)</h2>
+      <div class="moy-section">
+        <div class="moy-head">
+          <span class="moy-title">סטטוס נוכחי: ${escapeHtml(lbl.text)}</span>
+          <span class="moy-window">· חלון: ינואר-פברואר 2026</span>
+        </div>
+
+        <div class="moy-status-display">
+          ${statusBadgeHtml}
+          <div class="moy-details">
+            <div class="moy-reason">${reasonLine}</div>
+            ${tasksLine}
+          </div>
+        </div>
+
+        ${dueBanner}
+
+        <div class="moy-warning">
+          ⚠️ <strong>MOY-Lite הוא תרגול, לא תחליף למבדק ראמ"ה הרשמי.</strong>
+          המבדק הרשמי 1-on-1 פרטני, עם פריטים ייעודיים מ-PDF ראמ"ה ומדריך מורה.
+        </div>
+
+        <div class="moy-actions">
+          <a class="btn-moy" href="${escapeHtml(launchUrl)}" target="_self">📋 ${escapeHtml(buttonLabel)}</a>
+          <span class="btn-moy-pdf" title="קישור ל-PDF ראמ&quot;ה — בבנייה (לא בסקופ סוכן 10)" style="opacity:0.7; cursor:not-allowed;">📖 פתחי PDF ראמ"ה (בקרוב)</span>
+        </div>
+
+        ${attemptsHtml}
+      </div>
+    </div>
+  `;
 }
 
 // ============================================================
