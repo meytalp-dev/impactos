@@ -4,6 +4,65 @@
 
 ---
 
+## 🟡 קבוצה Y — B.7 Finding A סגור · F.21A Finding B ניסיון תיקון לא הצליח
+
+**סטטוס:** 🟢 Finding A ✅ closed · 🔴 Finding B ❌ עדיין פתוח (push לשמר state הנוכחי ל-debugging הבא)
+**תאריך:** 2026-05-28 ערב (סוכן 13)
+**1 קובץ קוד שונה + 3 handoff updates · חבילה קטנה (~30 שורות net)**
+
+| # | קובץ | סטטוס | הערה |
+|---|---|---|---|
+| 1 | `underwater-app/teacher-rama.html` | שינוי | 2 תיקונים: (A) helper `_getGroupSharedLetterDetails` שמחשב top-3 most-shared weak letters בקבוצה + העברה ל-`interpolateScript` כ-studentDetails ב-`openInterventionModal` וב-`printInterventionGroup`. (B) הזזת `const STUDENTS_KEY / PULSE_RANGES / STALE_*` ו-`let viewState` לפני ה-IIFE של PIN-gate (היו אחריו → TDZ ב-F5 refresh עם `sessionStorage auth=1`). |
+| + | `_handoff/2026-05-26-architecture-tasks-tracker.html` | שינוי קל | B.7 — 2 findings סומנו closed |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש בראש | תיעוד התיקונים + השפעה + tests pass |
+| + | `_handoff/pending-commits.md` | בלוק חדש בראש (זה) | הקבוצה הזו |
+
+**מהות התוצר:**
+התייחסות ל-2 ה-findings שתועדו ב-orchestrator סיכום ערב 28.5 (commit `fc4b5b7`, סוכן verification חיצוני):
+- **Finding A** (B.7) — ✅ **closed (verified ידנית ע"י מיטל):** ב-Letter Cluster intervention, ה-script מכיל `{personalized_letters}` ו-`{personalized_first_letter}` ב-Materials/HOOK. `groupCommonDetails` ריק (האותיות פר-ילדה) → ה-placeholders נשארו כטקסט מילולי ב-Modal וב-PDF. תיקון: pre-compute top-3 most-shared weak letters בקבוצה (ע"י ספירת הופעות אותיות ב-`s.details.weak_letters` לכל הילדות) והעבר כ-`studentDetails` ל-`interpolateScript` (הסיגנאטורה כבר תמכה). הכרטיסים פר-ילדה ממשיכים להציג את האותיות הספציפיות שלה (לא שונה).
+- **Finding B** (F.21A · pre-existing מ-`54e00ec`) — ❌ **עדיין פתוח · ניסיון תיקון לא הצליח:** השערה שלי היתה — IIFE `initPinGate` קרא ל-`boot()` synchronously ב-PIN-bypass path (`sessionStorage auth=1`), אבל `const STUDENTS_KEY` / `let viewState` הוצהרו אחריו → TDZ. **תיקון שניסיתי:** הזזת ה-declarations לפני ה-IIFE (אופציה 2 הנקייה מה-handoff). **תוצאה:** מיטל בדקה ידנית — F5 refresh עדיין שובר את הדף. הזזת `viewState`/`STUDENTS_KEY` לבדם לא הספיקה. **חשד שלי לroot cause האמיתי** (לחקירה בסבב הבא · לא תוקן עכשיו): יש עוד `let` declarations שמוצהרים הרבה אחרי IIFE ושנגישים מ-render() — בעיקר `let _activeGroups = []` ב-שורה 2332 (מוגדר ב-section של renderInterventionTriggers, באמצע הסקריפט). `boot()` → `render()` → `renderClassView()` → `renderInterventionTriggers()` שמתייחס ל-`_activeGroups` — אם הוא ב-TDZ → exception, body.innerHTML לא מתעדכן, דף ריק. הפתרון הסביר: לעטוף `boot()` ב-`setTimeout(boot, 0)` או `queueMicrotask(boot)` בשני המקומות ב-IIFE — יבטיח שכל ה-script tag הסתיים לפני שboot() רץ. **הקוד הנוכחי נשאר ככה לפי הוראת מיטל** — הזזת declarations לא רגרסיה, אולי צעד נכון לקראת פתרון, אולי לא; דחיפת ה"ניסיון" עוזרת ל-debugging הבא.
+
+**יחס לקבוצות שכבר נדחפו / ממתינות:**
+- ✅ B.7 (`0dbbf4e`) — תיקון UI fail-soft. ה-data של `letter-cluster.json` לא נגעתי בה. `js/shared/interventions.js` לא נגעתי בה (ה-signature `interpolateScript(script, groupCommonDetails, studentDetails)` כבר תומכת ב-`weak_letters` → `personalized_letters`).
+- 🟡 F.21A (`54e00ec`) — ניסיתי fix, לא הצליח. הקוד נשאר במצב "declarations הוזזו" — Finding B עדיין דורש חקירה.
+- ✅ MOY-Lite (`93dbd4a` + `7a70a03`, סוכן 10+12) — נדחפו לפני הסבב שלי. סוכן 12 גם תיקן `backToTeacher → history.back()` ב-`moy-screener.html` (`7a70a03`) שפתר תרחיש שונה של "דף ריק אחרי refresh" (מ-moy-screener). זה לא ה-Finding B שלנו — Finding B הוא F5 ידני על teacher-rama עצמה.
+- 🟡 קבוצה W (C.12C, סוכן 12) — packs JSONs בלבד, אין חפיפת קוד.
+- 🟡 קבוצות אחרות (V/U/T/S/R) — אין חפיפת קבצים.
+
+**🎯 פונקציה חדשה שמתווספת ל-teacher-rama:**
+`_getGroupSharedLetterDetails(group)` — internal helper, חוזרת `null` ל-patternId שאינו `letter_cluster`. לא נחשפת ל-window.
+
+**אסור לגעת ב- (לא נגעתי):**
+- `interventions.js` · `letter-cluster.json` · 4 ה-interventions/*.json אחרים
+- `mastery-check.js` · `bkt.js` · `pack-bkt-bridge.js` · `assessments.js` · `state.js`
+- `engine/moy-screener.html` / `engine/moy-items.json` (סוכן 12 פעיל שם)
+- 7 `curriculum/packs/grade1-tashpaz/{month}.json` untracked + `perplexity-shatil-share-2003-validation-2026-05-25.json` (תוכן של מיטל)
+
+**מה כבר אומת (לפני push):**
+
+1. **בדיקות אוטומטיות** — כל 4 ה-suites ירוקים:
+   - `test-interventions.js` → **78/78 ✓**
+   - `test-pack-bridge.js` → **75/75 ✓**
+   - `test-weakness-targeting.js` → **38/38 ✓**
+   - `test-moy-assessments.js` → **51/51 ✓**
+   - **סה"כ 242/242 ✓** (כולם רצים ב-Node — לא משקפים F5 בbrowser)
+2. **Finding A — מאומת ידנית ע"י מיטל:** ✅ closed.
+3. **Finding B — מאומת ידנית ע"י מיטל:** ❌ עדיין שובר. F5 → דף ריק.
+
+**TODO לסבב הבא (Finding B — לא בסקופ של commit הזה):**
+- אסוף DevTools Console output ממיטל אחרי F5 על מסך מאומת.
+- בדוק את ה-`let _activeGroups = []` ב-שורה 2332 (TDZ candidate).
+- אם זה הroot cause: עטף `boot()` ב-`setTimeout(boot, 0)` בשני המקומות ב-IIFE.
+- בדוק אם dependencies חיצוניים (`AvneiBKT`, `AvneiMasteryCheck`, `AvneiInterventions`) נטענו בזמן.
+
+**אזהרות שמורות:**
+- ❌ אין להוסיף features. רק תיקון Finding A + ניסיון Finding B (שנשמר ב-state הנוכחי).
+- ❌ אין לגעת ב-content/data של interventions.
+- 🟢 RTL נשמר ✓
+- 🟢 כל ה-API הציבורי לא השתנה ✓
+
+---
+
 ## 🟡 קבוצה X — MOY-Lite: Middle of Year Diagnostic (תשתית · משימות 3+4)
 
 **סטטוס:** 🟡 ממתין לבדיקה ידנית של מיטל ואז push

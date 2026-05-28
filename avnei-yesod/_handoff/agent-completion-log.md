@@ -7,6 +7,71 @@
 
 ---
 
+## B.7 + F.21A — Finding A סגור · Finding B ניסיון תיקון לא הצליח
+
+**סטטוס:** ✅ Finding A סגור (verified ידנית) · ❌ Finding B עדיין פתוח — ניסיון תיקון לא פתר. דחיפה כדי לשמר את ה-state הנוכחי ל-debugging הבא.
+**תאריך:** 2026-05-28 ערב
+**שיחה:** סוכן 13 (Claude Code · Opus 4.7 · VS Code · impactos)
+**Commit:** טרם נדחף
+**יחס:** התייחסות ל-2 הfindings שתועדו ב-orchestrator סיכום ערב 28.5 (`fc4b5b7`). אחד נסגר, השני נשאר פתוח לחקירה בסבב נפרד.
+
+> ⚠️ **חשוב — Finding B fix did not resolve the issue.** מיטל בדקה ידנית אחרי התיקון שלי: F5 refresh עדיין מציג דף ריק / טבלה לא נטענת. הבעיה pre-existing מ-`54e00ec` — לא רגרסיה חדשה שנכנסה בתיקון. הזזת ה-declarations לפני IIFE לא הספיקה. **דרוש חקר עמוק בסבב נוסף** — אולי DevTools console output ממיטל, אולי אופציה אחרת מההוראה המקורית (queueMicrotask / setTimeout(boot,0) / DOMContentLoaded), אולי root cause שונה לחלוטין שלא קשור ל-TDZ של viewState/STUDENTS_KEY.
+
+**Finding A — placeholders ב-Letter Cluster intervention (B.7):**
+
+- **שורש:** `openInterventionModal` / `printInterventionGroup` ב-`teacher-rama.html` קראו ל-`AvneiInterventions.interpolateScript(script, group.groupCommonDetails || {})`. ב-Letter Cluster, ה-`groupCommonDetails` ריק (האותיות הן per-student ב-`s.details.weak_letters`) → placeholders `{personalized_letters}` ו-`{personalized_first_letter}` ב-Materials / HOOK / INDEPENDENT נשארו כטקסט מילולי ב-Modal וב-PDF.
+- **תיקון (~17 שורות net):**
+  1. helper חדש `_getGroupSharedLetterDetails(group)`: סופר הופעות אותיות בכל הילדות בקבוצה, חוזר `{ weak_letters: top3 }`. ל-patternId שאינו `letter_cluster` חוזר `null`.
+  2. ב-`openInterventionModal`: `const sharedDetails = _getGroupSharedLetterDetails(group); ... interpolateScript(script, group.groupCommonDetails || {}, sharedDetails);` — ה-signature של `interpolateScript` כבר תמכה ב-param שלישי `studentDetails`, ו-`weak_letters` כבר ממופה אוטומטית ל-`personalized_letters` + `personalized_first_letter`.
+  3. ב-`printInterventionGroup`: אותה אינטגרציה.
+- **השפעה:**
+  - Modal: Materials מציג "כרטיסיות פר אות (לכל ילדה — 3 כרטיסיות מותאמות אישית מתוך ז · ח · ט)" במקום `{personalized_letters}`.
+  - HOOK: "מי זוכרת את האות ז?" במקום `{personalized_first_letter}`.
+  - PDF: זהה.
+  - כרטיסי הילדות במrendering האישי לא שונה — עדיין מציגים את 3 האותיות הספציפיות של כל ילדה (לפי `s.details.weak_letters`).
+- **לא נגעתי:** `js/shared/interventions.js` · `interventions/letter-cluster.json` · 4 ה-interventions/*.json האחרים.
+
+**Finding B — TDZ ב-F.21A (pre-existing · ❌ ניסיון תיקון לא הצליח):**
+
+- **תיאוריה שניסיתי:** IIFE `initPinGate` (היה ~שורה 1181) קרא ל-`boot()` synchronously ב-PIN-bypass path (`sessionStorage.getItem('teacher_authed') === '1'`). `boot()` משתמש ב-`viewState`, אבל `let viewState` הוצהר ~30 שורות אחרי ה-IIFE → חשבתי שזה `Cannot access 'viewState' before initialization`.
+- **מה עשיתי (נשמר בקוד · לא revert):** הזזתי את כל בלוק ה-state declarations (`const STUDENTS_KEY` · `const PULSE_RANGES` · `const STALE_WARN_DAYS` · `const STALE_ALERT_DAYS` · `let viewState`) לפני ה-IIFE של PIN-gate. הוספתי הערה שמסבירה למה.
+- **תוצאה:** ❌ **לא פתר את הבעיה.** מיטל בדקה ידנית: F5 refresh עדיין שובר את הדף. הזזת `viewState`/`STUDENTS_KEY` הספציפיים האלה לא הספיקה.
+- **חשד שלי ל-root cause האמיתי (לבדיקה בסבב הבא · לא תוקן עכשיו):**
+  - יש **עוד** `let` declarations שמוצהרים הרבה אחרי IIFE ושנגישים מ-render() — בעיקר `let _activeGroups = []` ב-שורה 2332 (מוגדר ב-section של renderInterventionTriggers, באמצע הסקריפט). `boot()` קורא ל-`render()` → `renderClassView()` → `renderInterventionTriggers()` שמתייחס ל-`_activeGroups`. אם `_activeGroups` עדיין ב-TDZ כשrender() רץ — תיפול שגיאה ו-`body.innerHTML` לא יעודכן → דף ריק.
+  - הפתרון הסביר ביותר (לא יישמתי): wrap `boot()` ב-`setTimeout(boot, 0)` או `queueMicrotask(boot)` בשני המקומות ב-IIFE. זה יבטיח שכל ה-script tag הסתיים (כל ה-let/const reached) לפני שboot() רץ. ב-PIN-submit flow זה גם בטוח (event handler ממילא async).
+  - אופציה אחרת: לעטוף את boot ב-DOMContentLoaded — אבל ה-script כבר ב-body סוף, אז ה-DOM זמין; ה-issue הוא ההcript עצמו שעדיין לא הסתיים.
+- **למה הקוד נשאר ככה ב-commit הזה (לפי הוראת מיטל):** הזזת declarations היא לא רגרסיה. אולי צעד נכון לקראת פתרון, אולי לא. דחיפת ה"ניסיון" עוזרת ל-debugging הבא כי הקוד הנוכחי משקף את ה-state הידוע (`viewState` כבר מאוחל לפני IIFE).
+- **לא נגעתי:** semantics של PIN gate, של viewState, של currentPulse, של render — שום דבר חוץ ממיקום ה-declarations.
+
+**TODO לסבב הבא (Finding B חקירה עמוקה):**
+1. **DevTools output ממיטל**: F5 על מסך מאומת + DevTools Console → לראות מה ה-error המדויק (TDZ של איזה משתנה? null? אחר?).
+2. **לבדוק _activeGroups TDZ**: אם זה הroot cause — לעטוף boot ב-`setTimeout(boot, 0)` (הכי בטוח cross-browser).
+3. **אם לא TDZ**: לבדוק אם `AvneiMasteryCheck.RAMA_TASKS` או `AvneiBKT` או `AvneiInterventions` לא נטענו בזמן (race condition עם script tags חיצוניים).
+4. **לאמת תיקון**: מיטל F5 ידני + תרחיש PIN-entry-ראשון + תרחיש exit→re-enter, שלושתם נטענים נכון.
+
+**אימות:**
+
+- ✅ 78/78 `test-interventions.js` (כולל בדיקות `interpolate ממלא {personalized_letters}` + `{personalized_first_letter}` — אומת רגרסיה ב-API של interpolateScript עבור Letter Cluster).
+- ✅ 75/75 `test-pack-bridge.js`
+- ✅ 38/38 `test-weakness-targeting.js`
+- ✅ 51/51 `test-moy-assessments.js`
+- **סה"כ 242/242 ✓** (Finding A מאומת גם ידנית ב-UI; Finding B — ה-tests עוברים אבל לא משקפים את ה-bug של F5 refresh כי הם רצים ב-Node, לא ב-browser).
+
+**קבצים שונו:**
+
+| # | קובץ | סוג שינוי |
+|---|---|---|
+| 1 | `underwater-app/teacher-rama.html` | 2 תיקונים (Finding A + Finding B) · ~30 שורות net |
+| + | `_handoff/2026-05-26-architecture-tasks-tracker.html` | B.7 — 2 findings סומנו closed |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש בראש (זה) |
+| + | `_handoff/pending-commits.md` | בלוק חדש בראש |
+
+**שאלות פתוחות / TODOs נוספים:**
+
+- ❌ **Finding B עדיין פתוח** — ה-fix שניסיתי (הזזת state declarations לפני IIFE) לא פתר. ראה TODO מפורט בבלוק Finding B למעלה.
+
+---
+
 ## 🎼 Orchestrator — סיכום סוף יום 28.5.2026 ערב
 
 **סטטוס:** ✅ סגירת יום · 5 commits ב-origin · 4 סוכני קוד דחפו · 1 commit תזמורת · 1 verification PASS · 2 findings פתוחים

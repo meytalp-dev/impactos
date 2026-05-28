@@ -1178,6 +1178,31 @@
 const TEACHER_PIN = '4521';
 const SESSION_AUTH_KEY = 'teacher_authed';
 
+// ============================================================
+// State (declarations חייבות לרוץ לפני ה-IIFE — אחרת PIN-bypass path
+// קורא ל-boot() synchronously ונופל ב-TDZ על viewState / STUDENTS_KEY).
+// ============================================================
+// STATE_KEY כבר מוגדר ב-state.js — לא להגדיר שוב (SyntaxError).
+const STUDENTS_KEY = 'avnei-yesod-students';
+
+// תאריכי פעימות — מקור: spec §8, אישור מיטל 27.5.2026
+const PULSE_RANGES = {
+  1: { start: '2026-09-01', end: '2026-10-31', label: 'ספט-אוק' },
+  2: { start: '2027-01-01', end: '2027-02-28', label: 'ינו-פבר' },
+  3: { start: '2027-05-01', end: '2027-06-30', label: 'מאי-יוני' },
+};
+
+// ספי "ישן" ל-Confidence downgrade — spec §9, אישור מיטל
+const STALE_WARN_DAYS = 7;
+const STALE_ALERT_DAYS = 14;
+
+let viewState = {
+  view: 'class',          // 'class' | 'student'
+  pulseMode: 'daily',     // 'daily' | 'snapshot'
+  pulse: null,            // null = current; 1/2/3 = chosen snapshot
+  selectedStudent: null,  // student id when view='student'
+};
+
 (function initPinGate() {
   const gate = document.getElementById('pinGate');
   const main = document.getElementById('mainContent');
@@ -1214,30 +1239,6 @@ document.getElementById('exitBtn').addEventListener('click', () => {
   sessionStorage.removeItem(SESSION_AUTH_KEY);
   location.href = 'map.html';
 });
-
-// ============================================================
-// State
-// ============================================================
-// STATE_KEY כבר מוגדר ב-state.js — לא להגדיר שוב (SyntaxError).
-const STUDENTS_KEY = 'avnei-yesod-students';
-
-// תאריכי פעימות — מקור: spec §8, אישור מיטל 27.5.2026
-const PULSE_RANGES = {
-  1: { start: '2026-09-01', end: '2026-10-31', label: 'ספט-אוק' },
-  2: { start: '2027-01-01', end: '2027-02-28', label: 'ינו-פבר' },
-  3: { start: '2027-05-01', end: '2027-06-30', label: 'מאי-יוני' },
-};
-
-// ספי "ישן" ל-Confidence downgrade — spec §9, אישור מיטל
-const STALE_WARN_DAYS = 7;
-const STALE_ALERT_DAYS = 14;
-
-let viewState = {
-  view: 'class',          // 'class' | 'student'
-  pulseMode: 'daily',     // 'daily' | 'snapshot'
-  pulse: null,            // null = current; 1/2/3 = chosen snapshot
-  selectedStudent: null,  // student id when view='student'
-};
 
 function readJson(key, fallback) {
   try {
@@ -2399,6 +2400,20 @@ function renderInterventionTriggers(students) {
   });
 }
 
+// Letter Cluster — top-3 most-shared weak letters across the group (לטקסט הסקריפט בלבד; כרטיסי
+// הילדות עדיין מציגים את האותיות פר ילדה). הפונקציה ריקה לסקריפטים אחרים.
+function _getGroupSharedLetterDetails(group) {
+  if (!group || group.patternId !== 'letter_cluster') return null;
+  const counts = {};
+  (group.students || []).forEach(function (s) {
+    const letters = s && s.details && Array.isArray(s.details.weak_letters) ? s.details.weak_letters : [];
+    letters.forEach(function (l) { counts[l] = (counts[l] || 0) + 1; });
+  });
+  const ranked = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; });
+  if (ranked.length === 0) return null;
+  return { weak_letters: ranked.slice(0, 3) };
+}
+
 function openInterventionModal(groupIdx) {
   closeInterventionModal();
   const group = _activeGroups[groupIdx];
@@ -2419,8 +2434,11 @@ function openInterventionModal(groupIdx) {
     return '<li>· ' + escapeHtml(s.name) + letters + '</li>';
   }).join('');
 
-  // אינטרפלציה של ה-script לפי groupCommonDetails (לאינדפנדנט/Personalized — נציג את הקבוצתי)
-  const interp = AvneiInterventions.interpolateScript(script, group.groupCommonDetails || {});
+  // אינטרפלציה של ה-script לפי groupCommonDetails (לאינדפנדנט/Personalized — נציג את הקבוצתי).
+  // ב-letter_cluster נעביר ב-studentDetails את top-3 האותיות הכי משותפות בקבוצה, כדי ש-placeholders
+  // {personalized_letters} / {personalized_first_letter} ב-Materials/HOOK יתמלאו (פר-ילדה נשאר בכרטיסים).
+  const sharedDetails = _getGroupSharedLetterDetails(group);
+  const interp = AvneiInterventions.interpolateScript(script, group.groupCommonDetails || {}, sharedDetails);
 
   // היסטוריה: רשומות אחרונות של הקבוצה (לפי studentId הראשון — דוגמה)
   const recentRecs = group.students.length > 0
@@ -2541,7 +2559,8 @@ function printInterventionGroup(group) {
   if (!group) return;
   const script = AvneiInterventions.loadScript(group.patternId);
   if (!script) return;
-  const interp = AvneiInterventions.interpolateScript(script, group.groupCommonDetails || {});
+  const sharedDetails = _getGroupSharedLetterDetails(group);
+  const interp = AvneiInterventions.interpolateScript(script, group.groupCommonDetails || {}, sharedDetails);
   const meta = IV_PATTERN_LABELS[group.patternId] || { icon: '📋', label: group.patternId };
 
   const today = new Date();
