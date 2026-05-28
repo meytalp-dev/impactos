@@ -305,28 +305,39 @@ button { font-family: inherit; cursor: pointer; }
 'use strict';
 
 // ============================================================
-// MOY-Lite Screener · סוכן 10 · 28.5.2026
+// MOY-Lite Screener · 28.5.2026
 // ============================================================
 // ⚠️ אסור להציג ציון לתלמידה (evaluation, לא תרגול).
 // אסור לערבב את הפריטים האלה עם תרגול רגיל (זיהום BKT).
+// מבנה items[]: 1 passage × 1 question per item (task_3) · 3 sub_types × 10 (task_4).
+// בחירה אקראית: 10 פריטים מתוך 30 (task_3) · 22 פריטים מאוזנים מתוך 30 (task_4, 7+8+7).
+// אודיו: AvriNeural MP3 (audio/moy/{item_id}.mp3) אם קיים, אחרת Web Speech API (he-IL).
 // ============================================================
 
-const AUDIO_BASE = 'audio/'; // קבצי AvriNeural של engine קיימים תחת engine/audio/...
-const MOY_AUDIO_PREFIX = AUDIO_BASE + 'moy/'; // ייעודי ל-MOY (יוצר ב-deploy של מיטל)
+const MOY_AUDIO_PREFIX = 'audio/moy/'; // יחסי ל-engine/moy-screener.html
+const SPEECH_RATE = 0.85;              // קצב איטי לכיתה א'
 
-// ====== URL params ======
+const TASK_4_BALANCE = Object.freeze({
+  phoneme_awareness_open_close: 7,
+  phoneme_awareness_syllables: 8,
+  phoneme_awareness_phonemes: 7,
+});
+
 const urlParams = new URLSearchParams(location.search);
 const STUDENT_ID = urlParams.get('student') || 'local';
+const ONLY_TASK = urlParams.get('task'); // '3' / '4' / null (default = both)
 
-// ====== State ======
 const session = {
   studentId: STUDENT_ID,
   studentName: '',
   itemsBank: null,
-  taskOrder: ['task_3', 'task_4'],
+  task3Items: [],
+  task4Items: [],
+  taskOrder: (ONLY_TASK === '3') ? ['task_3']
+            : (ONLY_TASK === '4') ? ['task_4']
+            : ['task_3', 'task_4'],
   currentTaskIdx: 0,
-  currentQuestionIdx: 0,
-  passageShown: false,
+  currentItemIdx: 0,
   results: {
     task_3: { score: 0, items: [] },
     task_4: { score: 0, items: [] },
@@ -334,19 +345,10 @@ const session = {
   currentAudio: null,
 };
 
-// ====== Helpers ======
-
 function $(id) { return document.getElementById(id); }
 function show(id) { $(id).style.display = ''; }
 function hide(id) { $(id).style.display = 'none'; }
 
-function escapeHtml(s) {
-  return String(s == null ? '' : s)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-}
-
-// טעינת שם תלמידה (אם קיים ב-Students store) — לא חוסם, רק תצוגה
 function loadStudentName(studentId) {
   try {
     const raw = localStorage.getItem('avnei-yesod-students');
@@ -359,34 +361,107 @@ function loadStudentName(studentId) {
   }
 }
 
-// audio playback — AvriNeural (mp3) בלבד. אם קובץ חסר → fallback ל-text + הודעה.
-// audioUrl יחסי לשורש engine/ (לדוגמה: assets/audio/moy/passage-001.mp3)
-function playAudio(audioUrl, onError) {
-  return new Promise((resolve) => {
-    if (!audioUrl) { resolve(false); return; }
+// ====== Random selection ======
+
+function shuffle(arr) {
+  const out = arr.slice();
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = out[i]; out[i] = out[j]; out[j] = tmp;
+  }
+  return out;
+}
+
+function randomSelectItems(pool, n) {
+  if (!Array.isArray(pool) || pool.length === 0) return [];
+  return shuffle(pool).slice(0, Math.min(n, pool.length));
+}
+
+// מחלק לפי type ובוחר n פריטים מכל קבוצה, ואז מערבב את הסדר הכולל
+function balancedSelectTask4(pool, counts) {
+  const byType = {};
+  (pool || []).forEach(it => {
+    if (!it || !it.type) return;
+    (byType[it.type] = byType[it.type] || []).push(it);
+  });
+  const selected = [];
+  Object.keys(counts).forEach(t => {
+    selected.push(...randomSelectItems(byType[t] || [], counts[t]));
+  });
+  return shuffle(selected);
+}
+
+// מערבב options כדי שהאופציה הנכונה לא תהיה תמיד הראשונה (הקובץ המאושר תמיד שם correct: true ראשון)
+function shuffleOptions(item) {
+  return Object.assign({}, item, { options: shuffle(item.options || []) });
+}
+
+// ====== Audio ======
+
+function stopAudio() {
+  if (session.currentAudio) {
+    try { session.currentAudio.pause(); } catch (e) {}
+    session.currentAudio = null;
+  }
+  if (typeof speechSynthesis !== 'undefined') {
+    try { speechSynthesis.cancel(); } catch (e) {}
+  }
+}
+
+function playFile(url) {
+  return new Promise(resolve => {
+    if (!url) { resolve(false); return; }
     try {
-      if (session.currentAudio) {
-        try { session.currentAudio.pause(); } catch (e) {}
-      }
-      const a = new Audio(audioUrl);
+      stopAudio();
+      const a = new Audio(url);
       session.currentAudio = a;
       a.addEventListener('ended', () => resolve(true), { once: true });
-      a.addEventListener('error', () => {
-        if (onError) onError();
-        resolve(false);
-      }, { once: true });
-      a.play().catch(() => {
-        if (onError) onError();
-        resolve(false);
-      });
+      a.addEventListener('error', () => resolve(false), { once: true });
+      a.play().catch(() => resolve(false));
     } catch (e) {
-      if (onError) onError();
       resolve(false);
     }
   });
 }
 
-// ====== Load items bank ======
+function speakHebrew(text) {
+  return new Promise(resolve => {
+    if (!text || typeof speechSynthesis === 'undefined') { resolve(false); return; }
+    try {
+      stopAudio();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'he-IL';
+      u.rate = SPEECH_RATE;
+      u.onend = () => resolve(true);
+      u.onerror = () => resolve(false);
+      speechSynthesis.speak(u);
+    } catch (e) {
+      resolve(false);
+    }
+  });
+}
+
+// kind = 'passage' (task_3 passage) · 'question' (task_3 question / task_4 instruction)
+// אסטרטגיה: ראשית לנסות MP3 ייעודי לפריט; אם נכשל — Web Speech API.
+async function playItemAudio(item, kind) {
+  if (!item) return false;
+  let url = null, text = '';
+  if (kind === 'passage') {
+    url = item.passage_audio_url || (item.item_id ? MOY_AUDIO_PREFIX + item.item_id + '-passage.mp3' : null);
+    text = item.passage_text || '';
+  } else {
+    url = item.audio_url || item.instruction_audio || (item.item_id ? MOY_AUDIO_PREFIX + item.item_id + '.mp3' : null);
+    text = item.question_text || item.instruction_text || '';
+    if (item.word) text = (text ? text + '. ' : '') + item.word;
+  }
+  if (url) {
+    const ok = await playFile(url);
+    if (ok) return true;
+  }
+  return await speakHebrew(text);
+}
+
+// ====== Load items ======
 
 async function loadItems() {
   try {
@@ -413,17 +488,15 @@ async function init() {
   }
 
   $('welcomeAudioBtn').addEventListener('click', () => {
-    // הסבר נוני — אם קובץ קיים. אחרת — אין דבר (הטקסט מוצג בבועה).
-    playAudio(MOY_AUDIO_PREFIX + 'noni-welcome.mp3');
+    speakHebrew('שָׁלוֹם! אֲנִי נוֹנִי. הַיּוֹם נַעֲשֶׂה בְּיַחַד שְׁתֵּי מְשִׂימוֹת קְצָרוֹת. הַקְשִׁיבִי לְהוֹרָאוֹת וַעֲנִי בְּשֶׁקֶט.');
   });
   $('startBtn').addEventListener('click', startTasks);
   $('passagePlayBtn').addEventListener('click', playCurrentPassage);
-  $('passageDoneBtn').addEventListener('click', () => showQuestion());
+  $('passageDoneBtn').addEventListener('click', () => showQuestionForCurrent());
   $('questionAudioBtn').addEventListener('click', playCurrentQuestionAudio);
   $('backToTeacherBtn').addEventListener('click', () => {
-    // history.back() משמר את state של teacher-rama: PIN-unlocked + selectedStudent + Student View.
-    // location.href גורם לטעינה מחדש שמאבדת state — ולכן נראתה כ"דשבורד ריק" (PIN gate חוסם).
-    // fallback רק אם אין היסטוריה (פתיחה ישירה ב-tab חדש).
+    // history.back() משמר את state של teacher-rama (PIN-unlocked + selectedStudent + Student View).
+    // location.href גורם לטעינה מחדש שמאבדת state. fallback רק אם אין היסטוריה.
     if (history.length > 1) {
       history.back();
     } else {
@@ -437,8 +510,19 @@ async function init() {
 function startTasks() {
   hide('screen-welcome');
   show('screen-task');
+
+  const t3Pool = (session.itemsBank.task_3 && session.itemsBank.task_3.items) || [];
+  const t4Pool = (session.itemsBank.task_4 && session.itemsBank.task_4.items) || [];
+
+  if (session.taskOrder.indexOf('task_3') !== -1) {
+    session.task3Items = randomSelectItems(t3Pool, 10).map(shuffleOptions);
+  }
+  if (session.taskOrder.indexOf('task_4') !== -1) {
+    session.task4Items = balancedSelectTask4(t4Pool, TASK_4_BALANCE).map(shuffleOptions);
+  }
+
   session.currentTaskIdx = 0;
-  session.currentQuestionIdx = 0;
+  session.currentItemIdx = 0;
   enterCurrentTask();
 }
 
@@ -446,143 +530,115 @@ function currentTaskKey() {
   return session.taskOrder[session.currentTaskIdx];
 }
 
+function currentTaskItems() {
+  return currentTaskKey() === 'task_3' ? session.task3Items : session.task4Items;
+}
+
 function enterCurrentTask() {
   const tKey = currentTaskKey();
   if (!tKey) { finishAll(); return; }
 
-  const task = session.itemsBank[tKey];
-  if (!task) {
-    showTaskError('משימה חסרה במאגר הפריטים (' + tKey + ')');
+  const items = currentTaskItems();
+  if (!items || items.length === 0) {
+    showTaskError('אין פריטים זמינים למשימה ' + tKey);
     return;
   }
 
-  $('taskLabel').textContent = (tKey === 'task_3' ? 'מְשִׂימָה 3 · הֲבָנַת טֶקְסְט מוּשְׁמָע' : 'מְשִׂימָה 4 · מוּדָעוּת לְשׁוֹנִית');
-  session.currentQuestionIdx = 0;
-  session.passageShown = false;
-
-  if (tKey === 'task_3') {
-    // task 3 = passage + questions
-    showPassage();
-  } else {
-    // task 4 = רק שאלות
-    showQuestion();
-  }
+  $('taskLabel').textContent = (tKey === 'task_3')
+    ? 'מְשִׂימָה 3 · הֲבָנַת טֶקְסְט מוּשְׁמָע'
+    : 'מְשִׂימָה 4 · מוּדָעוּת לְשׁוֹנִית';
+  session.currentItemIdx = 0;
+  showCurrentItem();
 }
 
-function showPassage() {
-  const tKey = currentTaskKey();
-  if (tKey !== 'task_3') { showQuestion(); return; }
-  const passage = (session.itemsBank.task_3.passages || [])[0];
-  if (!passage) { showQuestion(); return; }
-
-  $('progressLabel').textContent = 'הַקְשָׁבָה רִאשׁוֹנָה';
-  hide('questionPanel');
-  show('passagePanel');
-  // הַטֶּקְסְט תָּמִיד מוּצָג (כִּיתָּה א' צְרִיכָה לִרְאוֹת כְּשֶׁאֵין שֶׁמַע, וְגַם כְּגַבּוּי לְמוֹרָה לְהַקְרִיא אִם יֵשׁ קוֹשִי).
-  $('passageText').textContent = passage.passage_text_fallback || '';
-  $('passageAudioMissing').style.display = 'none';
-  session.passageShown = true;
-}
-
-async function playCurrentPassage() {
-  const tKey = currentTaskKey();
-  if (tKey !== 'task_3') return;
-  const passage = (session.itemsBank.task_3.passages || [])[0];
-  if (!passage) return;
-
-  $('passagePlayBtn').disabled = true;
-  const ok = await playAudio(passage.audio_url, () => {
-    // קובץ חסר → רק להציג את ה-warning. הטקסט כבר מוצג למעלה.
-    $('passageAudioMissing').style.display = '';
-  });
-  if (!ok) {
-    $('passageAudioMissing').style.display = '';
-  }
-  $('passagePlayBtn').disabled = false;
-}
-
-function showQuestion() {
-  hide('passagePanel');
-  show('questionPanel');
-
-  const tKey = currentTaskKey();
-  const questions = currentQuestionList();
-  if (!questions || session.currentQuestionIdx >= questions.length) {
+function showCurrentItem() {
+  const items = currentTaskItems();
+  if (!items || session.currentItemIdx >= items.length) {
     nextTaskOrFinish();
     return;
   }
+  $('progressLabel').textContent = (session.currentItemIdx + 1) + ' / ' + items.length;
+  const item = items[session.currentItemIdx];
 
-  const total = questions.length;
-  $('progressLabel').textContent = (session.currentQuestionIdx + 1) + ' / ' + total;
+  if (currentTaskKey() === 'task_3') {
+    // task_3: מציגה את הקטע, ואחרי "הקשבתי, המשך לשאלות" מציגה את השאלה
+    hide('questionPanel');
+    show('passagePanel');
+    $('passageText').textContent = item.passage_text || '';
+    $('passageAudioMissing').style.display = 'none';
+  } else {
+    showQuestionForCurrent();
+  }
+}
 
-  const q = questions[session.currentQuestionIdx];
-  $('questionText').textContent = q.text || q.instruction_text || '';
+function showQuestionForCurrent() {
+  hide('passagePanel');
+  show('questionPanel');
 
-  // Options
+  const items = currentTaskItems();
+  const item = items[session.currentItemIdx];
+  if (!item) { nextTaskOrFinish(); return; }
+
+  // טקסט השאלה / הוראה — אם יש word ב-task_4 נצרף אותו בשורה נפרדת (גופן גדול, נראה ע"י הילדה)
+  const main = item.question_text || item.instruction_text || '';
+  const wordPart = item.word ? ('\n' + item.word) : '';
+  $('questionText').textContent = main + wordPart;
+
   const container = $('optionsContainer');
   container.innerHTML = '';
-  (q.options || []).forEach(opt => {
+  (item.options || []).forEach((opt, idx) => {
     const btn = document.createElement('button');
     btn.className = 'option-btn';
     btn.type = 'button';
     btn.textContent = opt.text;
-    btn.addEventListener('click', () => onAnswer(opt.id));
+    btn.addEventListener('click', () => onAnswer(idx));
     container.appendChild(btn);
   });
 }
 
-function currentQuestionList() {
-  const tKey = currentTaskKey();
-  if (tKey === 'task_3') {
-    const passage = (session.itemsBank.task_3.passages || [])[0];
-    return passage ? (passage.questions || []) : [];
-  }
-  if (tKey === 'task_4') {
-    return session.itemsBank.task_4.questions || [];
-  }
-  return [];
+async function playCurrentPassage() {
+  const item = currentTaskItems()[session.currentItemIdx];
+  if (!item) return;
+  $('passagePlayBtn').disabled = true;
+  const ok = await playItemAudio(item, 'passage');
+  if (!ok) $('passageAudioMissing').style.display = '';
+  $('passagePlayBtn').disabled = false;
 }
 
 async function playCurrentQuestionAudio() {
-  const list = currentQuestionList();
-  const q = list[session.currentQuestionIdx];
-  if (!q) return;
-  const url = q.audio_url || q.instruction_audio;
-  if (!url) return;
+  const item = currentTaskItems()[session.currentItemIdx];
+  if (!item) return;
   $('questionAudioBtn').disabled = true;
-  await playAudio(url);
+  await playItemAudio(item, 'question');
   $('questionAudioBtn').disabled = false;
 }
 
-function onAnswer(optionId) {
+function onAnswer(idx) {
   const tKey = currentTaskKey();
-  const list = currentQuestionList();
-  const q = list[session.currentQuestionIdx];
-  if (!q) return;
+  const items = currentTaskItems();
+  const item = items[session.currentItemIdx];
+  if (!item) return;
+  const chosen = (item.options || [])[idx];
 
-  // disable all + visual select
-  document.querySelectorAll('#optionsContainer .option-btn').forEach(btn => {
+  document.querySelectorAll('#optionsContainer .option-btn').forEach((btn, i) => {
     btn.disabled = true;
-    if (btn.textContent === (q.options.find(o => o.id === optionId) || {}).text) {
-      btn.classList.add('selected');
-    }
+    if (i === idx) btn.classList.add('selected');
   });
 
-  const isCorrect = (optionId === q.correct);
+  const isCorrect = !!(chosen && chosen.correct === true);
   if (isCorrect) session.results[tKey].score += 1;
   session.results[tKey].items.push({
-    q_id: q.q_id,
-    chosen: optionId,
-    correct: q.correct,
+    item_id: item.item_id,
+    chosen_idx: idx,
+    chosen_text: chosen ? chosen.text : null,
     is_correct: isCorrect,
     ts: Date.now(),
   });
 
   // אין feedback מיידי (evaluation, לא תרגול)
-  // מתקדמים אחרי השהיה קלה (לסגירת אנימציית-בחירה)
   setTimeout(() => {
-    session.currentQuestionIdx++;
-    showQuestion();
+    session.currentItemIdx++;
+    showCurrentItem();
   }, 450);
 }
 
@@ -596,13 +652,17 @@ function nextTaskOrFinish() {
 }
 
 function finishAll() {
-  // שמירה ל-state.assessments דרך AvneiAssessments.recordMOYAttempt
+  stopAudio();
+
+  // שמירה ל-state.assessments דרך AvneiAssessments.recordMOYAttempt.
+  // שולחים רק את המשימות שהורצו בפועל (תמיכה ב-?task=3 / ?task=4).
   if (window.AvneiAssessments) {
     try {
-      AvneiAssessments.recordMOYAttempt(session.studentId, {
-        task_3: { score: session.results.task_3.score },
-        task_4: { score: session.results.task_4.score },
+      const payload = {};
+      session.taskOrder.forEach(tKey => {
+        payload[tKey] = { score: session.results[tKey].score };
       });
+      AvneiAssessments.recordMOYAttempt(session.studentId, payload);
     } catch (e) {
       console.warn('recordMOYAttempt failed:', e);
     }
@@ -628,6 +688,7 @@ document.addEventListener('DOMContentLoaded', init);
 window.__moy = {
   session: () => session,
   finishNow: finishAll,
+  results: () => session.results,
 };
 </script>
 </body>
