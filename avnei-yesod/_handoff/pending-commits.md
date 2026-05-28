@@ -4,6 +4,83 @@
 
 ---
 
+## 🟡 קבוצה R — A.5 Cold-start Protocol
+
+**סטטוס:** 🟡 דורש בדיקת מיטל ידנית לפני push (5-8 דק')
+**תאריך:** 2026-05-27 לילה
+**3 קבצים (1 חדש + 2 שינויים + 3 handoff updates) · חבילה אחת**
+
+| # | קובץ | סטטוס שינוי | הערה |
+|---|---|---|---|
+| 1 | `underwater-app/js/shared/mastery-check.js` | שינוי (+~85 שורות) | הוספת `isInColdStart(studentId)` + `COLD_START_DAYS=3` + `COLD_START_ATTEMPTS=30` + עזרים פרטיים `_getFirstSeenAt` ו-`_totalAttemptsAllStrands`. ה-API הקיים (checkMastery, checkRamaTaskStatus, ISLAND_TO_RAMA, RAMA_TASKS) נשמר 1:1. |
+| 2 | `underwater-app/teacher-rama.html` | שינוי (~30 שורות) | CSS חדש (`.badge-new`, `.cold-start-banner`, `.cold-count`) · helper `coldStartFor(studentId)` · Class View: badge "חדשה" ליד שם בטבלה · Student View: banner בולט מעל סקציה 1 + סינון `teacherFlags` ב-cold-start (החלטה 5) · pulse summary counter "📚 X ילדות חדשות". |
+| 3 | `underwater-app/scripts/test-cold-start.js` | **חדש** (~165 שורות) | 5 בלוקי טסט · 24 assertions · 4 קומבינציות קריטיות + edge cases + backwards compat. |
+| + | `_handoff/2026-05-26-architecture-tasks-tracker.html` | שינוי קל | A.5 ☐ → ✅ ב-2 מקומות. |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש בראש | תיעוד A.5 (6 החלטות פדגוגיות שהוטמעו, API חדש, edge cases). |
+| + | `_handoff/pending-commits.md` | בלוק חדש בראש (זה) | הקבוצה הזו. |
+
+**מהות התוצר:**
+A.5 Cold-start Protocol — מסביר למורה למה היא רואה ⚫ לתלמידות חדשות. שילוב של 2 קריטריונים (3+ ימים AND 30+ ניסיונות). שניהם חייבים להתקיים יחד כדי **לצאת** מ-cold-start. UI מורה בלבד — הילדה משחקת רגיל ולא יודעת על cold-start. משלים את F.21A שנדחפה הרגע (`54e00ec`).
+
+**יחס לקבוצות שכבר נדחפו / ממתינות:**
+- ✅ קבוצה N (F.21A code · `54e00ec`) — A.5 משלים את F.21A · אותם 2 קבצי קוד (`mastery-check.js` + `teacher-rama.html`) אבל אדיטיבי בלבד, אין שבירה
+- ❌ אין חפיפת קבצים עם A.1/A.3/A.4 (BKT/EPA/Sub-BKT) — A.5 רק קורא ה-API שלהן
+- ❌ אין חפיפת קבצים עם D.15 v2 (Q/P/O · stage-3-*, mechanic-*, letter-anims) — תחומים שונים לגמרי
+- ❌ לא נגעתי ב-`profile-classifier.js` — ניצול `entry_date` הקיים ב-StudentsStore
+
+**🎯 פונקציה חדשה שנחשפת:**
+`AvneiMasteryCheck.isInColdStart(studentId)` — החזר: `{inColdStart, daysSince, attemptsTotal, daysCriterion, attemptsCriterion}`. בנוסף נחשפים הקבועים `COLD_START_DAYS` ו-`COLD_START_ATTEMPTS` כך ש-F.21E עתידי יוכל להשתמש באותם ספים בלי דבלקציה.
+
+**לא חוסם דבר נוסף:** A.5 הוא tip של פירמידת "הסבר למורה את העדר הציון". F.21E (דשבורד פעולה) יוכל לבסס על isInColdStart לוגיקה של "אל תציע אינטרבנציה לתלמידה ב-cold-start".
+
+**לפני push (חובה — סביבת ריבוי-סוכנים):**
+```
+git fetch origin && git status
+```
+
+**הצעת message לקומיט:**
+```
+A.5 — Cold-start Protocol (3 ימים + 30 ניסיונות · שילוב)
+
+מנגנון "ילדה חדשה במערכת" שמסביר למורה למה היא רואה ⚫.
+משלים את F.21A code (54e00ec).
+
+mastery-check.js הורחב ב-isInColdStart(studentId):
+  {inColdStart, daysSince, attemptsTotal,
+   daysCriterion, attemptsCriterion}
+שילוב: inColdStart=true כל עוד אחד הקריטריונים לא התקיים.
+שניהם חייבים (days>=3 AND attempts>=30) כדי לצאת.
+
+UI ב-teacher-rama.html:
+  Class View — badge "חדשה" צהוב ליד שם בטבלה
+  Student View — banner בולט בראש: "📚 יום X/3 · Y/30 ניסיונות"
+  Pulse summary — counter "📚 X ילדות חדשות"
+  Flags חסומים ב-cold-start (החלטה פדגוגית של מיטל)
+
+לא נגעתי ב-profile-classifier.js — entry_date כבר נשמר ב-StudentsStore.
+Fallback אם entry_date חסר: earliest event ts → Date.now().
+
+24/24 smoke assertions ב-scripts/test-cold-start.js:
+  - 4 קומבינציות קריטיות (day1×5, day1×50, day5×5, day5×50)
+  - edge cases (אין רשומה, גבולות 3×30 ו-2×30, fallback)
+  - backwards compat: F.21A tests עדיין עוברים (30/30)
+
+6 החלטות פדגוגיות של מיטל (27.5 לילה) הוטמעו 1:1.
+```
+
+**מסלול בדיקה ידנית של מיטל לפני אישור push:**
+1. שרת רץ ב-`http://localhost:8765/underwater-app/teacher-rama.html` (PIN 4521)
+2. צרי תלמידה חדשה ב-`onboarding-profile.html`. חזרי ל-teacher-rama.
+3. **Class View:** השם שלה מופיע עם badge "חדשה" צהוב ליד השם.
+4. **Student View:** banner צהוב בולט "📚 יום 1/3 · 0/30 ניסיונות"
+5. **Pulse summary:** שורת סטטוס עם "📚 X ילדות חדשות"
+6. **רגרסיה:** תלמידות קיימות (מאיה/נועה/מיטל פלג) — תלוי ב-entry_date שלהן. אם < 3 ימים → גם הן cold (מצופה).
+
+**אם נמצא באג** → איטרציה לפני push.
+**אם הכל תקין** → push קבוצה R, A.5 נסגרת.
+
+---
+
 ## ✅ קבוצה Q — D.15 v2 שלב E · קבוצת דגים (נדחפה 27.5 לילה · `e36a916`) — **D.15 סגורה!**
 
 **סטטוס:** ✅ נדחפה · **17/17 אותיות D.15 חיות · רף ראמ"ה נפתח · חוסם פיילוט P0 נסגר**

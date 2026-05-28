@@ -307,6 +307,34 @@
   .conf-med  { background: #fef3c7; color: #78350f; }
   .conf-low  { background: #edf2f7; color: #4a5568; }
 
+  /* A.5 — Cold-start: badge "חדשה" ליד שם בטבלה */
+  .badge-new {
+    display: inline-block;
+    background: #ffd97d; color: #744210;
+    padding: 2px 6px; border-radius: 4px;
+    font-size: 11px; font-weight: 700;
+    margin-right: 6px;
+  }
+  /* A.5 — Cold-start: banner בראש Student View */
+  .cold-start-banner {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-right: 4px solid #f59e0b;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    color: #744210;
+  }
+  .cold-start-banner strong { color: #5c3500; }
+  .cold-start-banner .counter {
+    font-weight: 700; color: #5c3500;
+    display: block; margin-bottom: 4px; font-size: 15px;
+  }
+  /* קאונטר ב-pulse summary */
+  .pulse-summary .cold-count {
+    color: #744210;
+  }
+
   /* 22 letters */
   .letters-grid {
     display: grid;
@@ -742,6 +770,20 @@ function studentOverallConfidence(studentId) {
   return minConf;
 }
 
+// A.5 — Cold-start helper. שכבת UI דקה מעל AvneiMasteryCheck.isInColdStart.
+// מחזירה גם תווית counter מוכנה לתצוגה.
+function coldStartFor(studentId) {
+  if (!window.AvneiMasteryCheck || typeof AvneiMasteryCheck.isInColdStart !== 'function') {
+    return { inColdStart: false };
+  }
+  const r = AvneiMasteryCheck.isInColdStart(studentId);
+  if (!r.inColdStart) return r;
+  // יום X/3 · Y/30 ניסיונות — לפי spec של מיטל
+  const dayDisplay = Math.min(r.daysSince + 1, AvneiMasteryCheck.COLD_START_DAYS);
+  r.counterText = `יום ${dayDisplay}/${AvneiMasteryCheck.COLD_START_DAYS} · ${r.attemptsTotal}/${AvneiMasteryCheck.COLD_START_ATTEMPTS} ניסיונות`;
+  return r;
+}
+
 // ============================================================
 // Boot + render loop
 // ============================================================
@@ -914,9 +956,11 @@ function renderClassView() {
 
   students.forEach(stu => {
     const overallConf = studentOverallConfidence(stu.id);
+    const cs = coldStartFor(stu.id);
     bodyHtml += `<tr><td class="student-col" data-student="${stu.id}">
       <span class="conf" title="ביטחון מדידה">${confidenceIcon(overallConf)}</span>
       ${escapeHtml(stu.name || stu.id)}
+      ${cs.inColdStart ? `<span class="badge-new" title="${escapeHtml(cs.counterText)}">חדשה</span>` : ''}
     </td>`;
     taskIds.forEach(tid => {
       const t = tasks[tid];
@@ -945,9 +989,11 @@ function renderClassView() {
   const summary = curTasks.map(tid => aggregates[tid]).reduce((a, b) => ({
     pass: a.pass + b.pass, near: a.near + b.near, fail: a.fail + b.fail, cold: a.cold + b.cold
   }), { pass: 0, near: 0, fail: 0, cold: 0 });
+  // A.5 — ספירת תלמידות ב-cold-start בפעימה הפעילה
+  const coldStartCount = students.filter(s => coldStartFor(s.id).inColdStart).length;
   html += `<div class="pulse-summary">
     <div class="row"><strong>פעימה ${curPulse} (${PULSE_RANGES[curPulse].label})</strong> · משימות: ${curTasks.map(t => 'מ' + t).join(' + ')}</div>
-    <div class="row">סטטוס: ✓ ${summary.pass} תקין · ~ ${summary.near} קרוב · ✗ ${summary.fail} לא תקין · ○ ${summary.cold} לא נמדד</div>
+    <div class="row">סטטוס: ✓ ${summary.pass} תקין · ~ ${summary.near} קרוב · ✗ ${summary.fail} לא תקין · ○ ${summary.cold} לא נמדד${coldStartCount > 0 ? ` · <span class="cold-count">📚 ${coldStartCount} ילדות חדשות</span>` : ''}</div>
     ${summary.fail > 0 ? `<div class="urgent">דחוף: ${summary.fail} סטטוסים מתחת לרף בפעימה הפעילה
       <button onclick="showFailingStudents(${curPulse})">ראי שמות</button></div>` : ''}
   </div>`;
@@ -1128,6 +1174,7 @@ function renderStudentView() {
   const stu = students.find(s => s.id === viewState.selectedStudent);
   const stale = daysSinceLastEvent(stu.id);
   const overallConf = studentOverallConfidence(stu.id);
+  const cs = coldStartFor(stu.id);
 
   // student switcher
   const switcher = `<select id="studentSwitcher" style="font-family:inherit; font-size:14px; padding:6px 10px; border-radius:8px; border:1px solid #cbd5e0;">
@@ -1139,6 +1186,15 @@ function renderStudentView() {
     : (stale != null && stale >= STALE_WARN_DAYS)
       ? `<div class="stale-warn" style="background:#fffaf0; border-color:#fbd38d;">⏰ נמדד לפני ${stale} ימים</div>`
       : '';
+
+  // A.5 — Cold-start banner (החלטה 4: בולט, לא opacity 0.5)
+  const coldStartBanner = cs.inColdStart ? `
+    <div class="cold-start-banner">
+      <span class="counter">📚 ${escapeHtml(cs.counterText)}</span>
+      <strong>המערכת עוד לומדת את הילדה.</strong>
+      נציג ציונים מלאים אחרי שתעמוד בשני התנאים: ${AvneiMasteryCheck.COLD_START_DAYS}+ ימים מהצטרפות וגם ${AvneiMasteryCheck.COLD_START_ATTEMPTS}+ ניסיונות.
+    </div>
+  ` : '';
 
   // ===== Section 1: 5 strands =====
   const strandsHtml = window.AvneiBKT ? (function () {
@@ -1240,8 +1296,12 @@ function renderStudentView() {
   }
 
   // ===== Section 5: Flags =====
-  const flags = getTeacherFlags().filter(f => !f.student_id || f.student_id === stu.id);
-  const flagsHtml = flags.length > 0 ? flags.slice().reverse().map(f => `
+  // A.5 — החלטה 5: דגלים אוטומטיים חסומים ב-cold-start (אין מספיק דאטה לדפוס אמיתי).
+  // TODO: A.5 flag block when teacherFlags exists — להרחיב כשייווסף מנוע flags חי. כרגע הסקציה ריקה במציאות.
+  const flagsRaw = cs.inColdStart
+    ? []
+    : getTeacherFlags().filter(f => !f.student_id || f.student_id === stu.id);
+  const flagsHtml = flagsRaw.length > 0 ? flagsRaw.slice().reverse().map(f => `
     <div class="flag-card">
       <span class="flag-type">${escapeHtml(f.type)}</span>
       <strong>${escapeHtml(f.target_letter || '')}</strong> ${escapeHtml(f.note_template || '')}
@@ -1260,6 +1320,8 @@ function renderStudentView() {
       </div>
       ${staleWarn}
     </div>
+
+    ${coldStartBanner}
 
     <div class="section">
       <h2>5 הסטרנדים (BKT)</h2>
@@ -1282,7 +1344,7 @@ function renderStudentView() {
       <span class="parent-link" title="תצוגת הורה — בבנייה (F.21B)">תצוגת הורה ↗ (בקרוב)</span>
     </div>
 
-    ${flags.length > 0 ? `<div class="section"><h2>דגלים פעילים</h2>${flagsHtml}</div>` : ''}
+    ${flagsRaw.length > 0 ? `<div class="section"><h2>דגלים פעילים</h2>${flagsHtml}</div>` : ''}
   `;
 
   document.getElementById('studentSwitcher').addEventListener('change', (e) => {

@@ -7,6 +7,98 @@
 
 ---
 
+## A.5 — Cold-start Protocol (3 ימים + 30 ניסיונות · שילוב)
+
+**סטטוס:** ✅ קוד + UI הסתיימו · 24/24 smoke assertions עוברות · **ממתין לאישור push**
+**תאריך:** 2026-05-27 לילה
+**שיחה:** Claude Code (Opus 4.7 · VS Code · impactos · אותה שיחה כמו F.21A code)
+**Commit:** טרם נדחף
+**יחס:** A.5 משלים את F.21A — מסביר למורה למה היא רואה ⚫ לתלמידות חדשות.
+
+**מה נעשה:**
+מנגנון "ילדה חדשה במערכת" שמשלב 2 קריטריונים: **3+ ימים מהצטרפות** AND **30+ ניסיונות בסה"כ**. שניהם חייבים להתקיים יחד כדי **לצאת** מ-cold-start. UI מורה בלבד — הילדה משחקת רגיל ולא יודעת על cold-start.
+
+**6 החלטות פדגוגיות של מיטל (27.5.2026 לילה) שהוטמעו 1:1:**
+
+| # | החלטה | יישום |
+|---|---|---|
+| 1 | Cold-start = שילוב 3+ ימים AND 30+ ניסיונות | `inColdStart = !(daysCriterion && attemptsCriterion)` |
+| 2 | למורה: ⚫ + הודעה + counter "יום X/3 · Y/30" | banner + badge מציגים את ה-counter |
+| 3 | חל רק על כניסה ראשונה (לא על מעבר פעימה) | Confidence indicators מטפלים במעבר פעימה — לא נגעתי |
+| 4 | UI: badge "חדשה" + banner בולט. **אסור opacity 0.5** | `.badge-new` (#ffd97d) + `.cold-start-banner` (gradient #fef3c7→#fde68a, border-right #f59e0b) |
+| 5 | דגלים אוטומטיים חסומים ב-cold-start | `flagsRaw = cs.inColdStart ? [] : getTeacherFlags()...` + `// TODO: A.5 flag block when teacherFlags exists` |
+| 6 | הילדה לא מודעת ל-cold-start | UI מורה בלבד — אין שינוי במשחקונים |
+
+**קבצים שנוצרו/שונו:**
+
+| # | קובץ | סטטוס | הערה |
+|---|---|---|---|
+| 1 | `underwater-app/js/shared/mastery-check.js` | שינוי (+~85 שורות) | הוספת `isInColdStart(studentId)` (חתימה: `{inColdStart, daysSince, attemptsTotal, daysCriterion, attemptsCriterion}`) + עזרים פרטיים `_getFirstSeenAt` (entry_date → earliest event → Date.now()) ו-`_totalAttemptsAllStrands` + קבועים נחשפים `COLD_START_DAYS=3`, `COLD_START_ATTEMPTS=30`. ה-API הקיים נשמר 1:1. |
+| 2 | `underwater-app/teacher-rama.html` | שינוי (~30 שורות) | CSS חדש (`.badge-new`, `.cold-start-banner`, `.pulse-summary .cold-count`) · helper `coldStartFor(studentId)` שמייצר `counterText` · Class View: badge ליד שם בטבלה · Student View: banner מעל סקציה 1 + סינון `teacherFlags` ב-cold-start · pulse summary: counter "📚 X ילדות חדשות" כשרלוונטי. |
+| 3 | `underwater-app/scripts/test-cold-start.js` | **חדש** (~165 שורות) | 5 בלוקי טסט · 24 assertions: API exists · return shape · 4 קומבינציות קריטיות (day1×5, day1×50, day5×5, day5×50) · edge cases (אין רשומה · גבולות 3×30 ו-2×30 · fallback ל-event ts) · backwards compat. |
+| + | `_handoff/2026-05-26-architecture-tasks-tracker.html` | שינוי קל | A.5 ☐ → ✅ ב-2 מקומות. |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש בראש | זה. |
+| + | `_handoff/pending-commits.md` | בלוק חדש בראש | קבוצה O. |
+
+**ה-API החדש — `isInColdStart`:**
+
+```js
+AvneiMasteryCheck.isInColdStart(studentId)
+  → {
+      inColdStart: boolean,    // true = עדיין cold (לפחות אחד מהקריטריונים לא התקיים)
+      daysSince: number,       // ימים מ-firstSeenAt
+      attemptsTotal: number,   // סה"כ ניסיונות על 5 הסטרנדים
+      daysCriterion: boolean,  // daysSince >= 3
+      attemptsCriterion: boolean, // attemptsTotal >= 30
+    }
+```
+
+**4 הקומבינציות הקריטיות (Acceptance Criteria #1) — כולן ✓:**
+
+| יום | ניסיונות | days | attempts | inColdStart | משמעות |
+|---|---|---|---|---|---|
+| 1 | 5 | ✗ | ✗ | **true** | טריה לחלוטין |
+| 1 | 50 | ✗ | ✓ | **true** | חסר יום (Acceptance #5 — "ילדה ביום 2 עם 50 = עדיין cold") |
+| 5 | 5 | ✓ | ✗ | **true** | חסר ניסיונות (Acceptance #5 — "ילדה ביום 5 עם 10 = עדיין cold") |
+| 5 | 50 | ✓ | ✓ | **false** | יצאה — המורה רואה ציונים אמיתיים |
+
+**Edge cases שנבדקו:**
+- ✅ תלמידה לגמרי חדשה (אין רשומה ב-StudentsStore, אין events) → cold + daysSince=0
+- ✅ ספי גבולות: בדיוק 3 ימים × 30 ניסיונות → יצאה (`>=`)
+- ✅ 2 ימים × 30 ניסיונות → cold (חסר יום אחד)
+- ✅ Fallback: entry_date חסר → לוקח earliest event timestamp
+- ✅ Backwards compat: `checkMastery` + `checkRamaTaskStatus` עדיין עובדים בלי שינוי
+
+**החלטות קוד פנימיות (לא דרשו שאלה למיטל):**
+1. **firstSeenAt מאיפה?** — `entry_date` כבר נשמר ב-`StudentsStore.add()` ב-profile-classifier.js. ניצול נכס קיים — לא נוגעים ב-profile-classifier.js כפי שביקשת. fallback 3-שכבתי: events ts → Date.now().
+2. **"30+ ניסיונות"** — סכום על 5 הסטרנדים (לפי `attemptsTotal: סה"כ ניסיונות על כל הסטרנדים` בחתימה שכתבת).
+3. **counter "יום X/3"** — מציג `min(daysSince+1, 3)` כדי שילדה ביום הראשון תראה "יום 1/3" ולא "יום 0/3" (קריא יותר).
+4. **PIN gate** — נשאר כפי שהיה ב-F.21A. cold-start לא חוסם כניסה.
+
+**מה לא נגעתי בו (לפי כללי ריבוי-סוכנים):**
+- ❌ `bkt.js`, `epa.js`, `event-logger.js`, `profile-classifier.js` — קראתי API/localStorage בלבד
+- ❌ `teacher-live.html` — לא נוגע (deprecated)
+- ❌ stage-*.html · map.html · student-picker.html · D.14/D.15 — אדיטיבי בלבד, אין חפיפת קבצים
+
+**מסלול בדיקה ידנית של מיטל (5-8 דקות):**
+1. שרת רץ ב-`http://localhost:8765/underwater-app/teacher-rama.html` (PIN 4521)
+2. בדיקה: צרי תלמידה חדשה ב-`onboarding-profile.html`. חזרי ל-teacher-rama.
+3. **Class View:** השם שלה אמור להופיע עם badge "חדשה" ⓋⓁ צהוב ליד השם.
+4. **לחיצה על שם:** Student View — אמור להופיע banner צהוב בולט: "📚 יום 1/3 · 0/30 ניסיונות"
+5. **pulse summary:** "📚 X ילדות חדשות" יופיע בשורת הסטטוס.
+6. **רגרסיה:** מאיה/נועה/מיטל פלג (שכבר היו במערכת) — תלוי ב-entry_date שלהן. אם < 3 ימים מהצטרפות → גם הן cold (מצופה).
+7. אם תלמידה חוזרת ושיחקה הרבה → באיזשהו רגע ה-badge ייעלם והציונים יופיעו רגיל.
+
+**ממתין ממיטל:**
+1. אישור push של קבוצה O.
+
+**מה זה פותח להמשך:**
+- ✅ F.21A יותר שלם פדגוגית — המורה מבינה למה היא רואה ⚫
+- ⏳ A.6 (Confidence indicators מלאים — calibration) — לא בסקופ A.5
+- ⏳ F.21E (דשבורד מורה פעולתי) — יוכל לקחת in account `isInColdStart` בלוגיקה של הצעות
+
+---
+
 ## D.15 v2 שלב C — קבוצת כוכבים (4 אותיות, אותה רוטציה)
 
 **סטטוס:** 🟡 קוד הסתיים · 44/44 sanity · ממתין לבדיקה ידנית של מיטל · **לא נדחף**

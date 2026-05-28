@@ -793,6 +793,90 @@ window.AvneiMasteryCheck = (function () {
   }
 
   // ============================================================
+  // A.5 — Cold-start Protocol
+  // ============================================================
+  // מסביר למורה למה היא רואה ⚫ ליד תלמידה חדשה. שילוב של 2 קריטריונים
+  // (ימים + ניסיונות) — שניהם חייבים להתקיים כדי לצאת מ-cold-start.
+  // החלטה פדגוגית של מיטל (27.5.2026 לילה).
+  //
+  // למה שילוב ולא רק ניסיונות:
+  //   • ילדה ביום 1 עם 50 ניסיונות = עדיין cold (לא נתנו לה זמן לטעות)
+  //   • ילדה ביום 5 עם 5 ניסיונות = עדיין cold (אין מספיק דאטה לציון)
+  //   • רק יום 3+ AND 30+ ניסיונות → יוצאים מ-cold-start, המורה רואה ציונים אמיתיים
+  //
+  // לא נוגעים ב-profile-classifier.js (אחריות אחרת). entry_date כבר נשמר ב-StudentsStore
+  // בכל הוספת תלמידה — ניצול נכס קיים. Fallback אם entry_date חסר:
+  // earliest event timestamp → אם גם זה ריק → Date.now() (טרי).
+  //
+  // השפעה רק על UI מורה (F.21A · F.21E עתידי). הילדה משחקת רגיל ולא יודעת על cold-start.
+  // ============================================================
+
+  const COLD_START_DAYS = 3;
+  const COLD_START_ATTEMPTS = 30;
+  const MS_PER_DAY = 1000 * 60 * 60 * 24;
+  const STUDENTS_KEY = 'avnei-yesod-students';
+
+  function _getFirstSeenAt(studentId) {
+    // 1) student.entry_date (StudentsStore.add() כותב את זה בכל יצירה)
+    try {
+      const raw = localStorage.getItem(STUDENTS_KEY);
+      if (raw) {
+        const students = JSON.parse(raw);
+        const s = Array.isArray(students) ? students.find(x => x && x.id === studentId) : null;
+        if (s && s.entry_date) {
+          const t = new Date(s.entry_date).getTime();
+          if (!isNaN(t)) return t;
+        }
+      }
+    } catch (e) {}
+    // 2) Fallback — earliest event timestamp לאותה תלמידה
+    try {
+      const stateRaw = localStorage.getItem(STATE_KEY);
+      if (stateRaw) {
+        const state = JSON.parse(stateRaw);
+        const events = (state.events || []).filter(e =>
+          (e.student_id || 'local') === studentId && typeof e.timestamp === 'number'
+        );
+        if (events.length > 0) {
+          return events.reduce((min, e) => e.timestamp < min ? e.timestamp : min, Infinity);
+        }
+      }
+    } catch (e) {}
+    // 3) ברירת מחדל — עכשיו (תלמידה טריה, אין דאטה בכלל)
+    return Date.now();
+  }
+
+  function _totalAttemptsAllStrands(studentId) {
+    if (!window.AvneiBKT || typeof AvneiBKT.getStrandState !== 'function') return 0;
+    let total = 0;
+    for (let s = 1; s <= 5; s++) {
+      try {
+        const strand = AvneiBKT.getStrandState(studentId, s);
+        total += (strand && typeof strand.attempts === 'number') ? strand.attempts : 0;
+      } catch (e) {}
+    }
+    return total;
+  }
+
+  function isInColdStart(studentId) {
+    studentId = studentId || 'local';
+    const firstSeenAt = _getFirstSeenAt(studentId);
+    const daysSince = Math.floor((Date.now() - firstSeenAt) / MS_PER_DAY);
+    const attemptsTotal = _totalAttemptsAllStrands(studentId);
+    const daysCriterion = daysSince >= COLD_START_DAYS;
+    const attemptsCriterion = attemptsTotal >= COLD_START_ATTEMPTS;
+    // יוצאים מ-cold-start רק כששני הקריטריונים מתקיימים יחד.
+    const inColdStart = !(daysCriterion && attemptsCriterion);
+    return {
+      inColdStart,
+      daysSince,
+      attemptsTotal,
+      daysCriterion,
+      attemptsCriterion,
+    };
+  }
+
+  // ============================================================
   // API
   // ============================================================
   return {
@@ -810,5 +894,9 @@ window.AvneiMasteryCheck = (function () {
     NEAR_RATIO,
     CONFIDENCE_HIGH_MIN,
     CONFIDENCE_MED_MIN,
+    // ---- A.5 — Cold-start Protocol ----
+    isInColdStart,
+    COLD_START_DAYS,
+    COLD_START_ATTEMPTS,
   };
 })();
