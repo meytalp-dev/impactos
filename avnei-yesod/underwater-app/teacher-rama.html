@@ -1214,7 +1214,10 @@ let viewState = {
   if (sessionStorage.getItem(SESSION_AUTH_KEY) === '1') {
     gate.style.display = 'none';
     main.style.display = 'block';
-    boot();
+    // setTimeout(boot, 0): דוחה ל-task הבא כדי שכל ה-script tag יסיים
+    // להריץ את כל ה-let/const declarations (כולל _activeGroups בשורה ~2332)
+    // לפני boot() קורא ל-render() → renderInterventionTriggers() שמשתמש בהם.
+    setTimeout(boot, 0);
     return;
   }
 
@@ -1226,7 +1229,8 @@ let viewState = {
       sessionStorage.setItem(SESSION_AUTH_KEY, '1');
       gate.style.display = 'none';
       main.style.display = 'block';
-      boot();
+      // setTimeout(boot, 0): ראה הסבר ב-PIN-bypass למעלה.
+      setTimeout(boot, 0);
     } else {
       err.textContent = 'PIN שגוי. נסי שוב.';
       input.value = '';

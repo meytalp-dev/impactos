@@ -4,6 +4,42 @@
 
 ---
 
+## 🟢 קבוצה Z — F.21A Finding B נסגר (setTimeout(boot, 0))
+
+**סטטוס:** 🟢 Finding B ✅ closed — ממתין לבדיקה ידנית של מיטל (F5 על מסך מאומת)
+**תאריך:** 2026-05-28 ערב מאוחר (סוכן 15)
+**1 קובץ קוד שונה + 3 handoff updates · חבילה זעירה (~4 שורות net)**
+
+| # | קובץ | סטטוס | הערה |
+|---|---|---|---|
+| 1 | `underwater-app/teacher-rama.html` | שינוי | 2 שורות: `boot()` → `setTimeout(boot, 0)` ב-IIFE של PIN-gate (PIN-bypass + PIN-submit). פותר TDZ של `_activeGroups` בשורה ~2332. |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש בראש | תיעוד התיקון |
+| + | `_handoff/pending-commits.md` | בלוק חדש בראש (זה) | הקבוצה הזו |
+| + | `_handoff/2026-05-26-architecture-tasks-tracker.html` | שינוי קל | Finding B סומן closed |
+
+**מהות התוצר:**
+המשך ישיר לקבוצה Y (סוכן 13, `bf258b5`). סוכן 13 זיהה root cause נכון אבל לא יישם — הצעתו היתה לעטוף `boot()` ב-`setTimeout(boot, 0)`. סוכן 15 יישם.
+
+**מנגנון:**
+`setTimeout(fn, 0)` דוחה ל-macrotask הבא, אחרי שכל ה-`<script>` הנוכחי הסתיים. עד אז כל ה-`let _activeGroups = []` (שורה ~2332) ו-`let`/`const` declarations אחרים שבאמצע הסקריפט הגיעו → ה-TDZ הסתיים → `render() → renderInterventionTriggers()` יכול לגשת אליהם בבטחה.
+
+**אימות אוטומטי:** 242/242 ✓ (4 suites).
+
+**ממתין מהמתמרצת:** F5 ידני ב-browser → טבלה נטענת (לא דף ריק).
+
+**יחס לקבוצות שכבר נדחפו / ממתינות:**
+- ✅ קבוצה Y (Finding A · `bf258b5`) — לא נגעתי. הזזת declarations נשארה.
+- 🟡 קבוצה W (C.12C, סוכן 12) — packs JSONs בלבד, אין חפיפה.
+- 🟡 קבוצות אחרות — אין חפיפת קבצים.
+
+**אסור לגעת ב- (לא נגעתי):**
+- 7 `curriculum/packs/grade1-tashpaz/{month}.json` untracked (תוכן של מיטל).
+- `engine/demo-day2/` untracked.
+- `perplexity-shatil-share-2003-validation-2026-05-25.json` untracked.
+- כל קוד אחר חוץ מ-2 השורות ב-`teacher-rama.html`.
+
+---
+
 ## 🟡 קבוצה Y — B.7 Finding A סגור · F.21A Finding B ניסיון תיקון לא הצליח
 
 **סטטוס:** 🟢 Finding A ✅ closed · 🔴 Finding B ❌ עדיין פתוח (push לשמר state הנוכחי ל-debugging הבא)

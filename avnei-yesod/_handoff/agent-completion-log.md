@@ -7,6 +7,56 @@
 
 ---
 
+## F.21A — Finding B נסגר (setTimeout(boot, 0) פותר TDZ של `_activeGroups`)
+
+**סטטוס:** ✅ Finding B נסגר — fix applied, 242/242 ✓
+**תאריך:** 2026-05-28 ערב מאוחר
+**שיחה:** סוכן 15 (Claude Code · Opus 4.7 · VS Code · impactos)
+**Commit:** טרם נדחף (יידחף בסוף הסבב)
+**יחס:** המשך לסוכן 13 (`bf258b5`) — root cause זוהה ע"י סוכן 13 (let `_activeGroups = []` בשורה 2332) אבל לא יושם. סוכן 15 מיישם את ההצעה.
+
+**שורש הבעיה (כפי שזיהה סוכן 13):**
+ה-IIFE של `initPinGate` קרא ל-`boot()` synchronously בשני נתיבים (PIN-bypass ו-PIN-submit). `boot()` → `render()` → `renderClassView()` → `renderInterventionTriggers()` מתייחס ל-`let _activeGroups = []` שמוצהר בשורה ~2332, *אחרי* ה-IIFE. כשרצים בתוך אותו `<script>` block, ה-declaration עדיין ב-TDZ → exception → `body.innerHTML` לא מתעדכן → דף ריק.
+
+הזזת `viewState`/`STUDENTS_KEY` (סוכן 13) לפני IIFE לא הספיקה כי `_activeGroups` נשאר במקום (באמצע הסקריפט, לא ניתן להזיז בצורה נקייה).
+
+**התיקון:** עטיפת `boot()` ב-`setTimeout(boot, 0)` בשני המקומות ב-IIFE.
+
+- שורה ~1217 (PIN-bypass path · `sessionStorage auth=1`): `boot()` → `setTimeout(boot, 0)`.
+- שורה ~1230 (PIN-submit handler): `boot()` → `setTimeout(boot, 0)`.
+
+המנגנון: `setTimeout(fn, 0)` דוחה ל-macrotask הבא. עד שהוא רץ, כל ה-`<script>` הנוכחי הסתיים — כל ה-`let`/`const` declarations (כולל `_activeGroups`) הגיעו, ה-TDZ הסתיים. הפונקציה `boot` עצמה כן מוגדרת לפני (`function boot()` ב-hoisting), אז ה-reference אליה בטוח.
+
+**~4 שורות net (+הערות).**
+
+**אימות:**
+
+- ✅ 78/78 `test-interventions.js`
+- ✅ 75/75 `test-pack-bridge.js`
+- ✅ 38/38 `test-weakness-targeting.js`
+- ✅ 51/51 `test-moy-assessments.js`
+- **סה"כ 242/242 ✓** (Node tests · לא browser — Finding B דורש בדיקה ידנית של מיטל ב-F5).
+
+**קבצים שונו:**
+
+| # | קובץ | סוג שינוי |
+|---|---|---|
+| 1 | `underwater-app/teacher-rama.html` | 2 שורות boot() → setTimeout(boot, 0) + הערות |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש (זה) |
+| + | `_handoff/pending-commits.md` | בלוק חדש בראש |
+| + | `_handoff/2026-05-26-architecture-tasks-tracker.html` | Finding B מסומן closed |
+
+**ממתין:**
+
+- בדיקה ידנית של מיטל: PIN entry → טבלה נטענת ✓ · F5 על מסך מאומת → טבלה נטענת שוב ✓ (לא דף ריק).
+
+**לא נגעתי:**
+
+- ה-declarations שסוכן 13 הזיז (viewState/STUDENTS_KEY/PULSE_RANGES/STALE_*) נשארו במקום החדש שלהן — לא revert.
+- שום דבר ב-render/state/PIN semantics.
+
+---
+
 ## B.7 + F.21A — Finding A סגור · Finding B ניסיון תיקון לא הצליח
 
 **סטטוס:** ✅ Finding A סגור (verified ידנית) · ❌ Finding B עדיין פתוח — ניסיון תיקון לא פתר. דחיפה כדי לשמר את ה-state הנוכחי ל-debugging הבא.
