@@ -433,6 +433,209 @@ AvneiMasteryCheck.checkRamaTaskStatus(studentId, ramaTaskId)
 
 ---
 
+## 🚀 סוכן 7 — משימות E.17 + E.18: Event Logger + Data Export (P0 · M · תשתית פיילוט)
+
+**רמת קושי:** M (4-6 שעות, שתי משימות צמודות) · **עדיפות:** P0 (חוסם פיילוט אמיתי)
+**תלות:** A0.2 ✅ (`rama_task_alignment` + `peima_target` כבר ב-item schema) · A.1+A.3+A.4 ✅ (BKT/EPA חיים)
+
+### 📍 איפה אתה עובד
+
+**ריפו:** `meytalp-dev/impactos`
+**נתיב מקומי:** `c:/Users/meyta/Downloads/impactos/avnei-yesod/`
+
+⚠️ **לא** ב-`ort-presentation-builder`. **לא** ב-`Downloads/edura`.
+
+לפני כל פעולה:
+```bash
+cd c:/Users/meyta/Downloads/impactos && git fetch origin && git status
+```
+
+### הקונטקסט והרציונל
+
+**הבעיה:** הפיילוט בלי דאטה = פיילוט עקר. המורה תשחק עם המערכת, ילדות יצברו ניסיונות, אבל אין דרך לאסוף את הדאטה ל:
+- מחקר פדגוגי (האם המערכת באמת מקדמת קריאה?)
+- דוח לעירייה/מנהל ביה"ס
+- כיול thresholds (האם רף 80% של `near` בנכון?)
+- ניתוח דפוסי EPA רחבים יותר מ-3 ימים
+
+**מה כבר עובד:** `event-logger.js` שומר 17 שדות פר אירוע ב-localStorage. שדה מערכת `state.events` נצבר ועובר ל-BKT+EPA. מצוין.
+
+**מה חסר:**
+1. **E.17:** 3 תיוגים קריטיים שעוד לא באירוע — `strand_id`, `rama_task_alignment`, `peima_target`
+2. **E.18:** UI לייצוא הדאטה ל-CSV (פיילוט) → Apps Script ל-Google Sheet (post-pilot)
+
+### החלטות סגורות (לא לפתוח מחדש)
+
+| # | פריט | החלטה |
+|---|---|---|
+| 1 | איך נוסיף `strand_id` לכל אירוע? | **mapping אוטומטי** ב-event-logger (`ISLAND_TO_STRAND[island_id]`) — אין שינוי במשחקונים |
+| 2 | איך נוסיף `rama_task_alignment` ו-`peima_target`? | **דרך ה-item** — המכניקה מעבירה את הפריט המלא (או 2 השדות) ל-`logActivityResult`. עדכון 5 קבצי משחקונים נדרש. |
+| 3 | פורמט ייצוא | **CSV** ראשון (פשוט, ידני, פיילוט קטן). Apps Script POST = שלב ב' אחרי הפיילוט. |
+| 4 | היכן ה-UI? | **קובץ נפרד** `data-export.html` — לא לדרוס את `teacher-rama.html` |
+| 5 | אבטחה | **אותו PIN gate** של teacher-rama (sessionStorage, hash) — דאטה רגיש זהה |
+| 6 | מי רואה? | **רק המורה** (PIN). הילדה לא רואה את עצמה. |
+
+### מה לבנות
+
+## חלק 1 — E.17: Event Logger ל-3 תיוגים חסרים
+
+### 1.1 — הוספת `ISLAND_TO_STRAND` mapping ב-event-logger.js
+
+זה mapping של 22 איים ל-5 סטרנדים. מקור: `architecture-mvp.md` או `pedagogy-integration-framework.md` (חפש "סטרנד" + "אי"). אם לא ברור — שאל את מיטל לפני שאתה ממציא.
+
+```js
+// strand_id: 1=פונולוגיה, 2=מורפולוגיה, 3=שפה דבורה, 4=קריאה+הבנה, 5=כתיבה
+const ISLAND_TO_STRAND = {
+  1: 1,    // אי 1 → פונולוגיה (השלמה אחרי קריאת מסמכי-אם)
+  2: 1,    // אי 2 (שונית גלי הצליל) → פונולוגיה
+  3: 1,    // אי 3 (זיהוי אותיות) → פונולוגיה
+  // ... וכן הלאה ל-22
+};
+```
+
+### 1.2 — הוספת 3 שדות באירוע
+
+ב-`logActivityResult`, להוסיף לאחר שדה `secondary_island_ids`:
+
+```js
+strand_id:            ISLAND_TO_STRAND[ISLAND_ID_CURRENT] || null,
+rama_task_alignment:  result.rama_task_alignment || null,  // מהפריט
+peima_target:         result.peima_target || null,         // מהפריט
+```
+
+### 1.3 — עדכון 5 קבצי המשחקונים הקיימים באי 3 + 12 החדשים מ-D.15
+
+כל מכניקה (`mechanic-tap-all.js`, `mechanic-pick.js`, `mechanic-memory-pair.js`, `mechanic-sort-by-letter.js`) שמקבלת פריט מ-JSON וקוראת ל-`AvneiEventLogger.logActivityResult({...})` — להעביר גם:
+```js
+rama_task_alignment: item.rama_task_alignment,  // קיים ב-JSON מ-A0.2
+peima_target: item.peima_target                  // קיים ב-JSON מ-A0.2
+```
+
+ב-5 משחקוני האי האמנותיים (`stage-3-shell/house/rescue/trail-resh/storm.html`) — חיפוש אחר `logActivityResult` והעברת השדות.
+
+### 1.4 — בדיקות
+
+קובץ `scripts/test-event-logger-fields.js`:
+- אירוע חדש כולל 20 שדות (17 + 3 חדשים)
+- `strand_id` נכון פר-אי (לפחות 3 איים בודקים)
+- `rama_task_alignment` עובר מהפריט
+- `peima_target` עובר מהפריט
+- Backwards compat: אירועים ישנים בלי 3 השדות עדיין נטענים (null)
+
+---
+
+## חלק 2 — E.18: Data Export UI
+
+### 2.1 — קובץ חדש `underwater-app/data-export.html`
+
+מבנה:
+
+```
+┌──────────────────────────────────────────────────────────┐
+│ HEADER                                                    │
+│ ייצוא נתוני פיילוט · אבני יסוד · כיתה א/3               │
+│ [← חזרה ל-teacher-rama]                                  │
+├──────────────────────────────────────────────────────────┤
+│ FILTERS                                                   │
+│ תלמידה: [כל הילדות ▼]  טווח: [מ ___ עד ___]            │
+│ פעימה: [● כל הפעימות]  משימת ראמ"ה: [כל המשימות ▼]    │
+│ סטטוס: ☑ נכון ☑ לא נכון                                  │
+├──────────────────────────────────────────────────────────┤
+│ SUMMARY                                                   │
+│ 1,247 אירועים נטענו  ·  4 תלמידות  ·  3-27.5.2026        │
+│ 78% accuracy  ·  זמן תגובה חציוני: 1.4 שנ'              │
+├──────────────────────────────────────────────────────────┤
+│ TABLE PREVIEW (10 שורות אחרונות)                          │
+│ ┌──────────┬───────┬──────┬──────┬───────┬─────┬───────┐│
+│ │ timestamp│ student│ item │ strd │ rama │ ok  │ ms    ││
+│ ├──────────┼───────┼──────┼──────┼───────┼─────┼───────┤│
+│ │ ...      │ ...   │ ...  │ ...  │ ...   │ ... │ ...   ││
+│ └──────────┴───────┴──────┴──────┴───────┴─────┴───────┘│
+├──────────────────────────────────────────────────────────┤
+│ [📥 הורד CSV]    [📋 העתק ל-clipboard]                   │
+└──────────────────────────────────────────────────────────┘
+```
+
+### 2.2 — לוגיקת ייצוא
+
+```js
+function exportToCSV(events) {
+  const headers = ['timestamp', 'student_id', 'session_id', 'island_id',
+                   'strand_id', 'rama_task_alignment', 'peima_target',
+                   'activity_type', 'item_id', 'target_letter',
+                   'is_correct', 'attempts', 'response_time_ms',
+                   'hint_used', 'auto_hint_triggered', 'noni_guidance_used',
+                   'supportLevel'];
+  const rows = events.map(e => headers.map(h =>
+    typeof e[h] === 'string' ? `"${e[h].replace(/"/g, '""')}"` : (e[h] ?? '')
+  ).join(','));
+  const csv = '﻿' + headers.join(',') + '\n' + rows.join('\n');  // BOM ל-Excel
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `avnei-yesod-events-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+```
+
+### 2.3 — PIN gate
+
+זהה ל-teacher-rama.html — העתק את הקוד מ-§584-623 ב-teacher-rama.html. אותו PIN, אותו hash, אותו sessionStorage key. **לא קישור מ-teacher-rama** (privacy — את לא רוצה שמורה תגלה בטעות שאפשר לייצא הכל). הגישה רק דרך URL ישיר `data-export.html`.
+
+### 2.4 — בדיקות
+
+- [ ] PIN gate חוסם
+- [ ] CSV נוצר עם BOM (Excel פותח עברית נכון)
+- [ ] שמות עמודות באנגלית (תואם Sheet)
+- [ ] פילטרים עובדים (תלמידה / טווח תאריכים / פעימה / משימת ראמ"ה / סטטוס)
+- [ ] טבלת preview מציגה 10 שורות אחרונות
+- [ ] Summary מחושב נכון (count + accuracy + median ms)
+- [ ] בדיקה ידנית עם 100+ אירועים sample
+
+### אסור לגעת ב-
+
+- `bkt.js`, `epa.js`, `mastery-check.js`, `profile-classifier.js`
+- `teacher-rama.html` (לא לערבב — קובץ של F.21A)
+- מסמכי-אם
+- A.5 ליבה (`isInColdStart`) — סוכן 5 עובד על UI שלו
+
+### אזהרות
+
+- ❌ לא להמציא `ISLAND_TO_STRAND` mapping — לקרוא ממסמכי-אם או לשאול את מיטל
+- ❌ לא לדחוף ל-git בלי אישור מפורש ממיטל
+- ❌ CSV בעברית — חובה BOM (`﻿`) בתחילת הקובץ, אחרת Excel מציג ג'יבריש
+- RTL מלא ב-`data-export.html`
+- מסלול עתידי: Apps Script POST ל-Sheet — **לא בסקופ E.18**, רק מציינים `// TODO: E.18B Apps Script POST` בקוד
+
+### Acceptance Criteria
+
+**E.17:**
+- [ ] `ISLAND_TO_STRAND` mapping מ-22 איים → 5 סטרנדים (מקור מאומת)
+- [ ] 3 שדות חדשים באירוע: `strand_id`, `rama_task_alignment`, `peima_target`
+- [ ] 5 משחקונים אמנותיים + 17 D.15 מעבירים את 2 שדות הפריט
+- [ ] `test-event-logger-fields.js` עובר (5+ assertions)
+- [ ] Backwards compat: אירועים ישנים בלי 3 השדות עדיין נטענים ל-BKT/EPA
+
+**E.18:**
+- [ ] `data-export.html` קיים, רץ ללא שגיאות
+- [ ] PIN gate חוסם, PIN נכון פותח
+- [ ] CSV מיוצא נכון עם BOM (עברית קריאה ב-Excel)
+- [ ] 5 פילטרים עובדים
+- [ ] Summary מחושב נכון
+- [ ] טבלת preview מציגה 10 שורות
+- [ ] בדיקה ידנית: ייצוא + פתיחה ב-Excel + ספירת שורות תואמת
+
+### בסיום
+
+1. עדכן tracker: ✅ E.17 + ✅ E.18 ב-`_handoff/2026-05-26-architecture-tasks-tracker.html`
+2. הוסף בלוק חדש בראש `_handoff/agent-completion-log.md`
+3. הוסף קבוצה חדשה ב-`_handoff/pending-commits.md` 🟡 ("E.17+E.18 — ממתין לאישור push")
+4. דווח: "E.17+E.18 מוכן. שלח לי שאני אבדוק `data-export.html` עם PIN ואייצא CSV ראשון. ממתין לאישור push."
+5. **אל תדחוף לפני אישור.**
+
+---
+
 ## הוספת bootstraps נוספים
 ככל שמיטל תאשר משימות נוספות מהמסלול הקריטי — נוסיף סוכנים נוספים כאן.
 המסלול הקריטי: A0.2 → A0.3 → A0.4 → A.1-6 → B → C → ...
