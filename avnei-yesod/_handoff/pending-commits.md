@@ -4,6 +4,137 @@
 
 ---
 
+## 🟢 קבוצה Z4 — B.9 Group Suggestion Engine (logic + UI · סוכן 18)
+
+**סטטוס:** 🟢 הסתיים — 503/503 ✓ (77 חדש + 426 רגרסיה ב-12 suites) · ממתין לאישור push
+**תאריך:** 2026-05-28 ערב (סוכן 18 · אחרי סוכן 17)
+**3 קבצים שונו + 3 handoff updates · חבילה בינונית (~680 שורות net)**
+
+| # | קובץ | סטטוס | הערה |
+|---|---|---|---|
+| 1 | `underwater-app/js/shared/group-suggester.js` | **חדש** (~190 שורות) | logic only · `AvneiGroupSuggester.suggestGroups(studentIds, options)` → עד 5 קבוצות אופטימליות (3-5 ילדות פר קבוצה). Options: `{min_group_size:3, max_group_size:5, max_groups:5, min_confidence:'med'}`. צורך `AvneiInterventionMatcher.matchForStudent` (B.8) ופוסל ילדות מתחת ל-`min_confidence`. Split homogeneous-by-confidence כש group > max (אישרה מיטל בשיחה לפני הקוד). Sort: size desc → confidence desc → priority idx. |
+| 2 | `underwater-app/scripts/test-group-suggester.js` | **חדש** (~390 שורות) | 20 בלוקים · **77 assertions ✓** · Mock של `AvneiInterventionMatcher`. כיסוי: API surface + defaults · empty/null/invalid · 10 students → 3 groups · min_group_size respected · 6 high → 5+1 (drop 1) · 5 high + 4 med → 2 groups homogeneous · min_confidence filter · max_groups cap · sort priorities · evidence shape · 11 high → 5+5+1 sub-buckets · _aggregateConfidence (all branches) · per-student matcher throws (isolation) · matcher missing → [] · tie-breaker priority · null match · 8 high → 5+3 · _evidenceBySource unknown sources. |
+| 3 | `underwater-app/teacher-rama.html` | שינוי | (a) ~95 CSS lines (`.mg-section`/`.mg-card`/`.mg-conf-pill`/`.mg-toggle`/...) · (b) `<div id="morningGroupSuggestions"></div>` בראש Class View (לפני MOY+IV banners) · (c) 2 script tags חדשים: `intervention-matcher.js?v=1` + `group-suggester.js?v=1` (B.8 לא נטען עד עכשיו) · (d) `mgWrap` clear ב-empty-class · (e) `renderMorningGroupSuggestions(students)` (~95 שורות) + `openMorningGroupModal(suggestion)` (~50 שורות) + `_mgReadCollapsed`/`_mgWriteCollapsed` + `MG_COLLAPSE_KEY` · (f) קריאה מ-`renderClassView` לפני שאר ה-renders. |
+| + | `_handoff/2026-05-26-architecture-tasks-tracker.html` | שינוי קל | B.9 ☐ → ✅ ב-3 מקומות (סקירה ✅ + רשימה חסומה + פאזה B). |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש בראש | תיעוד B.9 מלא. |
+| + | `_handoff/pending-commits.md` | בלוק חדש בראש (זה) | הקבוצה הזו. |
+
+**מהות התוצר:**
+"🌅 בבוקר המורה פותחת teacher-rama ורואה איזה קבוצות לפתוח היום." זה החלק שמשלים את שלשת B.7→B.8→B.9 — B.7 (סוכן 9) מספק 5 scripts פדגוגיים, B.8 (סוכן 17) ממפה תלמידה בודדת ל-pattern_id יחיד (EPA+MOY), B.9 לוקח את כל הכיתה, רץ B.8 פר ילדה, ומקבץ ל-3-5 קבוצות אופטימליות לפי priority + confidence — ופותח Section ויזואלי במסך מורה עם toggle, רענון, וכרטיסים. כפתור "פתחי קבוצה" מחזיר את ה-modal הקיים של B.7 דרך `_activeGroups` עם flag `_mgSourced:true` (zero-duplication).
+
+**יחס לקבוצות שכבר נדחפו / ממתינות:**
+
+- ✅ סוכן 9 (B.7 · `0dbbf4e`) — `AvneiInterventions.detectForStudent` נצרך רק ב-`openMorningGroupModal` להעשרת details ב-letter_cluster/letter_knowledge/decoding. לא נגעתי ב-`interventions.js`.
+- ✅ סוכן 10 (MOY-Lite · `93dbd4a`+`7a70a03`) — נצרך עקיף דרך B.8.
+- ✅ סוכן 14 (MOY × B.7 link · `31c9f00`) — נצרך עקיף דרך B.8.
+- ✅ סוכן 15 (Finding B fix · `3ef476b`) — אין חפיפה.
+- ✅ סוכן 16 (UI badge · `1d11f14`) — אין חפיפת DOM. ה-Section שלי בראש Class View, מעל ה-MOY banners של 16. שני המנגנונים פעילים במקביל. ה-CSS שלי באמת `mg-*` (Morning Groups · מובחן מ-`iv-*` של B.7).
+- ✅ סוכן 17 (B.8 · `a831a62`) — `AvneiInterventionMatcher` נצרך בלבד. לא נגעתי ב-`intervention-matcher.js`. **חשוב: סוכן 17 לא הוסיף script tag ל-teacher-rama.html (logic only) — אני מוסיף את 2 ה-tags (B.8 + B.9) ביחד.**
+- 🟡 פתוח: B.10 (3 תצוגות) · F.21E (Action Dashboard) — B.9 מסתיר חלק גדול מה-pain points של F.21E.
+
+**🎯 פונקציות חדשות שנחשפות:**
+- `AvneiGroupSuggester.suggestGroups(studentIds, options)` → array של suggestion objects (ראה schema ב-agent-completion-log).
+- `AvneiGroupSuggester.DEFAULT_OPTS` (frozen) · `_splitHomogeneousByConfidence` · `_aggregateConfidence` · `_evidenceBySource` · `CONF_RANK` · `CONF_BY_RANK`
+
+**🎯 פונקציות חדשות ב-teacher-rama.html:**
+- `renderMorningGroupSuggestions(students)` · `openMorningGroupModal(suggestion)` · `_mgReadCollapsed()` · `_mgWriteCollapsed(c)` · `MG_COLLAPSE_KEY` constant
+
+**אסור לגעת ב- (לא נגעתי):**
+
+- `intervention-matcher.js` (B.8) · `assessments.js` · `interventions.js` · `epa.js` · `bkt.js` · `mastery-check.js` · `event-logger.js` · `pack-bkt-bridge.js` · `profile-classifier.js` (קריאה בלבד)
+- `interventions/*.json` (5 קבצים) · `moy-intervention-map.json` (קריאה בלבד דרך B.8)
+- `moy-screener.html` · `screener.html` · `data-export.html`
+- 22 `stage-3-*.html` · 7 planning packs · 2 dummy packs · onboarding
+- 7 untracked `curriculum/packs/grade1-tashpaz/{month}.json` + `engine/demo-day2/` + `perplexity-shatil-share-2003-validation-2026-05-25.json` (תוכן של מיטל)
+- מסמכי-אם + B.7 spec
+
+**מה לבדוק לפני push (3 דקות — אוטומטי בלבד · אישרה מיטל בשיחה "טסטים בלבד · אין סימולציה ידנית"):**
+
+```powershell
+cd c:\Users\meyta\Downloads\impactos\avnei-yesod\underwater-app
+
+# 1. הטסט החדש
+node scripts/test-group-suggester.js
+# → 77/77 ✓
+
+# 2. רגרסיות — 11 ה-suites המאומתים ממשיכים ירוקים
+node scripts/test-intervention-matcher.js    # → 57/57
+node scripts/test-interventions.js           # → 78/78
+node scripts/test-moy-intervention-link.js   # → 51/51
+node scripts/test-moy-assessments.js         # → 51/51
+node scripts/test-pack-bridge.js             # → 75/75
+node scripts/test-weakness-targeting.js      # → 38/38
+node scripts/test-bkt-letters.js             # → 53/53
+node scripts/test-event-logger-fields.js     # → 23/23
+node scripts/test-bkt.js                     # → ירוק
+node scripts/test-cold-start.js              # → ירוק
+node scripts/test-rama-task-status.js        # → ירוק
+
+# סה"כ: 503/503 ✓ (12 suites)
+```
+
+**בדיקה ידנית — לא נדרשת:** מיטל אישרה בשיחה לפני קוד "טסטים בלבד · אריץ אותם בלוקלי לפני push". בדיקת UI ב-browser תיעשה רק אם תפתחי אותו אחרי שתאשרי לדחוף.
+
+**אזהרות שמורות:**
+
+- ❌ שום API ציבורי קיים לא נשבר — קובץ חדש בלבד + שינויים אדיטיביים ב-teacher-rama.html (Section עליון, לא דורס שום DOM קיים).
+- 🟢 robustness: אם `AvneiInterventionMatcher` חסר → `suggestGroups` מחזירה `[]` בשקט · אם matcher זורק לילדה ספציפית → שאר הילדות ממשיכות (per-student isolation). UI: אם `AvneiGroupSuggester` חסר → ה-Section פשוט לא מוצג.
+- 🟢 ה-toggle persisted ב-localStorage — אם אישה רוצה להסתיר, ההסתרה נשמרת ל-session הבא.
+- 🟢 RTL מלא · ניקוד תקין · שפת מורה פשוטה (memory feedback teacher-language-simplicity).
+- 🟢 לא נטען intervention-matcher.js ולא group-suggester.js ב-`map.html` או stage-3 (לא נחוצים שם). רק teacher-rama.
+
+**הצעת message לקומיט (HEREDOC):**
+
+```
+B.9 — Group Suggestion Engine (logic + UI · סוכן 18)
+
+"🌅 בבוקר המורה פותחת teacher-rama ורואה איזה קבוצות לפתוח היום."
+משלים את שלשת B.7→B.8→B.9: B.7=scripts, B.8=match פר ילדה,
+B.9=ארגון היום פר כיתה.
+
+API חדש (window.AvneiGroupSuggester):
+  suggestGroups(studentIds[], options) → [
+    {pattern_id, students[3-5], confidence, evidence: {by_source, ...}},
+    ...
+  ]
+  options: {min_group_size:3, max_group_size:5, max_groups:5,
+            min_confidence:'med'}
+
+אלגוריתם (אישרה מיטל בשיחה לפני קוד):
+  1. matchForStudent (B.8) פר ילדה
+  2. סינון min_confidence (פר-תלמידה)
+  3. קיבוץ פר pattern_id
+  4. split homogeneous by confidence כש > max (אישור מפורש)
+  5. sort: size desc → confidence desc → priority idx
+  6. cap ל-max_groups
+
+UI ב-teacher-rama Class View:
+  Section עליון "🌅 קבוצות בוקר מוצעות"
+    toggle (Show/Hide) persisted ב-localStorage
+    כפתור "🔄 רענן הצעות"
+    כרטיסים responsive (icon · pattern · count · conf pill · שמות · 📋)
+    שפת מורה פשוטה (memory teacher-language-simplicity)
+  "פתחי קבוצה" → modal של B.7 דרך _activeGroups עם _mgSourced:true
+    העשרה אוטומטית פר pattern (letter_cluster/letter_knowledge/decoding)
+
+קבצים:
+  underwater-app/js/shared/group-suggester.js (חדש · ~190 שורות)
+  underwater-app/scripts/test-group-suggester.js (חדש · ~390 שורות)
+    20 בלוקים · 77/77 ✓ · Mock של AvneiInterventionMatcher
+  underwater-app/teacher-rama.html (~190 שורות net)
+    +~95 CSS · +2 script tags (intervention-matcher + group-suggester)
+    +<div id="morningGroupSuggestions"> · +renderMorningGroupSuggestions
+    +openMorningGroupModal · +helpers
+
+לא נגעתי: intervention-matcher.js · interventions.js · assessments.js ·
+epa.js · bkt.js (קריאה בלבד) · interventions/*.json · 22 משחקונים ·
+moy-screener.html · 7 untracked packs · engine/demo-day2/.
+
+אימות: 503/503 ✓ (12 suites · 77 חדש + 426 רגרסיה)
+```
+
+---
+
 ## 🟢 קבוצה Z3 — B.8 Intervention Matcher (logic only · ללא UI)
 
 **סטטוס:** 🟢 הסתיים — 350/350 ✓ (57 חדש + 293 רגרסיה) · ממתין לאישור push

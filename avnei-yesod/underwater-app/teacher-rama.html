@@ -908,6 +908,88 @@
     font-size: 12px; font-weight: 700;
   }
 
+  /* ===== B.9 — Morning Group Suggestions (סוכן 18) ===== */
+  .mg-section {
+    background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+    border-right: 4px solid #0284c7;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(2,132,199,0.08);
+  }
+  .mg-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 12px;
+  }
+  .mg-toggle {
+    flex: 1;
+    background: transparent; border: 0;
+    display: flex; align-items: center; gap: 8px;
+    font-family: inherit; font-size: 16px; font-weight: 800;
+    color: #075985; cursor: pointer;
+    padding: 4px 0;
+  }
+  .mg-toggle:hover { color: #0c4a6e; }
+  .mg-toggle-icon { font-size: 14px; color: #0369a1; }
+  .mg-toggle-count {
+    background: rgba(255,255,255,0.7); color: #075985;
+    font-size: 12px; font-weight: 700;
+    padding: 2px 8px; border-radius: 999px;
+  }
+  .mg-refresh {
+    background: #0284c7; color: white; border: 0;
+    padding: 6px 12px; border-radius: 8px;
+    font-family: inherit; font-size: 12px; font-weight: 700;
+    cursor: pointer;
+  }
+  .mg-refresh:hover { background: #0369a1; }
+  .mg-section.mg-collapsed .mg-body { display: none; }
+  .mg-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .mg-card {
+    background: white; border-radius: 10px;
+    padding: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    border: 1px solid rgba(2,132,199,0.15);
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .mg-card-head {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .mg-card-head .mg-icon { font-size: 22px; }
+  .mg-card-head .mg-label {
+    font-weight: 800; color: #1a2332; font-size: 15px;
+  }
+  .mg-meta {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12.5px; color: #4a5568;
+  }
+  .mg-meta .mg-count { font-weight: 700; color: #075985; }
+  .mg-conf-pill {
+    padding: 2px 9px; border-radius: 999px;
+    font-size: 11.5px; font-weight: 700;
+  }
+  .mg-conf-pill.mg-conf-high { background: #dcfce7; color: #15803d; }
+  .mg-conf-pill.mg-conf-med  { background: #fef9c3; color: #854d0e; }
+  .mg-conf-pill.mg-conf-low  { background: #fee2e2; color: #b91c1c; }
+  .mg-students {
+    font-size: 13px; color: #2d3748;
+    line-height: 1.4;
+    background: #f7fafc; border-radius: 6px;
+    padding: 6px 10px;
+  }
+  .mg-open {
+    background: #0284c7; color: white; border: 0;
+    padding: 8px 14px; border-radius: 8px;
+    font-family: inherit; font-size: 13px; font-weight: 700;
+    cursor: pointer;
+    margin-top: 2px;
+  }
+  .mg-open:hover { background: #0369a1; }
+
   .iv-modal-backdrop {
     position: fixed; inset: 0;
     background: rgba(26, 35, 50, 0.55);
@@ -1169,6 +1251,7 @@
 
 <!-- ============ CLASS VIEW ============ -->
 <div id="classView">
+  <div id="morningGroupSuggestions"></div>
   <div id="moyInterventionBanners" class="iv-banners-wrap"></div>
   <div id="interventionTriggers" class="iv-banners-wrap"></div>
   <div class="section">
@@ -1195,6 +1278,8 @@
 <script src="js/shared/pack-bkt-bridge.js?v=1"></script>
 <script src="js/shared/interventions.js?v=1"></script>
 <script src="js/shared/assessments.js?v=1"></script>
+<script src="js/shared/intervention-matcher.js?v=1"></script>
+<script src="js/shared/group-suggester.js?v=1"></script>
 
 <script>
 // ============================================================
@@ -1494,6 +1579,7 @@ function renderClassView() {
   const students = getAllStudents();
   const ivWrap = document.getElementById('interventionTriggers');
   const moyWrap = document.getElementById('moyInterventionBanners');
+  const mgWrap = document.getElementById('morningGroupSuggestions');
 
   if (students.length === 0) {
     body.innerHTML = `<div class="empty">
@@ -1505,9 +1591,12 @@ function renderClassView() {
     document.getElementById('classLegend').innerHTML = '';
     if (ivWrap) ivWrap.innerHTML = '';
     if (moyWrap) moyWrap.innerHTML = '';
+    if (mgWrap) mgWrap.innerHTML = '';
     return;
   }
 
+  // B.9 — Morning Group Suggestions (סוכן 18) — Section עליון, אופציונלי (toggle)
+  renderMorningGroupSuggestions(students);
   // B.7 — Intervention triggers (groups של 3+ ילדות עם דפוס משותף)
   renderInterventionTriggers(students);
   // MOY × B.7 link (סוכן 16) — banner נפרד מעל, כשיש 3+ עם suggested_intervention
@@ -2403,6 +2492,181 @@ const IV_PATTERN_LABELS = {
   fluency:          { icon: '⏱', label: 'שטף קריאה' },
   letter_cluster:   { icon: '🎯', label: 'חיזוק אותיות חלשות' }
 };
+
+// ============================================================
+// B.9 — Morning Group Suggestions (סוכן 18 · 28.5.2026)
+// "🌅 בבוקר המורה רואה איזה קבוצות לפתוח היום."
+// משלים את B.7+B.8 — שולח studentIds ל-AvneiGroupSuggester שמשתמש
+// ב-B.8 matchForStudent כדי לבנות עד 5 קבוצות אופטימליות, ומציג כרטיסים.
+// כפתור "פתחי קבוצה" משתמש ב-modal הקיים של B.7 דרך _activeGroups.
+// ============================================================
+const MG_COLLAPSE_KEY = 'avnei-mg-collapsed-v1';
+
+function _mgReadCollapsed() {
+  try { return localStorage.getItem(MG_COLLAPSE_KEY) === '1'; }
+  catch (e) { return false; }
+}
+function _mgWriteCollapsed(c) {
+  try { localStorage.setItem(MG_COLLAPSE_KEY, c ? '1' : '0'); }
+  catch (e) { /* swallow */ }
+}
+
+function renderMorningGroupSuggestions(students) {
+  const wrap = document.getElementById('morningGroupSuggestions');
+  if (!wrap) return;
+  if (!window.AvneiGroupSuggester || !window.AvneiInterventionMatcher) {
+    wrap.innerHTML = '';
+    return;
+  }
+  // אל תרענן כש-modal פתוח — שלא לאבד reference ב-_activeGroups
+  if (document.querySelector('[data-iv-modal]')) return;
+
+  const studentIds = students.map(function (s) { return s.id; });
+  let suggestions;
+  try { suggestions = AvneiGroupSuggester.suggestGroups(studentIds) || []; }
+  catch (e) { suggestions = []; }
+
+  if (suggestions.length === 0) {
+    wrap.innerHTML = '';
+    return;
+  }
+
+  const collapsed = _mgReadCollapsed();
+  const studentsMap = {};
+  students.forEach(function (s) { studentsMap[s.id] = s; });
+
+  const cardsHtml = suggestions.map(function (s, idx) {
+    const meta = IV_PATTERN_LABELS[s.pattern_id] || { icon: '📋', label: s.pattern_id };
+    const confLabel = s.confidence === 'high' ? 'גבוה' : s.confidence === 'med' ? 'בינוני' : 'נמוך';
+    const names = s.students.map(function (st) {
+      const sr = studentsMap[st.studentId];
+      return sr ? (sr.name || st.studentId) : st.studentId;
+    }).join(' · ');
+    return '<div class="mg-card" data-mg-idx="' + idx + '" data-pattern="' + escapeHtml(s.pattern_id) + '">' +
+      '<div class="mg-card-head">' +
+        '<span class="mg-icon">' + meta.icon + '</span>' +
+        '<span class="mg-label">' + escapeHtml(meta.label) + '</span>' +
+      '</div>' +
+      '<div class="mg-meta">' +
+        '<span class="mg-count">' + s.students.length + ' ילדות</span>' +
+        '<span class="mg-conf-pill mg-conf-' + s.confidence + '">ביטחון ' + confLabel + '</span>' +
+      '</div>' +
+      '<div class="mg-students">' + escapeHtml(names) + '</div>' +
+      '<button type="button" class="mg-open" data-mg-open-idx="' + idx + '">📋 פתחי קבוצה</button>' +
+    '</div>';
+  }).join('');
+
+  wrap.innerHTML =
+    '<div class="mg-section' + (collapsed ? ' mg-collapsed' : '') + '">' +
+      '<div class="mg-header">' +
+        '<button type="button" class="mg-toggle" aria-expanded="' + (!collapsed) + '">' +
+          '<span class="mg-toggle-icon">' + (collapsed ? '▸' : '▾') + '</span>' +
+          '<span class="mg-title">🌅 קבוצות בוקר מוצעות</span>' +
+          '<span class="mg-toggle-count">' + suggestions.length + '</span>' +
+        '</button>' +
+        '<button type="button" class="mg-refresh" title="רענן הצעות">🔄 רענן</button>' +
+      '</div>' +
+      '<div class="mg-body">' +
+        '<div class="mg-cards">' + cardsHtml + '</div>' +
+      '</div>' +
+    '</div>';
+
+  // hooks
+  const sec = wrap.querySelector('.mg-section');
+  const toggleBtn = wrap.querySelector('.mg-toggle');
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', function () {
+      const newCollapsed = !sec.classList.contains('mg-collapsed');
+      sec.classList.toggle('mg-collapsed', newCollapsed);
+      _mgWriteCollapsed(newCollapsed);
+      const arrow = wrap.querySelector('.mg-toggle-icon');
+      if (arrow) arrow.textContent = newCollapsed ? '▸' : '▾';
+      toggleBtn.setAttribute('aria-expanded', String(!newCollapsed));
+    });
+  }
+  const refreshBtn = wrap.querySelector('.mg-refresh');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', function () {
+      renderMorningGroupSuggestions(getAllStudents());
+    });
+  }
+  wrap.querySelectorAll('button.mg-open').forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const idx = Number(btn.dataset.mgOpenIdx);
+      const sug = suggestions[idx];
+      if (sug) openMorningGroupModal(sug);
+    });
+  });
+}
+
+// פותח modal של B.7 לקבוצה שהוצעה ע"י B.9.
+// בונה virtualGroup ב-shape של _activeGroups, מעשיר details ב-letter_cluster
+// ו-groupCommonDetails ב-letter_knowledge מתוך B.7 detectForStudent.
+function openMorningGroupModal(suggestion) {
+  if (!suggestion || !suggestion.students || suggestion.students.length === 0) return;
+
+  const allStudents = getAllStudents();
+  const studentsMap = {};
+  allStudents.forEach(function (s) { studentsMap[s.id] = s; });
+
+  // העשרת details פר-ילדה (רק ל-letter_cluster — שאר הדפוסים לא צריכים details פר-ילדה ב-modal)
+  const groupStudents = suggestion.students.map(function (ms) {
+    const rec = studentsMap[ms.studentId] || {};
+    const out = { id: ms.studentId, name: rec.name || ms.studentId };
+    if (suggestion.pattern_id === 'letter_cluster' && window.AvneiInterventions) {
+      try {
+        const triggers = AvneiInterventions.detectForStudent(ms.studentId) || [];
+        const lc = triggers.find(function (t) { return t.patternId === 'letter_cluster'; });
+        if (lc && lc.details) out.details = lc.details;
+      } catch (e) { /* swallow */ }
+    }
+    return out;
+  });
+
+  // groupCommonDetails — ל-letter_knowledge מחפש confused_pair מהילדה הראשונה
+  let groupCommonDetails = {};
+  if (suggestion.pattern_id === 'letter_knowledge' && window.AvneiInterventions) {
+    try {
+      const first = suggestion.students[0];
+      const triggers = AvneiInterventions.detectForStudent(first.studentId) || [];
+      const lk = triggers.find(function (t) { return t.patternId === 'letter_knowledge'; });
+      if (lk && lk.details) {
+        groupCommonDetails = {
+          confused_pair: lk.details.confused_pair,
+          example_a: lk.details.example_a,
+          example_b: lk.details.example_b,
+          distinction: lk.details.distinction
+        };
+      }
+    } catch (e) { /* swallow */ }
+  } else if (suggestion.pattern_id === 'decoding' && window.AvneiInterventions) {
+    try {
+      const first = suggestion.students[0];
+      const triggers = AvneiInterventions.detectForStudent(first.studentId) || [];
+      const dec = triggers.find(function (t) { return t.patternId === 'decoding'; });
+      if (dec && dec.details && dec.details.context_value) {
+        groupCommonDetails = { context_value: dec.details.context_value };
+      }
+    } catch (e) { /* swallow */ }
+  }
+
+  // מנע כפילות: אם כבר קיים virtualGroup לאותו pattern מ-MG — השתמשי בו
+  let idx = _activeGroups.findIndex(function (g) {
+    return g && g._mgSourced && g.patternId === suggestion.pattern_id;
+  });
+  if (idx === -1) {
+    _activeGroups.push({
+      patternId: suggestion.pattern_id,
+      students: groupStudents,
+      groupCommonDetails: groupCommonDetails,
+      confidence: suggestion.confidence,
+      _mgSourced: true
+    });
+    idx = _activeGroups.length - 1;
+  }
+  openInterventionModal(idx);
+}
 
 function renderInterventionTriggers(students) {
   const wrap = document.getElementById('interventionTriggers');
