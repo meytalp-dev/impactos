@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOY-Lite · אבני יסוד · אמצע שנה</title>
+<meta name="description" content="MOY-Lite — כלי עזר אינטראקטיבי למשימות 3+4. לא תחליף למבדק ראמ&quot;ה הרשמי.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Rubik:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --indigo: #4F46E5;
+  --indigo-deep: #3730A3;
+  --violet: #8B5CF6;
+  --violet-deep: #6D28D9;
+  --lavender-light: #DDD6FE;
+  --bg-ocean: linear-gradient(180deg, #c7e9ff 0%, #7cc4ff 60%, #4a9ce8 100%);
+  --bg-card: #FFFFFF;
+  --text: #1E1B4B;
+  --text-2: #475569;
+  --line: #E5E7EB;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Heebo', sans-serif;
+  background: var(--bg-ocean);
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { font-family: 'Rubik', sans-serif; line-height: 1.2; }
+button { font-family: inherit; cursor: pointer; }
+
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 20px 60px;
+}
+
+.card {
+  background: var(--bg-card);
+  border-radius: 20px;
+  padding: 32px 28px;
+  box-shadow: 0 20px 50px rgba(30,27,75,0.18);
+  border: 1px solid rgba(255,255,255,0.6);
+}
+
+.welcome h1 {
+  font-size: 26px;
+  font-weight: 900;
+  margin-bottom: 6px;
+  color: var(--indigo-deep);
+}
+.welcome .sub {
+  font-size: 14px;
+  color: var(--text-2);
+  margin-bottom: 22px;
+}
+.noni-bubble {
+  background: linear-gradient(135deg, #FEF3C7, #FCE7F3);
+  border-radius: 16px;
+  padding: 18px 22px;
+  margin: 18px 0;
+  position: relative;
+  font-size: 18px;
+  line-height: 1.55;
+  border: 2px solid #FBBF24;
+}
+.noni-bubble::before {
+  content: "";
+  position: absolute;
+  top: -22px;
+  right: 12px;
+  width: 44px;
+  height: 44px;
+  background: #fff url("../underwater-app/assets/noni-idle.png") center/contain no-repeat;
+  border-radius: 50%;
+  border: 2px solid #FBBF24;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.audio-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 0;
+}
+.audio-btn {
+  background: linear-gradient(135deg, var(--indigo), var(--violet));
+  color: #fff;
+  border: none;
+  padding: 14px 22px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 16px;
+  box-shadow: 0 6px 14px rgba(139,92,246,0.3);
+}
+.audio-btn:hover { transform: translateY(-1px); }
+.audio-btn:disabled { opacity: 0.55; cursor: default; transform: none; }
+
+.audio-missing {
+  font-size: 13px;
+  color: #92400e;
+  background: #FEF3C7;
+  border: 1px dashed #f59e0b;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 8px;
+}
+
+/* טֶקְסְט הַסִּפּוּר — מנוקד, גדול, קריא לכיתה א' */
+.passage-text {
+  background: #fff7ed;
+  border: 2px solid #fdba74;
+  border-radius: 14px;
+  padding: 18px 22px;
+  margin: 14px 0;
+  font-family: 'Rubik', sans-serif;
+  font-size: 22px;
+  line-height: 2;
+  font-weight: 500;
+  color: #1E1B4B;
+  text-align: right;
+}
+
+/* שאלה — טקסט גדול ומנוקד לתלמידה */
+#questionText {
+  font-family: 'Rubik', sans-serif;
+  font-size: 24px;
+  line-height: 1.8;
+  font-weight: 700;
+  margin-top: 14px;
+}
+
+.options {
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+}
+.option-btn {
+  display: block;
+  width: 100%;
+  text-align: right;
+  background: #F9FAFB;
+  border: 2px solid #E5E7EB;
+  border-radius: 14px;
+  padding: 16px 20px;
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--text);
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.option-btn:hover { border-color: var(--violet); background: #F5F3FF; }
+.option-btn:disabled { opacity: 0.7; cursor: default; }
+.option-btn.selected {
+  border-color: var(--indigo);
+  background: var(--lavender-light);
+}
+.option-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+.option-row .option-btn { flex: 1; }
+.option-audio-btn {
+  background: #FFF;
+  border: 2px solid var(--violet);
+  color: var(--violet);
+  width: 56px;
+  border-radius: 14px;
+  font-size: 22px;
+  flex-shrink: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.option-audio-btn:hover { background: #F5F3FF; }
+.option-audio-btn:disabled { opacity: 0.5; cursor: default; }
+
+.progress {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255,255,255,0.55);
+  border-radius: 12px;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--indigo-deep);
+  font-weight: 700;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--indigo), var(--violet));
+  color: #fff;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 17px;
+  box-shadow: 0 6px 18px rgba(139,92,246,0.4);
+  margin-top: 18px;
+}
+.btn-primary:hover { transform: translateY(-2px); }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--violet-deep);
+  border: 1px solid var(--violet);
+  padding: 10px 22px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+.task-pill {
+  display: inline-block;
+  background: #FEF3C7;
+  color: #78350f;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+
+.done-card {
+  text-align: center;
+}
+.done-icon {
+  font-size: 64px;
+  margin: 12px 0;
+}
+.done-card h2 {
+  color: var(--indigo-deep);
+  font-size: 28px;
+  margin-bottom: 6px;
+}
+.done-card .sub {
+  color: var(--text-2);
+  font-size: 15px;
+  margin-bottom: 20px;
+}
+
+.error-card {
+  background: #FEE2E2;
+  border: 1px solid #FECACA;
+  color: #7F1D1D;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+/* תֵּאוּם לְמִסְכֵי מוֹבָיְל קְטַנִּים (≤480px) — סוֹכֵן 25 a11y */
+@media (max-width: 480px) {
+  .page { padding: 20px 12px; }
+  .welcome h1 { font-size: 22px; }
+  .passage-text { font-size: 19px; line-height: 1.85; padding: 14px 16px; }
+  #questionText { font-size: 21px; line-height: 1.7; }
+  .audio-btn { min-height: 44px; padding: 12px 18px; font-size: 15px; }
+  .option-btn { padding: 14px 16px; font-size: 18px; }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <!-- Welcome -->
+  <div id="screen-welcome" class="card welcome">
+    <span class="task-pill">MOY · אֶמְצַע שָׁנָה</span>
+    <h1>נַתְחִיל הַעֲרָכַת אֶמְצַע שָׁנָה</h1>
+    <div class="sub">תַּלְמִידָה: <span id="studentNameDisplay">—</span></div>
+
+    <div class="noni-bubble" role="region" aria-label="הוראות נוני">
+      שָׁלוֹם! אֲנִי <strong>נוֹנִי</strong>
+      <br>
+      הַיּוֹם נַעֲשֶׂה בְּיַחַד שְׁתֵּי מְשִׂימוֹת קְצָרוֹת — נַקְשִׁיב לְסִפּוּר וְנַעֲנֶה עַל שְׁאֵלוֹת, וְאַחַר כָּךְ נַחְשׁוֹב עַל מִילִּים. <strong>לַחֲצִי עַל "הַתְחִילִי" כְּשֶׁאַתְּ מוּכָנָה.</strong>
+    </div>
+
+    <div class="audio-row">
+      <button class="audio-btn" id="welcomeAudioBtn" aria-label="הקראת ההסבר">🔊 הַשְׁמִיעִי אֶת הַהֶסְבֵּר</button>
+    </div>
+
+    <button class="btn-primary" id="startBtn">▶ הַתְחִילִי</button>
+  </div>
+
+  <!-- Task running -->
+  <div id="screen-task" class="card" style="display:none;">
+    <div class="progress" aria-live="polite">
+      <span id="taskLabel">מְשִׂימָה</span>
+      <span id="progressLabel">0 / 0</span>
+    </div>
+
+    <div id="passagePanel" style="display:none;">
+      <div class="noni-bubble" role="region" aria-label="הוראות נוני">
+        🔊 הַקְשִׁיבִי טוֹב לַסִּפּוּר הַקָּצָר. אַחַר כָּךְ נִשְׁאַל אוֹתָךְ שְׁאֵלוֹת עָלָיו.
+      </div>
+      <div class="audio-row">
+        <button class="audio-btn" id="passagePlayBtn" aria-label="נגן את הסיפור">▶ נַגֵּן אֶת הַסִּפּוּר</button>
+      </div>
+      <!-- טֶקְסְט הַסִּפּוּר — מוּצָג תָּמִיד (לְכִיתָּה א' שֶׁעוֹד לֹא קוֹרֵאת שׁוֹטֵף, אוֹ כְּשֶׁאוֹדִיוֹ חָסֵר) -->
+      <div id="passageText" class="passage-text"></div>
+      <div id="passageAudioMissing" class="audio-missing" style="display:none;">
+        ⚠️ קוֹבֶץ הָאוֹדִיוֹ עֲדַיִן לֹא הוּעֲלָה — הַטֶּקְסְט מוּצָג לְמַעְלָה.
+      </div>
+      <button class="btn-secondary" id="passageDoneBtn">הִקְשַׁבְתִּי, הַמְשִׁיכִי לַשְּׁאֵלוֹת ←</button>
+    </div>
+
+    <div id="questionPanel" style="display:none;">
+      <div class="audio-row">
+        <button class="audio-btn" id="questionAudioBtn" aria-label="הקראת השאלה">🔊 הַשְׁמִיעִי אֶת הַשְּׁאֵלָה</button>
+      </div>
+      <h2 id="questionText"></h2>
+      <div class="options" id="optionsContainer"></div>
+    </div>
+
+    <div id="taskError" class="error-card" style="display:none;"></div>
+  </div>
+
+  <!-- Done -->
+  <div id="screen-done" class="card done-card" style="display:none;">
+    <div class="done-icon">🌟</div>
+    <h2>מְצוּיָן, סִיַּמְתְּ!</h2>
+    <div class="sub">כָּל הַכָּבוֹד עַל הָעֲבוֹדָה הַיָּפָה. חִזְרִי לַכִּיתָּה.</div>
+    <button class="btn-primary" id="backToTeacherBtn">חֲזָרָה לְמַסַּךְ הַמּוֹרָה ←</button>
+  </div>
+</div>
+
+<script src="../underwater-app/js/shared/assessments.js"></script>
+<script>
+'use strict';
+
+// ============================================================
+// MOY-Lite Screener · 28.5.2026
+// ============================================================
+// ⚠️ אסור להציג ציון לתלמידה (evaluation, לא תרגול).
+// אסור לערבב את הפריטים האלה עם תרגול רגיל (זיהום BKT).
+// מבנה items[]: 1 passage × 1 question per item (task_3) · 3 sub_types × 10 (task_4).
+// בחירה אקראית: 10 פריטים מתוך 30 (task_3) · 22 פריטים מאוזנים מתוך 30 (task_4, 7+8+7).
+// אודיו: AvriNeural MP3 (audio/moy/{item_id}.mp3) אם קיים, אחרת Web Speech API (he-IL).
+// ============================================================
+
+const MOY_AUDIO_PREFIX = 'audio/moy/'; // יחסי ל-engine/moy-screener.html
+const SPEECH_RATE = 0.85;              // קצב איטי לכיתה א'
+
+const TASK_4_BALANCE = Object.freeze({
+  phoneme_awareness_open_close: 7,
+  phoneme_awareness_syllables: 8,
+  phoneme_awareness_phonemes: 7,
+});
+
+const urlParams = new URLSearchParams(location.search);
+const STUDENT_ID = urlParams.get('student') || 'local';
+const ONLY_TASK = urlParams.get('task'); // '3' / '4' / null (default = both)
+
+const session = {
+  studentId: STUDENT_ID,
+  studentName: '',
+  itemsBank: null,
+  task3Items: [],
+  task4Items: [],
+  taskOrder: (ONLY_TASK === '3') ? ['task_3']
+            : (ONLY_TASK === '4') ? ['task_4']
+            : ['task_3', 'task_4'],
+  currentTaskIdx: 0,
+  currentItemIdx: 0,
+  results: {
+    task_3: { score: 0, items: [] },
+    task_4: { score: 0, items: [] },
+  },
+  currentAudio: null,
+};
+
+function $(id) { return document.getElementById(id); }
+function show(id) { $(id).style.display = ''; }
+function hide(id) { $(id).style.display = 'none'; }
+
+function loadStudentName(studentId) {
+  try {
+    const raw = localStorage.getItem('avnei-yesod-students');
+    if (!raw) return studentId;
+    const arr = JSON.parse(raw);
+    const found = (arr || []).find(s => s.id === studentId);
+    return (found && found.name) || studentId;
+  } catch (e) {
+    return studentId;
+  }
+}
+
+// ====== Random selection ======
+
+function shuffle(arr) {
+  const out = arr.slice();
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = out[i]; out[i] = out[j]; out[j] = tmp;
+  }
+  return out;
+}
+
+function randomSelectItems(pool, n) {
+  if (!Array.isArray(pool) || pool.length === 0) return [];
+  return shuffle(pool).slice(0, Math.min(n, pool.length));
+}
+
+// מחלק לפי type ובוחר n פריטים מכל קבוצה, ואז מערבב את הסדר הכולל
+function balancedSelectTask4(pool, counts) {
+  const byType = {};
+  (pool || []).forEach(it => {
+    if (!it || !it.type) return;
+    (byType[it.type] = byType[it.type] || []).push(it);
+  });
+  const selected = [];
+  Object.keys(counts).forEach(t => {
+    selected.push(...randomSelectItems(byType[t] || [], counts[t]));
+  });
+  return shuffle(selected);
+}
+
+// מערבב options כדי שהאופציה הנכונה לא תהיה תמיד הראשונה (הקובץ המאושר תמיד שם correct: true ראשון)
+function shuffleOptions(item) {
+  return Object.assign({}, item, { options: shuffle(item.options || []) });
+}
+
+// ====== Audio ======
+
+function stopAudio() {
+  if (session.currentAudio) {
+    try { session.currentAudio.pause(); } catch (e) {}
+    session.currentAudio = null;
+  }
+  if (typeof speechSynthesis !== 'undefined') {
+    try { speechSynthesis.cancel(); } catch (e) {}
+  }
+}
+
+function playFile(url) {
+  return new Promise(resolve => {
+    if (!url) { resolve(false); return; }
+    try {
+      stopAudio();
+      const a = new Audio(url);
+      session.currentAudio = a;
+      a.addEventListener('ended', () => resolve(true), { once: true });
+      a.addEventListener('error', () => resolve(false), { once: true });
+      a.play().catch(() => resolve(false));
+    } catch (e) {
+      resolve(false);
+    }
+  });
+}
+
+function speakHebrew(text) {
+  return new Promise(resolve => {
+    if (!text || typeof speechSynthesis === 'undefined') { resolve(false); return; }
+    try {
+      stopAudio();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'he-IL';
+      u.rate = SPEECH_RATE;
+      u.onend = () => resolve(true);
+      u.onerror = () => resolve(false);
+      speechSynthesis.speak(u);
+    } catch (e) {
+      resolve(false);
+    }
+  });
+}
+
+// kind = 'passage' (task_3 passage) · 'question' (task_3 question / task_4 instruction)
+// אסטרטגיה: ראשית לנסות MP3 ייעודי לפריט; אם נכשל — Web Speech API.
+async function playItemAudio(item, kind) {
+  if (!item) return false;
+  let url = null, text = '';
+  if (kind === 'passage') {
+    url = item.passage_audio_url || (item.item_id ? MOY_AUDIO_PREFIX + item.item_id + '-passage.mp3' : null);
+    text = item.passage_text || '';
+  } else {
+    url = item.audio_url || item.instruction_audio || (item.item_id ? MOY_AUDIO_PREFIX + item.item_id + '.mp3' : null);
+    text = item.question_text || item.instruction_text || '';
+    if (item.word) text = (text ? text + '. ' : '') + item.word;
+  }
+  if (url) {
+    const ok = await playFile(url);
+    if (ok) return true;
+  }
+  return await speakHebrew(text);
+}
+
+// ====== Load items ======
+
+async function loadItems() {
+  try {
+    const res = await fetch('moy-items.json');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return await res.json();
+  } catch (e) {
+    console.error('Failed to load moy-items.json', e);
+    return null;
+  }
+}
+
+// ====== Init ======
+
+async function init() {
+  session.studentName = loadStudentName(session.studentId);
+  $('studentNameDisplay').textContent = session.studentName;
+
+  session.itemsBank = await loadItems();
+  if (!session.itemsBank) {
+    $('startBtn').disabled = true;
+    $('startBtn').textContent = '⚠️ קוֹבֶץ הַפְּרִיטִים לֹא נִטְעַן';
+    return;
+  }
+
+  $('welcomeAudioBtn').addEventListener('click', () => {
+    speakHebrew('שָׁלוֹם! אֲנִי נוֹנִי. הַיּוֹם נַעֲשֶׂה בְּיַחַד שְׁתֵּי מְשִׂימוֹת קְצָרוֹת. הַקְשִׁיבִי לְהוֹרָאוֹת וַעֲנִי בְּשֶׁקֶט.');
+  });
+  $('startBtn').addEventListener('click', startTasks);
+  $('passagePlayBtn').addEventListener('click', playCurrentPassage);
+  $('passageDoneBtn').addEventListener('click', () => showQuestionForCurrent());
+  $('questionAudioBtn').addEventListener('click', playCurrentQuestionAudio);
+  $('backToTeacherBtn').addEventListener('click', () => {
+    // history.back() משמר את state של teacher-rama (PIN-unlocked + selectedStudent + Student View).
+    // location.href גורם לטעינה מחדש שמאבדת state. fallback רק אם אין היסטוריה.
+    if (history.length > 1) {
+      history.back();
+    } else {
+      location.href = '../underwater-app/teacher-rama.html';
+    }
+  });
+}
+
+// ====== Task lifecycle ======
+
+function startTasks() {
+  hide('screen-welcome');
+  show('screen-task');
+
+  const t3Pool = (session.itemsBank.task_3 && session.itemsBank.task_3.items) || [];
+  const t4Pool = (session.itemsBank.task_4 && session.itemsBank.task_4.items) || [];
+
+  if (session.taskOrder.indexOf('task_3') !== -1) {
+    session.task3Items = randomSelectItems(t3Pool, 10).map(shuffleOptions);
+  }
+  if (session.taskOrder.indexOf('task_4') !== -1) {
+    session.task4Items = balancedSelectTask4(t4Pool, TASK_4_BALANCE).map(shuffleOptions);
+  }
+
+  session.currentTaskIdx = 0;
+  session.currentItemIdx = 0;
+  enterCurrentTask();
+}
+
+function currentTaskKey() {
+  return session.taskOrder[session.currentTaskIdx];
+}
+
+function currentTaskItems() {
+  return currentTaskKey() === 'task_3' ? session.task3Items : session.task4Items;
+}
+
+function enterCurrentTask() {
+  const tKey = currentTaskKey();
+  if (!tKey) { finishAll(); return; }
+
+  const items = currentTaskItems();
+  if (!items || items.length === 0) {
+    showTaskError('אֵין פְּרִיטִים זְמִינִים לַמְּשִׂימָה ' + tKey);
+    return;
+  }
+
+  $('taskLabel').textContent = (tKey === 'task_3')
+    ? 'מְשִׂימָה 3 · הֲבָנַת טֶקְסְט מוּשְׁמָע'
+    : 'מְשִׂימָה 4 · מוּדָעוּת לְשׁוֹנִית';
+  session.currentItemIdx = 0;
+  showCurrentItem();
+}
+
+function showCurrentItem() {
+  const items = currentTaskItems();
+  if (!items || session.currentItemIdx >= items.length) {
+    nextTaskOrFinish();
+    return;
+  }
+  $('progressLabel').textContent = (session.currentItemIdx + 1) + ' / ' + items.length;
+  const item = items[session.currentItemIdx];
+
+  if (currentTaskKey() === 'task_3') {
+    // task_3: מציגה את הקטע, ואחרי "הקשבתי, המשך לשאלות" מציגה את השאלה
+    hide('questionPanel');
+    show('passagePanel');
+    $('passageText').textContent = item.passage_text || '';
+    $('passageAudioMissing').style.display = 'none';
+  } else {
+    showQuestionForCurrent();
+  }
+}
+
+function showQuestionForCurrent() {
+  hide('passagePanel');
+  show('questionPanel');
+
+  const items = currentTaskItems();
+  const item = items[session.currentItemIdx];
+  if (!item) { nextTaskOrFinish(); return; }
+
+  // טקסט השאלה / הוראה — אם יש word ב-task_4 נצרף אותו בשורה נפרדת (גופן גדול, נראה ע"י הילדה)
+  const main = item.question_text || item.instruction_text || '';
+  const wordPart = item.word ? ('\n' + item.word) : '';
+  $('questionText').textContent = main + wordPart;
+
+  const container = $('optionsContainer');
+  container.innerHTML = '';
+  (item.options || []).forEach((opt, idx) => {
+    const row = document.createElement('div');
+    row.className = 'option-row';
+
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.type = 'button';
+    btn.textContent = opt.text;
+    btn.addEventListener('click', () => onAnswer(idx));
+    row.appendChild(btn);
+
+    const audioBtn = document.createElement('button');
+    audioBtn.className = 'option-audio-btn';
+    audioBtn.type = 'button';
+    audioBtn.textContent = '🔊';
+    audioBtn.setAttribute('aria-label', 'הַקְרָאַת הַתְּשׁוּבָה');
+    audioBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      speakHebrew(opt.audio_text || opt.text);
+    });
+    row.appendChild(audioBtn);
+
+    container.appendChild(row);
+  });
+}
+
+async function playCurrentPassage() {
+  const item = currentTaskItems()[session.currentItemIdx];
+  if (!item) return;
+  $('passagePlayBtn').disabled = true;
+  const ok = await playItemAudio(item, 'passage');
+  if (!ok) $('passageAudioMissing').style.display = '';
+  $('passagePlayBtn').disabled = false;
+}
+
+async function playCurrentQuestionAudio() {
+  const item = currentTaskItems()[session.currentItemIdx];
+  if (!item) return;
+  $('questionAudioBtn').disabled = true;
+  await playItemAudio(item, 'question');
+  $('questionAudioBtn').disabled = false;
+}
+
+function onAnswer(idx) {
+  const tKey = currentTaskKey();
+  const items = currentTaskItems();
+  const item = items[session.currentItemIdx];
+  if (!item) return;
+  const chosen = (item.options || [])[idx];
+
+  document.querySelectorAll('#optionsContainer .option-btn').forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === idx) btn.classList.add('selected');
+  });
+  document.querySelectorAll('#optionsContainer .option-audio-btn').forEach(btn => {
+    btn.disabled = true;
+  });
+
+  const isCorrect = !!(chosen && chosen.correct === true);
+  if (isCorrect) session.results[tKey].score += 1;
+  session.results[tKey].items.push({
+    item_id: item.item_id,
+    chosen_idx: idx,
+    chosen_text: chosen ? chosen.text : null,
+    is_correct: isCorrect,
+    ts: Date.now(),
+  });
+
+  // אין feedback מיידי (evaluation, לא תרגול)
+  setTimeout(() => {
+    session.currentItemIdx++;
+    showCurrentItem();
+  }, 450);
+}
+
+function nextTaskOrFinish() {
+  session.currentTaskIdx++;
+  if (session.currentTaskIdx >= session.taskOrder.length) {
+    finishAll();
+  } else {
+    enterCurrentTask();
+  }
+}
+
+function finishAll() {
+  stopAudio();
+
+  // שמירה ל-state.assessments דרך AvneiAssessments.recordMOYAttempt.
+  // שולחים רק את המשימות שהורצו בפועל (תמיכה ב-?task=3 / ?task=4).
+  if (window.AvneiAssessments) {
+    try {
+      const payload = {};
+      session.taskOrder.forEach(tKey => {
+        payload[tKey] = { score: session.results[tKey].score };
+      });
+      AvneiAssessments.recordMOYAttempt(session.studentId, payload);
+    } catch (e) {
+      console.warn('recordMOYAttempt failed:', e);
+    }
+  } else {
+    console.warn('AvneiAssessments not loaded — תוצאה לא נשמרה');
+  }
+
+  hide('screen-task');
+  show('screen-done');
+  // ⚠️ לא מציגים ציון לתלמידה. רק "סיימת".
+}
+
+function showTaskError(msg) {
+  const el = $('taskError');
+  el.textContent = msg;
+  el.style.display = '';
+}
+
+// ====== Boot ======
+document.addEventListener('DOMContentLoaded', init);
+
+// ====== Debug ======
+window.__moy = {
+  session: () => session,
+  finishNow: finishAll,
+  results: () => session.results,
+};
+</script>
+</body>
+</html>

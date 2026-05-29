@@ -1,0 +1,551 @@
+/* ============================================================
+   rescue-quest.css — הצלת הדגים (אי 3, אות מ׳)
+   מתלבש מעל stage-3.css. טוען *אחריה* כדי לעקוף עיצובי game-area.
+
+   לקחים מ-[[project-avnei-yesod-island3-mem-lessons]] שהוטמעו כאן:
+   #1  rescue-header position:fixed (כדי לא להתנגש עם game-area)
+   #2  direction:rtl + flex-direction:row בכל grids
+   #11 hint-glow רך (לא outline צהוב חד)
+   #12 wrong feedback רך (לא shake חזק, לא אדום)
+   #14 noni בצד ימני, keyframes בלי translateX
+   #15 feedback-bubble display:none (overrides גם stage-3.css)
+   #17 בועה לא מעל אזור פעיל (noni בצד, instruction-bubble למעלה)
+   ============================================================ */
+
+/* ===== Rescue header — school counter + instruction (fixed top) ===== */
+.rescue-header {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px 0 16px;
+  pointer-events: none;
+}
+.rescue-header > * { pointer-events: auto; }
+
+/* School row — 5 fish slots in a horizontal pill */
+.school-row {
+  display: flex;
+  flex-direction: row !important;
+  direction: rtl !important;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 18px;
+  background: linear-gradient(180deg, rgba(168, 232, 255, 0.85), rgba(115, 217, 209, 0.7));
+  border-radius: var(--radius-pill, 999px);
+  box-shadow: 0 8px 22px rgba(38, 80, 92, 0.18),
+              inset 0 2px 6px rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.fish-slot {
+  width: 42px;
+  height: 32px;
+  border-radius: 12px;
+  background: rgba(38, 80, 92, 0.18);
+  border: 2px dashed rgba(38, 80, 92, 0.28);
+  display: grid;
+  place-items: center;
+  position: relative;
+  transition: background 0.3s ease, border 0.3s ease, transform 0.3s ease,
+              box-shadow 0.3s ease;
+}
+
+.fish-slot.filled {
+  background: linear-gradient(180deg, rgba(255, 231, 168, 0.4),
+                                       rgba(255, 169, 141, 0.32));
+  border: 2px solid rgba(255, 169, 141, 0.85);
+  box-shadow: 0 0 14px rgba(255, 231, 168, 0.65);
+  animation: slot-pop 0.5s ease;
+}
+@keyframes slot-pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.22); }
+  100% { transform: scale(1); }
+}
+
+.fish-icon {
+  width: 100%;
+  height: 100%;
+  background-image: url('../assets/island-03/rescue-game/fish-single.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.fish-slot.filled .fish-icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Mission instruction bubble (with speaker — lesson #10: speaker on every overlay)
+   IMPORTANT: stage-3.css sets .instruction-bubble { opacity: 0 } expecting JS
+   to add .show class. We render it statically in HTML, so force it visible. */
+.rescue-header .instruction-bubble {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  background: #FFFFFF !important;
+  padding: 10px 18px 10px 14px !important;
+  border: none !important;
+  border-radius: var(--radius-pill, 999px) !important;
+  font-size: clamp(15px, 3.4vw, 19px) !important;
+  font-weight: 700 !important;
+  color: var(--text-main, #26505C) !important;
+  box-shadow: 0 8px 22px rgba(38, 80, 92, 0.18) !important;
+  max-width: min(420px, 92vw) !important;
+  opacity: 1 !important;
+  transform: none !important;
+  text-align: right !important;
+  margin: 0 auto !important;
+}
+.instruction-bubble .mem-letter {
+  color: var(--coral, #FFA98D);
+  font-size: 1.3em;
+  font-weight: 900;
+}
+.mission-speaker {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--water-secondary, #73D9D1);
+  color: #FFFFFF;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(115, 217, 209, 0.5);
+  animation: speaker-pulse 1.8s ease-in-out infinite;
+}
+.mission-speaker svg { width: 20px; height: 20px; }
+.mission-speaker:active { transform: scale(0.94); }
+.mission-speaker.playing { animation: speaker-active 0.5s ease-in-out infinite; }
+
+/* ===== Seaweed area — 4 pods in a row ===== */
+.seaweed-area {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: row !important;
+  direction: rtl !important;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: clamp(8px, 2.5vw, 18px);
+  padding: clamp(170px, 32vw, 240px) 16px 160px 16px;
+  pointer-events: none;
+}
+.seaweed-area > * { pointer-events: auto; }
+
+/* Single seaweed pod — closed state with letter overlay */
+.seaweed-pod {
+  position: relative;
+  width: clamp(80px, 19vw, 130px);
+  aspect-ratio: 0.7 / 1;
+  cursor: pointer;
+  transition: transform 0.3s ease, filter 0.3s ease, opacity 0.3s ease;
+  filter: drop-shadow(0 10px 20px rgba(38, 80, 92, 0.22));
+  animation: pod-sway 4s ease-in-out infinite;
+  transform-origin: 50% 100%;
+}
+.seaweed-pod:nth-child(2) { animation-delay: 0.6s; }
+.seaweed-pod:nth-child(3) { animation-delay: 1.2s; }
+.seaweed-pod:nth-child(4) { animation-delay: 1.8s; }
+
+@keyframes pod-sway {
+  0%, 100% { transform: rotate(-2deg) translateY(0); }
+  50%      { transform: rotate(2deg)  translateY(-6px); }
+}
+
+.seaweed-pod:active { transform: scale(0.95) rotate(0); }
+
+.seaweed-pod__img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+}
+
+/* Letter on the pod — big, bold, soft shadow (legible from across the room) */
+.seaweed-pod__letter {
+  position: absolute;
+  top: 44%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Heebo', sans-serif;
+  font-size: clamp(46px, 12vw, 72px);
+  font-weight: 900;
+  color: #FFFFFF;
+  text-shadow:
+    0 3px 6px rgba(38, 80, 92, 0.6),
+    0 0 16px rgba(255, 169, 141, 0.8),
+    -2px -2px 0 rgba(226, 127, 102, 0.85),
+    2px 2px 0 rgba(226, 127, 102, 0.85),
+    -2px 2px 0 rgba(226, 127, 102, 0.85),
+    2px -2px 0 rgba(226, 127, 102, 0.85);
+  pointer-events: none;
+  line-height: 1;
+  user-select: none;
+}
+
+/* CORRECT — pod opens, fish swims out */
+.seaweed-pod.opening { animation: pod-open 0.7s ease forwards; }
+@keyframes pod-open {
+  0%   { transform: rotate(0)   scale(1); }
+  30%  { transform: rotate(-4deg) scale(1.12); }
+  100% { transform: rotate(0)   scale(1.08); }
+}
+.seaweed-pod.opened .seaweed-pod__letter {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.4);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.seaweed-pod.opened .seaweed-pod__img {
+  animation: pod-open-img 0.6s ease forwards;
+}
+@keyframes pod-open-img {
+  0%   { opacity: 1; }
+  100% { opacity: 0.65; }
+}
+
+/* WRONG — gentle sway (lesson #12: no punishing shake, no red) */
+.seaweed-pod.wrong-sway { animation: pod-wrong-sway 0.6s ease; }
+@keyframes pod-wrong-sway {
+  0%, 100% { transform: rotate(0) translateY(0); }
+  25%      { transform: rotate(-6deg) translateY(-4px); }
+  50%      { transform: rotate(0) translateY(0); }
+  75%      { transform: rotate(6deg)  translateY(-4px); }
+}
+
+/* Hint glow — soft pulse (lesson #11: no harsh outline) */
+.seaweed-pod.hint-glow {
+  animation: pod-sway 4s ease-in-out infinite,
+             hint-soft-pulse 1.4s ease-in-out infinite;
+  filter: drop-shadow(0 10px 22px rgba(255, 217, 130, 0.8))
+          drop-shadow(0 0 30px rgba(255, 231, 168, 0.85));
+}
+@keyframes hint-soft-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 10px 22px rgba(255, 217, 130, 0.65))
+            drop-shadow(0 0 22px rgba(255, 231, 168, 0.6));
+  }
+  50% {
+    filter: drop-shadow(0 14px 28px rgba(255, 217, 130, 0.85))
+            drop-shadow(0 0 36px rgba(255, 231, 168, 0.95));
+  }
+}
+
+/* ===== Flying fish — from opened pod to school slot ===== */
+.flying-fish {
+  position: fixed;
+  width: 56px;
+  height: 40px;
+  z-index: 100;
+  pointer-events: none;
+  transition: transform 0.95s cubic-bezier(.5,-0.2,.5,1.2),
+              opacity 0.3s ease;
+  filter: drop-shadow(0 8px 16px rgba(255, 169, 141, 0.65));
+}
+.flying-fish img,
+.flying-fish svg { width: 100%; height: 100%; display: block; }
+
+/* ===== Top bar rescue counter ===== */
+.rescue-counter {
+  flex: 0 1 auto;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 8px 16px;
+  border-radius: var(--radius-pill, 999px);
+  box-shadow: 0 6px 16px rgba(38, 80, 92, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--text-main, #26505C);
+}
+.rescue-counter .rc-letter {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--coral, #FFA98D);
+}
+
+/* ===== Noni — right side, mid-bottom (lesson #14: keyframes WITHOUT translateX) ===== */
+body .noni-fixed,
+.noni-fixed {
+  position: fixed !important;
+  bottom: clamp(10vh, 14vh, 18vh) !important;
+  right: clamp(4px, 3vw, 18px) !important;
+  left: auto !important;
+  top: auto !important;
+  width: clamp(96px, 20vw, 140px) !important;
+  height: auto !important;
+  z-index: 30 !important;
+  pointer-events: none;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.22));
+  transform-origin: 50% 90%;
+  animation: noni-idle-bob 3.6s ease-in-out infinite;
+}
+@media (orientation: landscape) and (min-width: 800px) {
+  body .noni-fixed,
+  .noni-fixed {
+    bottom: 18vh !important;
+    right: 20px !important;
+    left: auto !important;
+    top: auto !important;
+    width: clamp(130px, 16vw, 180px) !important;
+  }
+}
+
+@keyframes noni-idle-bob {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%      { transform: translateY(-8px) rotate(2deg); }
+}
+
+.noni-fixed.noni-helping { animation: noni-lean 1.2s ease-in-out infinite !important; }
+@keyframes noni-lean {
+  0%, 100% { transform: translateY(0)    rotate(-8deg)  scale(1.02); }
+  50%      { transform: translateY(-4px) rotate(-12deg) scale(1.05); }
+}
+
+.noni-fixed.noni-hint { animation: noni-point 0.9s ease-in-out infinite !important; }
+@keyframes noni-point {
+  0%, 100% { transform: translateY(0)     rotate(-4deg); }
+  50%      { transform: translateY(-14px) rotate(-10deg) scale(1.06); }
+}
+
+.noni-fixed.noni-cheering { animation: noni-cheer-jump 0.55s ease-in-out 3 !important; }
+@keyframes noni-cheer-jump {
+  0%, 100% { transform: translateY(0)     rotate(0); }
+  30%      { transform: translateY(-26px) rotate(-12deg) scale(1.08); }
+  60%      { transform: translateY(-26px) rotate(12deg)  scale(1.08); }
+}
+
+.noni-fixed.dancing { animation: noni-dance 0.9s ease-in-out infinite !important; }
+@keyframes noni-dance {
+  0%   { transform: translateY(0)     rotate(-12deg) scale(1.0); }
+  25%  { transform: translateY(-22px) rotate(8deg)   scale(1.1); }
+  50%  { transform: translateY(-6px)  rotate(-18deg) scale(1.05); }
+  75%  { transform: translateY(-22px) rotate(14deg)  scale(1.1); }
+  100% { transform: translateY(0)     rotate(-12deg) scale(1.0); }
+}
+
+/* ===== Feedback bubble — HIDDEN (lesson #15: stage-3.css had it as a giant box) ===== */
+.feedback-bubble { display: none !important; }
+
+/* ===== Confetti layer (finale — lesson #13: dramatic celebration) ===== */
+.confetti-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 280;
+  overflow: hidden;
+}
+.confetti-piece {
+  position: absolute;
+  top: -20px;
+  border-radius: 2px;
+  animation: confetti-fall linear forwards;
+}
+@keyframes confetti-fall {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0.4; }
+}
+
+/* ===== Kisses layer (finale) ===== */
+.kisses-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 285;
+  overflow: hidden;
+}
+.kiss-heart {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  animation: kiss-rise 3.2s ease-out forwards;
+  filter: drop-shadow(0 4px 8px rgba(255, 107, 157, 0.5));
+}
+.kiss-heart svg { width: 100%; height: 100%; }
+@keyframes kiss-rise {
+  0%   { transform: translateY(0) translateX(0) scale(0.5) rotate(0deg); opacity: 0; }
+  15%  { opacity: 1; transform: translateY(-30px) translateX(10px) scale(1) rotate(-8deg); }
+  60%  { transform: translateY(-50vh) translateX(40px) scale(1.1) rotate(8deg); opacity: 1; }
+  100% { transform: translateY(-90vh) translateX(-20px) scale(0.7) rotate(-12deg); opacity: 0; }
+}
+
+/* ===== Swimming school finale — fish school glides across the scene ===== */
+.swimming-school {
+  position: fixed;
+  left: -200px;
+  top: 35%;
+  z-index: 290;
+  width: clamp(220px, 50vw, 380px);
+  height: auto;
+  pointer-events: none;
+  animation: school-swim 5s ease-in-out forwards;
+  filter: drop-shadow(0 12px 24px rgba(38, 80, 92, 0.3));
+}
+@keyframes school-swim {
+  0%   { transform: translateX(0) translateY(0); opacity: 0; }
+  15%  { opacity: 1; }
+  50%  { transform: translateX(50vw) translateY(-20px); }
+  100% { transform: translateX(120vw) translateY(10px); opacity: 0.7; }
+}
+
+/* ===== Tap-to-start overlay (lesson #10: speaker button for non-readers) ===== */
+.tap-to-start {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 24px;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(168, 232, 255, 0.96), rgba(115, 217, 209, 0.96));
+  backdrop-filter: blur(4px);
+}
+.tap-to-start.hidden { display: none; }
+.tap-to-start h2 {
+  font-size: clamp(32px, 7vw, 48px);
+  color: var(--text-main, #26505C);
+  margin: 0;
+}
+.tap-to-start p {
+  font-size: clamp(17px, 3.5vw, 21px);
+  max-width: 28ch;
+  color: var(--text-soft, #4A6D78);
+  margin: 0;
+  line-height: 1.5;
+}
+.tap-to-start p strong {
+  color: var(--coral, #FFA98D);
+  font-size: 1.2em;
+}
+.start-btn {
+  background: #FFFFFF;
+  color: var(--text-main, #26505C);
+  font-size: 22px;
+  font-weight: 700;
+  padding: 16px 36px;
+  border-radius: var(--radius-pill, 999px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  margin-top: 12px;
+  border: none;
+  cursor: pointer;
+}
+.start-btn:active { transform: scale(0.96); }
+
+.intro-speaker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--water-secondary, #73D9D1);
+  color: #FFFFFF;
+  font-size: 17px;
+  font-weight: 700;
+  padding: 12px 22px;
+  border-radius: var(--radius-pill, 999px);
+  box-shadow: 0 8px 20px rgba(115, 217, 209, 0.5);
+  animation: speaker-pulse 1.8s ease-in-out infinite;
+  border: none;
+  cursor: pointer;
+}
+.intro-speaker svg { width: 26px; height: 26px; flex-shrink: 0; }
+.intro-speaker:active { transform: scale(0.96); }
+.intro-speaker.playing { animation: speaker-active 0.5s ease-in-out infinite; }
+@keyframes speaker-pulse {
+  0%, 100% {
+    box-shadow: 0 8px 20px rgba(115, 217, 209, 0.5),
+                0 0 0 0 rgba(115, 217, 209, 0.6);
+  }
+  50% {
+    box-shadow: 0 8px 20px rgba(115, 217, 209, 0.5),
+                0 0 0 14px rgba(115, 217, 209, 0);
+  }
+}
+@keyframes speaker-active {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.05); }
+}
+
+/* ===== Completion overlay ===== */
+.completion {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  padding: 24px;
+  text-align: center;
+  background: linear-gradient(180deg,
+              rgba(168, 232, 255, 0.95) 0%,
+              rgba(255, 244, 194, 0.95) 100%);
+}
+.completion.show { display: flex; animation: fade-in 0.6s ease; }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+.completion h2 {
+  font-size: clamp(30px, 7vw, 46px);
+  color: var(--text-main, #26505C);
+  margin: 0;
+}
+.completion-school {
+  width: clamp(200px, 60vw, 320px);
+  height: clamp(120px, 35vw, 180px);
+  background: url('../assets/island-03/rescue-game/fish-school.png') center/contain no-repeat;
+  animation: souvenir-float 3s ease-in-out infinite;
+}
+@keyframes souvenir-float {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50%      { transform: translateY(-12px) rotate(3deg); }
+}
+.completion p {
+  font-size: clamp(17px, 3.5vw, 21px);
+  max-width: 28ch;
+  color: var(--text-soft, #4A6D78);
+  margin: 0;
+  line-height: 1.5;
+}
+.btn-primary {
+  background: var(--water-secondary, #73D9D1);
+  color: #FFFFFF;
+  font-size: 20px;
+  font-weight: 700;
+  padding: 14px 32px;
+  border-radius: var(--radius-pill, 999px);
+  text-decoration: none;
+  box-shadow: 0 8px 20px rgba(115, 217, 209, 0.5);
+}
+
+/* ===== Landscape ===== */
+@media (orientation: landscape) and (min-width: 820px) {
+  .rescue-header { padding-top: 18px; }
+  .seaweed-area  { padding: 140px 220px 24px 24px; }
+}
+
+/* ===== Small screens ===== */
+@media (max-height: 700px) {
+  .rescue-header { padding-top: 56px; gap: 8px; }
+  .school-row    { padding: 8px 14px; gap: 6px; }
+  .fish-slot     { width: 36px; height: 28px; }
+  .seaweed-area  { padding-top: clamp(150px, 28vw, 200px); padding-bottom: 110px; }
+}

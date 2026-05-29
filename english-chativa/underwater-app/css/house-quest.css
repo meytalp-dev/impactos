@@ -1,0 +1,706 @@
+/* ============================================================
+   house-quest.css — הבית של נוני (אי 3, אות מ׳)
+   מתלבש מעל stage-3.css. טוען *אחריה* כדי לעקוף game-area.
+   המטאפורה: 5 חידות מ' → 5 לבני אלמוג → בית-אלמוג בצורת מ' נבנה
+   קומה-קומה. בסיום נוני נכנס פנימה, אור נדלק.
+   ============================================================ */
+
+/* ===== Quest header — house + 5 brick slots ===== */
+.quest-header {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  pointer-events: none;
+}
+.quest-header > * { pointer-events: auto; }
+
+/* ===== House container — SVG בצורת מ׳ ===== */
+.house-container {
+  position: relative;
+  width: clamp(190px, 34vw, 270px);
+  aspect-ratio: 1.05 / 1;
+  pointer-events: auto;
+  filter: drop-shadow(0 14px 26px rgba(38, 80, 92, 0.28));
+}
+
+.house-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ===== Blueprint — קווי מתאר רכים של הבית הסופי =====
+   גלוי מההתחלה כדי שהילד.ה תדע מה הולך להיבנות.
+   כל piece (1-5) שהתמלא — ה-blueprint התואם שלו נעלם. */
+.house-blueprint {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.blueprint-piece {
+  transition: opacity 0.5s ease 0.3s;
+  filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.4));
+  animation: blueprint-breath 3.5s ease-in-out infinite;
+}
+@keyframes blueprint-breath {
+  0%, 100% { opacity: 0.7; }
+  50%      { opacity: 1; }
+}
+/* blueprint piece שהוסתר ע"י JS (כש-piece המתאים placed) */
+.blueprint-piece.bp-hidden {
+  opacity: 0 !important;
+  animation: none !important;
+}
+
+/* כל חלקי הבית בהתחלה — מוסתרים, ממתינים לכניסה דרמטית */
+.house-piece {
+  opacity: 0;
+  transform-origin: center 80%;
+  transform: scale(0.3) translateY(20px);
+  transition: opacity 0.5s ease,
+              transform 0.7s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+.house-piece.placed {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  animation: brick-pop 0.7s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+@keyframes brick-pop {
+  0%   { transform: scale(0.3) translateY(20px); opacity: 0; }
+  60%  { transform: scale(1.12) translateY(-4px); opacity: 1; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* החלון והאור — בהתחלה ללא זוהר */
+.house-window-glow {
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+.house-container.completed .house-window-glow {
+  opacity: 1;
+  animation: window-pulse 2.8s ease-in-out infinite 0.6s;
+}
+@keyframes window-pulse {
+  0%, 100% { opacity: 0.78; }
+  50%      { opacity: 1; }
+}
+
+/* הילה זהובה מסביב לבית כשהוא מוכן */
+.house-aura {
+  position: absolute;
+  inset: -20% -10% -25% -10%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 55%,
+              rgba(255, 244, 194, 0.6) 0%,
+              rgba(255, 228, 168, 0.3) 40%,
+              rgba(255, 228, 168, 0) 70%);
+  opacity: 0;
+  z-index: -1;
+  pointer-events: none;
+  transform: scale(0.7);
+  transition: opacity 1s ease, transform 1.2s ease;
+}
+.house-container.completed .house-aura {
+  opacity: 1;
+  transform: scale(1);
+  animation: aura-pulse 3.6s ease-in-out infinite 1.2s;
+}
+@keyframes aura-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50%      { transform: scale(1.08); opacity: 1; }
+}
+
+/* "ניצוצות" שזורמות מהבית כשהוא נבנה */
+.house-spark {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  background: #FFFFFF;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(255, 244, 194, 0.95);
+  opacity: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+.house-container.completed .house-spark {
+  animation: house-spark-fly 1.8s ease-out forwards;
+}
+@keyframes house-spark-fly {
+  0%   { opacity: 0; transform: translate(0,0) scale(0.4); }
+  30%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--sx), var(--sy)) scale(1); }
+}
+
+/* נוני "נכנס" לבית — סמל מ׳ קטן זוהר בחלון */
+.house-mem-final {
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.8s ease 0.6s,
+              transform 1s cubic-bezier(.34, 1.56, .64, 1) 0.6s;
+}
+.house-container.completed .house-mem-final {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ===== תמונת הבית האמיתי (ChatGPT) — נחשפת אחרי 5 לבנים =====
+   ה-SVG הפנימי משמש לתהליך הבנייה ההדרגתי, ואז התמונה מחליפה
+   אותו כדי לחשוף את הבית "במלוא תפארתו". */
+.house-final-image {
+  position: absolute;
+  inset: -8%;
+  width: 116%;
+  height: 116%;
+  object-fit: contain;
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity 1s ease, transform 1.2s cubic-bezier(.34, 1.56, .64, 1);
+  pointer-events: none;
+  z-index: 3;
+  filter: drop-shadow(0 18px 28px rgba(38, 80, 92, 0.32));
+}
+.house-container.revealed .house-final-image {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ה-SVG הפנימי מתעמעם כשהתמונה האמיתית נחשפת */
+.house-container.revealed .house-svg {
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+/* נוני בחלון — מופיע אחרי שהבית האמיתי נחשף */
+.house-noni-window {
+  position: absolute;
+  width: 46%;
+  height: auto;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%) scale(0.4);
+  opacity: 0;
+  transition: opacity 0.7s ease 1.4s,
+              transform 0.9s cubic-bezier(.34, 1.56, .64, 1) 1.4s;
+  pointer-events: none;
+  z-index: 5;
+  filter: drop-shadow(0 8px 18px rgba(38, 80, 92, 0.35));
+}
+.house-container.revealed .house-noni-window {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+  animation: noni-window-bob 3.5s ease-in-out infinite 2.4s;
+}
+@keyframes noni-window-bob {
+  0%, 100% { transform: translateX(-50%) scale(1) translateY(0); }
+  50%      { transform: translateX(-50%) scale(1) translateY(-4px); }
+}
+
+/* ===== Brick row — 5 slots under the house ===== */
+.bricks-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+.brick-slot {
+  width: 46px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(38, 80, 92, 0.16);
+  border: 2px dashed rgba(38, 80, 92, 0.32);
+  display: grid;
+  place-items: center;
+  position: relative;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: transform 0.3s ease, background 0.3s ease,
+              box-shadow 0.3s ease, border 0.3s ease;
+  box-shadow: inset 0 2px 6px rgba(38, 80, 92, 0.12);
+}
+
+.brick-slot.filled {
+  background: linear-gradient(180deg,
+              rgba(255, 231, 168, 0.45),
+              rgba(255, 169, 141, 0.34));
+  border: 2px solid rgba(255, 169, 141, 0.88);
+  box-shadow: 0 0 18px rgba(255, 231, 168, 0.7),
+              inset 0 0 12px rgba(255, 255, 255, 0.45);
+  animation: slot-pop 0.5s ease;
+}
+@keyframes slot-pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+.brick-slot .brick-icon {
+  width: 32px;
+  height: 22px;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.brick-slot.filled .brick-icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.brick-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 2px 4px rgba(226, 127, 102, 0.55));
+}
+
+/* ===== Override game-area for quest layout ===== */
+.quest-game-area {
+  /* Big padding-top to leave room for top-bar + quest-header (house+bricks) */
+  padding: clamp(330px, 52vw, 420px) 16px 130px 16px !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  gap: 14px !important;
+  min-height: 100dvh !important;
+  width: 100% !important;
+}
+
+/* RTL: grids in this quest use natural row (right→left in RTL) */
+.quest-game-area .shell-grid,
+.quest-game-area #smOptionsGrid,
+.quest-game-area #lsOptionsGrid,
+.quest-game-area #lsBubbleGrid,
+.quest-game-area #flLettersGrid {
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  gap: clamp(8px, 2vw, 16px) !important;
+  margin-top: 4px;
+  direction: rtl !important;
+}
+
+/* Image centering inside the pearl */
+/* shell-content/shell-image: שכבת overrides ישנה (קונכייה+פנינה).
+   ב-23.5.2026 הוחלף ל-.bubble. כאן רק להבטיח שהתמונה ממלאת את הבועה. */
+.quest-game-area .shell-content {
+  display: contents !important;
+}
+.quest-game-area .shell-image {
+  width: 70% !important;
+  height: 70% !important;
+  object-fit: contain !important;
+}
+/* .shell-letter font-size: ה-override הוסר ב-26.5.2026.
+   ה-standard מ-stage-3.css `.bubble .shell-letter` (72-112px Rubik)
+   הוא היחיד שאמור לחול — בלי לכווץ את האות באמצע פעילות letter-shape A. */
+
+/* Activity content tighter so the house stays visible */
+.quest-game-area .letter-stage { margin-top: 0; gap: 6px; }
+.quest-game-area .letter-pedestal { width: clamp(76px, 14vw, 110px); height: clamp(76px, 14vw, 110px); }
+.quest-game-area .letter-pedestal.big { width: clamp(86px, 16vw, 130px); height: clamp(86px, 16vw, 130px); }
+.quest-game-area .letter-pedestal .letter-display { font-size: clamp(44px, 9vw, 70px); }
+.quest-game-area .letter-pedestal.big .letter-display { font-size: clamp(54px, 11vw, 86px); }
+.quest-game-area .shell-option { width: clamp(140px, 26vw, 180px); height: clamp(140px, 26vw, 180px); }
+
+/* Instruction bubble compact */
+.quest-game-area .instruction-bubble {
+  font-size: clamp(15px, 3.5vw, 19px) !important;
+  padding: 10px 16px !important;
+  max-width: min(420px, 90vw);
+}
+
+/* ===== Softer hint glow — no harsh outline ===== */
+.quest-game-area .shell-option.hint-glow {
+  animation: hint-soft-pulse 1.6s ease-in-out infinite !important;
+  filter: drop-shadow(0 10px 22px rgba(255, 217, 130, 0.65))
+          drop-shadow(0 0 28px rgba(255, 231, 168, 0.75)) !important;
+}
+@keyframes hint-soft-pulse {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    filter: drop-shadow(0 10px 22px rgba(255, 217, 130, 0.55))
+            drop-shadow(0 0 22px rgba(255, 231, 168, 0.6));
+  }
+  50% {
+    transform: translateY(-4px) scale(1.05);
+    filter: drop-shadow(0 14px 28px rgba(255, 217, 130, 0.75))
+            drop-shadow(0 0 36px rgba(255, 231, 168, 0.95));
+  }
+}
+.quest-game-area .shell-option[style*="outline"] {
+  outline: none !important;
+}
+
+/* Soften 'wrong' feedback */
+.quest-game-area .shell-option.wrong {
+  animation: gentle-shake 0.5s ease !important;
+  opacity: 0.78 !important;
+  filter: drop-shadow(0 10px 18px rgba(255, 200, 200, 0.45)) !important;
+}
+@keyframes gentle-shake {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  20% { transform: translateX(-4px) rotate(-1deg); }
+  40% { transform: translateX(4px) rotate(1deg); }
+  60% { transform: translateX(-3px) rotate(-0.5deg); }
+  80% { transform: translateX(3px) rotate(0.5deg); }
+}
+
+.quest-game-area .shell-option.dimmed {
+  opacity: 0.5 !important;
+  filter: grayscale(0.25) !important;
+}
+
+/* ===== Feedback bubble — same JS override approach as shell-quest ===== */
+.feedback-bubble {
+  background: #FFFFFF !important;
+  border-radius: 22px !important;
+  padding: 10px 16px !important;
+  font-size: clamp(14px, 3.2vw, 18px) !important;
+  font-weight: 700 !important;
+  color: var(--text-main, #26505C) !important;
+  box-shadow: 0 8px 22px rgba(38, 80, 92, 0.18) !important;
+  border: 2.5px solid rgba(115, 217, 209, 0.6) !important;
+  top: auto !important;
+  left: auto !important;
+  right: clamp(110px, 24vw, 170px) !important;
+  bottom: clamp(18vh, 22vh, 26vh) !important;
+  transform: translateY(8px) !important;
+  width: auto !important;
+  max-width: min(180px, 48vw) !important;
+  min-width: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  white-space: nowrap;
+  display: inline-block !important;
+}
+.feedback-bubble.show {
+  transform: translateY(0) !important;
+}
+.feedback-bubble::before,
+.feedback-bubble::after {
+  content: '' !important;
+  position: absolute !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  border-style: solid !important;
+  bottom: auto !important;
+}
+.feedback-bubble::before {
+  top: 55% !important;
+  right: -16px !important;
+  left: auto !important;
+  transform: translateY(-50%) !important;
+  border-width: 9px 0 9px 16px !important;
+  border-color: transparent transparent transparent rgba(115, 217, 209, 0.6) !important;
+}
+.feedback-bubble::after {
+  top: 55% !important;
+  right: -11px !important;
+  left: auto !important;
+  transform: translateY(-50%) !important;
+  border-width: 7px 0 7px 13px !important;
+  border-color: transparent transparent transparent #FFFFFF !important;
+}
+
+/* ===== Top bar quest counter ===== */
+.quest-counter {
+  flex: 0 1 auto;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 6px 16px rgba(38, 80, 92, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--text-main);
+}
+.quest-counter .qc-letter {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--coral);
+}
+
+/* ===== Flying brick — מהמרכז של ה-activity אל ה-slot ===== */
+.flying-brick {
+  position: fixed;
+  width: 56px;
+  height: 40px;
+  z-index: 100;
+  pointer-events: none;
+  transition: transform 0.9s cubic-bezier(.5, -0.2, .5, 1.2),
+              opacity 0.3s ease;
+  filter: drop-shadow(0 8px 16px rgba(226, 127, 102, 0.6));
+}
+
+/* ===== Noni — same right-side placement as shell-quest ===== */
+body .noni-fixed,
+.noni-fixed {
+  position: fixed !important;
+  bottom: clamp(10vh, 14vh, 18vh) !important;
+  right: clamp(4px, 3vw, 18px) !important;
+  left: auto !important;
+  top: auto !important;
+  width: clamp(96px, 20vw, 140px) !important;
+  height: auto !important;
+  z-index: 30 !important;
+  pointer-events: none;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.22));
+  transform-origin: 50% 90%;
+  animation: noni-idle-bob 3.6s ease-in-out infinite;
+}
+@media (orientation: landscape) and (min-width: 800px) {
+  body .noni-fixed,
+  .noni-fixed {
+    bottom: 18vh !important;
+    right: 20px !important;
+    left: auto !important;
+    top: auto !important;
+    width: clamp(130px, 16vw, 180px) !important;
+  }
+}
+
+@keyframes noni-idle-bob {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%      { transform: translateY(-8px) rotate(2deg); }
+}
+
+.noni-fixed.noni-helping { animation: noni-lean 1.2s ease-in-out infinite !important; }
+@keyframes noni-lean {
+  0%, 100% { transform: translateY(0)    rotate(-8deg)  scale(1.02); }
+  50%      { transform: translateY(-4px) rotate(-12deg) scale(1.05); }
+}
+
+.noni-fixed.noni-hint { animation: noni-point 0.9s ease-in-out infinite !important; }
+@keyframes noni-point {
+  0%, 100% { transform: translateY(0)     rotate(-4deg); }
+  50%      { transform: translateY(-14px) rotate(-10deg) scale(1.06); }
+}
+
+.noni-fixed.noni-cheering { animation: noni-cheer-jump 0.55s ease-in-out 3 !important; }
+@keyframes noni-cheer-jump {
+  0%, 100% { transform: translateY(0)     rotate(0); }
+  30%      { transform: translateY(-26px) rotate(-12deg) scale(1.08); }
+  60%      { transform: translateY(-26px) rotate(12deg)  scale(1.08); }
+}
+
+/* נוני "נכנס" לבית — אנימציה ייחודית למשחק הזה */
+.noni-fixed.entering-house {
+  animation: noni-enter-house 1.8s cubic-bezier(.5, -0.2, .5, 1.2) forwards !important;
+}
+@keyframes noni-enter-house {
+  0%   { transform: translateY(0) rotate(0) scale(1); opacity: 1; }
+  40%  { transform: translateY(-30vh) translateX(28vw) rotate(-10deg) scale(0.85); opacity: 1; }
+  75%  { transform: translateY(-42vh) translateX(40vw) rotate(0) scale(0.4); opacity: 0.7; }
+  100% { transform: translateY(-46vh) translateX(42vw) rotate(0) scale(0.2); opacity: 0; }
+}
+
+.noni-fixed.dancing { animation: noni-dance 0.9s ease-in-out infinite !important; }
+@keyframes noni-dance {
+  0%   { transform: translateY(0)     rotate(-12deg) scale(1.0); }
+  25%  { transform: translateY(-22px) rotate(8deg)   scale(1.1); }
+  50%  { transform: translateY(-6px)  rotate(-18deg) scale(1.05); }
+  75%  { transform: translateY(-22px) rotate(14deg)  scale(1.1); }
+  100% { transform: translateY(0)     rotate(-12deg) scale(1.0); }
+}
+
+/* ===== Confetti + kisses (כמו shell-quest) ===== */
+.confetti-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 280;
+  overflow: hidden;
+}
+.confetti-piece {
+  position: absolute;
+  top: -20px;
+  border-radius: 2px;
+  animation: confetti-fall linear forwards;
+}
+@keyframes confetti-fall {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0.4; }
+}
+
+.kisses-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 285;
+  overflow: hidden;
+}
+.kiss-heart {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  animation: kiss-rise 3.2s ease-out forwards;
+  filter: drop-shadow(0 4px 8px rgba(255, 107, 157, 0.5));
+}
+.kiss-heart svg { width: 100%; height: 100%; }
+@keyframes kiss-rise {
+  0%   { transform: translateY(0) translateX(0) scale(0.5) rotate(0deg); opacity: 0; }
+  15%  { opacity: 1; transform: translateY(-30px) translateX(10px) scale(1) rotate(-8deg); }
+  60%  { transform: translateY(-50vh) translateX(40px) scale(1.1) rotate(8deg); opacity: 1; }
+  100% { transform: translateY(-90vh) translateX(-20px) scale(0.7) rotate(-12deg); opacity: 0; }
+}
+
+/* ===== Tap-to-start overlay ===== */
+.tap-to-start {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 24px;
+  text-align: center;
+  background: linear-gradient(180deg,
+              rgba(168, 232, 255, 0.96),
+              rgba(255, 231, 168, 0.96));
+  backdrop-filter: blur(4px);
+}
+.tap-to-start.hidden { display: none; }
+.tap-to-start h2 {
+  font-size: clamp(32px, 7vw, 48px);
+  color: var(--text-main);
+  margin: 0;
+}
+.tap-to-start p {
+  font-size: clamp(17px, 3.5vw, 21px);
+  max-width: 28ch;
+  color: var(--text-soft);
+  margin: 0;
+  line-height: 1.5;
+}
+.start-btn {
+  background: #FFFFFF;
+  color: var(--text-main);
+  font-size: 22px;
+  font-weight: 700;
+  padding: 16px 36px;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  margin-top: 12px;
+}
+.start-btn:active { transform: scale(0.96); }
+
+.intro-speaker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--coral, #FFA98D);
+  color: #FFFFFF;
+  font-size: 17px;
+  font-weight: 700;
+  padding: 12px 22px;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 8px 20px rgba(255, 169, 141, 0.5);
+  animation: speaker-pulse 1.8s ease-in-out infinite;
+}
+.intro-speaker svg { width: 26px; height: 26px; flex-shrink: 0; }
+.intro-speaker:active { transform: scale(0.96); }
+.intro-speaker.playing { animation: speaker-active 0.5s ease-in-out infinite; }
+@keyframes speaker-pulse {
+  0%, 100% { box-shadow: 0 8px 20px rgba(255, 169, 141, 0.5),
+                         0 0 0 0 rgba(255, 169, 141, 0.6); }
+  50%      { box-shadow: 0 8px 20px rgba(255, 169, 141, 0.5),
+                         0 0 0 14px rgba(255, 169, 141, 0); }
+}
+@keyframes speaker-active {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.05); }
+}
+
+/* ===== Completion overlay ===== */
+.completion {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  padding: 24px;
+  text-align: center;
+  background: linear-gradient(180deg,
+              rgba(168, 232, 255, 0.95) 0%,
+              rgba(255, 244, 194, 0.95) 100%);
+}
+.completion.show { display: flex; animation: fade-in 0.6s ease; }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+.completion h2 {
+  font-size: clamp(30px, 7vw, 46px);
+  color: var(--text-main);
+  margin: 0;
+}
+.completion-souvenir {
+  width: clamp(180px, 38vw, 240px);
+  height: auto;
+  object-fit: contain;
+  animation: souvenir-float 3s ease-in-out infinite;
+  filter: drop-shadow(0 14px 22px rgba(38, 80, 92, 0.35));
+}
+@keyframes souvenir-float {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50%      { transform: translateY(-12px) rotate(3deg); }
+}
+.completion p {
+  font-size: clamp(17px, 3.5vw, 21px);
+  max-width: 28ch;
+  color: var(--text-soft);
+  margin: 0;
+  line-height: 1.5;
+}
+.btn-primary {
+  background: var(--water-secondary);
+  color: #FFFFFF;
+  font-size: 20px;
+  font-weight: 700;
+  padding: 14px 32px;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  box-shadow: 0 8px 20px rgba(115, 217, 209, 0.5);
+}
+
+/* ===== Landscape tablet/desktop ===== */
+@media (orientation: landscape) and (min-width: 820px) {
+  .scene-frame { flex-direction: row !important; }
+  .quest-header {
+    flex: 0 0 auto;
+    padding: 70px 8px 24px 24px;
+    justify-content: center;
+    align-items: center;
+    width: 320px;
+  }
+  .house-container { width: 250px; }
+  .quest-game-area {
+    flex: 1;
+    padding: 70px 220px 24px 24px !important;
+    justify-content: center !important;
+  }
+}
+
+/* ===== Small screens ===== */
+@media (max-height: 700px) {
+  .quest-header { padding-top: 56px; gap: 6px; }
+  .house-container { width: clamp(150px, 28vw, 210px); }
+  .brick-slot { width: 38px; height: 30px; }
+  .brick-slot .brick-icon { width: 26px; height: 18px; }
+}

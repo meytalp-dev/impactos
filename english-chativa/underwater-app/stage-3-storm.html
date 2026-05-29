@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0F1E3C">
+  <title>הסערה והאור · אות ת׳ · עומק הים המואר</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/stage-3.css">
+  <link rel="stylesheet" href="css/storm-quest.css">
+  <style>
+    /* במובייל-portrait, נוני בפינה הימנית-עליונה מסתיר את אלמוגי-האותיות
+       בעמודה הימנית של הרשת. מעבירים אותו לפינה השמאלית-תחתונה ומקטינים. */
+    @media (max-width: 800px) and (orientation: portrait) {
+      body .noni-fixed {
+        top: auto;
+        right: auto;
+        bottom: clamp(12px, 4vh, 32px);
+        left: clamp(8px, 3vw, 20px);
+        width: clamp(80px, 18vw, 110px);
+        transform-origin: 50% 80%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="stage-scene">
+    <div class="scene-frame lit-0" id="sceneFrame">
+      <!-- שכבת בסיס: הים הזוהר (לא משתנה — נחשף בהדרגה כשה-dark דועך) -->
+      <img class="scene-bg storm-scene storm-scene-bright"
+           src="assets/island-03/storm-game/scene-storm-bright.png" alt="" aria-hidden="true"
+           onerror="this.style.display='none'">
+      <!-- שכבה עליונה: הים הסוער — opacity יורד עם כל אלמוג -->
+      <img class="scene-bg storm-scene storm-scene-dark"
+           src="assets/island-03/storm-game/scene-storm-dark.png" alt="" aria-hidden="true"
+           onerror="this.style.display='none'">
+
+      <!-- שכבות סערה: ערפל חושך עדין + הבזקים רכים -->
+      <div class="storm-overlay" aria-hidden="true"></div>
+      <div class="storm-flash" aria-hidden="true"></div>
+
+      <!-- Hunt header — באנר הוראה + 5 נקודות התקדמות -->
+      <section class="hunt-header">
+        <div class="storm-banner" id="stormBanner">
+          <span class="storm-banner-dot"></span>
+          <span id="stormBannerText">הקש על האות ת׳</span>
+        </div>
+        <div class="hunt-progress" id="huntProgress" aria-label="התקדמות">
+          <span class="hunt-progress__dot" data-i="0"></span>
+          <span class="hunt-progress__dot" data-i="1"></span>
+          <span class="hunt-progress__dot" data-i="2"></span>
+          <span class="hunt-progress__dot" data-i="3"></span>
+          <span class="hunt-progress__dot" data-i="4"></span>
+        </div>
+      </section>
+
+      <!-- שטח הציד — אלמוגי-אותיות פזורים. JS ממלא 12 tiles ב-letterField -->
+      <div class="letter-field" id="letterField" aria-label="שטח הציד"></div>
+
+      <div class="burst" id="burst"></div>
+    </div>
+  </main>
+
+  <!-- Noni (src swap by JS). idle = sad-storm — חוזר ל-happy רק כשמדליקים אלמוג -->
+  <img class="noni-fixed" id="noniImg" src="assets/island-03/storm-game/noni-sad-storm.png" alt="נוני">
+
+  <!-- בועת פידבק -->
+  <div class="feedback-bubble" id="feedbackBubble"></div>
+
+  <!-- Top bar -->
+  <header class="top-bar">
+    <a href="map.html" class="icon-btn" aria-label="חזרה למפה">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+    <div class="storm-counter" id="stormCounter">
+      <span class="sc-letter">ת</span>
+      <span id="coralCountDisplay">0/5 אלמוגים</span>
+    </div>
+    <div class="pearl-counter" aria-label="פנינים">
+      <span class="pearl" aria-hidden="true"></span>
+      <span class="count" id="pearlCount">0</span>
+    </div>
+  </header>
+
+  <!-- Start overlay -->
+  <div class="tap-to-start" id="tapToStart">
+    <h2>הסערה והאור</h2>
+    <button class="intro-speaker" id="introSpeaker" aria-label="שמע את ההסבר">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>הקש/י לשמוע</span>
+    </button>
+    <p>הייתה סערה. גן האלמוגים חשוך. נוני עצוב.</p>
+    <p>בים יש אלמוגים עם אותיות. <strong>הקישו על כל ה-ת׳-ים</strong> — וכל אחד שתדליקו יחזיר עוד אור לים.</p>
+    <button class="start-btn" id="startBtn">בוא/י נדליק!</button>
+  </div>
+
+  <!-- Completion overlay -->
+  <div class="completion" id="completion">
+    <h2>הים זוהר שוב!</h2>
+    <div class="completion-corals" aria-hidden="true">
+      <svg class="coral-mini coral-lit" viewBox="0 0 60 80"><use href="#tavCoral"/></svg>
+      <svg class="coral-mini coral-lit" viewBox="0 0 60 80"><use href="#tavCoral"/></svg>
+      <svg class="coral-mini coral-lit" viewBox="0 0 60 80"><use href="#tavCoral"/></svg>
+      <svg class="coral-mini coral-lit" viewBox="0 0 60 80"><use href="#tavCoral"/></svg>
+      <svg class="coral-mini coral-lit" viewBox="0 0 60 80"><use href="#tavCoral"/></svg>
+    </div>
+    <p id="completionMsg">5 אלמוגי-ת׳ מאירים את גן האלמוגים. נוני שמח.</p>
+    <a href="map.html" class="btn-primary">חזרה למפה</a>
+  </div>
+
+  <!-- SVG defs — אלמוג בצורת ת׳ בגרדיאנטים: dark (כבוי) ו-lit (תכלת ים זוהר) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <!-- כבוי: אפור-תכלת דהוי -->
+      <linearGradient id="coralGradDark" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%"   stop-color="#6E8590"/>
+        <stop offset="60%"  stop-color="#556B76"/>
+        <stop offset="100%" stop-color="#3D525C"/>
+      </linearGradient>
+      <!-- זוהר: תכלת ים זוהר (#A8E8FF → #73D9D1 → #4FB8C9) -->
+      <linearGradient id="coralGradLit" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%"   stop-color="#E8F8FF"/>
+        <stop offset="35%"  stop-color="#A8E8FF"/>
+        <stop offset="75%"  stop-color="#73D9D1"/>
+        <stop offset="100%" stop-color="#4FB8C9"/>
+      </linearGradient>
+      <radialGradient id="coralCoreLit" cx="50%" cy="35%" r="55%">
+        <stop offset="0%"   stop-color="#FFFFFF" stop-opacity="0.95"/>
+        <stop offset="100%" stop-color="#A8E8FF" stop-opacity="0"/>
+      </radialGradient>
+
+      <!-- אלמוג ת׳ בצורת האות ת — קו אופקי עליון, רגל ימנית עם "ברך" -->
+      <symbol id="tavCoral" viewBox="0 0 60 80">
+        <!-- בסיס סלע -->
+        <ellipse cx="30" cy="74" rx="22" ry="5" fill="rgba(38,80,92,0.35)" class="coral-base-shadow"/>
+        <!-- גזע קטן בבסיס -->
+        <path d="M24 70 Q26 62 28 58 L32 58 Q34 62 36 70 Z"
+              fill="var(--coral-fill)" stroke="#FFFFFF" stroke-width="1.2"/>
+        <!-- צורת ת׳ דפוסית:
+             * קו אופקי בראש (12..52 ב-y=16)
+             * רגל ימנית — עם ברך מאוחורה למטה
+             * רגל שמאלית קצרה בצורה של חצי-עיגול -->
+        <!-- קו אופקי עליון -->
+        <path d="M10 12 L52 12 Q56 12 56 18 L56 22 Q56 26 52 26 L10 26 Q6 26 6 22 L6 18 Q6 12 10 12 Z"
+              fill="var(--coral-fill)" stroke="#FFFFFF" stroke-width="1.5" stroke-linejoin="round"/>
+        <!-- רגל ימנית (אנכי + ברך מאוחורה) -->
+        <path d="M40 26 L48 26 L48 52 Q48 58 42 58 L36 58 Q31 58 31 53 L31 50 Q31 46 35 46 L40 46 Z"
+              fill="var(--coral-fill)" stroke="#FFFFFF" stroke-width="1.5" stroke-linejoin="round"/>
+        <!-- רגל שמאלית קצרה -->
+        <path d="M14 26 L22 26 L22 50 Q22 58 16 58 L12 58 Q8 58 8 52 L8 48 Q8 44 12 44 L14 44 Z"
+              fill="var(--coral-fill)" stroke="#FFFFFF" stroke-width="1.5" stroke-linejoin="round"/>
+        <!-- ניצוץ פנימי (רק במצב lit) -->
+        <circle cx="30" cy="18" r="4" fill="var(--coral-spark, transparent)"/>
+        <circle cx="45" cy="38" r="2.5" fill="var(--coral-spark2, transparent)"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <!-- Shared modules — load order matters -->
+  <script src="js/state.js"></script>
+  <script src="js/shared/bkt.js"></script>
+  <script src="js/shared/epa.js"></script>
+  <script src="js/shared/event-logger.js"></script>
+  <script src="js/shared/mastery-check.js"></script>
+  <script src="js/shared/audio.js"></script>
+  <script src="js/shared/noni.js"></script>
+  <script src="js/shared/feedback.js"></script>
+
+  <!-- ====== OVERRIDE: noni facial expressions via src swap (מ-shell-quest) ====== -->
+  <script>
+  (function noniExpressions() {
+    // EXPR.idle משתנה דינמית לפי כמה אלמוגים מודלקים
+    // (window.STORM_setIdleByLit() מהקונטרולר). ברירת מחדל: עצוב.
+    const EXPR = {
+      idle:    'assets/island-03/storm-game/noni-sad-storm.png',
+      help:    'assets/noni-thinking.png',
+      hint:    'assets/noni-surprised.png',
+      cheer:   'assets/noni-happy.png',
+      dance:   'assets/noni-kiss.png',
+    };
+    Object.values(EXPR).forEach(src => { const i = new Image(); i.src = src; });
+
+    // נחשף לקונטרולר כדי לעדכן את הבעת ה-idle לפי התקדמות
+    window.STORM_setIdleByLit = function(litCount) {
+      if (litCount >= 4)      EXPR.idle = 'assets/noni-happy.png';
+      else if (litCount >= 2) EXPR.idle = 'assets/noni-thinking.png';
+      else                    EXPR.idle = 'assets/island-03/storm-game/noni-sad-storm.png';
+    };
+
+    if (!window.AvneiNoni) return;
+    const origSetState = AvneiNoni.setState;
+    AvneiNoni.setState = function(state) {
+      origSetState.call(this, state);
+      const img = document.getElementById('noniImg');
+      if (!img) return;
+      const src = EXPR[state] || EXPR.idle;
+      if (img.src.indexOf(src.split('/').pop()) === -1) {
+        img.src = src;
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const img = document.getElementById('noniImg');
+      if (img) img.src = EXPR.idle;
+    });
+  })();
+  </script>
+
+  <!-- ====== OVERRIDE: hide feedback bubble (כמו ב-shell-quest) ====== -->
+  <script>
+  (function overrideFeedbackBubble() {
+    if (!window.AvneiFeedback) return;
+    AvneiFeedback.show = function(text) {
+      const fb = document.getElementById('feedbackBubble');
+      if (fb) fb.style.display = 'none';
+    };
+    AvneiFeedback.hide = function() {
+      const fb = document.getElementById('feedbackBubble');
+      if (fb) fb.style.display = 'none';
+    };
+  })();
+  </script>
+
+  <!-- מנגנון Hunt לא משתמש ב-activities (sound-match/letter-shape/find-letter).
+       state.js + audio.js + noni.js + feedback.js לבד מספיקים. -->
+
+
+  <script>
+  // ============================================================
+  // storm-quest controller — "ציד האורות"
+  // ים מלא אלמוגי-אותיות. הילד מקליק על ת׳-ים. כל ת׳ נכון מאיר אזור.
+  // 5 ת׳-ים שהודלקו → הים זוהר מחדש.
+  // ============================================================
+
+  const ISLAND_ID = 3;
+  const LETTER = 'ת';
+  const TOTAL_CORALS = 5;
+  const TOTAL_TILES = 12;          // סך אלמוגים במסך
+  const NUM_TARGETS = TOTAL_CORALS; // 5 ת׳-ים מתוך 12
+
+  // אותיות מסיחות (לא ת׳) — מאי 23 ספט: ת מ ר ב ק הן אותיות אי 3,
+  // השאר עוד לא נלמדו אבל מותרות כצורות חזותיות.
+  const DISTRACTOR_LETTERS = ['מ', 'ר', 'ב', 'ק', 'ש', 'ל', 'נ', 'ד', 'ע'];
+
+  const BANNER_MESSAGES = [
+    'הקש על האות ת׳',
+    'יופי! אור ראשון',
+    'הים מתחיל להאיר',
+    'עוד קצת — ויש אור!',
+    'כמעט כל הים זוהר',
+    'הים זוהר שוב!',
+  ];
+
+  const state = {
+    coralsLit: 0,
+    tiles: [],   // [{ el, letter, isTarget, lit }]
+  };
+
+  const elFrame   = document.getElementById('sceneFrame');
+  const elField   = document.getElementById('letterField');
+  const elBanner  = document.getElementById('stormBannerText');
+  const elNoni    = document.getElementById('noniImg');
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function updateCoralCounter() {
+    const el = document.getElementById('coralCountDisplay');
+    if (el) el.textContent = state.coralsLit + '/5 אלמוגים';
+  }
+
+  function updateBanner(litCount) {
+    if (elBanner) elBanner.textContent = BANNER_MESSAGES[litCount] || BANNER_MESSAGES[0];
+  }
+
+  function updateProgressDots(litCount) {
+    document.querySelectorAll('.hunt-progress__dot').forEach((d, i) => {
+      if (i < litCount) d.classList.add('lit');
+      else d.classList.remove('lit');
+    });
+  }
+
+  function updatePearlDisplay() {
+    if (typeof getPearls === 'function') {
+      document.getElementById('pearlCount').textContent = getPearls();
+    }
+  }
+
+  // ============================================================
+  // בניית שטח האלמוגים — 12 tiles פזורים ב-grid 4x3 עם offset אקראי
+  // ============================================================
+  function buildField() {
+    elField.innerHTML = '';
+    state.tiles = [];
+
+    // בחירת אותיות — 5 ת׳ + 7 מסיחים אקראיים
+    const distractors = shuffle(DISTRACTOR_LETTERS).slice(0, TOTAL_TILES - NUM_TARGETS);
+    const letters = shuffle([
+      ...Array(NUM_TARGETS).fill(LETTER),
+      ...distractors,
+    ]);
+
+    // grid 4 עמודות × 3 שורות. כל תא בערך 25% רוחב × 33% גובה.
+    // הסחנו 0-12% בכל ציר כדי לתת תחושת פיזור אורגנית.
+    const cols = 4, rows = 3;
+    const cellW = 100 / cols, cellH = 100 / rows;
+
+    letters.forEach((letter, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+
+      // מיקום בסיס + ג'יטר
+      const jitterX = (Math.random() - 0.5) * 8;   // ±4%
+      const jitterY = (Math.random() - 0.5) * 10;  // ±5%
+      const left = cellW * col + cellW * 0.5 + jitterX;
+      const top  = cellH * row + cellH * 0.5 + jitterY;
+
+      const tile = document.createElement('div');
+      tile.className = 'letter-tile';
+      tile.style.left = `calc(${left}% - clamp(27px, 6.5vw, 36px))`;
+      tile.style.top  = `calc(${top}%  - clamp(27px, 6.5vw, 36px))`;
+      tile.style.animationDelay = (Math.random() * 2.5) + 's';
+      tile.dataset.letter = letter;
+      tile.dataset.target = (letter === LETTER) ? 'true' : 'false';
+      tile.setAttribute('role', 'button');
+      tile.setAttribute('aria-label', 'אלמוג עם האות ' + letter);
+
+      tile.innerHTML = `
+        <div class="letter-tile__shell">
+          <span class="letter-tile__letter">${letter}</span>
+        </div>
+        <div class="letter-tile__ripple"></div>
+      `;
+
+      tile.addEventListener('click', () => handleTileClick(tile, letter === LETTER));
+      elField.appendChild(tile);
+
+      state.tiles.push({ el: tile, letter, isTarget: letter === LETTER, lit: false });
+    });
+
+    // בועות-אווירה (4 בועות נעות ברקע)
+    for (let i = 0; i < 4; i++) {
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble-deco';
+      const size = 14 + Math.random() * 28;
+      bubble.style.width = size + 'px';
+      bubble.style.height = size + 'px';
+      bubble.style.left = Math.random() * 95 + 'vw';
+      bubble.style.bottom = (-20 + Math.random() * 10) + 'vh';
+      bubble.style.animationDuration = (8 + Math.random() * 6) + 's';
+      bubble.style.animationDelay = (Math.random() * 4) + 's';
+      elField.appendChild(bubble);
+    }
+  }
+
+  // ============================================================
+  // טיפול בלחיצה על אלמוג
+  // ============================================================
+  function handleTileClick(tile, isTarget) {
+    if (tile.classList.contains('lit')) return;       // כבר הואר
+    if (tile.classList.contains('wrong-flash')) return; // עוד באנימציית רעידה
+
+    if (isTarget) {
+      onCorrectHit(tile);
+    } else {
+      onWrongHit(tile);
+    }
+  }
+
+  function onCorrectHit(tile) {
+    spawnLightBurst(tile);
+    tile.classList.add('lit');
+
+    state.coralsLit++;
+    updateCoralCounter();
+    updateBanner(state.coralsLit);
+    updateProgressDots(state.coralsLit);
+    updatePearlDisplay();
+
+    // לוגינג לתובנות מורה (23.5.2026 · E.17 28.5)
+    if (window.AvneiEventLogger) {
+      AvneiEventLogger.logActivityResult({
+        activity_type: 'storm-quest',
+        target_letter: LETTER,
+        item_id: 'storm-coral-' + state.coralsLit,
+        supportLevel: 1,
+        is_correct: true,
+        attempts: 1,
+        response_time_ms: Date.now() - (state.lastTileShownAt || Date.now()),
+        rama_task_alignment: 1,
+        peima_target: 1,
+      });
+      state.lastTileShownAt = Date.now();
+    }
+
+    // עדכון רמת ההארה של ה-scene
+    elFrame.classList.remove('lit-0','lit-1','lit-2','lit-3','lit-4','lit-5');
+    elFrame.classList.add('lit-' + state.coralsLit);
+
+    AvneiAudio.play('great');
+    cheerNoni();
+
+    if (state.coralsLit >= TOTAL_CORALS) {
+      setTimeout(startFinale, 1100);
+    }
+  }
+
+  function onWrongHit(tile) {
+    tile.classList.add('wrong-flash');
+    setTimeout(() => tile.classList.remove('wrong-flash'), 600);
+    // ללא אודיו ענישה — לפי feedback_avnei_yesod_support_levels
+
+    // לוגינג לתובנות מורה (E.17 28.5)
+    if (window.AvneiEventLogger) {
+      AvneiEventLogger.logActivityResult({
+        activity_type: 'storm-quest',
+        target_letter: LETTER,
+        item_id: 'storm-wrong',
+        supportLevel: 1,
+        is_correct: false,
+        attempts: 1,
+        response_time_ms: null,
+        rama_task_alignment: 1,
+        peima_target: 1,
+      });
+    }
+  }
+
+  function spawnLightBurst(anchorEl) {
+    const rect = anchorEl.getBoundingClientRect();
+    const burst = document.createElement('div');
+    burst.className = 'light-burst';
+    burst.style.left = (rect.left + rect.width / 2) + 'px';
+    burst.style.top  = (rect.top  + rect.height / 2) + 'px';
+    document.body.appendChild(burst);
+    setTimeout(() => burst.remove(), 2000);
+  }
+
+  function cheerNoni() {
+    if (window.AvneiNoni) AvneiNoni.setState('cheer');
+    if (window.STORM_setIdleByLit) window.STORM_setIdleByLit(state.coralsLit);
+    setTimeout(() => {
+      if (window.AvneiNoni) AvneiNoni.setState('idle');
+    }, 1500);
+  }
+
+  // ============================================================
+  // חגיגת סוף — נוני רוקד, קונפטי, נשיקות (זהה ל-shell-quest)
+  // ============================================================
+  function startFinale() {
+    elNoni.classList.add('dancing');
+    elNoni.src = 'assets/noni-kiss.png';
+
+    spawnConfetti(80);
+    spawnKisses(8);
+
+    // ת׳ — finale-storm-tav-cleared, נופל אחורה ל-finale-storm-cleared (גנרי) ואז ל-finale-found-treasure
+    try {
+      AvneiAudio.playSequence(['great', 'finale-storm-tav-cleared'], 800);
+    } catch (e) {
+      AvneiAudio.playSequence(['great', 'finale-found-treasure'], 800);
+    }
+
+    setTimeout(showCompletion, 1800);
+  }
+
+  function spawnConfetti(count) {
+    const container = document.getElementById('confettiLayer') || (() => {
+      const c = document.createElement('div');
+      c.id = 'confettiLayer';
+      c.className = 'confetti-layer';
+      document.body.appendChild(c);
+      return c;
+    })();
+    const colors = ['#FFE7A8', '#FFA98D', '#B8F2CF', '#A8E8FF', '#D9D2FF', '#FFD3D8'];
+    for (let i = 0; i < count; i++) {
+      const piece = document.createElement('span');
+      piece.className = 'confetti-piece';
+      piece.style.left = Math.random() * 100 + 'vw';
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.animationDelay = (Math.random() * 0.8) + 's';
+      piece.style.animationDuration = (2.4 + Math.random() * 2.2) + 's';
+      piece.style.width = (6 + Math.random() * 8) + 'px';
+      piece.style.height = (10 + Math.random() * 14) + 'px';
+      piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+      container.appendChild(piece);
+      setTimeout(() => piece.remove(), 5000);
+    }
+  }
+
+  function spawnKisses(count) {
+    const container = document.getElementById('kissesLayer') || (() => {
+      const c = document.createElement('div');
+      c.id = 'kissesLayer';
+      c.className = 'kisses-layer';
+      document.body.appendChild(c);
+      return c;
+    })();
+    for (let i = 0; i < count; i++) {
+      const k = document.createElement('span');
+      k.className = 'kiss-heart';
+      k.style.left = (8 + Math.random() * 18) + 'vw';
+      k.style.bottom = (4 + Math.random() * 6) + 'vh';
+      k.style.animationDelay = (Math.random() * 1.2) + 's';
+      k.innerHTML = `
+        <svg viewBox="0 0 32 32">
+          <path d="M16 28 C 6 20, 2 14, 6 9 C 10 4, 14 8, 16 12 C 18 8, 22 4, 26 9 C 30 14, 26 20, 16 28 Z"
+                fill="#FF6B9D" stroke="#FFFFFF" stroke-width="1.5"/>
+        </svg>
+      `;
+      container.appendChild(k);
+      setTimeout(() => k.remove(), 5000);
+    }
+  }
+
+  // Quest tracking — לפי project-avnei-yesod-island-overview-screen.
+  // stage-3-island.html קורא את island3-quests:completed לפתיחת הנעילה ההדרגתית.
+  function markQuestCompleted(questId) {
+    try {
+      const key = 'island3-quests:completed';
+      const completed = JSON.parse(localStorage.getItem(key) || '[]');
+      if (!completed.includes(questId)) {
+        completed.push(questId);
+        localStorage.setItem(key, JSON.stringify(completed));
+      }
+    } catch (e) {}
+  }
+
+  function showCompletion() {
+    if (typeof completeStage === 'function') completeStage(ISLAND_ID);
+    if (typeof addSouvenir === 'function') addSouvenir('אלמוג אור');
+    markQuestCompleted('storm');
+    document.getElementById('completion').classList.add('show');
+    spawnConfetti(40);
+    // A0.3 — mastery משולש לאי כולו
+    if (window.AvneiMasteryCheck) {
+      AvneiMasteryCheck.checkAndShowIslandCelebration(null, ISLAND_ID);
+    }
+  }
+
+  // ============================================================
+  // הרצה ראשית — בנייה של שטח הציד והפעלה
+  // ============================================================
+  function runQuest() {
+    AvneiNoni.ready();
+    updatePearlDisplay();
+    updateCoralCounter();
+    updateBanner(0);
+    updateProgressDots(0);
+    buildField();
+  }
+
+  // ============================================================
+  // Intro speaker — מקריא את הסיפור
+  // ============================================================
+  document.getElementById('introSpeaker').addEventListener('click', () => {
+    AvneiAudio.unlock();
+    const btn = document.getElementById('introSpeaker');
+    btn.classList.add('playing');
+    // נסיון לנגן את ההקלטות הייעודיות לסערה. אם לא קיימות עדיין —
+    // ה-onerror של ה-Audio יתקדם הלאה בלי לחסום.
+    AvneiAudio.playSequence(['intro-storm-tav-quest', 'intro-storm-tav-mission'], 600);
+    setTimeout(() => btn.classList.remove('playing'), 12000);
+  });
+
+  // ============================================================
+  // Bootstrap
+  // ============================================================
+  document.getElementById('startBtn').addEventListener('click', () => {
+    AvneiAudio.unlock();
+    document.getElementById('tapToStart').classList.add('hidden');
+    // אין צורך לטעון data — האותיות נבחרות מקבוצה קבועה בקוד
+    runQuest();
+  });
+
+  // Dev shortcut: ?reset=1
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('reset') === '1') {
+    localStorage.removeItem('underwater-app:v1');
+    console.log('localStorage reset.');
+  }
+  </script>
+
+</body>
+</html>

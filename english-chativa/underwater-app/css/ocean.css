@@ -1,0 +1,137 @@
+/* ============================================================
+   ocean.css — רקע ים, בועות, קרני אור, פלנקטון
+   לפי design-system.md סעיף 8 (Ambient)
+   ============================================================ */
+
+/* ===== רקע ים מדורג ===== */
+
+.ocean {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(ellipse at 50% -10%, var(--warm-white) 0%, transparent 55%),
+    linear-gradient(180deg, var(--water-soft) 0%, var(--water-main) 45%, var(--water-secondary) 100%);
+}
+
+/* ===== קרני אור — תנועה איטית ימינה-שמאלה ===== */
+
+.light-rays {
+  position: fixed;
+  top: -10%;
+  left: 0;
+  right: 0;
+  height: 75%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(105deg,
+      transparent 18%,
+      rgba(255, 255, 255, 0.22) 22%,
+      transparent 30%,
+      transparent 48%,
+      rgba(255, 255, 255, 0.14) 52%,
+      transparent 60%,
+      transparent 72%,
+      rgba(255, 255, 255, 0.18) 76%,
+      transparent 84%);
+  filter: blur(2px);
+  mix-blend-mode: screen;
+  animation: rays-sway 22s ease-in-out infinite alternate;
+  transform-origin: 50% 0%;
+}
+
+@keyframes rays-sway {
+  0%   { transform: translateX(-2%) skewX(-2deg); opacity: 0.65; }
+  50%  { transform: translateX(0%) skewX(0deg); opacity: 0.85; }
+  100% { transform: translateX(2%) skewX(2deg); opacity: 0.7; }
+}
+
+/* ===== חלקיקי פלנקטון (אבק אור) ===== */
+
+.plankton {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.plankton-dot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 50%;
+  filter: blur(0.5px);
+  animation: plankton-drift linear infinite;
+  opacity: 0;
+}
+
+@keyframes plankton-drift {
+  0%   { transform: translate(0, 110vh) scale(0.6); opacity: 0; }
+  10%  { opacity: 0.9; }
+  90%  { opacity: 0.9; }
+  100% { transform: translate(-20vw, -10vh) scale(1); opacity: 0; }
+}
+
+/* ===== זרם בועות רקע (BubbleStream) ===== */
+
+.bubble-stream {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bubble-amb {
+  position: absolute;
+  bottom: -10%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%,
+    rgba(255, 255, 255, 0.85) 0%,
+    rgba(255, 255, 255, 0.35) 20%,
+    rgba(168, 232, 255, 0.18) 55%,
+    rgba(168, 232, 255, 0.05) 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.3);
+  opacity: 0;
+  animation: bubble-rise linear infinite;
+}
+
+@keyframes bubble-rise {
+  0%   { transform: translate(0, 0) scale(0.8); opacity: 0; }
+  10%  { opacity: 0.8; }
+  85%  { opacity: 0.8; }
+  100% { transform: translate(var(--drift, 4vw), -120vh) scale(1); opacity: 0; }
+}
+
+/* ===== אצות מתנדנדות (אופציונלי לסביבת קרקעית) ===== */
+
+.seaweed {
+  position: fixed;
+  bottom: 0;
+  z-index: -1;
+  pointer-events: none;
+  transform-origin: 50% 100%;
+  animation: seaweed-sway 6s ease-in-out infinite alternate;
+}
+
+.seaweed.delay-1 { animation-delay: -2s; animation-duration: 7s; }
+.seaweed.delay-2 { animation-delay: -4s; animation-duration: 5.5s; }
+
+@keyframes seaweed-sway {
+  0%   { transform: rotate(-4deg); }
+  100% { transform: rotate(4deg); }
+}
+
+/* ===== reduced motion ===== */
+
+@media (prefers-reduced-motion: reduce) {
+  .light-rays { animation: none; opacity: 0.55; }
+  .seaweed { animation: none; }
+  .plankton { display: none; }
+  /* משאיר בועות איטיות בלבד — מאט פי 3 ומפחית כמות בקוד */
+  .bubble-amb { animation-duration: 60s !important; }
+}

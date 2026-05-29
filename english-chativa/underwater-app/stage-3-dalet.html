@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#051628">
+  <title>יָם הַדָּגִיגִים הָאֲבוּדִים · אוֹת דָּלֶת</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/stage-3.css">
+  <link rel="stylesheet" href="css/game-shell.css?v=12">
+  <link rel="stylesheet" href="css/fish-deep-quest.css?v=1">
+</head>
+<body>
+
+  <!-- ===== הסצנה האמנותית: ים אפל + להקה + שדה דגיגים ===== -->
+  <div class="fish-deep-scene" id="scene">
+    <div class="light-rays" aria-hidden="true"></div>
+    <div class="school-area" id="schoolArea" aria-label="להקת הדגיגים">
+      <div class="school-orb" aria-hidden="true"></div>
+    </div>
+    <div class="fish-field" id="fishField"></div>
+  </div>
+
+  <img class="noni-fixed" id="noniImg" src="assets/noni-idle.png" alt="נוני">
+  <div class="feedback-bubble" id="feedbackBubble"></div>
+
+  <header class="top-bar">
+    <a href="stage-3-island.html" class="icon-btn" aria-label="חֲזָרָה לְאִי 3">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+    <div class="unit-counter" id="unitCounter">
+      <span class="uc-letter">ד</span>
+      <span id="unitCountDisplay">0/5 דָּגִיגִים</span>
+    </div>
+    <div class="pearl-counter" aria-label="פְּנִינִים">
+      <span class="pearl" aria-hidden="true"></span>
+      <span class="count" id="pearlCount">0</span>
+    </div>
+  </header>
+
+  <div class="deep-tap-to-start" id="tapToStart">
+    <h2>יָם הַדָּגִיגִים הָאֲבוּדִים</h2>
+    <button class="intro-speaker" id="introSpeaker" aria-label="שִׁמְעוּ אֶת הַסִּפּוּר">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>הַקִּישׁוּ לִשְׁמֹעַ</span>
+    </button>
+    <p>הַיָּם אָפֵל. לְהָקַת דָּגִיגִים אָבְדָה אֶת דַּרְכָּהּ בַּסְּעָרָה.</p>
+    <p>רַק הַדָּגִיגִים עִם הָאוֹת <strong>ד</strong> זוֹהֲרִים.</p>
+    <p>עִזְרוּ לִי לֶאֱסֹף אוֹתָם — וְהַיָּם יָאִיר שׁוּב.</p>
+    <button class="start-btn" id="startBtn">בּוֹאוּ נַתְחִיל</button>
+  </div>
+
+  <div class="deep-completion" id="completion">
+    <h2>הִצְלַחְתֶּם! הַלְּהָקָה שְׁלֵמָה</h2>
+    <p>וְהַיָּם זוֹהֵר שׁוּב</p>
+    <a href="stage-3-island.html" class="btn-primary">חֲזָרָה לְאִי 3</a>
+  </div>
+
+  <script src="js/state.js"></script>
+  <script src="js/shared/bkt.js"></script>
+  <script src="js/shared/epa.js"></script>
+  <script src="js/shared/event-logger.js"></script>
+  <script src="js/shared/mastery-check.js"></script>
+  <script src="js/shared/audio.js"></script>
+  <script src="js/shared/noni.js"></script>
+  <script src="js/shared/feedback.js"></script>
+  <script src="js/templates/letter-anims.js?v=2"></script>
+
+  <script>
+  // ============================================================
+  // stage-3-dalet.html · "ים הדגיגים האבודים" (D.15 v2 G)
+  // המשחקון האמנותי הראשון בקבוצת דגים — מבנה משלו, לא משתמש
+  // ב-AvneiGameShell / mechanic-tap-all.
+  //
+  // 12 דגיגים שוחים: 5 זוהרים (ד'), 7 דהויים (מסיחים). הקשה
+  // נכונה → דגיג עף ללהקה במרכז + רקע מאיר 20%. 5/5 → finale
+  // עם letter-anim של "דָּג".
+  // ============================================================
+  const TARGET_LETTER = 'ד';
+  const QUEST_ID = 'dalet-fish';
+  const TOTAL_TARGETS = 5;
+  const DISTRACTORS = ['ש', 'ת', 'מ', 'ר', 'ב', 'ק', 'נ'];
+
+  // mode: 'neutral' (כל הדגיגים זהים, לפני הקשה) · 'glowing' (אחרי הקשה נכונה,
+  // לפני שעף ללהקה). מאלץ את הילד לקרוא את האות במקום להסתמך על צבע.
+  function fishSvg(letter, mode) {
+    const glowing = mode === 'glowing' || mode === true;
+    const bodyColor = glowing ? '#FFA94D' : '#5BA5C9';
+    const tailColor = glowing ? '#FF6B35' : '#3D8AA8';
+    const letterColor = glowing ? '#4A2200' : '#FFFFFF';
+    const stroke = '#FFFFFF';
+    return `<svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="55" cy="40" rx="40" ry="26" fill="${bodyColor}" stroke="${stroke}" stroke-width="2.5"/>
+      <polygon points="95,40 118,18 118,62" fill="${tailColor}" stroke="${stroke}" stroke-width="2.5"/>
+      <circle cx="42" cy="32" r="5" fill="#FFFFFF"/>
+      <circle cx="42" cy="32" r="3" fill="#000000"/>
+      <path d="M68,28 Q74,26 76,32" stroke="${tailColor}" stroke-width="1.8" fill="none"/>
+      <text x="58" y="50" text-anchor="middle"
+            font-family="Rubik, Heebo, sans-serif" font-weight="900" font-size="26"
+            fill="${letterColor}" stroke="${glowing ? 'none' : 'rgba(255,255,255,0.4)'}" stroke-width="0.5"
+            style="direction:rtl;unicode-bidi:isolate;">${letter}</text>
+    </svg>`;
+  }
+
+  const state = {
+    fishEls: [],
+    hits: 0,
+    attempts: 0,
+    locked: false,
+    hintTimer: null,
+    startedAt: 0,
+    collectedInSchool: 0,
+  };
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function buildFish() {
+    const field = document.getElementById('fishField');
+    field.innerHTML = '';
+    state.fishEls = [];
+
+    const distList = shuffle(DISTRACTORS).slice(0, 7);
+    const allLetters = shuffle([
+      ...Array(TOTAL_TARGETS).fill(TARGET_LETTER),
+      ...distList,
+    ]);
+
+    const cols = 4;
+    allLetters.forEach((ltr, idx) => {
+      const row = Math.floor(idx / cols);
+      const col = idx % cols;
+      const isTarget = (ltr === TARGET_LETTER);
+      const fish = document.createElement('button');
+      fish.type = 'button';
+      // 28.5 — כל הדגיגים זהים ויזואלית (neutral). הילדה חייבת לקרוא את האות.
+      // אחרי הקשה נכונה — הדגיג מקבל classes glowing + collected ועף ללהקה.
+      fish.className = 'fish-floater';
+      fish.dataset.letter = ltr;
+      fish.dataset.target = isTarget ? 'true' : 'false';
+      fish.dataset.idx = String(idx);
+      fish.setAttribute('aria-label', 'דגיג עם האות ' + ltr);
+      fish.innerHTML = fishSvg(ltr, 'neutral');
+      // פיזור — נוני בימין, מותירים לו 25% רוחב
+      const xPercent = 8 + (col * 17) + (Math.random() * 4 - 2);
+      const yPercent = 8 + (row * 28) + (Math.random() * 6 - 3);
+      fish.style.left = xPercent + '%';
+      fish.style.top  = yPercent + '%';
+      fish.style.animationDelay = (Math.random() * -4) + 's';
+      fish.addEventListener('click', () => handleTap(fish));
+      field.appendChild(fish);
+      state.fishEls.push(fish);
+    });
+
+    state.startedAt = Date.now();
+    scheduleAutoHint();
+  }
+
+  function scheduleAutoHint() {
+    if (state.hintTimer) clearTimeout(state.hintTimer);
+    state.hintTimer = setTimeout(() => {
+      if (state.locked) return;
+      if (window.AvneiAudio) AvneiAudio.play('dalet-still-dark');
+      if (window.AvneiNoni) AvneiNoni.setState('hint');
+      state.fishEls.forEach(f => {
+        if (f.dataset.target === 'true' && !f.classList.contains('collected')) {
+          f.style.filter = 'drop-shadow(0 0 22px rgba(255, 224, 122, 1))';
+          setTimeout(() => f.style.filter = '', 1800);
+        }
+      });
+    }, 11000);
+  }
+
+  function handleTap(fish) {
+    if (state.locked) return;
+    if (fish.classList.contains('collected')) return;
+    if (state.hintTimer) { clearTimeout(state.hintTimer); state.hintTimer = null; }
+
+    const isCorrect = (fish.dataset.target === 'true');
+    const responseTime = Date.now() - state.startedAt;
+
+    if (window.AvneiEventLogger) {
+      AvneiEventLogger.logActivityResult({
+        activity_type: 'dalet-art-fish',
+        target_letter: TARGET_LETTER,
+        item_id: QUEST_ID + '-fish-' + (state.hits + 1),
+        supportLevel: 1,
+        is_correct: isCorrect,
+        attempts: state.attempts + 1,
+        response_time_ms: isCorrect ? responseTime : null,
+        hint_used: state.attempts >= 1,
+        rama_task_alignment: 1,
+        peima_target: 1,
+      });
+    }
+
+    if (isCorrect) onCorrect(fish);
+    else onWrong(fish);
+  }
+
+  function spawnGlowBurst(x, y) {
+    const burst = document.createElement('div');
+    burst.className = 'glow-burst';
+    burst.style.left = (x - 30) + 'px';
+    burst.style.top  = (y - 30) + 'px';
+    document.body.appendChild(burst);
+    setTimeout(() => burst.remove(), 900);
+  }
+
+  function onCorrect(fish) {
+    state.attempts = 0;
+    state.hits++;
+    const isLast = state.hits >= TOTAL_TARGETS;
+
+    document.getElementById('scene').classList.add('lit-' + state.hits);
+
+    const rect = fish.getBoundingClientRect();
+    spawnGlowBurst(rect.left + rect.width/2, rect.top + rect.height/2);
+
+    // הדגיג נדלק לכתום (mode=glowing) רגע לפני שעף — חיזוק חזותי
+    // לאישור "מצאת!" וקישור לאות הזוהרת בלהקה.
+    fish.innerHTML = fishSvg(fish.dataset.letter, 'glowing');
+    fish.classList.add('collected');
+    setTimeout(() => fish.remove(), 800);
+    setTimeout(() => addToSchool(), 400);
+
+    if (window.AvneiAudio) {
+      if (isLast) AvneiAudio.play('sound-dalet');
+      else        AvneiAudio.play('dalet-found');
+    }
+    if (window.AvneiNoni) {
+      AvneiNoni.setState('cheer');
+      setTimeout(() => AvneiNoni.setState('idle'), 900);
+    }
+
+    document.getElementById('unitCountDisplay').textContent =
+      state.hits + '/' + TOTAL_TARGETS + ' דָּגִיגִים';
+
+    if (isLast) {
+      state.locked = true;
+      if (state.hintTimer) clearTimeout(state.hintTimer);
+      setTimeout(triggerFinale, 1600);
+    } else {
+      scheduleAutoHint();
+    }
+  }
+
+  function addToSchool() {
+    const school = document.getElementById('schoolArea');
+    const collected = document.createElement('div');
+    collected.className = 'collected-fish';
+    collected.innerHTML = fishSvg('ד', true);
+    collected.style.animationDelay = (-state.collectedInSchool * 1.2) + 's';
+    school.appendChild(collected);
+    state.collectedInSchool++;
+  }
+
+  function onWrong(fish) {
+    state.attempts++;
+    fish.classList.add('wrong-jiggle');
+    setTimeout(() => fish.classList.remove('wrong-jiggle'), 600);
+
+    if (state.attempts >= 2) {
+      if (window.AvneiNoni) AvneiNoni.setState('hint');
+      state.fishEls.forEach(f => {
+        if (f.dataset.target === 'true' && !f.classList.contains('collected')) {
+          f.style.filter = 'drop-shadow(0 0 20px rgba(255, 224, 122, 1)) drop-shadow(0 0 40px rgba(255, 169, 141, 0.8))';
+          setTimeout(() => f.style.filter = '', 1500);
+        }
+      });
+      if (window.AvneiAudio) {
+        setTimeout(() => AvneiAudio.play('dalet-still-dark'), 400);
+      }
+    }
+  }
+
+  function triggerFinale() {
+    if (window.AvneiNoni) AvneiNoni.setState('dance');
+    if (window.AvneiLetterAnims) {
+      AvneiLetterAnims.runAnimation(TARGET_LETTER, () => {
+        if (window.AvneiAudio) AvneiAudio.play('dalet-school-done');
+        setTimeout(showCompletion, 2200);
+      });
+    } else {
+      if (window.AvneiAudio) AvneiAudio.play('dalet-school-done');
+      setTimeout(showCompletion, 2600);
+    }
+  }
+
+  function showCompletion() {
+    if (typeof completeStage === 'function') completeStage(3);
+    if (typeof addSouvenir === 'function') addSouvenir('דָּג זוֹהֵר');
+    try {
+      const key = 'island3-quests:completed';
+      const completed = JSON.parse(localStorage.getItem(key) || '[]');
+      if (!completed.includes(QUEST_ID)) {
+        completed.push(QUEST_ID);
+        localStorage.setItem(key, JSON.stringify(completed));
+      }
+    } catch (e) {}
+    document.getElementById('completion').classList.add('show');
+    if (window.AvneiMasteryCheck) {
+      AvneiMasteryCheck.checkAndShowIslandCelebration(null, 3);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('introSpeaker').addEventListener('click', () => {
+      if (window.AvneiAudio) {
+        AvneiAudio.unlock();
+        AvneiAudio.play('intro-dalet-art');
+      }
+    });
+
+    document.getElementById('startBtn').addEventListener('click', () => {
+      if (window.AvneiAudio) {
+        AvneiAudio.unlock();
+        ['dalet-found', 'dalet-school-done', 'dalet-still-dark',
+         'sound-dalet', 'word-dag'].forEach(k => AvneiAudio.preload(k));
+      }
+      document.getElementById('tapToStart').classList.add('hidden');
+      if (window.AvneiNoni) AvneiNoni.ready();
+      buildFish();
+    });
+
+    if (typeof getPearls === 'function') {
+      document.getElementById('pearlCount').textContent = getPearls();
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('reset') === '1') {
+      localStorage.removeItem('underwater-app:v1');
+    }
+  });
+  </script>
+</body>
+</html>

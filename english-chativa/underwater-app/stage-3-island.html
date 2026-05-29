@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>אי 3 · אלמוגי האותיות</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+
+  <style>
+    body {
+      background: linear-gradient(180deg, #B9F0E8 0%, #7FD8D2 60%, #5BC5C0 100%);
+      min-height: 100dvh;
+      overflow-x: hidden;
+    }
+
+    /* ===== Top bar ===== */
+    .top-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      padding: var(--space-m);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 50;
+      pointer-events: none;
+    }
+    .top-bar > * { pointer-events: auto; }
+
+    .icon-btn {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(8px);
+      border: 1.5px solid rgba(255, 255, 255, 0.95);
+      box-shadow: 0 6px 16px rgba(38, 80, 92, 0.15);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-main);
+      text-decoration: none;
+    }
+    .icon-btn:active { transform: scale(0.92); }
+
+    /* ===== Header ===== */
+    .island-header {
+      padding: 80px 16px 24px;
+      text-align: center;
+      animation: fade-down 700ms ease-out;
+    }
+    @keyframes fade-down {
+      from { opacity: 0; transform: translateY(-12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .island-title {
+      font-size: clamp(28px, 6vw, 42px);
+      font-weight: 900;
+      color: var(--text-main);
+      margin: 0 0 6px;
+      text-shadow: 0 2px 8px rgba(255, 255, 255, 0.5);
+    }
+    .island-subtitle {
+      font-size: clamp(15px, 3vw, 19px);
+      color: var(--text-soft);
+      margin: 0;
+      max-width: 50ch;
+      margin-inline: auto;
+      line-height: 1.5;
+    }
+
+    /* ===== Quests groups + grid =====
+       D.15: 22 משחקונים מקובצים פר נושא. כל קבוצה היא section עם
+       כותרת קטנה ו-grid של כרטיסים. layout responsive זהה ל-D.14.
+       ============================================================ */
+    .quests-container {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 16px 16px 40px;
+    }
+    .quest-group {
+      margin-bottom: clamp(20px, 4vw, 32px);
+    }
+    .quest-group__header {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: clamp(8px, 2vw, 14px);
+      padding: 0 4px;
+    }
+    .quest-group__title {
+      font-size: clamp(16px, 3.4vw, 20px);
+      font-weight: 800;
+      color: var(--text-main);
+      margin: 0;
+      letter-spacing: 0.01em;
+    }
+    .quest-group__count {
+      font-size: clamp(12px, 2.4vw, 14px);
+      color: var(--text-soft);
+      font-weight: 600;
+    }
+    .quest-group__grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: clamp(14px, 3vw, 22px);
+    }
+
+    /* ===== Quest card ===== */
+    .quest-card {
+      position: relative;
+      aspect-ratio: 3 / 4;
+      border-radius: 24px;
+      background: linear-gradient(180deg,
+                  rgba(255, 255, 255, 0.92) 0%,
+                  rgba(255, 244, 220, 0.88) 100%);
+      box-shadow:
+        0 14px 28px rgba(38, 80, 92, 0.18),
+        inset 0 2px 8px rgba(255, 255, 255, 0.95);
+      padding: 16px 12px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      text-align: center;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 280ms cubic-bezier(.34,1.56,.64,1),
+                  box-shadow 280ms ease;
+      cursor: pointer;
+      opacity: 0;
+      animation: card-rise 700ms cubic-bezier(.34,1.56,.64,1) forwards;
+      animation-delay: var(--card-delay, 200ms);
+    }
+
+    @keyframes card-rise {
+      from { opacity: 0; transform: translateY(20px) scale(0.94); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .quest-card:active { transform: scale(0.96); }
+
+    /* Number badge — top-right corner */
+    .quest-number {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(38, 80, 92, 0.12);
+      color: var(--text-soft);
+      font-size: 14px;
+      font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Letter circle — the star of the card */
+    .quest-letter {
+      width: clamp(72px, 16vw, 100px);
+      height: clamp(72px, 16vw, 100px);
+      border-radius: 50%;
+      background: radial-gradient(circle at 32% 28%,
+                  #FFFFFF 0%,
+                  #FFE7A8 30%,
+                  var(--coral, #FFA98D) 95%);
+      box-shadow:
+        0 10px 22px rgba(255, 169, 141, 0.45),
+        inset 0 2px 8px rgba(255, 255, 255, 0.7);
+      display: flex; align-items: center; justify-content: center;
+      font-size: clamp(40px, 9vw, 56px);
+      font-weight: 900;
+      color: #FFFFFF;
+      text-shadow: 0 2px 6px rgba(226, 127, 102, 0.45);
+      margin-top: 6px;
+      animation: letter-bob 4s ease-in-out infinite;
+    }
+    @keyframes letter-bob {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-4px); }
+    }
+
+    .quest-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: center;
+    }
+    .quest-name {
+      font-size: clamp(15px, 3vw, 18px);
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.25;
+    }
+    .quest-tagline {
+      font-size: clamp(12px, 2.4vw, 14px);
+      color: var(--text-soft);
+      line-height: 1.3;
+      min-height: 1.3em;
+    }
+
+    /* ===== State: available (current) ===== */
+    .quest-card.state-current {
+      animation: card-rise 700ms cubic-bezier(.34,1.56,.64,1) forwards,
+                 current-glow 2.6s ease-in-out infinite 1s;
+      animation-delay: var(--card-delay, 200ms), 1s;
+    }
+    @keyframes current-glow {
+      0%, 100% {
+        box-shadow:
+          0 14px 28px rgba(38, 80, 92, 0.18),
+          inset 0 2px 8px rgba(255, 255, 255, 0.95),
+          0 0 0 0 rgba(255, 231, 168, 0.6);
+      }
+      50% {
+        box-shadow:
+          0 14px 28px rgba(38, 80, 92, 0.22),
+          inset 0 2px 8px rgba(255, 255, 255, 0.95),
+          0 0 0 14px rgba(255, 231, 168, 0);
+      }
+    }
+
+    /* ===== State: completed ===== */
+    .quest-card.state-completed {
+      background: linear-gradient(180deg,
+                  rgba(220, 246, 236, 0.95) 0%,
+                  rgba(184, 242, 207, 0.88) 100%);
+    }
+    .quest-card.state-completed .quest-letter {
+      background: radial-gradient(circle at 32% 28%,
+                  #FFFFFF 0%,
+                  #DCF6EC 30%,
+                  var(--water-secondary, #73D9D1) 95%);
+      box-shadow: 0 8px 18px rgba(115, 217, 209, 0.4),
+                  inset 0 2px 8px rgba(255, 255, 255, 0.7);
+    }
+    .quest-card.state-completed .completed-check {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--water-secondary, #73D9D1);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 10px rgba(115, 217, 209, 0.5);
+    }
+    .quest-card.state-completed .completed-check svg {
+      width: 16px; height: 16px;
+    }
+
+    /* ===== State: locked ===== */
+    .quest-card.state-locked {
+      opacity: 0.62;
+      filter: blur(0.4px);
+      cursor: default;
+      pointer-events: none;
+    }
+    .quest-card.state-locked .quest-letter {
+      background: radial-gradient(circle at 32% 28%,
+                  rgba(255, 255, 255, 0.94) 0%,
+                  rgba(200, 240, 232, 0.85) 35%,
+                  rgba(155, 220, 210, 0.7) 95%);
+      color: rgba(60, 90, 95, 0.55);
+      text-shadow: none;
+      box-shadow: 0 6px 14px rgba(38, 80, 92, 0.12);
+    }
+    .quest-card.state-locked .lock-icon {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.85);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 3px 8px rgba(38, 80, 92, 0.12);
+    }
+    .quest-card.state-locked .lock-icon svg {
+      width: 14px; height: 14px;
+      color: var(--text-soft);
+    }
+
+    /* ===== State: coming-soon (not yet built) ===== */
+    .quest-card.state-coming-soon {
+      opacity: 0.5;
+      filter: blur(0.6px);
+      cursor: default;
+      pointer-events: none;
+      background: linear-gradient(180deg,
+                  rgba(255, 255, 255, 0.78) 0%,
+                  rgba(220, 240, 240, 0.7) 100%);
+    }
+    .quest-card.state-coming-soon .quest-letter {
+      background: radial-gradient(circle at 32% 28%,
+                  rgba(255, 255, 255, 0.85) 0%,
+                  rgba(190, 225, 220, 0.7) 100%);
+      color: rgba(80, 110, 115, 0.4);
+      text-shadow: none;
+      animation: none;
+    }
+    .quest-card.state-coming-soon .coming-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(255, 255, 255, 0.85);
+      padding: 3px 9px;
+      border-radius: 14px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-soft);
+      box-shadow: 0 3px 8px rgba(38, 80, 92, 0.1);
+    }
+    .quest-card.state-coming-soon .quest-tagline {
+      opacity: 0;
+    }
+
+    /* ===== Progress bar at the bottom ===== */
+    .progress-bar {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 0 16px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .progress-track {
+      width: 100%;
+      max-width: 320px;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 999px;
+      overflow: hidden;
+      box-shadow: inset 0 1px 3px rgba(38, 80, 92, 0.15);
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #FFE7A8, #FFA98D);
+      border-radius: 999px;
+      transition: width 800ms cubic-bezier(.34,1.56,.64,1);
+      box-shadow: 0 0 12px rgba(255, 169, 141, 0.55);
+    }
+    .progress-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-soft);
+    }
+
+    /* ===== Noni overlay =====
+       דסקטופ: bottom-left fixed.
+       מובייל: מוסתר — אין מקום שלא יחסום או יסתיר כותרת/כרטיסים. */
+    .island-noni {
+      display: none;
+    }
+    @keyframes noni-float {
+      0%, 100% { transform: translateY(0) rotate(-3deg); }
+      50%      { transform: translateY(-8px) rotate(3deg); }
+    }
+
+    /* תחתית הדף — רווח גדול מתחת לכרטיסים כדי שלא ייחתכו */
+    .quests-container {
+      padding-bottom: 60px;
+    }
+
+    /* דסקטופ רחב — נוני מופיע בפינה התחתונה השמאלית, יש שם מקום */
+    @media (min-width: 820px) {
+      .island-noni {
+        display: block;
+        position: fixed;
+        bottom: clamp(8px, 2vh, 20px);
+        left: clamp(8px, 3vw, 20px);
+        width: clamp(100px, 12vw, 140px);
+        z-index: 8;
+        pointer-events: none;
+        filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.22));
+        animation: noni-float 4s ease-in-out infinite;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="top-bar">
+    <a href="map.html" class="icon-btn" aria-label="חזרה למפה">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+    <div class="pearl-counter" aria-label="פנינים">
+      <span class="pearl" aria-hidden="true"></span>
+      <span class="count" id="pearlCount">0</span>
+    </div>
+  </header>
+
+  <div class="island-header">
+    <h1 class="island-title">אִי 3 · אַלְמוֹגֵי הָאוֹתִיּוֹת</h1>
+    <p class="island-subtitle">22 הַרְפַּתְקָאוֹת, 22 אוֹתִיּוֹת. תִּפְתְּרוּ אַחַת בְּכֹל פַּעַם — וְכֹל הַרְפַּתְקָה תִּתְבַּהֵר.</p>
+  </div>
+
+  <main class="quests-container" id="questsContainer">
+    <!-- 5 groups × cards inserted by JS -->
+  </main>
+
+  <div class="progress-bar">
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+    </div>
+    <div class="progress-label" id="progressLabel">0/5 הרפתקאות</div>
+  </div>
+
+  <img class="island-noni" src="assets/noni-hero-transparent.png" alt="נוני"
+       onerror="this.src='assets/noni-idle.png'">
+
+  <script src="js/state.js"></script>
+  <script>
+  // ============================================================
+  // stage-3-island.html — מסך פתיחה של אי 3
+  //
+  // החלטה ארכיטקטונית 23.5.2026: משחקון פר אות.
+  // 22 משחקונים מקובצים פר נושא (D.15, 27.5.2026):
+  //   ⭐ אמנותיים  (5) — מ/ב/ר/ק/ת — סדר פדגוגי
+  //   🫧 בועות בים  (4) — ש/ל/נ/א
+  //   ⭐ כוכבי הים  (4) — ז/י/ו/ה (טרם נבנו)
+  //   🐚 צדפי החוף  (4) — ס/ע/צ/ט (טרם נבנו)
+  //   🐟 להקת הדגים (5) — ד/ג/ח/פ/כ (טרם נבנו)
+  //
+  // ראה: project-avnei-yesod-pedagogy-one-game-per-letter
+  //      project-avnei-yesod-d14-template-theme-decision
+  // ============================================================
+
+  // 5 קבוצות. הסדר בתוך כל קבוצה הוא סדר ההצגה והנעילה ההדרגתית.
+  const GROUPS = [
+    {
+      key: 'artisanal',
+      title: 'הַרְפַּתְקָאוֹת אַמְנוּתִיּוֹת',
+      quests: [
+        { id: 'shell',  letter: 'מ', name: 'הַצֶּדֶף הַקָּסוּם',  tagline: 'חֲמִשָּׁה מַפְתְּחוֹת לַצֶּדֶף', href: 'stage-3-shell.html',      souvenir: 'אלמוג אות זוהר',   built: true },
+        { id: 'house',  letter: 'ב', name: 'הַבַּיִת שֶׁל נוֹנִי', tagline: 'חָמֵשׁ לִבְנֵי אַלְמוֹג',      href: 'stage-3-house.html',      souvenir: 'בית-אלמוג ב׳',     built: true },
+        { id: 'trail',  letter: 'ר', name: 'שְׁבִיל הַחֲזָרָה',   tagline: 'אַבְנֵי שְׁבִיל זוֹהֲרוֹת',  href: 'stage-3-trail-resh.html', souvenir: 'אבן שביל זוהרת',  built: true },
+        { id: 'rescue', letter: 'ק', name: 'הַצָּלַת הַדָּגִים',  tagline: 'אֲצוֹת, דָּגִיגִים, חוֹפֶשׁ', href: 'stage-3-rescue.html',     souvenir: null,                built: true },
+        { id: 'storm',  letter: 'ת', name: 'הַסְּעָרָה וְהָאוֹר', tagline: 'הַיָּם זוֹהֵר שׁוּב',         href: 'stage-3-storm.html',      souvenir: 'אלמוג אור',         built: true },
+      ],
+    },
+    {
+      key: 'bubbles',
+      title: 'בּוּעוֹת בַּיָּם',
+      quests: [
+        // shin הוא ה-canonical demo של D.14 (stage-3-template-demo.html).
+        // ה-quest_id ב-shin.json = "shin-demo" — לכן כאן id תואם.
+        // הרוטציה: ש=tap-all · ל=pick · נ=memory-pair · א=sort-by-letter
+        { id: 'shin-demo',     letter: 'ש', name: 'צֵיד הַבּוּעוֹת · ש',   tagline: 'הַקִּישׁוּ עַל בּוּעוֹת ש',     href: 'stage-3-template-demo.html', souvenir: 'בּוּעָה זוֹהֶרֶת', built: true },
+        { id: 'lamed-bubbles', letter: 'ל', name: 'בְּחִירַת הַבּוּעוֹת · ל', tagline: 'בִּחֲרוּ אֶת הַבּוּעָה עִם ל', href: 'stage-3-lamed.html',         souvenir: 'בּוּעַת לֵב',     built: true },
+        { id: 'nun-bubbles',   letter: 'נ', name: 'זִכָּרוֹן הַבּוּעוֹת · נ', tagline: 'מִצְאוּ זוּגוֹת עִם נ',         href: 'stage-3-nun.html',           souvenir: 'בּוּעַת נֵר',     built: true },
+        { id: 'alef-bubbles',  letter: 'א', name: 'מִיּוּן הַבּוּעוֹת · א',   tagline: 'גָּרְרוּ בּוּעוֹת א לָרֶשֶׁת',  href: 'stage-3-alef.html',          souvenir: 'בּוּעַת אַרְיֵה', built: true },
+      ],
+    },
+    {
+      key: 'stars',
+      title: 'כּוֹכְבֵי הַיָּם',
+      quests: [
+        // הרוטציה: ז=tap-all · י=pick · ו=memory-pair · ה=sort-by-letter (זהה לבועות)
+        { id: 'zayin-stars', letter: 'ז', name: 'צֵיד הַכּוֹכָבִים · ז',     tagline: 'הַקִּישׁוּ עַל כּוֹכָבֵי ז',     href: 'stage-3-zayin.html', souvenir: 'כּוֹכָב זוֹהֵר',  built: true },
+        { id: 'yud-stars',   letter: 'י', name: 'בְּחִירַת הַכּוֹכָבִים · י', tagline: 'בִּחֲרוּ אֶת הַכּוֹכָב עִם י', href: 'stage-3-yud.html',   souvenir: 'כּוֹכָב יוֹם',     built: true },
+        { id: 'vav-stars',   letter: 'ו', name: 'זִכָּרוֹן הַכּוֹכָבִים · ו', tagline: 'מִצְאוּ זוּגוֹת עִם ו',         href: 'stage-3-vav.html',   souvenir: 'כּוֹכָב וֶרֶד',    built: true },
+        { id: 'hey-stars',   letter: 'ה', name: 'מִיּוּן הַכּוֹכָבִים · ה',   tagline: 'גָּרְרוּ כּוֹכָבִים עִם ה לָרֶשֶׁת', href: 'stage-3-hey.html',   souvenir: 'כּוֹכָב הַר',     built: true },
+      ],
+    },
+    {
+      key: 'shells',
+      title: 'צִדְפֵי הַחוֹף',
+      quests: [
+        // הרוטציה: ס=tap-all · ע=pick · צ=memory-pair · ט=sort-by-letter
+        { id: 'samekh-shells', letter: 'ס', name: 'צֵיד הַצְּדָפִים · ס',     tagline: 'הַקִּישׁוּ עַל צִדְפֵי ס',      href: 'stage-3-samekh.html', souvenir: 'צֶדֶף סָבָא',  built: true },
+        { id: 'ayin-shells',   letter: 'ע', name: 'בְּחִירַת הַצְּדָפִים · ע', tagline: 'בִּחֲרוּ אֶת הַצֶּדֶף עִם ע', href: 'stage-3-ayin.html',   souvenir: 'צֶדֶף עֵץ',    built: true },
+        { id: 'tzadi-shells',  letter: 'צ', name: 'זִכָּרוֹן הַצְּדָפִים · צ', tagline: 'מִצְאוּ זוּגוֹת עִם צ',         href: 'stage-3-tzadi.html',  souvenir: 'צֶדֶף צִפּוֹר', built: true },
+        { id: 'tet-shells',    letter: 'ט', name: 'מִיּוּן הַצְּדָפִים · ט',   tagline: 'גָּרְרוּ צְדָפִים עִם ט לָרֶשֶׁת', href: 'stage-3-tet.html',    souvenir: 'צֶדֶף טַוָּס', built: true },
+      ],
+    },
+    {
+      key: 'fish',
+      title: 'לְהָקַת הַדָּגִים',
+      quests: [
+        // הרוטציה: ד=tap-all · ג=pick · ח=memory-pair · פ=sort-by-letter · כ=tap-all (חזרה)
+        { id: 'dalet-fish', letter: 'ד', name: 'יָם הַדָּגִיגִים הָאֲבוּדִים', tagline: 'הצילו את הלהקה האבודה', href: 'stage-3-dalet.html', souvenir: 'דָּג זוֹהֵר',    built: true },
+        { id: 'gimel-fish', letter: 'ג', name: 'בְּחִירַת הַדָּגִים · ג', tagline: 'בִּחֲרוּ אֶת הַדָּג עִם ג', href: 'stage-3-gimel.html', souvenir: 'דָּג גָּמָל',   built: true },
+        { id: 'het-fish',   letter: 'ח', name: 'זִכָּרוֹן הַדָּגִים · ח', tagline: 'מִצְאוּ זוּגוֹת עִם ח',       href: 'stage-3-het.html',   souvenir: 'דָּג חָתוּל',   built: true },
+        { id: 'pey-fish',   letter: 'פ', name: 'מִיּוּן הַדָּגִים · פ',   tagline: 'גָּרְרוּ דָּגִים עִם פ לָרֶשֶׁת', href: 'stage-3-pey.html',  souvenir: 'דָּג פִּיל',    built: true },
+        { id: 'kaf-fish',   letter: 'כ', name: 'צֵיד הַדָּגִים · כ',     tagline: 'הַקִּישׁוּ עַל דָּגֵי כ',     href: 'stage-3-kaf.html',   souvenir: 'דָּג כֶּלֶב',    built: true },
+      ],
+    },
+  ];
+
+  // רשימה שטוחה לחישובי total/completed/gating
+  const QUESTS = GROUPS.flatMap(g => g.quests);
+  const TOTAL_QUESTS = QUESTS.length; // 22
+
+  const QUESTS_STORAGE_KEY = 'island3-quests:completed';
+
+  function getCompletedQuests() {
+    try {
+      return JSON.parse(localStorage.getItem(QUESTS_STORAGE_KEY) || '[]');
+    } catch {
+      return [];
+    }
+  }
+
+  function isQuestCompleted(quest) {
+    if (!quest.built) return false;
+    const completed = getCompletedQuests();
+    if (completed.includes(quest.id)) return true;
+    // fallback — souvenir cache (works for shell which doesn't track separately yet)
+    if (quest.souvenir && typeof hasSouvenir === 'function' && hasSouvenir(quest.souvenir)) {
+      return true;
+    }
+    return false;
+  }
+
+  function getQuestState(quest, prevQuestCompleted) {
+    if (!quest.built) return 'coming-soon';
+    if (isQuestCompleted(quest)) return 'completed';
+    if (prevQuestCompleted) return 'current';
+    return 'locked';
+  }
+
+  function buildQuestCard(quest, globalIndex, state) {
+    const isClickable = (state === 'current' || state === 'completed') && quest.href;
+    const el = document.createElement(isClickable ? 'a' : 'div');
+    el.className = `quest-card state-${state}`;
+    if (isClickable) el.href = quest.href;
+    el.setAttribute('aria-label', `${quest.name} - אות ${quest.letter}`);
+    // animation-delay מחושב פר כרטיס במקום nth-child קשיח
+    const delayMs = 200 + (globalIndex * 60);
+    el.style.setProperty('--card-delay', delayMs + 'ms');
+
+    let topRightHtml = `<div class="quest-number">${globalIndex + 1}</div>`;
+    let topLeftHtml = '';
+    if (state === 'completed') {
+      topLeftHtml = `
+        <div class="completed-check" aria-label="הושלם">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M5 13l4 4 10-10" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>`;
+    } else if (state === 'locked') {
+      topLeftHtml = `
+        <div class="lock-icon" aria-label="נעול">
+          <svg viewBox="0 0 24 24" fill="none">
+            <rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/>
+            <path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="2.2" fill="none"/>
+          </svg>
+        </div>`;
+    } else if (state === 'coming-soon') {
+      topLeftHtml = `<div class="coming-badge">בְּקָרוֹב</div>`;
+    }
+
+    el.innerHTML = `
+      ${topRightHtml}
+      ${topLeftHtml}
+      <div class="quest-letter" aria-hidden="true">${quest.letter}</div>
+      <div class="quest-info">
+        <div class="quest-name">${quest.name}</div>
+        <div class="quest-tagline">${quest.tagline || ''}</div>
+      </div>
+    `;
+    return el;
+  }
+
+  function renderQuests() {
+    const container = document.getElementById('questsContainer');
+    container.innerHTML = '';
+
+    let prevCompleted = true; // נעילה הדרגתית — הקבוצה הראשונה נפתחת מההתחלה
+    let completedCount = 0;
+    let globalIndex = 0;
+
+    GROUPS.forEach(group => {
+      const section = document.createElement('section');
+      section.className = `quest-group quest-group--${group.key}`;
+
+      const header = document.createElement('header');
+      header.className = 'quest-group__header';
+      header.innerHTML = `
+        <h2 class="quest-group__title">${group.title}</h2>
+        <span class="quest-group__count">${group.quests.length} הַרְפַּתְקָאוֹת</span>
+      `;
+      section.appendChild(header);
+
+      const grid = document.createElement('div');
+      grid.className = 'quest-group__grid';
+
+      group.quests.forEach(quest => {
+        const state = getQuestState(quest, prevCompleted);
+        if (state === 'completed') completedCount++;
+        grid.appendChild(buildQuestCard(quest, globalIndex, state));
+        prevCompleted = (state === 'completed');
+        globalIndex++;
+      });
+
+      section.appendChild(grid);
+      container.appendChild(section);
+    });
+
+    // Progress bar — 22 הרפתקאות
+    const pct = Math.round((completedCount / TOTAL_QUESTS) * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent =
+      completedCount + '/' + TOTAL_QUESTS + ' הַרְפַּתְקָאוֹת';
+  }
+
+  // Pearl counter (state.js renders automatically on DOMContentLoaded,
+  // but our script may run after — call it explicitly to be safe)
+  function updatePearls() {
+    if (typeof getPearls === 'function') {
+      document.getElementById('pearlCount').textContent = getPearls();
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    renderQuests();
+    updatePearls();
+  });
+
+  // Dev shortcut: ?reset=1 wipes all progress
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('reset') === '1') {
+    localStorage.removeItem('underwater-app:v1');
+    localStorage.removeItem(QUESTS_STORAGE_KEY);
+    console.log('All progress reset.');
+  }
+  </script>
+</body>
+</html>

@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ייצוא נתוני פיילוט · אבני יסוד</title>
+<style>
+  :root {
+    --primary: #2c7a7b;
+    --primary-light: #4fd1c5;
+    --text: #1a2332;
+    --muted: #4a5568;
+    --line: #e2e8f0;
+    --bg: #f7fafc;
+    --ok: #38a169;
+    --warn: #c05621;
+    --err: #c53030;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Heebo', 'Segoe UI', Arial, sans-serif;
+    direction: rtl;
+  }
+
+  /* ===== PIN gate (זהה ל-teacher-rama.html — אותו hash/sessionStorage key) ===== */
+  .gate-backdrop {
+    position: fixed; inset: 0; z-index: 9500;
+    background: linear-gradient(135deg, #2c7a7b 0%, #4fd1c5 100%);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .gate-card {
+    background: white; border-radius: 18px;
+    max-width: 380px; width: 100%;
+    padding: 32px 28px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  }
+  .gate-card .lock { font-size: 48px; margin-bottom: 12px; }
+  .gate-card h2 { font-size: 22px; margin-bottom: 8px; color: var(--text); }
+  .gate-card .gate-sub { color: var(--muted); font-size: 14px; margin-bottom: 22px; }
+  .gate-card input[type=tel] {
+    font-family: inherit; font-size: 24px;
+    text-align: center; letter-spacing: 8px;
+    padding: 12px 16px; width: 200px;
+    border: 2px solid #cbd5e0; border-radius: 10px;
+    direction: ltr;
+  }
+  .gate-card input[type=tel]:focus { outline: none; border-color: var(--primary); }
+  .gate-card button {
+    display: block; margin: 14px auto 0;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white; border: 0;
+    padding: 12px 32px; border-radius: 10px;
+    font-family: inherit; font-size: 15px; font-weight: 700;
+    cursor: pointer;
+  }
+  .gate-card .err { color: var(--err); margin-top: 10px; font-size: 13px; min-height: 18px; }
+  .gate-card .hint { margin-top: 18px; color: #718096; font-size: 12px; }
+
+  /* ===== Main layout ===== */
+  .container { max-width: 1100px; margin: 0 auto; padding: 22px 18px 80px; }
+  header.top {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white;
+    padding: 22px 26px;
+    border-radius: 14px;
+    margin-bottom: 22px;
+    box-shadow: 0 6px 20px rgba(44, 122, 123, 0.18);
+  }
+  header.top h1 { margin: 0 0 4px; font-size: 24px; }
+  header.top .sub { font-size: 14px; opacity: 0.95; }
+  .top-actions { float: left; }
+  .top-actions a, .top-actions button {
+    background: rgba(255,255,255,0.15); color: white;
+    border: 0; padding: 8px 14px; border-radius: 8px;
+    font-family: inherit; font-size: 14px; text-decoration: none;
+    cursor: pointer; margin-left: 6px;
+  }
+  .top-actions a:hover, .top-actions button:hover { background: rgba(255,255,255,0.25); }
+
+  .card {
+    background: white; border-radius: 12px;
+    padding: 18px 20px; margin-bottom: 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .card h2 {
+    margin: 0 0 14px; font-size: 16px; color: var(--text);
+    padding-bottom: 8px; border-bottom: 1px solid var(--line);
+  }
+
+  /* ===== Filters ===== */
+  .filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+  .filter-group label {
+    display: block; font-size: 12px; color: var(--muted);
+    margin-bottom: 4px; font-weight: 600;
+  }
+  .filter-group select, .filter-group input[type=date] {
+    width: 100%; padding: 8px 10px;
+    border: 1px solid #cbd5e0; border-radius: 8px;
+    font-family: inherit; font-size: 14px;
+    background: white; color: var(--text);
+  }
+  .filter-group .checks { display: flex; gap: 12px; padding-top: 6px; font-size: 14px; }
+  .filter-group .checks label { display: flex; align-items: center; gap: 4px; margin: 0; font-size: 14px; color: var(--text); font-weight: 500; }
+
+  /* ===== Summary ===== */
+  .summary-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+  }
+  .summary-tile {
+    background: #f0f9f9; border: 1px solid #c6e9e8;
+    padding: 14px 16px; border-radius: 10px;
+  }
+  .summary-tile .label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .summary-tile .value { font-size: 22px; font-weight: 800; color: var(--primary); }
+  .summary-tile .sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* ===== Table preview ===== */
+  .table-wrap { overflow-x: auto; }
+  table.preview {
+    width: 100%; border-collapse: collapse; font-size: 12px;
+    min-width: 900px;
+  }
+  table.preview th, table.preview td {
+    text-align: right; padding: 6px 8px;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  table.preview th {
+    background: #f0f9f9; color: var(--muted);
+    font-weight: 700; font-size: 11px;
+    border-bottom: 2px solid #b2e1de;
+  }
+  table.preview td.num { font-family: 'Menlo', 'Consolas', monospace; }
+  table.preview td.ok-yes { color: var(--ok); font-weight: 700; }
+  table.preview td.ok-no  { color: var(--err); font-weight: 700; }
+  .empty-state {
+    padding: 30px; text-align: center; color: var(--muted);
+    font-size: 14px;
+  }
+
+  /* ===== Action buttons ===== */
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white; border: 0;
+    padding: 12px 22px; border-radius: 10px;
+    font-family: inherit; font-size: 15px; font-weight: 700;
+    cursor: pointer; min-height: 44px;
+    transition: transform 0.1s;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .btn.secondary {
+    background: white; color: var(--primary);
+    border: 2px solid var(--primary);
+  }
+  .toast {
+    position: fixed; bottom: 24px; right: 50%;
+    transform: translateX(50%) translateY(20px);
+    background: var(--text); color: white;
+    padding: 10px 18px; border-radius: 10px;
+    font-size: 14px;
+    opacity: 0; pointer-events: none;
+    transition: all 0.25s;
+    z-index: 10000;
+  }
+  .toast.show { opacity: 1; transform: translateX(50%) translateY(0); }
+
+  @media (max-width: 640px) {
+    .container { padding: 14px 10px 60px; }
+    header.top { padding: 16px 18px; }
+    header.top h1 { font-size: 19px; }
+    .actions { flex-direction: column; }
+    .btn { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ PIN GATE ============ -->
+<div class="gate-backdrop" id="pinGate">
+  <div class="gate-card">
+    <div class="lock">🔒</div>
+    <h2>ייצוא נתוני פיילוט</h2>
+    <p class="gate-sub">המסך מציג נתוני אירועים גולמיים. נא הזיני PIN.</p>
+    <form id="pinForm" autocomplete="off">
+      <input type="tel" id="pinInput" inputmode="numeric" maxlength="4" pattern="[0-9]*" placeholder="••••" required>
+      <div class="err" id="pinErr"></div>
+      <button type="submit">כניסה</button>
+    </form>
+    <div class="hint">PIN נשמר רק עד סגירת הלשונית הזו</div>
+  </div>
+</div>
+
+<!-- ============ MAIN CONTENT (hidden until PIN ok) ============ -->
+<div class="container" id="mainContent" style="display:none;">
+
+<header class="top">
+  <div class="top-actions">
+    <a href="teacher-rama.html">← דשבורד מורה</a>
+    <button id="exitBtn">יציאה</button>
+  </div>
+  <h1>ייצוא נתוני פיילוט · אבני יסוד</h1>
+  <div class="sub">אירועי תרגול גולמיים מ-localStorage · ייצוא ל-CSV לניתוח חיצוני</div>
+</header>
+
+<!-- ===== Filters ===== -->
+<div class="card">
+  <h2>סינון</h2>
+  <div class="filters">
+    <div class="filter-group">
+      <label for="fStudent">תלמידה</label>
+      <select id="fStudent"><option value="">כל הילדות</option></select>
+    </div>
+    <div class="filter-group">
+      <label for="fFrom">מתאריך</label>
+      <input type="date" id="fFrom">
+    </div>
+    <div class="filter-group">
+      <label for="fTo">עד תאריך</label>
+      <input type="date" id="fTo">
+    </div>
+    <div class="filter-group">
+      <label for="fPeima">פעימה</label>
+      <select id="fPeima">
+        <option value="">כל הפעימות</option>
+        <option value="1">פעימה 1 (ספט-אוק)</option>
+        <option value="2">פעימה 2 (ינו-פבר)</option>
+        <option value="3">פעימה 3 (מאי-יוני)</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="fRamaTask">משימת ראמ"ה</label>
+      <select id="fRamaTask">
+        <option value="">כל המשימות</option>
+        <option value="1">1 · קריאת שמות אותיות</option>
+        <option value="2">2 · מודעות פונולוגית</option>
+        <option value="3">3 · הבנת טקסט מושמע</option>
+        <option value="4">4 · מודעות לשונית</option>
+        <option value="5">5 · קריאת צירופים</option>
+        <option value="6">6 · קריאת מילים מוכרות</option>
+        <option value="7">7 · קריאת מילים לא-מוכרות</option>
+        <option value="8">8 · קריאת סיפור</option>
+        <option value="9">9 · הכתבה</option>
+        <option value="10">10 · הבנת הנקרא</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>סטטוס</label>
+      <div class="checks">
+        <label><input type="checkbox" id="fCorrect" checked> נכון</label>
+        <label><input type="checkbox" id="fWrong" checked> לא נכון</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Summary ===== -->
+<div class="card">
+  <h2>סיכום</h2>
+  <div class="summary-grid" id="summaryGrid">
+    <div class="summary-tile">
+      <div class="label">אירועים נטענו</div>
+      <div class="value" id="sumCount">—</div>
+      <div class="sub" id="sumStudents">—</div>
+    </div>
+    <div class="summary-tile">
+      <div class="label">טווח תאריכים</div>
+      <div class="value" id="sumRange" style="font-size:14px; line-height:1.4; padding-top:4px;">—</div>
+    </div>
+    <div class="summary-tile">
+      <div class="label">דיוק</div>
+      <div class="value" id="sumAccuracy">—</div>
+      <div class="sub" id="sumCorrectBreak">—</div>
+    </div>
+    <div class="summary-tile">
+      <div class="label">זמן תגובה חציוני</div>
+      <div class="value" id="sumMedianMs">—</div>
+      <div class="sub">בלי תשובות שגויות</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Table preview ===== -->
+<div class="card">
+  <h2>תצוגה מקדימה — 10 שורות אחרונות</h2>
+  <div class="table-wrap" id="tablePreview">
+    <div class="empty-state">טוען…</div>
+  </div>
+</div>
+
+<!-- ===== Export actions ===== -->
+<div class="card">
+  <h2>ייצוא</h2>
+  <div class="actions">
+    <button class="btn" id="btnDownloadCsv">📥 הורד CSV</button>
+    <button class="btn secondary" id="btnCopyCsv">📋 העתק ל-clipboard</button>
+  </div>
+  <div style="font-size:12px; color:var(--muted); margin-top:10px;">
+    CSV עם BOM — נפתח ב-Excel עם עברית קריאה. שמות עמודות באנגלית לתאימות עם Sheets.
+    <br>
+    <!-- E.18B אינו בסקופ. ראה bootstrap. -->
+    <!-- TODO: E.18B — Apps Script POST ל-Google Sheet -->
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+</div><!-- /mainContent -->
+
+<!-- ============ Scripts ============ -->
+<script src="js/state.js"></script>
+
+<script>
+// ============================================================
+// E.18 — data-export.html
+// PIN gate + filters + summary + CSV export (UTF-8 + BOM).
+// ============================================================
+
+// ===== PIN gate =====
+// אותו מנגנון של teacher-rama.html — אותו PIN, אותו sessionStorage key.
+// השער הוא "UX gate" למניעת קריאה בטעות ע"י תלמידה. רמת אבטחה ב-MVP בלבד —
+// PIN חשוף בקוד. ב-post-pilot → Apps Script + token חתום.
+const TEACHER_PIN = '4521';
+const SESSION_AUTH_KEY = 'teacher_authed';
+
+(function initPinGate() {
+  const gate = document.getElementById('pinGate');
+  const main = document.getElementById('mainContent');
+  const form = document.getElementById('pinForm');
+  const input = document.getElementById('pinInput');
+  const err = document.getElementById('pinErr');
+
+  if (sessionStorage.getItem(SESSION_AUTH_KEY) === '1') {
+    gate.style.display = 'none';
+    main.style.display = 'block';
+    boot();
+    return;
+  }
+
+  setTimeout(() => input.focus(), 100);
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (input.value === TEACHER_PIN) {
+      sessionStorage.setItem(SESSION_AUTH_KEY, '1');
+      gate.style.display = 'none';
+      main.style.display = 'block';
+      boot();
+    } else {
+      err.textContent = 'PIN שגוי. נסי שוב.';
+      input.value = '';
+      input.focus();
+    }
+  });
+})();
+
+document.getElementById('exitBtn').addEventListener('click', () => {
+  sessionStorage.removeItem(SESSION_AUTH_KEY);
+  location.href = 'map.html';
+});
+
+// ============================================================
+// Data + filters + render
+// ============================================================
+
+// סכמת הייצוא — 20 השדות שאירוע מכיל אחרי E.17.
+// סדר העמודות אופטימלי לקריאה ב-Sheet: timestamp ראשון, ואז context.
+const EXPORT_COLUMNS = [
+  'timestamp', 'student_id', 'session_id',
+  'island_id_current', 'primary_island_id', 'secondary_island_ids',
+  'strand_id', 'rama_task_alignment', 'peima_target',
+  'activity_type', 'activity_variant',
+  'item_id', 'target_letter', 'supportLevel',
+  'is_correct', 'attempts', 'response_time_ms',
+  'hint_used', 'auto_hint_triggered', 'noni_guidance_used',
+];
+
+let allEvents = [];
+let filteredEvents = [];
+
+function boot() {
+  loadEvents();
+  populateStudentFilter();
+  attachFilterListeners();
+  applyFilters();
+}
+
+function loadEvents() {
+  // getEvents מ-state.js — מחזיר את state.events או [].
+  try {
+    if (typeof getEvents === 'function') {
+      allEvents = getEvents() || [];
+    } else {
+      // fallback: localStorage → JSON parse
+      const raw = localStorage.getItem('underwater-app:v1');
+      if (raw) {
+        const s = JSON.parse(raw);
+        allEvents = Array.isArray(s.events) ? s.events : [];
+      } else {
+        allEvents = [];
+      }
+    }
+  } catch (e) {
+    console.error('שגיאה בטעינת events:', e);
+    allEvents = [];
+  }
+}
+
+function populateStudentFilter() {
+  const ids = Array.from(new Set(allEvents.map(e => e.student_id).filter(Boolean))).sort();
+  const sel = document.getElementById('fStudent');
+  ids.forEach(id => {
+    const opt = document.createElement('option');
+    opt.value = id; opt.textContent = id;
+    sel.appendChild(opt);
+  });
+}
+
+function attachFilterListeners() {
+  ['fStudent', 'fFrom', 'fTo', 'fPeima', 'fRamaTask'].forEach(id => {
+    document.getElementById(id).addEventListener('change', applyFilters);
+  });
+  ['fCorrect', 'fWrong'].forEach(id => {
+    document.getElementById(id).addEventListener('change', applyFilters);
+  });
+}
+
+function applyFilters() {
+  const fStudent = document.getElementById('fStudent').value;
+  const fFrom = document.getElementById('fFrom').value;
+  const fTo = document.getElementById('fTo').value;
+  const fPeima = document.getElementById('fPeima').value;
+  const fRamaTask = document.getElementById('fRamaTask').value;
+  const fCorrect = document.getElementById('fCorrect').checked;
+  const fWrong = document.getElementById('fWrong').checked;
+
+  // טווח תאריכים → epoch ms. fFrom = 00:00:00 ביום, fTo = 23:59:59 ביום
+  const fromMs = fFrom ? new Date(fFrom + 'T00:00:00').getTime() : null;
+  const toMs   = fTo   ? new Date(fTo   + 'T23:59:59').getTime() : null;
+
+  filteredEvents = allEvents.filter(e => {
+    if (fStudent && e.student_id !== fStudent) return false;
+    if (fromMs !== null && e.timestamp < fromMs) return false;
+    if (toMs !== null && e.timestamp > toMs) return false;
+    if (fPeima && String(e.peima_target) !== fPeima) return false;
+    if (fRamaTask && String(e.rama_task_alignment) !== fRamaTask) return false;
+    if (e.is_correct && !fCorrect) return false;
+    if (!e.is_correct && !fWrong) return false;
+    return true;
+  });
+
+  renderSummary();
+  renderTablePreview();
+}
+
+function renderSummary() {
+  const count = filteredEvents.length;
+  document.getElementById('sumCount').textContent = count.toLocaleString('he-IL');
+
+  // students unique
+  const students = new Set(filteredEvents.map(e => e.student_id).filter(Boolean));
+  document.getElementById('sumStudents').textContent =
+    students.size + ' ' + (students.size === 1 ? 'תלמידה' : 'תלמידות');
+
+  // date range
+  if (count === 0) {
+    document.getElementById('sumRange').textContent = '—';
+    document.getElementById('sumAccuracy').textContent = '—';
+    document.getElementById('sumCorrectBreak').textContent = '—';
+    document.getElementById('sumMedianMs').textContent = '—';
+    return;
+  }
+  const timestamps = filteredEvents.map(e => e.timestamp).filter(t => typeof t === 'number');
+  if (timestamps.length > 0) {
+    const min = new Date(Math.min(...timestamps));
+    const max = new Date(Math.max(...timestamps));
+    document.getElementById('sumRange').textContent =
+      fmtDateShort(min) + ' – ' + fmtDateShort(max);
+  } else {
+    document.getElementById('sumRange').textContent = '—';
+  }
+
+  // accuracy
+  const correct = filteredEvents.filter(e => e.is_correct === true).length;
+  const accuracy = count > 0 ? Math.round((correct / count) * 100) : 0;
+  document.getElementById('sumAccuracy').textContent = accuracy + '%';
+  document.getElementById('sumCorrectBreak').textContent =
+    correct + ' נכון · ' + (count - correct) + ' לא נכון';
+
+  // median response time (correct only)
+  const correctTimes = filteredEvents
+    .filter(e => e.is_correct === true && typeof e.response_time_ms === 'number')
+    .map(e => e.response_time_ms)
+    .sort((a, b) => a - b);
+  if (correctTimes.length > 0) {
+    const median = correctTimes[Math.floor(correctTimes.length / 2)];
+    document.getElementById('sumMedianMs').textContent =
+      (median / 1000).toFixed(1) + ' שנ\'';
+  } else {
+    document.getElementById('sumMedianMs').textContent = '—';
+  }
+}
+
+function fmtDateShort(d) {
+  return d.getDate() + '.' + (d.getMonth() + 1) + '.' + d.getFullYear();
+}
+
+function fmtTime(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  return d.getDate() + '.' + (d.getMonth() + 1) + ' ' +
+         String(d.getHours()).padStart(2, '0') + ':' +
+         String(d.getMinutes()).padStart(2, '0');
+}
+
+function renderTablePreview() {
+  const wrap = document.getElementById('tablePreview');
+  if (filteredEvents.length === 0) {
+    wrap.innerHTML = '<div class="empty-state">אין אירועים תואמים לסינון הנוכחי.</div>';
+    return;
+  }
+  // 10 שורות אחרונות לפי timestamp
+  const last10 = filteredEvents
+    .slice()
+    .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+    .slice(0, 10);
+
+  const previewCols = [
+    { key: 'timestamp',         label: 'זמן',    fmt: v => fmtTime(v) },
+    { key: 'student_id',        label: 'תלמידה' },
+    { key: 'island_id_current', label: 'אי',     cls: 'num' },
+    { key: 'strand_id',         label: 'סטרנד', cls: 'num' },
+    { key: 'rama_task_alignment', label: 'ראמ"ה', cls: 'num' },
+    { key: 'peima_target',      label: 'פעימה', cls: 'num' },
+    { key: 'activity_type',     label: 'פעילות' },
+    { key: 'target_letter',     label: 'אות' },
+    { key: 'is_correct',        label: 'נכון?', fmt: v => v ? '✓' : '✗',
+      clsFn: v => v ? 'ok-yes' : 'ok-no' },
+    { key: 'response_time_ms',  label: 'זמן (מ"ש)', cls: 'num',
+      fmt: v => (typeof v === 'number' ? v : '') },
+  ];
+
+  let html = '<table class="preview"><thead><tr>';
+  previewCols.forEach(c => html += '<th>' + c.label + '</th>');
+  html += '</tr></thead><tbody>';
+  last10.forEach(e => {
+    html += '<tr>';
+    previewCols.forEach(c => {
+      const raw = e[c.key];
+      const val = c.fmt ? c.fmt(raw) : (raw == null ? '' : String(raw));
+      const cls = c.clsFn ? c.clsFn(raw) : (c.cls || '');
+      html += '<td' + (cls ? ' class="' + cls + '"' : '') + '>' + escapeHtml(val) + '</td>';
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ============================================================
+// CSV builder + download
+// ============================================================
+
+function csvEscape(value) {
+  if (value === null || value === undefined) return '';
+  if (Array.isArray(value)) return csvEscape(value.join(';'));
+  if (typeof value === 'boolean') return value ? 'TRUE' : 'FALSE';
+  const s = String(value);
+  // צריך quoting אם יש פסיק/קו/quote/שורה חדשה
+  if (/[",\r\n]/.test(s)) {
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
+}
+
+function buildCsv(events) {
+  const headerRow = EXPORT_COLUMNS.join(',');
+  const dataRows = events.map(e =>
+    EXPORT_COLUMNS.map(col => csvEscape(e[col])).join(',')
+  );
+  // ﻿ — BOM. בלעדיו Excel קורא ג'יבריש בעברית.
+  return '﻿' + headerRow + '\n' + dataRows.join('\n');
+}
+
+function downloadCsv() {
+  if (filteredEvents.length === 0) {
+    showToast('אין אירועים לייצוא');
+    return;
+  }
+  const csv = buildCsv(filteredEvents);
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const date = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = 'avnei-yesod-events-' + date + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showToast(filteredEvents.length.toLocaleString('he-IL') + ' שורות הורדו');
+}
+
+async function copyCsv() {
+  if (filteredEvents.length === 0) {
+    showToast('אין אירועים להעתקה');
+    return;
+  }
+  const csv = buildCsv(filteredEvents);
+  try {
+    await navigator.clipboard.writeText(csv);
+    showToast('הועתק ל-clipboard · ' + filteredEvents.length.toLocaleString('he-IL') + ' שורות');
+  } catch (e) {
+    console.error('clipboard write failed:', e);
+    showToast('שגיאה בהעתקה — נסי הורדה');
+  }
+}
+
+let toastTimer = null;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+document.getElementById('btnDownloadCsv').addEventListener('click', downloadCsv);
+document.getElementById('btnCopyCsv').addEventListener('click', copyCsv);
+</script>
+
+</body>
+</html>

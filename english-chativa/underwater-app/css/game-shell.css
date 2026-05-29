@@ -1,0 +1,885 @@
+/* ============================================================
+   game-shell.css — styles for the D.14 template
+   (used by stage-3 letter mini-games built on AvneiGameShell)
+
+   Depends on tokens.css + components.css + stage-3.css for the shared
+   layout (.top-bar, .tap-to-start, .completion, .noni-fixed). This file
+   adds:
+     - .unit-counter (top-bar slot)
+     - .shell-slots (header strip showing collected units)
+     - .mechanic-tap-all + .tap-field + .tap-tile
+     - .mechanic-pick + .pick-area + .pick-pod
+     - .confetti-layer / .kisses-layer (canonical copy — also exists in
+       shell-quest.css/storm-quest.css for the artisanal games)
+
+   Color tokens come from tokens.css; if a token is missing the rule
+   provides a soft fallback so the template renders.
+   ============================================================ */
+
+/* ===== Start overlay — speaker + start button (canonical) ====
+   Extracted from house-quest.css / journey-quest.css so the template
+   doesn't depend on any per-game CSS file.
+   ============================================================ */
+.intro-speaker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--coral, #FFA98D);
+  color: #FFFFFF;
+  font-size: 17px;
+  font-weight: 700;
+  padding: 12px 22px;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius-pill, 999px);
+  box-shadow: 0 8px 20px rgba(255, 169, 141, 0.5);
+  animation: speaker-pulse 1.8s ease-in-out infinite;
+}
+.intro-speaker svg { width: 26px; height: 26px; flex-shrink: 0; }
+.intro-speaker:active { transform: scale(0.96); }
+.intro-speaker.playing { animation: speaker-active 0.5s ease-in-out infinite; }
+@keyframes speaker-pulse {
+  0%, 100% { box-shadow: 0 8px 20px rgba(255, 169, 141, 0.5),
+                         0 0 0 0 rgba(255, 169, 141, 0.6); }
+  50%      { box-shadow: 0 8px 20px rgba(255, 169, 141, 0.5),
+                         0 0 0 14px rgba(255, 169, 141, 0); }
+}
+@keyframes speaker-active {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.05); }
+}
+
+.start-btn {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(180deg, #73D9D1 0%, #4FB8C9 100%);
+  color: #FFFFFF;
+  font-family: 'Heebo', sans-serif;
+  font-weight: 800;
+  font-size: clamp(17px, 4vw, 20px);
+  padding: 14px 32px;
+  border-radius: var(--radius-pill, 999px);
+  box-shadow: 0 10px 22px rgba(38, 80, 92, 0.28);
+  transition: transform 160ms ease;
+}
+.start-btn:hover { transform: translateY(-2px); }
+.start-btn:active { transform: scale(0.96); }
+
+/* ===== Top-bar counter (per-quest) ============================ */
+.unit-counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
+  color: #26505C;
+  font-size: clamp(14px, 3.5vw, 18px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+.unit-counter .uc-letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #FFE7A8 0%, #FFA98D 100%);
+  color: #fff;
+  font-family: 'Rubik', 'Heebo', sans-serif;
+  font-weight: 900;
+  font-size: 20px;
+  direction: rtl;
+  unicode-bidi: isolate;
+}
+
+/* ===== Quest header — host for the slot strip ================
+   ב-demo: אין hero ויזואלי, רק שורת slots. ממוקם מתחת ל-top-bar (z:50).
+   המשחקונים האמנותיים מגדירים .quest-header בעצמם (house-quest.css וכו')
+   ולא טוענים game-shell.css — אין קונפליקט.
+   ============================================================ */
+.quest-header {
+  position: fixed;
+  top: clamp(64px, 9vh, 84px);
+  left: 0;
+  right: 0;
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  pointer-events: none;
+}
+.quest-header > * { pointer-events: auto; }
+
+/* ===== Slot strip (collected-units indicator) ================= */
+.shell-slots {
+  display: flex;
+  gap: clamp(8px, 2vw, 14px);
+  justify-content: center;
+  padding: clamp(4px, 1.5vw, 10px) 0;
+}
+.shell-slot {
+  width: clamp(36px, 9vw, 56px);
+  height: clamp(36px, 9vw, 56px);
+  border-radius: 50%;
+  border: 2px dashed rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 320ms cubic-bezier(.34,1.56,.64,1),
+              background 320ms ease,
+              border-color 320ms ease;
+}
+.shell-slot.filled {
+  background: linear-gradient(180deg, #FFE7A8 0%, #FFA98D 100%);
+  border-color: #fff;
+  transform: scale(1.08);
+  box-shadow: 0 0 14px rgba(255,169,141,0.55);
+}
+.shell-slot.filled::after {
+  content: '';
+  width: 60%;
+  height: 60%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff 0%, rgba(255,255,255,0) 60%);
+}
+
+/* ===== Mechanic: tap-all =====================================
+   Each tile = an "ocean bubble" — circular, glassy radial gradient,
+   floating bob. Reliably laid out in a 4×3 grid regardless of viewport
+   (mobile, tablet, desktop). On very narrow phones it collapses to 3×4.
+
+   IMPORTANT: .game-area in stage-3.css applies asymmetric padding
+   (huge right-padding to clear Noni). For tap-all we override with
+   absolute-position fill + balanced padding so the grid sits centered.
+   Noni stays on top via its own z-index in .noni-fixed.
+   ============================================================ */
+.mechanic-tap-all {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* top padding מספיק לפנות את top-bar (52px) + .quest-header slot strip (~80px נוסף) */
+  padding: clamp(140px, 22vh, 180px) clamp(16px, 4vw, 32px) clamp(20px, 4vh, 40px);
+  box-sizing: border-box;
+  pointer-events: auto;
+}
+.tap-field {
+  display: grid;
+  grid-template-columns: repeat(4, clamp(64px, 14vw, 110px));
+  grid-auto-rows: clamp(64px, 14vw, 110px);
+  gap: clamp(12px, 2.5vw, 26px);
+  padding: clamp(8px, 3vw, 24px);
+  box-sizing: border-box;
+  justify-content: center;
+  align-content: center;
+}
+@media (max-width: 480px) {
+  .tap-field {
+    grid-template-columns: repeat(3, clamp(64px, 22vw, 96px));
+    grid-auto-rows: clamp(64px, 22vw, 96px);
+  }
+}
+
+.tap-tile {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  width:  100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%,
+              rgba(255, 255, 255, 0.55) 0%,
+              rgba(168, 232, 255, 0.85) 45%,
+              rgba(115, 217, 209, 0.95) 100%);
+  border: 2.5px solid rgba(255, 255, 255, 0.65);
+  box-shadow:
+    0 6px 16px rgba(38, 80, 92, 0.32),
+    inset 0 -8px 16px rgba(38, 80, 92, 0.18),
+    inset 0 6px 14px rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  animation: tile-float 3.6s ease-in-out infinite;
+  transition: filter 240ms ease, opacity 240ms ease;
+}
+.tap-tile:nth-child(3n)   { animation-delay: -0.6s; }
+.tap-tile:nth-child(3n+1) { animation-delay: -1.2s; }
+.tap-tile:nth-child(3n+2) { animation-delay: -1.8s; }
+.tap-tile:active { transform: scale(0.94); }
+.tap-tile__letter {
+  /* F1.6 — מיטל אישרה: ז' "כמו מראה". Heebo עם font-weight 900
+     הציג את ז' כ-mirror-flipped. עברנו ל-Rubik (כבר טעון ב-HTML)
+     שמטפל ב-glyph של ז' נכון. */
+  font-family: 'Rubik', 'Heebo', sans-serif;
+  font-weight: 900;
+  font-size: clamp(28px, 7vw, 40px);
+  color: #1A4E5A;
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+  text-shadow: 0 1px 3px rgba(255,255,255,0.85),
+               0 0 8px rgba(168,232,255,0.5);
+  /* Bidi guard — מבטיח שה-glyph לא מתהפך בהקשרי RTL לא תקינים */
+  direction: rtl;
+  unicode-bidi: isolate;
+  display: inline-block;
+}
+@keyframes tile-float {
+  0%, 100% { transform: translateY(0)   rotate(-1deg); }
+  50%      { transform: translateY(-6px) rotate(2deg);  }
+}
+
+/* LIT — after the child taps the correct letter */
+.tap-tile.lit {
+  animation: tile-float 3.6s ease-in-out infinite,
+             tile-just-lit 0.7s cubic-bezier(.34,1.56,.64,1);
+  filter: drop-shadow(0 0 14px rgba(255, 224, 122, 0.95))
+          drop-shadow(0 0 28px rgba(255, 169, 141, 0.6));
+  background: radial-gradient(circle at 35% 30%,
+              #FFFFFF 0%,
+              #FFF7C9 25%,
+              #FFE07A 65%,
+              #FFA98D 100%);
+  border-color: #FFFFFF;
+  cursor: default;
+  pointer-events: none;
+}
+.tap-tile.lit .tap-tile__letter {
+  color: #6B4A1F;
+  text-shadow: 0 1px 2px rgba(255,255,255,0.95);
+}
+@keyframes tile-just-lit {
+  0%   { transform: scale(1)    rotate(0); }
+  60%  { transform: scale(1.3)  rotate(-8deg); }
+  100% { transform: scale(1)    rotate(0); }
+}
+
+.tap-tile.hint-glow {
+  animation: tile-float 3.6s ease-in-out infinite,
+             tile-hint-pulse 1.4s ease-in-out infinite;
+  border-color: #FFE07A;
+}
+@keyframes tile-hint-pulse {
+  0%,100% { box-shadow:
+    0 6px 16px rgba(38, 80, 92, 0.32),
+    inset 0 -8px 16px rgba(38, 80, 92, 0.18),
+    inset 0 6px 14px rgba(255, 255, 255, 0.4),
+    0 0 0 0 rgba(255,224,122,0);
+  }
+  50%     { box-shadow:
+    0 6px 16px rgba(38, 80, 92, 0.32),
+    inset 0 -8px 16px rgba(38, 80, 92, 0.18),
+    inset 0 6px 14px rgba(255, 255, 255, 0.4),
+    0 0 0 14px rgba(255,224,122,0.55);
+  }
+}
+
+.tap-tile.wrong-sway {
+  animation: tile-float 3.6s ease-in-out infinite,
+             tile-sway 600ms ease-in-out;
+}
+@keyframes tile-sway {
+  0%,100% { transform: translateX(0); }
+  20%     { transform: translateX(-8px) rotate(-3deg); }
+  50%     { transform: translateX(8px)  rotate(3deg); }
+  80%     { transform: translateX(-4px) rotate(-1deg); }
+}
+
+/* ===== Mechanic: pick ======================================== */
+.mechanic-pick { width: 100%; height: 100%; }
+.pick-area {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(10px, 3vw, 22px);
+  padding: clamp(10px, 4vw, 28px);
+  box-sizing: border-box;
+  align-content: center;
+}
+@media (max-width: 480px) {
+  .pick-area { grid-template-columns: repeat(2, 1fr); }
+}
+.pick-pod {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  aspect-ratio: 1;
+  border-radius: 50% 50% 45% 45% / 60% 60% 40% 40%;
+  background: linear-gradient(180deg, #A8E8FF 0%, #73D9D1 50%, #FFA98D 100%);
+  border: 3px solid rgba(255,255,255,0.7);
+  box-shadow: inset 0 -10px 20px rgba(255, 169, 141, 0.3),
+              0 8px 22px rgba(38,80,92,0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Heebo', sans-serif;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(38,80,92,0.45);
+  transition: transform 220ms cubic-bezier(.34,1.56,.64,1),
+              opacity 220ms ease;
+}
+.pick-pod:hover { transform: translateY(-3px) scale(1.04); }
+.pick-pod:active { transform: scale(0.96); }
+.pick-pod__letter {
+  font-family: 'Rubik', 'Heebo', sans-serif;
+  font-size: clamp(36px, 9vw, 64px);
+  line-height: 1;
+  direction: rtl;
+  unicode-bidi: isolate;
+  display: inline-block;
+}
+.pick-pod.picked {
+  animation: pod-pop 700ms cubic-bezier(.34,1.56,.64,1) forwards;
+  cursor: default;
+}
+@keyframes pod-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.2) rotate(-4deg); }
+  100% { transform: scale(0.6); opacity: 0.3; }
+}
+.pick-pod.hint-glow {
+  animation: pod-hint-pulse 1.4s ease-in-out infinite;
+  border-color: #FFE07A;
+}
+@keyframes pod-hint-pulse {
+  0%,100% { box-shadow: inset 0 -10px 20px rgba(255, 169, 141, 0.3),
+                        0 0 0 0 rgba(255,224,122,0); }
+  50%     { box-shadow: inset 0 -10px 20px rgba(255, 169, 141, 0.3),
+                        0 0 0 14px rgba(255,224,122,0.5); }
+}
+.pick-pod.wrong-sway { animation: pod-sway 700ms ease-in-out; }
+@keyframes pod-sway {
+  0%,100% { transform: translateX(0); }
+  20%     { transform: translateX(-10px) rotate(-3deg); }
+  50%     { transform: translateX(10px)  rotate(3deg); }
+  80%     { transform: translateX(-5px)  rotate(-1deg); }
+}
+
+/* ===== Mechanic: memory-pair (D.15 v2) =====================
+   6 קלפים (3 זוגות) על השולחן. כל קלף — אות-יעד או SVG אסוציאטיבי.
+   הילד הופך, מחפש זוגות. flip animation אופקי.
+   ============================================================ */
+.mechanic-memory-pair {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(140px, 22vh, 180px) clamp(16px, 4vw, 32px) clamp(20px, 4vh, 40px);
+  box-sizing: border-box;
+}
+.memory-board {
+  display: grid;
+  grid-template-columns: repeat(3, clamp(72px, 18vw, 130px));
+  grid-auto-rows: clamp(72px, 18vw, 130px);
+  gap: clamp(14px, 3vw, 24px);
+  justify-content: center;
+}
+@media (max-width: 480px) {
+  .memory-board {
+    grid-template-columns: repeat(3, clamp(72px, 25vw, 110px));
+    grid-auto-rows: clamp(72px, 25vw, 110px);
+  }
+}
+.memory-card {
+  appearance: none;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+  perspective: 800px;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.memory-card__inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 480ms cubic-bezier(.34,1.56,.64,1);
+}
+.memory-card.flipped .memory-card__inner {
+  transform: rotateY(180deg);
+}
+.memory-card__back,
+.memory-card__front {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
+}
+.memory-card__back {
+  background: radial-gradient(circle at 35% 30%,
+              rgba(255, 255, 255, 0.55) 0%,
+              rgba(168, 232, 255, 0.85) 45%,
+              rgba(115, 217, 209, 0.95) 100%);
+  border: 2.5px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 6px 16px rgba(38, 80, 92, 0.32),
+              inset 0 -8px 16px rgba(38, 80, 92, 0.18);
+}
+.memory-card__back svg {
+  width: 65%;
+  height: 65%;
+}
+.memory-card__front {
+  background: linear-gradient(180deg, #FFFFFF 0%, #FFE7A8 100%);
+  border: 2.5px solid #FFA98D;
+  box-shadow: 0 6px 16px rgba(255, 169, 141, 0.4),
+              inset 0 -6px 12px rgba(255, 169, 141, 0.2);
+  transform: rotateY(180deg);
+}
+.memory-card__letter {
+  font-family: 'Rubik', 'Heebo', sans-serif;
+  font-weight: 900;
+  font-size: clamp(32px, 8vw, 52px);
+  color: #6B4A1F;
+  text-shadow: 0 2px 6px rgba(255,255,255,0.85);
+  direction: rtl;
+  unicode-bidi: isolate;
+  display: inline-block;
+}
+.memory-card__svg {
+  width: 80%;
+  height: 80%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.memory-card__svg svg {
+  width: 100%;
+  height: 100%;
+}
+.memory-card__fallback {
+  font-size: clamp(36px, 9vw, 56px);
+  color: #FFA94D;
+}
+.memory-card.matched .memory-card__front {
+  background: linear-gradient(180deg, #DCF6EC 0%, #B8F2CF 100%);
+  border-color: #73D9D1;
+  box-shadow: 0 0 14px rgba(115, 217, 209, 0.55),
+              inset 0 -6px 12px rgba(115, 217, 209, 0.25);
+  animation: memory-card-pop 700ms cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes memory-card-pop {
+  0%   { transform: rotateY(180deg) scale(1); }
+  60%  { transform: rotateY(180deg) scale(1.15); }
+  100% { transform: rotateY(180deg) scale(1); }
+}
+.memory-card.hint-glow .memory-card__back {
+  animation: memory-hint-pulse 1.4s ease-in-out infinite;
+  border-color: #FFE07A;
+}
+@keyframes memory-hint-pulse {
+  0%,100% { box-shadow:
+    0 6px 16px rgba(38, 80, 92, 0.32),
+    inset 0 -8px 16px rgba(38, 80, 92, 0.18),
+    0 0 0 0 rgba(255,224,122,0);
+  }
+  50%     { box-shadow:
+    0 6px 16px rgba(38, 80, 92, 0.32),
+    inset 0 -8px 16px rgba(38, 80, 92, 0.18),
+    0 0 0 14px rgba(255,224,122,0.55);
+  }
+}
+.memory-card.wrong-sway {
+  animation: memory-card-sway 600ms ease-in-out;
+}
+@keyframes memory-card-sway {
+  0%,100% { transform: translateX(0); }
+  20%     { transform: translateX(-6px) rotate(-2deg); }
+  50%     { transform: translateX(6px)  rotate(2deg); }
+  80%     { transform: translateX(-3px); }
+}
+
+/* ===== Mechanic: sort-by-letter (D.15 v2) ===================
+   פריטים צפים במגרש העליון, 2 בינים (אקווריומים) למטה.
+   Drag with pointer events (תומך mouse + touch).
+   ============================================================ */
+.mechanic-sort {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(120px, 18vh, 160px) clamp(8px, 3vw, 20px) clamp(20px, 4vh, 30px);
+  box-sizing: border-box;
+}
+.sort-field {
+  position: relative;
+  flex: 1;
+  min-height: 200px;
+  width: 100%;
+  margin-bottom: clamp(12px, 2vh, 22px);
+  /* RTL: נוני יושב ב-bottom-right של ה-viewport, תופס ~25-30% רוחב.
+     padding-right מצמצם את ה-area הויזואלית כדי שהבועות הצפות לא
+     יוסתרו מאחורי נוני. ה-pointer events של הפריטים עדיין עובדים
+     כי הם ב-position absolute עם left/top% של ה-field. */
+  padding-right: clamp(110px, 25vw, 170px);
+  box-sizing: border-box;
+}
+.sort-item {
+  position: absolute;
+  width: clamp(60px, 13vw, 90px);
+  height: clamp(60px, 13vw, 90px);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%,
+              rgba(255, 255, 255, 0.55) 0%,
+              rgba(168, 232, 255, 0.85) 45%,
+              rgba(115, 217, 209, 0.95) 100%);
+  border: 2.5px solid rgba(255, 255, 255, 0.65);
+  box-shadow:
+    0 6px 16px rgba(38, 80, 92, 0.32),
+    inset 0 -8px 16px rgba(38, 80, 92, 0.18),
+    inset 0 6px 14px rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  animation: sort-item-float 3.6s ease-in-out infinite;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.sort-item__letter {
+  font-family: 'Rubik', 'Heebo', sans-serif;
+  font-weight: 900;
+  font-size: clamp(26px, 6.5vw, 36px);
+  color: #1A4E5A;
+  pointer-events: none;
+  text-shadow: 0 1px 3px rgba(255,255,255,0.85);
+  direction: rtl;
+  unicode-bidi: isolate;
+  display: inline-block;
+}
+.sort-item.dragging {
+  cursor: grabbing;
+  z-index: 100;
+  animation: none;
+  filter: drop-shadow(0 10px 20px rgba(38, 80, 92, 0.45));
+  transition: none;
+}
+.sort-item.placed-correct {
+  transition: left 380ms cubic-bezier(.34,1.56,.64,1),
+              top  380ms cubic-bezier(.34,1.56,.64,1);
+  animation: none;
+}
+.sort-item.absorbed {
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 320ms ease, opacity 320ms ease;
+  pointer-events: none;
+}
+.sort-item.wrong-sway {
+  animation: sort-item-float 3.6s ease-in-out infinite,
+             sort-item-sway 700ms ease-in-out;
+}
+.sort-item.return-sway {
+  animation: sort-item-float 3.6s ease-in-out infinite,
+             sort-item-shake 500ms ease-in-out;
+}
+@keyframes sort-item-float {
+  0%,100% { transform: translateY(0)    rotate(-1deg); }
+  50%     { transform: translateY(-4px) rotate(2deg); }
+}
+@keyframes sort-item-sway {
+  0%,100% { transform: translateX(0); }
+  20%     { transform: translateX(-10px) rotate(-4deg); }
+  50%     { transform: translateX(10px)  rotate(4deg); }
+  80%     { transform: translateX(-5px); }
+}
+@keyframes sort-item-shake {
+  0%,100% { transform: translateY(0); }
+  25%     { transform: translateY(-4px); }
+  75%     { transform: translateY(4px); }
+}
+
+.sort-bins {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: stretch;
+  gap: clamp(12px, 3vw, 24px);
+  min-height: clamp(110px, 22vh, 160px);
+  padding: 0 clamp(8px, 2vw, 16px);
+}
+.sort-bin {
+  flex: 1;
+  position: relative;
+  border-radius: 22px 22px 12px 12px;
+  background: linear-gradient(180deg,
+              rgba(168, 232, 255, 0.3) 0%,
+              rgba(115, 217, 209, 0.5) 100%);
+  border: 3px dashed rgba(255, 255, 255, 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: clamp(8px, 2vw, 14px);
+  box-shadow: inset 0 -6px 14px rgba(38, 80, 92, 0.18);
+}
+.sort-bin--target {
+  background: linear-gradient(180deg,
+              rgba(255, 231, 168, 0.45) 0%,
+              rgba(255, 169, 141, 0.55) 100%);
+  border-color: #FFFFFF;
+  box-shadow: inset 0 -6px 14px rgba(255, 169, 141, 0.25);
+}
+.sort-bin__label {
+  width: clamp(48px, 10vw, 64px);
+  height: clamp(48px, 10vw, 64px);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: clamp(4px, 1vw, 8px);
+  box-shadow: 0 4px 10px rgba(38, 80, 92, 0.18);
+}
+.sort-bin__letter {
+  font-family: 'Heebo', sans-serif;
+  font-weight: 900;
+  font-size: clamp(22px, 5.5vw, 32px);
+  color: #1A4E5A;
+}
+.sort-bin__net {
+  width: 100%;
+  flex: 1;
+  margin-top: 4px;
+  background-image: repeating-linear-gradient(45deg,
+                    rgba(255,255,255,0.3) 0 4px,
+                    transparent 4px 12px);
+  border-radius: 8px;
+  pointer-events: none;
+}
+.sort-bin.hint-glow {
+  animation: sort-bin-hint-pulse 1.4s ease-in-out infinite;
+  border-color: #FFE07A;
+}
+@keyframes sort-bin-hint-pulse {
+  0%,100% { box-shadow: inset 0 -6px 14px rgba(255, 169, 141, 0.25),
+                        0 0 0 0 rgba(255,224,122,0); }
+  50%     { box-shadow: inset 0 -6px 14px rgba(255, 169, 141, 0.25),
+                        0 0 0 16px rgba(255,224,122,0.55); }
+}
+
+/* ===== Confetti + kisses (canonical copy used by the template) === */
+.confetti-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 280;
+  overflow: hidden;
+}
+.confetti-piece {
+  position: absolute;
+  top: -20px;
+  border-radius: 2px;
+  animation: shell-confetti-fall linear forwards;
+}
+@keyframes shell-confetti-fall {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0.4; }
+}
+.kisses-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 285;
+  overflow: hidden;
+}
+.kiss-heart {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  animation: shell-kiss-rise 3.2s ease-out forwards;
+  filter: drop-shadow(0 4px 8px rgba(255, 107, 157, 0.5));
+}
+.kiss-heart svg { width: 100%; height: 100%; }
+@keyframes shell-kiss-rise {
+  0%   { transform: translateY(0) translateX(0)   scale(0.5) rotate(0deg);  opacity: 0; }
+  15%  { transform: translateY(-30px) translateX(10px) scale(1)   rotate(-8deg); opacity: 1; }
+  60%  { transform: translateY(-50vh) translateX(40px) scale(1.1) rotate(8deg);  opacity: 1; }
+  100% { transform: translateY(-90vh) translateX(-20px) scale(0.7) rotate(-12deg); opacity: 0; }
+}
+
+/* ===== Theme variants (D.15 v2 F1.1) ========================
+   צורות ויזואליות לפי נושא — כוכב/צדף/דג מחליפים את הבועה ב-tile,
+   ה-pod, ה-sort-item, וקלפי memory. ה-CSS משתמש ב-SVG inline
+   כ-background-image (data URI) כדי לא לגעת במבנה ה-DOM —
+   האנימציות הקיימות (tile-float, hint-pulse, tile-just-lit וכו')
+   ממשיכות לעבוד.
+
+   ה-class theme-X מתווסף ע"י ה-mechanic ל-root (.mechanic-tap-all
+   וכו'). CSS משתמש ב-cascade selector: .theme-stars .tap-tile.
+   ============================================================ */
+
+/* כוכב 5-קצוות זהוב */
+.theme-stars .tap-tile,
+.theme-stars .pick-pod,
+.theme-stars .sort-item {
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><radialGradient id='s' cx='50%25' cy='40%25'><stop offset='0%25' stop-color='%23FFF8DC'/><stop offset='60%25' stop-color='%23FFD60A'/><stop offset='100%25' stop-color='%23FF9500'/></radialGradient></defs><polygon points='50,8 61,38 93,38 67,57 78,90 50,71 22,90 33,57 7,38 39,38' fill='url(%23s)' stroke='%23FFFFFF' stroke-width='2.5' stroke-linejoin='round'/></svg>") no-repeat center / contain;
+  border: none;
+  box-shadow: 0 6px 16px rgba(255, 169, 0, 0.4),
+              0 2px 6px rgba(0,0,0,0.15);
+}
+.theme-stars .tap-tile.lit {
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><radialGradient id='sl' cx='50%25' cy='40%25'><stop offset='0%25' stop-color='%23FFFFFF'/><stop offset='40%25' stop-color='%23FFE066'/><stop offset='100%25' stop-color='%23FF6B35'/></radialGradient></defs><polygon points='50,5 62,37 96,37 68,57 79,93 50,73 21,93 32,57 4,37 38,37' fill='url(%23sl)' stroke='%23FFFFFF' stroke-width='3' stroke-linejoin='round'/></svg>") no-repeat center / contain !important;
+  filter: drop-shadow(0 0 18px rgba(255, 215, 0, 0.95))
+          drop-shadow(0 0 32px rgba(255, 140, 0, 0.7));
+}
+.theme-stars .tap-tile__letter,
+.theme-stars .pick-pod__letter,
+.theme-stars .sort-item__letter {
+  color: #4A2700;
+  text-shadow: 0 1px 2px rgba(255, 248, 220, 0.95),
+               0 0 6px rgba(255, 215, 0, 0.6);
+}
+
+/* צדף ורוד עם חריצים */
+.theme-shells .tap-tile,
+.theme-shells .pick-pod,
+.theme-shells .sort-item {
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='sh' x1='50%25' y1='10%25' x2='50%25' y2='100%25'><stop offset='0%25' stop-color='%23FFE4E1'/><stop offset='50%25' stop-color='%23FFB6C1'/><stop offset='100%25' stop-color='%23DB7093'/></linearGradient></defs><path d='M50,12 Q88,18 90,55 Q85,82 50,90 Q15,82 10,55 Q12,18 50,12 Z' fill='url(%23sh)' stroke='%23FFFFFF' stroke-width='2.5'/><path d='M50,12 L50,90 M30,16 Q40,55 38,87 M70,16 Q60,55 62,87 M20,28 Q30,55 28,82 M80,28 Q70,55 72,82' stroke='%23FFFFFF' stroke-width='1.2' opacity='0.5' fill='none'/></svg>") no-repeat center / contain;
+  border: none;
+  box-shadow: 0 6px 16px rgba(219, 112, 147, 0.35),
+              0 2px 6px rgba(0,0,0,0.15);
+}
+.theme-shells .tap-tile.lit {
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='shl' x1='50%25' y1='10%25' x2='50%25' y2='100%25'><stop offset='0%25' stop-color='%23FFFFFF'/><stop offset='50%25' stop-color='%23FFE7A8'/><stop offset='100%25' stop-color='%23FFA94D'/></linearGradient></defs><path d='M50,10 Q90,16 92,55 Q87,84 50,92 Q13,84 8,55 Q10,16 50,10 Z' fill='url(%23shl)' stroke='%23FFFFFF' stroke-width='3'/></svg>") no-repeat center / contain !important;
+  filter: drop-shadow(0 0 18px rgba(255, 169, 141, 0.9));
+}
+.theme-shells .tap-tile__letter,
+.theme-shells .pick-pod__letter,
+.theme-shells .sort-item__letter {
+  color: #6B2949;
+  text-shadow: 0 1px 2px rgba(255, 228, 225, 0.9);
+}
+
+/* דג כתום עם זנב */
+.theme-fish .tap-tile,
+.theme-fish .pick-pod,
+.theme-fish .sort-item {
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='fi' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23FFE4B5'/><stop offset='50%25' stop-color='%23FFA94D'/><stop offset='100%25' stop-color='%23FF6B35'/></linearGradient></defs><ellipse cx='42' cy='50' rx='32' ry='22' fill='url(%23fi)' stroke='%23FFFFFF' stroke-width='2.5'/><polygon points='74,50 95,32 95,68' fill='%23FF6B35' stroke='%23FFFFFF' stroke-width='2'/><circle cx='32' cy='45' r='3.5' fill='%23FFFFFF'/><circle cx='32' cy='45' r='2' fill='%23000000'/><path d='M55,40 Q60,38 62,42' stroke='%23D44A1F' stroke-width='1.5' fill='none'/></svg>") no-repeat center / contain;
+  border: none;
+  box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4),
+              0 2px 6px rgba(0,0,0,0.15);
+}
+.theme-fish .tap-tile.lit {
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='fil' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23FFFFFF'/><stop offset='50%25' stop-color='%23FFE066'/><stop offset='100%25' stop-color='%23FF6B35'/></linearGradient></defs><ellipse cx='42' cy='50' rx='34' ry='24' fill='url(%23fil)' stroke='%23FFFFFF' stroke-width='3'/><polygon points='75,50 96,30 96,70' fill='%23FF8C42' stroke='%23FFFFFF' stroke-width='2.5'/></svg>") no-repeat center / contain !important;
+  filter: drop-shadow(0 0 18px rgba(255, 224, 122, 0.95))
+          drop-shadow(0 0 28px rgba(255, 107, 53, 0.7));
+}
+.theme-fish .tap-tile__letter,
+.theme-fish .pick-pod__letter,
+.theme-fish .sort-item__letter {
+  color: #5A2200;
+  font-size: clamp(24px, 6vw, 32px);
+  /* האות מוצבת קצת ימינה במרכז הגוף של הדג (לא בזנב) */
+  margin-left: -8%;
+  text-shadow: 0 1px 2px rgba(255, 248, 220, 0.95);
+}
+
+/* memory-card — שכבת תמונה משתנה לפי theme (רק ב-front) */
+.theme-stars .memory-card__front {
+  background: linear-gradient(180deg, #FFF8DC 0%, #FFD60A 100%);
+  border-color: #FF9500;
+}
+.theme-shells .memory-card__front {
+  background: linear-gradient(180deg, #FFE4E1 0%, #FFB6C1 100%);
+  border-color: #DB7093;
+}
+.theme-fish .memory-card__front {
+  background: linear-gradient(180deg, #FFE4B5 0%, #FFA94D 100%);
+  border-color: #FF6B35;
+}
+
+/* ===== Letter-anim overlay (D.15 v2) ============================
+   אנימציה ייחודית פר אות, רצה אחרי 5/5 הקשות נכונות ולפני startFinale.
+   מציגה SVG אסוציאטיבי במרכז המסך + מנגנת word-X.mp3.
+   ~2.2 שניות סה"כ (200ms fade-in + 1800ms hold + 400ms fade-out).
+   z-index 270 — מתחת ל-confetti (280) ול-kisses (285), מעל לכל השאר.
+   ============================================================ */
+.letter-anim-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center,
+              rgba(255, 255, 255, 0.78) 0%,
+              rgba(168, 232, 255, 0.55) 40%,
+              rgba(38, 80, 92, 0.35) 100%);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 270;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+.letter-anim-overlay.show {
+  opacity: 1;
+}
+.letter-anim-overlay.hide {
+  opacity: 0;
+  transition: opacity 400ms ease;
+}
+.letter-anim-stage {
+  width: clamp(180px, 50vw, 320px);
+  height: clamp(180px, 50vw, 320px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 12px 28px rgba(38, 80, 92, 0.45))
+          drop-shadow(0 0 18px rgba(255, 224, 122, 0.5));
+  transform: scale(0.5);
+  transition: transform 320ms cubic-bezier(.34,1.56,.64,1);
+}
+.letter-anim-overlay.show .letter-anim-stage {
+  transform: scale(1) rotate(-2deg);
+  animation: letter-anim-pop 1.8s ease-in-out;
+}
+.letter-anim-overlay.hide .letter-anim-stage {
+  transform: scale(1.2);
+  transition: transform 400ms ease;
+}
+.letter-anim-stage svg {
+  width: 100%;
+  height: 100%;
+}
+@keyframes letter-anim-pop {
+  0%   { transform: scale(1)    rotate(-2deg); }
+  25%  { transform: scale(1.08) rotate(3deg); }
+  50%  { transform: scale(1)    rotate(-2deg); }
+  75%  { transform: scale(1.05) rotate(2deg); }
+  100% { transform: scale(1)    rotate(-2deg); }
+}
+
+/* ===== Noni dance state (matches the 5 existing games) ========= */
+.noni-fixed.dancing {
+  animation: noni-dance 0.9s ease-in-out infinite;
+}
+@keyframes noni-dance {
+  0%,100% { transform: translateY(0)   rotate(-4deg) scale(1.0); }
+  25%     { transform: translateY(-10px) rotate(6deg)  scale(1.05); }
+  50%     { transform: translateY(0)   rotate(-6deg) scale(1.0); }
+  75%     { transform: translateY(-8px) rotate(4deg)  scale(1.05); }
+}

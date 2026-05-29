@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>הצדף הקסום · עומק הים המואר</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/stage-3.css">
+  <link rel="stylesheet" href="css/shell-quest.css">
+</head>
+<body>
+
+  <main class="stage-scene">
+    <div class="scene-frame">
+      <img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true"
+           onerror="this.style.display='none'">
+
+      <!-- Quest header — big shell + 5 key slots -->
+      <section class="quest-header">
+        <div class="shell-container" id="shellContainer">
+          <img class="shell-img shell-closed idle" id="shellClosed"
+               src="assets/island-03/shell-game/shell-closed.png" alt="">
+          <img class="shell-img shell-open" id="shellOpen"
+               src="assets/island-03/shell-game/shell-open.png" alt="">
+          <div class="shell-glow" aria-hidden="true"></div>
+          <span class="spark" style="--sx:-80px;--sy:-40px;left:48%;top:42%;animation-delay:0.2s"></span>
+          <span class="spark" style="--sx:90px;--sy:-30px;left:50%;top:38%;animation-delay:0.4s"></span>
+          <span class="spark" style="--sx:-40px;--sy:-90px;left:46%;top:46%;animation-delay:0.6s"></span>
+          <span class="spark" style="--sx:60px;--sy:-100px;left:52%;top:44%;animation-delay:0.8s"></span>
+          <span class="spark" style="--sx:0;--sy:-110px;left:50%;top:40%;animation-delay:1s"></span>
+
+          <svg class="treasure" id="treasure" viewBox="0 0 100 100" aria-hidden="true">
+            <defs>
+              <radialGradient id="coralGrad" cx="40%" cy="40%" r="70%">
+                <stop offset="0%" stop-color="#FFE7A8"/>
+                <stop offset="60%" stop-color="#FFA98D"/>
+                <stop offset="100%" stop-color="#E27F66"/>
+              </radialGradient>
+            </defs>
+            <path d="M50 12 C 70 28, 80 50, 78 78 C 78 84, 72 86, 68 80 C 64 60, 56 50, 50 50 C 44 50, 36 60, 32 80 C 28 86, 22 84, 22 78 C 20 50, 30 28, 50 12 Z"
+                  fill="url(#coralGrad)" stroke="#FFF" stroke-width="2"/>
+            <circle cx="50" cy="42" r="6" fill="#FFE7A8" opacity="0.9"/>
+            <circle cx="50" cy="42" r="3" fill="#FFFFFF"/>
+          </svg>
+        </div>
+
+        <div class="keys-row" id="keysRow">
+          <div class="key-slot" data-i="0"><div class="key-icon"><svg class="key-svg" viewBox="0 0 40 56"><use href="#keySymbol"/></svg></div></div>
+          <div class="key-slot" data-i="1"><div class="key-icon"><svg class="key-svg" viewBox="0 0 40 56"><use href="#keySymbol"/></svg></div></div>
+          <div class="key-slot" data-i="2"><div class="key-icon"><svg class="key-svg" viewBox="0 0 40 56"><use href="#keySymbol"/></svg></div></div>
+          <div class="key-slot" data-i="3"><div class="key-icon"><svg class="key-svg" viewBox="0 0 40 56"><use href="#keySymbol"/></svg></div></div>
+          <div class="key-slot" data-i="4"><div class="key-icon"><svg class="key-svg" viewBox="0 0 40 56"><use href="#keySymbol"/></svg></div></div>
+        </div>
+      </section>
+
+      <!-- Activity area — each round mounts a different activity here -->
+      <div class="game-area quest-game-area" id="gameRoot"></div>
+
+      <!-- burst layer לבועות זהב -->
+      <div class="burst" id="burst"></div>
+    </div>
+  </main>
+
+  <!-- Noni (src swapped by JS based on state) -->
+  <img class="noni-fixed" id="noniImg" src="assets/noni-idle.png" alt="נוני">
+
+  <!-- בועת פידבק -->
+  <div class="feedback-bubble" id="feedbackBubble"></div>
+
+  <!-- Top bar -->
+  <header class="top-bar">
+    <a href="map.html" class="icon-btn" aria-label="חזרה למפה">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+    <div class="quest-counter" id="questCounter">
+      <span class="qc-letter">מ</span>
+      <span id="keyCountDisplay">0/5 מפתחות</span>
+    </div>
+    <div class="pearl-counter" aria-label="פנינים">
+      <span class="pearl" aria-hidden="true"></span>
+      <span class="count" id="pearlCount">0</span>
+    </div>
+  </header>
+
+  <!-- Start overlay -->
+  <div class="tap-to-start" id="tapToStart">
+    <h2>הצדף הקסום</h2>
+    <button class="intro-speaker" id="introSpeaker" aria-label="שמע את ההסבר">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>הקש/י לשמוע</span>
+    </button>
+    <p>נוני מצא צדף סגור. בתוכו אוצר — אבל צריך <strong>5 מפתחות בצורת מ׳</strong> כדי לפתוח אותו.</p>
+    <p style="font-size: clamp(15px, 3vw, 18px);">תפתרו 5 חידות על האות מ׳ ותקבלו מפתחות!</p>
+    <button class="start-btn" id="startBtn">בוא/י נתחיל</button>
+  </div>
+
+  <!-- Completion overlay -->
+  <div class="completion" id="completion">
+    <h2>מצאתם את האוצר!</h2>
+    <svg class="completion-souvenir" viewBox="0 0 100 100">
+      <use href="#coralFinal"/>
+    </svg>
+    <p id="completionMsg">אלמוג אות זוהר הצטרף לבית של נוני.</p>
+    <a href="map.html" class="btn-primary">חזרה למפה</a>
+  </div>
+
+  <!-- SVG defs -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <!-- Key — gold/coral so it pops against the cyan background -->
+      <symbol id="keySymbol" viewBox="0 0 40 56">
+        <defs>
+          <linearGradient id="keyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#FFE7A8"/>
+            <stop offset="60%" stop-color="#FFA98D"/>
+            <stop offset="100%" stop-color="#E27F66"/>
+          </linearGradient>
+        </defs>
+        <!-- Hebrew מ-shaped head -->
+        <path d="M6 4 L34 4 L34 22 Q34 28 28 28 L26 28 Q22 28 22 24 L22 14 L18 14 L18 30 Q18 34 14 34 L10 34 Q6 34 6 30 Z"
+              fill="url(#keyGrad)" stroke="#FFFFFF" stroke-width="1.5" stroke-linejoin="round"/>
+        <rect x="17" y="34" width="6" height="14" fill="url(#keyGrad)" stroke="#FFFFFF" stroke-width="1.5"/>
+        <rect x="11" y="44" width="6" height="4" fill="url(#keyGrad)" stroke="#FFFFFF" stroke-width="1.5"/>
+        <rect x="11" y="50" width="6" height="4" fill="url(#keyGrad)" stroke="#FFFFFF" stroke-width="1.5"/>
+        <circle cx="14" cy="14" r="2" fill="#FFFFFF" opacity="0.9"/>
+      </symbol>
+      <symbol id="coralFinal" viewBox="0 0 100 100">
+        <defs>
+          <radialGradient id="coralGradFinal" cx="40%" cy="40%" r="70%">
+            <stop offset="0%" stop-color="#FFE7A8"/>
+            <stop offset="60%" stop-color="#FFA98D"/>
+            <stop offset="100%" stop-color="#E27F66"/>
+          </radialGradient>
+        </defs>
+        <path d="M50 12 C 70 28, 80 50, 78 78 C 78 84, 72 86, 68 80 C 64 60, 56 50, 50 50 C 44 50, 36 60, 32 80 C 28 86, 22 84, 22 78 C 20 50, 30 28, 50 12 Z"
+              fill="url(#coralGradFinal)" stroke="#FFF" stroke-width="2"/>
+        <circle cx="50" cy="42" r="6" fill="#FFE7A8" opacity="0.9"/>
+        <circle cx="50" cy="42" r="3" fill="#FFFFFF"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <!-- Shared modules — load order matters -->
+  <script src="js/state.js"></script>
+  <script src="js/shared/audio.js"></script>
+  <script src="js/shared/noni.js"></script>
+  <script src="js/shared/feedback.js"></script>
+
+  <!-- ====== OVERRIDE: noni facial expressions via src swap ====== -->
+  <script>
+  (function noniExpressions() {
+    const EXPR = {
+      idle:    'assets/noni-idle.png',
+      help:    'assets/noni-thinking.png',
+      hint:    'assets/noni-surprised.png',
+      cheer:   'assets/noni-happy.png',
+      dance:   'assets/noni-kiss.png',
+    };
+
+    // Preload all images so swapping is instant
+    Object.values(EXPR).forEach(src => { const i = new Image(); i.src = src; });
+
+    if (!window.AvneiNoni) return;
+    const origSetState = AvneiNoni.setState;
+    AvneiNoni.setState = function(state) {
+      origSetState.call(this, state);
+      const img = document.getElementById('noniImg');
+      if (!img) return;
+      const src = EXPR[state] || EXPR.idle;
+      if (img.src.indexOf(src.split('/').pop()) === -1) {
+        img.src = src;
+      }
+    };
+
+    // Set initial idle on load
+    document.addEventListener('DOMContentLoaded', () => {
+      const img = document.getElementById('noniImg');
+      if (img) img.src = EXPR.idle;
+    });
+  })();
+  </script>
+
+  <!-- ====== OVERRIDE: force feedback bubble styling via inline style ======
+       Inline style wins over any external CSS (even !important rules in
+       stage-3.css / shell-quest.css). This is the last-resort fix for the
+       giant bubble bug. -->
+  <script>
+  (function overrideFeedbackBubble() {
+    if (!window.AvneiFeedback) return;
+    const origShow = AvneiFeedback.show;
+    const origHide = AvneiFeedback.hide;
+
+    // Visual bubble is hidden — kids don't read at this age. Audio + noni's
+    // facial expression carry the feedback instead.
+    AvneiFeedback.show = function(text) {
+      // origShow.call(this, text);  // skip — we don't want the text bubble
+      const fb = document.getElementById('feedbackBubble');
+      if (fb) fb.style.display = 'none';
+    };
+
+    AvneiFeedback.hide = function() {
+      origHide.call(this);
+      const fb = document.getElementById('feedbackBubble');
+      if (fb) fb.style.display = 'none';
+    };
+  })();
+  </script>
+
+  <script src="js/shared/scaffolding.js"></script>
+  <script src="js/shared/bkt.js"></script>
+  <script src="js/shared/epa.js"></script>
+  <script src="js/shared/event-logger.js"></script>
+  <script src="js/shared/mastery-check.js"></script>
+  <script src="js/shared/shell.js"></script>
+  <script src="js/shared/instruction.js"></script>
+  <script src="js/activities/sound-match.js"></script>
+  <script src="js/activities/letter-shape.js"></script>
+  <script src="js/activities/find-letter.js"></script>
+
+  <script>
+  // ============================================================
+  // shell-quest controller — מסגרת הצדף עם 5 שלבים מגוונים על אות מ׳
+  // ============================================================
+
+  const ISLAND_ID = 3;
+  const LETTER = 'מ';
+  const TOTAL_KEYS = 5;
+
+  // The 5 stages — each one different. If an activity has no items, skip it.
+  const STAGES = [
+    { activity: 'soundMatch',    variant: null },
+    { activity: 'letterShape',   variant: 'A'  },
+    { activity: 'findLetter',    variant: null },
+    { activity: 'letterShape',   variant: 'B'  },
+    { activity: 'soundMatch',    variant: null },
+  ];
+
+  const state = {
+    soundMatchItems: [],
+    letterShapeAItems: [],
+    letterShapeBItems: [],
+    findLetterItems: [],
+    soundMatchPool: [],   // shuffled queue
+    keysCollected: 0,
+    stageIdx: 0,
+  };
+
+  const elShell = document.getElementById('shellContainer');
+  const elRoot  = document.getElementById('gameRoot');
+  const elBubble = document.getElementById('feedbackBubble');
+  const elNoni  = document.getElementById('noniImg');
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function showFeedback(text, duration = 1500) {
+    elBubble.textContent = text;
+    elBubble.classList.add('show');
+    setTimeout(() => elBubble.classList.remove('show'), duration);
+  }
+
+  function updateKeyCounter() {
+    const el = document.getElementById('keyCountDisplay');
+    if (el) el.textContent = state.keysCollected + '/5 מפתחות';
+  }
+
+  function updatePearlDisplay() {
+    if (typeof getPearls === 'function') {
+      document.getElementById('pearlCount').textContent = getPearls();
+    }
+  }
+
+  // ============================================================
+  // טעינת כל ה-data
+  // ============================================================
+  async function loadAllData() {
+    const [items03, letterShape, findLetter] = await Promise.all([
+      fetch('data/island-03-items.json').then(r => r.json()),
+      fetch('data/island-03-letter-shape.json').then(r => r.json()).catch(() => ({ items: [] })),
+      fetch('data/island-03-find-letter.json').then(r => r.json()).catch(() => ({ items: [] })),
+    ]);
+
+    state.soundMatchItems = (items03.items || []).filter(it =>
+      it.letter_in_focus === LETTER
+    );
+    state.letterShapeAItems = (letterShape.items || []).filter(it =>
+      it.letter === LETTER && it.variant === 'A'
+    );
+    state.letterShapeBItems = (letterShape.items || []).filter(it =>
+      it.letter === LETTER && it.variant === 'B'
+    );
+    state.findLetterItems = (findLetter.items || []).filter(it =>
+      it.target_letter === LETTER
+    );
+
+    // Build a shuffled queue of sound-match items so two SM stages get different ones
+    state.soundMatchPool = shuffle(state.soundMatchItems);
+  }
+
+  // ============================================================
+  // קבלת items עבור שלב — מחזיר רק 1 (שלב = מפתח אחד)
+  // ============================================================
+  function getStageItems(stage) {
+    if (stage.activity === 'soundMatch') {
+      const next = state.soundMatchPool.shift();
+      return next ? [next] : [];
+    }
+    if (stage.activity === 'letterShape' && stage.variant === 'A') {
+      return state.letterShapeAItems.length > 0
+        ? [state.letterShapeAItems[0]]
+        : [];
+    }
+    if (stage.activity === 'letterShape' && stage.variant === 'B') {
+      return state.letterShapeBItems.length > 0
+        ? [state.letterShapeBItems[0]]
+        : [];
+    }
+    if (stage.activity === 'findLetter') {
+      return state.findLetterItems.length > 0
+        ? [state.findLetterItems[Math.floor(Math.random() * state.findLetterItems.length)]]
+        : [];
+    }
+    return [];
+  }
+
+  // ============================================================
+  // הרצת activity יחיד עטוף כ-Promise
+  // ============================================================
+  function runStage(stage) {
+    return new Promise((resolve) => {
+      let activity;
+      if (stage.activity === 'soundMatch')  activity = window.AvneiSoundMatch;
+      if (stage.activity === 'letterShape') activity = window.AvneiLetterShape;
+      if (stage.activity === 'findLetter')  activity = window.AvneiFindLetter;
+
+      if (!activity) {
+        console.warn('Missing activity:', stage.activity);
+        return resolve({ skipped: true });
+      }
+
+      const items = getStageItems(stage);
+      if (items.length === 0) {
+        console.warn('No items for', stage.activity, stage.variant, '— falling back to sound-match');
+        // Fallback: use another sound-match item if available
+        if (state.soundMatchPool.length > 0) {
+          const fb = state.soundMatchPool.shift();
+          window.AvneiSoundMatch.mount(elRoot, {
+            letter: LETTER,
+            supportLevel: 1,
+            items: [fb],
+            onItemComplete: () => {},
+            onActivityComplete: (summary) => {
+              window.AvneiSoundMatch.unmount();
+              resolve(summary);
+            },
+          });
+          return;
+        }
+        return resolve({ skipped: true });
+      }
+
+      activity.mount(elRoot, {
+        letter: LETTER,
+        supportLevel: 1,
+        variant: stage.variant,
+        items,
+        onItemComplete: () => {},
+        onActivityComplete: (summary) => {
+          activity.unmount();
+          resolve(summary);
+        },
+      });
+    });
+  }
+
+  // ============================================================
+  // אנימציית מפתח שטס — מהמרכז של ה-activity אל ה-slot
+  // ============================================================
+  function flyKeyToSlot(slotIdx) {
+    const slot = document.querySelector(`.key-slot[data-i="${slotIdx}"]`);
+    if (!slot) return;
+
+    const rootRect = elRoot.getBoundingClientRect();
+    const tRect = slot.getBoundingClientRect();
+    const sx = rootRect.left + rootRect.width / 2 - 28;
+    const sy = rootRect.top  + rootRect.height / 2 - 36;
+
+    const flyEl = document.createElement('div');
+    flyEl.className = 'flying-key';
+    flyEl.innerHTML = `<svg viewBox="0 0 40 56" style="width:100%;height:100%"><use href="#keySymbol"/></svg>`;
+    flyEl.style.left = sx + 'px';
+    flyEl.style.top  = sy + 'px';
+    document.body.appendChild(flyEl);
+
+    requestAnimationFrame(() => {
+      const dx = (tRect.left + tRect.width / 2) - (sx + 28);
+      const dy = (tRect.top  + tRect.height / 2) - (sy + 36);
+      flyEl.style.transform = `translate(${dx}px, ${dy}px) scale(0.7)`;
+    });
+
+    setTimeout(() => slot.classList.add('filled'), 850);
+
+    setTimeout(() => {
+      flyEl.style.opacity = '0';
+      setTimeout(() => flyEl.remove(), 300);
+    }, 950);
+  }
+
+  function cheerNoni() {
+    if (window.AvneiNoni) AvneiNoni.setState('cheer');
+    setTimeout(() => {
+      if (window.AvneiNoni) AvneiNoni.setState('idle');
+    }, 1500);
+  }
+
+  // ============================================================
+  // פתיחת הצדף — דרמטיות בסוף + חגיגה
+  // ============================================================
+  async function openShell() {
+    showFeedback('הצדף מזדעזע...', 1800);
+    elShell.classList.add('shaking');
+    AvneiAudio.play('great');
+
+    setTimeout(() => {
+      elShell.classList.remove('shaking');
+      document.getElementById('shellClosed').style.opacity = '0';
+      document.getElementById('shellOpen').style.opacity = '1';
+      elShell.classList.add('opened');
+      showFeedback('הצדף נפתח!', 2200);
+      cheerNoni();
+    }, 1300);
+
+    setTimeout(() => {
+      startFinale();
+    }, 4200);
+  }
+
+  // ============================================================
+  // החגיגה — נוני רוקד, קונפטי, נשיקות
+  // ============================================================
+  function startFinale() {
+    // Noni dances + blows kiss expression
+    elNoni.classList.add('dancing');
+    elNoni.src = 'assets/noni-kiss.png';
+
+    // Spawn confetti
+    spawnConfetti(80);
+
+    // Spawn floating kisses
+    spawnKisses(8);
+
+    // Play proper finale audio + cheer
+    AvneiAudio.playSequence(['great', 'finale-found-treasure'], 800);
+
+    // Show completion overlay after a beat
+    setTimeout(showCompletion, 1800);
+  }
+
+  function spawnConfetti(count) {
+    const container = document.getElementById('confettiLayer') || (() => {
+      const c = document.createElement('div');
+      c.id = 'confettiLayer';
+      c.className = 'confetti-layer';
+      document.body.appendChild(c);
+      return c;
+    })();
+    const colors = ['#FFE7A8', '#FFA98D', '#B8F2CF', '#A8E8FF', '#D9D2FF', '#FFD3D8'];
+    for (let i = 0; i < count; i++) {
+      const piece = document.createElement('span');
+      piece.className = 'confetti-piece';
+      piece.style.left = Math.random() * 100 + 'vw';
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.animationDelay = (Math.random() * 0.8) + 's';
+      piece.style.animationDuration = (2.4 + Math.random() * 2.2) + 's';
+      piece.style.width = (6 + Math.random() * 8) + 'px';
+      piece.style.height = (10 + Math.random() * 14) + 'px';
+      piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+      container.appendChild(piece);
+      setTimeout(() => piece.remove(), 5000);
+    }
+  }
+
+  function spawnKisses(count) {
+    const container = document.getElementById('kissesLayer') || (() => {
+      const c = document.createElement('div');
+      c.id = 'kissesLayer';
+      c.className = 'kisses-layer';
+      document.body.appendChild(c);
+      return c;
+    })();
+    for (let i = 0; i < count; i++) {
+      const k = document.createElement('span');
+      k.className = 'kiss-heart';
+      // Start near Noni (bottom-left)
+      k.style.left = (8 + Math.random() * 18) + 'vw';
+      k.style.bottom = (4 + Math.random() * 6) + 'vh';
+      k.style.animationDelay = (Math.random() * 1.2) + 's';
+      k.innerHTML = `
+        <svg viewBox="0 0 32 32">
+          <path d="M16 28 C 6 20, 2 14, 6 9 C 10 4, 14 8, 16 12 C 18 8, 22 4, 26 9 C 30 14, 26 20, 16 28 Z"
+                fill="#FF6B9D" stroke="#FFFFFF" stroke-width="1.5"/>
+        </svg>
+      `;
+      container.appendChild(k);
+      setTimeout(() => k.remove(), 5000);
+    }
+  }
+
+  // Mark this quest done so stage-3-island.html unlocks the next letter
+  function markQuestCompleted(questId) {
+    try {
+      const key = 'island3-quests:completed';
+      const completed = JSON.parse(localStorage.getItem(key) || '[]');
+      if (!completed.includes(questId)) {
+        completed.push(questId);
+        localStorage.setItem(key, JSON.stringify(completed));
+      }
+    } catch (e) {}
+  }
+
+  function showCompletion() {
+    if (typeof completeStage === 'function') completeStage(ISLAND_ID);
+    if (typeof addSouvenir === 'function') addSouvenir('אלמוג אות זוהר');
+    markQuestCompleted('shell');
+    document.getElementById('completion').classList.add('show');
+    // Keep confetti going on the completion screen
+    spawnConfetti(40);
+    // A0.3 — בדיקת mastery משולש לאי כולו (BKT + שטף + רף ראמ"ה)
+    if (window.AvneiMasteryCheck) {
+      AvneiMasteryCheck.checkAndShowIslandCelebration(null, ISLAND_ID);
+    }
+  }
+
+  // ============================================================
+  // הרצה ראשית — 5 שלבים ברצף
+  // ============================================================
+  async function runQuest() {
+    AvneiNoni.ready();
+    updatePearlDisplay();
+    updateKeyCounter();
+
+    for (let i = 0; i < TOTAL_KEYS; i++) {
+      state.stageIdx = i;
+      const stage = STAGES[i];
+      const result = await runStage(stage);
+
+      if (result && result.skipped) {
+        // skip — try the rest
+        continue;
+      }
+
+      // award a key
+      flyKeyToSlot(state.keysCollected);
+      state.keysCollected++;
+      updateKeyCounter();
+      updatePearlDisplay();
+
+      // longer pause so the success audio finishes before next prompt starts
+      if (state.keysCollected < TOTAL_KEYS) {
+        await new Promise(r => setTimeout(r, 2400));
+      }
+    }
+
+    if (state.keysCollected >= TOTAL_KEYS) {
+      setTimeout(openShell, 800);
+    } else {
+      console.warn('Not enough stages completed:', state.keysCollected);
+      showCompletion();
+    }
+  }
+
+  // ============================================================
+  // Intro speaker — plays the explanation in Hebrew (kids who don't read)
+  // ============================================================
+  document.getElementById('introSpeaker').addEventListener('click', () => {
+    AvneiAudio.unlock();
+    const btn = document.getElementById('introSpeaker');
+    btn.classList.add('playing');
+    AvneiAudio.playSequence(['intro-shell-quest', 'intro-shell-mission'], 600);
+    setTimeout(() => btn.classList.remove('playing'), 12000);
+  });
+
+  // ============================================================
+  // Bootstrap
+  // ============================================================
+  document.getElementById('startBtn').addEventListener('click', async () => {
+    AvneiAudio.unlock();
+    document.getElementById('tapToStart').classList.add('hidden');
+
+    try {
+      await loadAllData();
+    } catch (e) {
+      console.error('Failed to load data:', e);
+      return;
+    }
+
+    runQuest();
+  });
+
+  // Dev shortcut: ?reset=1
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('reset') === '1') {
+    localStorage.removeItem('underwater-app:v1');
+    console.log('localStorage reset.');
+  }
+
+  </script>
+
+</body>
+</html>

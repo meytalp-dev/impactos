@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>הבועה שרוצה לעלות · אי 1 · עומק הים המואר</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/stage-1.css">
+  <link rel="stylesheet" href="css/bubble-rise.css">
+</head>
+<body>
+
+  <!-- ============ Scene ============ -->
+  <main class="stage-1-scene">
+    <img class="bay-bg" src="assets/island-01/bay-bg.png" alt="" aria-hidden="true">
+
+    <!-- בועות רקע אטמוספריות -->
+    <div class="ambient-bubble" style="left: 12%; width: 28px; height: 28px; animation-duration: 14s; animation-delay: 0s; --drift: 20px;"></div>
+    <div class="ambient-bubble" style="left: 78%; width: 22px; height: 22px; animation-duration: 18s; animation-delay: 3s; --drift: -15px;"></div>
+    <div class="ambient-bubble" style="left: 30%; width: 18px; height: 18px; animation-duration: 12s; animation-delay: 6s; --drift: 10px;"></div>
+    <div class="ambient-bubble" style="left: 88%; width: 32px; height: 32px; animation-duration: 20s; animation-delay: 9s; --drift: -25px;"></div>
+    <div class="ambient-bubble" style="left: 6%; width: 20px; height: 20px; animation-duration: 16s; animation-delay: 11s; --drift: 18px;"></div>
+
+    <!-- מסלול אנכי + צ'קפוינטים -->
+    <div class="rise-track" id="riseTrack">
+      <!-- checkpoints מתווספים דינמית לפי syllable_count -->
+    </div>
+
+    <!-- הבועה הגדולה -->
+    <div class="big-bubble" id="bigBubble">
+      <img class="word-img" id="wordImg" src="assets/island-01/parpar.png" alt="">
+    </div>
+
+    <!-- נוני -->
+    <img class="noni-bay" id="noniImg" src="assets/noni-idle.png" alt="נוני">
+
+    <!-- שדה בועות-הברה -->
+    <div class="choice-field" id="choiceField" aria-label="בועות הברה לבחירה"></div>
+
+    <!-- טבעת זוהר בקצה הים -->
+    <div class="surface-ring" id="surfaceRing"></div>
+  </main>
+
+  <!-- ============ Top bar ============ -->
+  <header class="stage-1-topbar">
+    <a href="map.html" class="icon-btn" aria-label="חזרה למפה">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+
+    <div class="word-pill" id="wordPill">
+      <img class="pill-img" id="pillImg" src="assets/island-01/parpar.png" alt="">
+      <span id="wordPillText">פַּרְפַּר</span>
+    </div>
+
+    <button class="replay-btn" id="replayBtn" aria-label="השמע שוב">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+    </button>
+  </header>
+
+  <!-- ============ הוראה דיסקרטית ============ -->
+  <div class="rise-instruction" id="riseInstruction" style="display:none">
+    <div class="rise-instruction__bubble">
+      <button class="mini-speaker" id="instructionSpeaker" aria-label="השמע">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
+        </svg>
+      </button>
+      <span id="instructionText">איזו בועה אומרת את הצליל?</span>
+    </div>
+  </div>
+
+  <!-- ============ tap-to-start ============ -->
+  <div class="tap-to-start" id="tapToStart">
+    <h2>הבועה שרוצה לעלות</h2>
+    <button class="intro-speaker" id="introSpeaker" aria-label="הקש לשמיעה">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>הקש/י לשמוע</span>
+    </button>
+    <p>בועת-אור קטנה נתקעה בקרקעית.</p>
+    <p><strong>בואו נעזור לה לעלות לפני המים.</strong></p>
+    <button class="start-btn" id="startBtn">בוא/י נתחיל!</button>
+  </div>
+
+  <!-- ============ completion ============ -->
+  <div class="completion" id="completion">
+    <h2>הבועה עלתה!</h2>
+    <button class="intro-speaker" id="completionSpeaker" aria-label="השמע">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>הקש/י לשמוע</span>
+    </button>
+    <p id="completionMsg">בועת-האור הגיעה לפני המים.</p>
+    <div>
+      <button class="btn-primary" id="nextWordBtn">מילה נוספת</button>
+      <a href="map.html" class="btn-primary btn-secondary">חזרה למפה</a>
+    </div>
+  </div>
+
+  <!-- ============ Feedback toast ============ -->
+  <div class="feedback-toast" id="feedbackToast"></div>
+
+  <!-- ============ Particles ============ -->
+  <div class="celebrate-particles" id="celebrateParticles" aria-hidden="true"></div>
+
+  <!-- ============ Audio elements ============ -->
+  <audio id="audioPlayer" preload="auto"></audio>
+
+  <script src="js/shared/mastery.js"></script>
+  <script>
+  // ============================================================
+  // BubbleRise — controller
+  // ============================================================
+  const GAME_ID = 'bubbleRise';
+
+  const AUDIO_BASE = 'assets/audio/island-01';
+  const audio = document.getElementById('audioPlayer');
+
+  let WORDS = [];
+  let currentWordIndex = 0;
+  let currentWord = null;
+  let currentSyllableIndex = 0;
+  let mistakeCount = 0;
+  let wordMistakeTotal = 0; // total mistakes in current word (for mastery)
+  let started = false;
+  let hintTimer = null;
+  let demoRunning = false; // disables clicks during auto-demo
+
+  // ----- Audio helpers -----
+  // Guarantees onEnd fires exactly once — on ended, error, or play-rejection.
+  // Without this, a single missing/corrupt MP3 silently freezes the whole game.
+  function playAudio(filename, onEnd) {
+    let done = false;
+    const finish = () => { if (done) return; done = true; onEnd && onEnd(); };
+    audio.onended = finish;
+    audio.onerror = () => { console.warn('audio error:', filename); finish(); };
+    audio.src = `${AUDIO_BASE}/${filename}.mp3`;
+    const p = audio.play();
+    if (p && p.catch) {
+      p.catch(err => {
+        console.warn('audio play blocked:', filename, err);
+        setTimeout(finish, 800);
+      });
+    }
+  }
+
+  function playSequence(filenames, onAllDone, gapMs = 250) {
+    if (!filenames.length) { onAllDone && onAllDone(); return; }
+    const [first, ...rest] = filenames;
+    playAudio(first, () => {
+      if (rest.length === 0) { onAllDone && onAllDone(); return; }
+      setTimeout(() => playSequence(rest, onAllDone, gapMs), gapMs);
+    });
+  }
+
+  // playSequence variant with per-step callback (used by demo)
+  function playSequenceWithStep(items, onStep, onDone, gapMs = 350) {
+    if (!items.length) { onDone && onDone(); return; }
+    const [first, ...rest] = items;
+    onStep && onStep(first);
+    playAudio(first.audio, () => {
+      if (rest.length === 0) { onDone && onDone(); return; }
+      setTimeout(() => playSequenceWithStep(rest, onStep, onDone, gapMs), gapMs);
+    });
+  }
+
+  // ----- Word bank loading -----
+  async function loadWords() {
+    try {
+      const res = await fetch('data/island-01-words.json');
+      const data = await res.json();
+      WORDS = data.words;
+    } catch (err) {
+      console.error('failed to load words:', err);
+    }
+  }
+
+  // ----- Build distractor syllables from OTHER words -----
+  // excludeIds = syllable_ids that are already on screen (target word's own syllables)
+  function pickDistractors(targetWord, count = 4) {
+    const excludeIds = new Set(targetWord.syllable_ids);
+    const pool = [];
+    WORDS.forEach(w => {
+      if (w.id === targetWord.id) return;
+      w.syllables.forEach((syl, i) => {
+        const sylId = w.syllable_ids[i];
+        if (excludeIds.has(sylId)) return;
+        pool.push({
+          syllable: syl,
+          syllable_id: sylId,
+          audio: w.syllable_audios[i].split('/').pop().replace('.mp3', '')
+        });
+      });
+    });
+    // shuffle and take N unique
+    const shuffled = pool.sort(() => Math.random() - 0.5);
+    const seen = new Set();
+    const out = [];
+    for (const item of shuffled) {
+      if (seen.has(item.syllable_id)) continue;
+      seen.add(item.syllable_id);
+      out.push(item);
+      if (out.length >= count) break;
+    }
+    return out;
+  }
+
+  // ----- Build checkpoints based on syllable count -----
+  function buildCheckpoints(count) {
+    const track = document.getElementById('riseTrack');
+    track.innerHTML = '';
+    // Distribute checkpoints evenly between bottom (14%) and top (12%)
+    // For 2 syllables → 2 checkpoints; for 3 → 3
+    for (let i = 0; i < count; i++) {
+      const cp = document.createElement('div');
+      cp.className = 'checkpoint';
+      cp.dataset.i = i;
+      // higher i = higher on screen
+      const bottomPct = 14 + ((i + 1) * (74 / count));
+      cp.style.bottom = `${bottomPct}%`;
+      track.appendChild(cp);
+    }
+  }
+
+  // ----- Position big bubble at checkpoint i -----
+  function moveBigBubbleTo(i) {
+    const big = document.getElementById('bigBubble');
+    if (i < 0) {
+      big.style.bottom = '14%';
+      return;
+    }
+    const checkpoints = document.querySelectorAll('.checkpoint');
+    const cp = checkpoints[i];
+    if (cp) {
+      big.style.bottom = cp.style.bottom;
+    }
+  }
+
+  // ----- Build ALL bubbles for the word (correct syllables + distractors) -----
+  // Called ONCE per word. Bubbles stay on screen as child progresses through syllables.
+  function buildAllBubblesForWord() {
+    const field = document.getElementById('choiceField');
+    field.innerHTML = '';
+
+    // 1. correct syllables (each with its order index)
+    const correctChoices = currentWord.syllables.map((syl, i) => ({
+      syllable: syl,
+      syllable_id: currentWord.syllable_ids[i],
+      audio: currentWord.syllable_audios[i].split('/').pop().replace('.mp3', ''),
+      correct: true,
+      order: i
+    }));
+
+    // 2. distractors — 3 for 2-syl words, 3 for 3-syl words (total bubbles: 5 or 6)
+    const distractorCount = currentWord.syllable_count === 2 ? 3 : 3;
+    const distractors = pickDistractors(currentWord, distractorCount).map(d => ({
+      syllable: d.syllable,
+      syllable_id: d.syllable_id,
+      audio: d.audio,
+      correct: false,
+      order: -1
+    }));
+
+    const all = [...correctChoices, ...distractors].sort(() => Math.random() - 0.5);
+
+    // Positions — distributed around the center, avoiding the big bubble area
+    // Big bubble is bottom-center (50%, ~14%-86%), so place choices on sides + top
+    const positions = pickPositions(all.length);
+
+    const speakerSvg = `<svg class="speaker-icon" viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>`;
+
+    all.forEach((c, idx) => {
+      const b = document.createElement('button');
+      b.className = 'syllable-bubble';
+      b.dataset.correct = c.correct ? '1' : '0';
+      b.dataset.order = c.order;
+      b.dataset.audio = c.audio;
+      b.dataset.idx = idx;
+      b.style.left = positions[idx].left;
+      b.style.top = positions[idx].top;
+      b.style.animationDelay = `${idx * 0.25}s`;
+      b.setAttribute('aria-label', `בועה ${idx + 1}`);
+      b.innerHTML = speakerSvg;
+
+      b.addEventListener('click', () => handleChoiceClick(b, c));
+
+      field.appendChild(b);
+    });
+
+    // === AUTO DEMO: play each bubble in sequence ===
+    demoRunning = true;
+    showInstruction('הַקְשִׁיבוּ לְכָל בּוּעָה...');
+    const bubbles = Array.from(field.querySelectorAll('.syllable-bubble'));
+    const demoItems = bubbles.map(b => ({
+      audio: b.dataset.audio,
+      btn: b
+    }));
+
+    setTimeout(() => {
+      playSequenceWithStep(
+        demoItems,
+        (item) => {
+          item.btn.classList.add('demo-pulse', 'heard');
+          setTimeout(() => item.btn.classList.remove('demo-pulse'), 900);
+        },
+        () => {
+          setTimeout(() => promptForCurrentSyllable(), 400);
+        },
+        420
+      );
+    }, 500);
+  }
+
+  // Prompt the child to find the next-needed syllable
+  function promptForCurrentSyllable() {
+    const targetSyl = currentWord.syllables[currentSyllableIndex];
+    const targetAudio = currentWord.syllable_audios[currentSyllableIndex].split('/').pop().replace('.mp3', '');
+
+    const promptText = currentSyllableIndex === 0
+      ? `תִּמְצְאוּ אֶת "${targetSyl}"`
+      : `עַכְשָׁו "${targetSyl}"`;
+    showInstruction(promptText);
+
+    playAudio(targetAudio, () => {
+      demoRunning = false;
+      // hint after 9 seconds of inactivity
+      clearTimeout(hintTimer);
+      hintTimer = setTimeout(() => {
+        const correctBtn = document.querySelector(`.syllable-bubble[data-order="${currentSyllableIndex}"]`);
+        if (correctBtn) correctBtn.classList.add('hint');
+      }, 9000);
+    });
+  }
+
+  function showInstruction(text) {
+    const el = document.getElementById('riseInstruction');
+    document.getElementById('instructionText').textContent = text;
+    el.style.display = 'flex';
+  }
+
+  // Position bubbles in the upper half of the field, avoiding:
+  //   - the big bubble (bottom-center, large hit area)
+  //   - noni (bottom-right corner)
+  //   - mobile edge overflow (was happening with left: 78%)
+  // 6 slots, 3-column × 2-row grid. Bubble width is ~86-130px (clamp).
+  function pickPositions(n) {
+    const POOL = [
+      { left: '4%',  top: '6%'  },
+      { left: '38%', top: '2%'  },
+      { left: '68%', top: '6%'  },
+      { left: '4%',  top: '36%' },
+      { left: '38%', top: '32%' },
+      { left: '68%', top: '36%' },
+    ];
+    return POOL.slice(0, n).sort(() => Math.random() - 0.5);
+  }
+
+  function handleChoiceClick(btn, choice) {
+    // ignore clicks during auto-demo
+    if (demoRunning) return;
+    // ignore clicks on bubbles already used (correct + popped)
+    if (btn.classList.contains('correct')) return;
+    clearTimeout(hintTimer);
+
+    const targetAudio = currentWord.syllable_audios[currentSyllableIndex].split('/').pop().replace('.mp3', '');
+    const targetSyl = currentWord.syllables[currentSyllableIndex];
+
+    // ===== CASE A: correct bubble AND correct order =====
+    if (choice.correct && choice.order === currentSyllableIndex) {
+      btn.classList.add('correct');
+      btn.style.pointerEvents = 'none';
+
+      playAudio(choice.audio, () => {
+        // light up checkpoint
+        const cps = document.querySelectorAll('.checkpoint');
+        if (cps[currentSyllableIndex]) cps[currentSyllableIndex].classList.add('lit');
+        // move big bubble up
+        moveBigBubbleTo(currentSyllableIndex);
+        // advance
+        currentSyllableIndex++;
+        mistakeCount = 0;
+        if (currentSyllableIndex >= currentWord.syllable_count) {
+          setTimeout(completeWord, 1100);
+        } else {
+          // toast + prompt next syllable (bubbles stay on screen!)
+          showFeedbackToast('יָפֶה!');
+          setTimeout(promptForCurrentSyllable, 1000);
+        }
+      });
+      return;
+    }
+
+    // ===== CASE B: correct syllable BUT wrong order =====
+    // (e.g. clicked "תוּל" before "חָ")
+    if (choice.correct && choice.order !== currentSyllableIndex) {
+      mistakeCount++;
+      wordMistakeTotal++;
+      btn.classList.add('wobble');
+      setTimeout(() => btn.classList.remove('wobble'), 600);
+      // play what they tapped, then remind them about order
+      playAudio(choice.audio, () => {
+        // hint: glow on the CORRECT next bubble
+        const correctBtn = document.querySelector(`.syllable-bubble[data-order="${currentSyllableIndex}"]`);
+        if (correctBtn) correctBtn.classList.add('hint');
+        setTimeout(() => playAudio(targetAudio), 350);
+      });
+      return;
+    }
+
+    // ===== CASE C: wrong syllable (distractor) =====
+    mistakeCount++;
+    wordMistakeTotal++;
+    btn.classList.add('wobble', 'heard');
+    setTimeout(() => btn.classList.remove('wobble'), 600);
+
+    playAudio(choice.audio, () => {
+      if (mistakeCount === 1) {
+        setTimeout(() => playAudio(targetAudio), 350);
+      } else if (mistakeCount === 2) {
+        const correctBtn = document.querySelector(`.syllable-bubble[data-order="${currentSyllableIndex}"]`);
+        if (correctBtn) correctBtn.classList.add('hint');
+        setTimeout(() => playSequence(['support-mistake-2', targetAudio]), 300);
+      } else {
+        const correctBtn = document.querySelector(`.syllable-bubble[data-order="${currentSyllableIndex}"]`);
+        if (correctBtn) correctBtn.classList.add('hint');
+        setTimeout(() => playAudio('support-mistake-3'), 300);
+      }
+    });
+  }
+
+  function showFeedbackToast(text) {
+    if (!text) return;
+    const t = document.getElementById('feedbackToast');
+    t.textContent = text;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 1100);
+  }
+
+  // ----- Word complete: surface + celebration -----
+  function completeWord() {
+    // record mastery result
+    if (window.AvneiMastery) {
+      window.AvneiMastery.recordResult(currentWord.id, GAME_ID, wordMistakeTotal);
+    }
+
+    const big = document.getElementById('bigBubble');
+    const noni = document.getElementById('noniImg');
+    const ring = document.getElementById('surfaceRing');
+
+    // swap noni to happy
+    noni.src = 'assets/noni-happy.png';
+    noni.classList.add('celebrating');
+
+    // surface burst
+    ring.classList.add('active');
+
+    // big bubble pops
+    big.classList.add('popping');
+
+    // particles
+    burstParticles();
+
+    // play full word audio
+    setTimeout(() => playAudio(`word-${currentWord.id}`, () => {
+      setTimeout(showCompletion, 700);
+    }), 700);
+  }
+
+  function burstParticles() {
+    const container = document.getElementById('celebrateParticles');
+    container.innerHTML = '';
+    const colors = ['#FFF7C8', '#FFA98D', '#B981FF', '#A8E8FF', '#73D9D1'];
+    for (let i = 0; i < 28; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const angle = (i / 28) * Math.PI * 2;
+      const dist = 200 + Math.random() * 120;
+      p.style.left = `${50 + (Math.random() - 0.5) * 10}%`;
+      p.style.top = `${60 + (Math.random() - 0.5) * 10}%`;
+      p.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
+      p.style.setProperty('--dy', `${Math.sin(angle) * dist - 100}px`);
+      p.style.background = colors[i % colors.length];
+      p.style.boxShadow = `0 0 12px ${colors[i % colors.length]}`;
+      p.style.animationDelay = `${(i % 6) * 0.06}s`;
+      container.appendChild(p);
+    }
+    setTimeout(() => { container.innerHTML = ''; }, 3000);
+  }
+
+  function showCompletion() {
+    document.getElementById('completion').classList.add('visible');
+    // play completion audio automatically — children can't read
+    setTimeout(() => playAudio('ui-complete-rise'), 400);
+  }
+
+  // ----- Word switching -----
+  function loadWord(idx) {
+    currentWordIndex = (idx + WORDS.length) % WORDS.length;
+    currentWord = WORDS[currentWordIndex];
+    currentSyllableIndex = 0;
+    mistakeCount = 0;
+    wordMistakeTotal = 0;
+
+    // update UI
+    document.getElementById('wordImg').src = currentWord.image;
+    document.getElementById('pillImg').src = currentWord.image;
+    document.getElementById('wordPillText').textContent = currentWord.display;
+
+    // reset visuals
+    document.querySelectorAll('.checkpoint').forEach(c => c.classList.remove('lit'));
+    const big = document.getElementById('bigBubble');
+    big.classList.remove('popping');
+    big.style.bottom = '14%';
+    big.style.opacity = '1';
+
+    const noni = document.getElementById('noniImg');
+    noni.src = 'assets/noni-idle.png';
+    noni.classList.remove('celebrating');
+
+    document.getElementById('surfaceRing').classList.remove('active');
+    document.getElementById('completion').classList.remove('visible');
+
+    // build checkpoints & first round
+    buildCheckpoints(currentWord.syllable_count);
+    showInstruction('הַקְשִׁיבוּ לַמִּלָּה...');
+
+    // Play word in two passes:
+    //  1. SPLIT syllables (with pause between) — teaches the breaks
+    //  2. WHOLE word (natural rhythm) — anchors to meaning
+    const syllableKeys = currentWord.syllable_audios.map(p => p.split('/').pop().replace('.mp3', ''));
+
+    setTimeout(() => {
+      // Pass 1: syllables, slow with pauses
+      playSequence(syllableKeys, () => {
+        // Pass 2: full word after a pause
+        setTimeout(() => {
+          playAudio(`word-${currentWord.id}`, () => {
+            setTimeout(buildAllBubblesForWord, 500);
+          });
+        }, 600);
+      }, 400);
+    }, 500);
+  }
+
+  function nextWord() {
+    const w = window.AvneiMastery ? window.AvneiMastery.pickWord(GAME_ID, WORDS) : null;
+    const idx = w ? WORDS.indexOf(w) : (currentWordIndex + 1);
+    loadWord(idx);
+  }
+
+  // ----- Start flow -----
+  async function start() {
+    if (started) return;
+    started = true;
+    document.getElementById('tapToStart').classList.add('hidden');
+    // Guard: if init() hasn't finished loading WORDS, wait for it.
+    // Without this, tapping start before fetch completes throws and the screen freezes.
+    if (!WORDS.length) {
+      await loadWords();
+    }
+    if (!WORDS.length) {
+      showInstruction('שגיאת טעינה — נסי לרענן');
+      return;
+    }
+    const w = window.AvneiMastery ? window.AvneiMastery.pickWord(GAME_ID, WORDS) : null;
+    const idx = w ? WORDS.indexOf(w) : Math.floor(Math.random() * WORDS.length);
+    loadWord(idx);
+  }
+
+  // ----- Event wiring -----
+  document.getElementById('startBtn').addEventListener('click', start);
+  document.getElementById('introSpeaker').addEventListener('click', (e) => {
+    e.stopPropagation();
+    playAudio('ui-bubble-story');
+  });
+  document.getElementById('replayBtn').addEventListener('click', () => {
+    if (!currentWord) return;
+    playAudio(`word-${currentWord.id}`);
+  });
+  document.getElementById('instructionSpeaker').addEventListener('click', () => {
+    if (!currentWord) return;
+    const targetAudio = currentWord.syllable_audios[currentSyllableIndex].split('/').pop().replace('.mp3', '');
+    playAudio(targetAudio);
+  });
+  document.getElementById('nextWordBtn').addEventListener('click', nextWord);
+  document.getElementById('completionSpeaker').addEventListener('click', (e) => {
+    e.stopPropagation();
+    playAudio('ui-complete-rise');
+  });
+
+  // ----- Init -----
+  (async function init() {
+    await loadWords();
+    // preload intro story audio
+    audio.src = `${AUDIO_BASE}/ui-bubble-story.mp3`;
+  })();
+  </script>
+</body>
+</html>

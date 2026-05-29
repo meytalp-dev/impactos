@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>אצות התאומות · עומק הים המואר</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/twin-seaweeds.css">
+</head>
+<body>
+
+  <!-- ===== Stage scene ===== -->
+  <main class="twin-scene">
+
+    <!-- Top bar -->
+    <header class="twin-top-bar">
+      <a href="map.html" class="back-btn" aria-label="חזרה למפה">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <div class="round-counter" id="roundCounter">סיבוב 1/8</div>
+      <div style="width:44px"></div>
+    </header>
+
+    <!-- Stage area -->
+    <section class="twin-stage">
+
+      <!-- Progress dots -->
+      <div class="round-dots" id="roundDots" aria-hidden="true"></div>
+
+      <!-- 2 seaweeds + center Noni -->
+      <div class="seaweeds-row" id="seaweedsRow">
+
+        <!-- LEFT seaweed -->
+        <div class="seaweed" data-side="left" id="seaweedLeft" tabindex="0" role="button" aria-label="אצה שמאלית — הקש לשמוע מילה">
+          <div class="word-bubble" id="bubbleLeft">
+            <div class="word-image-fallback" id="textLeft"></div>
+          </div>
+          <svg class="seaweed-svg" viewBox="0 0 120 200" aria-hidden="true">
+            <defs>
+              <linearGradient id="seaweedGlowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop class="seaweed-glow-stop-1" offset="0%" stop-color="#B8F2CF"/>
+                <stop class="seaweed-glow-stop-2" offset="100%" stop-color="#73D9D1"/>
+              </linearGradient>
+            </defs>
+            <g class="seaweed-fronds">
+              <path d="M 60 200 Q 50 160, 56 130 Q 62 100, 50 70 Q 42 45, 58 20 Q 70 38, 64 60 Q 72 85, 62 110 Q 70 135, 60 200 Z"/>
+              <path d="M 60 200 Q 70 170, 76 150 Q 84 125, 72 100 Q 88 85, 80 60 Q 70 80, 76 95 Q 64 115, 70 145 Q 64 175, 60 200 Z" opacity="0.85"/>
+              <path d="M 60 200 Q 48 180, 38 165 Q 28 145, 40 125 Q 30 110, 42 90 Q 50 110, 44 130 Q 54 150, 48 175 Q 56 188, 60 200 Z" opacity="0.78"/>
+            </g>
+          </svg>
+          <div class="tap-me-hint">הקש לשמוע</div>
+        </div>
+
+        <!-- Noni in middle -->
+        <div class="twin-noni-host" id="noniHost">
+          <img class="twin-noni-img" id="noniImg" src="assets/noni-thinking.png" alt="נוני">
+        </div>
+
+        <!-- Heart/ribbon overlay between seaweeds when same is correct -->
+        <svg class="same-ribbon" id="sameRibbon" viewBox="0 0 140 90" aria-hidden="true">
+          <defs>
+            <linearGradient id="ribbonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#FFF7C9"/>
+              <stop offset="100%" stop-color="#FFA98D"/>
+            </linearGradient>
+          </defs>
+          <path d="M 70 78 C 30 62, 14 38, 30 18 C 46 6, 62 18, 70 32 C 78 18, 94 6, 110 18 C 126 38, 110 62, 70 78 Z"
+                fill="url(#ribbonGrad)" stroke="#FFFFFF" stroke-width="2.5" stroke-linejoin="round"/>
+          <circle cx="70" cy="45" r="6" fill="#FFFFFF" opacity="0.8"/>
+        </svg>
+
+        <!-- RIGHT seaweed -->
+        <div class="seaweed" data-side="right" id="seaweedRight" tabindex="0" role="button" aria-label="אצה ימנית — הקש לשמוע מילה">
+          <div class="word-bubble" id="bubbleRight">
+            <div class="word-image-fallback" id="textRight"></div>
+          </div>
+          <svg class="seaweed-svg" viewBox="0 0 120 200" aria-hidden="true">
+            <g class="seaweed-fronds">
+              <path d="M 60 200 Q 70 160, 64 130 Q 58 100, 70 70 Q 78 45, 62 20 Q 50 38, 56 60 Q 48 85, 58 110 Q 50 135, 60 200 Z"/>
+              <path d="M 60 200 Q 50 170, 44 150 Q 36 125, 48 100 Q 32 85, 40 60 Q 50 80, 44 95 Q 56 115, 50 145 Q 56 175, 60 200 Z" opacity="0.85"/>
+              <path d="M 60 200 Q 72 180, 82 165 Q 92 145, 80 125 Q 90 110, 78 90 Q 70 110, 76 130 Q 66 150, 72 175 Q 64 188, 60 200 Z" opacity="0.78"/>
+            </g>
+          </svg>
+          <div class="tap-me-hint">הקש לשמוע</div>
+        </div>
+
+      </div>
+
+      <!-- Question + answer buttons -->
+      <div class="twin-question-panel" id="questionPanel">
+        <div class="twin-hint-speaker" id="hintSpeaker" role="button" aria-label="הקש לשמוע שוב">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
+            <path d="M15.5 8.5a4 4 0 0 1 0 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+          </svg>
+          <span>הקש כאן לשמוע שוב את שתי המילים</span>
+        </div>
+
+        <div class="twin-question-row">
+          <button class="twin-replay-btn" id="replayQuestionBtn" aria-label="השמע את השאלה שוב">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
+              <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+            </svg>
+          </button>
+          <div class="twin-question-text">האם הצליל הראשון בשתי המילים זהה?</div>
+        </div>
+
+        <div class="twin-answer-row">
+          <button class="twin-answer-btn same" data-answer="same" id="btnSame">
+            <svg class="answer-icon" viewBox="0 0 32 32" fill="none">
+              <circle cx="11" cy="16" r="6" fill="white"/>
+              <circle cx="21" cy="16" r="6" fill="white"/>
+              <line x1="14" y1="16" x2="18" y2="16" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+            <span>זהה</span>
+          </button>
+          <button class="twin-answer-btn different" data-answer="different" id="btnDifferent">
+            <svg class="answer-icon" viewBox="0 0 32 32" fill="none">
+              <circle cx="10" cy="16" r="5.5" fill="white"/>
+              <rect x="17" y="11" width="10" height="10" rx="2" fill="white"/>
+            </svg>
+            <span>שונה</span>
+          </button>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Tap-to-start overlay -->
+  <div class="tap-to-start" id="tapToStart">
+    <h2>אצות התאומות</h2>
+    <p>בשונית הים יש שתי אצות זוהרות. כל אחת שרה מילה משלה — הקשיבו וקבעו אם הצליל הראשון <strong>זהה</strong> או <strong>שונה</strong>.</p>
+    <button class="intro-speaker" id="introSpeaker" aria-label="שמע את ההסבר">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>הקש/י לשמוע את ההסבר</span>
+    </button>
+    <button class="start-btn" id="startBtn">בוא/י נתחיל</button>
+  </div>
+
+  <!-- Completion overlay -->
+  <div class="twin-completion" id="completion">
+    <h2>האצות התחברו!</h2>
+    <p id="completionMsg">שתי האצות מצאו זו את זו. כל הצלילים שומעים אחד את השני.</p>
+    <a href="map.html" class="btn-primary">חזרה למפה</a>
+  </div>
+
+  <!-- ===== Shared modules ===== -->
+  <script src="js/state.js"></script>
+  <script src="js/shared/audio.js"></script>
+  <script src="js/shared/epa.js"></script>
+  <script src="js/shared/event-logger.js" onerror="window.AvneiEventLogger = { log: function(){} }"></script>
+
+  <script>
+  // ============================================================
+  // אצות התאומות — Twin Seaweeds · אי 2
+  // מנגנון: same/different פותח
+  // אומת בפרפלקסיטי 23.5.2026
+  // ============================================================
+
+  const ISLAND_ID = 2;
+  const GAME_ID = 'twin-seaweeds';
+
+  // ===== מפת מילה → קובץ אודיו =====
+  const WORD_TO_AUDIO = {
+    'סוס':'word-sus', 'סלע':'word-sela', 'סבא':'word-saba', 'סוכר':'word-sukar',
+    'מים':'word-mayim', 'מלך':'word-melech', 'מנורה':'word-menora', 'מפתח':'word-mafteach',
+    'שמש':'word-shemesh', 'שולחן':'word-shulchan', 'שעון':'word-shaon', 'שמיכה':'word-smicha',
+    'לב':'word-lev', 'לחם':'word-lechem', 'לימון':'word-limon', 'לבנה':'word-levena',
+    'נמר':'word-namer', 'נחל':'word-nachal', 'נר':'word-ner', 'נמלה':'word-nemala',
+  };
+
+  // ===== מפת פונמה → קובץ אודיו (הצליל המאורך) =====
+  const PHONEME_TO_AUDIO = {
+    'מ': 'phoneme-mmm',
+    'ס': 'phoneme-sss',
+    'ש': 'phoneme-shh',
+    'ל': 'phoneme-lll',
+    'נ': 'phoneme-nnn',
+  };
+
+  // ===== State =====
+  const state = {
+    rounds: [],
+    idx: 0,
+    leftActivated: false,
+    rightActivated: false,
+    mistakesInRound: 0,
+    correctCount: 0,
+    sessionId: 'tws_' + Date.now(),
+  };
+
+  // ===== DOM refs =====
+  const $ = (id) => document.getElementById(id);
+  const elLeft     = $('seaweedLeft');
+  const elRight    = $('seaweedRight');
+  const elTextL    = $('textLeft');
+  const elTextR    = $('textRight');
+  const elNoni     = $('noniHost');
+  const elNoniImg  = $('noniImg');
+  const elPanel    = $('questionPanel');
+  const elBtnSame  = $('btnSame');
+  const elBtnDiff  = $('btnDifferent');
+  const elHint     = $('hintSpeaker');
+  const elRibbon   = $('sameRibbon');
+  const elRow      = $('seaweedsRow');
+  const elDots     = $('roundDots');
+  const elCounter  = $('roundCounter');
+  const elReplay   = $('replayQuestionBtn');
+
+  function renderDots() {
+    elDots.innerHTML = '';
+    state.rounds.forEach((r, i) => {
+      const dot = document.createElement('div');
+      dot.className = 'round-dot';
+      if (i < state.idx) dot.classList.add('correct');
+      else if (i === state.idx) dot.classList.add('current');
+      elDots.appendChild(dot);
+    });
+  }
+
+  function updateCounter() {
+    elCounter.textContent = `סיבוב ${state.idx + 1}/${state.rounds.length}`;
+  }
+
+  function setNoniExpression(name) {
+    const map = {
+      idle:    'assets/noni-idle.png',
+      thinking:'assets/noni-thinking.png',
+      hint:    'assets/noni-surprised.png',
+      cheer:   'assets/noni-happy.png',
+    };
+    elNoniImg.src = map[name] || map.thinking;
+  }
+
+  function resetRoundUI() {
+    // איפוס כל מצב חזותי לסיבוב חדש
+    elLeft.classList.remove('activated');
+    elRight.classList.remove('activated');
+    elRow.classList.remove('feedback-same', 'feedback-different');
+    elPanel.classList.remove('visible');
+    elNoni.classList.remove('visible', 'pulsing');
+    elHint.classList.remove('visible');
+    elRibbon.classList.remove('visible');
+    elBtnSame.classList.remove('wrong-shake');
+    elBtnDiff.classList.remove('wrong-shake');
+    elBtnSame.disabled = false;
+    elBtnDiff.disabled = false;
+    state.leftActivated = false;
+    state.rightActivated = false;
+    state.mistakesInRound = 0;
+  }
+
+  function loadRound() {
+    resetRoundUI();
+    const r = state.rounds[state.idx];
+    elTextL.textContent = r.left;
+    elTextR.textContent = r.right;
+    renderDots();
+    updateCounter();
+  }
+
+  function activateSeaweed(side) {
+    const el = side === 'left' ? elLeft : elRight;
+    if (el.classList.contains('activated')) {
+      // לחיצה חוזרת — רק השמע את המילה שוב
+      const word = side === 'left' ? state.rounds[state.idx].left : state.rounds[state.idx].right;
+      AvneiAudio.play(WORD_TO_AUDIO[word]);
+      return;
+    }
+    el.classList.add('activated');
+    if (side === 'left')  state.leftActivated  = true;
+    if (side === 'right') state.rightActivated = true;
+
+    const word = side === 'left' ? state.rounds[state.idx].left : state.rounds[state.idx].right;
+    AvneiAudio.play(WORD_TO_AUDIO[word]);
+
+    if (state.leftActivated && state.rightActivated) {
+      setTimeout(showQuestion, 1100);
+    }
+  }
+
+  function showQuestion() {
+    setNoniExpression('thinking');
+    elNoni.classList.add('visible', 'pulsing');
+    setTimeout(() => {
+      elPanel.classList.add('visible');
+      AvneiAudio.play('twin-question-same-or-different');
+    }, 400);
+  }
+
+  function replayBothWords() {
+    const r = state.rounds[state.idx];
+    AvneiAudio.play(WORD_TO_AUDIO[r.left]);
+    setTimeout(() => AvneiAudio.play(WORD_TO_AUDIO[r.right]), 1100);
+  }
+
+  function logEvent(eventType, payload) {
+    try {
+      if (window.AvneiEventLogger && AvneiEventLogger.log) {
+        AvneiEventLogger.log({
+          session_id: state.sessionId,
+          activity_type: GAME_ID,
+          primary_island: ISLAND_ID,
+          event_type: eventType,
+          round_id: state.rounds[state.idx]?.id,
+          ...payload,
+        });
+      }
+    } catch (e) { /* fail-safe */ }
+  }
+
+  function handleAnswer(answer) {
+    const r = state.rounds[state.idx];
+    const correct = (answer === r.answer);
+
+    if (correct) {
+      onCorrect(answer);
+    } else {
+      onWrong(answer);
+    }
+  }
+
+  // playChain — רצף אודיו עם delay מותאם בין פריט לפריט.
+  // קריטי: משתמשים ב-AvneiAudio.play() שעוצרת את האודיו הקודם — כדי
+  // למנוע חפיפה עם השמעת מילה שעדיין רצה ברקע.
+  function playChain(steps) {
+    let i = 0;
+    const next = () => {
+      if (i >= steps.length) return;
+      const step = steps[i++];
+      AvneiAudio.play(step.key); // עוצר אוטומטית כל אודיו פעיל
+      const a = AvneiAudio.preload(step.key);
+      const onDone = () => {
+        a.removeEventListener('ended', onDone);
+        a.removeEventListener('error', onDone);
+        setTimeout(next, step.delayAfter || 0);
+      };
+      a.addEventListener('ended', onDone);
+      a.addEventListener('error', onDone);
+    };
+    next();
+  }
+
+  function onCorrect(answer) {
+    elBtnSame.disabled = true;
+    elBtnDiff.disabled = true;
+    setNoniExpression('cheer');
+    elNoni.classList.remove('pulsing');
+    elHint.classList.remove('visible');
+
+    const r = state.rounds[state.idx];
+
+    if (answer === 'same') {
+      elRow.classList.add('feedback-same');
+      setTimeout(() => elRibbon.classList.add('visible'), 600);
+
+      // "שתי המילים מתחילות באותו צליל." → פונמה אחת
+      const phonemeKey = PHONEME_TO_AUDIO[r.phoneme_focus];
+      const chain = [{ key: 'twin-feedback-correct-same', delayAfter: 400 }];
+      if (phonemeKey) chain.push({ key: phonemeKey, delayAfter: 0 });
+      playChain(chain);
+    } else {
+      elRow.classList.add('feedback-different');
+
+      // "בשתי המילים יש צלילים שונים." → צליל 1 → המתנה 1 שנייה → צליל 2
+      const [p1, p2] = r.phonemes || [];
+      const k1 = PHONEME_TO_AUDIO[p1];
+      const k2 = PHONEME_TO_AUDIO[p2];
+      const chain = [{ key: 'twin-feedback-correct-different', delayAfter: 400 }];
+      if (k1) chain.push({ key: k1, delayAfter: 1000 });
+      if (k2) chain.push({ key: k2, delayAfter: 0 });
+      playChain(chain);
+    }
+
+    spawnGlowParticles(answer);
+
+    state.correctCount++;
+    logEvent('answer_correct', {
+      is_correct: true,
+      answer: answer,
+      mistakes: state.mistakesInRound,
+      response_time_ms: null,
+    });
+
+    // ספיק זמן לרצף האודיו: same ~4s, different ~6s
+    const advanceDelay = (answer === 'same') ? 4500 : 6800;
+    setTimeout(advanceRound, advanceDelay);
+  }
+
+  function onWrong(answer) {
+    state.mistakesInRound++;
+    const btn = answer === 'same' ? elBtnSame : elBtnDiff;
+    btn.classList.remove('wrong-shake');
+    void btn.offsetWidth;
+    btn.classList.add('wrong-shake');
+
+    logEvent('answer_wrong', {
+      is_correct: false,
+      answer: answer,
+      mistakes: state.mistakesInRound,
+    });
+
+    if (state.mistakesInRound === 1) {
+      // טעות 1: רעידה עדינה בלבד
+      setNoniExpression('thinking');
+    } else if (state.mistakesInRound === 2) {
+      // טעות 2: רמז — אפשרות להאזין שוב
+      setNoniExpression('hint');
+      elHint.classList.add('visible');
+      AvneiAudio.play('twin-hint-listen-again');
+    } else {
+      // טעות 3+: הקש פה — מציג את התשובה בקול
+      setNoniExpression('hint');
+      AvneiAudio.play('twin-feedback-try-again');
+      // אחרי 1.5 שנייה — תן להם את התשובה הנכונה
+      setTimeout(() => {
+        const r = state.rounds[state.idx];
+        AvneiAudio.play(
+          r.answer === 'same' ? 'twin-feedback-correct-same' : 'twin-feedback-correct-different'
+        );
+        // לאחר ההודעה — סמן את התשובה הנכונה כ"בחורה" אוטומטית
+        setTimeout(() => {
+          const correctBtn = r.answer === 'same' ? elBtnSame : elBtnDiff;
+          correctBtn.click();
+        }, 2000);
+      }, 1600);
+    }
+  }
+
+  function spawnGlowParticles(answer) {
+    const rowRect = elRow.getBoundingClientRect();
+    const layer = document.body;
+    for (let i = 0; i < 7; i++) {
+      const p = document.createElement('div');
+      p.className = 'glow-particle';
+      const x = rowRect.left + rowRect.width * (0.3 + Math.random() * 0.4);
+      const y = rowRect.bottom - 30 - Math.random() * 80;
+      p.style.left = x + 'px';
+      p.style.top = y + 'px';
+      p.style.animationDelay = (Math.random() * 0.3) + 's';
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 2500);
+    }
+  }
+
+  function advanceRound() {
+    state.idx++;
+    if (state.idx >= state.rounds.length) {
+      finishGame();
+      return;
+    }
+    loadRound();
+  }
+
+  function finishGame() {
+    setNoniExpression('cheer');
+    elNoni.classList.add('visible');
+    AvneiAudio.play('twin-finale-complete');
+
+    // ניצוצות
+    spawnConfetti(50);
+
+    logEvent('game_complete', {
+      correct_count: state.correctCount,
+      total_rounds: state.rounds.length,
+    });
+
+    markQuestCompleted();
+
+    setTimeout(() => {
+      $('completion').classList.add('show');
+    }, 1500);
+  }
+
+  function spawnConfetti(count) {
+    const container = document.getElementById('confettiLayer') || (() => {
+      const c = document.createElement('div');
+      c.id = 'confettiLayer';
+      c.className = 'confetti-layer';
+      document.body.appendChild(c);
+      return c;
+    })();
+    const colors = ['#FFF7C9', '#B8F2CF', '#A8E8FF', '#FFA98D', '#D9D2FF'];
+    for (let i = 0; i < count; i++) {
+      const piece = document.createElement('span');
+      piece.className = 'confetti-piece';
+      piece.style.left = Math.random() * 100 + 'vw';
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.animationDelay = (Math.random() * 0.8) + 's';
+      piece.style.animationDuration = (2.4 + Math.random() * 2.2) + 's';
+      piece.style.width = (6 + Math.random() * 8) + 'px';
+      piece.style.height = (10 + Math.random() * 14) + 'px';
+      piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+      container.appendChild(piece);
+      setTimeout(() => piece.remove(), 5500);
+    }
+  }
+
+  function markQuestCompleted() {
+    try {
+      const key = 'island2-quests:completed';
+      const completed = JSON.parse(localStorage.getItem(key) || '[]');
+      if (!completed.includes(GAME_ID)) {
+        completed.push(GAME_ID);
+        localStorage.setItem(key, JSON.stringify(completed));
+      }
+    } catch (e) { /* fail-safe */ }
+  }
+
+  // ===== Event bindings =====
+  elLeft.addEventListener('click', () => {
+    AvneiAudio.unlock();
+    activateSeaweed('left');
+  });
+  elRight.addEventListener('click', () => {
+    AvneiAudio.unlock();
+    activateSeaweed('right');
+  });
+  elBtnSame.addEventListener('click', () => handleAnswer('same'));
+  elBtnDiff.addEventListener('click', () => handleAnswer('different'));
+  elReplay.addEventListener('click', () => {
+    AvneiAudio.play('twin-question-same-or-different');
+  });
+  elHint.addEventListener('click', replayBothWords);
+
+  document.getElementById('introSpeaker').addEventListener('click', () => {
+    AvneiAudio.unlock();
+    const btn = document.getElementById('introSpeaker');
+    btn.classList.add('playing');
+    AvneiAudio.playSequence(['intro-twin-seaweeds', 'intro-twin-mission'], 800);
+    setTimeout(() => btn.classList.remove('playing'), 12000);
+  });
+
+  // ===== Load data and start =====
+  async function loadAndStart() {
+    try {
+      const res = await fetch('data/island-02-twin-seaweeds.json');
+      const data = await res.json();
+      state.rounds = data.rounds;
+      loadRound();
+    } catch (e) {
+      console.error('Failed to load Twin Seaweeds data:', e);
+    }
+  }
+
+  document.getElementById('startBtn').addEventListener('click', async () => {
+    AvneiAudio.unlock();
+    document.getElementById('tapToStart').classList.add('hidden');
+    await loadAndStart();
+  });
+
+  // Reset support
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('reset') === '1') {
+    localStorage.removeItem('island2-quests:completed');
+    console.log('Island 2 quest progress reset.');
+  }
+
+  </script>
+
+</body>
+</html>

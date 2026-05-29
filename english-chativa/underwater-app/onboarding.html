@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#A8E8FF">
+<title>המסע הראשון בים · אבני יסוד</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════
+   Design tokens — תואם design-system.md
+   ═══════════════════════════════════════════════════════════ */
+:root {
+  --water-main:    #A8E8FF;
+  --water-deep:    #73D9D1;
+  --water-soft:    #8DDFFF;
+  --water-line:    #63CFE5;
+  --coral:         #FFA98D;
+  --mint:          #B8F2CF;
+  --mint-deep:     #8ED9B8;
+  --sand:          #F8E3D6;
+  --stone:         #DAD6C9;
+  --white-warm:    #FFF9F4;
+  --lavender:      #D9D2FF;
+  --peach:         #FFC8AE;
+  --gold-hint:     #FFE7A8;
+  --success:       #7CE7B4;
+  --deep:          #1E3D47;
+  --shell-pink:    #FFD3D8;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: 'Heebo', sans-serif;
+  background: linear-gradient(180deg, var(--water-main) 0%, var(--water-deep) 100%);
+  color: var(--deep);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Screen system — 5 screens fixed, only one visible
+   ═══════════════════════════════════════════════════════════ */
+.screen {
+  position: fixed;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: screen-in 700ms ease-out;
+}
+.screen.active { display: flex; }
+
+@keyframes screen-in {
+  from { opacity: 0; transform: scale(0.98); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Noni speech bubble — קבוע על כל מסך
+   ═══════════════════════════════════════════════════════════ */
+.noni-speech {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  max-width: 380px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  border-radius: 24px;
+  padding: 18px 22px;
+  box-shadow: 0 8px 24px rgba(38, 80, 92, 0.15);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--deep);
+  z-index: 30;
+  display: none;
+  align-items: center;
+  gap: 14px;
+}
+.noni-speech.active { display: flex; animation: speech-in 500ms ease-out; }
+
+.noni-speech img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.noni-speech .text {
+  flex: 1;
+}
+
+@keyframes speech-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* "Replay" button — small audio icon */
+.replay-btn {
+  position: fixed;
+  top: 24px;
+  left: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 6px 16px rgba(38, 80, 92, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 40;
+  transition: transform 200ms ease;
+}
+.replay-btn:active { transform: scale(0.92); }
+.replay-btn svg { width: 28px; height: 28px; }
+
+/* ═══════════════════════════════════════════════════════════
+   SCREEN 0 — Welcome / Intro
+   ═══════════════════════════════════════════════════════════ */
+#screen-welcome {
+  background:
+    radial-gradient(ellipse at top, rgba(255, 235, 200, 0.6), transparent 60%),
+    linear-gradient(180deg, #FFE3C8 0%, var(--water-main) 35%, var(--water-deep) 100%);
+}
+
+.welcome-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+}
+
+.student-photo {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: var(--lavender);
+  border: 6px solid white;
+  box-shadow: 0 8px 24px rgba(38, 80, 92, 0.20);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
+  font-size: 64px;
+  color: var(--deep);
+  animation: photo-pulse 3s ease-in-out infinite;
+}
+
+@keyframes photo-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 8px 24px rgba(38, 80, 92, 0.20); }
+  50%      { transform: scale(1.03); box-shadow: 0 12px 32px rgba(38, 80, 92, 0.25); }
+}
+
+.welcome-greeting {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
+  font-size: 36px;
+  color: var(--deep);
+  text-align: center;
+}
+
+.noni-hero {
+  width: 220px;
+  height: auto;
+  animation: noni-breath 4s ease-in-out infinite;
+}
+
+@keyframes noni-breath {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-6px) scale(1.02); }
+}
+
+.primary-btn {
+  background: var(--water-deep);
+  color: white;
+  border: none;
+  padding: 18px 48px;
+  border-radius: 999px;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(115, 217, 209, 0.45);
+  transition: all 200ms ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.primary-btn:active { transform: scale(0.95); }
+.primary-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(115, 217, 209, 0.55); }
+
+.primary-btn svg { width: 28px; height: 28px; }
+
+/* ═══════════════════════════════════════════════════════════
+   SCREEN 1 — Bubble Bay (PA — 2-3 items)
+   SCREEN 3 — Treasure chest (vocab + listening — 2 items)
+   ═══════════════════════════════════════════════════════════ */
+.stage-scene {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.stage-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  z-index: -1;
+}
+
+#screen-stage1 .stage-bg,
+#screen-stage3 .stage-bg {
+  background-image: url('assets/onboarding/scene-bay-bg.png');
+}
+
+#screen-stage2 .stage-bg {
+  background: linear-gradient(180deg, var(--water-soft) 0%, var(--water-deep) 60%, var(--sand) 100%);
+}
+
+#screen-stage4 .stage-bg {
+  background: linear-gradient(180deg, var(--water-main) 0%, var(--water-soft) 100%);
+}
+
+.bubbles-row {
+  display: flex;
+  gap: 36px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  margin: 40px 0;
+}
+
+/* === Image bubble === */
+.bubble {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  border: 3px solid rgba(255, 255, 255, 0.85);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 220ms ease, box-shadow 300ms ease, border-color 220ms ease;
+  animation: bubble-breath 4s ease-in-out infinite;
+  box-shadow:
+    inset 0 -8px 16px rgba(99, 207, 229, 0.25),
+    0 6px 16px rgba(38, 80, 92, 0.10);
+  user-select: none;
+}
+.bubble::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  right: 28px;
+  width: 32px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  filter: blur(3px);
+}
+.bubble img {
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+  pointer-events: none;
+}
+.bubble:active { transform: scale(0.96); }
+.bubble.locked { pointer-events: none; opacity: 0.85; }
+
+.bubble.zoharet {
+  border-color: var(--gold-hint);
+  box-shadow:
+    inset 0 -8px 16px rgba(99, 207, 229, 0.25),
+    0 0 28px var(--gold-hint),
+    0 6px 16px rgba(38, 80, 92, 0.10);
+  animation: bubble-hint 1.4s ease-in-out infinite;
+}
+.bubble.correct {
+  border-color: var(--success);
+  box-shadow:
+    inset 0 -8px 16px rgba(99, 207, 229, 0.25),
+    0 0 28px var(--success),
+    0 6px 16px rgba(38, 80, 92, 0.10);
+  animation: bubble-pop 700ms ease-out;
+}
+.bubble.wrong-pulse { animation: bubble-shake 400ms ease-in-out; }
+
+@keyframes bubble-breath {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-4px) scale(1.02); }
+}
+@keyframes bubble-hint {
+  0%, 100% { box-shadow: inset 0 -8px 16px rgba(99,207,229,0.25), 0 0 18px var(--gold-hint), 0 6px 16px rgba(38,80,92,0.10); }
+  50%      { box-shadow: inset 0 -8px 16px rgba(99,207,229,0.25), 0 0 32px var(--gold-hint), 0 6px 16px rgba(38,80,92,0.10); }
+}
+@keyframes bubble-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.14); }
+  100% { transform: scale(1); }
+}
+@keyframes bubble-shake {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-6px); }
+  75%      { transform: translateX(6px); }
+}
+
+/* === Letter coral === */
+.coral-row {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-end;
+  margin: 40px 0;
+  padding-bottom: 20px;
+}
+
+.coral {
+  position: relative;
+  width: 160px;
+  height: 220px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  transition: transform 220ms ease;
+  user-select: none;
+}
+.coral:active { transform: scale(0.95); }
+.coral.locked { pointer-events: none; opacity: 0.9; }
+
+.coral-svg {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 160px;
+  height: 180px;
+  animation: coral-idle 4s ease-in-out infinite;
+}
+@keyframes coral-idle {
+  0%, 100% { transform: translateX(-50%) rotate(-0.5deg); }
+  50%      { transform: translateX(-50%) rotate(0.5deg); }
+}
+
+.coral-letter {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
+  font-size: 72px;
+  color: var(--deep);
+  line-height: 1;
+  z-index: 2;
+  transition: transform 300ms ease, text-shadow 300ms ease;
+}
+
+.coral.zoher .coral-letter {
+  transform: translateX(-50%) translateY(-8px);
+  text-shadow: 0 0 16px var(--gold-hint);
+}
+.coral.zoher .coral-svg {
+  filter: drop-shadow(0 0 12px var(--gold-hint));
+}
+
+.coral.correct-glow .coral-letter {
+  transform: translateX(-50%) translateY(-14px);
+  text-shadow: 0 0 18px var(--success);
+}
+.coral.correct-glow .coral-svg {
+  filter: drop-shadow(0 0 16px var(--success));
+  animation: coral-bloom 700ms ease-out;
+}
+@keyframes coral-bloom {
+  0%   { transform: translateX(-50%) scale(1); }
+  50%  { transform: translateX(-50%) scale(1.08); }
+  100% { transform: translateX(-50%) scale(1); }
+}
+
+/* === Big word bubble === */
+.word-bubble {
+  width: 380px;
+  height: 380px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.65);
+  border: 4px solid rgba(255, 255, 255, 0.92);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 220ms ease, box-shadow 300ms ease;
+  animation: word-bubble-breath 5s ease-in-out infinite;
+  box-shadow:
+    inset 0 -16px 32px rgba(99, 207, 229, 0.20),
+    0 12px 32px rgba(38, 80, 92, 0.12);
+  user-select: none;
+}
+.word-bubble::before {
+  content: '';
+  position: absolute;
+  top: 26px;
+  right: 52px;
+  width: 56px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  filter: blur(4px);
+}
+.word-text {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
+  font-size: 96px;
+  color: var(--deep);
+  line-height: 1;
+  user-select: none;
+}
+.word-bubble.pulsing { animation: word-bubble-invite 1.8s ease-in-out infinite; }
+.word-bubble.spoken {
+  box-shadow:
+    inset 0 -16px 32px rgba(99, 207, 229, 0.20),
+    0 0 36px var(--success),
+    0 12px 32px rgba(38, 80, 92, 0.12);
+}
+
+@keyframes word-bubble-breath {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-6px) scale(1.015); }
+}
+@keyframes word-bubble-invite {
+  0%, 100% { transform: scale(1); box-shadow: inset 0 -16px 32px rgba(99,207,229,0.20), 0 0 18px var(--gold-hint), 0 12px 32px rgba(38,80,92,0.12); }
+  50%      { transform: scale(1.04); box-shadow: inset 0 -16px 32px rgba(99,207,229,0.20), 0 0 36px var(--gold-hint), 0 12px 32px rgba(38,80,92,0.12); }
+}
+
+/* === Word choice buttons (stage 4) === */
+.word-choices {
+  display: flex;
+  gap: 20px;
+  margin-top: 36px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.word-choice-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 32px;
+  border-radius: 999px;
+  border: 3px solid;
+  background: rgba(255, 255, 255, 0.92);
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 220ms ease;
+  user-select: none;
+}
+.word-choice-btn svg { width: 24px; height: 24px; }
+.word-choice-btn:active { transform: scale(0.95); }
+
+.word-choice-btn.knows {
+  border-color: var(--success);
+  color: var(--deep);
+}
+.word-choice-btn.knows:hover { background: var(--success); color: white; }
+
+.word-choice-btn.tell {
+  border-color: var(--water-line);
+  color: var(--deep);
+}
+.word-choice-btn.tell:hover { background: var(--water-deep); color: white; }
+
+.word-choices.locked { pointer-events: none; opacity: 0.6; }
+
+/* === Dot card === */
+.dot-cards {
+  display: flex;
+  gap: 28px;
+  justify-content: center;
+  align-items: center;
+  margin: 40px 0;
+}
+
+.dot-card {
+  width: 140px;
+  height: 140px;
+  background: rgba(255, 255, 255, 0.65);
+  border: 3px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: transform 220ms ease, box-shadow 300ms ease, border-color 220ms ease;
+  box-shadow:
+    inset 0 -8px 16px rgba(99, 207, 229, 0.25),
+    0 6px 16px rgba(38, 80, 92, 0.10);
+  position: relative;
+  user-select: none;
+}
+.dot-card::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  right: 22px;
+  width: 24px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  filter: blur(2px);
+}
+.dot-card:active { transform: scale(0.95); }
+.dot {
+  width: 18px;
+  height: 18px;
+  background: var(--deep);
+  border-radius: 50%;
+}
+.dot-card.selected {
+  border-color: var(--water-line);
+  box-shadow:
+    inset 0 -8px 16px rgba(99, 207, 229, 0.25),
+    0 0 24px var(--water-main),
+    0 6px 16px rgba(38, 80, 92, 0.10);
+}
+.dot-card.correct-glow {
+  border-color: var(--success);
+  box-shadow:
+    inset 0 -8px 16px rgba(99, 207, 229, 0.25),
+    0 0 28px var(--success),
+    0 6px 16px rgba(38, 80, 92, 0.10);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCREEN 3 — Story Frames
+   ═══════════════════════════════════════════════════════════ */
+.story-frame {
+  width: 360px;
+  max-width: 90vw;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.story-frame img {
+  width: 100%;
+  height: auto;
+  border-radius: 24px;
+  box-shadow: 0 8px 24px rgba(38, 80, 92, 0.15);
+  animation: story-fadein 700ms ease-out;
+}
+@keyframes story-fadein {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.chest-container {
+  text-align: center;
+  margin-bottom: 24px;
+}
+.chest-container img {
+  width: 240px;
+  height: auto;
+  animation: chest-glow 3s ease-in-out infinite;
+}
+@keyframes chest-glow {
+  0%, 100% { filter: drop-shadow(0 0 12px rgba(255, 231, 168, 0.4)); }
+  50%      { filter: drop-shadow(0 0 24px rgba(255, 231, 168, 0.7)); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCREEN 5 — Map outro
+   ═══════════════════════════════════════════════════════════ */
+#screen-map {
+  background: linear-gradient(180deg, var(--water-main) 0%, var(--water-deep) 100%);
+}
+
+.map-container {
+  position: relative;
+  width: 90%;
+  max-width: 720px;
+  height: 280px;
+  margin: 40px 0;
+}
+
+.map-island {
+  position: absolute;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: var(--sand);
+  border: 4px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 6px 18px rgba(38, 80, 92, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 800;
+  font-size: 32px;
+  color: var(--deep);
+  opacity: 0;
+  transform: scale(0.5);
+}
+.map-island.lit {
+  animation: island-light 800ms ease-out forwards;
+}
+@keyframes island-light {
+  from { opacity: 0; transform: scale(0.5); }
+  to   { opacity: 1; transform: scale(1); box-shadow: 0 6px 18px rgba(38, 80, 92, 0.15), 0 0 24px var(--gold-hint); }
+}
+
+.map-island.fogged {
+  background: rgba(218, 214, 201, 0.4);
+  color: rgba(30, 61, 71, 0.3);
+  border-color: rgba(255, 255, 255, 0.3);
+  opacity: 0.5;
+}
+
+.map-island-wrap {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.map-island-1-wrap { top: 50%; right: 6%; }
+.map-island-2-wrap { top: 20%; right: 26%; }
+.map-island-3-wrap { top: 50%; right: 46%; }
+.map-island-fogged-1-wrap { top: 20%; right: 66%; }
+.map-island-fogged-2-wrap { top: 50%; right: 84%; }
+
+.map-island svg { width: 50px; height: 50px; }
+
+.island-letter {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
+  font-size: 38px;
+  color: var(--deep);
+  line-height: 1;
+}
+
+.island-name {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--deep);
+  background: rgba(255, 255, 255, 0.85);
+  padding: 4px 12px;
+  border-radius: 999px;
+  opacity: 0;
+  animation: name-in 500ms ease-out forwards;
+  white-space: nowrap;
+}
+@keyframes name-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.map-subtitle {
+  font-size: 16px;
+  color: var(--deep);
+  opacity: 0.7;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.map-line {
+  position: absolute;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 2px;
+  opacity: 0;
+  animation: line-in 500ms ease-out forwards;
+  animation-delay: 1200ms;
+}
+.map-line-1 { top: 50%; right: 12%; width: 18%; transform: rotate(-25deg); }
+.map-line-2 { top: 45%; right: 32%; width: 18%; transform: rotate(25deg); }
+@keyframes line-in { to { opacity: 1; } }
+
+.gems-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 24px;
+  justify-content: center;
+}
+.gem {
+  width: 28px;
+  height: 28px;
+  background: var(--lavender);
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  opacity: 0;
+  transform: scale(0);
+  animation: gem-pop 400ms ease-out forwards;
+}
+.gem:nth-child(1) { animation-delay: 1800ms; }
+.gem:nth-child(2) { animation-delay: 1950ms; }
+.gem:nth-child(3) { animation-delay: 2100ms; }
+.gem:nth-child(4) { animation-delay: 2250ms; }
+
+@keyframes gem-pop {
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Prompt & Title
+   ═══════════════════════════════════════════════════════════ */
+.stage-title {
+  font-family: 'Rubik', sans-serif;
+  font-weight: 600;
+  font-size: 24px;
+  color: var(--deep);
+  text-align: center;
+  margin-bottom: 8px;
+}
+.stage-prompt {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--deep);
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+/* Mobile tweaks */
+@media (max-width: 640px) {
+  .bubble { width: 140px; height: 140px; }
+  .coral { width: 130px; height: 180px; }
+  .coral-svg { width: 130px; height: 150px; }
+  .coral-letter { font-size: 58px; }
+  .word-bubble { width: 280px; height: 280px; }
+  .word-text { font-size: 76px; }
+  .student-photo { width: 160px; height: 160px; font-size: 52px; }
+  .noni-hero { width: 160px; }
+  .welcome-greeting { font-size: 28px; }
+  .noni-speech { max-width: calc(100% - 48px); bottom: 16px; right: 16px; padding: 14px 18px; font-size: 16px; }
+  .noni-speech img { width: 48px; height: 48px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═════════════════════ SCREEN 0 — Welcome ═════════════════════ -->
+<section class="screen active" id="screen-welcome">
+  <div class="welcome-content">
+    <div class="student-photo" id="studentPhoto">ר</div>
+    <div class="welcome-greeting" id="welcomeGreeting">בּוֹקֶר טוֹב, רוֹנִי!</div>
+    <img class="noni-hero" src="assets/noni-happy.png" alt="נוני">
+    <button class="primary-btn" onclick="startJourney()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 12s3-8 10-8 10 8 10 8-3 8-10 8-10-8-10-8z"/>
+        <path d="M12 6v12M6 12h12"/>
+      </svg>
+      בּוֹאוּ נֵצֵא
+    </button>
+  </div>
+</section>
+
+<!-- ═════════════════════ SCREEN 1 — Bubble Bay (PA) ═════════════════════ -->
+<section class="screen" id="screen-stage1">
+  <div class="stage-bg"></div>
+  <div class="stage-scene">
+    <div class="stage-title" id="stage1Title">מִפְרַץ הַבּוּעוֹת הַמְזַמְּרוֹת</div>
+    <div class="stage-prompt" id="stage1Prompt">אֵיזוֹ בּוּעָה מַתְחִילָה בְּ-/מ/?</div>
+    <div class="bubbles-row" id="bubblesRow"></div>
+  </div>
+</section>
+
+<!-- ═════════════════════ SCREEN 2 — Letter Corals ═════════════════════ -->
+<section class="screen" id="screen-stage2">
+  <div class="stage-bg"></div>
+  <div class="stage-scene">
+    <div class="stage-title">אַלְמוֹגֵי הָאוֹתִיּוֹת</div>
+    <div class="stage-prompt" id="stage2Prompt">אֵיזֶה אַלְמוֹג אוֹמֵר אֶת הַצְּלִיל הַזֶּה?</div>
+    <div class="coral-row" id="coralRow"></div>
+  </div>
+</section>
+
+<!-- ═════════════════════ SCREEN 3 — Treasure & Story ═════════════════════ -->
+<section class="screen" id="screen-stage3">
+  <div class="stage-bg"></div>
+  <div class="stage-scene">
+    <div id="chest-phase">
+      <div class="chest-container">
+        <img src="assets/onboarding/treasure-chest.png" alt="תיבת המילים">
+      </div>
+      <div class="stage-prompt" id="stage3Prompt">תּוּכְלִי לְהַרְאוֹת לִי אֵיפֹה הַבַּיִת?</div>
+      <div class="bubbles-row" id="vocabRow"></div>
+    </div>
+
+    <div id="story-phase" style="display: none;">
+      <div class="story-frame">
+        <img id="storyFrame" src="assets/onboarding/story-1-running.png" alt="הסיפור">
+      </div>
+      <div class="stage-prompt" id="storyPrompt" style="margin-top: 24px;">אֵיזֶה פְּרִי אָכַל הַקָּטָן?</div>
+      <div class="bubbles-row" id="fruitsRow" style="display: none;"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════════════════ SCREEN 4 — Big Word Bubble (Adaptive) ═════════════════════ -->
+<section class="screen" id="screen-stage4">
+  <div class="stage-bg"></div>
+  <div class="stage-scene">
+    <div class="stage-title">בּוּעַת הַמִּלָּה</div>
+    <div class="stage-prompt" id="stage4Prompt">אֲנִי אַרְאֶה לָךְ מִלָּה.</div>
+    <div class="word-bubble pulsing" id="wordBubble">
+      <span class="word-text" id="wordText">אִמָּא</span>
+    </div>
+    <div class="word-choices" id="wordChoices">
+      <button class="word-choice-btn knows" onclick="onWordChoice(true)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 12l2 2 4-4"/>
+          <circle cx="12" cy="12" r="10"/>
+        </svg>
+        אֲנִי יוֹדַעַת
+      </button>
+      <button class="word-choice-btn tell" onclick="onWordChoice(false)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 18V5l12-2v13"/>
+          <circle cx="6" cy="18" r="3"/>
+          <circle cx="18" cy="16" r="3"/>
+        </svg>
+        תַּגִּיד לִי
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════════════════ SCREEN 5 — Map Outro ═════════════════════ -->
+<section class="screen" id="screen-map">
+  <div class="welcome-greeting" style="margin-bottom: 8px;">הַיָּם שֶׁלָּנוּ מַתְבַּהֵר</div>
+  <div class="map-subtitle">הַיּוֹם הִכַּרְנוּ שְׁלוֹשָׁה אִיִּים. עוֹד יִתְבַּהֲרוּ לְאַט.</div>
+
+  <div class="map-container">
+    <div class="map-line map-line-1"></div>
+    <div class="map-line map-line-2"></div>
+
+    <div class="map-island-wrap map-island-1-wrap">
+      <div class="map-island lit" style="animation-delay: 300ms;">
+        <svg viewBox="0 0 32 32" fill="none">
+          <circle cx="10" cy="10" r="4" fill="rgba(255,255,255,0.7)"/>
+          <circle cx="22" cy="14" r="5" fill="rgba(255,255,255,0.85)"/>
+          <circle cx="14" cy="22" r="3" fill="rgba(255,255,255,0.7)"/>
+        </svg>
+      </div>
+      <div class="island-name" style="animation-delay: 1100ms;">הַבּוּעוֹת</div>
+    </div>
+
+    <div class="map-island-wrap map-island-2-wrap">
+      <div class="map-island lit" style="animation-delay: 600ms;">
+        <span class="island-letter">מָ</span>
+      </div>
+      <div class="island-name" style="animation-delay: 1400ms;">הָאוֹתִיּוֹת</div>
+    </div>
+
+    <div class="map-island-wrap map-island-3-wrap">
+      <div class="map-island lit" style="animation-delay: 900ms;">
+        <svg viewBox="0 0 32 32" fill="none">
+          <rect x="6" y="10" width="20" height="12" rx="2" fill="rgba(255,255,255,0.85)"/>
+          <path d="M6 12 L26 12 M6 16 L20 16 M6 20 L24 20" stroke="var(--coral)" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="island-name" style="animation-delay: 1700ms;">הַמִּלִּים</div>
+    </div>
+
+    <div class="map-island-wrap map-island-fogged-1-wrap">
+      <div class="map-island fogged">·</div>
+    </div>
+    <div class="map-island-wrap map-island-fogged-2-wrap">
+      <div class="map-island fogged">·</div>
+    </div>
+  </div>
+
+  <div class="gems-row" style="margin-top: 48px;">
+    <div class="gem"></div>
+    <div class="gem"></div>
+    <div class="gem"></div>
+    <div class="gem"></div>
+  </div>
+
+  <button class="primary-btn" onclick="finishJourney()" style="margin-top: 32px;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 12h14M12 5l7 7-7 7"/>
+    </svg>
+    בּוֹאִי נַתְחִיל
+  </button>
+</section>
+
+<!-- ═════════════════════ Noni speech bubble (overlay) ═════════════════════ -->
+<div class="noni-speech" id="noniSpeech">
+  <img src="assets/noni-idle.png" alt="נוני">
+  <div class="text" id="noniText"></div>
+</div>
+
+<!-- ═════════════════════ Replay audio button (overlay) ═════════════════════ -->
+<div class="replay-btn" id="replayBtn" onclick="replayLastAudio()" style="display: none;">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+  </svg>
+</div>
+
+<!-- ═════════════════════ SVG defs (reusable coral) ═════════════════════ -->
+<svg width="0" height="0" style="position: absolute;">
+  <defs>
+    <radialGradient id="coralGrad" cx="50%" cy="60%" r="60%">
+      <stop offset="0%" stop-color="#FFC0AB"/>
+      <stop offset="100%" stop-color="#FFA98D"/>
+    </radialGradient>
+  </defs>
+</svg>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   STATE & CONFIG
+   ═══════════════════════════════════════════════════════════ */
+const state = {
+  studentName: 'רוני',
+  studentInitial: 'ר',
+  currentStage: 0,
+  currentItem: 0,
+  responses: [],       // {stage, item, correct, attempts, ts}
+  signals: {           // soft priors, ±0.1
+    PA: 0,
+    letter_id: 0,
+    vocab: 0,
+    listening: 0,
+    decoding: 0
+  },
+  attempts: 0,
+  lastAudio: null
+};
+
+/* Item bank — מבוסס על מה שיש ב-assets ו-audio */
+const ITEMS = {
+  /* === Stage 1 — PA === */
+  stage1: [
+    {
+      id: '1.1',
+      skill: 'PA',
+      prompt: 'אֵיזוֹ תְּמוּנָה מַתְחִילָה בְּ-/מ/?',
+      sound: 'sound-mem',
+      narration: 'שִׁמְעִי. /מ/. אֵיזוֹ תְּמוּנָה מַתְחִילָה בְּ-/מ/?',
+      bubbles: [
+        { img: 'assets/island-03/marak.png',  word: 'marak',  label: 'מרק',  correct: true },
+        { img: 'assets/island-03/bayit.png',  word: 'bayit',  label: 'בית',  correct: false },
+        { img: 'assets/island-03/sefer.png',  word: 'sefer',  label: 'ספר',  correct: false }
+      ]
+    },
+    {
+      id: '1.2',
+      skill: 'PA',
+      prompt: 'אֵיזוֹ תְּמוּנָה מַתְחִילָה בְּ-/ב/?',
+      sound: 'sound-bet',
+      narration: 'עַכְשָׁו /ב/. אֵיזוֹ תְּמוּנָה מַתְחִילָה בְּ-/ב/?',
+      bubbles: [
+        { img: 'assets/island-03/sefer.png',  word: 'sefer',  label: 'ספר',   correct: false },
+        { img: 'assets/island-03/bayit.png',  word: 'bayit',  label: 'בית',   correct: true },
+        { img: 'assets/island-03/ramzor.png', word: 'ramzor', label: 'רמזור', correct: false }
+      ]
+    }
+    /* 1.3 — סגמנטציה אופציונלית, מופעלת רק אם הצליחה ב-1.1 ו-1.2 */
+  ],
+
+  /* === Stage 1.3 — Segmentation (adaptive) === */
+  stage1_3: {
+    id: '1.3',
+    skill: 'PA',
+    prompt: 'כַּמָּה הֲבָרוֹת יֵשׁ בַּמִּלָּה /אַבָּא/?',
+    sound: 'aba',
+    narration: 'שִׁמְעִי אֶת הַמִּלָּה /אַבָּא/. כַּמָּה הֲבָרוֹת יֵשׁ בָּהּ?',
+    correct: 2  // אַב-בָּא = 2 הברות
+  },
+
+  /* === Stage 2 — Letter Corals === */
+  stage2: [
+    {
+      id: '2.1',
+      skill: 'letter_id',
+      prompt: 'אֵיזֶה אַלְמוֹג אוֹמֵר /מ/?',
+      sound: 'sound-mem',
+      narration: 'שִׁמְעִי. /מ/. אֵיזֶה אַלְמוֹג אוֹמֵר אֶת הַצְּלִיל הַזֶּה?',
+      letters: ['מָ', 'רָ', 'בָּ', 'תָּ'],
+      correct: 'מָ'
+    },
+    {
+      id: '2.2',
+      skill: 'letter_id',
+      prompt: 'עַכְשָׁו /ר/.',
+      sound: 'sound-resh',
+      narration: 'עַכְשָׁו /ר/. אֵיזֶה אַלְמוֹג?',
+      letters: ['בָּ', 'מָ', 'תָּ', 'רָ'],
+      correct: 'רָ'
+    },
+    {
+      id: '2.3',
+      skill: 'letter_id',
+      prompt: 'וְעַכְשָׁו /ל/.',
+      sound: 'sound-lamed',
+      narration: 'וְעַכְשָׁו אוֹת שֶׁעוֹד לֹא רָאִית. /ל/. אֵיזֶה אַלְמוֹג?',
+      letters: ['לָ', 'רָ', 'בָּ', 'מָ'],
+      correct: 'לָ'
+    }
+  ],
+
+  /* === Stage 3.1 — Vocabulary === */
+  stage3_1: {
+    id: '3.1',
+    skill: 'vocab',
+    prompt: 'תּוּכְלִי לְהַרְאוֹת לִי אֵיפֹה הַבַּיִת?',
+    sound: null,
+    narration: 'תּוּכְלִי לְהַרְאוֹת לִי אֵיפֹה הַבַּיִת?',
+    bubbles: [
+      { img: 'assets/island-03/bayit.png',    word: 'bayit',    label: 'בית',    correct: true },
+      { img: 'assets/island-03/sefer.png',    word: 'sefer',    label: 'ספר',    correct: false },
+      { img: 'assets/island-03/mechonit.png', word: 'mechonit', label: 'מכונית', correct: false },
+      { img: 'assets/island-03/ramzor.png',   word: 'ramzor',   label: 'רמזור',  correct: false }
+    ]
+  },
+
+  /* === Stage 3.2 — Story comprehension === */
+  stage3_2: {
+    id: '3.2',
+    skill: 'listening',
+    frames: [
+      { img: 'assets/onboarding/story-1-running.png', narration: 'הַקָּטָן רָץ הַבַּיְתָה.' },
+      { img: 'assets/onboarding/story-2-hungry.png',  narration: 'הוּא הָיָה רָעֵב.' },
+      { img: 'assets/onboarding/story-3-apple.png',   narration: 'אִמָּא נָתְנָה לוֹ תַּפּוּחַ.' }
+    ],
+    prompt: 'אֵיזֶה פְּרִי אָכַל הַקָּטָן?',
+    sound: null,
+    narration: 'אֵיזֶה פְּרִי אָכַל הַקָּטָן?',
+    fruits: [
+      { img: 'assets/island-03/tapuach.png', word: 'tapuach', label: 'תפוח', correct: true },
+      { img: 'assets/island-03/banana.png',  word: 'banana',  label: 'בננה', correct: false },
+      { img: 'assets/island-03/rimon.png',   word: 'rimon',   label: 'רימון', correct: false },
+      { img: 'assets/island-03/tamar.png',   word: 'tamar',   label: 'תמר',   correct: false }
+    ]
+  },
+
+  /* === Stage 4 — Word Bubble (adaptive) === */
+  stage4: [
+    { id: '4.1', skill: 'decoding', word: 'אִמָּא', sound: 'ima', narration: null },
+    { id: '4.2', skill: 'decoding', word: 'אַבָּא', sound: 'aba', narration: null }
+  ]
+};
+
+/* ═══════════════════════════════════════════════════════════
+   AUDIO — MP3 first, TTS fallback
+   ═══════════════════════════════════════════════════════════ */
+const AUDIO_BASE = '../engine/audio/he/';
+let _currentAudio = null;
+let _heVoice = null;
+
+function loadVoices() {
+  if (!window.speechSynthesis) return;
+  const voices = speechSynthesis.getVoices();
+  if (!voices.length) return;
+  // Prefer Avri, then any Hebrew voice
+  _heVoice = voices.find(v => v.name && /avri/i.test(v.name))
+          || voices.find(v => v.lang === 'he-IL')
+          || voices.find(v => v.lang && v.lang.startsWith('he'))
+          || null;
+}
+if (window.speechSynthesis) {
+  loadVoices();
+  speechSynthesis.addEventListener('voiceschanged', loadVoices);
+}
+
+function playAudio(slugOrText, onEnded) {
+  if (_currentAudio) { try { _currentAudio.pause(); } catch (e) {} }
+  if (window.speechSynthesis) speechSynthesis.cancel();
+
+  state.lastAudio = { slug: slugOrText, onEnded };
+  document.getElementById('replayBtn').style.display = 'flex';
+
+  // Try MP3 first
+  const audioPath = AUDIO_BASE + slugOrText + '.mp3';
+  const audio = new Audio(audioPath);
+  audio.oncanplaythrough = () => audio.play().catch(() => ttsSay(slugOrText, onEnded));
+  audio.onerror = () => ttsSay(slugOrText, onEnded);
+  audio.onended = () => { if (onEnded) onEnded(); };
+  _currentAudio = audio;
+  audio.load();
+}
+
+function ttsSay(text, onEnded) {
+  // text might be a slug — convert common ones
+  const slugToText = {
+    'sound-mem': 'מ', 'sound-resh': 'ר', 'sound-lamed': 'ל', 'sound-bet': 'ב',
+    'sound-tav': 'ת', 'sound-alef': 'א',
+    'gan': 'גן', 'bayit': 'בית', 'ima': 'אמא', 'aba': 'אבא',
+    'mechonit': 'מכונית', 'sefer': 'ספר', 'tapuach': 'תפוח',
+    'try-again': 'בואי ננסה יחד', 'good': 'יופי', 'excellent': 'כל הכבוד'
+  };
+  const sayText = slugToText[text] || text;
+
+  if (!window.speechSynthesis || !_heVoice) {
+    if (onEnded) setTimeout(onEnded, 800);
+    return;
+  }
+  const u = new SpeechSynthesisUtterance(sayText);
+  u.lang = 'he-IL'; u.rate = 0.85; u.pitch = 1.0; u.voice = _heVoice;
+  u.onend = () => { if (onEnded) onEnded(); };
+  u.onerror = () => { if (onEnded) onEnded(); };
+  setTimeout(() => speechSynthesis.speak(u), 50);
+}
+
+function replayLastAudio() {
+  if (state.lastAudio) playAudio(state.lastAudio.slug, state.lastAudio.onEnded);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   NONI SPEECH UI
+   ═══════════════════════════════════════════════════════════ */
+function noniSay(text, audioSlug, onDone) {
+  const speech = document.getElementById('noniSpeech');
+  document.getElementById('noniText').textContent = text;
+  speech.classList.add('active');
+  if (audioSlug) {
+    playAudio(audioSlug, onDone);
+  } else if (onDone) {
+    setTimeout(onDone, Math.max(2500, text.length * 110));
+  }
+}
+function noniHide() {
+  document.getElementById('noniSpeech').classList.remove('active');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCREEN NAVIGATION
+   ═══════════════════════════════════════════════════════════ */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  noniHide();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   JOURNEY FLOW
+   ═══════════════════════════════════════════════════════════ */
+function startJourney() {
+  showScreen('screen-stage1');
+  setTimeout(() => {
+    noniSay('בּוֹאִי נִרְאֶה מָה הַיָּם מַצִּיעַ לָנוּ הַיּוֹם.', null, () => {
+      setTimeout(() => startStage1Item(0), 1500);
+    });
+  }, 600);
+}
+
+/* ─── Stage 1: PA — bubbles ─── */
+function startStage1Item(idx) {
+  state.currentItem = idx;
+  state.attempts = 0;
+  const item = ITEMS.stage1[idx];
+  document.getElementById('stage1Prompt').textContent = item.prompt;
+  renderBubbles('bubblesRow', item.bubbles, (chosenIdx, chosen) => handleBubbleTap('stage1', item, chosenIdx, chosen));
+  noniSay(item.narration, item.sound);
+}
+
+function renderBubbles(containerId, bubbles, onTap) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  bubbles.forEach((b, i) => {
+    const el = document.createElement('div');
+    el.className = 'bubble';
+    el.innerHTML = `<img src="${b.img}" alt="${b.label}">`;
+    el.addEventListener('click', () => onTap(i, b));
+    container.appendChild(el);
+  });
+}
+
+function handleBubbleTap(stage, item, idx, chosen) {
+  const bubbles = document.querySelectorAll(`#${stage === 'stage1' ? 'bubblesRow' : (stage === 'vocab' ? 'vocabRow' : 'fruitsRow')} .bubble`);
+  const tappedEl = bubbles[idx];
+
+  if (chosen.correct) {
+    bubbles.forEach(b => b.classList.add('locked'));
+    tappedEl.classList.add('correct');
+    state.responses.push({ stage, item: item.id, correct: true, attempts: state.attempts });
+    updateSignal(item.skill, state.attempts === 0 ? +0.05 : +0.02);
+    playAudio(chosen.word);
+    setTimeout(() => {
+      tappedEl.classList.remove('correct');
+      progressFromStage(stage);
+    }, 2400);
+  } else {
+    state.attempts++;
+    tappedEl.classList.add('wrong-pulse');
+    setTimeout(() => tappedEl.classList.remove('wrong-pulse'), 500);
+
+    if (state.attempts === 1) {
+      // טעות 1 — ננסה יחד + רמז
+      noniSay('בּוֹאִי נְנַסֶּה יַחַד.', 'try-again', () => {
+        // highlight correct
+        bubbles.forEach((b, i) => {
+          if (item.bubbles[i].correct) b.classList.add('zoharet');
+        });
+      });
+    } else {
+      // טעות 2+ — הצגת התשובה
+      bubbles.forEach((b, i) => {
+        b.classList.remove('zoharet');
+        b.classList.add('locked');
+        if (item.bubbles[i].correct) b.classList.add('correct');
+      });
+      state.responses.push({ stage, item: item.id, correct: false, attempts: state.attempts });
+      updateSignal(item.skill, -0.05);
+      const correctBubble = item.bubbles.find(b => b.correct);
+      playAudio(correctBubble.word);
+      setTimeout(() => progressFromStage(stage), 3500);
+    }
+  }
+}
+
+function progressFromStage(stage) {
+  if (stage === 'stage1') {
+    if (state.currentItem + 1 < ITEMS.stage1.length) {
+      startStage1Item(state.currentItem + 1);
+    } else {
+      // Adaptive: only do 1.3 if both 1.1 and 1.2 were correct on first try
+      const stage1Resp = state.responses.filter(r => r.stage === 'stage1');
+      const allClean = stage1Resp.length === 2 && stage1Resp.every(r => r.correct && r.attempts === 0);
+      if (allClean) {
+        startStage1_3();
+      } else {
+        goToStage2();
+      }
+    }
+  } else if (stage === 'vocab') {
+    startStory();
+  } else if (stage === 'fruits') {
+    decideStage4();
+  }
+}
+
+/* ─── Stage 1.3: Segmentation (adaptive) ─── */
+function startStage1_3() {
+  const item = ITEMS.stage1_3;
+  document.getElementById('stage1Prompt').textContent = item.prompt;
+  document.getElementById('bubblesRow').innerHTML = `
+    <div class="dot-cards">
+      <div class="dot-card" data-count="1"><span class="dot"></span></div>
+      <div class="dot-card" data-count="2"><span class="dot"></span><span class="dot"></span></div>
+      <div class="dot-card" data-count="3"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+    </div>
+  `;
+  noniSay(item.narration, item.sound);
+
+  state.attempts = 0;
+  const cards = document.querySelectorAll('.dot-card');
+  cards.forEach(card => {
+    card.addEventListener('click', () => {
+      const count = parseInt(card.dataset.count);
+      if (count === item.correct) {
+        cards.forEach(c => c.style.pointerEvents = 'none');
+        card.classList.add('correct-glow');
+        updateSignal('PA', state.attempts === 0 ? +0.05 : 0);
+        state.responses.push({ stage: 'stage1', item: '1.3', correct: true, attempts: state.attempts });
+        setTimeout(goToStage2, 2500);
+      } else {
+        state.attempts++;
+        if (state.attempts >= 2) {
+          cards.forEach(c => c.style.pointerEvents = 'none');
+          cards.forEach(c => {
+            if (parseInt(c.dataset.count) === item.correct) c.classList.add('correct-glow');
+          });
+          state.responses.push({ stage: 'stage1', item: '1.3', correct: false, attempts: state.attempts });
+          setTimeout(goToStage2, 3500);
+        } else {
+          // Hint: highlight correct gently
+          cards.forEach(c => {
+            if (parseInt(c.dataset.count) === item.correct) c.classList.add('selected');
+          });
+        }
+      }
+    });
+  });
+}
+
+/* ─── Stage 2: Letter Corals ─── */
+function goToStage2() {
+  showScreen('screen-stage2');
+  setTimeout(() => startStage2Item(0), 1200);
+}
+
+function startStage2Item(idx) {
+  state.currentItem = idx;
+  state.attempts = 0;
+  const item = ITEMS.stage2[idx];
+  document.getElementById('stage2Prompt').textContent = item.prompt;
+  renderCorals(item);
+  noniSay(item.narration, item.sound);
+}
+
+function renderCorals(item) {
+  const container = document.getElementById('coralRow');
+  container.innerHTML = '';
+  item.letters.forEach((letter) => {
+    const el = document.createElement('div');
+    el.className = 'coral';
+    el.innerHTML = `
+      <span class="coral-letter">${letter}</span>
+      <svg class="coral-svg" viewBox="0 0 160 180" xmlns="http://www.w3.org/2000/svg">
+        <path d="M80 180 Q70 130 65 100 Q55 70 75 50 Q80 40 80 30 Q80 20 90 30 Q95 50 90 70 Q100 90 95 120 Q90 150 90 180 Z" fill="url(#coralGrad)"/>
+        <ellipse cx="55" cy="110" rx="14" ry="20" fill="url(#coralGrad)" transform="rotate(-25 55 110)"/>
+        <ellipse cx="108" cy="120" rx="12" ry="18" fill="url(#coralGrad)" transform="rotate(20 108 120)"/>
+        <ellipse cx="65" cy="80" rx="10" ry="14" fill="url(#coralGrad)" transform="rotate(-15 65 80)"/>
+        <ellipse cx="80" cy="178" rx="50" ry="8" fill="#F8E3D6" opacity="0.7"/>
+      </svg>
+    `;
+    el.addEventListener('click', () => handleCoralTap(item, letter, el));
+    container.appendChild(el);
+  });
+}
+
+function handleCoralTap(item, letter, el) {
+  const corals = document.querySelectorAll('#coralRow .coral');
+  if (letter === item.correct) {
+    corals.forEach(c => c.classList.add('locked'));
+    el.classList.add('correct-glow');
+    updateSignal('letter_id', state.attempts === 0 ? +0.05 : +0.02);
+    state.responses.push({ stage: 'stage2', item: item.id, correct: true, attempts: state.attempts });
+    playAudio(item.sound);
+    setTimeout(() => {
+      if (state.currentItem + 1 < ITEMS.stage2.length) {
+        startStage2Item(state.currentItem + 1);
+      } else {
+        goToStage3();
+      }
+    }, 2400);
+  } else {
+    state.attempts++;
+    el.style.animation = 'coral-idle 0.4s ease-in-out';
+    setTimeout(() => el.style.animation = '', 500);
+
+    if (state.attempts === 1) {
+      noniSay('הָאַלְמוֹג שֶׁל ' + item.correct + ' כָּאן.', 'try-again', () => {
+        corals.forEach((c, i) => {
+          if (item.letters[i] === item.correct) c.classList.add('zoher');
+        });
+      });
+    } else {
+      corals.forEach((c, i) => {
+        c.classList.remove('zoher');
+        c.classList.add('locked');
+        if (item.letters[i] === item.correct) c.classList.add('correct-glow');
+      });
+      updateSignal('letter_id', -0.05);
+      state.responses.push({ stage: 'stage2', item: item.id, correct: false, attempts: state.attempts });
+      playAudio(item.sound);
+      setTimeout(() => {
+        if (state.currentItem + 1 < ITEMS.stage2.length) {
+          startStage2Item(state.currentItem + 1);
+        } else {
+          goToStage3();
+        }
+      }, 3500);
+    }
+  }
+}
+
+/* ─── Stage 3: Treasure + Story ─── */
+function goToStage3() {
+  showScreen('screen-stage3');
+  document.getElementById('chest-phase').style.display = 'block';
+  document.getElementById('story-phase').style.display = 'none';
+  setTimeout(() => startStage3_1(), 1200);
+}
+
+function startStage3_1() {
+  state.attempts = 0;
+  const item = ITEMS.stage3_1;
+  document.getElementById('stage3Prompt').textContent = item.prompt;
+  renderBubbles('vocabRow', item.bubbles, (idx, chosen) => handleBubbleTap('vocab', item, idx, chosen));
+  noniSay(item.narration, item.sound);
+}
+
+function startStory() {
+  document.getElementById('chest-phase').style.display = 'none';
+  document.getElementById('story-phase').style.display = 'block';
+
+  const story = ITEMS.stage3_2;
+  let frameIdx = 0;
+
+  function showFrame() {
+    if (frameIdx >= story.frames.length) {
+      // After all frames, show question
+      document.getElementById('storyPrompt').textContent = story.prompt;
+      document.getElementById('fruitsRow').style.display = 'flex';
+      renderBubbles('fruitsRow', story.fruits, (idx, chosen) => handleBubbleTap('fruits', story, idx, chosen));
+      noniSay(story.narration, story.sound);
+      return;
+    }
+    const frame = story.frames[frameIdx];
+    document.getElementById('storyFrame').src = frame.img;
+    document.getElementById('storyPrompt').textContent = frame.narration;
+    noniSay(frame.narration, null, () => {
+      frameIdx++;
+      setTimeout(showFrame, 1800);
+    });
+  }
+
+  document.getElementById('fruitsRow').style.display = 'none';
+  showFrame();
+}
+
+/* ─── Stage 4: Word Bubble (Adaptive) ─── */
+function decideStage4() {
+  // Run stage 4 only if 4+ correct on first try across all stages
+  const cleanCount = state.responses.filter(r => r.correct && r.attempts === 0).length;
+  if (cleanCount >= 4) {
+    goToStage4(0);
+  } else {
+    goToMap();
+  }
+}
+
+function goToStage4(idx) {
+  showScreen('screen-stage4');
+  state.currentItem = idx;
+  state.attempts = 0;
+  const item = ITEMS.stage4[idx];
+  document.getElementById('wordText').textContent = item.word;
+  document.getElementById('wordBubble').className = 'word-bubble pulsing';
+  document.getElementById('wordChoices').classList.remove('locked');
+  document.getElementById('stage4Prompt').textContent =
+    idx === 0
+      ? 'אֲנִי אַרְאֶה לָךְ מִלָּה.'
+      : 'וְעוֹד אַחַת!';
+
+  noniSay(document.getElementById('stage4Prompt').textContent, null);
+}
+
+function onWordChoice(childKnows) {
+  const item = ITEMS.stage4[state.currentItem];
+  document.getElementById('wordChoices').classList.add('locked');
+  document.getElementById('wordBubble').classList.remove('pulsing');
+  document.getElementById('wordBubble').classList.add('spoken');
+
+  state.responses.push({
+    stage: 'stage4',
+    item: item.id,
+    child_self_report: childKnows ? 'knows' : 'asks',
+    attempts: 0
+  });
+
+  // Soft signal — child self-reports. Not an objective measure.
+  if (childKnows) updateSignal('decoding', +0.10);
+  // If "tell me" — no signal change, neutral.
+
+  playAudio(item.sound, () => {
+    setTimeout(() => {
+      // If child said "knows" on first word, offer second word
+      if (state.currentItem === 0 && childKnows && state.currentItem + 1 < ITEMS.stage4.length) {
+        goToStage4(state.currentItem + 1);
+      } else {
+        goToMap();
+      }
+    }, 2500);
+  });
+}
+
+/* ─── Stage 5: Map outro ─── */
+function goToMap() {
+  showScreen('screen-map');
+  setTimeout(() => {
+    noniSay('הַיּוֹם הִכַּרְנוּ שְׁלוֹשָׁה אִיִּים: הַבּוּעוֹת, הָאוֹתִיּוֹת וְהַמִּלִּים. עוֹד יִהְיוּ אִיִּים — לְאַט, בַּקֶּצֶב שֶׁלָּנוּ.', null);
+  }, 1500);
+}
+
+function finishJourney() {
+  // Output: write to localStorage + console
+  const output = {
+    student: state.studentName,
+    timestamp: new Date().toISOString(),
+    duration_seconds: null,
+    responses: state.responses,
+    soft_priors: state.signals,
+    profile_label: 'TBD',
+    confidence: 'initial',
+    next_step: 'BKT cold-start with shifted priors, profile to be determined after 3-5 sessions'
+  };
+  localStorage.setItem('avnei-yesod-onboarding', JSON.stringify(output));
+  console.log('Journey complete:', output);
+  location.href = 'map.html';
+}
+
+/* ─── Helper: update soft signal ─── */
+function updateSignal(skill, delta) {
+  if (state.signals[skill] !== undefined) {
+    state.signals[skill] = Math.max(-0.1, Math.min(0.1, state.signals[skill] + delta));
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   QUERY PARAMS — for testing with different students
+   ═══════════════════════════════════════════════════════════ */
+const urlParams = new URLSearchParams(location.search);
+const nameParam = urlParams.get('name');
+if (nameParam) {
+  state.studentName = nameParam;
+  state.studentInitial = nameParam.charAt(0);
+  document.getElementById('studentPhoto').textContent = state.studentInitial;
+  document.getElementById('welcomeGreeting').textContent = `בוקר טוב, ${state.studentName}!`;
+}
+</script>
+
+</body>
+</html>

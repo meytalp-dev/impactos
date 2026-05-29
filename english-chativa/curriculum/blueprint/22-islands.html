@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>אבני יסוד — בלופרינט 22 איים · פאזה A</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7fafc;
+    --card: #ffffff;
+    --ink: #1a2332;
+    --ink-soft: #4a5568;
+    --ink-muted: #718096;
+    --accent: #2c7a7b;
+    --accent-soft: #b2f5ea;
+    --border: #e2e8f0;
+    --phase-1: #4fd1c5;
+    --risk-bg: #fef5e7;
+    --risk-border: #ed8936;
+    --game-bg: #ebf4ff;
+    --game-border: #4299e1;
+    --variation-bg: #f0fff4;
+    --variation-border: #48bb78;
+    --variation-fix-bg: #fffaf0;
+    --variation-fix-border: #ed8936;
+    --weak-bg: #fff5f5;
+    --weak-border: #f56565;
+    --replacement-bg: #faf5ff;
+    --replacement-border: #9f7aea;
+    --journey-bg: #e6fffa;
+    --journey-border: #2c7a7b;
+    --companion-bg: #fffaf0;
+    --companion-border: #d69e2e;
+    --gap-bg: #fff5f5;
+    --gap-border: #f56565;
+    --anchor-bg: #faf5ff;
+    --anchor-border: #9f7aea;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Assistant', 'Heebo', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    font-size: 16px;
+  }
+  .container { max-width: 1150px; margin: 0 auto; padding: 32px 24px 80px; }
+  header.page {
+    background: linear-gradient(135deg, #2c7a7b 0%, #4fd1c5 100%);
+    color: white;
+    padding: 40px 24px;
+    margin-bottom: 24px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(44, 122, 123, 0.15);
+  }
+  header.page h1 { margin: 0 0 8px; font-size: 32px; font-weight: 700; }
+  header.page .subtitle { font-size: 18px; opacity: 0.92; margin-bottom: 16px; }
+  header.page .meta { display: flex; gap: 16px; flex-wrap: wrap; font-size: 14px; }
+  header.page .meta span { background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 12px; }
+  .scope-note {
+    background: var(--card);
+    border-right: 4px solid var(--accent);
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    font-size: 15px;
+    color: var(--ink-soft);
+  }
+  .scope-note strong { color: var(--ink); }
+
+  /* Sections */
+  section.global-section {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  section.companion-section { border-top: 6px solid var(--companion-border); }
+  section.cross-cutting { border: 2px solid var(--gap-border); }
+  section.global-section h2 { margin: 0 0 16px; font-size: 22px; }
+  section.companion-section h2 { color: var(--companion-border); }
+  section.cross-cutting h2 { color: var(--gap-border); }
+  section.global-section > p { color: var(--ink-soft); margin-bottom: 16px; }
+
+  /* Companion UI specifics */
+  .companion-states { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 16px 0; }
+  .companion-state {
+    background: var(--companion-bg);
+    border-right: 3px solid var(--companion-border);
+    padding: 12px 14px;
+    border-radius: 8px;
+  }
+  .companion-state .state-name { font-weight: 700; color: var(--companion-border); margin-bottom: 4px; }
+  .companion-state .state-trigger { font-size: 13px; color: var(--ink-muted); margin-bottom: 6px; }
+  .companion-state .state-visual { font-size: 14px; }
+  .water-indicator {
+    background: var(--journey-bg);
+    border-right: 3px solid var(--journey-border);
+    padding: 14px 18px;
+    border-radius: 8px;
+    margin-top: 12px;
+  }
+
+  /* Cross-cutting gaps */
+  .gap {
+    background: var(--gap-bg);
+    border-right: 3px solid var(--gap-border);
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-size: 14px;
+  }
+  .gap.resolved { background: var(--variation-bg); border-right-color: var(--variation-border); }
+  .gap-id-badge {
+    display: inline-block;
+    background: var(--gap-border);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 5px;
+    margin-left: 6px;
+  }
+  .gap.resolved .gap-id-badge { background: var(--variation-border); }
+  .gap-status { font-size: 13px; color: var(--ink-muted); margin-top: 4px; }
+
+  /* Islands */
+  .islands-grid { display: flex; flex-direction: column; gap: 24px; }
+  article.island {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border-top: 6px solid var(--phase-1);
+  }
+  .island-header { margin-bottom: 16px; }
+  .island-header .row { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+  .island-number {
+    background: var(--accent);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .island-name-visual { font-size: 22px; font-weight: 700; margin: 0; }
+  .island-name-pedagogical { color: var(--ink-soft); font-size: 15px; font-style: italic; margin-right: 52px; }
+  .phase-tag {
+    display: inline-block;
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    margin-right: 52px;
+    margin-top: 6px;
+    font-weight: 600;
+    background: var(--phase-1);
+    color: white;
+  }
+  .island-section { margin-top: 18px; }
+  .island-section h4 {
+    font-size: 14px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 8px;
+    font-weight: 700;
+  }
+  .child-goal {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    padding: 14px 18px;
+    border-radius: 10px;
+    font-size: 17px;
+    font-weight: 600;
+    color: #78350f;
+  }
+  .skill-desc { font-size: 16px; line-height: 1.7; }
+  .available {
+    background: #f0f9ff;
+    border-right: 3px solid #0284c7;
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  .available div { margin: 4px 0; }
+  .available strong { color: #075985; }
+
+  /* Games + Variations */
+  .games { display: flex; flex-direction: column; gap: 14px; }
+  .game {
+    background: var(--game-bg);
+    border-right: 3px solid var(--game-border);
+    padding: 14px 18px;
+    border-radius: 8px;
+  }
+  .game.weak { background: var(--weak-bg); border-right-color: var(--weak-border); }
+  .game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .game-name { font-weight: 700; font-size: 16px; flex: 1; }
+  .envelope-tag {
+    background: var(--game-border);
+    color: white;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+  .weak-tag {
+    background: var(--weak-border);
+    color: white;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-weight: 700;
+  }
+  .game-description { color: var(--ink-soft); font-size: 14px; line-height: 1.6; }
+  .game-objective {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--accent);
+    font-style: italic;
+  }
+  .game-objective::before { content: '◆ '; color: var(--accent); }
+  .weak-reason {
+    background: rgba(245, 101, 101, 0.1);
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-top: 8px;
+    font-size: 13px;
+  }
+  .weak-reason strong { color: var(--weak-border); }
+  .replacement-recommended {
+    background: var(--replacement-bg);
+    border-right: 3px solid var(--replacement-border);
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-top: 8px;
+    font-size: 13px;
+  }
+  .replacement-recommended::before { content: '↻ מומלץ להחליף: '; font-weight: 700; color: var(--replacement-border); }
+
+  .variations-toggle {
+    margin-top: 10px;
+    cursor: pointer;
+    color: var(--variation-border);
+    font-weight: 600;
+    font-size: 13px;
+    user-select: none;
+  }
+  .variations-toggle:hover { text-decoration: underline; }
+  .variations { display: none; margin-top: 10px; padding-right: 12px; border-right: 2px dashed var(--variation-border); }
+  .variations.open { display: block; }
+  .variation {
+    background: var(--variation-bg);
+    border-right: 3px solid var(--variation-border);
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .variation.fixed { background: var(--variation-fix-bg); border-right-color: var(--variation-fix-border); }
+  .variation .var-name { font-weight: 700; margin-bottom: 4px; }
+  .variation .var-name .fix-badge {
+    background: var(--variation-fix-border);
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 6px;
+  }
+  .variation .var-desc { color: var(--ink-soft); margin: 4px 0; }
+  .variation .var-improvement { color: var(--accent); font-size: 12px; margin-top: 4px; }
+  .variation .var-improvement::before { content: '+ '; font-weight: 700; }
+  .variation .var-source { color: var(--ink-muted); font-size: 11px; margin-top: 4px; }
+
+  /* Session Journey */
+  .journey {
+    background: var(--journey-bg);
+    border-right: 3px solid var(--journey-border);
+    padding: 14px 18px;
+    border-radius: 8px;
+  }
+  .journey > div { margin: 6px 0; font-size: 14px; }
+  .journey strong { color: var(--journey-border); }
+  .journey-thresholds {
+    background: rgba(255,255,255,0.7);
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-top: 8px;
+    font-size: 13px;
+    display: flex;
+    gap: 16px;
+  }
+
+  /* Risks */
+  .risks {
+    background: var(--risk-bg);
+    border-right: 3px solid var(--risk-border);
+    padding: 12px 18px;
+    border-radius: 8px;
+  }
+  .risks ul { margin: 0; padding-right: 20px; }
+  .risks li { margin: 6px 0; font-size: 14px; line-height: 1.6; }
+
+  /* Anchors (collapsed) */
+  .anchors {
+    background: var(--anchor-bg);
+    border-right: 3px solid var(--anchor-border);
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+  .anchors div { margin: 4px 0; }
+  .anchors strong { color: #553c9a; }
+  summary { cursor: pointer; padding: 8px 0; font-weight: 600; color: var(--accent); user-select: none; }
+  summary:hover { text-decoration: underline; }
+  details { margin-top: 8px; }
+
+  .stats {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+    padding: 12px;
+    background: #f7fafc;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .sources { font-size: 12px; color: var(--ink-muted); margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); }
+  .sources strong { color: var(--ink-soft); }
+
+  footer.page {
+    margin-top: 48px;
+    padding: 24px;
+    background: var(--card);
+    border-radius: 12px;
+    text-align: center;
+    color: var(--ink-muted);
+    font-size: 14px;
+  }
+  footer.page a { color: var(--accent); text-decoration: none; }
+  footer.page a:hover { text-decoration: underline; }
+
+  .toc {
+    position: sticky;
+    top: 16px;
+    background: var(--card);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .toc a { color: var(--accent); text-decoration: none; margin-left: 10px; }
+  .toc a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="page">
+  <h1>אבני יסוד — בלופרינט 22 איים</h1>
+  <div class="subtitle">פאזה A · איים 1, 2, 4-9 · גרסה 0.2 (אחרי שילוב GPT)</div>
+  <div class="meta">
+    <span>גרסה 0.2-draft</span>
+    <span>עדכון: 23.5.2026</span>
+    <span>Perplexity ×3</span>
+    <span>GPT 48 וריאציות</span>
+    <span>סטטוס: ממתין לבדיקת מיטל</span>
+  </div>
+</header>
+
+<div class="toc">
+  <strong>קפוץ אל:</strong>
+  <a href="#companion">בועת נוני</a>
+  <a href="#journey-rules">חוקי Session Journey</a>
+  <a href="#gaps">פערים</a>
+  <a href="#islands">איים</a>
+</div>
+
+<div class="scope-note">
+  <strong>גרסה 0.2 (23.5.2026):</strong> שולבו 48 וריאציות מ-GPT, 8 Session Journeys, בועת נוני גלובלית, והחלפת 3 משחקונים חלשים. 9 וריאציות תוקנו מחציית מטאפורות בין איים. מסומנות עם תג "תוקן" כתום.
+</div>
+
+<section id="companion" class="global-section companion-section">
+  <h2>בועת נוני החיה — UI גלובלי</h2>
+  <p id="companion-desc"></p>
+  <div class="companion-states" id="companion-states"></div>
+  <div class="water-indicator" id="water-indicator"></div>
+</section>
+
+<section id="journey-rules" class="global-section" style="border-top:6px solid var(--journey-border);">
+  <h2 style="color:var(--journey-border);">חוקי Session Journey — שכבת המוטיבציה התוך-סשנית</h2>
+  <p id="journey-rules-intro"></p>
+  <div id="journey-rules-list"></div>
+</section>
+
+<section id="gaps" class="global-section cross-cutting">
+  <h2>פערים חוצי-איים — סטטוס</h2>
+  <p id="gaps-intro"></p>
+  <div id="gaps-list"></div>
+</section>
+
+<div id="islands" class="islands-grid"></div>
+
+<footer class="page">
+  <div><strong>אבני יסוד — מערכת תרגול דיפרנציאלית-אדפטיבית לכיתה א' עברית</strong></div>
+  <div style="margin-top:8px">
+    מסמכים קשורים:
+    <a href="../../narrative-spec.md">narrative-spec.md</a> ·
+    <a href="../../architecture-mvp.md">architecture-mvp.md</a> ·
+    <a href="gpt-prompt.md">gpt-prompt.md</a> ·
+    <a href="assets/gpt-mockup-2026-05-23.png">GPT mockup</a>
+  </div>
+</footer>
+
+</div>
+
+<script>
+async function loadBlueprint() {
+  const res = await fetch('22-islands.json');
+  const data = await res.json();
+
+  // Companion UI
+  document.getElementById('companion-desc').textContent = data.companion_ui.description;
+  const states = data.companion_ui.states;
+  document.getElementById('companion-states').innerHTML = Object.entries(states).map(([key, s]) => `
+    <div class="companion-state">
+      <div class="state-name">${key}</div>
+      <div class="state-trigger">${s.trigger}</div>
+      <div class="state-visual">${s.visual}${s.important ? '<br><em>' + s.important + '</em>' : ''}</div>
+    </div>
+  `).join('');
+  const wp = data.companion_ui.water_progress_indicator;
+  document.getElementById('water-indicator').innerHTML = `
+    <strong>פס זרם המים:</strong> ${wp.description}<br>
+    <strong>פעולה:</strong> ${wp.fill_event}<br>
+    <strong>סיום:</strong> ${wp.completion}<br>
+    <strong>חוק ברזל:</strong> ${wp.no_numbers}
+  `;
+
+  // Journey rules
+  const jr = data.session_journey_rules;
+  document.getElementById('journey-rules-intro').textContent = jr.intro;
+  document.getElementById('journey-rules-list').innerHTML = `
+    <ul style="line-height:1.9;font-size:15px;">
+      <li><strong>בלי ניקוד גלוי:</strong> ${jr.no_visible_score ? 'אסור (3/5, 60%, וכו')' : ''}</li>
+      <li><strong>בלי השוואה לעמיתים:</strong> ${jr.no_peer_comparison ? 'אסור' : ''}</li>
+      <li><strong>בלי חגיגה דרמטית:</strong> ${jr.no_high_intensity_celebration ? 'אסור' : ''}</li>
+      <li><strong>מתאפס בכל סשן:</strong> ${jr.journey_resets_each_session}</li>
+      <li><strong>נפרד מ-Mastery של האי:</strong> ${jr.journey_is_separate_from_island_mastery}</li>
+      <li><strong>טון פידבק:</strong> ${jr.feedback_tone}</li>
+      <li><strong>ספי השלמה:</strong> רמות 1-2 = ${jr.completion_thresholds.levels_1_2} צעדים · רמות 3-4 = ${jr.completion_thresholds.levels_3_4} צעדים. ${jr.completion_thresholds.rationale}</li>
+    </ul>
+    <div style="font-size:12px;color:var(--ink-muted);margin-top:8px;">מבוסס: ${jr.based_on}</div>
+  `;
+
+  // Cross-cutting gaps
+  const gaps = data.cross_cutting_findings_from_perplexity_review;
+  document.getElementById('gaps-intro').textContent = gaps.intro + ' · ' + gaps.open_gaps_summary;
+  const statusItems = gaps.status_after_gpt_integration;
+  document.getElementById('gaps-list').innerHTML = Object.entries(statusItems).map(([key, val]) => {
+    const isResolved = val.includes('נפתר');
+    const code = key.split('_')[0];
+    return `
+      <div class="gap ${isResolved ? 'resolved' : ''}">
+        <span class="gap-id-badge">${code}</span>
+        <strong>${key.replace(/_/g, ' ')}</strong>
+        <div class="gap-status">${val}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Islands
+  const grid = document.getElementById('islands');
+  data.islands.forEach(island => {
+    const card = document.createElement('article');
+    card.className = 'island';
+    card.dataset.phase = island.phase;
+    card.id = `island-${island.id}`;
+
+    const games = island.mini_games.map((g, gi) => {
+      const variations = (g.variations || []).map((v, vi) => {
+        const isFixed = v.source && v.source.includes('תוקן');
+        return `
+          <div class="variation ${isFixed ? 'fixed' : ''}">
+            <div class="var-name">${isFixed ? '<span class="fix-badge">תוקן</span>' : ''}${v.name}<span class="envelope-tag" style="margin-right:8px;">${v.envelope}</span></div>
+            <div class="var-desc">${v.description}</div>
+            <div class="var-improvement">${v.improvement_over_original || ''}</div>
+            <div class="var-source">${v.source || ''}</div>
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div class="game ${g.weak_game_flag ? 'weak' : ''}">
+          <div class="game-header">
+            <span class="game-name">${g.name}</span>
+            <span class="envelope-tag">${g.envelope}</span>
+            ${g.weak_game_flag ? '<span class="weak-tag">חלש</span>' : ''}
+          </div>
+          <div class="game-description">${g.description}</div>
+          <div class="game-objective">${g.primary_objective}</div>
+          ${g.weak_game_reason ? `<div class="weak-reason"><strong>סיבה:</strong> ${g.weak_game_reason}</div>` : ''}
+          ${g.replacement_recommended ? `<div class="replacement-recommended">${g.replacement_recommended}</div>` : ''}
+          ${variations ? `
+            <div class="variations-toggle" onclick="this.nextElementSibling.classList.toggle('open'); this.textContent = this.nextElementSibling.classList.contains('open') ? 'הסתר ${g.variations.length} וריאציות ↑' : 'הצג ${g.variations.length} וריאציות ↓'">הצג ${g.variations.length} וריאציות ↓</div>
+            <div class="variations">${variations}</div>
+          ` : ''}
+        </div>
+      `;
+    }).join('');
+
+    const risks = island.pedagogical_risks.map(r => `<li>${r}</li>`).join('');
+    const sources = (island.research_sources || []).join(' · ');
+
+    const letters = Array.isArray(island.available_at_arrival.letters)
+      ? (island.available_at_arrival.letters.length ? island.available_at_arrival.letters.join(' · ') : '— (אודיו בלבד)')
+      : island.available_at_arrival.letters;
+
+    const journey = island.session_journey;
+
+    card.innerHTML = `
+      <div class="island-header">
+        <div class="row">
+          <div class="island-number">${island.id}</div>
+          <h2 class="island-name-visual">${island.name_visual}</h2>
+        </div>
+        <div class="island-name-pedagogical">${island.name_pedagogical}</div>
+        <div class="phase-tag">פאזה ${island.phase} · ${island.phase_name}</div>
+      </div>
+
+      <div class="island-section">
+        <h4>מטרת האי לילד.ה</h4>
+        <div class="child-goal">${island.child_goal_one_line}</div>
+      </div>
+
+      <div class="island-section">
+        <h4>המיומנות הפדגוגית</h4>
+        <div class="skill-desc">${island.pedagogical_skill}</div>
+      </div>
+
+      <div class="island-section">
+        <h4>מה זמין ברגע ההגעה</h4>
+        <div class="available">
+          <div><strong>אותיות:</strong> ${letters}</div>
+          <div><strong>אוצר מילים:</strong> ${island.available_at_arrival.vocabulary_constraints}</div>
+          <div><strong>ניקוד:</strong> ${island.available_at_arrival.niqqud}</div>
+          <div><strong>חודש בתוכנית:</strong> ${island.available_at_arrival.month_in_curriculum}</div>
+        </div>
+      </div>
+
+      <div class="island-section">
+        <h4>3 משחקונים + 6 וריאציות</h4>
+        <div class="games">${games}</div>
+      </div>
+
+      <div class="island-section">
+        <h4>Session Journey — מסע תוך-סשני</h4>
+        <div class="journey">
+          <div><strong>היעד הגלוי:</strong> ${journey.visible_goal}</div>
+          <div><strong>צעד בכל הצלחה:</strong> ${journey.step_unit}</div>
+          <div><strong>חגיגת סיום:</strong> ${journey.celebration}</div>
+          <div class="journey-thresholds">
+            <span><strong>רמות 1-2:</strong> ${journey.completion_threshold_levels_1_2} צעדים</span>
+            <span><strong>רמות 3-4:</strong> ${journey.completion_threshold_levels_3_4} צעדים</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="island-section">
+        <h4>סיכונים פדגוגיים / LLM pitfalls</h4>
+        <div class="risks"><ul>${risks}</ul></div>
+      </div>
+
+      <details>
+        <summary>עוגנים מהסיפור (narrative-spec)</summary>
+        <div class="anchors">
+          <div><strong>לפני (אובך):</strong> ${island.narrative_anchors.before}</div>
+          <div><strong>רגע התבהרות:</strong> ${island.narrative_anchors.clearing_moment}</div>
+          <div><strong>מזכרת המפה:</strong> ${island.narrative_anchors.map_token}</div>
+          <div><strong>פריט אקווריום בבית נוני:</strong> ${island.narrative_anchors.aquarium_item}</div>
+        </div>
+      </details>
+
+      <div class="stats">
+        <div><strong>אומדן פריטים:</strong> ${island.item_count_estimate}</div>
+        <div><strong>סף שטף:</strong> ${island.fluency_threshold_seconds ? island.fluency_threshold_seconds + ' שניות' : '— לא רלוונטי'}</div>
+        <div><strong>ציר דשבורד:</strong> ${island.teacher_axis}</div>
+        <div><strong>מיומנות מ-9:</strong> #${island.skill_id_in_9}</div>
+      </div>
+
+      <div class="sources"><strong>מקורות:</strong> ${sources}</div>
+    `;
+
+    grid.appendChild(card);
+  });
+}
+
+loadBlueprint().catch(e => {
+  document.getElementById('islands').innerHTML =
+    '<div style="background:#fee;padding:20px;border-radius:8px;color:#900">שגיאה בטעינת ה-JSON: ' + e.message + '</div>';
+});
+</script>
+
+</body>
+</html>

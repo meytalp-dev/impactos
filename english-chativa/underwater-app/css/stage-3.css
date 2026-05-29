@@ -1,0 +1,1121 @@
+/* ============================================================
+   stage-3.css — אלמוגי האותיות
+   חולץ מ-stage-3.html (23.5.2026) + תוספות עבור letter-shape ו-find-letter
+   שדרוג ויזואלי 23.5.2026 (פנינה+קונכייה, בועת הוראה, נוני צמוד לאקשן)
+   ============================================================ */
+
+:root {
+  /* גוונים לקונכיות (התאמה לויזואל של ChatGPT) */
+  --shell-peach-top:    #FFD8C4;
+  --shell-peach-bottom: #FFB39A;
+  --pearl-shadow-peach: #FFE7DA;
+
+  --shell-mint-top:     #C7F5DE;
+  --shell-mint-bottom:  #98E5C0;
+  --pearl-shadow-mint:  #E2F8EE;
+
+  --shell-lavender-top:    #E2D8FF;
+  --shell-lavender-bottom: #C8B8F5;
+  --pearl-shadow-lavender: #EFE9FF;
+
+  /* גוונים לבועת הוראה */
+  --bubble-instr-top:    #FFD8C4;
+  --bubble-instr-bottom: #FFA98D;
+  --bubble-instr-border: #FFFFFF;
+}
+
+body {
+  background: linear-gradient(180deg, #B8E8E0 0%, #63D8D0 100%);
+  overflow: hidden;
+}
+
+/* ===== Stage scene ===== */
+.stage-scene {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scene-frame {
+  position: relative;
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.scene-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* ===== Top bar ===== */
+.top-bar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  padding: var(--space-m);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 50;
+  gap: var(--space-s);
+}
+
+.icon-btn {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 6px 16px rgba(38, 80, 92, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-main);
+  text-decoration: none;
+  transition: transform 180ms ease;
+}
+.icon-btn:active { transform: scale(0.92); }
+
+.progress-pill {
+  flex: 0 1 auto;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 8px 18px;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 6px 16px rgba(38, 80, 92, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--text-main);
+}
+
+.progress-pill .pp-letter {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--coral);
+}
+
+/* ===== Game area ===== */
+.game-area {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(16px, 3vh, 32px);
+  /* padding ימני גדול יותר כדי לפנות מקום לנוני המוגדל */
+  padding: clamp(80px, 14vh, 130px) clamp(140px, 26vw, 220px) clamp(20px, 4vh, 40px) clamp(16px, 3vw, 32px);
+  z-index: 10;
+}
+
+/* ===== Letter display (pedestal) ===== */
+.letter-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.letter-pedestal {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(110px, 22vw, 160px);
+  height: clamp(110px, 22vw, 160px);
+  background: radial-gradient(circle at 35% 30%,
+    rgba(255, 255, 255, 0.95) 0%,
+    var(--warm-white) 35%,
+    var(--hint) 100%);
+  border: 4px solid rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  box-shadow:
+    0 14px 30px rgba(38, 80, 92, 0.25),
+    inset 0 0 24px rgba(255, 255, 255, 0.6),
+    0 0 0 0 rgba(255, 231, 168, 0.5);
+  animation: letter-pulse 3s ease-in-out infinite;
+}
+
+.letter-pedestal.big {
+  width: clamp(140px, 28vw, 200px);
+  height: clamp(140px, 28vw, 200px);
+}
+
+.letter-pedestal.bloomed {
+  animation: letter-bloom 2200ms cubic-bezier(.2,.8,.25,1);
+  box-shadow:
+    0 18px 40px rgba(255, 169, 141, 0.5),
+    inset 0 0 30px rgba(255, 255, 255, 0.8),
+    0 0 0 24px rgba(255, 231, 168, 0);
+}
+
+@keyframes letter-pulse {
+  0%, 100% { box-shadow: 0 14px 30px rgba(38,80,92,0.25), inset 0 0 24px rgba(255,255,255,0.6), 0 0 0 0 rgba(255,231,168,0.6); }
+  50%      { box-shadow: 0 14px 30px rgba(38,80,92,0.25), inset 0 0 24px rgba(255,255,255,0.6), 0 0 0 20px rgba(255,231,168,0); }
+}
+
+@keyframes letter-bloom {
+  0%   { transform: scale(1); filter: drop-shadow(0 0 0 rgba(255,169,141,0)); }
+  40%  { transform: scale(1.18); filter: drop-shadow(0 0 30px rgba(255,169,141,0.7)); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(255,169,141,0)); }
+}
+
+.letter-display {
+  font-size: clamp(70px, 14vw, 110px);
+  font-weight: 900;
+  color: var(--text-main);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.letter-pedestal.big .letter-display {
+  font-size: clamp(90px, 18vw, 150px);
+}
+
+.audio-btn {
+  position: absolute;
+  bottom: -8px;
+  right: -8px;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: var(--water-secondary);
+  color: white;
+  border: 3px solid white;
+  box-shadow: 0 6px 16px rgba(115, 217, 209, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 180ms ease;
+}
+.audio-btn:active { transform: scale(0.92); }
+.audio-btn.playing {
+  animation: audio-bump 600ms ease;
+}
+@keyframes audio-bump {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.15); }
+}
+
+/* כפתור אודיו גדול — בתוך activities (לא בתוך פדסטל) */
+.audio-btn-large {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: var(--water-secondary);
+  color: white;
+  border: 4px solid white;
+  box-shadow: 0 8px 20px rgba(115, 217, 209, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 180ms ease;
+}
+.audio-btn-large:active { transform: scale(0.92); }
+
+.ls-prompt-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 0;
+}
+
+.prompt-text {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 10px 20px;
+  border-radius: var(--radius-pill);
+  font-size: clamp(15px, 2.6vw, 19px);
+  font-weight: 700;
+  color: var(--text-main);
+  box-shadow: 0 6px 16px rgba(38, 80, 92, 0.12);
+  text-align: center;
+  max-width: 90%;
+}
+
+/* ===== Options grid (sound-match, letter-shape A) ===== */
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(10px, 2.5vw, 18px);
+  align-content: center;
+  max-width: 540px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.options-grid.letter-options {
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  max-width: 600px;
+}
+
+.option-card {
+  background: rgba(255, 255, 255, 0.94);
+  border: 3px solid rgba(255, 255, 255, 0.96);
+  border-radius: var(--radius-lg);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(38, 80, 92, 0.15);
+  transition: transform 200ms cubic-bezier(.2,.8,.25,1), box-shadow 200ms ease, border-color 200ms ease;
+  min-height: clamp(110px, 22vw, 160px);
+  position: relative;
+  overflow: hidden;
+}
+
+.option-card:hover { transform: translateY(-3px); }
+.option-card:active { transform: scale(0.96); }
+
+.option-card .pic {
+  width: clamp(80px, 16vw, 130px);
+  height: clamp(80px, 16vw, 130px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(40px, 9vw, 64px);
+}
+.option-card .pic img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* letter-card (variant A) — אות גדולה במקום תמונה */
+.letter-card .option-letter {
+  font-size: clamp(56px, 12vw, 92px);
+  font-weight: 900;
+  color: var(--text-main);
+  line-height: 1;
+}
+
+/* פידבק על כרטיסים (משותף לכל הפעילויות) */
+.option-card.correct,
+.bubble-option.correct,
+.fl-letter.correct {
+  border-color: var(--success);
+  box-shadow: 0 8px 20px rgba(124, 231, 180, 0.4), var(--glow-success);
+  animation: correct-bounce 600ms ease;
+}
+
+@keyframes correct-bounce {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+.option-card.wrong,
+.bubble-option.wrong,
+.fl-letter.wrong {
+  animation: wrong-shake 500ms ease;
+  opacity: 0.5;
+}
+
+@keyframes wrong-shake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-4px); }
+  40%      { transform: translateX(4px); }
+  60%      { transform: translateX(-3px); }
+  80%      { transform: translateX(3px); }
+}
+
+.option-card.hint-glow,
+.bubble-option.hint-glow,
+.fl-letter.hint-glow {
+  border-color: var(--hint);
+  box-shadow: 0 8px 20px rgba(255, 231, 168, 0.5), var(--glow-pedagogic);
+  animation: hint-throb 1.4s ease-in-out infinite;
+}
+@keyframes hint-throb {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.04); }
+}
+
+.option-card.dimmed,
+.bubble-option.dimmed,
+.fl-letter.dimmed {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* ===== Bubble grid (letter-shape variant B) ===== */
+.bubble-grid {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: clamp(16px, 4vw, 32px);
+  margin: 24px auto 0;
+  max-width: 560px;
+}
+
+.bubble-option {
+  width: clamp(80px, 16vw, 120px);
+  height: clamp(80px, 16vw, 120px);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(168, 232, 255, 0.85) 50%,
+    rgba(115, 217, 209, 0.9) 100%);
+  border: 4px solid rgba(255, 255, 255, 0.96);
+  box-shadow: 0 10px 24px rgba(38, 80, 92, 0.22);
+  color: var(--water-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 200ms cubic-bezier(.2,.8,.25,1), box-shadow 200ms ease, border-color 200ms ease;
+  position: relative;
+}
+.bubble-option:hover { transform: translateY(-3px); }
+.bubble-option:active { transform: scale(0.94); }
+
+.bubble-option.bubble-active {
+  border-color: var(--hint);
+  box-shadow: 0 12px 28px rgba(255, 231, 168, 0.6), 0 0 0 6px rgba(255, 231, 168, 0.3);
+  transform: scale(1.06);
+}
+
+/* ===== Find-letter ===== */
+.fl-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(16px, 4vw, 32px);
+  width: 100%;
+  padding: 12px;
+}
+
+.fl-image-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fl-image {
+  width: clamp(80px, 16vw, 130px);
+  height: clamp(80px, 16vw, 130px);
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.85);
+  border: 3px solid white;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 6px 16px rgba(38, 80, 92, 0.18);
+  padding: 8px;
+}
+
+.fl-word {
+  display: flex;
+  flex-direction: row-reverse;  /* RTL: האות הראשונה מימין */
+  justify-content: center;
+  align-items: center;
+  gap: clamp(12px, 3vw, 24px);
+  background: rgba(255, 255, 255, 0.92);
+  padding: clamp(18px, 4vw, 32px) clamp(20px, 5vw, 40px);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 26px rgba(38, 80, 92, 0.18);
+  max-width: 90vw;
+}
+
+.fl-letter {
+  font-size: clamp(60px, 13vw, 100px);
+  font-weight: 900;
+  color: var(--text-main);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 14px;
+  line-height: 1;
+  transition: transform 200ms ease, background 200ms ease, box-shadow 200ms ease;
+  min-width: clamp(60px, 12vw, 96px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.fl-letter:hover { background: rgba(168, 232, 255, 0.4); transform: translateY(-3px); }
+.fl-letter:active { transform: scale(0.94); }
+
+.fl-floating-letter {
+  position: fixed;
+  top: 35%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.5);
+  font-size: clamp(140px, 28vw, 220px);
+  font-weight: 900;
+  color: var(--coral);
+  text-shadow: 0 8px 24px rgba(255, 169, 141, 0.5);
+  opacity: 0;
+  z-index: 100;
+  pointer-events: none;
+  transition: opacity 350ms ease, transform 350ms ease;
+}
+.fl-floating-letter.show {
+  opacity: 0.92;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* ===== Trace-path activity ===== */
+.tp-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(12px, 3vw, 24px);
+  width: 100%;
+  padding: 12px;
+}
+
+.tp-canvas-wrap {
+  position: relative;
+  width: min(90vw, 480px);
+  aspect-ratio: 1;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 24px;
+  box-shadow: 0 10px 28px rgba(38, 80, 92, 0.15);
+  border: 3px solid rgba(255, 255, 255, 0.96);
+  overflow: hidden;
+  touch-action: none;     /* חיוני ל-pointer events רציפים על מסך מגע */
+}
+
+.tp-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.tp-canvas .tp-template {
+  pointer-events: none;
+}
+
+.tp-canvas .tp-marker {
+  pointer-events: none;
+}
+
+.tp-canvas .tp-active,
+.tp-canvas .tp-done {
+  pointer-events: none;
+}
+
+.tp-canvas .tp-done {
+  animation: tp-stroke-confirm 600ms ease;
+}
+
+@keyframes tp-stroke-confirm {
+  0%   { filter: brightness(1); }
+  50%  { filter: brightness(1.3) drop-shadow(0 0 8px rgba(255, 231, 168, 0.7)); }
+  100% { filter: brightness(1); }
+}
+
+.tp-canvas .tp-demo-dot {
+  pointer-events: none;
+  filter: drop-shadow(0 0 6px currentColor);
+}
+
+/* trial pips — מציגים איזו חזרה מתוך 4 */
+.tp-trials {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.tp-trial-pip {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  border: 2px solid rgba(115, 217, 209, 0.4);
+  color: var(--text-soft);
+  font-weight: 800;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 300ms ease;
+}
+.tp-trial-pip.active {
+  background: var(--coral);
+  color: white;
+  border-color: white;
+  transform: scale(1.15);
+  box-shadow: 0 4px 12px rgba(255, 169, 141, 0.5);
+}
+.tp-trial-pip.done {
+  background: var(--success);
+  color: white;
+  border-color: white;
+}
+
+.tp-progress {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+}
+
+.tp-progress-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  border: 2px solid rgba(115, 217, 209, 0.5);
+  transition: all 300ms ease;
+}
+.tp-progress-dot.active {
+  background: var(--coral);
+  border-color: white;
+  transform: scale(1.2);
+  box-shadow: 0 0 12px rgba(229, 69, 69, 0.5);
+}
+.tp-progress-dot.done {
+  background: var(--success);
+  border-color: white;
+}
+
+/* ===== Bloom overlay — אות פורחת בסוף הפעילויות שלה ===== */
+.bloom-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 150;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 244, 194, 0.0) 0%, rgba(255, 244, 194, 0.0) 100%);
+  transition: background 600ms ease;
+}
+.bloom-overlay.show {
+  background: radial-gradient(circle at 50% 50%, rgba(255, 244, 194, 0.6) 0%, rgba(255, 169, 141, 0.2) 60%, rgba(255, 169, 141, 0.0) 100%);
+}
+
+.bloom-letter {
+  font-size: clamp(120px, 26vw, 220px);
+  font-weight: 900;
+  color: var(--coral);
+  text-shadow:
+    0 0 30px rgba(255, 231, 168, 0.9),
+    0 0 60px rgba(255, 169, 141, 0.6),
+    0 10px 40px rgba(255, 169, 141, 0.5);
+  opacity: 0;
+  transform: scale(0.3) rotate(-20deg);
+  transition: opacity 700ms cubic-bezier(.2,.8,.25,1), transform 1100ms cubic-bezier(.2,.8,.25,1);
+}
+.bloom-overlay.show .bloom-letter {
+  opacity: 1;
+  transform: scale(1) rotate(0);
+  animation: bloom-pulse 1500ms ease-in-out 600ms;
+}
+
+@keyframes bloom-pulse {
+  0%, 100% { transform: scale(1) rotate(0); }
+  50%      { transform: scale(1.08) rotate(2deg); }
+}
+
+/* ============================================================
+   ===== Instruction bubble (בועת הוראה — חדש 23.5.2026) =====
+   פיל אופקי באפרסק/קורל, יושב למעלה בתוך game-area.
+   ============================================================ */
+.instruction-bubble {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 26px;
+  margin: 0 auto;
+  background: linear-gradient(180deg, var(--bubble-instr-top) 0%, var(--bubble-instr-bottom) 100%);
+  border: 4px solid var(--bubble-instr-border);
+  border-radius: var(--radius-pill);
+  box-shadow:
+    0 10px 24px rgba(255, 169, 141, 0.35),
+    inset 0 -3px 0 rgba(0,0,0,0.06),
+    inset 0 2px 0 rgba(255,255,255,0.7);
+  color: #5A2E1C;
+  font-weight: 800;
+  font-size: clamp(18px, 3.4vw, 24px);
+  letter-spacing: -0.01em;
+  opacity: 0;
+  transform: translateY(-8px) scale(0.96);
+  transition: opacity 320ms ease, transform 320ms cubic-bezier(.2,.8,.25,1);
+  max-width: min(560px, 92%);
+  text-align: center;
+  z-index: 12;
+}
+.instruction-bubble.show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.instruction-text {
+  display: inline-block;
+  line-height: 1.2;
+}
+.instruction-audio-btn {
+  width: 40px; height: 40px;
+  flex: 0 0 40px;
+  border-radius: 50%;
+  background: #FFF;
+  border: 2.5px solid rgba(255,255,255,0.95);
+  box-shadow: 0 4px 10px rgba(255, 120, 90, 0.35);
+  color: var(--coral);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 160ms ease;
+  padding: 0;
+}
+.instruction-audio-btn:active { transform: scale(0.9); }
+
+.instruction-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-bottom: clamp(6px, 1.5vw, 14px);
+}
+
+/* ============================================================
+   ===== Shell + Pearl (קונכייה — חדש 23.5.2026) =====
+   ============================================================ */
+.shell-grid {
+  display: flex;
+  flex-direction: row-reverse;  /* RTL — האפשרות הראשונה מימין */
+  justify-content: center;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: clamp(14px, 3vw, 32px);
+  margin: 0 auto;
+  width: 100%;
+  max-width: 720px;
+  padding: 4px clamp(8px, 2vw, 16px);
+}
+
+/* shell-option הפך לבועה (.bubble) מאז 23.5.2026 ערב.
+   הסגנונות של .bubble נטענים מ-components.css.
+   ה-state classes כאן ממופים לאנימציות בועה (.bubble.zoharet/.correct/.wrong-pulse). */
+
+.shell-content {
+  /* wrapper פנימי — נשמר לתאימות API של AvneiShell.setContent. שקוף ואינו ממוקם:
+     .bubble כבר מטפל ב-centering דרך display:flex. */
+  display: contents;
+}
+
+.bubble .shell-letter {
+  font-family: 'Rubik', 'Heebo', sans-serif;
+  font-size: clamp(72px, 16vw, 112px);
+  font-weight: 700;
+  color: var(--deep);
+  line-height: 1;
+  user-select: none;
+}
+
+/* תמונת vocab בתוך בועה: 70% — תואם לסטנדרט .bubble img (components.css)
+   ול-onboarding.html. ה-PNG-ים עברו PIL crop+center (commit d48d6f8) ולכן
+   יש להם כבר padding פנימי, ואין צורך ב-90% המקורי. */
+.bubble .shell-image {
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.shell-fallback {
+  font-size: clamp(46px, 10vw, 72px);
+  line-height: 1;
+}
+
+/* === מיפוי מצבים ישנים ל-bubble states === */
+
+/* .correct — אותה התנהגות כמו .bubble.correct */
+.shell-option.correct {
+  border-color: var(--success);
+  box-shadow:
+    inset 0 -8px 16px rgba(99, 207, 229, 0.25),
+    0 0 28px var(--success),
+    0 6px 16px rgba(38, 80, 92, 0.10);
+  animation: bubble-pop 700ms ease-out;
+}
+
+/* .wrong — אך ורק shake רכה, ללא אדום, ללא הפחתת opacity חזקה (לפי הסטנדרט).
+   opacity 0.85 מספיק כדי לסמן שהאפשרות נפסלה זמנית. */
+.shell-option.wrong {
+  animation: bubble-shake 400ms ease-in-out;
+  opacity: 0.85;
+}
+
+/* .hint-glow — גלואו זהוב + הילה פועמת */
+.shell-option.hint-glow {
+  border-color: var(--gold-hint);
+  box-shadow:
+    inset 0 -8px 16px rgba(99, 207, 229, 0.25),
+    0 0 28px var(--gold-hint),
+    0 6px 16px rgba(38, 80, 92, 0.10);
+  animation: bubble-hint 1.4s ease-in-out infinite;
+}
+
+/* .dimmed — מעמעם אפשרות שנפסלה (אחרי .wrong). */
+.shell-option.dimmed {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* ============================================================
+   ===== Word frame (לפעילות find-letter — חדש 23.5.2026) =====
+   מסגרת בצורת "כרטיס מילה" עם איור משמאל
+   ============================================================ */
+.word-frame {
+  display: flex;
+  flex-direction: row-reverse;  /* RTL — מילה מימין */
+  align-items: center;
+  justify-content: center;
+  gap: clamp(14px, 3vw, 28px);
+  background: linear-gradient(180deg, #FFF9F0 0%, #FFEED9 100%);
+  border: 4px solid #FFFFFF;
+  border-radius: clamp(20px, 4vw, 28px);
+  padding: clamp(16px, 3vw, 26px) clamp(20px, 4vw, 36px);
+  box-shadow:
+    0 14px 28px rgba(38, 80, 92, 0.2),
+    inset 0 -3px 0 rgba(255, 200, 174, 0.4);
+  max-width: 92%;
+  margin: 0 auto;
+}
+.word-frame__image {
+  width: clamp(80px, 14vw, 120px);
+  height: clamp(80px, 14vw, 120px);
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.word-frame__letters {
+  display: flex;
+  /* בלי flex-direction מפורש: ב-dir="rtl" השורה זורמת ימין-לשמאל אוטומטית.
+     row-reverse שבר את הסדר ויצר תצוגה הפוכה (מרק → קרמ). */
+  align-items: center;
+  gap: clamp(4px, 1.2vw, 10px);
+}
+.word-frame__letter {
+  font-size: clamp(56px, 12vw, 88px);
+  font-weight: 900;
+  color: var(--text-main);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 16px;
+  line-height: 1;
+  transition: transform 180ms ease, background 180ms ease, color 180ms ease;
+  min-width: 0;
+}
+.word-frame__letter:hover  { background: rgba(255, 200, 174, 0.35); transform: translateY(-3px); }
+.word-frame__letter:active { transform: scale(0.94); }
+.word-frame__letter.correct {
+  color: var(--coral);
+  background: rgba(255, 231, 168, 0.4);
+  animation: correct-bounce 600ms ease;
+}
+.word-frame__letter.wrong {
+  animation: wrong-shake 500ms ease;
+  opacity: 0.4;
+}
+.word-frame__letter.hint-glow {
+  background: rgba(255, 231, 168, 0.5);
+  animation: hint-throb 1.4s ease-in-out infinite;
+}
+.word-frame__letter.dimmed {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* חץ סטארפיש שמצביע על האות הנכונה (רמז) */
+.word-frame__pointer {
+  position: absolute;
+  bottom: -28px;
+  font-size: 28px;
+  animation: pointer-bob 1s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes pointer-bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+/* ============================================================
+   ===== Noni — צמוד לאקשן (לא בפינה — חדש 23.5.2026) =====
+   ============================================================ */
+.noni-fixed {
+  position: fixed;
+  /* portrait: למעלה־ימין, ליד בועת ההוראה */
+  top: clamp(70px, 12vh, 130px);
+  right: clamp(4px, 2vw, 18px);
+  width: clamp(120px, 24vw, 180px);
+  z-index: 30;
+  pointer-events: none;
+  filter: drop-shadow(0 12px 22px rgba(38, 80, 92, 0.28));
+  opacity: 0;
+  transition: opacity 700ms ease;
+  transform-origin: 50% 80%;
+  bottom: auto;
+}
+.noni-fixed.ready {
+  opacity: 1;
+  animation: noni-breathe 4.5s ease-in-out infinite;
+}
+
+/* landscape: צמוד לאמצע־ימין במקביל לפעילות */
+@media (orientation: landscape) and (min-width: 800px) {
+  .noni-fixed {
+    top: 50%;
+    right: clamp(12px, 3vw, 32px);
+    width: clamp(160px, 18vw, 240px);
+    transform: translateY(-50%);
+    transform-origin: 50% 50%;
+  }
+  .noni-fixed.ready {
+    animation: noni-breathe-landscape 4.5s ease-in-out infinite;
+  }
+  @keyframes noni-breathe-landscape {
+    0%, 100% { transform: translateY(-50%) scale(1); }
+    50%      { transform: translateY(calc(-50% - 4px)) scale(1.03); }
+  }
+}
+
+@keyframes noni-breathe {
+  0%, 100% { transform: scale(1) translateY(0); }
+  50%      { transform: scale(1.03) translateY(-4px); }
+}
+
+.noni-fixed.noni-helping {
+  opacity: 1;
+  animation: noni-help-bob 1800ms ease-in-out infinite;
+  filter: drop-shadow(0 12px 22px rgba(38, 80, 92, 0.28))
+          drop-shadow(0 0 18px rgba(255, 231, 168, 0.8));
+}
+@keyframes noni-help-bob {
+  0%, 100% { transform: rotate(-4deg) scale(1.03); }
+  50%      { transform: rotate(-7deg) scale(1.06) translateY(-5px); }
+}
+
+.noni-fixed.noni-hint {
+  opacity: 1;
+  animation: noni-hint-bob 1400ms ease-in-out infinite;
+  filter: drop-shadow(0 12px 22px rgba(38, 80, 92, 0.28))
+          drop-shadow(0 0 24px rgba(255, 169, 141, 0.85));
+}
+@keyframes noni-hint-bob {
+  0%, 100% { transform: rotate(-8deg) scale(1.06); }
+  50%      { transform: rotate(-11deg) scale(1.1) translateY(-7px); }
+}
+
+.noni-fixed.noni-cheering {
+  opacity: 1;
+  animation: noni-cheer 1500ms cubic-bezier(.2,.8,.25,1) 1 forwards;
+  filter: drop-shadow(0 12px 22px rgba(38, 80, 92, 0.28))
+          drop-shadow(0 0 28px rgba(124, 231, 180, 0.85));
+}
+@keyframes noni-cheer {
+  0%   { transform: translateY(0) rotate(0) scale(1); }
+  25%  { transform: translateY(-26px) rotate(8deg) scale(1.14); }
+  50%  { transform: translateY(-10px) rotate(-6deg) scale(1.08); }
+  75%  { transform: translateY(-18px) rotate(4deg) scale(1.1); }
+  100% { transform: translateY(0) rotate(0) scale(1); }
+}
+
+/* בועת פידבק — צמודה לנוני (עברה למעלה ב-23.5.2026) */
+.feedback-bubble {
+  position: fixed;
+  top: clamp(180px, 30vh, 290px);
+  right: clamp(110px, 22vw, 200px);
+  bottom: auto;
+  background: var(--warm-white);
+  border-radius: var(--radius-lg);
+  padding: 12px 18px;
+  font-size: clamp(15px, 3vw, 19px);
+  font-weight: 700;
+  color: var(--text-main);
+  box-shadow: 0 8px 22px rgba(38, 80, 92, 0.22);
+  opacity: 0;
+  transform: translateY(8px) scale(0.95);
+  transition: opacity 280ms ease, transform 280ms ease;
+  max-width: 60vw;
+  z-index: 31;
+  white-space: normal;
+}
+.feedback-bubble.show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.feedback-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  right: 28px;
+  width: 18px;
+  height: 18px;
+  background: var(--warm-white);
+  border-radius: 50%;
+}
+.feedback-bubble::before {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  right: 24px;
+  width: 9px;
+  height: 9px;
+  background: var(--warm-white);
+  border-radius: 50%;
+}
+
+/* ===== Tap-to-start overlay ===== */
+.tap-to-start {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(184, 232, 224, 0.94), rgba(99, 216, 208, 0.92));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-m);
+  z-index: 300;
+  cursor: pointer;
+  padding: var(--space-l);
+  text-align: center;
+}
+.tap-to-start.hidden { display: none; }
+.tap-to-start h2 {
+  font-size: clamp(28px, 6vw, 42px);
+  font-weight: 900;
+  color: var(--text-main);
+  margin: 0;
+}
+.tap-to-start .start-btn {
+  height: 72px;
+  padding: 0 56px;
+  background: var(--water-secondary);
+  color: white;
+  border-radius: var(--radius-pill);
+  font-size: clamp(22px, 5vw, 28px);
+  font-weight: 800;
+  box-shadow: 0 12px 28px rgba(115, 217, 209, 0.5);
+  border: none;
+  cursor: pointer;
+}
+
+/* ===== Success burst ===== */
+.burst {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  overflow: visible;
+}
+
+.burst-bubble {
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #FFFFFF 0%, #FFF4C2 50%, #F0DA8E 100%);
+  box-shadow: 0 0 8px rgba(255, 244, 194, 0.8);
+  animation: burst-up 1100ms ease-out forwards;
+  opacity: 0;
+}
+@keyframes burst-up {
+  0%   { transform: translate(-50%, 0) scale(0.5); opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--dx, 0px)), -180px) scale(1); opacity: 0; }
+}
+
+/* ===== Completion overlay ===== */
+.completion {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(184, 232, 224, 0.95) 0%, rgba(99, 216, 208, 0.95) 100%);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-l);
+  z-index: 200;
+  padding: var(--space-l);
+  text-align: center;
+}
+.completion.show { display: flex; }
+
+.completion-title {
+  font-size: clamp(28px, 6vw, 42px);
+  font-weight: 900;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.completion-souvenir {
+  width: 120px;
+  height: 120px;
+  filter: drop-shadow(0 10px 24px rgba(255, 168, 141, 0.5));
+  animation: souvenir-appear 1500ms cubic-bezier(.2,.8,.25,1) forwards;
+  opacity: 0;
+}
+
+@keyframes souvenir-appear {
+  0%   { opacity: 0; transform: scale(0.4) rotate(-20deg); }
+  60%  { opacity: 1; transform: scale(1.1) rotate(8deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+.completion-msg {
+  font-size: clamp(18px, 4vw, 24px);
+  font-weight: 600;
+  color: var(--text-soft);
+  max-width: 24ch;
+  margin: 0;
+}
+
+/* ===== Layout responsiveness ===== */
+@media (orientation: landscape) and (min-width: 800px) {
+  .game-area {
+    /* landscape — סדר אנכי: בועת הוראה למעלה, אזור משחק במרכז, נוני בצד */
+    padding-top: clamp(90px, 14vh, 130px);
+    padding-right: clamp(180px, 22vw, 280px);
+    padding-left: clamp(20px, 3vw, 40px);
+    padding-bottom: clamp(20px, 4vh, 40px);
+  }
+  .feedback-bubble {
+    top: 50%;
+    transform: translateY(-50%) translateY(8px) scale(0.95);
+    right: clamp(190px, 22vw, 290px);
+  }
+  .feedback-bubble.show {
+    transform: translateY(-50%) translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .letter-pedestal { animation: none; }
+  .noni-img { animation: none; }
+  .option-card.correct, .option-card.wrong, .option-card.hint-glow,
+  .bubble-option.correct, .bubble-option.wrong, .bubble-option.hint-glow,
+  .fl-letter.correct, .fl-letter.wrong, .fl-letter.hint-glow {
+    animation: none;
+  }
+}

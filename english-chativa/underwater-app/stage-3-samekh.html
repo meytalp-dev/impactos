@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>צֵיד הַכּוֹכָבִים · אוֹת זַיִן · עוֹמֶק הַיָּם הַמּוּאָר</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/stage-3.css">
+  <link rel="stylesheet" href="css/game-shell.css?v=12">
+</head>
+<body>
+
+  <main class="stage-scene">
+    <div class="scene-frame">
+      <img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true"
+           onerror="this.style.display='none'">
+
+      <section class="quest-header">
+        <div class="shell-slots" id="shellSlots">
+          <div class="shell-slot" data-shell-slot="0"></div>
+          <div class="shell-slot" data-shell-slot="1"></div>
+          <div class="shell-slot" data-shell-slot="2"></div>
+          <div class="shell-slot" data-shell-slot="3"></div>
+          <div class="shell-slot" data-shell-slot="4"></div>
+        </div>
+      </section>
+
+      <div class="game-area" id="gameRoot"></div>
+
+      <div class="burst" id="burst"></div>
+    </div>
+  </main>
+
+  <img class="noni-fixed" id="noniImg" src="assets/noni-idle.png" alt="נוני">
+
+  <div class="feedback-bubble" id="feedbackBubble"></div>
+
+  <header class="top-bar">
+    <a href="stage-3-island.html" class="icon-btn" aria-label="חֲזָרָה לְאִי 3">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+    <div class="unit-counter" id="unitCounter">
+      <span class="uc-letter" id="ucLetter">ס</span>
+      <span id="unitCountDisplay">0/5 כּוֹכָבִים</span>
+    </div>
+    <div class="pearl-counter" aria-label="פְּנִינִים">
+      <span class="pearl" aria-hidden="true"></span>
+      <span class="count" id="pearlCount">0</span>
+    </div>
+  </header>
+
+  <div class="tap-to-start" id="tapToStart">
+    <h2>צֵיד הַכּוֹכָבִים</h2>
+    <button class="intro-speaker" id="introSpeaker" aria-label="שִׁמְעוּ אֶת הַהֶסְבֵּר">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>הַקִּישׁוּ לִשְׁמֹעַ</span>
+    </button>
+    <div id="introHtmlSlot">
+      <p>נוֹנִי גִּלָּה <strong>כּוֹכָבִים זוֹהֲרִים</strong> בַּיָּם, וּבְכֹל כּוֹכָב יֵשׁ אוֹת!</p>
+      <p>הַקִּישׁוּ עַל כֹּל הַכּוֹכָבִים עִם הָאוֹת <strong>ז</strong>.</p>
+    </div>
+    <button class="start-btn" id="startBtn">בּוֹאוּ נַתְחִיל</button>
+  </div>
+
+  <div class="completion" id="completion">
+    <h2>אֲסַפְתֶּם אֶת כֹּל הַכּוֹכָבִים!</h2>
+    <p id="completionMsg">כּוֹכָב זוֹהֵר הִצְטָרֵף לְעוֹלָם שֶׁל נוֹנִי.</p>
+    <a href="stage-3-island.html" class="btn-primary">חֲזָרָה לְאִי 3</a>
+  </div>
+
+  <script src="js/state.js"></script>
+  <script src="js/shared/bkt.js"></script>
+  <script src="js/shared/epa.js"></script>
+  <script src="js/shared/event-logger.js"></script>
+  <script src="js/shared/mastery-check.js"></script>
+  <script src="js/shared/audio.js"></script>
+  <script src="js/shared/noni.js"></script>
+  <script src="js/shared/feedback.js"></script>
+
+  <script src="js/templates/game-shell.js"></script>
+  <script src="js/templates/mechanic-tap-all.js"></script>
+  <script src="js/templates/mechanic-pick.js"></script>
+  <script src="js/templates/mechanic-quest.js"></script>
+  <!-- D.15 v2 — מכניקות חדשות + letter-anim overlay -->
+  <script src="js/templates/mechanic-memory-pair.js?v=2"></script>
+  <script src="js/templates/mechanic-sort-by-letter.js?v=2"></script>
+  <script src="js/templates/letter-anims.js?v=2"></script>
+
+  <script src="js/shared/scaffolding.js"></script>
+  <script src="js/shared/shell.js"></script>
+  <script src="js/shared/instruction.js"></script>
+  <script src="js/activities/sound-match.js"></script>
+  <script src="js/activities/letter-shape.js"></script>
+  <script src="js/activities/find-letter.js"></script>
+
+  <script>
+  // אות ז (zayin) · קבוצת כוכבים · D.15 v2 שלב C · mechanic=tap-all
+  (async function () {
+    const letterKey = 'samekh';
+
+    let cfg;
+    try {
+      cfg = await fetch(`data/island-03-letters/${letterKey}.json?v=2`).then(r => r.json());
+    } catch (e) {
+      console.error('Failed to load letter config:', letterKey, e);
+      document.querySelector('#tapToStart h2').textContent = 'שגיאה בטעינת המשחקון';
+      return;
+    }
+
+    document.title = `${cfg.title} · עומק הים המואר`;
+    document.querySelector('#tapToStart h2').textContent = cfg.title;
+    const intro = document.getElementById('introHtmlSlot');
+    if (intro && cfg.intro_html) intro.innerHTML = cfg.intro_html;
+    document.getElementById('ucLetter').textContent = cfg.letter;
+    document.getElementById('unitCountDisplay').textContent =
+      `0/${cfg.counter.total} ${cfg.counter.unit}`;
+    document.querySelector('#completion h2').textContent = cfg.completion.title;
+    document.getElementById('completionMsg').textContent = cfg.completion.message;
+
+    AvneiGameShell.start({
+      theme:                 cfg.theme || 'bubbles',
+      letter:                cfg.letter,
+      questId:               cfg.quest_id,
+      title:                 cfg.title,
+      counter:               cfg.counter,
+      completion:            cfg.completion,
+      introAudioKeys:        cfg.intro_audio_keys || [],
+      inGamePromptAudioKey:  cfg.in_game_prompt_audio_key || null,
+      finale:                { audioKey: cfg.finale_audio_key },
+      mechanic:              cfg.mechanic,
+      mechanicConfig:        cfg.mechanic_config || {},
+      distractors:           cfg.distractors || [],
+    });
+  })();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>הבית של נוני · עומק הים המואר</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/stage-3.css">
+  <link rel="stylesheet" href="css/house-quest.css">
+</head>
+<body>
+
+  <main class="stage-scene">
+    <div class="scene-frame">
+      <img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true"
+           onerror="this.style.display='none'">
+
+      <!-- Quest header — house in the shape of ב׳ with 5 brick pieces + 5 slots -->
+      <section class="quest-header">
+        <div class="house-container" id="houseContainer">
+          <div class="house-aura" aria-hidden="true"></div>
+
+          <span class="house-spark" style="--sx:-80px;--sy:-40px;left:48%;top:42%;animation-delay:0.2s"></span>
+          <span class="house-spark" style="--sx:90px;--sy:-30px;left:50%;top:38%;animation-delay:0.4s"></span>
+          <span class="house-spark" style="--sx:-40px;--sy:-90px;left:46%;top:46%;animation-delay:0.6s"></span>
+          <span class="house-spark" style="--sx:60px;--sy:-100px;left:52%;top:44%;animation-delay:0.8s"></span>
+          <span class="house-spark" style="--sx:0;--sy:-110px;left:50%;top:40%;animation-delay:1s"></span>
+
+          <!-- SVG house in the shape of ב׳ — solid right wall + roof + floor, open on the left
+               (with a door framing the left opening). 5 coral bricks build it. -->
+          <svg class="house-svg" viewBox="0 0 220 200" aria-hidden="true">
+            <defs>
+              <radialGradient id="coralBrickGrad" cx="40%" cy="35%" r="75%">
+                <stop offset="0%" stop-color="#FFE7A8"/>
+                <stop offset="55%" stop-color="#FFA98D"/>
+                <stop offset="100%" stop-color="#E27F66"/>
+              </radialGradient>
+              <linearGradient id="floorGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#FFD4A3"/>
+                <stop offset="100%" stop-color="#D9876A"/>
+              </linearGradient>
+              <linearGradient id="doorGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#C97A5E"/>
+                <stop offset="100%" stop-color="#8B4E36"/>
+              </linearGradient>
+              <radialGradient id="windowLight" cx="50%" cy="50%" r="60%">
+                <stop offset="0%" stop-color="#FFF7C9" stop-opacity="1"/>
+                <stop offset="55%" stop-color="#FFE07A" stop-opacity="0.9"/>
+                <stop offset="100%" stop-color="#FFD24A" stop-opacity="0"/>
+              </radialGradient>
+              <linearGradient id="memGoldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#FFF4C2"/>
+                <stop offset="100%" stop-color="#E27F66"/>
+              </linearGradient>
+            </defs>
+
+            <!-- ===== BLUEPRINT — קווי-מתאר רכים של הבית הסופי בצורת ב'.
+                 גלויים מההתחלה כך שהילד.ה רואה.ה מה הולך להיבנות.
+                 כל blueprint-piece N נעלם כשה-piece המלא המתאים מתפוצץ פנימה. ===== -->
+            <g class="house-blueprint" aria-hidden="true">
+              <!-- bp-1: רצפה -->
+              <rect class="blueprint-piece" data-bp="1"
+                    x="22" y="158" width="176" height="24" rx="6"
+                    fill="none" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="5 4"/>
+              <!-- bp-2: דלת (פתח שמאלי של ב') -->
+              <path class="blueprint-piece" data-bp="2"
+                    d="M 30 158 L 30 100 Q 30 78 52 78 L 84 78 Q 106 78 106 100 L 106 158"
+                    fill="none" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="5 4"
+                    stroke-linejoin="round" stroke-linecap="round"/>
+              <!-- bp-3: קיר ימני -->
+              <path class="blueprint-piece" data-bp="3"
+                    d="M 158 158 L 158 60 Q 158 50 168 50 L 188 50 Q 198 50 198 60 L 198 158 Z"
+                    fill="none" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="5 4"
+                    stroke-linejoin="round"/>
+              <!-- bp-4: גג -->
+              <rect class="blueprint-piece" data-bp="4"
+                    x="14" y="38" width="192" height="22" rx="8"
+                    fill="none" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="5 4"/>
+              <!-- bp-5: חלון בקיר ימני (הדגלון לא חלק מהצורה — מושמט) -->
+              <rect class="blueprint-piece" data-bp="5"
+                    x="168" y="88" width="22" height="28" rx="3"
+                    fill="none" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="4 3"/>
+            </g>
+
+            <!-- ===== PIECE 1: רצפה — הקו התחתון של ב׳ ===== -->
+            <g class="house-piece" data-piece="1">
+              <rect x="22" y="158" width="176" height="24" rx="6"
+                    fill="url(#floorGrad)" stroke="#FFFFFF" stroke-width="2.5"/>
+              <circle cx="40" cy="170" r="2.5" fill="#FFE7A8" opacity="0.7"/>
+              <circle cx="70" cy="172" r="2" fill="#FFE7A8" opacity="0.6"/>
+              <circle cx="110" cy="170" r="2.5" fill="#FFE7A8" opacity="0.7"/>
+              <circle cx="150" cy="172" r="2" fill="#FFE7A8" opacity="0.6"/>
+              <circle cx="180" cy="170" r="2.5" fill="#FFE7A8" opacity="0.7"/>
+            </g>
+
+            <!-- ===== PIECE 2: דלת — מסגרת הפתח השמאלי של ב׳ ===== -->
+            <g class="house-piece" data-piece="2">
+              <!-- Door arch frame — coral, marks the open-left side of ב -->
+              <path d="M 30 158 L 30 100 Q 30 78 52 78 L 84 78 Q 106 78 106 100 L 106 158"
+                    fill="none" stroke="url(#coralBrickGrad)" stroke-width="10"
+                    stroke-linejoin="round" stroke-linecap="round"/>
+              <!-- Door panel (wood) -->
+              <path d="M 40 158 L 40 102 Q 40 86 56 86 L 80 86 Q 96 86 96 102 L 96 158 Z"
+                    fill="url(#doorGrad)" stroke="#FFFFFF" stroke-width="2"
+                    stroke-linejoin="round"/>
+              <!-- Door knob -->
+              <circle cx="88" cy="130" r="3" fill="#FFE7A8" stroke="#FFFFFF" stroke-width="1"/>
+              <!-- Door planks (vertical lines) -->
+              <line x1="58" y1="100" x2="58" y2="158" stroke="#5C3320" stroke-width="1" opacity="0.5"/>
+              <line x1="76" y1="100" x2="76" y2="158" stroke="#5C3320" stroke-width="1" opacity="0.5"/>
+            </g>
+
+            <!-- ===== PIECE 3: קיר ימני — הקו האנכי הימני של ב׳ ===== -->
+            <g class="house-piece" data-piece="3">
+              <path d="M 158 158 L 158 60 Q 158 50 168 50 L 188 50 Q 198 50 198 60 L 198 158 Z"
+                    fill="url(#coralBrickGrad)" stroke="#FFFFFF" stroke-width="2.5"
+                    stroke-linejoin="round"/>
+              <line x1="160" y1="90" x2="196" y2="90" stroke="#FFFFFF" stroke-width="1" opacity="0.4"/>
+              <line x1="160" y1="120" x2="196" y2="120" stroke="#FFFFFF" stroke-width="1" opacity="0.4"/>
+              <circle cx="178" cy="74" r="2" fill="#FFFFFF" opacity="0.7"/>
+            </g>
+
+            <!-- ===== PIECE 4: גג — הקו האופקי העליון של ב׳ ===== -->
+            <g class="house-piece" data-piece="4">
+              <rect x="14" y="38" width="192" height="22" rx="8"
+                    fill="url(#coralBrickGrad)" stroke="#FFFFFF" stroke-width="2.5"/>
+              <circle cx="40" cy="49" r="2" fill="#FFFFFF" opacity="0.65"/>
+              <circle cx="80" cy="49" r="2" fill="#FFFFFF" opacity="0.65"/>
+              <circle cx="140" cy="49" r="2" fill="#FFFFFF" opacity="0.65"/>
+              <circle cx="180" cy="49" r="2" fill="#FFFFFF" opacity="0.65"/>
+            </g>
+
+            <!-- ===== PIECE 5: חלון בקיר ימני + דגלון על הגג ===== -->
+            <g class="house-piece" data-piece="5">
+              <!-- Window in the right wall -->
+              <rect x="168" y="88" width="22" height="28" rx="3"
+                    fill="#FFD89A" stroke="#FFFFFF" stroke-width="2"/>
+              <line x1="179" y1="88" x2="179" y2="116" stroke="#E27F66" stroke-width="1.5"/>
+              <line x1="168" y1="102" x2="190" y2="102" stroke="#E27F66" stroke-width="1.5"/>
+              <!-- Sea-coral flag on top -->
+              <path d="M 110 38 L 110 22 L 130 28 L 110 32 Z"
+                    fill="#FF6B9D" stroke="#FFFFFF" stroke-width="1.5"
+                    stroke-linejoin="round"/>
+              <circle cx="110" cy="22" r="2" fill="#FFE7A8"/>
+            </g>
+
+            <!-- ===== Window glow — appears when house is complete ===== -->
+            <g class="house-window-glow" aria-hidden="true">
+              <!-- Light glow around the right window -->
+              <ellipse cx="179" cy="102" rx="20" ry="22" fill="url(#windowLight)"/>
+              <rect x="168" y="88" width="22" height="28" rx="3" fill="#FFF7C9"
+                    stroke="#FFFFFF" stroke-width="1.5"/>
+              <line x1="179" y1="88" x2="179" y2="116" stroke="#E27F66" stroke-width="1.2"/>
+              <line x1="168" y1="102" x2="190" y2="102" stroke="#E27F66" stroke-width="1.2"/>
+              <!-- Soft light spilling from the doorway -->
+              <ellipse cx="68" cy="130" rx="32" ry="22" fill="url(#windowLight)" opacity="0.7"/>
+            </g>
+
+            <!-- ===== Big ב׳ shining in the center — appears at finale ===== -->
+            <g class="house-mem-final" aria-hidden="true">
+              <circle cx="130" cy="124" r="28" fill="url(#windowLight)" opacity="0.85"/>
+              <text x="130" y="142" text-anchor="middle"
+                    font-family="Heebo, sans-serif"
+                    font-size="44" font-weight="900"
+                    fill="url(#memGoldGrad)"
+                    stroke="#FFFFFF" stroke-width="1.5"
+                    paint-order="stroke fill">ב</text>
+            </g>
+          </svg>
+
+          <!-- ===== תמונת הבית האמיתי (ChatGPT) — נחשפת אחרי 5 לבנים =====
+               התמונה הקיימת היא של בית בצורת מ׳ — נשארת כ-placeholder עד
+               שמייטל תספק תמונה חדשה בצורת ב׳ (CORAL HOUSE BET.png).
+               תוסיף onerror כדי שלא יהיה ריבוע שבור אם חסרה. -->
+          <img class="house-final-image"
+               src="assets/island-03/house-game/coral-house-bet.png"
+               alt="" aria-hidden="true"
+               onerror="this.onerror=null; this.src='assets/island-03/house-game/coral-house.png'">
+
+          <!-- ===== נוני מציץ מהחלון ===== -->
+          <img class="house-noni-window"
+               src="assets/island-03/house-game/noni-in-window.png"
+               alt="" aria-hidden="true">
+        </div>
+
+        <!-- 5 brick slots that fill as pieces are placed -->
+        <div class="bricks-row" id="bricksRow">
+          <div class="brick-slot" data-i="0"><div class="brick-icon"><svg class="brick-svg" viewBox="0 0 40 28"><use href="#brickSymbol"/></svg></div></div>
+          <div class="brick-slot" data-i="1"><div class="brick-icon"><svg class="brick-svg" viewBox="0 0 40 28"><use href="#brickSymbol"/></svg></div></div>
+          <div class="brick-slot" data-i="2"><div class="brick-icon"><svg class="brick-svg" viewBox="0 0 40 28"><use href="#brickSymbol"/></svg></div></div>
+          <div class="brick-slot" data-i="3"><div class="brick-icon"><svg class="brick-svg" viewBox="0 0 40 28"><use href="#brickSymbol"/></svg></div></div>
+          <div class="brick-slot" data-i="4"><div class="brick-icon"><svg class="brick-svg" viewBox="0 0 40 28"><use href="#brickSymbol"/></svg></div></div>
+        </div>
+      </section>
+
+      <!-- Activity area — each round mounts a different activity here -->
+      <div class="game-area quest-game-area" id="gameRoot"></div>
+
+      <div class="burst" id="burst"></div>
+    </div>
+  </main>
+
+  <!-- Noni (src swapped by JS based on state) -->
+  <img class="noni-fixed" id="noniImg" src="assets/noni-idle.png" alt="נוני">
+
+  <!-- בועת פידבק -->
+  <div class="feedback-bubble" id="feedbackBubble"></div>
+
+  <!-- Top bar -->
+  <header class="top-bar">
+    <a href="map.html" class="icon-btn" aria-label="חזרה למפה">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+    <div class="quest-counter" id="questCounter">
+      <span class="qc-letter">ב</span>
+      <span id="brickCountDisplay">0/5 לבני אלמוג</span>
+    </div>
+    <div class="pearl-counter" aria-label="פנינים">
+      <span class="pearl" aria-hidden="true"></span>
+      <span class="count" id="pearlCount">0</span>
+    </div>
+  </header>
+
+  <!-- Start overlay -->
+  <div class="tap-to-start" id="tapToStart">
+    <h2>הבית של נוני</h2>
+    <button class="intro-speaker" id="introSpeaker" aria-label="שמע את ההסבר">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>הקש/י לשמוע</span>
+    </button>
+    <p>לנוני אין איפה לישון. עזרו לו לבנות בית-אלמוג <strong>בצורת ב׳</strong>.</p>
+    <p style="font-size: clamp(15px, 3vw, 18px);">תפתרו 5 חידות על האות ב׳ — כל פעם תקבלו לבנת אלמוג!</p>
+    <button class="start-btn" id="startBtn">בוא/י נתחיל</button>
+  </div>
+
+  <!-- Completion overlay -->
+  <div class="completion" id="completion">
+    <h2>הבית של נוני מוכן!</h2>
+    <img class="completion-souvenir"
+         src="assets/island-03/house-game/coral-house-bet.png"
+         alt="הבית של נוני"
+         onerror="this.src='assets/island-03/house-game/coral-house.png'">
+    <p id="completionMsg">בית-אלמוג בצורת ב׳ הצטרף לעולם של נוני.</p>
+    <a href="map.html" class="btn-primary">חזרה למפה</a>
+  </div>
+
+  <!-- SVG defs — brick icon for slots -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="brickSymbol" viewBox="0 0 40 28">
+        <defs>
+          <linearGradient id="brickIconGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#FFE7A8"/>
+            <stop offset="60%" stop-color="#FFA98D"/>
+            <stop offset="100%" stop-color="#E27F66"/>
+          </linearGradient>
+        </defs>
+        <rect x="2" y="3" width="36" height="22" rx="4"
+              fill="url(#brickIconGrad)" stroke="#FFFFFF" stroke-width="1.5"/>
+        <line x1="20" y1="3" x2="20" y2="14" stroke="#FFFFFF" stroke-width="1" opacity="0.55"/>
+        <line x1="2" y1="14" x2="38" y2="14" stroke="#FFFFFF" stroke-width="1" opacity="0.55"/>
+        <line x1="10" y1="14" x2="10" y2="25" stroke="#FFFFFF" stroke-width="1" opacity="0.55"/>
+        <line x1="30" y1="14" x2="30" y2="25" stroke="#FFFFFF" stroke-width="1" opacity="0.55"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <!-- Shared modules — load order matters -->
+  <script src="js/state.js"></script>
+  <script src="js/shared/audio.js"></script>
+  <script src="js/shared/noni.js"></script>
+  <script src="js/shared/feedback.js"></script>
+
+  <!-- ====== OVERRIDE: noni facial expressions via src swap ====== -->
+  <script>
+  (function noniExpressions() {
+    const EXPR = {
+      idle:    'assets/noni-idle.png',
+      help:    'assets/noni-thinking.png',
+      hint:    'assets/noni-surprised.png',
+      cheer:   'assets/noni-happy.png',
+      dance:   'assets/noni-kiss.png',
+    };
+
+    Object.values(EXPR).forEach(src => { const i = new Image(); i.src = src; });
+
+    if (!window.AvneiNoni) return;
+    const origSetState = AvneiNoni.setState;
+    AvneiNoni.setState = function(state) {
+      origSetState.call(this, state);
+      const img = document.getElementById('noniImg');
+      if (!img) return;
+      const src = EXPR[state] || EXPR.idle;
+      if (img.src.indexOf(src.split('/').pop()) === -1) {
+        img.src = src;
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const img = document.getElementById('noniImg');
+      if (img) img.src = EXPR.idle;
+    });
+  })();
+  </script>
+
+  <!-- ====== Hide visual feedback bubble — audio + facial expressions carry the message ====== -->
+  <script>
+  (function overrideFeedbackBubble() {
+    if (!window.AvneiFeedback) return;
+    AvneiFeedback.show = function() {
+      const fb = document.getElementById('feedbackBubble');
+      if (fb) fb.style.display = 'none';
+    };
+    const origHide = AvneiFeedback.hide;
+    AvneiFeedback.hide = function() {
+      origHide.call(this);
+      const fb = document.getElementById('feedbackBubble');
+      if (fb) fb.style.display = 'none';
+    };
+  })();
+  </script>
+
+  <script src="js/shared/scaffolding.js"></script>
+  <script src="js/shared/bkt.js"></script>
+  <script src="js/shared/epa.js"></script>
+  <script src="js/shared/event-logger.js"></script>
+  <script src="js/shared/mastery-check.js"></script>
+  <script src="js/shared/shell.js"></script>
+  <script src="js/shared/instruction.js"></script>
+  <script src="js/activities/sound-match.js"></script>
+  <script src="js/activities/letter-shape.js"></script>
+  <script src="js/activities/find-letter.js"></script>
+
+  <script>
+  // ============================================================
+  // house-quest controller — אות ב׳ · 5 חידות → 5 לבני אלמוג → בית בצורת ב׳
+  // החלטה פדגוגית 23.5.2026: משחקון פר אות (לא 5 על מ׳).
+  // ראה memory: project-avnei-yesod-pedagogy-one-game-per-letter
+  // ============================================================
+
+  const ISLAND_ID = 3;
+  const LETTER = 'ב';
+  const TOTAL_BRICKS = 5;
+
+  // 5 שלבים — אותה תבנית טכנית כמו shell-quest, רק על אות ב'
+  const STAGES = [
+    { activity: 'soundMatch',    variant: null },
+    { activity: 'letterShape',   variant: 'A'  },
+    { activity: 'findLetter',    variant: null },
+    { activity: 'letterShape',   variant: 'B'  },
+    { activity: 'soundMatch',    variant: null },
+  ];
+
+  const state = {
+    soundMatchItems: [],
+    letterShapeAItems: [],
+    letterShapeBItems: [],
+    findLetterItems: [],
+    soundMatchPool: [],
+    bricksCollected: 0,
+    stageIdx: 0,
+  };
+
+  const elHouse = document.getElementById('houseContainer');
+  const elRoot  = document.getElementById('gameRoot');
+  const elBubble = document.getElementById('feedbackBubble');
+  const elNoni  = document.getElementById('noniImg');
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function updateBrickCounter() {
+    const el = document.getElementById('brickCountDisplay');
+    if (el) el.textContent = state.bricksCollected + '/5 לבני אלמוג';
+  }
+
+  function updatePearlDisplay() {
+    if (typeof getPearls === 'function') {
+      document.getElementById('pearlCount').textContent = getPearls();
+    }
+  }
+
+  async function loadAllData() {
+    const [items03, letterShape, findLetter] = await Promise.all([
+      fetch('data/island-03-items.json').then(r => r.json()),
+      fetch('data/island-03-letter-shape.json').then(r => r.json()).catch(() => ({ items: [] })),
+      fetch('data/island-03-find-letter.json').then(r => r.json()).catch(() => ({ items: [] })),
+    ]);
+
+    state.soundMatchItems = (items03.items || []).filter(it =>
+      it.letter_in_focus === LETTER
+    );
+    state.letterShapeAItems = (letterShape.items || []).filter(it =>
+      it.letter === LETTER && it.variant === 'A'
+    );
+    state.letterShapeBItems = (letterShape.items || []).filter(it =>
+      it.letter === LETTER && it.variant === 'B'
+    );
+    state.findLetterItems = (findLetter.items || []).filter(it =>
+      it.target_letter === LETTER
+    );
+
+    state.soundMatchPool = shuffle(state.soundMatchItems);
+  }
+
+  function getStageItems(stage) {
+    if (stage.activity === 'soundMatch') {
+      const next = state.soundMatchPool.shift();
+      return next ? [next] : [];
+    }
+    if (stage.activity === 'letterShape' && stage.variant === 'A') {
+      return state.letterShapeAItems.length > 0 ? [state.letterShapeAItems[0]] : [];
+    }
+    if (stage.activity === 'letterShape' && stage.variant === 'B') {
+      return state.letterShapeBItems.length > 0 ? [state.letterShapeBItems[0]] : [];
+    }
+    if (stage.activity === 'findLetter') {
+      return state.findLetterItems.length > 0
+        ? [state.findLetterItems[Math.floor(Math.random() * state.findLetterItems.length)]]
+        : [];
+    }
+    return [];
+  }
+
+  function runStage(stage) {
+    return new Promise((resolve) => {
+      let activity;
+      if (stage.activity === 'soundMatch')  activity = window.AvneiSoundMatch;
+      if (stage.activity === 'letterShape') activity = window.AvneiLetterShape;
+      if (stage.activity === 'findLetter')  activity = window.AvneiFindLetter;
+
+      if (!activity) {
+        console.warn('Missing activity:', stage.activity);
+        return resolve({ skipped: true });
+      }
+
+      const items = getStageItems(stage);
+      if (items.length === 0) {
+        console.warn('No items for', stage.activity, stage.variant, '— falling back to sound-match');
+        if (state.soundMatchPool.length > 0) {
+          const fb = state.soundMatchPool.shift();
+          window.AvneiSoundMatch.mount(elRoot, {
+            letter: LETTER,
+            supportLevel: 1,
+            items: [fb],
+            onItemComplete: () => {},
+            onActivityComplete: (summary) => {
+              window.AvneiSoundMatch.unmount();
+              resolve(summary);
+            },
+          });
+          return;
+        }
+        return resolve({ skipped: true });
+      }
+
+      activity.mount(elRoot, {
+        letter: LETTER,
+        supportLevel: 1,
+        variant: stage.variant,
+        items,
+        onItemComplete: () => {},
+        onActivityComplete: (summary) => {
+          activity.unmount();
+          resolve(summary);
+        },
+      });
+    });
+  }
+
+  function flyBrickToSlot(slotIdx) {
+    const slot = document.querySelector(`.brick-slot[data-i="${slotIdx}"]`);
+    if (!slot) return;
+
+    const rootRect = elRoot.getBoundingClientRect();
+    const tRect = slot.getBoundingClientRect();
+    const sx = rootRect.left + rootRect.width / 2 - 28;
+    const sy = rootRect.top  + rootRect.height / 2 - 20;
+
+    const flyEl = document.createElement('div');
+    flyEl.className = 'flying-brick';
+    flyEl.innerHTML = `<svg viewBox="0 0 40 28" style="width:100%;height:100%"><use href="#brickSymbol"/></svg>`;
+    flyEl.style.left = sx + 'px';
+    flyEl.style.top  = sy + 'px';
+    document.body.appendChild(flyEl);
+
+    requestAnimationFrame(() => {
+      const dx = (tRect.left + tRect.width / 2) - (sx + 28);
+      const dy = (tRect.top  + tRect.height / 2) - (sy + 20);
+      flyEl.style.transform = `translate(${dx}px, ${dy}px) scale(0.65)`;
+    });
+
+    setTimeout(() => {
+      slot.classList.add('filled');
+      const piece = elHouse.querySelector(`.house-piece[data-piece="${slotIdx + 1}"]`);
+      if (piece) piece.classList.add('placed');
+      // הסתר את ה-blueprint piece התואם — כעת ה-piece המלא מחליף אותו
+      const bp = elHouse.querySelector(`.blueprint-piece[data-bp="${slotIdx + 1}"]`);
+      if (bp) bp.classList.add('bp-hidden');
+    }, 850);
+
+    setTimeout(() => {
+      flyEl.style.opacity = '0';
+      setTimeout(() => flyEl.remove(), 300);
+    }, 950);
+  }
+
+  function cheerNoni() {
+    if (window.AvneiNoni) AvneiNoni.setState('cheer');
+    setTimeout(() => {
+      if (window.AvneiNoni) AvneiNoni.setState('idle');
+    }, 1500);
+  }
+
+  async function completeHouse() {
+    elHouse.classList.add('completed');
+    AvneiAudio.play('great');
+
+    cheerNoni();
+
+    setTimeout(() => {
+      elHouse.classList.add('revealed');
+    }, 900);
+
+    setTimeout(() => {
+      elNoni.classList.add('entering-house');
+    }, 2200);
+
+    setTimeout(() => {
+      startFinale();
+    }, 3600);
+  }
+
+  function startFinale() {
+    elNoni.classList.remove('entering-house');
+    elNoni.style.display = 'none';
+
+    spawnConfetti(80);
+    spawnKisses(8);
+
+    AvneiAudio.playSequence(['great', 'finale-found-treasure'], 800);
+
+    setTimeout(showCompletion, 1600);
+  }
+
+  function spawnConfetti(count) {
+    const container = document.getElementById('confettiLayer') || (() => {
+      const c = document.createElement('div');
+      c.id = 'confettiLayer';
+      c.className = 'confetti-layer';
+      document.body.appendChild(c);
+      return c;
+    })();
+    const colors = ['#FFE7A8', '#FFA98D', '#B8F2CF', '#A8E8FF', '#D9D2FF', '#FFD3D8'];
+    for (let i = 0; i < count; i++) {
+      const piece = document.createElement('span');
+      piece.className = 'confetti-piece';
+      piece.style.left = Math.random() * 100 + 'vw';
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.animationDelay = (Math.random() * 0.8) + 's';
+      piece.style.animationDuration = (2.4 + Math.random() * 2.2) + 's';
+      piece.style.width = (6 + Math.random() * 8) + 'px';
+      piece.style.height = (10 + Math.random() * 14) + 'px';
+      piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+      container.appendChild(piece);
+      setTimeout(() => piece.remove(), 5000);
+    }
+  }
+
+  function spawnKisses(count) {
+    const container = document.getElementById('kissesLayer') || (() => {
+      const c = document.createElement('div');
+      c.id = 'kissesLayer';
+      c.className = 'kisses-layer';
+      document.body.appendChild(c);
+      return c;
+    })();
+    for (let i = 0; i < count; i++) {
+      const k = document.createElement('span');
+      k.className = 'kiss-heart';
+      k.style.left = (40 + Math.random() * 20) + 'vw';
+      k.style.bottom = (60 + Math.random() * 10) + 'vh';
+      k.style.animationDelay = (Math.random() * 1.2) + 's';
+      k.innerHTML = `
+        <svg viewBox="0 0 32 32">
+          <path d="M16 28 C 6 20, 2 14, 6 9 C 10 4, 14 8, 16 12 C 18 8, 22 4, 26 9 C 30 14, 26 20, 16 28 Z"
+                fill="#FF6B9D" stroke="#FFFFFF" stroke-width="1.5"/>
+        </svg>
+      `;
+      container.appendChild(k);
+      setTimeout(() => k.remove(), 5000);
+    }
+  }
+
+  function showCompletion() {
+    if (typeof completeStage === 'function') completeStage(ISLAND_ID);
+    if (typeof addSouvenir === 'function') addSouvenir('בית-אלמוג ב׳');
+    markQuestCompleted('house');
+    document.getElementById('completion').classList.add('show');
+    spawnConfetti(40);
+    // A0.3 — mastery משולש לאי כולו
+    if (window.AvneiMasteryCheck) {
+      AvneiMasteryCheck.checkAndShowIslandCelebration(null, ISLAND_ID);
+    }
+  }
+
+  // Quest tracking — stores which sub-quests of island-3 are complete.
+  // Used by stage-3-island.html to gate access to the next quest.
+  function markQuestCompleted(questId) {
+    try {
+      const key = 'island3-quests:completed';
+      const completed = JSON.parse(localStorage.getItem(key) || '[]');
+      if (!completed.includes(questId)) {
+        completed.push(questId);
+        localStorage.setItem(key, JSON.stringify(completed));
+      }
+    } catch (e) {
+      console.warn('Failed to mark quest completed:', e);
+    }
+  }
+
+  async function runQuest() {
+    AvneiNoni.ready();
+    updatePearlDisplay();
+    updateBrickCounter();
+
+    for (let i = 0; i < TOTAL_BRICKS; i++) {
+      state.stageIdx = i;
+      const stage = STAGES[i];
+      const result = await runStage(stage);
+
+      if (result && result.skipped) continue;
+
+      flyBrickToSlot(state.bricksCollected);
+      state.bricksCollected++;
+      updateBrickCounter();
+      updatePearlDisplay();
+
+      // 2400ms+ between stages (לקח 8 מ-mem-lessons)
+      if (state.bricksCollected < TOTAL_BRICKS) {
+        await new Promise(r => setTimeout(r, 2400));
+      }
+    }
+
+    if (state.bricksCollected >= TOTAL_BRICKS) {
+      setTimeout(completeHouse, 800);
+    } else {
+      console.warn('Not enough stages completed:', state.bricksCollected);
+      showCompletion();
+    }
+  }
+
+  // ============================================================
+  // Intro speaker — מקריא את המשימה המלאה (כמו בצדף הקסום)
+  // הקלטות חדשות ב-AvriNeural: intro-house-quest-bet + intro-house-mission-bet
+  // אם הקבצים חסרים — fallback ל-find-bet (לא אידיאלי, אבל לא ניחנק)
+  // ============================================================
+  document.getElementById('introSpeaker').addEventListener('click', () => {
+    AvneiAudio.unlock();
+    const btn = document.getElementById('introSpeaker');
+    btn.classList.add('playing');
+    AvneiAudio.playSequence(['intro-house-quest-bet', 'intro-house-mission-bet'], 800);
+    setTimeout(() => btn.classList.remove('playing'), 12000);
+  });
+
+  document.getElementById('startBtn').addEventListener('click', async () => {
+    AvneiAudio.unlock();
+    document.getElementById('tapToStart').classList.add('hidden');
+
+    try {
+      await loadAllData();
+    } catch (e) {
+      console.error('Failed to load data:', e);
+      return;
+    }
+
+    runQuest();
+  });
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('reset') === '1') {
+    localStorage.removeItem('underwater-app:v1');
+    console.log('localStorage reset.');
+  }
+
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>דשבורד מורה — נתונים אמיתיים</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Assistant', system-ui, sans-serif;
+    background: #f7fafc;
+    color: #1a2332;
+    line-height: 1.5;
+    font-size: 16px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 28px 18px 80px; }
+  header.top {
+    background: linear-gradient(135deg, #2c7a7b 0%, #4fd1c5 100%);
+    color: white;
+    padding: 32px 28px;
+    border-radius: 18px;
+    margin-bottom: 24px;
+  }
+  header.top h1 { font-size: 32px; margin-bottom: 8px; }
+  header.top .subtitle { font-size: 18px; opacity: 0.95; }
+  header.top .meta {
+    margin-top: 12px;
+    display: flex; gap: 12px; flex-wrap: wrap;
+    font-size: 14px;
+  }
+  header.top .meta span { background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 12px; }
+
+  .section {
+    background: white;
+    padding: 24px 28px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  }
+  .section h2 {
+    font-size: 22px;
+    margin-bottom: 16px;
+    color: #2c7a7b;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section h2 .num {
+    background: #2c7a7b; color: white;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 800;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+  }
+  .stat-card {
+    background: #f0fff4;
+    padding: 16px 18px;
+    border-radius: 10px;
+    border-right: 4px solid #2c7a7b;
+  }
+  .stat-label { font-size: 14px; color: #4a5568; margin-bottom: 4px; }
+  .stat-value { font-size: 28px; font-weight: 800; color: #1a2332; }
+
+  table.events {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  table.events th {
+    background: #edf2f7;
+    padding: 10px 12px;
+    text-align: right;
+    font-weight: 700;
+    color: #4a5568;
+    border-bottom: 2px solid #cbd5e0;
+  }
+  table.events td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  table.events tr.wrong td { background: #fff5f5; }
+  table.events tr.correct td { background: #f0fff4; }
+
+  .letter-card {
+    background: #fffaf0;
+    padding: 14px 18px;
+    border-radius: 10px;
+    border-right: 4px solid #d69e2e;
+    margin-bottom: 10px;
+  }
+  .letter-card .letter {
+    font-size: 32px;
+    font-weight: 800;
+    color: #c05621;
+    margin-left: 12px;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  .letter-card .stats {
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 15px;
+  }
+  .letter-card .accuracy {
+    font-size: 22px; font-weight: 800;
+    margin-right: 8px;
+  }
+  .letter-card .accuracy.good { color: #2f855a; }
+  .letter-card .accuracy.med { color: #c05621; }
+  .letter-card .accuracy.poor { color: #c53030; }
+
+  .flag {
+    background: #fef5e7;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border-right: 4px solid #ed8936;
+    margin-bottom: 10px;
+    font-size: 15px;
+  }
+  .flag .flag-type {
+    background: #ed8936;
+    color: white;
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-weight: 700;
+    margin-left: 8px;
+  }
+  .flag .flag-letter {
+    background: #c05621;
+    color: white;
+    font-size: 16px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-weight: 800;
+    margin-left: 8px;
+  }
+
+  .empty {
+    text-align: center;
+    padding: 32px;
+    color: #718096;
+    font-size: 16px;
+  }
+  .empty .icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
+
+  button.clear {
+    background: #e53e3e;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  button.clear:hover { background: #c53030; }
+
+  .nav-game {
+    background: #2c7a7b;
+    color: white;
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin: 4px;
+    display: inline-block;
+  }
+  .nav-game:hover { background: #234e52; }
+
+  .yearly-plan-cta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: linear-gradient(135deg, #d69e2e 0%, #ed8936 100%);
+    color: white;
+    padding: 14px 22px;
+    border-radius: 12px;
+    text-decoration: none;
+    margin-top: 18px;
+    box-shadow: 0 4px 14px rgba(214, 158, 46, 0.25);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .yearly-plan-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(214, 158, 46, 0.35);
+  }
+  .yearly-plan-cta .icon {
+    width: 44px; height: 44px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .yearly-plan-cta .icon svg { width: 26px; height: 26px; stroke: white; fill: none; stroke-width: 2; }
+  .yearly-plan-cta .text { flex: 1; }
+  .yearly-plan-cta .title { font-size: 16px; font-weight: 800; margin-bottom: 2px; }
+  .yearly-plan-cta .subtitle { font-size: 13px; opacity: 0.95; }
+  .yearly-plan-cta .arrow { font-size: 22px; }
+
+  /* A0.3 — סטטוס Mastery משולש */
+  .mastery-island {
+    background: #f0f9ff;
+    padding: 16px 18px;
+    border-radius: 12px;
+    border-right: 5px solid #5cb6d4;
+    margin-bottom: 12px;
+  }
+  .mastery-island.closed {
+    background: linear-gradient(135deg, #c6f6d5 0%, #f0fff4 100%);
+    border-right-color: #38a169;
+  }
+  .mastery-island.cold {
+    background: #f7fafc;
+    border-right-color: #cbd5e0;
+    opacity: 0.7;
+  }
+  .mastery-island .island-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 10px;
+    font-weight: 700;
+    color: #1a5a7a;
+    font-size: 17px;
+    flex-wrap: wrap;
+  }
+  .mastery-island .island-num {
+    background: #5cb6d4; color: white;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 800;
+  }
+  .mastery-island.closed .island-num { background: #38a169; }
+  .mastery-island .rama-tag {
+    font-size: 12px; padding: 2px 10px;
+    background: #e3f2fd; color: #1a5a7a;
+    border-radius: 10px; font-weight: 600;
+  }
+  .mastery-island.closed .rama-tag { background: #c6f6d5; color: #22543d; }
+  .mastery-island .status-badge {
+    margin-right: auto;
+    font-size: 14px; font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 10px;
+  }
+  .mastery-island .status-badge.met { background: #38a169; color: white; }
+  .mastery-island .status-badge.partial { background: #ecc94b; color: #744210; }
+  .mastery-island .status-badge.not-met { background: #fed7d7; color: #742a2a; }
+  .mastery-island .status-badge.cold { background: #edf2f7; color: #4a5568; }
+  .mastery-conditions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .cond {
+    background: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .cond .cond-label { color: #718096; font-size: 11px; margin-bottom: 2px; }
+  .cond .cond-value { font-weight: 700; color: #1a2332; }
+  .cond.ok .cond-value::before { content: '✓ '; color: #38a169; }
+  .cond.fail .cond-value::before { content: '✗ '; color: #c53030; }
+  .cond.cold .cond-value::before { content: '○ '; color: #a0aec0; }
+  .mastery-reason {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 8px;
+    font-size: 13px;
+    color: #4a5568;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="top">
+  <h1>דשבורד מורה — נתונים חיים</h1>
+  <div class="subtitle">קורא ישירות מ-localStorage של הדפדפן הזה</div>
+  <div class="meta">
+    <span id="totalEvents">— אירועים</span>
+    <span id="totalSessions">— סשנים</span>
+    <span id="totalFlags">— דגלים</span>
+  </div>
+  <div style="margin-top: 16px;">
+    <span style="opacity:0.85; font-size:14px;">לבדיקה — לשחק קצת ולחזור:</span>
+    <a class="nav-game" href="stage-3-shell.html">הצדף הקסום (מ)</a>
+    <a class="nav-game" href="stage-3-rescue.html">הצלת הדגים (ק)</a>
+    <a class="nav-game" href="stage-3-house.html">הבית של נוני (ב)</a>
+    <a class="nav-game" href="stage-3-trail-resh.html">שביל החזרה (ר)</a>
+    <a class="nav-game" href="stage-3-storm.html">סערה (ת)</a>
+  </div>
+
+  <a class="yearly-plan-cta" href="../curriculum/yearly-plan/grade1-daily-tashpaz.html" target="_blank">
+    <div class="icon">
+      <svg viewBox="0 0 24 24">
+        <rect x="3" y="4" width="18" height="18" rx="2" stroke-linejoin="round"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+        <line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="16" y1="2" x2="16" y2="6"/>
+        <circle cx="8" cy="15" r="1.2" fill="white" stroke="none"/>
+        <circle cx="12" cy="15" r="1.2" fill="white" stroke="none"/>
+        <circle cx="16" cy="15" r="1.2" fill="white" stroke="none"/>
+      </svg>
+    </div>
+    <div class="text">
+      <div class="title">תוכנית שנתית — כיתה א' תשפ"ז</div>
+      <div class="subtitle">180 ימי לימוד · 3 צירים פר יום · מה ללמד היום + מה אבני יסוד מתרגלת</div>
+    </div>
+    <div class="arrow">←</div>
+  </a>
+</header>
+
+<!-- 1. תקציר -->
+<div class="section">
+  <h2><span class="num">1</span>תקציר</h2>
+  <div class="stats-grid" id="summary"></div>
+</div>
+
+<!-- 2. תובנות פר-אות -->
+<div class="section">
+  <h2><span class="num">2</span>פר-אות</h2>
+  <div id="perLetter"></div>
+</div>
+
+<!-- 3. תובנות פר-משחקון -->
+<div class="section">
+  <h2><span class="num">3</span>פר-משחקון</h2>
+  <div id="perActivity"></div>
+</div>
+
+<!-- 4. דגלים אוטומטיים -->
+<div class="section">
+  <h2><span class="num">4</span>דגלים אוטומטיים למורה</h2>
+  <div id="flags"></div>
+</div>
+
+<!-- 5. 10 אירועים אחרונים -->
+<div class="section">
+  <h2><span class="num">5</span>10 אירועים אחרונים</h2>
+  <table class="events" id="eventsTable"><thead>
+    <tr><th>זמן</th><th>משחקון</th><th>אות</th><th>תוצאה</th><th>טעויות</th><th>רמז?</th></tr>
+  </thead><tbody></tbody></table>
+</div>
+
+<!-- 6. סטטוס Mastery משולש (A0.3) — BKT + שטף + רף ראמ"ה -->
+<div class="section">
+  <h2><span class="num">6</span>אבני יסוד נסגרות — מבדק ראמ"ה</h2>
+  <div style="background:#fef5e7; border-right:4px solid #d69e2e; padding:10px 14px; border-radius:8px; margin-bottom:14px; font-size:13px; color:#744210;">
+    <strong>תצוגת בדיקה למפתחים</strong> · המסך הידידותי למורה ייבנה במשימה 21A.
+  </div>
+  <p style="color:#4a5568; font-size:14px; margin-bottom:14px;">
+    אי "נסגר" רק כששלושה תנאים מתקיימים יחד: דיוק BKT ≥ סף · שטף עומד · ביצוע תקין במשימת ראמ"ה המקבילה.
+  </p>
+  <div id="masteryStatus"></div>
+</div>
+
+<div class="section" style="text-align: center;">
+  <button class="clear" onclick="clearAllData()">נקה את כל הנתונים (לא ניתן לחזור)</button>
+</div>
+
+</div>
+
+<!-- A0.3 — תלויות ל-Mastery משולש -->
+<script src="js/state.js"></script>
+<script src="js/shared/bkt.js"></script>
+<script src="js/shared/epa.js"></script>
+<script src="js/shared/event-logger.js"></script>
+<script src="js/shared/mastery-check.js"></script>
+
+<script>
+// STATE_KEY מוצהר ב-state.js כ-'underwater-app:v1' (המפתח האמיתי שבו state.js כותב).
+// קודם הופיע כאן 'avnei-state-v1' — באג שגרם לסקציות 1-5 להציג "אין נתונים" גם כשיש.
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STATE_KEY);
+    if (!raw) return { events: [], teacherFlags: [] };
+    return JSON.parse(raw);
+  } catch (e) {
+    return { events: [], teacherFlags: [] };
+  }
+}
+
+function clearAllData() {
+  if (!confirm('בטוחה? כל הנתונים יימחקו.')) return;
+  localStorage.removeItem(STATE_KEY);
+  location.reload();
+}
+
+function fmtTime(ts) {
+  const d = new Date(ts);
+  return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0') + ':' + d.getSeconds().toString().padStart(2,'0');
+}
+
+function render() {
+  const state = loadState();
+  const events = state.events || [];
+  const flags = state.teacherFlags || [];
+
+  // Header meta
+  document.getElementById('totalEvents').textContent = events.length + ' אירועים';
+  const sessions = new Set(events.map(e => e.session_id));
+  document.getElementById('totalSessions').textContent = sessions.size + ' סשנים';
+  document.getElementById('totalFlags').textContent = flags.length + ' דגלים';
+
+  // Section 6 (Mastery) — לרוץ בלי תלות ב-events, כי mastery-check.js קורא ממקור עצמאי
+  renderMasteryStatus();
+
+  // Section 1: summary
+  if (events.length === 0) {
+    document.getElementById('summary').innerHTML = '<div class="empty"><div class="icon">○</div>אין עדיין נתונים. לכי לשחק באחד המשחקונים למעלה, וחזרי לכאן.</div>';
+    document.getElementById('perLetter').innerHTML = '';
+    document.getElementById('perActivity').innerHTML = '';
+    document.getElementById('flags').innerHTML = '';
+    document.querySelector('#eventsTable tbody').innerHTML = '';
+    return;
+  }
+
+  const correct = events.filter(e => e.is_correct).length;
+  const accuracy = events.length > 0 ? (correct / events.length * 100).toFixed(0) : 0;
+  const totalAttempts = events.reduce((s, e) => s + (e.attempts || 0), 0);
+  const avgAttempts = (totalAttempts / events.length).toFixed(1);
+  const hintsUsed = events.filter(e => e.hint_used).length;
+
+  document.getElementById('summary').innerHTML = `
+    <div class="stat-card"><div class="stat-label">סה"כ ניסיונות</div><div class="stat-value">${events.length}</div></div>
+    <div class="stat-card"><div class="stat-label">דיוק כללי</div><div class="stat-value">${accuracy}%</div></div>
+    <div class="stat-card"><div class="stat-label">ממוצע ניסיונות לפריט</div><div class="stat-value">${avgAttempts}</div></div>
+    <div class="stat-card"><div class="stat-label">שימוש ברמז</div><div class="stat-value">${hintsUsed}</div></div>
+  `;
+
+  // Section 2: per letter
+  const byLetter = {};
+  events.forEach(e => {
+    const l = e.target_letter || '?';
+    if (!byLetter[l]) byLetter[l] = { total: 0, correct: 0, hints: 0 };
+    byLetter[l].total++;
+    if (e.is_correct) byLetter[l].correct++;
+    if (e.hint_used) byLetter[l].hints++;
+  });
+
+  document.getElementById('perLetter').innerHTML = Object.entries(byLetter).map(([letter, stats]) => {
+    const acc = (stats.correct / stats.total * 100).toFixed(0);
+    const accClass = acc >= 80 ? 'good' : acc >= 50 ? 'med' : 'poor';
+    return `
+      <div class="letter-card">
+        <span class="letter">${letter}</span>
+        <span class="stats">
+          <span class="accuracy ${accClass}">${acc}%</span>
+          (${stats.correct}/${stats.total} נכון, ${stats.hints} עם רמז)
+        </span>
+      </div>
+    `;
+  }).join('');
+
+  // Section 3: per activity
+  const byActivity = {};
+  events.forEach(e => {
+    const a = e.activity_type || '?';
+    if (!byActivity[a]) byActivity[a] = { total: 0, correct: 0 };
+    byActivity[a].total++;
+    if (e.is_correct) byActivity[a].correct++;
+  });
+
+  document.getElementById('perActivity').innerHTML = Object.entries(byActivity).map(([act, stats]) => {
+    const acc = (stats.correct / stats.total * 100).toFixed(0);
+    return `<div class="letter-card"><strong>${act}</strong> — ${acc}% (${stats.correct}/${stats.total})</div>`;
+  }).join('');
+
+  // Section 4: flags
+  if (flags.length === 0) {
+    document.getElementById('flags').innerHTML = '<div style="color:#718096; padding: 12px;">אין דגלים פעילים. אם הילדה תקועה בדפוס מסוים — יופיע כאן.</div>';
+  } else {
+    document.getElementById('flags').innerHTML = flags.slice().reverse().map(f => `
+      <div class="flag">
+        <span class="flag-letter">${f.target_letter || '?'}</span>
+        <span class="flag-type">${f.type}</span>
+        ${f.note_template} <span style="opacity:0.6; font-size:13px;">(${f.evidence_count || '?'} ראיות)</span>
+      </div>
+    `).join('');
+  }
+
+  // Section 5: last 10 events
+  const last10 = events.slice(-10).reverse();
+  document.querySelector('#eventsTable tbody').innerHTML = last10.map(e => `
+    <tr class="${e.is_correct ? 'correct' : 'wrong'}">
+      <td>${fmtTime(e.timestamp)}</td>
+      <td>${e.activity_type}</td>
+      <td><strong>${e.target_letter || '?'}</strong></td>
+      <td>${e.is_correct ? '✓ נכון' : '✗ טעות'}</td>
+      <td>${e.attempts || 0}</td>
+      <td>${e.hint_used ? 'כן' : '—'}</td>
+    </tr>
+  `).join('');
+
+}
+
+// ============================================================
+// A0.3 — Mastery משולש: BKT + שטף + רף ראמ"ה
+// ============================================================
+function getCurrentStudentId() {
+  try { return localStorage.getItem('avnei-yesod-current-student') || 'local'; }
+  catch (e) { return 'local'; }
+}
+
+function fmtCondValue(condResult, kind) {
+  if (!condResult) return { cls: 'cold', text: '—' };
+  if (condResult.value === null || condResult.value === undefined) {
+    return { cls: 'cold', text: 'טרם תורגל' };
+  }
+  if (kind === 'bkt') {
+    const v = (condResult.value * 100).toFixed(0) + '%';
+    return { cls: condResult.ok ? 'ok' : 'fail', text: `p=${v}` };
+  }
+  if (kind === 'fluency') {
+    const sec = (condResult.value / 1000).toFixed(1);
+    const days = condResult.valid_days_count || 0;
+    return { cls: condResult.ok ? 'ok' : 'fail', text: `${sec}שנ' · ${days} ימים` };
+  }
+  if (kind === 'rama') {
+    if (condResult.source === 'no_rama_task') {
+      return { cls: 'cold', text: 'אין משימת ראמ"ה' };
+    }
+    if (condResult.source === 'island3_proxy_mvp') {
+      const c = condResult.above_threshold_count || 0;
+      const total = condResult.total_letters_in_mvp || 0;
+      return { cls: condResult.ok ? 'ok' : 'fail', text: `${c}/${total} אותיות` };
+    }
+    return { cls: condResult.ok ? 'ok' : 'fail', text: condResult.ok ? 'תקין' : 'לא תקין' };
+  }
+  return { cls: 'cold', text: '—' };
+}
+
+function renderMasteryStatus() {
+  const container = document.getElementById('masteryStatus');
+  if (!container || !window.AvneiMasteryCheck) {
+    if (container) container.innerHTML = '<div class="empty">המודול AvneiMasteryCheck לא נטען.</div>';
+    return;
+  }
+
+  const studentId = getCurrentStudentId();
+  const islandIds = Object.keys(AvneiMasteryCheck.ISLAND_TO_RAMA)
+    .map(Number)
+    .sort((a, b) => a - b);
+
+  // קופסה עליונה — מי התלמידה הנוכחית
+  let html = `<div style="font-size:13px; color:#4a5568; margin-bottom:14px;">
+    תלמידה נוכחית: <strong>${studentId === 'local' ? 'מצב דמו (local)' : studentId}</strong>
+    · ${AvneiMasteryCheck.getClosedIslands(studentId).length} איים נסגרו
+  </div>`;
+
+  html += islandIds.map(islandId => {
+    const result = AvneiMasteryCheck.checkMastery(studentId, islandId);
+    const ramaSpec = AvneiMasteryCheck.ISLAND_TO_RAMA[islandId];
+    const bktInfo = fmtCondValue(result.conditions.bkt, 'bkt');
+    const flInfo  = fmtCondValue(result.conditions.fluency, 'fluency');
+    const ramaInfo = fmtCondValue(result.conditions.rama, 'rama');
+
+    // קביעת מצב כללי
+    let status, statusClass, statusLabel;
+    const condsMet = [
+      result.conditions.bkt && result.conditions.bkt.ok,
+      result.conditions.fluency && result.conditions.fluency.ok,
+      result.conditions.rama && result.conditions.rama.ok,
+    ].filter(Boolean).length;
+
+    const noData = result.conditions.bkt && result.conditions.bkt.value === null;
+
+    if (result.met) {
+      status = 'closed'; statusClass = 'met'; statusLabel = '✓ נסגר';
+    } else if (noData) {
+      status = 'cold'; statusClass = 'cold'; statusLabel = 'טרם תורגל';
+    } else if (condsMet >= 2) {
+      status = ''; statusClass = 'partial'; statusLabel = `קרוב — ${condsMet}/3`;
+    } else {
+      status = ''; statusClass = 'not-met'; statusLabel = `${condsMet}/3 תנאים`;
+    }
+
+    return `
+      <div class="mastery-island ${status}">
+        <div class="island-head">
+          <span class="island-num">${islandId}</span>
+          <span>אי ${islandId}</span>
+          <span class="rama-tag">
+            ${ramaSpec.rama_task ? `משימה ${ramaSpec.rama_task} · ` : ''}${ramaSpec.rama_task_name}
+          </span>
+          <span class="status-badge ${statusClass}">${statusLabel}</span>
+        </div>
+        <div class="mastery-conditions">
+          <div class="cond ${bktInfo.cls}">
+            <div class="cond-label">BKT (סף ${(ramaSpec.accuracy_threshold_pKnown * 100).toFixed(0)}%)</div>
+            <div class="cond-value">${bktInfo.text}</div>
+          </div>
+          <div class="cond ${flInfo.cls}">
+            <div class="cond-label">שטף (סף ${ramaSpec.fluency_threshold_seconds}שנ' · ${ramaSpec.fluency_source === 'rama-derived' ? 'מראמ"ה' : 'פנימי'})</div>
+            <div class="cond-value">${flInfo.text}</div>
+          </div>
+          <div class="cond ${ramaInfo.cls}">
+            <div class="cond-label">רף ראמ"ה</div>
+            <div class="cond-value">${ramaInfo.text}</div>
+          </div>
+        </div>
+        ${result.reason && !result.met ? `<div class="mastery-reason">${result.reason}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = html;
+}
+
+render();
+// רענון אוטומטי כל 3 שניות (במקרה שמשחקת בכרטיסייה אחרת)
+setInterval(render, 3000);
+</script>
+
+</body>
+</html>

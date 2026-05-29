@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>המקהלה שמתעוררת · אי 1 · עומק הים המואר</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/stage-1.css">
+  <link rel="stylesheet" href="css/bubble-rise.css">
+  <link rel="stylesheet" href="css/choir.css">
+</head>
+<body>
+
+  <main class="stage-1-scene">
+    <img class="bay-bg" src="assets/island-01/bay-bg.png" alt="" aria-hidden="true">
+
+    <div class="ambient-bubble" style="left: 12%; width: 28px; height: 28px; animation-duration: 14s; --drift: 20px;"></div>
+    <div class="ambient-bubble" style="left: 78%; width: 22px; height: 22px; animation-duration: 18s; animation-delay: 3s; --drift: -15px;"></div>
+    <div class="ambient-bubble" style="left: 30%; width: 18px; height: 18px; animation-duration: 12s; animation-delay: 6s; --drift: 10px;"></div>
+    <div class="ambient-bubble" style="left: 88%; width: 32px; height: 32px; animation-duration: 20s; animation-delay: 9s; --drift: -25px;"></div>
+
+    <div class="choir-stage">
+      <!-- בועה גדולה עם תמונת המילה -->
+      <div class="choir-word-bubble" id="wordBubble">
+        <img class="choir-word-img" id="wordImg" src="assets/island-01/parpar.png" alt="">
+      </div>
+
+      <!-- שורת המקהלה -->
+      <div class="choir-row" id="choirRow">
+        <!-- JS ממלא: בועות-מקהלה ישנות -->
+      </div>
+    </div>
+
+    <img class="noni-bay" id="noniImg" src="assets/noni-idle.png" alt="נוני">
+  </main>
+
+  <header class="stage-1-topbar">
+    <a href="stage-1-island.html" class="icon-btn" aria-label="חזרה לתפריט האי">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+
+    <div class="word-pill" id="wordPill">
+      <img class="pill-img" id="pillImg" src="assets/island-01/parpar.png" alt="">
+      <span id="wordPillText">פַּרְפַּר</span>
+    </div>
+
+    <button class="replay-btn" id="replayBtn" aria-label="השמע שוב">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+    </button>
+  </header>
+
+  <div class="rise-instruction" id="riseInstruction" style="display:none">
+    <div class="rise-instruction__bubble">
+      <button class="mini-speaker" id="instructionSpeaker" aria-label="השמע">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
+        </svg>
+      </button>
+      <span id="instructionText">הקשיבו...</span>
+    </div>
+  </div>
+
+  <div class="tap-to-start" id="tapToStart">
+    <h2>המקהלה שמתעוררת</h2>
+    <button class="intro-speaker" id="introSpeaker" aria-label="הקש לשמיעה">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>הקש/י לשמוע</span>
+    </button>
+    <p>המקהלה נרדמה ושוכבת בים.</p>
+    <p><strong>תעירו את הבועות בסדר — והן ישירו לכם את המילה!</strong></p>
+    <button class="start-btn" id="startBtn">בוא/י נתחיל!</button>
+  </div>
+
+  <div class="completion" id="completion">
+    <h2>המקהלה שרה!</h2>
+    <button class="intro-speaker" id="completionSpeaker" aria-label="השמע">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>הקש/י לשמוע</span>
+    </button>
+    <p id="completionMsg">כל הבועות התעוררו והרכיבו את המילה!</p>
+    <div>
+      <button class="btn-primary" id="nextWordBtn">מילה נוספת</button>
+      <a href="stage-1-island.html" class="btn-primary btn-secondary">חזרה לאי</a>
+    </div>
+  </div>
+
+  <div class="feedback-toast" id="feedbackToast"></div>
+  <div class="celebrate-particles" id="celebrateParticles" aria-hidden="true"></div>
+
+  <audio id="audioPlayer" preload="auto"></audio>
+
+  <script src="js/shared/mastery.js"></script>
+  <script>
+  // ============================================================
+  // ChoirGame — controller
+  // הילדה לוחצת על בועות-מקהלה בסדר. כל לחיצה נכונה מעירה
+  // את הבועה לתמיד. כשכל הנכונות ערות → מקהלה שרה!
+  // ============================================================
+  const GAME_ID = 'choirGame';
+
+  const AUDIO_BASE = 'assets/audio/island-01';
+  const audio = document.getElementById('audioPlayer');
+
+  let WORDS = [];
+  let currentWordIndex = 0;
+  let currentWord = null;
+  let nextExpectedOrder = 0;
+  let mistakeCount = 0;
+  let wordMistakeTotal = 0;
+  let started = false;
+  let acceptingClicks = false;
+  let hintTimer = null;
+
+  // ----- Audio helpers (single-fire onEnd) -----
+  function playAudio(filename, onEnd) {
+    try { audio.pause(); audio.currentTime = 0; } catch (e) {}
+    let done = false;
+    const finish = () => { if (done) return; done = true; onEnd && onEnd(); };
+    audio.onended = finish;
+    audio.onerror = () => { console.warn('audio error:', filename); finish(); };
+    audio.src = `${AUDIO_BASE}/${filename}.mp3`;
+    audio.play().catch(err => {
+      console.warn('audio play blocked:', filename, err);
+      setTimeout(finish, 800);
+    });
+  }
+  function playSequence(filenames, onAllDone, gapMs = 350) {
+    if (!filenames.length) { onAllDone && onAllDone(); return; }
+    const [first, ...rest] = filenames;
+    playAudio(first, () => {
+      if (rest.length === 0) { onAllDone && onAllDone(); return; }
+      setTimeout(() => playSequence(rest, onAllDone, gapMs), gapMs);
+    });
+  }
+
+  async function loadWords() {
+    try {
+      const res = await fetch('data/island-01-words.json');
+      const data = await res.json();
+      WORDS = data.words;
+    } catch (err) { console.error(err); }
+  }
+
+  // ----- Build distractor syllables from OTHER words -----
+  function pickDistractors(word, count) {
+    const excludeIds = new Set(word.syllable_ids);
+    const pool = [];
+    WORDS.forEach(w => {
+      if (w.id === word.id) return;
+      w.syllables.forEach((syl, i) => {
+        const sid = w.syllable_ids[i];
+        if (excludeIds.has(sid)) return;
+        pool.push({
+          syllable_id: sid,
+          audio: w.syllable_audios[i].split('/').pop().replace('.mp3', '')
+        });
+      });
+    });
+    const seen = new Set();
+    const shuffled = pool.sort(() => Math.random() - 0.5);
+    const out = [];
+    for (const p of shuffled) {
+      if (seen.has(p.syllable_id)) continue;
+      seen.add(p.syllable_id);
+      out.push(p);
+      if (out.length >= count) break;
+    }
+    return out;
+  }
+
+  // ----- Build the choir of sleeping bubbles -----
+  function buildChoir() {
+    const row = document.getElementById('choirRow');
+    row.innerHTML = '';
+
+    const correct = currentWord.syllables.map((syl, i) => ({
+      syllable_id: currentWord.syllable_ids[i],
+      audio: currentWord.syllable_audios[i].split('/').pop().replace('.mp3', ''),
+      correct: true,
+      order: i,
+    }));
+    const distractorCount = 2;
+    const distractors = pickDistractors(currentWord, distractorCount).map(d => ({
+      syllable_id: d.syllable_id,
+      audio: d.audio,
+      correct: false,
+      order: -1,
+    }));
+    const all = [...correct, ...distractors].sort(() => Math.random() - 0.5);
+
+    all.forEach((c, idx) => {
+      const s = document.createElement('div');
+      s.className = 'choir-singer appear';
+      s.dataset.correct = c.correct ? '1' : '0';
+      s.dataset.order = String(c.order);
+      s.dataset.audio = c.audio;
+      s.style.animationDelay = `${idx * 0.12}s`;
+      s.innerHTML = `
+        <span class="zzz">z</span>
+        <div class="choir-face">
+          <span class="eye left"></span>
+          <span class="eye right"></span>
+          <span class="mouth"></span>
+        </div>
+      `;
+      s.addEventListener('click', () => handleSingerClick(s, c));
+      row.appendChild(s);
+    });
+  }
+
+  function handleSingerClick(s, c) {
+    if (!acceptingClicks) return;
+    if (s.classList.contains('awake')) return; // already awake — ignore
+    clearTimeout(hintTimer);
+
+    const isCorrectSyl = c.correct;
+    const expectedSylId = currentWord.syllable_ids[nextExpectedOrder];
+    const fragSylId = c.order >= 0 ? currentWord.syllable_ids[c.order] : null;
+    const isIdenticalToExpected = isCorrectSyl && fragSylId === expectedSylId;
+
+    // CASE A: correct order OR identical syllable
+    if (isCorrectSyl && (c.order === nextExpectedOrder || isIdenticalToExpected)) {
+      s.classList.add('awake', 'singing');
+      setTimeout(() => s.classList.remove('singing'), 700);
+      playAudio(c.audio);
+
+      nextExpectedOrder++;
+      mistakeCount = 0;
+
+      if (nextExpectedOrder === currentWord.syllable_count) {
+        acceptingClicks = false;
+        setTimeout(performChoirFinale, 900);
+      } else {
+        // glow on the next expected singer
+        setTimeout(() => {
+          const nextExp = currentWord.syllable_ids[nextExpectedOrder];
+          const candidates = document.querySelectorAll('.choir-singer:not(.awake)');
+          // hint: glow ANY correct non-awake singer that matches the next expected syllable
+          for (const el of candidates) {
+            if (el.dataset.correct === '1' && parseInt(el.dataset.order) === nextExpectedOrder) {
+              el.classList.add('hint');
+              setTimeout(() => el.classList.remove('hint'), 3500);
+              break;
+            }
+          }
+        }, 900);
+      }
+      return;
+    }
+
+    // CASE B: correct syllable but wrong order
+    if (isCorrectSyl && c.order !== nextExpectedOrder && !isIdenticalToExpected) {
+      mistakeCount++;
+      wordMistakeTotal++;
+      s.classList.add('wobble');
+      setTimeout(() => s.classList.remove('wobble'), 600);
+      playAudio(c.audio, () => {
+        setTimeout(() => playAudio('support-order'), 250);
+        const correctBtn = document.querySelector(`.choir-singer:not(.awake)[data-order="${nextExpectedOrder}"]`);
+        if (correctBtn) {
+          correctBtn.classList.add('hint');
+          setTimeout(() => correctBtn.classList.remove('hint'), 3500);
+        }
+      });
+      return;
+    }
+
+    // CASE C: distractor
+    mistakeCount++;
+    wordMistakeTotal++;
+    s.classList.add('wobble');
+    setTimeout(() => s.classList.remove('wobble'), 600);
+    playAudio(c.audio, () => {
+      if (mistakeCount === 1) {
+        setTimeout(() => playAudio('support-mistake-1'), 250);
+      } else {
+        const correctBtn = document.querySelector(`.choir-singer:not(.awake)[data-order="${nextExpectedOrder}"]`);
+        if (correctBtn) correctBtn.classList.add('hint');
+        setTimeout(() => playAudio('support-mistake-2'), 250);
+      }
+    });
+  }
+
+  // ----- Finale: choir sings each syllable in order, then the whole word -----
+  function performChoirFinale() {
+    document.getElementById('wordBubble').classList.add('singing');
+
+    // Each awake singer sings in order
+    const awakeSorted = Array.from(document.querySelectorAll('.choir-singer.awake'))
+      .sort((a, b) => parseInt(a.dataset.order) - parseInt(b.dataset.order));
+
+    function singStep(i) {
+      if (i >= awakeSorted.length) {
+        // all sang — now play the whole word
+        setTimeout(() => {
+          playAudio(`word-${currentWord.id}`, () => {
+            setTimeout(celebrate, 500);
+          });
+        }, 400);
+        return;
+      }
+      const s = awakeSorted[i];
+      s.classList.add('singing');
+      playAudio(s.dataset.audio, () => {
+        s.classList.remove('singing');
+        setTimeout(() => singStep(i + 1), 200);
+      });
+    }
+    singStep(0);
+  }
+
+  function celebrate() {
+    if (window.AvneiMastery) {
+      window.AvneiMastery.recordResult(currentWord.id, GAME_ID, wordMistakeTotal);
+    }
+    const noni = document.getElementById('noniImg');
+    noni.src = 'assets/noni-happy.png';
+    noni.classList.add('celebrating');
+    burstParticles();
+    setTimeout(showCompletion, 900);
+  }
+
+  function burstParticles() {
+    const container = document.getElementById('celebrateParticles');
+    container.innerHTML = '';
+    const colors = ['#FFF7C8', '#FFA98D', '#B981FF', '#A8E8FF', '#73D9D1'];
+    for (let i = 0; i < 28; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const angle = (i / 28) * Math.PI * 2;
+      const dist = 200 + Math.random() * 120;
+      p.style.left = `${50 + (Math.random() - 0.5) * 10}%`;
+      p.style.top = `${50 + (Math.random() - 0.5) * 10}%`;
+      p.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
+      p.style.setProperty('--dy', `${Math.sin(angle) * dist - 80}px`);
+      p.style.background = colors[i % colors.length];
+      p.style.boxShadow = `0 0 12px ${colors[i % colors.length]}`;
+      p.style.animationDelay = `${(i % 6) * 0.06}s`;
+      container.appendChild(p);
+    }
+    setTimeout(() => { container.innerHTML = ''; }, 3000);
+  }
+
+  function showCompletion() {
+    document.getElementById('completion').classList.add('visible');
+    setTimeout(() => playAudio('ui-complete-choir'), 400);
+  }
+
+  function showInstruction(text) {
+    document.getElementById('riseInstruction').style.display = 'flex';
+    document.getElementById('instructionText').textContent = text;
+  }
+
+  function playSplitWord(onDone) {
+    const big = document.getElementById('wordBubble');
+    const syllableKeys = currentWord.syllable_audios.map(p => p.split('/').pop().replace('.mp3', ''));
+    function playStep(i) {
+      if (i >= syllableKeys.length) {
+        setTimeout(() => playAudio(`word-${currentWord.id}`, onDone), 500);
+        return;
+      }
+      playAudio(syllableKeys[i], () => setTimeout(() => playStep(i + 1), 350));
+    }
+    playStep(0);
+  }
+
+  function loadWord(idx) {
+    currentWordIndex = (idx + WORDS.length) % WORDS.length;
+    currentWord = WORDS[currentWordIndex];
+    nextExpectedOrder = 0;
+    mistakeCount = 0;
+    wordMistakeTotal = 0;
+    acceptingClicks = false;
+
+    document.getElementById('wordImg').src = currentWord.image;
+    document.getElementById('pillImg').src = currentWord.image;
+    document.getElementById('wordPillText').textContent = currentWord.display;
+
+    const noni = document.getElementById('noniImg');
+    noni.src = 'assets/noni-idle.png';
+    noni.classList.remove('celebrating');
+
+    document.getElementById('wordBubble').classList.remove('singing');
+    document.getElementById('completion').classList.remove('visible');
+
+    buildChoir();
+    showInstruction('הַקְשִׁיבוּ לַמִּלָּה...');
+
+    setTimeout(() => {
+      playSplitWord(() => {
+        showInstruction('הָעִירוּ אֶת הַבּוּעוֹת בְּסֵדֶר!');
+        playAudio('ui-choir-wake', () => {
+          acceptingClicks = true;
+          hintTimer = setTimeout(() => {
+            const correctBtn = document.querySelector(`.choir-singer:not(.awake)[data-order="${nextExpectedOrder}"]`);
+            if (correctBtn) correctBtn.classList.add('hint');
+          }, 10000);
+        });
+      });
+    }, 500);
+  }
+
+  function nextWord() {
+    const w = window.AvneiMastery ? window.AvneiMastery.pickWord(GAME_ID, WORDS) : null;
+    const idx = w ? WORDS.indexOf(w) : (currentWordIndex + 1);
+    loadWord(idx);
+  }
+
+  async function start() {
+    if (started) return;
+    started = true;
+    document.getElementById('tapToStart').classList.add('hidden');
+    if (!WORDS.length) await loadWords();
+    if (!WORDS.length) { console.error('failed to load words'); return; }
+    const w = window.AvneiMastery ? window.AvneiMastery.pickWord(GAME_ID, WORDS) : null;
+    const idx = w ? WORDS.indexOf(w) : Math.floor(Math.random() * WORDS.length);
+    loadWord(idx);
+  }
+
+  document.getElementById('startBtn').addEventListener('click', start);
+  document.getElementById('introSpeaker').addEventListener('click', (e) => {
+    e.stopPropagation();
+    playAudio('ui-bubble-story');
+  });
+  document.getElementById('replayBtn').addEventListener('click', () => {
+    if (!currentWord) return;
+    playSplitWord();
+  });
+  document.getElementById('instructionSpeaker').addEventListener('click', () => {
+    if (!currentWord) return;
+    playAudio('ui-choir-wake');
+  });
+  document.getElementById('nextWordBtn').addEventListener('click', nextWord);
+  document.getElementById('completionSpeaker').addEventListener('click', (e) => {
+    e.stopPropagation();
+    playAudio('ui-complete-choir');
+  });
+
+  (async function init() {
+    await loadWords();
+    audio.src = `${AUDIO_BASE}/ui-bubble-story.mp3`;
+  })();
+  </script>
+</body>
+</html>

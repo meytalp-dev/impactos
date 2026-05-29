@@ -1,0 +1,3101 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>דשבורד מורה — מבדק ראמ"ה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Assistant', system-ui, sans-serif;
+    background: #f7fafc;
+    color: #1a2332;
+    line-height: 1.5;
+    font-size: 14px;
+  }
+  .container { max-width: 1240px; margin: 0 auto; padding: 22px 16px 80px; }
+
+  /* ===== Header ===== */
+  header.top {
+    background: linear-gradient(135deg, #2c7a7b 0%, #4fd1c5 100%);
+    color: white;
+    padding: 22px 26px;
+    border-radius: 16px;
+    margin-bottom: 18px;
+  }
+  header.top h1 { font-size: 26px; margin-bottom: 4px; font-weight: 800; }
+  header.top .sub { font-size: 15px; opacity: 0.95; }
+  header.top .meta {
+    margin-top: 10px;
+    display: flex; gap: 8px; flex-wrap: wrap;
+    font-size: 13px;
+  }
+  header.top .meta span {
+    background: rgba(255,255,255,0.18);
+    padding: 4px 12px;
+    border-radius: 12px;
+  }
+  header.top .pulse-current { background: rgba(255,255,255,0.32); font-weight: 700; }
+  header.top .top-actions { float: left; display: flex; gap: 8px; }
+  header.top .top-actions button {
+    background: rgba(255,255,255,0.22);
+    color: white; border: 0;
+    padding: 6px 12px; border-radius: 8px;
+    font-family: inherit; font-size: 13px; cursor: pointer;
+  }
+  header.top .top-actions button:hover { background: rgba(255,255,255,0.32); }
+
+  /* ===== Toggle bars ===== */
+  .toggle-bar {
+    display: flex; gap: 6px; align-items: center;
+    background: white; padding: 8px;
+    border-radius: 12px; margin-bottom: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    flex-wrap: wrap;
+  }
+  .toggle-bar .toggle-btn {
+    background: transparent; color: #4a5568;
+    border: 0; padding: 8px 18px;
+    font-family: inherit; font-size: 14px; font-weight: 600;
+    border-radius: 8px; cursor: pointer;
+    transition: all .15s;
+  }
+  .toggle-bar .toggle-btn:hover { background: #edf2f7; }
+  .toggle-bar .toggle-btn.active {
+    background: #2c7a7b; color: white;
+  }
+  .toggle-bar .sep { width: 1px; height: 24px; background: #e2e8f0; margin: 0 6px; }
+  .toggle-bar .pulse-pick {
+    display: flex; gap: 4px; align-items: center;
+    font-size: 13px; color: #4a5568;
+  }
+  .toggle-bar .pulse-pick button {
+    background: transparent; border: 1px solid #cbd5e0;
+    padding: 4px 10px; border-radius: 6px;
+    font-family: inherit; font-size: 13px; cursor: pointer;
+    color: #4a5568;
+  }
+  .toggle-bar .pulse-pick button.active {
+    background: #2c7a7b; color: white; border-color: #2c7a7b;
+  }
+  .toggle-bar .pulse-pick button.disabled {
+    opacity: 0.4; cursor: not-allowed;
+  }
+
+  /* ===== Section card ===== */
+  .section {
+    background: white;
+    padding: 20px 22px;
+    border-radius: 14px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  }
+  .section h2 {
+    font-size: 18px; margin-bottom: 14px;
+    color: #2c7a7b; font-weight: 700;
+  }
+  .empty {
+    text-align: center; padding: 28px;
+    color: #718096; font-size: 15px;
+  }
+  .empty .icon { font-size: 40px; margin-bottom: 10px; opacity: 0.4; }
+
+  /* ===== Class view table ===== */
+  .table-wrap {
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+    border-radius: 10px; border: 1px solid #e2e8f0;
+  }
+  table.rama {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    font-size: 13px;
+    min-width: 880px;
+  }
+  table.rama thead tr.pulse-row th {
+    background: #edf2f7;
+    color: #4a5568; font-weight: 700;
+    padding: 8px 6px; text-align: center;
+    border-bottom: 1px solid #cbd5e0;
+    font-size: 12px;
+  }
+  table.rama thead tr.pulse-row th.pulse-1 { background: #b2f5ea; color: #234e52; }
+  table.rama thead tr.pulse-row th.pulse-2 { background: #e2e8f0; }
+  table.rama thead tr.pulse-row th.pulse-3 { background: #f7fafc; }
+  table.rama thead tr.task-row th {
+    background: white;
+    padding: 10px 8px; text-align: center;
+    font-weight: 700; color: #1a2332;
+    border-bottom: 2px solid #cbd5e0;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  table.rama thead tr.task-row th:hover { background: #f7fafc; }
+  table.rama thead tr.task-row th.task-num {
+    color: #2c7a7b; font-size: 14px;
+  }
+  table.rama thead tr.task-row th .thr {
+    font-size: 11px; color: #718096;
+    font-weight: 500; display: block;
+  }
+  table.rama thead .student-col {
+    background: white;
+    text-align: right;
+    padding: 10px 12px;
+    border-bottom: 2px solid #cbd5e0;
+    position: sticky; right: 0; z-index: 3;
+    box-shadow: -1px 0 0 #cbd5e0;
+    min-width: 140px;
+  }
+  table.rama tbody td.student-col {
+    background: white;
+    text-align: right;
+    padding: 10px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    position: sticky; right: 0; z-index: 2;
+    box-shadow: -1px 0 0 #e2e8f0;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  table.rama tbody tr:hover td.student-col { background: #f7fafc; }
+  table.rama tbody td.student-col .conf {
+    font-size: 14px; margin-right: 6px;
+  }
+  table.rama tbody td.cell {
+    padding: 8px 6px; text-align: center;
+    border-bottom: 1px solid #e2e8f0;
+    border-right: 1px solid #f0f3f6;
+    font-weight: 700;
+    cursor: pointer; position: relative;
+  }
+  table.rama tbody td.cell.pulse-1-bg { background: #f0fdfa; }
+  table.rama tbody td.cell.pulse-2-bg { background: #fafbfc; }
+  table.rama tbody td.cell.pulse-3-bg { background: #fafafa; }
+  table.rama tbody td.cell.status-pass { background: #d1fae5; color: #064e3b; }
+  table.rama tbody td.cell.status-near { background: #fef3c7; color: #78350f; }
+  table.rama tbody td.cell.status-fail { background: #fee2e2; color: #7f1d1d; }
+  table.rama tbody td.cell.status-cold { color: #a0aec0; }
+  table.rama tbody td.cell .cell-icon { font-size: 14px; display: inline-block; margin-left: 3px; }
+  table.rama tbody td.cell .cell-val  { font-size: 11px; }
+  table.rama tbody td.cell.low-conf .cell-val { opacity: 0.55; }
+  table.rama tbody td.cell.low-conf::after {
+    content: ''; position: absolute; top: 4px; left: 4px;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #cbd5e0;
+  }
+
+  .pulse-summary {
+    margin-top: 14px;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+    border-radius: 10px;
+    border-right: 4px solid #2c7a7b;
+  }
+  .pulse-summary .row {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    font-size: 14px; margin-bottom: 6px; color: #1a2332;
+  }
+  .pulse-summary .row strong { color: #2c7a7b; }
+  .pulse-summary .urgent {
+    background: #fee2e2; color: #7f1d1d;
+    padding: 8px 14px; border-radius: 8px;
+    font-weight: 700; margin-top: 8px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .pulse-summary .urgent button {
+    background: #c53030; color: white; border: 0;
+    padding: 5px 12px; border-radius: 6px;
+    font-family: inherit; font-size: 13px; cursor: pointer;
+    margin-right: auto;
+  }
+
+  .legend {
+    margin-top: 12px; padding: 10px 14px;
+    background: #f7fafc; border-radius: 8px;
+    font-size: 12px; color: #4a5568;
+    display: flex; gap: 16px; flex-wrap: wrap;
+  }
+  .legend strong { color: #1a2332; }
+
+  /* ===== Snapshot mode ===== */
+  .snapshot-block { margin-bottom: 22px; }
+  .snapshot-block h3 {
+    font-size: 16px; margin-bottom: 10px;
+    color: #1a2332; font-weight: 700;
+  }
+  .snapshot-bar-row {
+    display: grid;
+    grid-template-columns: 110px 1fr 90px;
+    gap: 10px; align-items: center;
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+  .snapshot-bar-row .label { color: #4a5568; }
+  .snapshot-bar-row .bar-bg {
+    background: #edf2f7; border-radius: 8px;
+    height: 22px; overflow: hidden; position: relative;
+  }
+  .snapshot-bar-row .bar-fill {
+    height: 100%; border-radius: 8px;
+    transition: width .3s ease;
+  }
+  .snapshot-bar-row.status-pass .bar-fill { background: #38a169; }
+  .snapshot-bar-row.status-near .bar-fill { background: #ecc94b; }
+  .snapshot-bar-row.status-fail .bar-fill { background: #e53e3e; }
+  .snapshot-bar-row.status-cold .bar-fill { background: #a0aec0; }
+  .snapshot-bar-row .num { text-align: left; color: #1a2332; font-weight: 700; }
+
+  /* ===== Student view ===== */
+  .student-head {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 20px; background: white;
+    border-radius: 12px; margin-bottom: 16px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  }
+  .student-head .back {
+    background: #edf2f7; border: 0; padding: 8px 14px;
+    border-radius: 8px; font-family: inherit; font-size: 14px;
+    cursor: pointer; color: #2c7a7b; font-weight: 700;
+  }
+  .student-head .back:hover { background: #cbd5e0; }
+  .student-head .name { font-size: 22px; font-weight: 800; color: #1a2332; }
+  .student-head .summary { color: #4a5568; font-size: 14px; }
+  .student-head .stale-warn {
+    margin-right: auto;
+    background: #fef5e7; color: #744210;
+    padding: 8px 14px; border-radius: 8px;
+    font-size: 13px; font-weight: 700;
+    border: 1px solid #f6ad55;
+  }
+
+  /* 5 strands */
+  .strand-row {
+    display: grid;
+    grid-template-columns: 130px 1fr 90px 130px;
+    gap: 12px; align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #edf2f7;
+    font-size: 14px;
+  }
+  .strand-row .name { font-weight: 700; color: #1a2332; }
+  .strand-row .bar-bg {
+    background: #edf2f7; border-radius: 8px;
+    height: 14px; overflow: hidden;
+  }
+  .strand-row .bar-fill {
+    background: linear-gradient(90deg, #4fd1c5, #2c7a7b);
+    height: 100%; border-radius: 8px;
+    transition: width .3s ease;
+  }
+  .strand-row.cold .bar-fill { background: #cbd5e0; }
+  .strand-row .pct { text-align: left; font-weight: 700; }
+  .strand-row .meta {
+    font-size: 12px; color: #718096;
+    text-align: left;
+  }
+  .conf-badge {
+    display: inline-block;
+    padding: 2px 8px; border-radius: 8px;
+    font-size: 12px; font-weight: 700;
+    margin-right: 4px;
+  }
+  .conf-high { background: #c6f6d5; color: #22543d; }
+  .conf-med  { background: #fef3c7; color: #78350f; }
+  .conf-low  { background: #edf2f7; color: #4a5568; }
+
+  /* A.5 — Cold-start: badge "חדשה" ליד שם בטבלה */
+  .badge-new {
+    display: inline-block;
+    background: #ffd97d; color: #744210;
+    padding: 2px 6px; border-radius: 4px;
+    font-size: 11px; font-weight: 700;
+    margin-right: 6px;
+  }
+  /* A.5 — Cold-start: banner בראש Student View */
+  .cold-start-banner {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-right: 4px solid #f59e0b;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    color: #744210;
+  }
+  .cold-start-banner strong { color: #5c3500; }
+  .cold-start-banner .counter {
+    font-weight: 700; color: #5c3500;
+    display: block; margin-bottom: 4px; font-size: 15px;
+  }
+  /* קאונטר ב-pulse summary */
+  .pulse-summary .cold-count {
+    color: #744210;
+  }
+
+  /* 22 letters */
+  .letters-grid {
+    display: grid;
+    grid-template-columns: repeat(11, 1fr);
+    gap: 4px; margin-bottom: 10px;
+  }
+  .letters-grid .letter {
+    aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    border-radius: 8px;
+    font-weight: 800; font-size: 18px;
+    cursor: pointer;
+    transition: transform .12s;
+  }
+  .letters-grid .letter:hover { transform: scale(1.05); }
+  .letters-grid .letter.mastered    { background: #c6f6d5; color: #22543d; }
+  .letters-grid .letter.in_progress { background: #fef3c7; color: #78350f; }
+  .letters-grid .letter.weak        { background: #fee2e2; color: #7f1d1d; }
+  .letters-grid .letter.untouched   { background: #edf2f7; color: #a0aec0; }
+  .letters-summary {
+    font-size: 13px; color: #4a5568;
+    background: #f7fafc; padding: 8px 12px; border-radius: 8px;
+  }
+  .letters-summary .pass { color: #22543d; font-weight: 700; }
+
+  /* EPA */
+  .epa-block {
+    padding: 14px 18px; border-radius: 10px;
+    border-right: 4px solid #cbd5e0;
+    background: #f7fafc;
+    font-size: 14px;
+  }
+  .epa-block.pattern {
+    border-right-color: #d69e2e;
+    background: #fffaf0;
+  }
+  .epa-block h4 {
+    margin-bottom: 6px; color: #1a2332;
+    font-size: 15px;
+  }
+  .epa-block .intervention {
+    margin-top: 10px;
+    padding: 10px 14px; background: white;
+    border-radius: 8px; border: 1px dashed #d69e2e;
+    color: #744210; font-size: 13px;
+  }
+
+  /* RAMA tasks per pulse */
+  .pulse-group {
+    background: #f7fafc; border-radius: 10px;
+    padding: 12px 14px; margin-bottom: 10px;
+  }
+  .pulse-group h4 {
+    color: #2c7a7b; margin-bottom: 8px;
+    font-size: 15px; font-weight: 700;
+  }
+  .pulse-group.active {
+    background: #b2f5ea;
+  }
+  .pulse-group.active h4 { color: #234e52; }
+  .rama-task-row {
+    display: grid;
+    grid-template-columns: 32px 1fr 100px 80px;
+    gap: 10px; align-items: center;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  .rama-task-row:hover { background: rgba(255,255,255,0.5); }
+  .rama-task-row .num {
+    background: #2c7a7b; color: white;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 12px;
+  }
+  .rama-task-row .name { color: #1a2332; }
+  .rama-task-row .thr { font-size: 11px; color: #718096; display: block; }
+  .rama-task-row .status {
+    text-align: left; font-weight: 700;
+  }
+  .rama-task-row.status-pass .status { color: #22543d; }
+  .rama-task-row.status-near .status { color: #78350f; }
+  .rama-task-row.status-fail .status { color: #7f1d1d; }
+  .rama-task-row.status-cold .status { color: #a0aec0; }
+
+  /* ===== C.11+C.12 — Pack × Tier (Section 5 + Class View column) ===== */
+  /* עמודת Tier ב-Class View — sticky צמוד ל-student-col (right: 140px = רוחב student-col) */
+  table.rama thead .tier-col {
+    background: #fef5e7; color: #744210;
+    font-size: 12px; font-weight: 700;
+    text-align: center;
+    width: 70px; min-width: 70px;
+    border-bottom: 1px solid #f6ad55;
+    position: sticky; right: 140px; z-index: 3;
+  }
+  table.rama tbody td.tier-cell {
+    background: #fffaf0;
+    text-align: center;
+    font-weight: 800;
+    font-size: 14px;
+    color: #744210;
+    border-left: 1px solid #fde68a;
+    white-space: nowrap;
+    position: sticky; right: 140px; z-index: 2;
+    cursor: pointer;
+  }
+  table.rama tbody td.tier-cell:hover { filter: brightness(0.95); }
+  table.rama tbody td.tier-cell .manual-mark {
+    font-size: 10px;
+    color: #c05621;
+    margin-right: 2px;
+  }
+  table.rama tbody td.tier-cell.tier-1 { background: #fee2e2; color: #7f1d1d; }
+  table.rama tbody td.tier-cell.tier-2 { background: #fef3c7; color: #78350f; }
+  table.rama tbody td.tier-cell.tier-3 { background: #dbeafe; color: #1e3a8a; }
+  table.rama tbody td.tier-cell.tier-4 { background: #d1fae5; color: #064e3b; }
+  table.rama tbody td.tier-cell.tier-cold { background: #edf2f7; color: #4a5568; font-style: italic; }
+
+  /* ===== Tier Modal — Class View click ===== */
+  .tier-modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(26, 35, 50, 0.55);
+    z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px;
+    animation: tierModalFadeIn .15s ease-out;
+  }
+  @keyframes tierModalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .tier-modal {
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    max-width: 560px;
+    width: 100%;
+    max-height: 92vh;
+    overflow-y: auto;
+    direction: rtl;
+    animation: tierModalSlideIn .2s ease-out;
+  }
+  @keyframes tierModalSlideIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .tier-modal .tm-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #edf2f7;
+    background: linear-gradient(135deg, #fffaf0 0%, #fef5e7 100%);
+    border-radius: 14px 14px 0 0;
+  }
+  .tier-modal .tm-head .tm-title {
+    font-size: 17px; font-weight: 800; color: #744210;
+  }
+  .tier-modal .tm-head .tm-student {
+    font-size: 14px; color: #92400e; margin-top: 2px;
+  }
+  .tier-modal .tm-close {
+    background: transparent; border: 0;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px; color: #744210;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .tier-modal .tm-close:hover { background: rgba(0,0,0,0.06); }
+  .tier-modal .tm-body { padding: 18px 20px 22px; }
+
+  /* Section 5 — Pack חודשי ב-Student View */
+  .pack-section {
+    background: linear-gradient(135deg, #fffaf0 0%, #fef5e7 100%);
+    border: 1px solid #f6ad55;
+    border-radius: 12px;
+    padding: 16px 20px;
+  }
+  .pack-section .pack-head {
+    display: flex; align-items: baseline; gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .pack-section .pack-title {
+    font-size: 16px; font-weight: 800; color: #744210;
+  }
+  .pack-section .pack-sub {
+    color: #92400e; font-size: 13px;
+  }
+  .pack-tier-display {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    align-items: center;
+    padding: 12px 14px;
+    background: white;
+    border-radius: 10px;
+    margin: 10px 0;
+  }
+  .pack-tier-display .big-badge {
+    font-size: 28px; font-weight: 900;
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+  }
+  .pack-tier-display .big-badge .tier-num { line-height: 1; }
+  .pack-tier-display .big-badge .tier-label {
+    font-size: 11px; font-weight: 700;
+    margin-top: 2px;
+  }
+  .pack-tier-display .big-badge.tier-1 { background: #fee2e2; color: #7f1d1d; }
+  .pack-tier-display .big-badge.tier-2 { background: #fef3c7; color: #78350f; }
+  .pack-tier-display .big-badge.tier-3 { background: #dbeafe; color: #1e3a8a; }
+  .pack-tier-display .big-badge.tier-4 { background: #d1fae5; color: #064e3b; }
+  .pack-tier-display .details {
+    font-size: 13px; color: #1a2332;
+  }
+  .pack-tier-display .details .reason {
+    color: #4a5568; margin-bottom: 2px;
+  }
+  .pack-tier-display .details .source {
+    font-size: 12px; color: #718096;
+  }
+  .pack-tier-display .details .source .manual {
+    color: #c05621; font-weight: 700;
+  }
+
+  .pack-override {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #fde68a;
+  }
+  .pack-override .label {
+    font-size: 13px; color: #744210; font-weight: 700;
+  }
+  .pack-override button.tier-btn {
+    background: white;
+    border: 1.5px solid #fde68a;
+    color: #744210;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-family: inherit; font-size: 13px; font-weight: 700;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .pack-override button.tier-btn:hover {
+    background: #fef5e7; border-color: #f6ad55;
+  }
+  .pack-override button.tier-btn.active {
+    background: #f59e0b; color: white; border-color: #d97706;
+  }
+  .pack-override button.tier-btn.clear-btn {
+    background: #fef5e7;
+    color: #c05621;
+    border-color: #fdba74;
+    font-size: 12px;
+    margin-right: auto;
+  }
+  .pack-override button.tier-btn.clear-btn:hover {
+    background: #fed7aa;
+  }
+
+  /* ===== Section 6 — MOY (סוכן 10 · 28.5.2026) ===== */
+  .moy-section {
+    background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+    border: 1px solid #5eead4;
+    border-radius: 12px;
+    padding: 16px 20px;
+  }
+  .moy-section .moy-head {
+    display: flex; align-items: baseline; gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .moy-section .moy-title {
+    font-size: 16px; font-weight: 800; color: #115e59;
+  }
+  .moy-section .moy-window {
+    color: #134e4a; font-size: 13px;
+  }
+  .moy-status-display {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    align-items: center;
+    padding: 12px 14px;
+    background: white;
+    border-radius: 10px;
+    margin: 10px 0;
+  }
+  .moy-status-display .status-badge {
+    font-size: 22px;
+    font-weight: 900;
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    line-height: 1;
+  }
+  .moy-status-display .status-badge.status-not-measured {
+    background: #e2e8f0; color: #475569;
+  }
+  .moy-status-display .status-badge.status-pass {
+    background: #d1fae5; color: #064e3b;
+  }
+  .moy-status-display .status-badge.status-near {
+    background: #fef3c7; color: #78350f;
+  }
+  .moy-status-display .status-badge.status-fail {
+    background: #fee2e2; color: #7f1d1d;
+  }
+  .moy-status-display .moy-details {
+    font-size: 13px; color: #1a2332;
+  }
+  .moy-status-display .moy-details .moy-reason {
+    color: #4a5568; margin-bottom: 2px; font-weight: 600;
+  }
+  .moy-status-display .moy-details .moy-tasks {
+    font-size: 12px; color: #475569;
+    margin-top: 4px;
+  }
+  .moy-warning {
+    background: #fef3c7;
+    border-right: 4px solid #f59e0b;
+    color: #78350f;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+  .moy-warning strong { color: #92400e; }
+  .moy-due-banner {
+    background: #fee2e2;
+    border-right: 4px solid #dc2626;
+    color: #7f1d1d;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    margin-top: 8px;
+  }
+  .moy-actions {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 12px; flex-wrap: wrap;
+  }
+  .moy-actions .btn-moy {
+    background: linear-gradient(135deg, #14b8a6, #0d9488);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-family: inherit; font-weight: 700; font-size: 14px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(20,184,166,0.3);
+    text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .moy-actions .btn-moy:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(20,184,166,0.4);
+  }
+  .moy-actions .btn-moy-pdf {
+    background: white;
+    color: #115e59;
+    border: 1.5px solid #5eead4;
+    padding: 9px 16px;
+    border-radius: 999px;
+    font-family: inherit; font-weight: 700; font-size: 13px;
+    text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .moy-actions .btn-moy-pdf:hover { background: #f0fdfa; }
+  .moy-attempts-list {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #475569;
+  }
+  .moy-attempts-list .attempt-row {
+    padding: 6px 10px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 6px;
+    margin-top: 4px;
+  }
+  /* MOY × B.7 link (סוכן 16 · 28.5.2026) — "ממתינה לקבוצה" badge ב-Student View */
+  .moy-suggest-badge {
+    background: #fff7ed;
+    border-right: 4px solid #f97316;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-top: 10px;
+    color: #7c2d12;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .moy-suggest-badge .msb-line1 {
+    font-weight: 700; color: #9a3412;
+    margin-bottom: 2px;
+  }
+  .moy-suggest-badge .msb-line1 strong { color: #7c2d12; }
+  .moy-suggest-badge .msb-line2 {
+    color: #9a3412; font-size: 12.5px;
+  }
+  /* MOY-sourced banner ב-Class View — כתום מובחן מ-iv-banner (כהרגיל ענברי) */
+  .iv-banner.iv-banner-moy {
+    background: linear-gradient(135deg, #ffedd5 0%, #fdba74 100%);
+    border-right-color: #ea580c;
+  }
+  .iv-banner.iv-banner-moy .iv-desc { color: #7c2d12; }
+  .iv-banner.iv-banner-moy .iv-desc .iv-pattern { color: #7c2d12; font-weight: 800; }
+  .iv-banner.iv-banner-moy .iv-desc .iv-group-info { color: #9a3412; }
+  .iv-banner.iv-banner-moy button.iv-open-modal {
+    background: #ea580c;
+  }
+  .iv-banner.iv-banner-moy button.iv-open-modal:hover { background: #c2410c; }
+
+  /* Flags */
+  .flag-card {
+    background: #fef5e7; border-right: 4px solid #ed8936;
+    padding: 10px 14px; border-radius: 8px;
+    margin-bottom: 8px; font-size: 14px;
+  }
+  .flag-card .flag-type {
+    background: #ed8936; color: white;
+    font-size: 11px; padding: 2px 8px;
+    border-radius: 6px; font-weight: 700;
+    margin-left: 6px;
+  }
+
+  /* Parent view link (disabled) */
+  .parent-link {
+    display: inline-block; margin-top: 10px;
+    padding: 10px 16px; background: #edf2f7;
+    color: #a0aec0; border-radius: 8px;
+    font-size: 13px; cursor: not-allowed;
+  }
+
+  /* ===== Tooltip ===== */
+  .tip {
+    position: fixed; z-index: 9000;
+    background: #1a2332; color: white;
+    padding: 8px 14px; border-radius: 8px;
+    font-size: 13px; max-width: 280px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    pointer-events: none;
+    transition: opacity .15s;
+  }
+
+  /* ===== Modal (drill-down on task column) ===== */
+  .modal-backdrop {
+    position: fixed; inset: 0; z-index: 9100;
+    background: rgba(26, 35, 50, 0.6);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .modal {
+    background: white; border-radius: 14px;
+    max-width: 520px; width: 100%;
+    padding: 22px 26px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    max-height: 80vh; overflow-y: auto;
+  }
+  .modal h3 { font-size: 18px; margin-bottom: 12px; color: #2c7a7b; }
+  .modal .close {
+    float: left; background: #edf2f7; border: 0;
+    padding: 6px 14px; border-radius: 8px;
+    font-family: inherit; cursor: pointer; color: #4a5568;
+  }
+  .modal ul { list-style: none; padding: 0; margin: 10px 0; }
+  .modal li {
+    padding: 8px 12px; border-radius: 6px;
+    background: #f7fafc; margin-bottom: 4px;
+    display: flex; gap: 10px; align-items: center;
+    font-size: 14px;
+  }
+  .modal li .stat { color: #4a5568; font-size: 12px; margin-right: auto; }
+
+  /* ===== PIN gate ===== */
+  .gate-backdrop {
+    position: fixed; inset: 0; z-index: 9500;
+    background: linear-gradient(135deg, #2c7a7b 0%, #4fd1c5 100%);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .gate-card {
+    background: white; border-radius: 18px;
+    max-width: 380px; width: 100%;
+    padding: 32px 28px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  }
+  .gate-card .lock { font-size: 48px; margin-bottom: 12px; }
+  .gate-card h2 { font-size: 22px; margin-bottom: 8px; color: #1a2332; }
+  .gate-card .gate-sub { color: #4a5568; font-size: 14px; margin-bottom: 22px; }
+  .gate-card input[type=tel] {
+    font-family: inherit; font-size: 24px;
+    text-align: center; letter-spacing: 8px;
+    padding: 12px 16px; width: 200px;
+    border: 2px solid #cbd5e0; border-radius: 10px;
+    direction: ltr;
+  }
+  .gate-card input[type=tel]:focus {
+    outline: none; border-color: #2c7a7b;
+  }
+  .gate-card button {
+    display: block; margin: 14px auto 0;
+    background: linear-gradient(135deg, #2c7a7b, #4fd1c5);
+    color: white; border: 0;
+    padding: 12px 32px; border-radius: 10px;
+    font-family: inherit; font-size: 15px; font-weight: 700;
+    cursor: pointer;
+  }
+  .gate-card .err {
+    color: #c53030; margin-top: 10px;
+    font-size: 13px; min-height: 18px;
+  }
+  .gate-card .hint {
+    margin-top: 18px; color: #a0aec0;
+    font-size: 12px;
+  }
+
+  @media (max-width: 768px) {
+    .container { padding: 14px 10px 60px; }
+    header.top { padding: 18px 18px; }
+    header.top h1 { font-size: 20px; }
+    .strand-row { grid-template-columns: 110px 1fr 70px; }
+    .strand-row .meta { display: none; }
+    .letters-grid { grid-template-columns: repeat(8, 1fr); }
+    .rama-task-row { grid-template-columns: 28px 1fr 90px; }
+    .rama-task-row .thr { display: inline; }
+    .rama-task-row > :nth-child(4) { display: none; }
+  }
+
+  /* ===== B.7 — Intervention triggers + modal ===== */
+  .iv-banners-wrap {
+    display: flex; flex-direction: column; gap: 10px;
+    margin-bottom: 16px;
+  }
+  .iv-banner {
+    background: linear-gradient(135deg, #fef5e7 0%, #fde68a 100%);
+    border-right: 4px solid #d97706;
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  }
+  .iv-banner .iv-icon { font-size: 20px; }
+  .iv-banner .iv-desc {
+    flex: 1; min-width: 200px;
+    font-size: 14px; color: #744210;
+  }
+  .iv-banner .iv-desc .iv-pattern {
+    font-weight: 800; color: #5c3500; margin-left: 4px;
+  }
+  .iv-banner .iv-desc .iv-group-info {
+    display: block; font-size: 12px; color: #92400e; margin-top: 2px;
+  }
+  .iv-banner button.iv-open-modal {
+    background: #d97706; color: white;
+    border: 0; padding: 8px 16px;
+    border-radius: 8px;
+    font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .iv-banner button.iv-open-modal:hover { background: #b45309; }
+  .iv-banner .iv-conf-pill {
+    background: rgba(255,255,255,0.7); color: #744210;
+    padding: 3px 10px; border-radius: 999px;
+    font-size: 12px; font-weight: 700;
+  }
+
+  /* ===== B.9 — Morning Group Suggestions (סוכן 18) ===== */
+  .mg-section {
+    background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+    border-right: 4px solid #0284c7;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(2,132,199,0.08);
+  }
+  .mg-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 12px;
+  }
+  .mg-toggle {
+    flex: 1;
+    background: transparent; border: 0;
+    display: flex; align-items: center; gap: 8px;
+    font-family: inherit; font-size: 16px; font-weight: 800;
+    color: #075985; cursor: pointer;
+    padding: 4px 0;
+  }
+  .mg-toggle:hover { color: #0c4a6e; }
+  .mg-toggle-icon { font-size: 14px; color: #0369a1; }
+  .mg-toggle-count {
+    background: rgba(255,255,255,0.7); color: #075985;
+    font-size: 12px; font-weight: 700;
+    padding: 2px 8px; border-radius: 999px;
+  }
+  .mg-refresh {
+    background: #0284c7; color: white; border: 0;
+    padding: 6px 12px; border-radius: 8px;
+    font-family: inherit; font-size: 12px; font-weight: 700;
+    cursor: pointer;
+  }
+  .mg-refresh:hover { background: #0369a1; }
+  .mg-section.mg-collapsed .mg-body { display: none; }
+  .mg-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .mg-card {
+    background: white; border-radius: 10px;
+    padding: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    border: 1px solid rgba(2,132,199,0.15);
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .mg-card-head {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .mg-card-head .mg-icon { font-size: 22px; }
+  .mg-card-head .mg-label {
+    font-weight: 800; color: #1a2332; font-size: 15px;
+  }
+  .mg-meta {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12.5px; color: #4a5568;
+  }
+  .mg-meta .mg-count { font-weight: 700; color: #075985; }
+  .mg-conf-pill {
+    padding: 2px 9px; border-radius: 999px;
+    font-size: 11.5px; font-weight: 700;
+  }
+  .mg-conf-pill.mg-conf-high { background: #dcfce7; color: #15803d; }
+  .mg-conf-pill.mg-conf-med  { background: #fef9c3; color: #854d0e; }
+  .mg-conf-pill.mg-conf-low  { background: #fee2e2; color: #b91c1c; }
+  .mg-students {
+    font-size: 13px; color: #2d3748;
+    line-height: 1.4;
+    background: #f7fafc; border-radius: 6px;
+    padding: 6px 10px;
+  }
+  .mg-open {
+    background: #0284c7; color: white; border: 0;
+    padding: 8px 14px; border-radius: 8px;
+    font-family: inherit; font-size: 13px; font-weight: 700;
+    cursor: pointer;
+    margin-top: 2px;
+  }
+  .mg-open:hover { background: #0369a1; }
+
+  .iv-modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(26, 35, 50, 0.55);
+    z-index: 1100;
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px;
+  }
+  .iv-modal {
+    background: white; border-radius: 14px;
+    box-shadow: 0 24px 70px rgba(0,0,0,0.30);
+    max-width: 760px; width: 100%;
+    max-height: 92vh; overflow-y: auto;
+    direction: rtl;
+  }
+  .iv-modal .iv-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding: 18px 22px;
+    border-bottom: 1px solid #edf2f7;
+    background: linear-gradient(135deg, #fef5e7 0%, #fde68a 100%);
+    border-radius: 14px 14px 0 0;
+  }
+  .iv-modal .iv-title { font-size: 19px; font-weight: 800; color: #744210; }
+  .iv-modal .iv-sub { font-size: 13px; color: #92400e; margin-top: 4px; }
+  .iv-modal .iv-close {
+    background: transparent; border: 0;
+    width: 32px; height: 32px; border-radius: 50%;
+    cursor: pointer; font-size: 18px; color: #744210;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .iv-modal .iv-close:hover { background: rgba(0,0,0,0.06); }
+  .iv-modal .iv-body { padding: 18px 22px 22px; }
+
+  .iv-meta-row {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    font-size: 12px; margin-bottom: 12px;
+  }
+  .iv-meta-row .iv-tag {
+    background: #f7fafc; color: #4a5568;
+    padding: 4px 10px; border-radius: 999px;
+  }
+  .iv-meta-row .iv-tag strong { color: #1a2332; }
+  .iv-goal {
+    background: #f0fdfa; border-right: 4px solid #2c7a7b;
+    padding: 10px 14px; border-radius: 8px;
+    font-size: 14px; color: #1a2332; margin-bottom: 12px;
+  }
+  .iv-goal .iv-goal-label { color: #2c7a7b; font-weight: 700; margin-left: 6px; }
+
+  .iv-students-card {
+    background: #f7fafc; padding: 10px 14px; border-radius: 8px;
+    margin-bottom: 12px;
+  }
+  .iv-students-card h4 {
+    font-size: 13px; color: #2c7a7b; margin-bottom: 6px; font-weight: 700;
+  }
+  .iv-students-card ul { list-style: none; padding: 0; margin: 0; }
+  .iv-students-card li {
+    padding: 5px 10px; background: white; border-radius: 6px;
+    margin-bottom: 4px; font-size: 13px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .iv-students-card .iv-stu-letters {
+    background: #fee2e2; color: #7f1d1d;
+    padding: 2px 8px; border-radius: 6px; font-size: 12px;
+    font-weight: 700; margin-right: auto;
+  }
+
+  .iv-materials {
+    background: #fffaf0; padding: 10px 14px; border-radius: 8px;
+    border: 1px solid #fde68a;
+    font-size: 13px; margin-bottom: 12px;
+  }
+  .iv-materials h4 {
+    font-size: 13px; color: #744210; margin-bottom: 6px; font-weight: 700;
+  }
+  .iv-materials ul { list-style: none; padding: 0; margin: 0; }
+  .iv-materials li { padding: 2px 0; color: #1a2332; }
+  .iv-materials li::before { content: '· '; color: #4a5568; }
+
+  .iv-stage {
+    border: 1px solid #e2e8f0; border-radius: 10px;
+    padding: 12px 14px; margin-bottom: 10px;
+    background: white;
+  }
+  .iv-stage-head {
+    display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .iv-stage-title { font-size: 14px; font-weight: 800; color: #2c7a7b; }
+  .iv-stage-dur { font-size: 12px; color: #4a5568; }
+  .iv-stage-say {
+    background: #f0fdfa; border-radius: 8px;
+    padding: 8px 12px; margin-bottom: 6px;
+    font-size: 13px; color: #1a2332;
+  }
+  .iv-stage-say::before {
+    content: '💬 המורה אומרת: '; color: #2c7a7b; font-weight: 700;
+  }
+  .iv-stage-do {
+    background: #fef5e7; border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px; color: #744210;
+  }
+  .iv-stage-do::before {
+    content: '👉 פעולה: '; color: #d97706; font-weight: 700;
+  }
+  .iv-stage-notes {
+    font-size: 12px; color: #718096; font-style: italic;
+    margin-top: 6px;
+  }
+  .iv-stage-criterion {
+    background: #c6f6d5; color: #22543d;
+    padding: 5px 12px; border-radius: 6px;
+    font-size: 12px; font-weight: 700; margin-top: 6px;
+    display: inline-block;
+  }
+
+  .iv-actions {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    padding-top: 14px;
+    border-top: 1px solid #edf2f7;
+    margin-top: 6px;
+  }
+  .iv-actions button {
+    border: 0; padding: 10px 16px;
+    border-radius: 8px; font-family: inherit;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+  }
+  .iv-actions button.iv-btn-print {
+    background: #2c7a7b; color: white;
+  }
+  .iv-actions button.iv-btn-print:hover { background: #1e5f5f; }
+  .iv-actions button.iv-btn-done {
+    background: #38a169; color: white;
+  }
+  .iv-actions button.iv-btn-done:hover { background: #2f855a; }
+  .iv-actions button.iv-btn-cancel {
+    background: #edf2f7; color: #4a5568;
+  }
+  .iv-actions button.iv-btn-cancel:hover { background: #cbd5e0; }
+
+  .iv-evidence {
+    margin-top: 14px;
+    font-size: 11px; color: #a0aec0;
+    border-top: 1px dashed #e2e8f0;
+    padding-top: 10px;
+  }
+  .iv-history-card {
+    background: #f0fdfa; border-right: 3px solid #2c7a7b;
+    padding: 8px 12px; border-radius: 6px;
+    font-size: 12px; color: #234e52;
+    margin-bottom: 12px;
+  }
+
+  /* Print area — מוסתר עד שלוחצים "הדפסה" */
+  #iv-print-area { display: none; }
+
+  /* Print mode — מסך אחד נקי לאינטרבנציה */
+  @media print {
+    body.iv-printing > *:not(#iv-print-area) { display: none !important; }
+    body.iv-printing #iv-print-area {
+      display: block !important;
+      direction: rtl;
+      color: #000;
+      background: white;
+      padding: 16px 22px;
+      font-family: 'Assistant', system-ui, sans-serif;
+    }
+    body.iv-printing #iv-print-area h1 {
+      font-size: 20px; margin-bottom: 6px; color: #1a2332;
+    }
+    body.iv-printing #iv-print-area .iv-pmeta {
+      font-size: 12px; color: #555; margin-bottom: 10px;
+    }
+    body.iv-printing #iv-print-area .iv-pgoal {
+      border-right: 3px solid #2c7a7b;
+      padding: 8px 12px; background: #f9f9f9;
+      font-size: 13px; margin-bottom: 12px;
+    }
+    body.iv-printing #iv-print-area .iv-pstu {
+      font-size: 12px; margin-bottom: 12px;
+    }
+    body.iv-printing #iv-print-area .iv-pstu strong { color: #1a2332; }
+    body.iv-printing #iv-print-area .iv-pmat {
+      font-size: 12px; margin-bottom: 12px;
+    }
+    body.iv-printing #iv-print-area .iv-pmat ul { padding-right: 18px; margin: 4px 0; }
+    body.iv-printing #iv-print-area .iv-pstage {
+      border: 1px solid #888;
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      page-break-inside: avoid;
+    }
+    body.iv-printing #iv-print-area .iv-pstage-title {
+      font-weight: 700; color: #2c7a7b; font-size: 13px;
+      margin-bottom: 4px;
+    }
+    body.iv-printing #iv-print-area .iv-pstage-say {
+      font-size: 12px; margin-bottom: 3px;
+    }
+    body.iv-printing #iv-print-area .iv-pstage-say strong { color: #2c7a7b; }
+    body.iv-printing #iv-print-area .iv-pstage-do {
+      font-size: 12px; color: #444;
+    }
+    body.iv-printing #iv-print-area .iv-pstage-do strong { color: #d97706; }
+    body.iv-printing #iv-print-area .iv-pstage-notes {
+      font-size: 11px; color: #777; font-style: italic;
+      margin-top: 3px;
+    }
+    body.iv-printing #iv-print-area .iv-pfoot {
+      font-size: 10px; color: #999;
+      margin-top: 16px;
+      border-top: 1px solid #ccc;
+      padding-top: 6px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ PIN GATE ============ -->
+<div class="gate-backdrop" id="pinGate">
+  <div class="gate-card">
+    <div class="lock">🔒</div>
+    <h2>דשבורד מורה — מבדק ראמ"ה</h2>
+    <p class="gate-sub">המסך מציג ציוני תלמידות. נא הזיני PIN.</p>
+    <form id="pinForm" autocomplete="off">
+      <input type="tel" id="pinInput" inputmode="numeric" maxlength="4" pattern="[0-9]*" placeholder="••••" required>
+      <div class="err" id="pinErr"></div>
+      <button type="submit">כניסה</button>
+    </form>
+    <div class="hint">PIN נשמר רק עד סגירת הלשונית הזו</div>
+  </div>
+</div>
+
+<!-- ============ MAIN CONTENT (hidden until PIN ok) ============ -->
+<div class="container" id="mainContent" style="display:none;">
+
+<header class="top">
+  <div class="top-actions">
+    <button id="exitBtn" title="יציאה מהדשבורד" aria-label="יציאה מהדשבורד">← יציאה</button>
+  </div>
+  <h1>דשבורד מורה — מבדק ראמ"ה</h1>
+  <div class="sub" id="subHead">טוען…</div>
+  <div class="meta" id="metaBar"></div>
+</header>
+
+<!-- View toggle -->
+<div class="toggle-bar">
+  <button class="toggle-btn active" data-view="class">מבט כיתה</button>
+  <button class="toggle-btn" data-view="student">מבט תלמידה</button>
+  <div class="sep" id="pulseToggleSep"></div>
+  <button class="toggle-btn active" data-pulse-mode="daily">מבט יומי</button>
+  <button class="toggle-btn" data-pulse-mode="snapshot">Snapshot פעימה</button>
+  <div class="sep"></div>
+  <div class="pulse-pick" id="pulsePick"></div>
+</div>
+
+<!-- ============ CLASS VIEW ============ -->
+<div id="classView">
+  <a href="teacher-action.html" class="mg-action-link" style="display:inline-flex;align-items:center;gap:6px;margin:0 0 10px;padding:8px 14px;background:linear-gradient(135deg,#E8F7F3 0%,#EEF4FF 100%);border:1px solid #4FB6A8;border-radius:999px;color:#1a4d4d;font-size:13px;font-weight:700;text-decoration:none;transition:transform 0.15s ease;" title="פתחי דשבורד פעולת בוקר" onmouseover="this.style.transform='translateX(-2px)'" onmouseout="this.style.transform='translateX(0)'">🌅 עברי לפעולה →</a>
+  <div id="morningGroupSuggestions"></div>
+  <div id="moyInterventionBanners" class="iv-banners-wrap"></div>
+  <div id="interventionTriggers" class="iv-banners-wrap"></div>
+  <div class="section">
+    <h2>טבלת כיתה — תלמידות × 10 משימות ראמ"ה</h2>
+    <div id="classViewBody"></div>
+    <div class="legend" id="classLegend"></div>
+  </div>
+</div>
+
+<!-- ============ STUDENT VIEW ============ -->
+<div id="studentView" style="display:none;"></div>
+
+</div>
+
+<!-- ============ Print area (B.7 — אינטרבנציה להדפסה) ============ -->
+<div id="iv-print-area"></div>
+
+<!-- ============ Scripts ============ -->
+<script src="js/state.js"></script>
+<script src="js/shared/bkt.js"></script>
+<script src="js/shared/epa.js"></script>
+<script src="js/shared/event-logger.js"></script>
+<script src="js/shared/mastery-check.js"></script>
+<script src="js/shared/pack-bkt-bridge.js?v=1"></script>
+<script src="js/shared/interventions.js?v=1"></script>
+<script src="js/shared/assessments.js?v=1"></script>
+<script src="js/shared/intervention-matcher.js?v=1"></script>
+<script src="js/shared/group-suggester.js?v=1"></script>
+
+<script>
+// ============================================================
+// F.21A — teacher-rama.html
+// מסך מורה בשפת ראמ"ה (10 משימות × 3 פעימות).
+// spec: _handoff/2026-05-27-F21A-ux-spec.md
+// ============================================================
+
+// ===== PIN gate =====
+// המלצת spec §6: SHA-256 של PIN hardcoded. ב-MVP אנחנו עושים השוואה ישירה —
+// אותה רמת אבטחה בדיוק (PIN חשוף בקוד בכל מקרה) אבל פחות קוד. זה "שער UX"
+// למניעת קריאה בטעות ע"י תלמידה. ב-post-pilot — Apps Script + token חתום (§6).
+const TEACHER_PIN = '4521';
+const SESSION_AUTH_KEY = 'teacher_authed';
+
+// ============================================================
+// State (declarations חייבות לרוץ לפני ה-IIFE — אחרת PIN-bypass path
+// קורא ל-boot() synchronously ונופל ב-TDZ על viewState / STUDENTS_KEY).
+// ============================================================
+// STATE_KEY כבר מוגדר ב-state.js — לא להגדיר שוב (SyntaxError).
+const STUDENTS_KEY = 'avnei-yesod-students';
+
+// תאריכי פעימות — מקור: spec §8, אישור מיטל 27.5.2026
+const PULSE_RANGES = {
+  1: { start: '2026-09-01', end: '2026-10-31', label: 'ספט-אוק' },
+  2: { start: '2027-01-01', end: '2027-02-28', label: 'ינו-פבר' },
+  3: { start: '2027-05-01', end: '2027-06-30', label: 'מאי-יוני' },
+};
+
+// ספי "ישן" ל-Confidence downgrade — spec §9, אישור מיטל
+const STALE_WARN_DAYS = 7;
+const STALE_ALERT_DAYS = 14;
+
+let viewState = {
+  view: 'class',          // 'class' | 'student'
+  pulseMode: 'daily',     // 'daily' | 'snapshot'
+  pulse: null,            // null = current; 1/2/3 = chosen snapshot
+  selectedStudent: null,  // student id when view='student'
+};
+
+(function initPinGate() {
+  const gate = document.getElementById('pinGate');
+  const main = document.getElementById('mainContent');
+  const form = document.getElementById('pinForm');
+  const input = document.getElementById('pinInput');
+  const err = document.getElementById('pinErr');
+
+  // bypass אם כבר מאומתת בלשונית הזו
+  if (sessionStorage.getItem(SESSION_AUTH_KEY) === '1') {
+    gate.style.display = 'none';
+    main.style.display = 'block';
+    // setTimeout(boot, 0): דוחה ל-task הבא כדי שכל ה-script tag יסיים
+    // להריץ את כל ה-let/const declarations (כולל _activeGroups בשורה ~2332)
+    // לפני boot() קורא ל-render() → renderInterventionTriggers() שמשתמש בהם.
+    setTimeout(boot, 0);
+    return;
+  }
+
+  setTimeout(() => input.focus(), 100);
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (input.value === TEACHER_PIN) {
+      sessionStorage.setItem(SESSION_AUTH_KEY, '1');
+      gate.style.display = 'none';
+      main.style.display = 'block';
+      // setTimeout(boot, 0): ראה הסבר ב-PIN-bypass למעלה.
+      setTimeout(boot, 0);
+    } else {
+      err.textContent = 'PIN שגוי. נסי שוב.';
+      input.value = '';
+      input.focus();
+    }
+  });
+})();
+
+document.getElementById('exitBtn').addEventListener('click', () => {
+  sessionStorage.removeItem(SESSION_AUTH_KEY);
+  location.href = 'map.html';
+});
+
+function readJson(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch (e) { return fallback; }
+}
+
+function getAllStudents() {
+  return readJson(STUDENTS_KEY, []);
+}
+
+function getEvents() {
+  const state = readJson(STATE_KEY, { events: [], teacherFlags: [] });
+  return state.events || [];
+}
+
+function getTeacherFlags() {
+  const state = readJson(STATE_KEY, { events: [], teacherFlags: [] });
+  return state.teacherFlags || [];
+}
+
+function escapeHtml(str) {
+  return String(str == null ? '' : str).replace(/[&<>"']/g,
+    c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// ============================================================
+// Pulse helpers
+// ============================================================
+function currentPulse() {
+  // מחזיר את הפעימה שמכילה את התאריך הנוכחי, או null אם בין פעימות.
+  const today = new Date().toISOString().slice(0, 10);
+  for (const [k, range] of Object.entries(PULSE_RANGES)) {
+    if (today >= range.start && today <= range.end) return Number(k);
+  }
+  // אם בין פעימות — להחזיר את הפעימה הקרובה ביותר שכבר התחילה
+  let lastStarted = 1;
+  for (const [k, range] of Object.entries(PULSE_RANGES)) {
+    if (today >= range.start) lastStarted = Number(k);
+  }
+  return lastStarted;
+}
+
+function pulseStartedYet(pulseNum) {
+  const today = new Date().toISOString().slice(0, 10);
+  return today >= PULSE_RANGES[pulseNum].start;
+}
+
+function pulseHasTask(pulseNum) {
+  // אילו משימות שייכות לפעימה נתונה
+  if (!window.AvneiMasteryCheck || !AvneiMasteryCheck.RAMA_TASKS) return [];
+  return Object.entries(AvneiMasteryCheck.RAMA_TASKS)
+    .filter(([_, spec]) => spec.pulse === pulseNum)
+    .map(([k]) => Number(k));
+}
+
+// ============================================================
+// Confidence + stale-data
+// ============================================================
+function daysSinceLastEvent(studentId) {
+  const events = getEvents().filter(e => (e.student_id || 'local') === studentId);
+  if (events.length === 0) return null;
+  const last = Math.max.apply(null, events.map(e => e.timestamp));
+  return Math.floor((Date.now() - last) / (1000 * 60 * 60 * 24));
+}
+
+function classifyConfidence(attemptCount, staleDays) {
+  // §7 — ניתוח ב-spec
+  if (attemptCount == null || attemptCount < 10) return 'low';
+  if (staleDays != null && staleDays > STALE_WARN_DAYS) return 'med';
+  if (attemptCount < 30) return 'med';
+  return 'high';
+}
+
+function confidenceIcon(conf) {
+  return conf === 'high' ? '✅' : conf === 'med' ? '🟡' : '⚫';
+}
+
+// בסיס Confidence ברמת תלמידה — מינימום על פני 5 הסטרנדים
+function studentOverallConfidence(studentId) {
+  if (!window.AvneiBKT) return 'low';
+  const stale = daysSinceLastEvent(studentId);
+  let minConf = 'high';
+  const order = { high: 3, med: 2, low: 1 };
+  for (let s = 1; s <= 5; s++) {
+    try {
+      const strand = AvneiBKT.getStrandState(studentId, s);
+      const c = classifyConfidence(strand.attempts || 0, stale);
+      if (order[c] < order[minConf]) minConf = c;
+    } catch (e) {}
+  }
+  return minConf;
+}
+
+// A.5 — Cold-start helper. שכבת UI דקה מעל AvneiMasteryCheck.isInColdStart.
+// מחזירה גם תווית counter מוכנה לתצוגה.
+function coldStartFor(studentId) {
+  if (!window.AvneiMasteryCheck || typeof AvneiMasteryCheck.isInColdStart !== 'function') {
+    return { inColdStart: false };
+  }
+  const r = AvneiMasteryCheck.isInColdStart(studentId);
+  if (!r.inColdStart) return r;
+  // יום X/3 · Y/30 ניסיונות — לפי spec של מיטל
+  const dayDisplay = Math.min(r.daysSince + 1, AvneiMasteryCheck.COLD_START_DAYS);
+  r.counterText = `יום ${dayDisplay}/${AvneiMasteryCheck.COLD_START_DAYS} · ${r.attemptsTotal}/${AvneiMasteryCheck.COLD_START_ATTEMPTS} ניסיונות`;
+  return r;
+}
+
+// ============================================================
+// Boot + render loop
+// ============================================================
+function boot() {
+  // התחלה — סימון פעימה נוכחית כברירת מחדל
+  viewState.pulse = currentPulse();
+  bindToggles();
+  render();
+  // auto-refresh כל 3 שניות (זהה ל-teacher-live)
+  setInterval(render, 3000);
+}
+
+function bindToggles() {
+  // view toggle
+  document.querySelectorAll('[data-view]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      viewState.view = btn.dataset.view;
+      document.querySelectorAll('[data-view]').forEach(b =>
+        b.classList.toggle('active', b.dataset.view === viewState.view)
+      );
+      if (viewState.view === 'student' && !viewState.selectedStudent) {
+        const students = getAllStudents();
+        if (students.length > 0) viewState.selectedStudent = students[0].id;
+      }
+      render();
+    });
+  });
+  // pulse-mode toggle
+  document.querySelectorAll('[data-pulse-mode]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      viewState.pulseMode = btn.dataset.pulseMode;
+      document.querySelectorAll('[data-pulse-mode]').forEach(b =>
+        b.classList.toggle('active', b.dataset.pulseMode === viewState.pulseMode)
+      );
+      render();
+    });
+  });
+}
+
+function render() {
+  renderHeader();
+  // pulse-mode + pulse-picker רלוונטיים רק ב-Class View (spec §3.3 — Snapshot mode הוא feature של מבט כיתה)
+  const inClass = viewState.view === 'class';
+  document.querySelectorAll('[data-pulse-mode]').forEach(b => { b.style.display = inClass ? '' : 'none'; });
+  document.getElementById('pulseToggleSep').style.display = inClass ? '' : 'none';
+  document.getElementById('pulsePick').style.display = inClass ? '' : 'none';
+  renderPulsePicker();
+  if (inClass) {
+    document.getElementById('classView').style.display = '';
+    document.getElementById('studentView').style.display = 'none';
+    renderClassView();
+  } else {
+    document.getElementById('classView').style.display = 'none';
+    document.getElementById('studentView').style.display = '';
+    renderStudentView();
+  }
+}
+
+function renderHeader() {
+  const students = getAllStudents();
+  const events = getEvents();
+  const pulse = currentPulse();
+  const range = PULSE_RANGES[pulse];
+
+  document.getElementById('subHead').textContent =
+    `פעימה נוכחית: ${pulse} (${range.label}) · ${students.length} ילדות · עודכן עכשיו`;
+
+  let last = events.length ? Math.max.apply(null, events.map(e => e.timestamp)) : null;
+  const lastTxt = last ? (function () {
+    const m = Math.floor((Date.now() - last) / (1000 * 60));
+    if (m < 1) return 'לפני פחות מדקה';
+    if (m < 60) return `לפני ${m} דקות`;
+    return `לפני ${Math.floor(m/60)} שעות`;
+  })() : 'אין דאטה';
+
+  document.getElementById('metaBar').innerHTML = `
+    <span class="pulse-current">פעימה ${pulse} פעילה</span>
+    <span>${escapeHtml(students.length)} ילדות</span>
+    <span>${escapeHtml(events.length)} אירועים</span>
+    <span>אירוע אחרון: ${escapeHtml(lastTxt)}</span>
+  `;
+}
+
+function renderPulsePicker() {
+  const wrap = document.getElementById('pulsePick');
+  if (viewState.pulseMode !== 'snapshot') {
+    wrap.innerHTML = `<span>פעימה ${currentPulse()} ●</span>`;
+    return;
+  }
+  wrap.innerHTML = '<span>בחרי פעימה:</span>' + [1, 2, 3].map(p => {
+    const started = pulseStartedYet(p);
+    const cls = (viewState.pulse === p ? 'active ' : '') + (!started ? 'disabled' : '');
+    return `<button class="${cls}" data-pick="${p}" ${!started ? 'disabled' : ''}>פעימה ${p}</button>`;
+  }).join('');
+  wrap.querySelectorAll('[data-pick]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      viewState.pulse = Number(btn.dataset.pick);
+      render();
+    });
+  });
+}
+
+// ============================================================
+// CLASS VIEW
+// ============================================================
+function renderClassView() {
+  const body = document.getElementById('classViewBody');
+  const students = getAllStudents();
+  const ivWrap = document.getElementById('interventionTriggers');
+  const moyWrap = document.getElementById('moyInterventionBanners');
+  const mgWrap = document.getElementById('morningGroupSuggestions');
+
+  if (students.length === 0) {
+    body.innerHTML = `<div class="empty">
+      <div class="icon">○</div>
+      אין תלמידות במערכת.<br>
+      פתחי <a href="../engine/onboarding-profile.html" style="color:#2c7a7b; font-weight:700;">כלי הניהול</a>
+      להוספת כיתה.
+    </div>`;
+    document.getElementById('classLegend').innerHTML = '';
+    if (ivWrap) ivWrap.innerHTML = '';
+    if (moyWrap) moyWrap.innerHTML = '';
+    if (mgWrap) mgWrap.innerHTML = '';
+    return;
+  }
+
+  // B.9 — Morning Group Suggestions (סוכן 18) — Section עליון, אופציונלי (toggle)
+  renderMorningGroupSuggestions(students);
+  // B.7 — Intervention triggers (groups של 3+ ילדות עם דפוס משותף)
+  renderInterventionTriggers(students);
+  // MOY × B.7 link (סוכן 16) — banner נפרד מעל, כשיש 3+ עם suggested_intervention
+  renderMOYInterventionBanners(students);
+
+  if (viewState.pulseMode === 'snapshot') {
+    body.innerHTML = renderSnapshotView(students);
+    document.getElementById('classLegend').innerHTML = renderLegend();
+    return;
+  }
+
+  // ===== Daily mode — full table =====
+  if (!window.AvneiMasteryCheck || !AvneiMasteryCheck.RAMA_TASKS) {
+    body.innerHTML = `<div class="empty">המודול AvneiMasteryCheck.RAMA_TASKS לא נטען.</div>`;
+    return;
+  }
+  const tasks = AvneiMasteryCheck.RAMA_TASKS;
+  const taskIds = Object.keys(tasks).map(Number).sort((a, b) => a - b);
+
+  let html = `<div class="table-wrap"><table class="rama">`;
+
+  // pulse band row — צריך לכלול גם את עמודת Tier (לפני שאר העמודות)
+  let pulseHtml = `<tr class="pulse-row"><th class="student-col">פעימה</th><th class="tier-col" rowspan="2" title="Tier בפאק החודשי">Tier</th>`;
+  let lastPulse = null, span = 0;
+  const pulseSpans = [];
+  taskIds.forEach(tid => {
+    const p = tasks[tid].pulse;
+    if (p !== lastPulse) {
+      if (lastPulse !== null) pulseSpans.push({ pulse: lastPulse, span });
+      lastPulse = p; span = 1;
+    } else { span++; }
+  });
+  pulseSpans.push({ pulse: lastPulse, span });
+  pulseSpans.forEach(ps => {
+    const range = PULSE_RANGES[ps.pulse];
+    pulseHtml += `<th class="pulse-${ps.pulse}" colspan="${ps.span}">פעימה ${ps.pulse} · ${range.label}${ps.pulse === currentPulse() ? ' (פעילה)' : ''}</th>`;
+  });
+  pulseHtml += `</tr>`;
+
+  // task header row
+  let taskHtml = `<tr class="task-row"><th class="student-col">תלמידה</th>`;
+  taskIds.forEach(tid => {
+    const t = tasks[tid];
+    taskHtml += `<th class="task-num" data-task="${tid}" title="${escapeHtml(t.name)}">
+      מ${tid}
+      <span class="thr">${t.value_threshold}/${t.value_max}${t.time_threshold_sec ? `·${t.time_threshold_sec}שנ` : ''}</span>
+    </th>`;
+  });
+  taskHtml += `</tr>`;
+
+  // body — one row per student
+  let bodyHtml = '';
+  const aggregates = {}; // taskId -> [statuses]
+  taskIds.forEach(tid => { aggregates[tid] = { pass: 0, near: 0, fail: 0, cold: 0 }; });
+
+  students.forEach(stu => {
+    const overallConf = studentOverallConfidence(stu.id);
+    const cs = coldStartFor(stu.id);
+    const tierDecision = tierDecisionFor(stu.id);
+    bodyHtml += `<tr><td class="student-col" data-student="${stu.id}">
+      <span class="conf" title="ביטחון מדידה">${confidenceIcon(overallConf)}</span>
+      ${escapeHtml(stu.name || stu.id)}
+      ${cs.inColdStart ? `<span class="badge-new" title="${escapeHtml(cs.counterText)}">חדשה</span>` : ''}
+    </td>` + tierCellHtml(tierDecision, stu.id);
+    taskIds.forEach(tid => {
+      const t = tasks[tid];
+      const r = AvneiMasteryCheck.checkRamaTaskStatus(stu.id, tid);
+      aggregates[tid][r.status]++;
+      const pulseClass = `pulse-${t.pulse}-bg`;
+      const statusClass = `status-${r.status}`;
+      const lowConf = r.confidence === 'low' && r.status !== 'cold';
+      const icon = r.status === 'pass' ? '✓' : r.status === 'near' ? '~' : r.status === 'fail' ? '✗' : '○';
+      const val = r.status === 'cold' ? '' :
+        (r.value != null ? `<span class="cell-val">${r.value}/${t.value_max}</span>` : '');
+      bodyHtml += `<td class="cell ${pulseClass} ${statusClass}${lowConf ? ' low-conf' : ''}"
+                       data-student="${stu.id}" data-task="${tid}"
+                       title="${escapeHtml(r.reason || '')}">
+        <span class="cell-icon">${icon}</span>${val}
+      </td>`;
+    });
+    bodyHtml += `</tr>`;
+  });
+
+  html += `<thead>${pulseHtml}${taskHtml}</thead><tbody>${bodyHtml}</tbody></table></div>`;
+
+  // Summary for current pulse
+  const curPulse = currentPulse();
+  const curTasks = pulseHasTask(curPulse);
+  const summary = curTasks.map(tid => aggregates[tid]).reduce((a, b) => ({
+    pass: a.pass + b.pass, near: a.near + b.near, fail: a.fail + b.fail, cold: a.cold + b.cold
+  }), { pass: 0, near: 0, fail: 0, cold: 0 });
+  // A.5 — ספירת תלמידות ב-cold-start בפעימה הפעילה
+  const coldStartCount = students.filter(s => coldStartFor(s.id).inColdStart).length;
+  html += `<div class="pulse-summary">
+    <div class="row"><strong>פעימה ${curPulse} (${PULSE_RANGES[curPulse].label})</strong> · משימות: ${curTasks.map(t => 'מ' + t).join(' + ')}</div>
+    <div class="row">סטטוס: ✓ ${summary.pass} תקין · ~ ${summary.near} קרוב · ✗ ${summary.fail} לא תקין · ○ ${summary.cold} לא נמדד${coldStartCount > 0 ? ` · <span class="cold-count">📚 ${coldStartCount} ילדות חדשות</span>` : ''}</div>
+    ${summary.fail > 0 ? `<div class="urgent">דחוף: ${summary.fail} סטטוסים מתחת לרף בפעימה הפעילה
+      <button onclick="showFailingStudents(${curPulse})">ראי שמות</button></div>` : ''}
+  </div>`;
+
+  body.innerHTML = html;
+
+  // hook clicks
+  body.querySelectorAll('[data-student]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      if (el.tagName === 'TD' && el.classList.contains('tier-cell')) {
+        // לחיצה על תא Tier → modal עם פרטים מלאים (תיקון באג 28.5 — מיטל)
+        openTierModal(el.dataset.student);
+        return;
+      }
+      if (el.tagName === 'TD' && el.classList.contains('cell')) {
+        // tooltip already shown via title; could expand to modal later
+        return;
+      }
+      if (el.classList.contains('student-col')) {
+        viewState.selectedStudent = el.dataset.student;
+        viewState.view = 'student';
+        document.querySelectorAll('[data-view]').forEach(b =>
+          b.classList.toggle('active', b.dataset.view === viewState.view)
+        );
+        render();
+      }
+    });
+  });
+  body.querySelectorAll('[data-task]').forEach(th => {
+    if (th.tagName === 'TH') {
+      th.addEventListener('click', () => showTaskDrillDown(Number(th.dataset.task)));
+    }
+  });
+
+  document.getElementById('classLegend').innerHTML = renderLegend();
+}
+
+function renderLegend() {
+  return `
+    <div><strong>סטטוס:</strong> ✓ תקין · ~ קרוב לרף · ✗ לא תקין · ○ לא נמדד</div>
+    <div><strong>ביטחון:</strong> ✅ גבוה (30+ נ') · 🟡 בינוני (10-29) · ⚫ &lt;10</div>
+    <div><strong>טיפ:</strong> לחיצה על שם → מבט תלמידה · לחיצה על כותרת משימה → drill</div>
+  `;
+}
+
+// ===== Snapshot mode (single-pulse summary) =====
+function renderSnapshotView(students) {
+  if (!window.AvneiMasteryCheck) return '<div class="empty">המודול לא נטען.</div>';
+  const tasks = AvneiMasteryCheck.RAMA_TASKS;
+  const pulse = viewState.pulse || currentPulse();
+  const range = PULSE_RANGES[pulse];
+  const taskIds = pulseHasTask(pulse);
+
+  if (!pulseStartedYet(pulse)) {
+    return `<div class="empty">פעימה ${pulse} עוד לא התחילה (${range.label}). אין דאטה להצגה.</div>`;
+  }
+
+  let html = `<div class="snapshot-block">
+    <h3>פעימה ${pulse} · ${range.label}</h3>`;
+
+  taskIds.forEach(tid => {
+    const t = tasks[tid];
+    const buckets = { pass: 0, near: 0, fail: 0, cold: 0 };
+    const names = { pass: [], near: [], fail: [], cold: [] };
+    students.forEach(stu => {
+      const r = AvneiMasteryCheck.checkRamaTaskStatus(stu.id, tid);
+      buckets[r.status]++;
+      names[r.status].push(stu.name || stu.id);
+    });
+    const N = students.length;
+    html += `<div style="margin-bottom:18px; padding:10px 14px; background:#f7fafc; border-radius:10px;">
+      <div style="margin-bottom:8px;">
+        <strong>משימה ${tid} — ${escapeHtml(t.name)}</strong>
+        <span style="color:#718096; font-size:12px;">(רף ${t.value_threshold}/${t.value_max}${t.time_threshold_sec ? `·${t.time_threshold_sec}שנ` : ''})</span>
+      </div>`;
+    ['pass', 'near', 'fail', 'cold'].forEach(b => {
+      const pct = N > 0 ? Math.round(100 * buckets[b] / N) : 0;
+      const lbl = { pass: '✓ תקין', near: '~ קרוב', fail: '✗ מתחת', cold: '○ לא נמדד' }[b];
+      const urgent = b === 'fail' && buckets[b] > 0 ? ' ← דחוף' : '';
+      html += `<div class="snapshot-bar-row status-${b}">
+        <div class="label">${lbl}</div>
+        <div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div>
+        <div class="num">${buckets[b]}/${N}${urgent}</div>
+      </div>`;
+    });
+    if (buckets.fail > 0) {
+      html += `<div style="margin-top:8px;">
+        <button onclick="showStudentList('מי לא תקין במשימה ${tid}', ${JSON.stringify(names.fail).replace(/"/g, '&quot;')})"
+                style="background:#fee2e2; color:#7f1d1d; border:0; padding:6px 12px; border-radius:6px; font-family:inherit; font-size:13px; cursor:pointer;">
+          ראי שמות (${buckets.fail})
+        </button>
+      </div>`;
+    }
+    html += `</div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+// ===== Drill-down + modal helpers =====
+function showStudentList(title, names) {
+  const html = `<div class="modal-backdrop" onclick="this.remove()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <button class="close" onclick="this.closest('.modal-backdrop').remove()">סגירה</button>
+      <h3>${escapeHtml(title)}</h3>
+      <ul>${names.map(n => `<li><span>${escapeHtml(n)}</span></li>`).join('')}</ul>
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function showFailingStudents(pulse) {
+  if (!window.AvneiMasteryCheck) return;
+  const tasks = AvneiMasteryCheck.RAMA_TASKS;
+  const taskIds = pulseHasTask(pulse);
+  const students = getAllStudents();
+  const failing = {};
+  students.forEach(stu => {
+    taskIds.forEach(tid => {
+      const r = AvneiMasteryCheck.checkRamaTaskStatus(stu.id, tid);
+      if (r.status === 'fail') {
+        if (!failing[stu.id]) failing[stu.id] = { name: stu.name || stu.id, tasks: [] };
+        failing[stu.id].tasks.push(tid);
+      }
+    });
+  });
+  const rows = Object.entries(failing).map(([id, info]) =>
+    `<li><span>${escapeHtml(info.name)}</span>
+      <span class="stat">לא תקין במשימות: ${info.tasks.map(t => 'מ' + t).join(', ')}</span></li>`
+  ).join('');
+  const html = `<div class="modal-backdrop" onclick="this.remove()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <button class="close" onclick="this.closest('.modal-backdrop').remove()">סגירה</button>
+      <h3>תלמידות שדורשות תשומת לב — פעימה ${pulse}</h3>
+      ${rows ? `<ul>${rows}</ul>` : '<div class="empty">אין תלמידות מתחת לרף בפעימה הזו.</div>'}
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function showTaskDrillDown(taskId) {
+  if (!window.AvneiMasteryCheck) return;
+  const t = AvneiMasteryCheck.RAMA_TASKS[taskId];
+  const students = getAllStudents();
+  const rows = students.map(stu => {
+    const r = AvneiMasteryCheck.checkRamaTaskStatus(stu.id, taskId);
+    const icon = r.status === 'pass' ? '✓' : r.status === 'near' ? '~' : r.status === 'fail' ? '✗' : '○';
+    return { name: stu.name || stu.id, icon, status: r.status, value: r.value, conf: r.confidence };
+  });
+  const order = { fail: 0, near: 1, cold: 2, pass: 3 };
+  rows.sort((a, b) => order[a.status] - order[b.status]);
+  const html = `<div class="modal-backdrop" onclick="this.remove()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <button class="close" onclick="this.closest('.modal-backdrop').remove()">סגירה</button>
+      <h3>משימה ${taskId} — ${escapeHtml(t.name)}</h3>
+      <p style="color:#4a5568; font-size:13px;">רף: ${t.value_threshold}/${t.value_max}${t.time_threshold_sec ? ` · ≤${t.time_threshold_sec}שנ` : ''} · איים תורמים: ${t.islands.join(', ')}</p>
+      <ul>${rows.map(r => `<li>
+        <span style="font-size:18px; width:24px;">${r.icon}</span>
+        <span>${escapeHtml(r.name)}</span>
+        <span class="stat">${r.value != null ? r.value + '/' + t.value_max : 'לא נמדד'} · ${confidenceIcon(r.conf)}</span>
+      </li>`).join('')}</ul>
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+// ============================================================
+// STUDENT VIEW
+// ============================================================
+function renderStudentView() {
+  const wrap = document.getElementById('studentView');
+  const students = getAllStudents();
+
+  if (students.length === 0) {
+    wrap.innerHTML = `<div class="section"><div class="empty">אין תלמידות במערכת.</div></div>`;
+    return;
+  }
+
+  if (!viewState.selectedStudent || !students.find(s => s.id === viewState.selectedStudent)) {
+    viewState.selectedStudent = students[0].id;
+  }
+
+  const stu = students.find(s => s.id === viewState.selectedStudent);
+  const stale = daysSinceLastEvent(stu.id);
+  const overallConf = studentOverallConfidence(stu.id);
+  const cs = coldStartFor(stu.id);
+
+  // student switcher
+  const switcher = `<select id="studentSwitcher" style="font-family:inherit; font-size:14px; padding:6px 10px; border-radius:8px; border:1px solid #cbd5e0;">
+    ${students.map(s => `<option value="${s.id}" ${s.id === stu.id ? 'selected' : ''}>${escapeHtml(s.name || s.id)}</option>`).join('')}
+  </select>`;
+
+  const staleWarn = (stale != null && stale >= STALE_ALERT_DAYS)
+    ? `<div class="stale-warn">⚠ לא תורגלה ${stale} ימים · נתונים מ-${new Date(Date.now() - stale*86400000).toISOString().slice(0,10)}</div>`
+    : (stale != null && stale >= STALE_WARN_DAYS)
+      ? `<div class="stale-warn" style="background:#fffaf0; border-color:#fbd38d;">⏰ נמדד לפני ${stale} ימים</div>`
+      : '';
+
+  // A.5 — Cold-start banner (החלטה 4: בולט, לא opacity 0.5)
+  const coldStartBanner = cs.inColdStart ? `
+    <div class="cold-start-banner">
+      <span class="counter">📚 ${escapeHtml(cs.counterText)}</span>
+      <strong>המערכת עוד לומדת את הילדה.</strong>
+      נציג ציונים מלאים אחרי שתעמוד בשני התנאים: ${AvneiMasteryCheck.COLD_START_DAYS}+ ימים מהצטרפות וגם ${AvneiMasteryCheck.COLD_START_ATTEMPTS}+ ניסיונות.
+    </div>
+  ` : '';
+
+  // ===== Section 1: 5 strands =====
+  const strandsHtml = window.AvneiBKT ? (function () {
+    return AvneiBKT.STRAND_IDS.map(sId => {
+      const s = AvneiBKT.getStrandState(stu.id, sId);
+      const conf = classifyConfidence(s.attempts || 0, stale);
+      const confLabel = conf === 'high' ? 'יציב' : conf === 'med' ? 'אומדן ראשוני' : 'טרם נמדד';
+      const name = strandNameHe(sId);
+      const pct = Math.round((s.pKnown || 0) * 100);
+      const cold = (s.attempts || 0) < 10;
+      return `<div class="strand-row${cold ? ' cold' : ''}">
+        <div class="name">${confidenceIcon(conf)} ${escapeHtml(name)}</div>
+        <div class="bar-bg"><div class="bar-fill" style="width:${cold ? 0 : pct}%"></div></div>
+        <div class="pct">${cold ? '—' : pct + '%'}</div>
+        <div class="meta">${s.attempts || 0} ניסיונות · ${confLabel}</div>
+      </div>`;
+    }).join('');
+  })() : '<div class="empty">AvneiBKT לא נטען.</div>';
+
+  // ===== Section 2: 22 letters =====
+  const dist = window.AvneiBKT ? AvneiBKT.getLetterMasteryDistribution(stu.id) : null;
+  const lettersHtml = dist ? (function () {
+    const allLetters = AvneiBKT.ALL_HEBREW_LETTERS_22;
+    const statusFor = (letter) => {
+      if (dist.by_bucket.mastered.includes(letter)) return 'mastered';
+      if (dist.by_bucket.in_progress.includes(letter)) return 'in_progress';
+      if (dist.by_bucket.weak.includes(letter)) return 'weak';
+      return 'untouched';
+    };
+    let grid = `<div class="letters-grid">`;
+    allLetters.forEach(l => {
+      const st = statusFor(l);
+      const ls = AvneiBKT.getLetterState(stu.id, l);
+      const tooltip = ls && ls.attempts > 0
+        ? `${l} — p=${Math.round(ls.pKnown * 100)}% · ${ls.attempts} ניס'`
+        : `${l} — לא תורגלה`;
+      grid += `<div class="letter ${st}" title="${escapeHtml(tooltip)}">${l}</div>`;
+    });
+    grid += `</div>`;
+    const ramaThr = 18;
+    const passOk = dist.mastered >= ramaThr;
+    return grid + `<div class="letters-summary">
+      <span class="pass">${dist.mastered}/22 שולטת</span> ·
+      ${dist.in_progress}/22 בהתפתחות ·
+      ${dist.weak}/22 חלשה ·
+      ${dist.untouched}/22 לא תורגלה ·
+      רף משימה 1: ${ramaThr}+/22 ${passOk ? '✓' : ''}
+    </div>`;
+  })() : '<div class="empty">אין דאטה.</div>';
+
+  // ===== Section 3: EPA =====
+  let epaHtml = '<div class="empty">EPA לא נטען.</div>';
+  if (window.AvneiEPA) {
+    const pattern = AvneiEPA.getDominantPattern(stu.id, 3, 0.4)
+      || AvneiEPA.getDominantPattern(stu.id, null, 0.4);
+    if (pattern) {
+      const axisLabel = { failure: 'סוג טעות', context: 'הקשר', task: 'משימה' }[pattern.axis] || pattern.axis;
+      epaHtml = `<div class="epa-block pattern">
+        <h4>🟡 דפוס דומיננטי — ${escapeHtml(axisLabel)}: ${escapeHtml(pattern.value)}</h4>
+        <div>${Math.round(pattern.percent * 100)}% מהטעויות (${pattern.count}/${pattern.total})</div>
+        <div class="intervention">
+          הצעה: אינטרבנציה ממוקדת לדפוס "${escapeHtml(pattern.value)}".
+          ייפתח ב-B.8 (intervention matcher).
+        </div>
+      </div>`;
+    } else {
+      epaHtml = `<div class="epa-block">
+        <h4>🟢 אין דפוס דומיננטי</h4>
+        <div>טעויות מפוזרות — אין צורך באינטרבנציה ייעודית.</div>
+      </div>`;
+    }
+  }
+
+  // ===== Section 4: 10 RAMA tasks per pulse =====
+  let ramaHtml = '<div class="empty">RAMA_TASKS לא נטען.</div>';
+  if (window.AvneiMasteryCheck && AvneiMasteryCheck.RAMA_TASKS) {
+    const cur = currentPulse();
+    ramaHtml = [1, 2, 3].map(p => {
+      const range = PULSE_RANGES[p];
+      const tIds = pulseHasTask(p);
+      const isActive = p === cur;
+      return `<div class="pulse-group${isActive ? ' active' : ''}">
+        <h4>פעימה ${p} (${range.label})${isActive ? ' — פעילה' : ''}</h4>
+        ${tIds.map(tid => {
+          const t = AvneiMasteryCheck.RAMA_TASKS[tid];
+          const r = AvneiMasteryCheck.checkRamaTaskStatus(stu.id, tid);
+          const icon = r.status === 'pass' ? '✓' : r.status === 'near' ? '~' : r.status === 'fail' ? '✗' : '○';
+          const stTxt = r.status === 'pass' ? 'תקין' : r.status === 'near' ? 'קרוב' : r.status === 'fail' ? 'לא תקין' : 'לא נמדד';
+          const valTxt = r.value != null ? `${r.value}/${t.value_max}` : '—';
+          return `<div class="rama-task-row status-${r.status}">
+            <div class="num">${tid}</div>
+            <div class="name">${escapeHtml(t.name)} <span class="thr">רף ${t.value_threshold}/${t.value_max}${t.time_threshold_sec ? `·${t.time_threshold_sec}שנ` : ''}</span></div>
+            <div>${valTxt}</div>
+            <div class="status">${icon} ${stTxt} ${confidenceIcon(r.confidence)}</div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    }).join('');
+  }
+
+  // ===== Section 5: Flags =====
+  // A.5 — החלטה 5: דגלים אוטומטיים חסומים ב-cold-start (אין מספיק דאטה לדפוס אמיתי).
+  // TODO: A.5 flag block when teacherFlags exists — להרחיב כשייווסף מנוע flags חי. כרגע הסקציה ריקה במציאות.
+  const flagsRaw = cs.inColdStart
+    ? []
+    : getTeacherFlags().filter(f => !f.student_id || f.student_id === stu.id);
+  const flagsHtml = flagsRaw.length > 0 ? flagsRaw.slice().reverse().map(f => `
+    <div class="flag-card">
+      <span class="flag-type">${escapeHtml(f.type)}</span>
+      <strong>${escapeHtml(f.target_letter || '')}</strong> ${escapeHtml(f.note_template || '')}
+      <span style="color:#718096; font-size:12px;">(${f.evidence_count || '?'} ראיות)</span>
+    </div>
+  `).join('') : '';
+
+  // ===== Assemble =====
+  wrap.innerHTML = `
+    <div class="student-head">
+      <button class="back" onclick="goBackToClass()" aria-label="חזרה למבט כיתה">← מבט כיתה</button>
+      ${switcher}
+      <div>
+        <div class="name">${confidenceIcon(overallConf)} ${escapeHtml(stu.name || stu.id)}</div>
+        <div class="summary">${escapeHtml(stu.profile ? 'פרופיל: ' + stu.profile : 'אין פרופיל מוגדר')}${stu.entry_date ? ' · מתאריך ' + escapeHtml(stu.entry_date) : ''}</div>
+      </div>
+      ${staleWarn}
+    </div>
+
+    ${coldStartBanner}
+
+    <div class="section">
+      <h2>5 הסטרנדים (BKT)</h2>
+      ${strandsHtml}
+    </div>
+
+    <div class="section">
+      <h2>22 אותיות (Sub-BKT פר אות)</h2>
+      ${lettersHtml}
+    </div>
+
+    <div class="section">
+      <h2>דפוס טעויות דומיננטי (EPA)</h2>
+      ${epaHtml}
+    </div>
+
+    <div class="section">
+      <h2>10 משימות ראמ"ה — מצב פר פעימה</h2>
+      ${ramaHtml}
+      <span class="parent-link" title="תצוגת הורה — בבנייה (F.21B)">תצוגת הורה ↗ (בקרוב)</span>
+    </div>
+
+    ${renderPackSection(stu.id)}
+
+    ${renderMOYSection(stu.id)}
+
+    ${flagsRaw.length > 0 ? `<div class="section"><h2>דגלים פעילים</h2>${flagsHtml}</div>` : ''}
+  `;
+
+  document.getElementById('studentSwitcher').addEventListener('change', (e) => {
+    viewState.selectedStudent = e.target.value;
+    render();
+  });
+
+  // C.11+C.12 — חיבור כפתורי override של ה-pack
+  attachPackOverrideHandlers(stu.id);
+}
+
+function strandNameHe(strandId) {
+  const names = {
+    1: 'פונולוגיה',
+    2: 'מורפולוגיה',
+    3: 'שפה דבורה',
+    4: 'קריאה והבנה',
+    5: 'כתיבה',
+  };
+  return names[strandId] || ('סטרנד ' + strandId);
+}
+
+// ============================================================
+// C.11+C.12 — Pack × Tier integration
+// ============================================================
+
+// currentPackId — לפיילוט: september-2026 (חודש פתיחה).
+// post-pilot: AvneiPackBridge.loadCurrentPack(new Date()).pack_id או UI לבחירה.
+function currentPackId() {
+  return 'september-2026';
+}
+
+// פאק לבחירה — נטען פעם אחת בכל render (ה-bridge cached internally)
+function getActivePack() {
+  if (!window.AvneiPackBridge) return null;
+  return AvneiPackBridge.loadPack(currentPackId());
+}
+
+// פאק decision לתלמידה (cache פר render — נקרא רק מ-render helpers)
+function tierDecisionFor(studentId) {
+  if (!window.AvneiPackBridge) return null;
+  return AvneiPackBridge.selectTierForStudent(studentId, currentPackId());
+}
+
+const TIER_LABELS = {
+  1: 'בסיסי',
+  2: 'ליבה',
+  3: 'מתקדם',
+  4: 'מאסטר+',
+};
+
+// פאנל ה-pack בשורת ה-class — תא קומפקטי "Tier N ⚙?"
+// data-student: לחיצה פותחת modal עם פרטים מלאים (renderPackSection)
+function tierCellHtml(decision, studentId) {
+  if (!decision) {
+    return '<td class="tier-cell tier-cold" data-student="' + escapeHtml(studentId || '') + '" title="Pack לא נטען">—</td>';
+  }
+  const tier = decision.tier;
+  const isManual = decision.source === 'manual';
+  const isCold = decision.source === 'cold-start' || decision.source === 'fallback';
+  const cls = isCold ? 'tier-cold' : ('tier-' + tier);
+  const mark = isManual ? '<span class="manual-mark" title="מורה הגדירה ידנית">⚙</span>' : '';
+  const titleParts = [decision.reason || ''];
+  if (decision.pKnown !== undefined) titleParts.push('p=' + decision.pKnown.toFixed(2));
+  if (decision.confidence) titleParts.push('ביטחון: ' + decision.confidence);
+  titleParts.push('לחיצה לפרטים');
+  return '<td class="tier-cell ' + cls + '" data-student="' + escapeHtml(studentId || '') + '"'
+       + ' title="' + escapeHtml(titleParts.filter(Boolean).join(' · ')) + '">'
+       + tier + mark + '</td>';
+}
+
+// Section 5 — סקציית הפאק ב-Student View
+function renderPackSection(studentId) {
+  const pack = getActivePack();
+  if (!pack) {
+    return '<div class="section"><h2>Pack חודשי</h2><div class="empty">Pack לא זמין (' + escapeHtml(currentPackId()) + ').</div></div>';
+  }
+  const decision = tierDecisionFor(studentId);
+  if (!decision) {
+    return '<div class="section"><h2>Pack חודשי</h2><div class="empty">AvneiPackBridge לא נטען.</div></div>';
+  }
+
+  const isCold = decision.source === 'cold-start' || decision.source === 'fallback';
+  const isManual = decision.source === 'manual';
+  const badgeCls = isCold ? 'tier-cold' : ('tier-' + decision.tier);
+  const tierLabel = TIER_LABELS[decision.tier] || '—';
+
+  let focusLine = '';
+  if (pack.focus_mode === 'letters' && Array.isArray(pack.letters_in_focus)) {
+    focusLine = pack.letters_in_focus.join(' · ');
+  } else if (pack.focus_mode === 'strand' && pack.strand_breakdown) {
+    focusLine = pack.strand_breakdown.skills.join(' · ');
+  }
+
+  const sourceText = isManual
+    ? '<span class="manual">⚙ מורה הגדירה ידנית</span>'
+    : ('מקור: ' + decision.source + ' · ביטחון: ' + decision.confidence);
+
+  let buttonsHtml = '<div class="pack-override"><span class="label">החלף Tier ידנית:</span>';
+  for (let t = 1; t <= 4; t++) {
+    const activeCls = (t === decision.tier) ? ' active' : '';
+    buttonsHtml += '<button class="tier-btn' + activeCls + '" data-override-tier="' + t + '">'
+                 + t + ' · ' + TIER_LABELS[t] + '</button>';
+  }
+  if (isManual) {
+    buttonsHtml += '<button class="tier-btn clear-btn" data-clear-override aria-label="בטל override ידני">× בטל override</button>';
+  }
+  buttonsHtml += '</div>';
+
+  return `
+    <div class="section">
+      <h2>📦 Pack חודשי — ${escapeHtml(pack.title || pack.pack_id)}</h2>
+      <div class="pack-section">
+        <div class="pack-head">
+          <span class="pack-title">${escapeHtml(pack.month || '')} ${pack.year || ''}</span>
+          ${focusLine ? '<span class="pack-sub">· ' + escapeHtml(focusLine) + '</span>' : ''}
+        </div>
+        <div class="pack-tier-display">
+          <div class="big-badge ${badgeCls}">
+            <span class="tier-num">${decision.tier}</span>
+            <span class="tier-label">${escapeHtml(tierLabel)}</span>
+          </div>
+          <div class="details">
+            <div class="reason">${escapeHtml(decision.reason || '')}</div>
+            <div class="source">${sourceText}</div>
+          </div>
+        </div>
+        ${buttonsHtml}
+      </div>
+    </div>
+  `;
+}
+
+// Override handlers — נצמיד אחרי render של Student View
+function attachPackOverrideHandlers(studentId) {
+  if (!window.AvneiPackBridge) return;
+  const packId = currentPackId();
+  document.querySelectorAll('[data-override-tier]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tier = Number(btn.dataset.overrideTier);
+      AvneiPackBridge.overrideTier(studentId, packId, tier);
+      render();
+    });
+  });
+  const clearBtn = document.querySelector('[data-clear-override]');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      AvneiPackBridge.clearOverride(studentId, packId);
+      render();
+    });
+  }
+}
+
+// ============================================================
+// Section 6 — MOY status (סוכן 10 · 28.5.2026)
+// ============================================================
+// מסמך-אם: _handoff/2026-05-28-MOY-diagnostic-spec.md §5.1
+// המסך מציג סטטוס + כפתור הפעלה + אזהרה "לא תחליף למבדק הרשמי".
+// השפה — פשוטה ("שולטת היטב" / "קרובה לרף" / "צריכה תרגול"), לא טכנית
+// (לפי feedback memory: teacher-rama יוצא ב-"שורה תחתונה", לא BKT/Sub-BKT).
+// ============================================================
+
+const MOY_STATUS_LABELS = {
+  'not-measured': { icon: '🟡', text: 'לא נמדד עדיין', cls: 'status-not-measured', reason: 'הילדה לא ביצעה MOY-Lite. מומלץ ינואר-פברואר.' },
+  'pass':         { icon: '✓',  text: 'שולטת היטב',     cls: 'status-pass',          reason: 'הילדה עברה את הרף בכל המשימות.' },
+  'near':         { icon: '~',  text: 'קרובה לרף',      cls: 'status-near',          reason: 'הילדה קרובה אבל לא שם. שווה תרגול ממוקד.' },
+  'fail':         { icon: '!',  text: 'צריכה תרגול',     cls: 'status-fail',          reason: 'הילדה לא עברה. נדרשת אינטרבנציה + חזרה בעוד 5-6 שבועות.' },
+  'unknown':      { icon: '?',  text: 'לא ברור',         cls: 'status-not-measured',  reason: 'נתונים חסרים.' },
+};
+
+// תרגום task_X status → טקסט פשוט למורה
+function moyTaskLabel(taskKey) {
+  return taskKey === 'task_3' ? 'משימה 3 (הבנת טקסט)' : (taskKey === 'task_4' ? 'משימה 4 (מודעות לשונית)' : taskKey);
+}
+
+function moyTaskStatusText(s) {
+  return s === 'pass' ? 'עברה' : s === 'near' ? 'קרובה' : s === 'fail' ? 'לא עברה' : '—';
+}
+
+function moyFormatDateHe(ts) {
+  if (!ts) return '—';
+  try {
+    return new Date(ts).toLocaleDateString('he-IL', { day: 'numeric', month: 'short', year: 'numeric' });
+  } catch (e) { return '—'; }
+}
+
+function renderMOYSection(studentId) {
+  if (!window.AvneiAssessments) {
+    return '<div class="section"><h2>📋 הערכת אמצע שנה (MOY)</h2><div class="empty">AvneiAssessments לא נטען.</div></div>';
+  }
+
+  const status = AvneiAssessments.getMOYStatus(studentId);
+  const lbl = MOY_STATUS_LABELS[status.latest_status] || MOY_STATUS_LABELS['unknown'];
+
+  // Banner of "next review due" if relevant
+  let dueBanner = '';
+  if (status.next_review_due) {
+    const now = Date.now();
+    if (now >= status.next_review_due) {
+      dueBanner = `<div class="moy-due-banner">⏰ הגיע מועד העברה חוזרת (היה ${moyFormatDateHe(status.next_review_due)})</div>`;
+    } else {
+      dueBanner = `<div class="moy-due-banner" style="background:#fef3c7; border-right-color:#f59e0b; color:#78350f;">🗓 העברה חוזרת מתוכננת ל-${moyFormatDateHe(status.next_review_due)}</div>`;
+    }
+  }
+
+  // MOY × B.7 link (סוכן 16) — badge "ממתינה לקבוצה" כשיש suggested_intervention
+  // ספירת תלמידות אחרות עם אותו patternId כדי להראות "ממתינה לעוד X תלמידות"
+  let suggestBadge = '';
+  if (status.suggested_intervention && status.suggested_intervention.patternId) {
+    const pid = status.suggested_intervention.patternId;
+    const patternLabel = moyPatternLabel(pid);
+    const total = countStudentsWithMOYPattern(pid);
+    let line2;
+    if (total >= 3) {
+      line2 = `📋 קבוצה מוכנה לפתיחה — ${total} תלמידות עם דפוס דומה (ראי "מבט כיתה")`;
+    } else {
+      const need = 3 - total;
+      const word = need === 1 ? 'תלמידה' : 'תלמידות';
+      line2 = `ממתינה לעוד ${need} ${word} עם דפוס דומה`;
+    }
+    suggestBadge = `
+      <div class="moy-suggest-badge">
+        <div class="msb-line1">💡 מתאימה לקבוצת תרגול ב<strong>${escapeHtml(patternLabel)}</strong></div>
+        <div class="msb-line2">${escapeHtml(line2)}</div>
+      </div>
+    `;
+  }
+
+  // Tasks summary (when measured)
+  let tasksLine = '';
+  if (status.measured && status.last_attempt) {
+    const parts = [];
+    ['task_3', 'task_4'].forEach(tk => {
+      const t = status.last_attempt[tk];
+      if (t) parts.push(`${moyTaskLabel(tk)}: ${moyTaskStatusText(t.status)} (${t.score}/${t.max})`);
+    });
+    if (parts.length > 0) tasksLine = '<div class="moy-tasks">' + parts.map(escapeHtml).join(' · ') + '</div>';
+  }
+
+  // Attempts history (if > 1)
+  let attemptsHtml = '';
+  if (status.measured && status.attempts.length > 1) {
+    attemptsHtml = '<div class="moy-attempts-list"><strong>היסטוריה:</strong>';
+    status.attempts.forEach((a, idx) => {
+      attemptsHtml += `<div class="attempt-row">העברה ${idx + 1} · ${moyFormatDateHe(a.date)} · ${escapeHtml(moyTaskStatusText(a.overall_status))}</div>`;
+    });
+    attemptsHtml += '</div>';
+  }
+
+  // Encoded studentId for the link
+  const launchUrl = '../engine/moy-screener.html?student=' + encodeURIComponent(studentId);
+
+  // Status icon — מילולית: לתלמיד.ה לא מציגים ציון. רק למורה.
+  const statusBadgeHtml = `<div class="status-badge ${lbl.cls}">${escapeHtml(lbl.icon)}</div>`;
+
+  // Reason — אם נמדד, נציג גם תאריך
+  let reasonLine = escapeHtml(lbl.reason);
+  if (status.measured && status.last_attempt) {
+    reasonLine += ` <span style="color:#64748b;">(נמדד ${escapeHtml(moyFormatDateHe(status.last_attempt.date))})</span>`;
+  }
+
+  const buttonLabel = status.measured ? 'העבירי שוב' : 'הפעילי MOY-Lite';
+
+  return `
+    <div class="section">
+      <h2>📋 הערכת אמצע שנה (MOY)</h2>
+      <div class="moy-section">
+        <div class="moy-head">
+          <span class="moy-title">סטטוס נוכחי: ${escapeHtml(lbl.text)}</span>
+          <span class="moy-window">· חלון: ינואר-פברואר 2026</span>
+        </div>
+
+        <div class="moy-status-display">
+          ${statusBadgeHtml}
+          <div class="moy-details">
+            <div class="moy-reason">${reasonLine}</div>
+            ${tasksLine}
+          </div>
+        </div>
+
+        ${dueBanner}
+
+        ${suggestBadge}
+
+        <div class="moy-warning">
+          ⚠️ <strong>MOY-Lite הוא תרגול, לא תחליף למבדק ראמ"ה הרשמי.</strong>
+          המבדק הרשמי 1-on-1 פרטני, עם פריטים ייעודיים מ-PDF ראמ"ה ומדריך מורה.
+        </div>
+
+        <div class="moy-actions">
+          <a class="btn-moy" href="${escapeHtml(launchUrl)}" target="_self">📋 ${escapeHtml(buttonLabel)}</a>
+          <span class="btn-moy-pdf" title="קישור ל-PDF ראמ&quot;ה — בבנייה (לא בסקופ סוכן 10)" style="opacity:0.7; cursor:not-allowed;">📖 פתחי PDF ראמ"ה (בקרוב)</span>
+        </div>
+
+        ${attemptsHtml}
+      </div>
+    </div>
+  `;
+}
+
+// ============================================================
+// Tier Modal — לחיצה על td.tier-cell ב-Class View (תיקון באג 28.5 — מיטל)
+// ============================================================
+function openTierModal(studentId) {
+  closeTierModal();  // קיים? סגור
+
+  const students = getAllStudents();
+  const stu = students.find(s => s.id === studentId);
+  if (!stu) return;
+
+  const pack = getActivePack();
+  if (!pack) return;
+  const decision = tierDecisionFor(studentId);
+  if (!decision) return;
+
+  const isCold = decision.source === 'cold-start' || decision.source === 'fallback';
+  const isManual = decision.source === 'manual';
+  const badgeCls = isCold ? 'tier-cold' : ('tier-' + decision.tier);
+  const tierLabel = TIER_LABELS[decision.tier] || '—';
+
+  let focusLine = '';
+  if (pack.focus_mode === 'letters' && Array.isArray(pack.letters_in_focus)) {
+    focusLine = pack.letters_in_focus.join(' · ');
+  } else if (pack.focus_mode === 'strand' && pack.strand_breakdown) {
+    focusLine = pack.strand_breakdown.skills.join(' · ');
+  }
+
+  const sourceText = isManual
+    ? '<span class="manual">⚙ מורה הגדירה ידנית</span>'
+    : ('מקור: ' + decision.source + ' · ביטחון: ' + decision.confidence);
+
+  let buttonsHtml = '<div class="pack-override"><span class="label">החלף Tier ידנית:</span>';
+  for (let t = 1; t <= 4; t++) {
+    const activeCls = (t === decision.tier) ? ' active' : '';
+    buttonsHtml += '<button class="tier-btn' + activeCls + '" data-modal-override-tier="' + t + '">'
+                 + t + ' · ' + TIER_LABELS[t] + '</button>';
+  }
+  if (isManual) {
+    buttonsHtml += '<button class="tier-btn clear-btn" data-modal-clear-override aria-label="בטל override ידני">× בטל override</button>';
+  }
+  buttonsHtml += '</div>';
+
+  // הוצאת ה-pack-section reuse מ-renderPackSection — מבנה זהה
+  const bodyHtml = `
+    <div class="pack-section">
+      <div class="pack-head">
+        <span class="pack-title">📦 ${escapeHtml(pack.month || '')} ${pack.year || ''} — ${escapeHtml(pack.title || pack.pack_id)}</span>
+        ${focusLine ? '<span class="pack-sub">· ' + escapeHtml(focusLine) + '</span>' : ''}
+      </div>
+      <div class="pack-tier-display">
+        <div class="big-badge ${badgeCls}">
+          <span class="tier-num">${decision.tier}</span>
+          <span class="tier-label">${escapeHtml(tierLabel)}</span>
+        </div>
+        <div class="details">
+          <div class="reason">${escapeHtml(decision.reason || '')}</div>
+          <div class="source">${sourceText}</div>
+        </div>
+      </div>
+      ${buttonsHtml}
+    </div>
+  `;
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'tier-modal-backdrop';
+  backdrop.setAttribute('data-tier-modal', '1');
+  backdrop.innerHTML = `
+    <div class="tier-modal" role="dialog" aria-modal="true" aria-labelledby="tmTitle">
+      <div class="tm-head">
+        <div>
+          <div class="tm-title" id="tmTitle">Pack חודשי — Tier</div>
+          <div class="tm-student">${escapeHtml(stu.name || stu.id)}</div>
+        </div>
+        <button type="button" class="tm-close" aria-label="סגור" data-tier-modal-close>×</button>
+      </div>
+      <div class="tm-body">${bodyHtml}</div>
+    </div>
+  `;
+  document.body.appendChild(backdrop);
+
+  // אירועים: כפתורי override · סגירה · ESC · click-outside
+  const packId = currentPackId();
+  backdrop.querySelectorAll('[data-modal-override-tier]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tier = Number(btn.dataset.modalOverrideTier);
+      AvneiPackBridge.overrideTier(studentId, packId, tier);
+      closeTierModal();
+      render();
+    });
+  });
+  const clearBtn = backdrop.querySelector('[data-modal-clear-override]');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      AvneiPackBridge.clearOverride(studentId, packId);
+      closeTierModal();
+      render();
+    });
+  }
+  backdrop.querySelector('[data-tier-modal-close]').addEventListener('click', closeTierModal);
+  backdrop.addEventListener('click', (e) => {
+    if (e.target === backdrop) closeTierModal();
+  });
+  document.addEventListener('keydown', _tierModalEscHandler);
+}
+
+function _tierModalEscHandler(e) {
+  if (e.key === 'Escape') closeTierModal();
+}
+
+function closeTierModal() {
+  const existing = document.querySelector('[data-tier-modal]');
+  if (existing) existing.remove();
+  document.removeEventListener('keydown', _tierModalEscHandler);
+}
+
+function goBackToClass() {
+  viewState.view = 'class';
+  document.querySelectorAll('[data-view]').forEach(b =>
+    b.classList.toggle('active', b.dataset.view === viewState.view)
+  );
+  render();
+}
+
+// ============================================================
+// B.7 — Targeted Reading Interventions UI
+// spec: _handoff/2026-05-28-B7-interventions-spec.md
+// API: window.AvneiInterventions
+// ============================================================
+
+// cache של group detection — מסונכרן עם renderInterventionTriggers
+let _activeGroups = [];
+
+const IV_PATTERN_LABELS = {
+  phonological:     { icon: '🔊', label: 'מודעות פונולוגית' },
+  letter_knowledge: { icon: '🔤', label: 'ידיעת אותיות' },
+  decoding:         { icon: '📖', label: 'פענוח לפי הקשר' },
+  fluency:          { icon: '⏱', label: 'שטף קריאה' },
+  letter_cluster:   { icon: '🎯', label: 'חיזוק אותיות חלשות' }
+};
+
+// ============================================================
+// B.9 — Morning Group Suggestions (סוכן 18 · 28.5.2026)
+// "🌅 בבוקר המורה רואה איזה קבוצות לפתוח היום."
+// משלים את B.7+B.8 — שולח studentIds ל-AvneiGroupSuggester שמשתמש
+// ב-B.8 matchForStudent כדי לבנות עד 5 קבוצות אופטימליות, ומציג כרטיסים.
+// כפתור "פתחי קבוצה" משתמש ב-modal הקיים של B.7 דרך _activeGroups.
+// ============================================================
+const MG_COLLAPSE_KEY = 'avnei-mg-collapsed-v1';
+
+function _mgReadCollapsed() {
+  try { return localStorage.getItem(MG_COLLAPSE_KEY) === '1'; }
+  catch (e) { return false; }
+}
+function _mgWriteCollapsed(c) {
+  try { localStorage.setItem(MG_COLLAPSE_KEY, c ? '1' : '0'); }
+  catch (e) { /* swallow */ }
+}
+
+function renderMorningGroupSuggestions(students) {
+  const wrap = document.getElementById('morningGroupSuggestions');
+  if (!wrap) return;
+  if (!window.AvneiGroupSuggester || !window.AvneiInterventionMatcher) {
+    wrap.innerHTML = '';
+    return;
+  }
+  // אל תרענן כש-modal פתוח — שלא לאבד reference ב-_activeGroups
+  if (document.querySelector('[data-iv-modal]')) return;
+
+  const studentIds = students.map(function (s) { return s.id; });
+  let suggestions;
+  try { suggestions = AvneiGroupSuggester.suggestGroups(studentIds) || []; }
+  catch (e) { suggestions = []; }
+
+  if (suggestions.length === 0) {
+    wrap.innerHTML = '';
+    return;
+  }
+
+  const collapsed = _mgReadCollapsed();
+  const studentsMap = {};
+  students.forEach(function (s) { studentsMap[s.id] = s; });
+
+  const cardsHtml = suggestions.map(function (s, idx) {
+    const meta = IV_PATTERN_LABELS[s.pattern_id] || { icon: '📋', label: s.pattern_id };
+    const confLabel = s.confidence === 'high' ? 'גבוה' : s.confidence === 'med' ? 'בינוני' : 'נמוך';
+    const names = s.students.map(function (st) {
+      const sr = studentsMap[st.studentId];
+      return sr ? (sr.name || st.studentId) : st.studentId;
+    }).join(' · ');
+    return '<div class="mg-card" data-mg-idx="' + idx + '" data-pattern="' + escapeHtml(s.pattern_id) + '">' +
+      '<div class="mg-card-head">' +
+        '<span class="mg-icon">' + meta.icon + '</span>' +
+        '<span class="mg-label">' + escapeHtml(meta.label) + '</span>' +
+      '</div>' +
+      '<div class="mg-meta">' +
+        '<span class="mg-count">' + s.students.length + ' ילדות</span>' +
+        '<span class="mg-conf-pill mg-conf-' + s.confidence + '">ביטחון ' + confLabel + '</span>' +
+      '</div>' +
+      '<div class="mg-students">' + escapeHtml(names) + '</div>' +
+      '<button type="button" class="mg-open" data-mg-open-idx="' + idx + '" aria-label="פתחי קבוצת בוקר מוצעת">📋 פתחי קבוצה</button>' +
+    '</div>';
+  }).join('');
+
+  wrap.innerHTML =
+    '<div class="mg-section' + (collapsed ? ' mg-collapsed' : '') + '">' +
+      '<div class="mg-header">' +
+        '<button type="button" class="mg-toggle" aria-expanded="' + (!collapsed) + '" aria-label="כווץ או פתח קבוצות בוקר מוצעות">' +
+          '<span class="mg-toggle-icon">' + (collapsed ? '▸' : '▾') + '</span>' +
+          '<span class="mg-title">🌅 קבוצות בוקר מוצעות</span>' +
+          '<span class="mg-toggle-count">' + suggestions.length + '</span>' +
+        '</button>' +
+        '<button type="button" class="mg-refresh" title="רענן הצעות" aria-label="רענן הצעות קבוצה">🔄 רענן</button>' +
+      '</div>' +
+      '<div class="mg-body">' +
+        '<div class="mg-cards">' + cardsHtml + '</div>' +
+      '</div>' +
+    '</div>';
+
+  // hooks
+  const sec = wrap.querySelector('.mg-section');
+  const toggleBtn = wrap.querySelector('.mg-toggle');
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', function () {
+      const newCollapsed = !sec.classList.contains('mg-collapsed');
+      sec.classList.toggle('mg-collapsed', newCollapsed);
+      _mgWriteCollapsed(newCollapsed);
+      const arrow = wrap.querySelector('.mg-toggle-icon');
+      if (arrow) arrow.textContent = newCollapsed ? '▸' : '▾';
+      toggleBtn.setAttribute('aria-expanded', String(!newCollapsed));
+    });
+  }
+  const refreshBtn = wrap.querySelector('.mg-refresh');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', function () {
+      renderMorningGroupSuggestions(getAllStudents());
+    });
+  }
+  wrap.querySelectorAll('button.mg-open').forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const idx = Number(btn.dataset.mgOpenIdx);
+      const sug = suggestions[idx];
+      if (sug) openMorningGroupModal(sug);
+    });
+  });
+}
+
+// פותח modal של B.7 לקבוצה שהוצעה ע"י B.9.
+// בונה virtualGroup ב-shape של _activeGroups, מעשיר details ב-letter_cluster
+// ו-groupCommonDetails ב-letter_knowledge מתוך B.7 detectForStudent.
+function openMorningGroupModal(suggestion) {
+  if (!suggestion || !suggestion.students || suggestion.students.length === 0) return;
+
+  const allStudents = getAllStudents();
+  const studentsMap = {};
+  allStudents.forEach(function (s) { studentsMap[s.id] = s; });
+
+  // העשרת details פר-ילדה (רק ל-letter_cluster — שאר הדפוסים לא צריכים details פר-ילדה ב-modal)
+  const groupStudents = suggestion.students.map(function (ms) {
+    const rec = studentsMap[ms.studentId] || {};
+    const out = { id: ms.studentId, name: rec.name || ms.studentId };
+    if (suggestion.pattern_id === 'letter_cluster' && window.AvneiInterventions) {
+      try {
+        const triggers = AvneiInterventions.detectForStudent(ms.studentId) || [];
+        const lc = triggers.find(function (t) { return t.patternId === 'letter_cluster'; });
+        if (lc && lc.details) out.details = lc.details;
+      } catch (e) { /* swallow */ }
+    }
+    return out;
+  });
+
+  // groupCommonDetails — ל-letter_knowledge מחפש confused_pair מהילדה הראשונה
+  let groupCommonDetails = {};
+  if (suggestion.pattern_id === 'letter_knowledge' && window.AvneiInterventions) {
+    try {
+      const first = suggestion.students[0];
+      const triggers = AvneiInterventions.detectForStudent(first.studentId) || [];
+      const lk = triggers.find(function (t) { return t.patternId === 'letter_knowledge'; });
+      if (lk && lk.details) {
+        groupCommonDetails = {
+          confused_pair: lk.details.confused_pair,
+          example_a: lk.details.example_a,
+          example_b: lk.details.example_b,
+          distinction: lk.details.distinction
+        };
+      }
+    } catch (e) { /* swallow */ }
+  } else if (suggestion.pattern_id === 'decoding' && window.AvneiInterventions) {
+    try {
+      const first = suggestion.students[0];
+      const triggers = AvneiInterventions.detectForStudent(first.studentId) || [];
+      const dec = triggers.find(function (t) { return t.patternId === 'decoding'; });
+      if (dec && dec.details && dec.details.context_value) {
+        groupCommonDetails = { context_value: dec.details.context_value };
+      }
+    } catch (e) { /* swallow */ }
+  }
+
+  // מנע כפילות: אם כבר קיים virtualGroup לאותו pattern מ-MG — השתמשי בו
+  let idx = _activeGroups.findIndex(function (g) {
+    return g && g._mgSourced && g.patternId === suggestion.pattern_id;
+  });
+  if (idx === -1) {
+    _activeGroups.push({
+      patternId: suggestion.pattern_id,
+      students: groupStudents,
+      groupCommonDetails: groupCommonDetails,
+      confidence: suggestion.confidence,
+      _mgSourced: true
+    });
+    idx = _activeGroups.length - 1;
+  }
+  openInterventionModal(idx);
+}
+
+function renderInterventionTriggers(students) {
+  const wrap = document.getElementById('interventionTriggers');
+  if (!wrap) return;
+  if (!window.AvneiInterventions) {
+    wrap.innerHTML = '';
+    return;
+  }
+  // אם modal פתוח — דלגי על re-render כדי לא לאבד reference (auto-refresh כל 3 שנ')
+  if (document.querySelector('[data-iv-modal]')) return;
+
+  // ניקוי cache (כי students משתנים) + detection
+  _activeGroups = AvneiInterventions.detectGroupTriggers(students) || [];
+
+  if (_activeGroups.length === 0) {
+    wrap.innerHTML = '';
+    return;
+  }
+
+  const html = _activeGroups.map((g, idx) => {
+    const meta = IV_PATTERN_LABELS[g.patternId] || { icon: '📋', label: g.patternId };
+    const names = g.students.map(s => s.name).join(', ');
+    let extra = '';
+    if (g.patternId === 'letter_knowledge' && g.groupCommonDetails.confused_pair) {
+      extra = ' · מבלבלות ' + g.groupCommonDetails.confused_pair.join('↔');
+    } else if (g.patternId === 'decoding' && g.groupCommonDetails.context_value) {
+      const ctxLabel = {
+        initial: 'תחילה', medial: 'אמצע', final: 'סוף', font: 'פונט'
+      }[g.groupCommonDetails.context_value] || g.groupCommonDetails.context_value;
+      extra = ' · קושי במיקום ' + ctxLabel;
+    } else if (g.patternId === 'fluency') {
+      extra = ' · קצב איטי בכיתה';
+    } else if (g.patternId === 'letter_cluster') {
+      extra = ' · 3+ אותיות חלשות פר ילדה';
+    } else if (g.patternId === 'phonological') {
+      extra = ' · קושי בצלילים';
+    }
+    const confLabel = g.confidence === 'high' ? 'גבוהה' : g.confidence === 'med' ? 'בינונית' : 'נמוכה';
+    return `<div class="iv-banner" data-pattern="${escapeHtml(g.patternId)}" data-group-idx="${idx}">
+      <span class="iv-icon">${meta.icon}</span>
+      <div class="iv-desc">
+        <span>דפוס</span>
+        <span class="iv-pattern">${escapeHtml(meta.label)}</span>
+        <span>— ${g.students.length} ילדות${escapeHtml(extra)}</span>
+        <span class="iv-group-info">${escapeHtml(names)}</span>
+      </div>
+      <span class="iv-conf-pill" title="רמת ביטחון">ביטחון: ${confLabel}</span>
+      <button type="button" class="iv-open-modal" data-group-idx="${idx}" aria-label="פתחי קבוצת תמיכה">📋 פתחי קבוצת תמיכה</button>
+    </div>`;
+  }).join('');
+
+  wrap.innerHTML = html;
+
+  // hooks
+  wrap.querySelectorAll('button.iv-open-modal').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openInterventionModal(Number(btn.dataset.groupIdx));
+    });
+  });
+}
+
+// ============================================================
+// MOY × B.7 link (סוכן 16 · 28.5.2026)
+// תוויות עברית פשוטה למורה (לפי spec של מיטל) — לא BKT/EPA טכני.
+// הבדל מ-IV_PATTERN_LABELS: המפה הזו "שורה תחתונה" קצרה ל-MOY context.
+// ============================================================
+const MOY_PATTERN_LABELS_HE = {
+  phonological:     'מודעות פונולוגית',
+  letter_knowledge: 'זיהוי אותיות',
+  decoding:         'פענוח',
+  fluency:          'שטף קריאה',
+  letter_cluster:   'צירופי אותיות'
+};
+
+function moyPatternLabel(patternId) {
+  return MOY_PATTERN_LABELS_HE[patternId] || patternId;
+}
+
+// כמה תלמידות במצב MOY suggested_intervention עם patternId זהה (כולל הנוכחית).
+function countStudentsWithMOYPattern(patternId) {
+  if (!window.AvneiAssessments || !patternId) return 0;
+  const students = getAllStudents();
+  let n = 0;
+  for (let i = 0; i < students.length; i++) {
+    const st = AvneiAssessments.getMOYStatus(students[i].id);
+    if (st && st.suggested_intervention && st.suggested_intervention.patternId === patternId) {
+      n++;
+    }
+  }
+  return n;
+}
+
+// Banner כתום ב-Class View כשמצטברות 3+ תלמידות עם אותו patternId מ-MOY.
+// נכתב מעל ה-iv-banners הקיימים (DOM order). אם EPA כבר מצא קבוצה — לא מחליפים.
+function renderMOYInterventionBanners(students) {
+  const wrap = document.getElementById('moyInterventionBanners');
+  if (!wrap) return;
+  if (!window.AvneiAssessments) { wrap.innerHTML = ''; return; }
+  // אם modal פתוח — דלגי על re-render (לא לפגוע ב-snapshotGroup של iv-modal)
+  if (document.querySelector('[data-iv-modal]')) return;
+
+  // קיבוץ ילדות לפי patternId
+  const groups = {};
+  for (let i = 0; i < students.length; i++) {
+    const s = students[i];
+    const moy = AvneiAssessments.getMOYStatus(s.id);
+    const sug = moy && moy.suggested_intervention;
+    if (!sug || !sug.patternId) continue;
+    const pid = sug.patternId;
+    if (!groups[pid]) groups[pid] = [];
+    groups[pid].push({
+      id: s.id,
+      name: s.name || s.id,
+      details: sug.details || {}
+    });
+  }
+
+  const readyPatterns = Object.keys(groups).filter(p => groups[p].length >= 3);
+  if (readyPatterns.length === 0) { wrap.innerHTML = ''; return; }
+
+  const html = readyPatterns.map(pid => {
+    const stus = groups[pid];
+    const label = moyPatternLabel(pid);
+    const names = stus.map(s => s.name).join(', ');
+    return `<div class="iv-banner iv-banner-moy" data-moy-pattern="${escapeHtml(pid)}">
+      <span class="iv-icon">📋</span>
+      <div class="iv-desc">
+        <span>קבוצה מוכנה לפתיחה (מתוך MOY-Lite) — </span>
+        <span class="iv-pattern">${stus.length} תלמידות צריכות תרגול ב${escapeHtml(label)}</span>
+        <span class="iv-group-info">${escapeHtml(names)}</span>
+      </div>
+      <button type="button" class="iv-open-modal" data-moy-open-pattern="${escapeHtml(pid)}" aria-label="פתחי קבוצת תמיכה לדפוס MOY">📋 פתחי קבוצת תמיכה</button>
+    </div>`;
+  }).join('');
+
+  wrap.innerHTML = html;
+
+  wrap.querySelectorAll('button[data-moy-open-pattern]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const pid = btn.dataset.moyOpenPattern;
+      openMOYInterventionGroup(pid, groups[pid]);
+    });
+  });
+}
+
+// בונה virtualGroup ב-shape של _activeGroups, דוחף ופותח modal קיים של B.7.
+// אותו modal — ה-handlers שם משתמשים ב-snapshotGroup, אז שינויים ל-_activeGroups
+// אחרי הפתיחה לא יפגעו ב-modal הפתוח.
+function openMOYInterventionGroup(patternId, stus) {
+  if (!patternId || !stus || stus.length === 0) return;
+  // מנע כפילות: אם כבר קיים virtualGroup לאותו pattern — השתמשי בו
+  let idx = _activeGroups.findIndex(g => g && g._moySourced && g.patternId === patternId);
+  if (idx === -1) {
+    const first = stus[0];
+    const virtualGroup = {
+      patternId: patternId,
+      students: stus,
+      groupCommonDetails: (first && first.details) ? first.details : {},
+      confidence: 'low',
+      _moySourced: true
+    };
+    _activeGroups.push(virtualGroup);
+    idx = _activeGroups.length - 1;
+  }
+  openInterventionModal(idx);
+}
+
+// Letter Cluster — top-3 most-shared weak letters across the group (לטקסט הסקריפט בלבד; כרטיסי
+// הילדות עדיין מציגים את האותיות פר ילדה). הפונקציה ריקה לסקריפטים אחרים.
+function _getGroupSharedLetterDetails(group) {
+  if (!group || group.patternId !== 'letter_cluster') return null;
+  const counts = {};
+  (group.students || []).forEach(function (s) {
+    const letters = s && s.details && Array.isArray(s.details.weak_letters) ? s.details.weak_letters : [];
+    letters.forEach(function (l) { counts[l] = (counts[l] || 0) + 1; });
+  });
+  const ranked = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; });
+  if (ranked.length === 0) return null;
+  return { weak_letters: ranked.slice(0, 3) };
+}
+
+function openInterventionModal(groupIdx) {
+  closeInterventionModal();
+  const group = _activeGroups[groupIdx];
+  if (!group) return;
+  const script = AvneiInterventions.loadScript(group.patternId);
+  if (!script) {
+    alert('שגיאה: לא ניתן לטעון את ה-script של ' + group.patternId);
+    return;
+  }
+  const meta = IV_PATTERN_LABELS[group.patternId] || { icon: '📋', label: group.patternId };
+
+  // התלמידות + פרטים אישיים פר ילדה (לטר-קלאסטר וכו')
+  const studentsHtml = group.students.map(s => {
+    let letters = '';
+    if (group.patternId === 'letter_cluster' && s.details && s.details.weak_letters) {
+      letters = '<span class="iv-stu-letters">' + escapeHtml(s.details.weak_letters.join(' · ')) + '</span>';
+    }
+    return '<li>· ' + escapeHtml(s.name) + letters + '</li>';
+  }).join('');
+
+  // אינטרפלציה של ה-script לפי groupCommonDetails (לאינדפנדנט/Personalized — נציג את הקבוצתי).
+  // ב-letter_cluster נעביר ב-studentDetails את top-3 האותיות הכי משותפות בקבוצה, כדי ש-placeholders
+  // {personalized_letters} / {personalized_first_letter} ב-Materials/HOOK יתמלאו (פר-ילדה נשאר בכרטיסים).
+  const sharedDetails = _getGroupSharedLetterDetails(group);
+  const interp = AvneiInterventions.interpolateScript(script, group.groupCommonDetails || {}, sharedDetails);
+
+  // היסטוריה: רשומות אחרונות של הקבוצה (לפי studentId הראשון — דוגמה)
+  const recentRecs = group.students.length > 0
+    ? AvneiInterventions.getInterventionsFor(group.students[0].id).filter(r => r.pattern === group.patternId).slice(-1)
+    : [];
+  const historyHtml = recentRecs.length > 0
+    ? `<div class="iv-history-card">📅 ביצוע אחרון: ${_fmtDate(recentRecs[0].date)} · ${escapeHtml(recentRecs[0].success_check || '')} · ${escapeHtml(recentRecs[0].teacher_note || '')}</div>`
+    : '';
+
+  // META row
+  const dur = interp.duration_minutes || { total_planned: 12 };
+  const grpSize = interp.group_size || { min: 3, max: 4 };
+  const metaRow = `<div class="iv-meta-row">
+    <span class="iv-tag"><strong>⏱</strong> ${dur.total_planned || (dur.min + '-' + dur.max)} דק'</span>
+    <span class="iv-tag"><strong>👧</strong> ${grpSize.min}-${grpSize.max} ילדות</span>
+    <span class="iv-tag"><strong>📅</strong> ${escapeHtml(interp.weekly_frequency || '4-5 ימים')}</span>
+    <span class="iv-tag"><strong>🏷</strong> ${escapeHtml(interp.tier || 'Tier-2 RTI')}</span>
+  </div>`;
+
+  // Materials (משתמש ב-materials אחרי interpolate)
+  const matsHtml = (interp.materials || []).map(m => '<li>' + escapeHtml(m) + '</li>').join('');
+
+  // 5 שלבים
+  const stagesHtml = (interp.stages || []).map(st => {
+    const crit = st.success_criterion
+      ? `<div class="iv-stage-criterion">קריטריון: ${escapeHtml(st.success_criterion)}</div>`
+      : '';
+    return `<div class="iv-stage">
+      <div class="iv-stage-head">
+        <span class="iv-stage-title">${escapeHtml(st.title || st.id)}</span>
+        <span class="iv-stage-dur">${st.duration_minutes != null ? st.duration_minutes + ' דק\'' : ''}</span>
+      </div>
+      <div class="iv-stage-say">${escapeHtml(st.teacher_say || '')}</div>
+      <div class="iv-stage-do">${escapeHtml(st.teacher_do || '')}</div>
+      ${st.notes ? `<div class="iv-stage-notes">${escapeHtml(st.notes)}</div>` : ''}
+      ${crit}
+    </div>`;
+  }).join('');
+
+  const evidenceHtml = (interp.evidence || []).length > 0
+    ? '<div class="iv-evidence">📚 בסיס מחקרי: ' + (interp.evidence || []).map(e => escapeHtml(e)).join(' · ') + '</div>'
+    : '';
+
+  const bodyHtml = `
+    ${metaRow}
+    <div class="iv-goal"><span class="iv-goal-label">🎯 מטרה:</span>${escapeHtml(interp.goal || '')}</div>
+    ${historyHtml}
+    <div class="iv-students-card">
+      <h4>קבוצה (${group.students.length} ילדות):</h4>
+      <ul>${studentsHtml}</ul>
+    </div>
+    <div class="iv-materials">
+      <h4>📦 חומרים:</h4>
+      <ul>${matsHtml}</ul>
+    </div>
+    ${stagesHtml}
+    ${evidenceHtml}
+    <div class="iv-actions">
+      <button type="button" class="iv-btn-print" data-iv-print="${groupIdx}" aria-label="הורד התערבות כ-PDF">📥 הורד / הדפסה ל-PDF</button>
+      <button type="button" class="iv-btn-done" data-iv-done="${groupIdx}" aria-label="סמני שביצעתי היום">✓ סמני שביצעתי היום</button>
+      <button type="button" class="iv-btn-cancel" data-iv-cancel aria-label="סגירה">× סגירה</button>
+    </div>
+  `;
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'iv-modal-backdrop';
+  backdrop.setAttribute('data-iv-modal', '1');
+  backdrop.innerHTML = `
+    <div class="iv-modal" role="dialog" aria-modal="true" aria-labelledby="ivModalTitle">
+      <div class="iv-head">
+        <div>
+          <div class="iv-title" id="ivModalTitle">${meta.icon} ${escapeHtml(interp.title || meta.label)}</div>
+          <div class="iv-sub">${group.students.length} ילדות · ${dur.total_planned || dur.min + '-' + dur.max} דק' · יעד: ${escapeHtml(interp.weekly_frequency || '4-5 ימים השבוע')}</div>
+        </div>
+        <button type="button" class="iv-close" aria-label="סגור" data-iv-close>×</button>
+      </div>
+      <div class="iv-body">${bodyHtml}</div>
+    </div>
+  `;
+  document.body.appendChild(backdrop);
+
+  // hooks — סנאפ-שוט של group ב-closure כדי שלא יתפוסס מ-auto-refresh
+  const snapshotGroup = group;
+  backdrop.querySelector('[data-iv-close]').addEventListener('click', closeInterventionModal);
+  backdrop.querySelector('[data-iv-cancel]').addEventListener('click', closeInterventionModal);
+  backdrop.querySelector('[data-iv-print]').addEventListener('click', () => {
+    printInterventionGroup(snapshotGroup);
+  });
+  backdrop.querySelector('[data-iv-done]').addEventListener('click', () => {
+    promptInterventionDoneForGroup(snapshotGroup);
+  });
+  backdrop.addEventListener('click', (e) => {
+    if (e.target === backdrop) closeInterventionModal();
+  });
+  document.addEventListener('keydown', _ivModalEscHandler);
+}
+
+function _ivModalEscHandler(e) {
+  if (e.key === 'Escape') closeInterventionModal();
+}
+
+function closeInterventionModal() {
+  const existing = document.querySelector('[data-iv-modal]');
+  if (existing) existing.remove();
+  document.removeEventListener('keydown', _ivModalEscHandler);
+}
+
+function _fmtDate(ts) {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  return d.getDate() + '/' + (d.getMonth() + 1);
+}
+
+// ============================================================
+// Print flow — window.print() עם print stylesheet
+// ============================================================
+function printInterventionGroup(group) {
+  if (!group) return;
+  const script = AvneiInterventions.loadScript(group.patternId);
+  if (!script) return;
+  const sharedDetails = _getGroupSharedLetterDetails(group);
+  const interp = AvneiInterventions.interpolateScript(script, group.groupCommonDetails || {}, sharedDetails);
+  const meta = IV_PATTERN_LABELS[group.patternId] || { icon: '📋', label: group.patternId };
+
+  const today = new Date();
+  const dd = String(today.getDate()).padStart(2, '0');
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const yyyy = today.getFullYear();
+
+  const dur = interp.duration_minutes || { total_planned: 12 };
+  const grpSize = interp.group_size || { min: 3, max: 4 };
+
+  // students + (לטר-קלאסטר: אותיות פר ילדה)
+  const studentsLine = group.students.map(s => {
+    let extra = '';
+    if (group.patternId === 'letter_cluster' && s.details && s.details.weak_letters) {
+      extra = ' (' + s.details.weak_letters.join(' · ') + ')';
+    }
+    return s.name + extra;
+  }).join(' · ');
+
+  const matsHtml = (interp.materials || []).map(m => '<li>' + escapeHtml(m) + '</li>').join('');
+
+  const stagesHtml = (interp.stages || []).map(st => `
+    <div class="iv-pstage">
+      <div class="iv-pstage-title">${escapeHtml(st.title || st.id)}${st.duration_minutes != null ? ' · ' + st.duration_minutes + ' דק\'' : ''}</div>
+      <div class="iv-pstage-say"><strong>💬 המורה אומרת:</strong> ${escapeHtml(st.teacher_say || '')}</div>
+      <div class="iv-pstage-do"><strong>👉 פעולה:</strong> ${escapeHtml(st.teacher_do || '')}</div>
+      ${st.notes ? '<div class="iv-pstage-notes">' + escapeHtml(st.notes) + '</div>' : ''}
+      ${st.success_criterion ? '<div class="iv-pstage-notes">קריטריון: ' + escapeHtml(st.success_criterion) + '</div>' : ''}
+    </div>
+  `).join('');
+
+  const printArea = document.getElementById('iv-print-area');
+  printArea.innerHTML = `
+    <h1>${meta.icon} ${escapeHtml(interp.title || meta.label)}</h1>
+    <div class="iv-pmeta">
+      תאריך הדפסה: ${dd}/${mm}/${yyyy} ·
+      קבוצה ${grpSize.min}-${grpSize.max} ילדות · משך ${dur.total_planned || dur.min + '-' + dur.max} דק' ·
+      תדירות: ${escapeHtml(interp.weekly_frequency || '4-5 ימים')} · ${escapeHtml(interp.tier || 'Tier-2 RTI')}
+    </div>
+    <div class="iv-pgoal"><strong>🎯 מטרה:</strong> ${escapeHtml(interp.goal || '')}</div>
+    <div class="iv-pstu"><strong>👧 קבוצה:</strong> ${escapeHtml(studentsLine)}</div>
+    <div class="iv-pmat"><strong>📦 חומרים:</strong><ul>${matsHtml}</ul></div>
+    ${stagesHtml}
+    <div class="iv-pfoot">
+      אבני יסוד · אינטרבנציה ${escapeHtml(meta.label)} · בסיס מחקרי: ${(interp.evidence || []).map(e => escapeHtml(e)).join(' · ')}
+    </div>
+  `;
+
+  document.body.classList.add('iv-printing');
+  // משהה למסגרת אחת — חלק מהדפדפנים דורשים שה-DOM יעודכן לפני print
+  setTimeout(() => {
+    window.print();
+    document.body.classList.remove('iv-printing');
+    printArea.innerHTML = '';
+  }, 60);
+}
+
+// ============================================================
+// "סמני שביצעתי" — prompt קצר ושמירה ב-state.interventions
+// ============================================================
+function promptInterventionDoneForGroup(group) {
+  if (!group) return;
+
+  const successCheck = prompt('כמה ילדות עברו את ה-Success Check? (לדוגמה "4/5", "3 מתוך 4", "מאיה+נועה")', '4/5');
+  if (successCheck === null) return;  // ביטלה
+  const durationStr = prompt('כמה דקות בפועל?', '12');
+  if (durationStr === null) return;
+  const note = prompt('הערה קצרה לתיעוד (אופציונלי):', '') || '';
+
+  const duration = parseInt(durationStr, 10);
+  const studentIds = group.students.map(s => s.id);
+  const payload = {
+    pattern_details: group.groupCommonDetails || {},
+    duration_minutes: isNaN(duration) ? null : duration,
+    success_check: successCheck.trim(),
+    teacher_note: note.trim()
+  };
+
+  // הוספת פרטים פר-ילדה (Letter Cluster — אותיות פר ילדה)
+  if (group.patternId === 'letter_cluster') {
+    payload.pattern_details = Object.assign({}, payload.pattern_details, {
+      per_student_letters: group.students.reduce((acc, s) => {
+        if (s.details && s.details.weak_letters) acc[s.id] = s.details.weak_letters;
+        return acc;
+      }, {})
+    });
+  }
+
+  const ok = AvneiInterventions.recordIntervention(studentIds, group.patternId, payload);
+  if (ok) {
+    alert('✓ נשמר ב-' + studentIds.length + ' תלמידות.\nאפשר לסגור את החלון.');
+    closeInterventionModal();
+    render();
+  } else {
+    alert('שגיאה בשמירת התיעוד.');
+  }
+}
+</script>
+
+</body>
+</html>

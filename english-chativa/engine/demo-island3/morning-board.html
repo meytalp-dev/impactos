@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>בוקר טוב, רחל · אבני יסוד</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Playpen+Sans+Hebrew:wght@500;700;800&family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="demo-style.css">
+<style>
+  .morning-hero {
+    background: linear-gradient(135deg, var(--indigo) 0%, var(--violet) 60%, var(--pink) 100%);
+    color: white;
+    border-radius: var(--radius-lg);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+  }
+  .morning-hero::before {
+    content: ""; position: absolute;
+    top: -100px; left: -80px;
+    width: 320px; height: 320px;
+    background: radial-gradient(circle, rgba(255,255,255,0.20), transparent 70%);
+    pointer-events: none;
+  }
+  .morning-hero h1 {
+    font-size: clamp(28px, 4.5vw, 40px);
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+  .morning-hero p {
+    font-size: 15px; opacity: 0.95;
+    max-width: 720px; line-height: 1.55;
+  }
+  .morning-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .morning-stat {
+    background: rgba(255,255,255,0.18);
+    backdrop-filter: blur(8px);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    border: 1px solid rgba(255,255,255,0.20);
+  }
+  .morning-stat-label {
+    font-size: 11.5px; font-weight: 700;
+    opacity: 0.88; letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+  .morning-stat-value {
+    font-family: 'Inter', sans-serif;
+    font-weight: 800; font-size: 26px;
+  }
+
+  /* Filter tabs */
+  .filter-tabs {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .filter-tab {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 13px; font-weight: 600;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-tab:hover { border-color: var(--lavender); color: var(--indigo); }
+  .filter-tab.active {
+    background: var(--indigo); color: #fff;
+    border-color: var(--indigo);
+  }
+  .filter-tab .count {
+    font-family: 'Inter', sans-serif;
+    background: rgba(255,255,255,0.25);
+    border-radius: 999px;
+    padding: 1px 7px;
+    margin-right: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+  }
+  .filter-tab:not(.active) .count {
+    background: var(--indigo-soft);
+    color: var(--indigo-deep);
+  }
+
+  /* Auto groups carousel */
+  .groups-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .group-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--violet);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s;
+  }
+  .group-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+  .group-card.violet { border-top-color: var(--violet); }
+  .group-card.green  { border-top-color: var(--green); }
+  .group-card.gold   { border-top-color: var(--gold); }
+  .group-card.orange { border-top-color: var(--orange); }
+  .group-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .group-name {
+    font-family: 'Playpen Sans Hebrew', sans-serif;
+    font-weight: 800; font-size: 15.5px;
+    color: var(--ink);
+  }
+  .group-count {
+    background: var(--indigo-soft);
+    color: var(--indigo-deep);
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .group-rationale {
+    font-size: 13px; color: var(--ink-soft);
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+  .group-avatars {
+    display: flex; gap: -8px; margin-bottom: 12px;
+  }
+  .group-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--indigo-soft); color: var(--indigo-deep);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playpen Sans Hebrew', sans-serif;
+    font-weight: 700; font-size: 13px;
+    border: 2px solid var(--card);
+    margin-left: -6px;
+  }
+  .group-action {
+    font-size: 12.5px; color: var(--indigo);
+    font-weight: 700;
+    background: var(--indigo-soft);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+  }
+
+  /* Student rows */
+  .student-row {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 14px;
+    transition: all 0.2s;
+  }
+  .student-row:hover { box-shadow: var(--shadow); }
+  .student-row.alert-bg {
+    background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+    border-color: var(--orange);
+  }
+  .student-row.ready-bg {
+    background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 30%, var(--card) 100%);
+    border-color: var(--green);
+  }
+  .row-head {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .row-avatar {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--indigo) 0%, var(--violet) 100%);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playpen Sans Hebrew', sans-serif;
+    font-weight: 800; font-size: 18px;
+    flex-shrink: 0;
+  }
+  .row-name {
+    font-family: 'Playpen Sans Hebrew', sans-serif;
+    font-weight: 800; font-size: 17px;
+    color: var(--ink);
+  }
+  .row-profile {
+    font-size: 12.5px; color: var(--ink-faded);
+    margin-top: 2px;
+  }
+  .row-summary {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+  }
+  .row-actions {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-top: 4px;
+  }
+
+  .plan-preview {
+    background: var(--bg-soft);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    border-right: 3px solid var(--indigo);
+  }
+  .plan-preview-meta {
+    font-size: 11.5px; font-weight: 700;
+    color: var(--ink-faded);
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+  .plan-preview-text {
+    font-size: 13.5px; color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* "תראי לי למה" panel */
+  .why-panel {
+    background: linear-gradient(135deg, var(--violet-soft) 0%, var(--indigo-soft) 100%);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    margin-top: 12px;
+    border: 1px dashed var(--lavender);
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+    display: none;
+  }
+  .why-panel.open { display: block; }
+  .why-title {
+    font-family: 'Playpen Sans Hebrew', sans-serif;
+    font-weight: 800; font-size: 14px;
+    color: var(--indigo-deep);
+    margin-bottom: 8px;
+  }
+  .why-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .why-cell {
+    background: rgba(255,255,255,0.6);
+    border-radius: 8px;
+    padding: 8px 10px;
+  }
+  .why-cell-label {
+    font-size: 10.5px; font-weight: 700;
+    color: var(--ink-faded);
+    letter-spacing: 0.04em;
+  }
+  .why-cell-value {
+    font-family: 'Inter', sans-serif;
+    font-weight: 800; font-size: 14px;
+    color: var(--ink);
+    margin-top: 2px;
+  }
+
+  .override-form {
+    background: var(--bg-soft);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    margin-top: 12px;
+    display: none;
+  }
+  .override-form.open { display: block; }
+  .override-form label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--ink); }
+  .override-form select, .override-form textarea {
+    width: 100%; padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-family: 'Heebo', sans-serif;
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+  .override-form textarea { resize: vertical; min-height: 60px; }
+
+  .confirmation {
+    background: var(--green-soft);
+    border-right: 4px solid var(--green);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    margin-top: 12px;
+    font-size: 13px;
+    color: #065F46;
+    font-weight: 600;
+    display: none;
+  }
+  .confirmation.open { display: block; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <div class="brand-mark">א</div>
+    <div>
+      <div class="brand-name">אבני יסוד</div>
+      <div class="brand-sub">בוקר טוב · דשבורד יומי</div>
+    </div>
+  </a>
+  <div class="topbar-actions">
+    <span class="demo-tag">דמו</span>
+    <a class="nav-link" href="index.html">שער</a>
+    <a class="nav-link" href="after-game.html">אחרי משחקון</a>
+    <a class="nav-link" href="island3-summary.html">סיכום אי 3</a>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div id="hero"></div>
+
+  <div class="section">
+    <h2 class="section-title">קבוצות אוטומטיות</h2>
+    <p class="section-subtitle">המערכת ניתחה אתמול ב-16:30 את התקדמות כל ילד.ה — וזיהתה את הקבוצות האלה.</p>
+    <div class="groups-row" id="groups"></div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">תכניות אישיות — לחצי כדי לאשר או לשנות</h2>
+    <p class="section-subtitle">8 ילדים · 1-לחיצה לכל אישור · "תראי לי למה" חושף את הלוגיקה.</p>
+
+    <div class="filter-tabs" id="filters"></div>
+
+    <div id="students"></div>
+  </div>
+
+  <div class="card-strong" style="margin-top: 36px;">
+    <h2 class="section-title" style="margin-bottom: 8px;">דריסות שנעשו היום</h2>
+    <p class="section-subtitle">המערכת לומדת מכל דריסה. בסוף השבוע — דוח על "מתי המערכת שגתה" שייתאמ אותה לכיתה הזו.</p>
+    <div id="overrides-log" style="font-size: 13.5px; color: var(--ink-soft);"></div>
+  </div>
+
+  <div class="foot">
+    דמו · רגע 03: דשבורד הבוקר · מנגנון השיוך מבוסס architecture-mvp.md §8
+  </div>
+
+</main>
+
+<script>
+const STATE_URL = 'state.json';
+let STATE = null;
+let CURRENT_FILTER = 'all';
+const LETTER_ORDER = ['ב', 'ק', 'מ', 'ת', 'ר'];
+
+function init() {
+  fetch(STATE_URL).then(r => r.json()).then(data => {
+    STATE = data;
+    renderAll();
+    loadOverridesLog();
+  });
+}
+
+function statusClass(s) {
+  return { 'mastered': 'mastered', 'near-mastery': 'near', 'in-progress': 'progress', 'needs-review': 'review', 'not-attempted': 'not' }[s] || 'not';
+}
+
+function islandLabel(islandId) {
+  if (!STATE || !STATE.meta || !STATE.meta.islands_friendly_names) return 'אי ' + islandId;
+  return STATE.meta.islands_friendly_names[String(islandId)] || ('אי ' + islandId);
+}
+
+function supportLevelLabel(level) {
+  return { 1: 'עצמאי', 2: 'תמיכה קלה', 3: 'תמיכה אוטומטית', 4: 'תמיכה מלאה' }[level] || ('רמה ' + level);
+}
+
+function renderAll() {
+  renderHero();
+  renderGroups();
+  renderFilters();
+  renderStudents();
+}
+
+function renderHero() {
+  const ready = STATE.students.filter(s => s.tomorrow_plan.ready_for_next).length;
+  const alerts = STATE.students.filter(s => s.tomorrow_plan.teacher_alert).length;
+  const totalMins = STATE.students.reduce((sum, s) => sum + s.tomorrow_plan.total_minutes_estimated, 0);
+  const islandNames = (STATE.meta && STATE.meta.islands_friendly_names) || {};
+  const today = new Date(STATE.meta.generated_at);
+  const tomorrow = new Date(today.getTime() + 24*60*60*1000);
+  const dateLabel = tomorrow.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  document.getElementById('hero').innerHTML = `
+    <div class="morning-hero">
+      <div style="font-size: 12.5px; font-weight: 800; opacity: 0.88; letter-spacing: 0.08em; margin-bottom: 6px;">
+        ${dateLabel} · 07:30
+      </div>
+      <h1>בוקר טוב, ${STATE.teacher_name}.</h1>
+      <p>
+        ההצעה שלי להיום מבוססת על ${STATE.students.reduce((sum, s) => sum + s.completed_today.length, 0)} משחקונים שהילדים השלימו אתמול — תרגול זיהוי 5 אותיות.
+        ${alerts} ילדים צריכים אותך לידם, ${ready} מוכנים לעבור לשלב הבא (חיבור אות+ניקוד). ${STATE.auto_groups.length} קבוצות זוהו אוטומטית.
+      </p>
+      <div class="morning-stats">
+        <div class="morning-stat">
+          <div class="morning-stat-label">תלמידים</div>
+          <div class="morning-stat-value">${STATE.class_size}</div>
+        </div>
+        <div class="morning-stat">
+          <div class="morning-stat-label">מוכנים להמשיך</div>
+          <div class="morning-stat-value">${ready}</div>
+        </div>
+        <div class="morning-stat">
+          <div class="morning-stat-label">צריכים 1:1</div>
+          <div class="morning-stat-value">${alerts}</div>
+        </div>
+        <div class="morning-stat">
+          <div class="morning-stat-label">דק' תרגול היום</div>
+          <div class="morning-stat-value">${totalMins}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderGroups() {
+  const root = document.getElementById('groups');
+  root.innerHTML = STATE.auto_groups.map(g => `
+    <div class="group-card ${g.color}">
+      <div class="group-head">
+        <div class="group-name">${g.name}</div>
+        <div class="group-count num">${g.students.length}</div>
+      </div>
+      ${g.target_island ? `
+        <span class="island-chip island-${g.target_island}" style="margin-top: 0; margin-bottom: 10px;">
+          <span class="island-chip-num">אי ${g.target_island}</span>
+          <span class="island-chip-name">${islandLabel(g.target_island)}</span>
+        </span>
+      ` : ''}
+      <div class="group-rationale">${g.rationale}</div>
+      <div class="group-avatars">
+        ${g.students.map(sid => {
+          const s = STATE.students.find(x => x.id === sid);
+          return `<div class="group-avatar" title="${s.name}">${s.name.charAt(0)}</div>`;
+        }).join('')}
+      </div>
+      <div class="group-action">המלצה: ${g.suggested_action}</div>
+    </div>
+  `).join('');
+}
+
+function renderFilters() {
+  const all       = STATE.students.length;
+  const ready     = STATE.students.filter(s => s.tomorrow_plan.ready_for_next).length;
+  const review    = STATE.students.filter(s => s.tomorrow_plan.primary_level >= 3).length;
+  const alerts    = STATE.students.filter(s => s.tomorrow_plan.teacher_alert).length;
+
+  document.getElementById('filters').innerHTML = `
+    <button class="filter-tab ${CURRENT_FILTER === 'all' ? 'active' : ''}" data-f="all">
+      <span class="count">${all}</span> כל הכיתה
+    </button>
+    <button class="filter-tab ${CURRENT_FILTER === 'ready' ? 'active' : ''}" data-f="ready">
+      <span class="count">${ready}</span> מוכנים להמשיך
+    </button>
+    <button class="filter-tab ${CURRENT_FILTER === 'review' ? 'active' : ''}" data-f="review">
+      <span class="count">${review}</span> צריכים חיזוק
+    </button>
+    <button class="filter-tab ${CURRENT_FILTER === 'alerts' ? 'active' : ''}" data-f="alerts">
+      <span class="count">${alerts}</span> צריכים 1:1
+    </button>
+  `;
+  document.querySelectorAll('.filter-tab').forEach(b => {
+    b.addEventListener('click', () => {
+      CURRENT_FILTER = b.dataset.f;
+      renderFilters();
+      renderStudents();
+    });
+  });
+}
+
+function filterStudent(s) {
+  if (CURRENT_FILTER === 'all')    return true;
+  if (CURRENT_FILTER === 'ready')  return s.tomorrow_plan.ready_for_next;
+  if (CURRENT_FILTER === 'review') return s.tomorrow_plan.primary_level >= 3;
+  if (CURRENT_FILTER === 'alerts') return !!s.tomorrow_plan.teacher_alert;
+  return true;
+}
+
+function renderStudents() {
+  const root = document.getElementById('students');
+  const list = STATE.students.filter(filterStudent);
+
+  if (list.length === 0) {
+    root.innerHTML = `<div class="card" style="text-align:center; color: var(--ink-faded);">אין תלמידים בקטגוריה הזו.</div>`;
+    return;
+  }
+
+  root.innerHTML = list.map(s => renderStudentRow(s)).join('');
+
+  // Bind events
+  document.querySelectorAll('[data-toggle-why]').forEach(b => {
+    b.addEventListener('click', () => {
+      const sid = b.dataset.toggleWhy;
+      document.getElementById('why-' + sid).classList.toggle('open');
+    });
+  });
+  document.querySelectorAll('[data-approve]').forEach(b => {
+    b.addEventListener('click', () => {
+      const sid = b.dataset.approve;
+      const conf = document.getElementById('conf-' + sid);
+      conf.textContent = '✓ אושר. התכנית של ' + STATE.students.find(x=>x.id===sid).name + ' תופיע על המסך כשהילד.ה תיכנס.';
+      conf.classList.add('open');
+      logOverride({ student: sid, action: 'approve', ts: Date.now() });
+    });
+  });
+  document.querySelectorAll('[data-override]').forEach(b => {
+    b.addEventListener('click', () => {
+      const sid = b.dataset.override;
+      document.getElementById('ovr-' + sid).classList.toggle('open');
+    });
+  });
+  document.querySelectorAll('[data-submit-override]').forEach(b => {
+    b.addEventListener('click', () => {
+      const sid = b.dataset.submitOverride;
+      const reason = document.getElementById('ovr-reason-' + sid).value;
+      const action = document.getElementById('ovr-action-' + sid).value;
+      const conf = document.getElementById('conf-' + sid);
+      conf.textContent = '✓ דריסה תועדה. המערכת תלמד מזה לקראת השבוע הבא.';
+      conf.classList.add('open');
+      document.getElementById('ovr-' + sid).classList.remove('open');
+      logOverride({ student: sid, action: 'override:' + action, reason: reason, ts: Date.now() });
+    });
+  });
+}
+
+function buildWhyContent(s) {
+  const plan = s.tomorrow_plan;
+
+  // Per-letter mini grid — שפה פשוטה
+  const letterRows = LETTER_ORDER.map(l => {
+    const d = s.per_letter[l];
+    if (d.status === 'not-attempted') return `<div class="why-cell"><div class="why-cell-label">${l}</div><div class="why-cell-value" style="font-size: 11.5px; color: var(--ink-faded);">לא הגיע.ה</div></div>`;
+    return `
+      <div class="why-cell">
+        <div class="why-cell-label">${l} · ${d.fluency_median_sec.toFixed(1)} שנ' לתשובה</div>
+        <div class="why-cell-value" style="font-size: 13px;">${statusLabelHe(d.status)}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Flag summary
+  const flagCounts = {};
+  Object.values(s.per_letter).forEach(d => (d.flags || []).forEach(f => flagCounts[f] = (flagCounts[f]||0)+1));
+  const flagText = Object.keys(flagCounts).length === 0
+    ? '<span style="color: var(--ink-faded);">אין דגלים — ההתקדמות נקייה.</span>'
+    : Object.entries(flagCounts).map(([f, c]) => `<span class="chip ${flagCounts[f] >= 2 ? 'gold' : 'violet'}" style="font-size: 11.5px; padding: 3px 9px; margin-left: 4px;">${flagLabel(f)} (${c} אותיות)</span>`).join('');
+
+  return `
+    <div class="why-title">למה זאת ההצעה</div>
+    <div><strong>תמונה כללית:</strong> ${s.profile_flag}</div>
+    <div style="margin-top: 6px;"><strong>מצב כל אות:</strong></div>
+    <div class="why-grid">${letterRows}</div>
+    <div style="margin-top: 10px;"><strong>מה זיהיתי:</strong> ${flagText}</div>
+    <div style="margin-top: 10px; font-size: 12px; color: var(--ink-faded);">
+      ילד.ה נחשב.ת "יודע.ת" אות אחרי שני סשנים רצופים עם דיוק גבוה ותשובה תוך 5 שניות.
+    </div>
+    <div style="margin-top: 10px; background: rgba(255,255,255,0.7); padding: 10px 12px; border-radius: 8px;">
+      <strong style="color: var(--indigo-deep);">ההסבר שלי:</strong> ${plan.rationale}
+    </div>
+  `;
+}
+
+function statusLabelHe(s) {
+  return {
+    'mastered':      'יודע.ת מצוין',
+    'near-mastery':  'כמעט שם',
+    'in-progress':   'באמצע',
+    'needs-review':  'צריך תרגול',
+    'not-attempted': 'לא הגיע.ה'
+  }[s] || s;
+}
+
+function flagLabel(f) {
+  return {
+    'slow_response': 'תשובה איטית',
+    'repeated_hint': 'הרבה רמזים',
+    'shape_vs_sound_gap': 'יודע.ת צליל, לא צורה',
+    'find_letter_struggle': 'מתקשה לאתר אות במילה',
+    'level4_drops': 'לא הצליח גם בעזרה מלאה'
+  }[f] || f;
+}
+
+function renderStudentRow(s) {
+  const plan = s.tomorrow_plan;
+  const completedCount = s.completed_today.length;
+  const masteredCount = Object.values(s.per_letter).filter(d => d.status === 'mastered').length;
+
+  const rowClass = plan.teacher_alert ? 'alert-bg' : (plan.ready_for_next ? 'ready-bg' : '');
+
+  return `
+    <div class="student-row ${rowClass}">
+      <div class="row-head">
+        <div class="row-avatar">${s.name.charAt(0)}</div>
+        <div style="flex: 1; min-width: 180px;">
+          <div class="row-name">${s.name}</div>
+          <div class="row-profile">${s.profile_flag}</div>
+          <div class="row-summary">
+            <span class="chip" style="font-size: 11.5px; padding: 3px 10px;">${completedCount}/5 אתמול</span>
+            ${masteredCount > 0 ? `<span class="chip mastered" style="font-size: 11.5px; padding: 3px 10px;">${masteredCount} יודע.ת מצוין</span>` : ''}
+            ${plan.ready_for_next ? `<span class="chip green" style="font-size: 11.5px; padding: 3px 10px;"><span class="chip-dot"></span>מוכן.ה לשלב הבא</span>` : ''}
+            ${plan.teacher_alert ? `<span class="chip orange" style="font-size: 11.5px; padding: 3px 10px;"><span class="chip-dot"></span>צריך 1:1</span>` : ''}
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px;">
+        <span class="island-chip island-${plan.primary_island}">
+          <span class="island-chip-num">אי ${plan.primary_island}</span>
+          <span class="island-chip-name">${islandLabel(plan.primary_island)}</span>
+        </span>
+        ${plan.secondary_island ? `
+          <span class="island-chip-arrow">+</span>
+          <span class="island-chip island-${plan.secondary_island} secondary">
+            <span class="island-chip-num">אי ${plan.secondary_island}</span>
+            <span class="island-chip-name">${islandLabel(plan.secondary_island)}</span>
+          </span>
+        ` : ''}
+      </div>
+
+      ${plan.teacher_alert ? `
+        <div class="alert" style="margin-bottom: 12px;">
+          <div class="alert-title">⚠ ${plan.teacher_alert}</div>
+        </div>
+      ` : ''}
+
+      <div class="plan-preview">
+        <div class="plan-preview-meta">המערכת מציעה היום</div>
+        <div class="plan-preview-text">
+          <strong>${plan.primary_items} פריטים</strong> · ${plan.primary_focus}
+          <span style="display: inline-block; font-size: 12px; color: var(--ink-faded); margin-right: 6px;">(${supportLevelLabel(plan.primary_level)})</span>
+          ${plan.secondary_island ? `<br><span style="color: var(--ink-soft); font-weight: 500;">+ ${plan.secondary_items} פריטים · ${plan.secondary_focus}</span>` : ''}
+          <span style="float: left; font-size: 12px; color: var(--ink-faded); font-weight: 500;">${plan.total_minutes_estimated} דקות</span>
+        </div>
+      </div>
+
+      <div class="row-actions">
+        <button class="btn btn-primary btn-sm" data-approve="${s.id}">✓ אשרי</button>
+        <button class="btn btn-soft btn-sm" data-toggle-why="${s.id}">תראי לי למה</button>
+        <button class="btn btn-ghost btn-sm" data-override="${s.id}">שני את ההצעה</button>
+        <a class="btn btn-ghost btn-sm" href="island3-summary.html?student=${s.id}">סיכום מלא</a>
+      </div>
+
+      <div class="why-panel" id="why-${s.id}">${buildWhyContent(s)}</div>
+
+      <div class="override-form" id="ovr-${s.id}">
+        <label for="ovr-action-${s.id}">איך לשנות:</label>
+        <select id="ovr-action-${s.id}">
+          <option value="lower_level">להוריד רמת פיגום</option>
+          <option value="raise_level">להעלות רמת פיגום</option>
+          <option value="more_items">עוד פריטים</option>
+          <option value="less_items">פחות פריטים</option>
+          <option value="different_letter">להחליף אות מיקוד</option>
+          <option value="skip">לדלג היום</option>
+        </select>
+        <label for="ovr-reason-${s.id}">למה? (יעזור למערכת ללמוד)</label>
+        <textarea id="ovr-reason-${s.id}" placeholder="לדוגמה: יואב היה חולה אתמול, אני יודעת שהוא יודע את ב"></textarea>
+        <button class="btn btn-primary btn-sm" data-submit-override="${s.id}">שמרי שינוי</button>
+      </div>
+
+      <div class="confirmation" id="conf-${s.id}"></div>
+    </div>
+  `;
+}
+
+function logOverride(record) {
+  const log = JSON.parse(localStorage.getItem('island3_overrides') || '[]');
+  log.push(record);
+  localStorage.setItem('island3_overrides', JSON.stringify(log));
+  loadOverridesLog();
+}
+
+function loadOverridesLog() {
+  const log = JSON.parse(localStorage.getItem('island3_overrides') || '[]');
+  const root = document.getElementById('overrides-log');
+  if (log.length === 0) {
+    root.innerHTML = '<em>עוד לא בוצעו אישורים/דריסות היום. אישורים יופיעו כאן בזמן אמת.</em>';
+    return;
+  }
+  root.innerHTML = log.slice(-10).reverse().map(r => {
+    if (!STATE) return '';
+    const s = STATE.students.find(x => x.id === r.student);
+    if (!s) return '';
+    const t = new Date(r.ts).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+    const actionLabel = r.action === 'approve' ? '✓ אישור 1-לחיצה' : '✎ דריסה: ' + r.action.replace('override:', '');
+    return `<div style="padding: 8px 0; border-bottom: 1px solid var(--line);">
+      <span class="num" style="color: var(--ink-faded);">${t}</span> ·
+      <strong>${s.name}</strong> · ${actionLabel}
+      ${r.reason ? `<div style="color: var(--ink-faded); font-size: 12.5px; margin-top: 4px;">${r.reason}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+init();
+</script>
+
+</body>
+</html>

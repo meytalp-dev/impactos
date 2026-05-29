@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>אבני יסוד — רשימת מטלות</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Assistant', system-ui, sans-serif;
+    background: #f7fafc;
+    color: #1a2332;
+    line-height: 1.65;
+    font-size: 20px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 28px 18px 80px; }
+
+  header.top {
+    background: linear-gradient(135deg, #2c7a7b 0%, #4fd1c5 100%);
+    color: white;
+    padding: 40px 28px;
+    border-radius: 18px;
+    margin-bottom: 28px;
+  }
+  header.top h1 { font-size: 40px; margin-bottom: 10px; }
+  header.top p { font-size: 22px; opacity: 0.95; }
+
+  .legend {
+    background: white;
+    padding: 20px 24px;
+    border-radius: 14px;
+    margin-bottom: 28px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    font-size: 18px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 10px; }
+  .legend-dot {
+    width: 22px; height: 22px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-now { background: #e53e3e; }
+  .dot-after { background: #d69e2e; }
+  .dot-parallel { background: #4299e1; }
+  .dot-later { background: #a0aec0; }
+
+  .step {
+    background: white;
+    padding: 32px;
+    border-radius: 18px;
+    margin-bottom: 24px;
+    border-right: 10px solid #4fd1c5;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  }
+  .step.priority-now { border-right-color: #e53e3e; }
+  .step.priority-after { border-right-color: #d69e2e; }
+  .step.priority-parallel { border-right-color: #4299e1; }
+  .step.priority-later { border-right-color: #a0aec0; }
+
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .step-number {
+    background: #2c7a7b;
+    color: white;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .step.priority-now .step-number { background: #e53e3e; }
+  .step.priority-after .step-number { background: #d69e2e; }
+  .step.priority-parallel .step-number { background: #4299e1; }
+  .step.priority-later .step-number { background: #a0aec0; }
+
+  .step-title { font-size: 30px; font-weight: 800; flex: 1; line-height: 1.2; }
+
+  .step-meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .badge {
+    font-size: 15px;
+    padding: 6px 14px;
+    border-radius: 14px;
+    font-weight: 600;
+  }
+  .badge-time { background: #e6fffa; color: #234e52; }
+  .badge-who-me { background: #ebf4ff; color: #2c5282; }
+  .badge-who-meytal { background: #fef3c7; color: #78350f; }
+  .badge-who-both { background: #faf5ff; color: #44337a; }
+  .badge-blocks { background: #fee; color: #9b2c2c; }
+  .badge-parallel { background: #e6f9ff; color: #285e61; }
+
+  .why-box {
+    background: #f7fafc;
+    border-right: 4px solid #4a5568;
+    padding: 16px 22px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 19px;
+    line-height: 1.65;
+  }
+  .why-box strong { color: #2d3748; }
+
+  .tasks ul { list-style: none; padding: 0; }
+  .tasks li {
+    background: #f0fff4;
+    margin-bottom: 12px;
+    padding: 16px 20px;
+    border-radius: 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    font-size: 19px;
+    line-height: 1.55;
+  }
+  .tasks li.note {
+    background: #fffaf0;
+    border-right: 4px solid #d69e2e;
+    font-size: 17px;
+    color: #744210;
+  }
+  .checkbox {
+    width: 26px; height: 26px;
+    border: 2.5px solid #2c7a7b;
+    border-radius: 5px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .tasks li.note .checkbox { display: none; }
+  .tasks li .who-tag {
+    font-size: 14px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    margin-left: 8px;
+    font-weight: 700;
+    white-space: nowrap;
+    display: inline-block;
+  }
+  .who-me { background: #2c5282; color: white; }
+  .who-meytal { background: #d69e2e; color: white; }
+  .who-both { background: #6b46c1; color: white; }
+
+  .parallel-track {
+    background: #e6f9ff;
+    padding: 22px 26px;
+    border-radius: 14px;
+    margin: 16px 0;
+    border-right: 5px solid #4299e1;
+  }
+  .parallel-track h3 {
+    font-size: 22px;
+    color: #2c5282;
+    margin-bottom: 12px;
+  }
+  .parallel-track p { font-size: 18px; }
+
+  .flow-arrow {
+    text-align: center;
+    font-size: 42px;
+    color: #4fd1c5;
+    margin: 6px 0;
+  }
+
+  .big-summary {
+    background: #fefce8;
+    border: 2px solid #ecc94b;
+    padding: 28px 32px;
+    border-radius: 14px;
+    margin-top: 32px;
+  }
+  .big-summary h2 { color: #744210; margin-bottom: 16px; font-size: 28px; }
+  .big-summary ol { padding-right: 28px; }
+  .big-summary li { margin: 12px 0; font-size: 20px; font-weight: 600; line-height: 1.55; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<header class="top">
+  <h1>אבני יסוד — רשימת מטלות</h1>
+  <p>סדר מה לעשות. מה קודם. מה במקביל. מי עושה.</p>
+</header>
+
+<div class="legend">
+  <div class="legend-item"><span class="legend-dot dot-now"></span>עכשיו · חוסם הכל</div>
+  <div class="legend-item"><span class="legend-dot dot-after"></span>אחרי זה · חשוב</div>
+  <div class="legend-item"><span class="legend-dot dot-parallel"></span>במקביל · אפשר עכשיו</div>
+  <div class="legend-item"><span class="legend-dot dot-later"></span>אחר כך · חכה</div>
+</div>
+
+<!-- שלב 1 -->
+<div class="step priority-now">
+  <div class="step-header">
+    <div class="step-number">1</div>
+    <div>
+      <div class="step-title">לגמור את אי 3</div>
+      <div class="step-meta">
+        <span class="badge badge-time">2-3 שבועות</span>
+        <span class="badge badge-who-both">מיטל + Claude</span>
+        <span class="badge badge-blocks">חוסם הכל</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="why-box">
+    <strong>למה זה ראשון:</strong> אי 3 הוא התבנית. הוא יודע איך משחקון נראה, איך נוני מתנהג, איך עוברים בין שלבים. כל איי A יבנו עליו. אם אי 3 לא טוב — האחרים יהיו רעים.
+  </div>
+
+  <div class="why-box" style="background:#fef3c7;border-color:#d69e2e;">
+    <strong>עדכון 23.5.2026 — המבנה השתנה בפועל:</strong> במקום 4 שלבים זהים × 5 אותיות, נבנו <strong>5 משחקונים שונים — אחד לכל אות</strong>. כל משחקון = מטאפורה ומכניקה שונה. גיוון מנגנונים פתר את בעיית "אותה משימה חוזרת".
+  </div>
+
+  <div class="tasks">
+    <ul>
+      <li><span class="checkbox" style="background:#48bb78;border-color:#48bb78;"></span><span>✓ <span class="who-tag who-meytal">מיטל</span><strong>הצדף הקסום</strong> — אות <strong>מ</strong> (stage-3-shell.html)</span></li>
+      <li><span class="checkbox" style="background:#48bb78;border-color:#48bb78;"></span><span>✓ <span class="who-tag who-meytal">מיטל</span><strong>הצלת הדגים</strong> — אות <strong>ק</strong> (stage-3-rescue.html)</span></li>
+      <li><span class="checkbox" style="background:#48bb78;border-color:#48bb78;"></span><span>✓ <span class="who-tag who-meytal">מיטל</span><strong>הבית של נוני</strong> — אות <strong>ב</strong> (stage-3-house.html)</span></li>
+      <li><span class="checkbox" style="background:#48bb78;border-color:#48bb78;"></span><span>✓ <span class="who-tag who-meytal">מיטל</span><strong>שביל החזרה</strong> — אות <strong>ר</strong> (stage-3-trail-resh.html)</span></li>
+      <li><span class="checkbox" style="background:#48bb78;border-color:#48bb78;"></span><span>✓ <span class="who-tag who-meytal">מיטל</span><strong>ציד האורות</strong> — אות <strong>ת</strong> (stage-3-storm.html)</span></li>
+      <li><span class="checkbox" style="background:#48bb78;border-color:#48bb78;"></span><span>✓ <span class="who-tag who-me">Claude</span>5 משחקונים מחוברים ל-event-logger (תובנות מורה)</span></li>
+      <li><span class="checkbox" style="background:#48bb78;border-color:#48bb78;"></span><span>✓ <span class="who-tag who-me">Claude</span>letter-shape variant B (האות גלויה בקונכייה — חוב 2)</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-meytal">מיטל</span>בדיקה עם ילדה אחת אמיתית על כל 5 המשחקונים</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-both">שנינו</span>תיקונים אחרי הבדיקה</span></li>
+    </ul>
+  </div>
+
+  <div class="why-box" style="background:#e6fffa;border-color:#2c7a7b;">
+    <strong>סוף השלב:</strong> אי 3 חי, אומת על ילדה אמיתית. שני פערים פתורים (G1 + G3).
+  </div>
+</div>
+
+<div class="flow-arrow">↓</div>
+
+<!-- שלב 2 — הושלם -->
+<div class="step priority-parallel" style="opacity:0.7;background:#f0fff4;">
+  <div class="step-header">
+    <div class="step-number" style="background:#48bb78;">✓</div>
+    <div>
+      <div class="step-title" style="text-decoration:line-through;color:#4a5568;">לשאול 5 שאלות חשובות</div>
+      <div class="step-meta">
+        <span class="badge" style="background:#48bb78;color:white;">הושלם 23.5.2026</span>
+        <span class="badge badge-who-me">Claude</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="why-box" style="background:#e6fffa;border-color:#2c7a7b;">
+    <strong>תוצאה:</strong> 5 תשובות שמורות ב-<a href="research-findings-2026-05-23.md" style="color:#2c7a7b;">research-findings-2026-05-23.md</a>. סף שטף = 20-30 WPM. דגש = לא מציגים מפורשות. קליטיקים = מודבק במילה. צ'אנקים מורפולוגיים = ו- ה- ב- ל- מ-. אבחנת אותיות = רק כשהזוג שלם.
+  </div>
+</div>
+
+<div class="flow-arrow">↓</div>
+
+<!-- שלב 2.5 — עבודה מקבילית חדשה -->
+<div class="step priority-parallel">
+  <div class="step-header">
+    <div class="step-number">2.5</div>
+    <div>
+      <div class="step-title">במקביל לבניית 4 המשחקונים של אות מ</div>
+      <div class="step-meta">
+        <span class="badge badge-time">2-4 שעות</span>
+        <span class="badge badge-who-me">Claude לבד</span>
+        <span class="badge badge-parallel">לא חוסם את מיטל</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="why-box">
+    <strong>למה זה במקביל:</strong> מיטל בונה את 4 המשחקונים האחרים של אות מ (אחרי הצדף הקסום). זה לוקח זמן. אני יכול לטפל באודיו, חובות פתוחים, ובדיקות אוטומטיות בלי לחסום את העבודה שלה.
+  </div>
+
+  <div class="tasks">
+    <ul>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span><strong>אודיט אודיו מלא</strong> — לבדוק לכל קובץ MP3 איזה קול (Hila/Avri/לא ידוע), לסמן 3-צבעים</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span><strong>רגנרציה ב-AvriNeural</strong> — לעדכן engine/generate-audio.py + להחליף 52 מילים גנריות במילים האמיתיות מ-items</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span><strong>גיבוי קבצים ישנים</strong> — ל-_old-hila-backup/ לפני החלפה</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span><strong>הכנת סקריפט עתידי</strong> — שעות שאת תוסיפי אות חדשה (ת·ר·ב·ק) תקבל MP3 אוטומטית</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span><strong>letter-shape variant B fix</strong> — חוב #2 — קונכיות עם האות גלויה</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span><strong>Playwright test לאות מ</strong> — חוב #3 — בדיקה אוטומטית של זרימת האות</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span><strong>תכנון 22 הקלטות עתידיות של מיטל</strong> — רשימה ספציפית של מה להקליט (פונמות /ב/, /מ/ וכו') ומתי</span></li>
+    </ul>
+  </div>
+
+  <div class="why-box" style="background:#e6fffa;border-color:#2c7a7b;">
+    <strong>סוף השלב:</strong> כל הקבצים האודיו ב-AvriNeural אחיד. סקריפט מוכן לאותיות עתידיות. 2 חובות סגורים. תכנון להקלטות שלך.
+  </div>
+</div>
+
+<div class="flow-arrow">↓</div>
+
+<!-- שלב 3 — חלק BKT הושלם -->
+<div class="step priority-parallel" style="opacity:0.85;background:#f0fff4;">
+  <div class="step-header">
+    <div class="step-number" style="background:#48bb78;">✓</div>
+    <div>
+      <div class="step-title">BKT engine נבנה (חלק משלב 3)</div>
+      <div class="step-meta">
+        <span class="badge" style="background:#48bb78;color:white;">הושלם 23.5.2026</span>
+        <span class="badge badge-who-me">Claude</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="why-box" style="background:#e6fffa;border-color:#2c7a7b;">
+    <strong>תוצאה:</strong> <code>js/shared/bkt.js</code> פעיל. עוקב אחרי p(שולטת) פר-תלמיד.ה × פר-אי. מעדכן אוטומטית אחרי כל אירוע. נבדק בסימולציה — אין False Positive (ניחוש בודד לא קופץ ל"שלט"). פרמטרים ספציפיים פר-אי + ספי שטף. עדיין נשאר ב-roadmap: תבנית גנרית + 4 רמות פיגום + companion UI גלובלי.
+  </div>
+</div>
+
+<div class="flow-arrow">↓</div>
+
+<!-- שלב 3 (המשך) -->
+<div class="step priority-after">
+  <div class="step-header">
+    <div class="step-number">3</div>
+    <div>
+      <div class="step-title">לבנות את המוח של המערכת</div>
+      <div class="step-meta">
+        <span class="badge badge-time">2-3 שבועות</span>
+        <span class="badge badge-who-me">Claude</span>
+        <span class="badge badge-blocks">חוסם איים חדשים</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="why-box">
+    <strong>למה זה צריך להיות מהר:</strong> בלי המוח לא נוכל לבנות עוד איים. המוח הוא מה שיודע באיזו רמה הילדה, מה התרגיל הבא, מתי לעבור לאי הבא.
+  </div>
+
+  <div class="tasks">
+    <ul>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>להפוך את <code>stage-3.html</code> לתבנית גנרית — כל אי יוכל להשתמש בה</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span><strong>BKT</strong> — האלגוריתם שעוקב מה הילדה יודעת</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>לוגיקת 4 רמות — קל, בינוני, קשה, מאוד קשה</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>לתייג את כל המילים ב-<code>vocab-bank.json</code> לפי אי ורמה</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>בועת נוני (3 מצבים) + פס זרם המים — אחיד בכל המסכים</span></li>
+    </ul>
+  </div>
+
+  <div class="why-box" style="background:#e6fffa;border-color:#2c7a7b;">
+    <strong>סוף השלב:</strong> תשתית מוכנה. עכשיו כל אי חדש יקח שבוע במקום חודש.
+  </div>
+</div>
+
+<div class="flow-arrow">↓</div>
+
+<!-- שלב 4 -->
+<div class="step priority-after">
+  <div class="step-header">
+    <div class="step-number">4</div>
+    <div>
+      <div class="step-title">לבנות אי 1 + אי 2 (הקלים)</div>
+      <div class="step-meta">
+        <span class="badge badge-time">3-4 שבועות</span>
+        <span class="badge badge-who-both">מיטל + Claude</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="why-box">
+    <strong>למה אלה הראשונים:</strong> אין בהם אותיות בכלל. רק קולות. הכי קלים לבנייה ולא דורשים תמונות מורכבות. נראה אם המוח עובד עליהם.
+  </div>
+
+  <div class="tasks">
+    <ul>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>SVG של מפרץ הבועות (אי 1)</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>SVG של שונית גלי הצליל (אי 2)</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>3 משחקונים לכל אי (מתוך הבלופרינט)</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>Session Journey לכל אי (המסע התוך-סשני)</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>TTS למילים ולצלילים (Google TTS)</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-meytal">מיטל</span>5-10 הקלטות שלך לעוגנים רגשיים</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-meytal">מיטל</span>בדיקה עם ילדה</span></li>
+      <li class="note">⚠ אחרי הבדיקה — תיקונים. סביר שיהיו 2-3 דברים לתקן.</li>
+    </ul>
+  </div>
+
+  <div class="why-box" style="background:#e6fffa;border-color:#2c7a7b;">
+    <strong>סוף השלב:</strong> 3 איים פעילים (3, 1, 2). ילדה יכולה לעבור ביניהם. אנחנו יודעים שזה עובד.
+  </div>
+</div>
+
+<div class="flow-arrow">↓</div>
+
+<!-- שלב 5 — מקבילי -->
+<div class="parallel-track">
+  <h3>שלבים 5-6-7 — אפשר במקביל אחרי שלב 4</h3>
+  <p>אחרי שיש לנו 3 איים חיים, אפשר לבנות את השאר במקביל. הסדר ביניהם פחות חשוב — אבל אי 4 מומלץ ראשון כי כל איי 5-9 תלויים בו.</p>
+</div>
+
+<!-- שלב 5 -->
+<div class="step priority-parallel">
+  <div class="step-header">
+    <div class="step-number">5</div>
+    <div>
+      <div class="step-title">לבנות אי 4 (אותיות + ניקוד)</div>
+      <div class="step-meta">
+        <span class="badge badge-time">3 שבועות</span>
+        <span class="badge badge-who-both">מיטל + Claude</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="why-box">
+    <strong>למה אי 4 ראשון מבין השאר:</strong> כל איי 5-9 תלויים בו. הילדה צריכה לדעת לקרוא הברה (ב + ָ = בָּ) לפני שהיא יכולה לקרוא מילה (אַבָּא = אַ + בָּא).
+  </div>
+
+  <div class="tasks">
+    <ul>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>SVG של מפרץ הצדפים</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>3 משחקונים — כולל המשחקון הקריטי "אור על הניקוד" (פותר G6)</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>הוספת אותיות סופיות (ך · ם · ן · ף · ץ) — פותר G2</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>הרחבה לכל הניקוד (לא רק /a i u/) — פותר G5</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>TTS לכל הצירופים</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-meytal">מיטל</span>בדיקה עם ילדה</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- שלב 6 -->
+<div class="step priority-parallel">
+  <div class="step-header">
+    <div class="step-number">6</div>
+    <div>
+      <div class="step-title">לבנות איים 5, 6 (מילים + שטף)</div>
+      <div class="step-meta">
+        <span class="badge badge-time">4-5 שבועות</span>
+        <span class="badge badge-who-both">מיטל + Claude</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="why-box">
+    <strong>מה זה:</strong> אי 5 = מחברים הברות למילה (בָּא + אַ = אַבָּא). אי 6 = קוראים מהר. שני האיים עובדים עם תמונות.
+  </div>
+
+  <div class="tasks">
+    <ul>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>SVG של שונית החיבורים + להקת הדגים</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>תמונות לאוצר מילים (פרפר, חתול, אבא, אמא, ים, וכו') — בערך 80 תמונות</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>3 משחקונים לכל אי</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-meytal">מיטל</span>בדיקה — במיוחד אי 6 (שטף) דורש זמני תגובה</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- שלב 7 -->
+<div class="step priority-parallel">
+  <div class="step-header">
+    <div class="step-number">7</div>
+    <div>
+      <div class="step-title">לבנות איים 7, 8, 9 (המתקדמים)</div>
+      <div class="step-meta">
+        <span class="badge badge-time">4-5 שבועות</span>
+        <span class="badge badge-who-both">מיטל + Claude</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="why-box">
+    <strong>מה זה:</strong> אי 7 = מילים ארוכות (פרפר). אי 8 = מילים שכיחות (אני, יש). אי 9 = משפחות מילים (כתב, כותב, מכתב).
+  </div>
+
+  <div class="tasks">
+    <ul>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>SVG לשלושת האיים</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>3 משחקונים לכל אי</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>אי 7 — להוסיף משחקון לצ'אנקים מורפולוגיים (פותר G7)</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-meytal">מיטל</span>בדיקה</span></li>
+    </ul>
+  </div>
+</div>
+
+<div class="flow-arrow">↓</div>
+
+<!-- שלב 8 -->
+<div class="step priority-later">
+  <div class="step-header">
+    <div class="step-number">8</div>
+    <div>
+      <div class="step-title">מפת המסע (אופק קרוב)</div>
+      <div class="step-meta">
+        <span class="badge badge-time">2-3 שבועות</span>
+        <span class="badge badge-who-me">Claude</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="why-box">
+    <strong>למה זה אחרי הכל:</strong> המפה מחברת בין האיים. בלי איים אין מה לחבר. אבל עם 9 איים — מפה זה הדבר שהופך את זה ל"מסע" ולא "אוסף משחקים".
+  </div>
+
+  <div class="tasks">
+    <ul>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>SVG של המפה — 9 איים בסביבת ים</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>5 מצבי תצוגה (completed, current, next-near, next-distant, horizon)</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>גלילה רכה — לא רואים את כל ה-22 בבת אחת</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>בית נוני עם אקווריום זיכרונות</span></li>
+    </ul>
+  </div>
+</div>
+
+<div class="flow-arrow">↓</div>
+
+<!-- שלב 9 -->
+<div class="step priority-later">
+  <div class="step-header">
+    <div class="step-number">9</div>
+    <div>
+      <div class="step-title">דשבורד למורה</div>
+      <div class="step-meta">
+        <span class="badge badge-time">3-4 שבועות</span>
+        <span class="badge badge-who-me">Claude</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="why-box">
+    <strong>למה זה אחרון:</strong> בלי הילדים אין נתונים. צריך לפחות שבוע של ילדה משחקת לפני שיש משהו להראות למורה. <strong>אבל</strong> — בלי דשבורד אין מוצר למכירה לבתי ספר.
+  </div>
+
+  <div class="tasks">
+    <ul>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>מסך בוקר — קבוצות אוטומטיות שנוצרו ב-16:30 אתמול</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>"תראי לי למה" — שקיפות BKT</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>אישור ב-לחיצה אחת</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-me">Claude</span>Apps Script + Sheet (BKT שרץ ב-16:30)</span></li>
+      <li><span class="checkbox"></span><span><span class="who-tag who-meytal">מיטל</span>בדיקה עם מורה אמיתית בכיתה א'</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- סיכום -->
+<div class="big-summary">
+  <h2>סיכום — מה לעשות עכשיו</h2>
+  <ol>
+    <li><strong>קודם כל:</strong> את עובדת על אי 3. אני מוסיף את שני הפערים הקטנים (G1+G3). בודקים על ילדה.</li>
+    <li><strong>בזמן שאת בודקת:</strong> אני שואל את פרפלקסיטי את 5 השאלות.</li>
+    <li><strong>אחרי שאי 3 מאומת:</strong> אני בונה את המוח של המערכת (BKT + תבנית גנרית + נוני UI).</li>
+    <li><strong>אחר כך:</strong> איי 1+2 (הקלים), ואז 4, ואז 5+6, ואז 7-9.</li>
+    <li><strong>בסוף:</strong> מפה ודשבורד מורה.</li>
+  </ol>
+  <p style="margin-top:16px;font-size:15px;color:#744210;"><strong>זמן כולל:</strong> 5-6 חודשי עבודה ל-MVP מלא של פאזה A.</p>
+</div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,252 @@
+/* ============================================================
+   stage-1.css — מפרץ הבועות המזמרות (אי 1)
+   מבוסס על tokens.css. בסיס משותף לכל משחקוני אי 1.
+   ============================================================ */
+
+/* ===== Palette extension לאי 1 ===== */
+:root {
+  --i1-aqua-top:    #A8E8FF;
+  --i1-aqua-mid:    #73D9D1;
+  --i1-aqua-deep:   #4FB8C9;
+  --i1-sand-pink:   #F8E3D6;
+  --i1-coral-soft:  #FFA98D;
+  --i1-lavender:    #B981FF;
+  --i1-glow-warm:   #FFF7C8;
+  --i1-bubble-fill: rgba(255, 255, 255, 0.42);
+  --i1-bubble-rim:  rgba(255, 255, 255, 0.78);
+}
+
+/* ===== Scene frame — מפרץ ===== */
+.stage-1-scene {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(180deg, #BFEFFF 0%, #8EDDD8 55%, #4FB8C9 100%);
+  overflow: hidden;
+}
+
+.bay-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ===== בועות רקע מתמדות (אטמוספרה) ===== */
+.ambient-bubble {
+  position: absolute;
+  bottom: -40px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.85), rgba(255,255,255,0.15) 60%, transparent 75%);
+  border: 1.5px solid rgba(255,255,255,0.5);
+  pointer-events: none;
+  animation: ambient-rise linear infinite;
+  opacity: 0;
+}
+
+@keyframes ambient-rise {
+  0%   { transform: translateY(0) translateX(0); opacity: 0; }
+  10%  { opacity: 0.7; }
+  90%  { opacity: 0.7; }
+  100% { transform: translateY(-105vh) translateX(var(--drift, 20px)); opacity: 0; }
+}
+
+/* ===== Top bar — שקוף, ימני ===== */
+.stage-1-topbar {
+  position: fixed;
+  top: 0;
+  inset-inline: 0;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  z-index: 50;
+  background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0));
+  backdrop-filter: blur(4px);
+}
+
+.icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.7);
+  display: grid;
+  place-items: center;
+  color: var(--text-main);
+  text-decoration: none;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.icon-btn:hover { background: rgba(255,255,255,0.95); transform: scale(1.05); }
+.icon-btn:active { transform: scale(0.95); }
+
+.word-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255,255,255,0.78);
+  border-radius: var(--radius-pill);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--text-main);
+}
+.word-pill .pill-img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.replay-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.7);
+  display: grid;
+  place-items: center;
+  color: var(--text-main);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.replay-btn:hover { background: rgba(255,255,255,0.95); transform: scale(1.05); }
+.replay-btn:active { transform: scale(0.92) rotate(-15deg); }
+
+/* ===== tap-to-start overlay — דמוי משחקוני אי 3 ===== */
+.tap-to-start {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(168, 232, 255, 0.92), rgba(115, 217, 209, 0.95));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  z-index: 200;
+  text-align: center;
+  color: var(--text-main);
+  animation: fadein 0.5s ease;
+}
+.tap-to-start.hidden { display: none; }
+
+.tap-to-start h2 {
+  font-size: clamp(28px, 6vw, 44px);
+  margin: 0 0 12px;
+  color: var(--text-main);
+  text-shadow: 0 2px 12px rgba(255,255,255,0.6);
+}
+
+.tap-to-start p {
+  font-size: clamp(18px, 3.5vw, 22px);
+  line-height: 1.5;
+  max-width: 540px;
+  margin: 8px 0;
+}
+
+.intro-speaker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 26px;
+  background: var(--text-main);
+  color: white;
+  border-radius: var(--radius-pill);
+  font-size: 18px;
+  font-weight: 600;
+  margin: 16px 0 24px;
+  transition: transform 0.15s ease;
+}
+.intro-speaker:active { transform: scale(0.96); }
+.intro-speaker svg { width: 24px; height: 24px; }
+
+.start-btn {
+  margin-top: 24px;
+  padding: 18px 48px;
+  background: linear-gradient(135deg, #FFA98D 0%, #FF8FB0 100%);
+  color: white;
+  border-radius: var(--radius-pill);
+  font-size: 22px;
+  font-weight: 800;
+  box-shadow: 0 8px 24px rgba(255, 169, 141, 0.45);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.start-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(255, 169, 141, 0.55); }
+.start-btn:active { transform: scale(0.97); }
+
+@keyframes fadein {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ===== completion overlay ===== */
+.completion {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 247, 200, 0.96), rgba(255, 169, 141, 0.94));
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  z-index: 300;
+  text-align: center;
+  color: var(--text-main);
+  animation: fadein 0.5s ease;
+}
+.completion.visible { display: flex; }
+
+.completion h2 {
+  font-size: clamp(32px, 7vw, 52px);
+  margin: 0 0 16px;
+  text-shadow: 0 4px 16px rgba(255,255,255,0.6);
+}
+
+.completion p {
+  font-size: 20px;
+  margin: 8px 0 24px;
+}
+
+.btn-primary {
+  display: inline-block;
+  padding: 16px 40px;
+  background: white;
+  color: var(--text-main);
+  border-radius: var(--radius-pill);
+  font-weight: 800;
+  font-size: 20px;
+  text-decoration: none;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  margin: 8px 6px;
+  transition: transform 0.15s ease;
+}
+.btn-primary:hover { transform: translateY(-2px); }
+.btn-primary:active { transform: scale(0.97); }
+
+.btn-secondary {
+  background: rgba(255,255,255,0.5);
+  border: 2px solid var(--text-main);
+}
+
+/* ===== feedback bubble קטנה ===== */
+.feedback-toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.5);
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--text-main);
+  padding: 20px 36px;
+  border-radius: var(--radius-pill);
+  font-size: 24px;
+  font-weight: 800;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.18);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 250;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
+}
+.feedback-toast.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}

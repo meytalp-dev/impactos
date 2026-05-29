@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>כמה חלקים? · אי 1 · עומק הים המואר</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/stage-1.css">
+  <link rel="stylesheet" href="css/bubble-rise.css">
+  <link rel="stylesheet" href="css/count-bubbles.css">
+</head>
+<body>
+
+  <main class="stage-1-scene">
+    <img class="bay-bg" src="assets/island-01/bay-bg.png" alt="" aria-hidden="true">
+
+    <div class="ambient-bubble" style="left: 12%; width: 28px; height: 28px; animation-duration: 14s; --drift: 20px;"></div>
+    <div class="ambient-bubble" style="left: 78%; width: 22px; height: 22px; animation-duration: 18s; animation-delay: 3s; --drift: -15px;"></div>
+    <div class="ambient-bubble" style="left: 30%; width: 18px; height: 18px; animation-duration: 12s; animation-delay: 6s; --drift: 10px;"></div>
+    <div class="ambient-bubble" style="left: 88%; width: 32px; height: 32px; animation-duration: 20s; animation-delay: 9s; --drift: -25px;"></div>
+
+    <div class="count-stage">
+      <!-- בועה גדולה עם תמונת המילה -->
+      <div class="count-word-bubble" id="wordBubble">
+        <img class="count-word-img" id="wordImg" src="assets/island-01/parpar.png" alt="">
+      </div>
+
+      <!-- 3 כפתורי בחירה -->
+      <div class="count-choices" id="choices">
+        <!-- JS ממלא: כפתורים עם 1/2/3/4 נקודות -->
+      </div>
+    </div>
+
+    <img class="noni-bay" id="noniImg" src="assets/noni-idle.png" alt="נוני">
+  </main>
+
+  <header class="stage-1-topbar">
+    <a href="stage-1-island.html" class="icon-btn" aria-label="חזרה לתפריט האי">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+
+    <div class="word-pill" id="wordPill">
+      <img class="pill-img" id="pillImg" src="assets/island-01/parpar.png" alt="">
+      <span id="wordPillText">פַּרְפַּר</span>
+    </div>
+
+    <button class="replay-btn" id="replayBtn" aria-label="השמע שוב">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+    </button>
+  </header>
+
+  <div class="rise-instruction" id="riseInstruction" style="display:none">
+    <div class="rise-instruction__bubble">
+      <button class="mini-speaker" id="instructionSpeaker" aria-label="השמע">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
+        </svg>
+      </button>
+      <span id="instructionText">הקשיבו...</span>
+    </div>
+  </div>
+
+  <div class="tap-to-start" id="tapToStart">
+    <h2>כמה חלקים?</h2>
+    <button class="intro-speaker" id="introSpeaker" aria-label="הקש לשמיעה">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>הקש/י לשמוע</span>
+    </button>
+    <p>שמעו את המילה.</p>
+    <p><strong>בחרו את הכפתור עם המספר הנכון של בועות!</strong></p>
+    <button class="start-btn" id="startBtn">בוא/י נתחיל!</button>
+  </div>
+
+  <div class="completion" id="completion">
+    <h2>ספרנו נכון!</h2>
+    <button class="intro-speaker" id="completionSpeaker" aria-label="השמע">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>הקש/י לשמוע</span>
+    </button>
+    <p id="completionMsg">כל הכבוד!</p>
+    <div>
+      <button class="btn-primary" id="nextWordBtn">מילה נוספת</button>
+      <a href="stage-1-island.html" class="btn-primary btn-secondary">חזרה לאי</a>
+    </div>
+  </div>
+
+  <div class="feedback-toast" id="feedbackToast"></div>
+  <div class="celebrate-particles" id="celebrateParticles" aria-hidden="true"></div>
+
+  <audio id="audioPlayer" preload="auto"></audio>
+
+  <script src="js/shared/mastery.js"></script>
+  <script>
+  // ============================================================
+  // CountBubbles — controller
+  // הילדה שומעת מילה ובוחרת בין 3 כפתורים (1/2/3 נקודות-בועות)
+  // ============================================================
+  const GAME_ID = 'countBubbles';
+
+  const AUDIO_BASE = 'assets/audio/island-01';
+  const audio = document.getElementById('audioPlayer');
+
+  let WORDS = [];
+  let currentWordIndex = 0;
+  let currentWord = null;
+  let started = false;
+  let acceptingClicks = false;
+  let mistakeCount = 0;
+  let wordMistakeTotal = 0;
+  let hintTimer = null;
+
+  // ----- Audio helpers -----
+  // Guarantees onEnd fires exactly once — on ended, error, or play-rejection.
+  function playAudio(filename, onEnd) {
+    try { audio.pause(); audio.currentTime = 0; } catch (e) {}
+    let done = false;
+    const finish = () => { if (done) return; done = true; onEnd && onEnd(); };
+    audio.onended = finish;
+    audio.onerror = () => { console.warn('audio error:', filename); finish(); };
+    audio.src = `${AUDIO_BASE}/${filename}.mp3`;
+    audio.play().catch(err => {
+      console.warn('audio play blocked:', filename, err);
+      setTimeout(finish, 800);
+    });
+  }
+
+  function playSequence(filenames, onAllDone, gapMs = 350) {
+    if (!filenames.length) { onAllDone && onAllDone(); return; }
+    const [first, ...rest] = filenames;
+    playAudio(first, () => {
+      if (rest.length === 0) { onAllDone && onAllDone(); return; }
+      setTimeout(() => playSequence(rest, onAllDone, gapMs), gapMs);
+    });
+  }
+
+  async function loadWords() {
+    try {
+      const res = await fetch('data/island-01-words.json');
+      const data = await res.json();
+      WORDS = data.words;
+    } catch (err) { console.error(err); }
+  }
+
+  // ----- Build choice buttons (1/2/3 dots, in random order) -----
+  function buildChoices() {
+    const container = document.getElementById('choices');
+    container.innerHTML = '';
+
+    // Always show 3 choices: 1, 2, 3 — even though we currently only have 2/3 syllable words
+    // (so the kid learns to choose, not just always pick the higher one)
+    const choices = [1, 2, 3].sort(() => Math.random() - 0.5);
+
+    choices.forEach(n => {
+      const btn = document.createElement('button');
+      btn.className = 'count-choice';
+      btn.dataset.count = String(n);
+      btn.setAttribute('aria-label', `${n} חלקים`);
+      // Build N bubble-dots inside
+      for (let i = 0; i < n; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'count-dot';
+        dot.style.animationDelay = `${i * 0.15}s`;
+        btn.appendChild(dot);
+      }
+      btn.addEventListener('click', () => handleChoiceClick(btn, n));
+      container.appendChild(btn);
+    });
+  }
+
+  function handleChoiceClick(btn, n) {
+    if (!acceptingClicks) return;
+    clearTimeout(hintTimer);
+
+    if (n === currentWord.syllable_count) {
+      // CORRECT
+      acceptingClicks = false;
+      btn.classList.add('correct');
+      // fade siblings
+      document.querySelectorAll('.count-choice').forEach(b => {
+        if (b !== btn) b.classList.add('faded');
+      });
+      showFeedbackToast('יָפֶה!');
+      setTimeout(() => {
+        playAudio(`word-${currentWord.id}`, () => {
+          setTimeout(completeWord, 600);
+        });
+      }, 400);
+    } else {
+      // WRONG — wobble + support
+      mistakeCount++;
+      wordMistakeTotal++;
+      btn.classList.add('wobble');
+      setTimeout(() => btn.classList.remove('wobble'), 600);
+
+      if (mistakeCount === 1) {
+        // gentle: replay the word
+        setTimeout(() => playSplitWord(), 400);
+      } else if (mistakeCount === 2) {
+        // hint glow on correct
+        const correctBtn = document.querySelector(`.count-choice[data-count="${currentWord.syllable_count}"]`);
+        if (correctBtn) correctBtn.classList.add('hint');
+        setTimeout(() => playSequence(['support-mistake-2'], () => playSplitWord()), 350);
+      } else {
+        // direct help
+        const correctBtn = document.querySelector(`.count-choice[data-count="${currentWord.syllable_count}"]`);
+        if (correctBtn) correctBtn.classList.add('hint');
+        setTimeout(() => playAudio('support-mistake-3'), 300);
+      }
+    }
+  }
+
+  function showFeedbackToast(text) {
+    if (!text) return;
+    const t = document.getElementById('feedbackToast');
+    t.textContent = text;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 1100);
+  }
+
+  // Play split syllables (with bubble pulse) + whole word
+  function playSplitWord(onDone) {
+    const big = document.getElementById('wordBubble');
+    const syllableKeys = currentWord.syllable_audios.map(p => p.split('/').pop().replace('.mp3', ''));
+    function playStep(i) {
+      if (i >= syllableKeys.length) {
+        setTimeout(() => playAudio(`word-${currentWord.id}`, onDone), 500);
+        return;
+      }
+      big.classList.remove('pulse');
+      void big.offsetWidth;
+      big.classList.add('pulse');
+      playAudio(syllableKeys[i], () => setTimeout(() => playStep(i + 1), 350));
+    }
+    playStep(0);
+  }
+
+  // ----- Completion -----
+  function completeWord() {
+    if (window.AvneiMastery) {
+      window.AvneiMastery.recordResult(currentWord.id, GAME_ID, wordMistakeTotal);
+    }
+    const noni = document.getElementById('noniImg');
+    noni.src = 'assets/noni-happy.png';
+    noni.classList.add('celebrating');
+    burstParticles();
+    setTimeout(showCompletion, 900);
+  }
+
+  function burstParticles() {
+    const container = document.getElementById('celebrateParticles');
+    container.innerHTML = '';
+    const colors = ['#FFF7C8', '#FFA98D', '#B981FF', '#A8E8FF', '#73D9D1'];
+    for (let i = 0; i < 28; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const angle = (i / 28) * Math.PI * 2;
+      const dist = 200 + Math.random() * 120;
+      p.style.left = `${50 + (Math.random() - 0.5) * 10}%`;
+      p.style.top = `${50 + (Math.random() - 0.5) * 10}%`;
+      p.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
+      p.style.setProperty('--dy', `${Math.sin(angle) * dist - 80}px`);
+      p.style.background = colors[i % colors.length];
+      p.style.boxShadow = `0 0 12px ${colors[i % colors.length]}`;
+      p.style.animationDelay = `${(i % 6) * 0.06}s`;
+      container.appendChild(p);
+    }
+    setTimeout(() => { container.innerHTML = ''; }, 3000);
+  }
+
+  function showCompletion() {
+    document.getElementById('completion').classList.add('visible');
+    setTimeout(() => playAudio('ui-complete-count'), 400);
+  }
+
+  function showInstruction(text) {
+    document.getElementById('riseInstruction').style.display = 'flex';
+    document.getElementById('instructionText').textContent = text;
+  }
+
+  // ----- Word switching -----
+  function loadWord(idx) {
+    currentWordIndex = (idx + WORDS.length) % WORDS.length;
+    currentWord = WORDS[currentWordIndex];
+    mistakeCount = 0;
+    wordMistakeTotal = 0;
+    acceptingClicks = false;
+
+    document.getElementById('wordImg').src = currentWord.image;
+    document.getElementById('pillImg').src = currentWord.image;
+    document.getElementById('wordPillText').textContent = currentWord.display;
+
+    const noni = document.getElementById('noniImg');
+    noni.src = 'assets/noni-idle.png';
+    noni.classList.remove('celebrating');
+
+    document.getElementById('completion').classList.remove('visible');
+
+    buildChoices();
+    showInstruction('הַקְשִׁיבוּ לַמִּלָּה...');
+
+    setTimeout(() => {
+      playSplitWord(() => {
+        showInstruction('כַּמָּה חֲלָקִים שָׁמַעְתֶּם?');
+        playAudio('ui-count-question', () => {
+          acceptingClicks = true;
+          hintTimer = setTimeout(() => {
+            const correctBtn = document.querySelector(`.count-choice[data-count="${currentWord.syllable_count}"]`);
+            if (correctBtn) correctBtn.classList.add('hint');
+          }, 10000);
+        });
+      });
+    }, 500);
+  }
+
+  function nextWord() {
+    const w = window.AvneiMastery ? window.AvneiMastery.pickWord(GAME_ID, WORDS) : null;
+    const idx = w ? WORDS.indexOf(w) : (currentWordIndex + 1);
+    loadWord(idx);
+  }
+
+  async function start() {
+    if (started) return;
+    started = true;
+    document.getElementById('tapToStart').classList.add('hidden');
+    if (!WORDS.length) await loadWords();
+    if (!WORDS.length) { console.error('failed to load words'); return; }
+    const w = window.AvneiMastery ? window.AvneiMastery.pickWord(GAME_ID, WORDS) : null;
+    const idx = w ? WORDS.indexOf(w) : Math.floor(Math.random() * WORDS.length);
+    loadWord(idx);
+  }
+
+  // ----- Wiring -----
+  document.getElementById('startBtn').addEventListener('click', start);
+  document.getElementById('introSpeaker').addEventListener('click', (e) => {
+    e.stopPropagation();
+    playAudio('ui-bubble-story');
+  });
+  document.getElementById('replayBtn').addEventListener('click', () => {
+    if (!currentWord) return;
+    playSplitWord();
+  });
+  document.getElementById('instructionSpeaker').addEventListener('click', () => {
+    if (!currentWord) return;
+    playAudio('ui-count-question');
+  });
+  document.getElementById('nextWordBtn').addEventListener('click', nextWord);
+  document.getElementById('completionSpeaker').addEventListener('click', (e) => {
+    e.stopPropagation();
+    playAudio('ui-complete-count');
+  });
+
+  (async function init() {
+    await loadWords();
+    audio.src = `${AUDIO_BASE}/ui-bubble-story.mp3`;
+  })();
+  </script>
+</body>
+</html>
