@@ -7,6 +7,57 @@
 
 ---
 
+## 🧪 סוכן 28 — Verification E2E (Playwright)
+
+**סטטוס:** ✅ הסתיים · 42/42 tests ירוקים (21 desktop-chrome + 21 mobile-iphone WebKit) · 0 regressions ב-16 test suites קיימים · 2 findings מדווחים · ממתין לאישור פוש
+**תאריך:** 2026-05-29 (ערב)
+**שיחה:** Claude Code · Opus 4.7 · 1M context · VS Code · impactos · Fresh Context
+**Handoff:** `_handoff/2026-05-29-verification-e2e-fresh-context-bootstrap.md`
+**Commit:** טרם נדחף (ממתין לאישור)
+
+**קבצים שנוצרו:**
+- `avnei-yesod/scripts/e2e/playwright.config.js` — desktop-chrome + mobile-iphone (WebKit) projects
+- `avnei-yesod/scripts/e2e/package.json` — Playwright 1.60.0 devDependency
+- `avnei-yesod/scripts/e2e/helpers.js` — `prepareSession` (one-shot seed) · `bypassPin` · readers
+- `avnei-yesod/scripts/e2e/01-onboarding.spec.js` — Story 1 (3 tests)
+- `avnei-yesod/scripts/e2e/02-stage-3-game.spec.js` — Story 2 (3 tests)
+- `avnei-yesod/scripts/e2e/03-moy-task-4-fail.spec.js` — Stories 3+4 (3 tests)
+- `avnei-yesod/scripts/e2e/04-group-suggester.spec.js` — Story 5 (2 tests)
+- `avnei-yesod/scripts/e2e/05-b7-modal-open.spec.js` — Story 6 (2 tests)
+- `avnei-yesod/scripts/e2e/06-pdf-print.spec.js` — Story 7 (1 test · skipped עם app-gap annotation)
+- `avnei-yesod/scripts/e2e/07-intervention-mark-done.spec.js` — Story 8 (3 tests)
+- `avnei-yesod/scripts/e2e/08-weakness-targeting-pack.spec.js` — Story 9 (3 tests)
+- `avnei-yesod/scripts/e2e/09-e2e-full-flow.spec.js` — chain test
+- `avnei-yesod/scripts/e2e/10-screenshots.spec.js` — תיעוד חזותי
+- `avnei-yesod/scripts/e2e/screenshots/` — 10 PNGs (5 פר project)
+- `avnei-yesod/_handoff/2026-05-29-e2e-verification-report.md` — דוח מלא
+
+**Findings פתוחים (לא תוקנו · אסור-לגעת בקוד production):**
+1. 🟡 **A/G-1 · story 7:** B.7 modal חסר כפתור Print/PDF. צריך סוכן fix.
+2. 🟢 **OBS-2:** MOY-only fallback מחזיר `confidence: 'low'` שמסונן ע"י group-suggester (`min_confidence: 'med'`). תלמידה ללא EPA signal לא תיכנס לקבוצת בוקר — שווה דיון פדגוגי.
+
+**גילויים מהקריאה (תיקונים להנחות שגויות ב-bootstrap):**
+- localStorage key של MOY = `underwater-app:assessments` (לא `avnei-yesod-moy-v1`)
+- PIN bypass key = `teacher_authed` (לא `avnei-rama-auth`)
+- BKT per-letter shape = `{[sid]:{1:{per_letter:{...}}}}` עם שדה `pKnown` (לא `p_l`)
+- ALL_HEBREW_LETTERS_22 = Hebrew chars (`'מ','ש','ק'`), לא שמות אנגליים (`'mem','shin','kuf'`)
+- task_4 balance field = `item.type` (לא `item.sub_type`)
+- suggested_intervention נקבע רק אחרי **2** attempts + fail (לא 1)
+
+**הוראות הרצה לסוכן הבא:**
+```bash
+cd avnei-yesod && python -m http.server 8765 &
+cd avnei-yesod/scripts/e2e && npm test
+```
+
+**מה זה פתח / ממתין לפעולה:**
+- Fix agent ל-A/G-1 (Print button).
+- דיון פדגוגי עם מיטל על OBS-2.
+- ביצוע push (מיטל בלבד).
+- הוספת `scripts/e2e/playwright-report/` ו-`test-results/` ל-`.gitignore` אם לא קיים.
+
+---
+
 ## 🔊 סוכן 26 — MOY-Lite Options Fix (IPA → עברית + audio per option)
 
 **סטטוס:** ✅ הסתיים · 90/90 options ב-task_4 עברית מנוקדת + audio_text · 🔊 ליד כל אופציה · 17/17 test suites ✓ · ממתין לאישור פוש
