@@ -7,6 +7,67 @@
 
 ---
 
+## ♿ סוכן 25 — UI Accessibility Fixes (29.5.2026 ערב)
+
+**סטטוס:** ✅ הסתיים · 4 fixes · 17/17 tests ✓ · 0 רגרסיות · ב-working tree (טרם נדחף — ממתין לאישור מיטל)
+**תאריך:** 2026-05-29
+**שיחה:** Claude Code · Opus 4.7 · 1M context · VS Code · impactos
+**Handoff:** `_handoff/2026-05-29-a11y-fixes-agent-prompt.md`
+**Audit source:** `_handoff/2026-05-29-performance-audit-report.md` (סוכן 24 · Phase E)
+
+### מה נעשה — 4 ה-fixes שזיהה סוכן 24
+
+| Fix | קבצים | אקצפטנס |
+|---|---|---|
+| 1 · `user-scalable=no` הוסר | 37 קבצי HTML תחת `underwater-app/` | 0 תוצאות חיפוש ✓ |
+| 2 · aria + @media ב-moy-screener | `engine/moy-screener.html` | 6 aria · 1 @media (יעד ≥6 · ≥1) ✓ |
+| 3 · aria-label על כפתורי action | `underwater-app/teacher-action.html` · `teacher-rama.html` | 19 + 16 instances (יעד 12+ · 14+) ✓ |
+| 4 · `#a0aec0` text → `#718096` | `teacher-action.html` · `data-export.html` | 2 text occurrences · 1 decorative background נשמר ✓ |
+
+### לא נעשה (תיעוד למעקב)
+
+- **`aria-pressed` דינמי** על option buttons ב-moy-screener — דורש עריכת inline JS (`document.createElement('button')`), נחסם ע"י "❌ לערוך קוד JS — רק HTML/CSS inline". נשאר כ-post-pilot.
+- **`teacher-rama.html` table @media** — סוכן 24 סימן כ-post-pilot, F.21E (`teacher-action.html`) היא הפתרון העיקרי לטלפון.
+- **`data-export.html` @media** — סוכן 24 סימן כ-post-pilot (מסך מורה בלבד, לא קריטי לפיילוט).
+
+### תוצאת test suites
+
+```
+test-bkt · test-bkt-letters · test-cold-start · test-event-logger-fields · test-group-suggester
+test-interventions · test-intervention-matcher · test-moy-assessments · test-moy-intervention-link
+test-pack-bridge · test-rama-task-status · test-weakness-targeting
+test-f21e-helpers · test-letter-targets · test-skill-units
+test-bkt-performance · test-localstorage-limits
+```
+**17/17 PASS · 0 רגרסיות.**
+
+### תיאום עם סוכנים אחרים
+
+- **סוכן 1 (F.21E)** — סיים מוקדם · `git status` נקי על `teacher-action.html` + `teacher-rama.html` לפני התיקונים. **בטוח.**
+- **סוכן 23 (6 packs)** — `curriculum/packs/` בלבד. **בלי חפיפה.**
+- **סוכן 21 (interventions)** — `interventions/*.json` בלבד. **בלי חפיפה.**
+
+### קבצים שונו (סיכום)
+
+| קובץ | סוג שינוי |
+|---|---|
+| 37 × `underwater-app/*.html` (stage-1/2/3, map, index, onboarding, student-picker) | meta viewport (Fix 1) |
+| `engine/moy-screener.html` | aria attributes + @media query (Fix 2) |
+| `underwater-app/teacher-action.html` | aria-label × 17 (Fix 3) + 1 text color (Fix 4) |
+| `underwater-app/teacher-rama.html` | aria-label × 12 (Fix 3) |
+| `underwater-app/data-export.html` | 1 text color (Fix 4) |
+| `_handoff/2026-05-29-performance-audit-report.md` | סעיף "Fixed by סוכן 25" |
+| `_handoff/agent-completion-log.md` | בלוק זה |
+
+**סה"כ: 41 קבצים שונו · 0 קבצים חדשים · 0 קבצים נמחקו.**
+
+### שאלות פתוחות / להחלטה
+
+1. **מתי לדחוף ל-main?** — ממתין לאישור מיטל.
+2. **post-pilot a11y:** האם להוסיף `aria-pressed` דינמי ל-moy-screener בעתיד? (3 שורות JS) — לסוכן עתידי.
+
+---
+
 ## 📦 סוכן 19 — השלמת september-2026 pack (29.5.2026)
 
 **סטטוס:** ✅ הסתיים · 21 פריטים נוספו · 75/75 tests ✓ · ב-working tree (טרם נדחף — ממתין לאישור מיטל)

@@ -245,3 +245,71 @@ state.events:      77% מהשטח (FIFO 1000 → 445KB constant)
 Per-student:       +27KB BKT+EPA (לינארי)
 Hard limit:        ~150 ילדות    לפני שצריך מיגרציה ל-IndexedDB
 ```
+
+---
+
+## Fixed by סוכן 25 — 2026-05-29 ערב מאוחר
+
+תיקון 4 ה-issues החשובים שזיהה סוכן 24, לפני פיילוט ספטמבר 2026. ~1.5 שעות. 17/17 test suites עברו · 0 רגרסיות.
+
+### Fix 1 — `user-scalable=no` הוסר מ-37 קבצי תלמיד.ה ✓
+- **בעיה:** WCAG 1.4.4 violation — מונע zoom.
+- **תיקון:** PowerShell batch replacement של `width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover` → `width=device-width, initial-scale=1.0, viewport-fit=cover` ב-37 קבצי HTML תחת `underwater-app/`.
+- **אימות:** `Select-String "user-scalable=no" underwater-app\*.html` → 0 תוצאות. עברית באותם קבצים נשמרה (UTF-8 בלי BOM).
+
+### Fix 2 — `moy-screener.html`: 6 aria + 1 @media query ✓
+- **בעיה:** 0 aria attributes + 0 @media queries.
+- **תיקון:**
+  - `aria-label="הקראת ההסבר"` על `#welcomeAudioBtn`.
+  - `aria-label="נגן את הסיפור"` על `#passagePlayBtn`.
+  - `aria-label="הקראת השאלה"` על `#questionAudioBtn`.
+  - `role="region" aria-label="הוראות נוני"` על 2 ה-`.noni-bubble` divs.
+  - `aria-live="polite"` על `.progress` div (קורא ל-screen reader כשmספר השאלה מתחלף).
+  - `@media (max-width: 480px)` עם התאמות `padding/font-size` ל-`.page`, `.welcome h1`, `.passage-text`, `#questionText`, `.audio-btn`, `.option-btn`.
+- **לא נעשה:** `aria-pressed` דינמי על option buttons (דורש עריכת inline JS — נחסם ע"י כללי הסוכן).
+- **אימות:** `grep -c "aria-" moy-screener.html` → 6 ✓ · `grep -c "@media"` → 1 ✓.
+
+### Fix 3 — aria-label על 25 כפתורים ב-2 מסכי מורה ✓
+- **בעיה:** 2 aria-label ב-`teacher-action.html` + 4 ב-`teacher-rama.html` כש-30+ כפתורים מכילים emoji.
+- **תיקון `teacher-action.html`:** 11 הוספות (backBtn, refreshBtn, open-group, mark-group, push-solo / cancel-push-solo, go-student, mark-solo, open-moy-sid, mark-moy, go-student-moy, untarget-all, untarget, target, handle, iv-btn-done, iv-btn-cancel) → **19 instances** (יעד 12+).
+- **תיקון `teacher-rama.html`:** 12 הוספות (exitBtn, back-to-class, clear-override × 2, mg-open, mg-toggle, mg-refresh, iv-open-modal × 2, iv-btn-print, iv-btn-done, iv-btn-cancel) → **16 instances** (יעד 14+).
+- **לא שונה:** emoji עצמם, JS handlers, מבנה DOM.
+
+### Fix 4 — `#a0aec0` → `#718096` ב-text colors בלבד ✓
+- **בעיה:** contrast ratio 2.5:1 על רקע לבן (יעד WCAG AA: 4.5:1).
+- **שונה:**
+  - `teacher-action.html:441` — `.iv-evidence { color: #a0aec0; }` → `#718096`.
+  - `data-export.html:62` — `.gate-card .hint { color: #a0aec0; }` → `#718096`.
+- **נשמר:**
+  - `teacher-action.html:191` — `.ta-action-mark.is-done:hover { background: #a0aec0; }` — **background-color** decorative, לא text. ratio לא רלוונטי.
+
+### תוצאת test suites (29.5.2026, אחרי 4 ה-fixes)
+17/17 PASS · 0 רגרסיות.
+```
+test-bkt                   ✓ כל 4 הפערים נסגרו
+test-bkt-letters           ✓ 53/0
+test-cold-start            ✓ all passed
+test-event-logger-fields   ✓ E.17 מוכן
+test-group-suggester       ✓ PASS
+test-interventions         ✓ passed
+test-intervention-matcher  ✓ PASS
+test-moy-assessments       ✓ passed
+test-moy-intervention-link ✓ passed
+test-pack-bridge           ✓ passed
+test-rama-task-status      ✓ all passed
+test-weakness-targeting    ✓ passed
+test-f21e-helpers          ✓ 132/0
+test-letter-targets        ✓ 59/0
+test-skill-units           ✓ 66/0
+test-bkt-performance       ✓ BKT 118.7KB / ingest 0.58ms avg
+test-localstorage-limits   ✓ QuotaExceeded NO
+```
+
+### מצב a11y לאחר התיקונים
+- **0 critical**
+- **0 important** (4/4 נסגרו)
+- **3 post-pilot** נשארים (כפי שזיהה סוכן 24 — לא בטיפול):
+  1. `teacher-rama.html` table `min-width: 880px` — overflow-x עובד, אבל לא אופטימלי במובייל. F.21E היא הפתרון הפדגוגי.
+  2. `data-export.html` — בלי @media queries (מסך מורה בלבד, לא קריטי).
+  3. `aria-pressed` דינמי על option buttons ב-moy-screener (דורש JS edit · יוטל על סוכן עתידי).
+
