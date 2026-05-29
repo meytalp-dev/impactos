@@ -558,6 +558,109 @@ header('12. moyAlertSimpleHe — תרגום סטטוס MOY');
 }
 
 // ----------------------------------------------------------------------------
+// בלוק 13 — getTopWeakLetters עם frozen filter (A+B integration)
+// ----------------------------------------------------------------------------
+header('13. getTopWeakLetters — frozen letters מסוננות');
+{
+  clearMocks();
+  global.localStorage = makeLocalStorageMock();
+  // טעינת letter-targets לפני helpers כדי שיהיה זמין דרך global
+  const LT = require(path.resolve(__dirname, '..', 'js', 'shared', 'letter-targets.js'));
+  global.AvneiLetterTargets = LT;
+
+  setupBKT({
+    s1: [
+      { letter: 'מ', pKnown: 0.10 },
+      { letter: 'ש', pKnown: 0.20 },
+      { letter: 'ר', pKnown: 0.30 },
+      { letter: 'ל', pKnown: 0.40 },
+      { letter: 'ח', pKnown: 0.50 }
+    ]
+  });
+  const H = loadHelpers();
+
+  // ללא frozen — top-3 רגיל
+  const r0 = H.getTopWeakLetters('s1', 3);
+  assert(r0.length === 3 && r0[0] === 'מ' && r0[1] === 'ש' && r0[2] === 'ר',
+         'ללא frozen → top-3 רגיל');
+
+  // הקפא את מ — top-3 מתעלמת ממ' ומקבלת את ר/ל במקום
+  LT.markFrozen('s1', 'מ');
+  const r1 = H.getTopWeakLetters('s1', 3);
+  assert(r1.length === 3, 'אחרי freeze של מ עדיין 3');
+  assert(r1.indexOf('מ') === -1, 'מ לא בתוצאה (מוקפאת)');
+  assert(r1[0] === 'ש', 'ראשונה: ש (מ דולגה)');
+
+  // הקפא גם ש ו-ר
+  LT.markFrozen('s1', 'ש');
+  LT.markFrozen('s1', 'ר');
+  const r2 = H.getTopWeakLetters('s1', 3);
+  // mock רק 5 אותיות, 3 מהן מוקפאות → נשארות 2
+  assert(r2.length === 2, '5 mock אותיות פחות 3 frozen = 2 מוחזרות');
+  assert(r2[0] === 'ל' && r2[1] === 'ח', 'נשארות ל ו-ח (אחרי 3 freezes)');
+
+  // נקה freeze של ר ידנית
+  LT.removeFrozen('s1', 'ר');
+  const r3 = H.getTopWeakLetters('s1', 3);
+  assert(r3.indexOf('ר') !== -1, 'ר חזרה אחרי removeFrozen');
+
+  global.AvneiLetterTargets = null;
+}
+
+// ----------------------------------------------------------------------------
+// בלוק 14 — getLetterStatus
+// ----------------------------------------------------------------------------
+header('14. getLetterStatus — 5 סטטוסים');
+{
+  clearMocks();
+  global.localStorage = makeLocalStorageMock();
+  const LT = require(path.resolve(__dirname, '..', 'js', 'shared', 'letter-targets.js'));
+  global.AvneiLetterTargets = LT;
+  const H = loadHelpers();
+
+  // 1. targeted — אחרי addTarget
+  LT.addTarget('s1', 'מ');
+  assert(H.getLetterStatus('s1', 'מ', { letters_in_focus: ['ש'] }) === 'targeted',
+         'targeted מנצח גם אם פאק לא מכסה');
+
+  // 2. auto-covered — pack מכסה + flag דלוק
+  const packOn = { letters_in_focus: ['ש', 'ל'], allows_weakness_targeting: true };
+  assert(H.getLetterStatus('s2', 'ש', packOn) === 'auto-covered', 'auto-covered');
+
+  // 3. pack-misses — האות לא ב-letters_in_focus
+  assert(H.getLetterStatus('s2', 'ר', packOn) === 'pack-misses', 'אות לא ב-focus');
+
+  // 4. pack-off — האות ב-focus אבל flag כבוי (מצב ספטמבר!)
+  const packOff = { letters_in_focus: ['ש', 'ל'], allows_weakness_targeting: false };
+  assert(H.getLetterStatus('s2', 'ש', packOff) === 'pack-off', 'flag כבוי');
+
+  // 5. unknown — אין pack ואין targets
+  assert(H.getLetterStatus('s3', 'א', null) === 'unknown', 'אין pack → unknown');
+
+  // edge: ריק
+  assert(H.getLetterStatus(null, 'א') === 'unknown', 'sid null → unknown');
+  assert(H.getLetterStatus('s1', null) === 'unknown', 'letter null → unknown');
+
+  global.AvneiLetterTargets = null;
+}
+
+// ----------------------------------------------------------------------------
+// בלוק 15 — letterStatusSimpleHe — תרגום
+// ----------------------------------------------------------------------------
+header('15. letterStatusSimpleHe');
+{
+  clearMocks();
+  global.localStorage = makeLocalStorageMock();
+  const H = loadHelpers();
+  assert(H.letterStatusSimpleHe('targeted').indexOf('בתרגול אישי') !== -1,    'targeted');
+  assert(H.letterStatusSimpleHe('auto-covered').indexOf('אוטומטית') !== -1,    'auto-covered');
+  assert(H.letterStatusSimpleHe('pack-misses').indexOf('פאק לא מכסה') !== -1,  'pack-misses');
+  assert(H.letterStatusSimpleHe('pack-off').indexOf('אוטומציה כבויה') !== -1,  'pack-off');
+  assert(H.letterStatusSimpleHe('unknown') === '', 'unknown → ""');
+  assert(H.letterStatusSimpleHe('') === '', 'ריק → ""');
+}
+
+// ----------------------------------------------------------------------------
 // סיכום
 // ----------------------------------------------------------------------------
 console.log('\n==================================================');

@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>🌱 זרע דאטה דמו · F.21E</title>
+<style>
+  body {
+    font-family: 'Assistant', system-ui, sans-serif;
+    background: #F7FBFA; color: #243B3B;
+    direction: rtl; max-width: 700px; margin: 40px auto; padding: 0 20px;
+  }
+  h1 { color: #2c7a7b; margin-bottom: 8px; }
+  .sub { color: #4a5568; font-size: 14px; margin-bottom: 24px; }
+  .card {
+    background: white; border: 1px solid #D9E8E6; border-radius: 12px;
+    padding: 20px 22px; margin-bottom: 16px;
+  }
+  .card h2 { color: #2c7a7b; font-size: 16px; margin: 0 0 12px; }
+  .card ul { margin: 0; padding-right: 20px; font-size: 14px; line-height: 1.7; }
+  .btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 20px 0; }
+  button {
+    background: #4FB6A8; color: white; border: 0;
+    padding: 12px 22px; border-radius: 8px;
+    font-size: 15px; font-weight: 700; cursor: pointer;
+    font-family: inherit;
+  }
+  button:hover { background: #3a9a8d; }
+  button.danger { background: #e53e3e; }
+  button.danger:hover { background: #c53030; }
+  button.secondary { background: white; color: #2c7a7b; border: 1px solid #D9E8E6; }
+  button.secondary:hover { background: #E8F7F3; }
+  .status {
+    margin-top: 16px; padding: 12px 16px;
+    background: #E8F8EF; border: 1px solid #9AE6B4; border-radius: 8px;
+    font-size: 14px; color: #22543d; display: none;
+  }
+  .status.error { background: #FFECE7; border-color: #FEB2B2; color: #9b2c2c; }
+  code { background: #f7fafc; padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<h1>🌱 זרע דאטה דמו · F.21E</h1>
+<div class="sub">כלי להזרקת דאטה דמו ל-localStorage כדי לראות איך כל הקטעים של F.21E עובדים. <strong>שים לב: הכפתורים דורסים את הדאטה הקיים.</strong></div>
+
+<div class="card">
+  <h2>מה ייזרע</h2>
+  <ul>
+    <li><strong>5 תלמידים:</strong> מאיה · נועם · ריף · אריאל · דניאל</li>
+    <li><strong>קבוצת letter_cluster</strong> (3 תלמידים): מאיה + נועם + ריף — 5 אותיות חלשות משותפות (מ · ש · ר · ל · ח) → ייצרו קבוצה אחת מ-B.9</li>
+    <li><strong>תלמיד.ה ללא קבוצה (letter_knowledge):</strong> אריאל — זוג אותיות מתבלבלות ד/ר → solo</li>
+    <li><strong>התראת MOY:</strong> דניאל — 2 ניסיונות שנכשלו במשימות 3+4 → MOY alert + solo (phonological)</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>מה תראי במסך</h2>
+  <ul>
+    <li><strong>Hero:</strong> "X, היום כדאי להתחיל מ־1 קבוצה קצרה ולתת מענה ל־2 תלמידים ללא קבוצה."</li>
+    <li><strong>KPIs:</strong> 1 קבוצה · 2 ללא קבוצה · 1 התראה · 0 בוצעו השבוע</li>
+    <li><strong>Action List:</strong> 1 כרטיס "קבוצה 1 · חיזוק אותיות חלשות" עם 3 שמות + אותיות (מ · ש · ר)</li>
+    <li><strong>תלמידים ללא קבוצה:</strong> 2 כרטיסים — אריאל (זיהוי אותיות) · דניאל (תרגול צלילים)</li>
+    <li><strong>MOY alerts:</strong> 1 כרטיס — דניאל · משימות 3+4 נכשלו</li>
+    <li><strong>אותיות שכדאי לשלב:</strong> 4 שורות (3 חברי הקבוצה + אריאל)</li>
+  </ul>
+</div>
+
+<div class="btn-row">
+  <button id="seedBtn">🌱 זרע דאטה דמו והעבירי ל-F.21E</button>
+  <button class="secondary" id="seedOnlyBtn">זרעי, אל תעבירי</button>
+  <button class="danger" id="clearBtn">🧹 נקי הכל</button>
+</div>
+
+<div class="status" id="status"></div>
+
+<div class="card" style="margin-top: 24px; background: #f7fafc;">
+  <h2>קישורים מהירים</h2>
+  <ul>
+    <li><a href="teacher-action.html" style="color:#2c7a7b;">⬅ teacher-action.html (F.21E)</a></li>
+    <li><a href="teacher-rama.html" style="color:#2c7a7b;">⬅ teacher-rama.html (F.21A)</a></li>
+  </ul>
+</div>
+
+<script>
+const STUDENTS_KEY = 'avnei-yesod-students';
+const BKT_STRAND_KEY = 'avnei-bkt-strand-v1';
+const BKT_KEY = 'avnei-bkt-v1';
+const ASSESSMENTS_KEY = 'underwater-app:assessments';
+
+const ALL_LETTERS = ['א','ב','ג','ד','ה','ו','ז','ח','ט','י','כ',
+                     'ל','מ','נ','ס','ע','פ','צ','ק','ר','ש','ת'];
+const PL0_STRAND1 = 0.12;
+const PL0_ISLAND3 = 0.10;
+
+function emptyLetterRec(pKnown) {
+  return {
+    pKnown: pKnown, attempts: 0, correct: 0, wrong: 0,
+    responseTimesMs: [], masteryAchievedAt: null
+  };
+}
+
+function weakLetterRec(pKnown, attempts) {
+  const correct = Math.floor(attempts * pKnown);
+  return {
+    pKnown: pKnown,
+    attempts: attempts,
+    correct: correct,
+    wrong: attempts - correct,
+    responseTimesMs: [3000, 3200, 2800, 3100, 3300, 2900, 3400].slice(0, attempts),
+    masteryAchievedAt: null
+  };
+}
+
+// בונה strand 1 per_letter עבור תלמיד.ה עם רשימת אותיות חלשות מותאמת
+// weakMap: { 'מ': 0.45, 'ש': 0.50, ... }
+function makeStrand1(weakMap) {
+  const per_letter = {};
+  ALL_LETTERS.forEach(function (l) {
+    if (Object.prototype.hasOwnProperty.call(weakMap, l)) {
+      per_letter[l] = weakLetterRec(weakMap[l], 5);
+    } else {
+      per_letter[l] = emptyLetterRec(PL0_STRAND1);
+    }
+  });
+  return {
+    pKnown: 0.5,
+    attempts: Object.keys(weakMap).length * 5,
+    correct: Object.keys(weakMap).reduce(function (s, l) { return s + Math.floor(5 * weakMap[l]); }, 0),
+    wrong: Object.keys(weakMap).length * 5 - Object.keys(weakMap).reduce(function (s, l) { return s + Math.floor(5 * weakMap[l]); }, 0),
+    responseTimesMs: [3000, 3200, 2800, 3100, 3300],
+    sessionsAtMastery: 0,
+    lastSessionId: 'seed-session',
+    masteryAchievedAt: null,
+    per_island_attempts: { 3: Object.keys(weakMap).length * 5 },
+    per_letter: per_letter
+  };
+}
+
+function makeIsland3(weakMap) {
+  const per_letter = {};
+  ALL_LETTERS.forEach(function (l) {
+    if (Object.prototype.hasOwnProperty.call(weakMap, l)) {
+      per_letter[l] = weakLetterRec(weakMap[l], 5);
+    } else {
+      per_letter[l] = emptyLetterRec(PL0_ISLAND3);
+    }
+  });
+  return {
+    per_letter: per_letter,
+    aggregate_pKnown: 0.5,
+    total_attempts: Object.keys(weakMap).length * 5,
+    sessionsAtMastery: 0,
+    lastSessionId: 'seed-session',
+    masteryAchievedAt: null
+  };
+}
+
+function seedDemo() {
+  try {
+    // 1. Students
+    const students = [
+      { id: 's1', name: 'מאיה' },
+      { id: 's2', name: 'נועם' },
+      { id: 's3', name: 'ריף' },
+      { id: 's4', name: 'אריאל' },
+      { id: 's5', name: 'דניאל' }
+    ];
+    localStorage.setItem(STUDENTS_KEY, JSON.stringify(students));
+
+    // 2. BKT strand-v1 + island-3 (dual-write for safety)
+    // s1/s2/s3 — letter_cluster (5 חלשות, אין confused pair מתחת ל-0.40)
+    const weakClusterMaya  = { 'מ': 0.45, 'ש': 0.50, 'ר': 0.55, 'ל': 0.60, 'ח': 0.65 };
+    const weakClusterNoam  = { 'מ': 0.42, 'ש': 0.48, 'ר': 0.52, 'ל': 0.58, 'ח': 0.62 };
+    const weakClusterRif   = { 'מ': 0.40, 'ש': 0.45, 'ר': 0.50, 'ל': 0.55, 'ח': 0.60 };
+    // s4 — letter_knowledge confused pair ד/ר (שתיהן ב-22 הקנוניות)
+    const weakLkAriel = { 'ד': 0.25, 'ר': 0.25 };
+    // s5 — no BKT weakness; רק MOY
+
+    const strandState = {
+      s1: { 1: makeStrand1(weakClusterMaya) },
+      s2: { 1: makeStrand1(weakClusterNoam) },
+      s3: { 1: makeStrand1(weakClusterRif) },
+      s4: { 1: makeStrand1(weakLkAriel) },
+      s5: { 1: makeStrand1({}) }
+    };
+    localStorage.setItem(BKT_STRAND_KEY, JSON.stringify(strandState));
+
+    const islandState = {
+      s1: { 3: makeIsland3(weakClusterMaya) },
+      s2: { 3: makeIsland3(weakClusterNoam) },
+      s3: { 3: makeIsland3(weakClusterRif) },
+      s4: { 3: makeIsland3(weakLkAriel) },
+      s5: { 3: makeIsland3({}) }
+    };
+    localStorage.setItem(BKT_KEY, JSON.stringify(islandState));
+
+    // 3. MOY for s5 (דניאל) — 2 attempts fail
+    const FIVE_WEEKS_MS = 5 * 7 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    const past = now - 7 * 24 * 60 * 60 * 1000;
+    const assessments = {
+      boy: {},
+      moy: {
+        s5: {
+          date: now,
+          attempts: [
+            { date: past,
+              task_3: { score: 4, threshold: 7, max: 10, status: 'fail' },
+              task_4: { score: 14, threshold: 16, max: 22, status: 'fail' },
+              overall_status: 'fail' },
+            { date: now,
+              task_3: { score: 5, threshold: 7, max: 10, status: 'fail' },
+              task_4: { score: 14, threshold: 16, max: 22, status: 'fail' },
+              overall_status: 'fail' }
+          ],
+          latest_status: 'fail',
+          next_review_due: now + FIVE_WEEKS_MS,
+          suggested_intervention: {
+            patternId: 'phonological',
+            source: 'moy_default_fallback',
+            match_quality: 'partial',
+            based_on_failed_tasks: ['task_3', 'task_4'],
+            notice: 'MOY משימות 3 ו-4 נכשלו פעמיים. phonological awareness הוא הקרוב ביותר ב-B.7 — בדקי גם דפוסים נוספים ב-EPA.',
+            confidence: 'low',
+            generated_at: now
+          }
+        }
+      },
+      eoy: {}
+    };
+    localStorage.setItem(ASSESSMENTS_KEY, JSON.stringify(assessments));
+
+    // 4. נקה execution log (כדי שהמסך יראה "טרם בוצע" בהתחלה)
+    localStorage.removeItem('avnei-action-log-v1');
+
+    return true;
+  } catch (e) {
+    console.error(e);
+    return false;
+  }
+}
+
+function clearAll() {
+  if (!confirm('למחוק את כל ה-localStorage? (לא רק דמו)')) return;
+  localStorage.clear();
+  showStatus('🧹 כל ה-localStorage נמחק.', false);
+}
+
+function showStatus(msg, isError) {
+  const s = document.getElementById('status');
+  s.textContent = msg;
+  s.style.display = 'block';
+  s.classList.toggle('error', !!isError);
+}
+
+document.getElementById('seedBtn').addEventListener('click', function () {
+  if (seedDemo()) {
+    showStatus('✅ דאטה נזרע. מעבירה ל-teacher-action.html...', false);
+    setTimeout(function () { location.href = 'teacher-action.html'; }, 800);
+  } else {
+    showStatus('❌ שגיאה. ראי console.', true);
+  }
+});
+
+document.getElementById('seedOnlyBtn').addEventListener('click', function () {
+  if (seedDemo()) {
+    showStatus('✅ דאטה נזרע. אפשר לפתוח teacher-action.html או teacher-rama.html בלשונית חדשה.', false);
+  } else {
+    showStatus('❌ שגיאה. ראי console.', true);
+  }
+});
+
+document.getElementById('clearBtn').addEventListener('click', clearAll);
+</script>
+
+</body>
+</html>

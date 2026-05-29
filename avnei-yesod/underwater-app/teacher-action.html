@@ -185,6 +185,8 @@
   .ta-action-primary:hover { background: #3a9a8d; }
   .ta-action-mark { background: #38a169; color: white; }
   .ta-action-mark:hover { background: #2f855a; }
+  .ta-action-undo { background: white; color: #1e40af; border: 1px solid #BFDBFE; }
+  .ta-action-undo:hover { background: #EFF6FF; }
   .ta-action-mark.is-done { background: #cbd5e0; color: #4a5568; }
   .ta-action-mark.is-done:hover { background: #a0aec0; }
   .ta-action-secondary { background: #edf2f7; color: #4a5568; }
@@ -234,15 +236,57 @@
   .ta-moy-type { font-size: 12px; color: #744210; margin-bottom: 8px; }
 
   /* ============ Letters Section ============ */
-  .ta-letters-list { font-size: 13px; color: #1a4d4d; line-height: 1.7; }
-  .ta-letters-row { padding: 4px 0; border-bottom: 1px dashed #edf2f7; }
-  .ta-letters-row:last-child { border-bottom: 0; }
-  .ta-letters-row strong { color: #2c7a7b; font-weight: 700; margin-left: 8px; }
-  .ta-letters-row .ta-letter {
-    display: inline-block; min-width: 24px;
+  .ta-letters-list { font-size: 13px; color: #1a4d4d; }
+  .ta-letter-block {
+    padding: 10px 0;
+    border-bottom: 1px dashed #edf2f7;
+  }
+  .ta-letter-block:last-child { border-bottom: 0; }
+  .ta-letter-block .ta-letter-stu-name {
+    font-weight: 700; color: #2c7a7b; font-size: 13px; margin-bottom: 6px;
+  }
+  .ta-letter-item {
+    display: flex; align-items: center; gap: 8px;
+    flex-wrap: wrap;
+    padding: 6px 0;
+  }
+  .ta-letter-item .ta-letter {
+    display: inline-block; min-width: 28px; text-align: center;
     background: #FFF4D8; color: #92400e;
-    padding: 2px 6px; border-radius: 6px;
-    font-weight: 700; margin-left: 4px;
+    padding: 4px 10px; border-radius: 6px;
+    font-weight: 700; font-size: 15px;
+  }
+  .ta-letter-status {
+    font-size: 12px; padding: 2px 8px;
+    border-radius: 999px; white-space: nowrap;
+  }
+  .ta-letter-status.is-auto { background: #E8F8EF; color: #22543d; }
+  .ta-letter-status.is-miss { background: #FFECE7; color: #9b2c2c; }
+  .ta-letter-status.is-off  { background: #FEF3C7; color: #92400e; }
+  .ta-letter-status.is-targeted { background: #DBEAFE; color: #1e40af; }
+  .ta-letter-btn {
+    border: 0; padding: 5px 12px;
+    border-radius: 6px; font-family: inherit;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    min-height: 32px;
+    background: white; color: #2c7a7b; border: 1px solid #4FB6A8;
+  }
+  .ta-letter-btn:hover { background: #E8F7F3; }
+  .ta-letter-btn.is-secondary {
+    background: white; color: #4a5568; border-color: #cbd5e0;
+  }
+  .ta-letter-btn.is-secondary:hover { background: #f7fafc; }
+  .ta-letter-spacer { flex: 1; }
+  .ta-letter-summary {
+    background: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    border-radius: 8px;
+    padding: 8px 12px !important;
+    margin-bottom: 6px;
+  }
+  .ta-letter-targets-list {
+    color: #1e40af; font-size: 13px; font-weight: 700;
+    background: white; padding: 3px 10px; border-radius: 6px;
   }
 
   /* ============ Execution Widget ============ */
@@ -494,7 +538,7 @@
       </div>
 
       <div class="ta-section" style="margin-top: 12px;">
-        <h2 class="ta-section-title" style="margin-bottom: 10px;">🔤 אותיות שכדאי לשלב היום</h2>
+        <h2 class="ta-section-title" style="margin-bottom: 10px;">🎯 נקודות לחיזוק היום</h2>
         <div id="lettersSection"></div>
       </div>
 
@@ -518,6 +562,8 @@
 <script src="js/shared/assessments.js?v=1"></script>
 <script src="js/shared/intervention-matcher.js?v=1"></script>
 <script src="js/shared/group-suggester.js?v=1"></script>
+<script src="js/shared/letter-targets.js?v=1"></script>
+<script src="js/shared/skill-units.js?v=1"></script>
 <script src="js/shared/f21e-helpers.js?v=1"></script>
 
 <script>
@@ -899,17 +945,35 @@ function renderSoloStudents(ctx) {
     const status = H.statusForEntry('individual', indivKey, ctx.log, Date.now());
     const isDone = status === 'today';
 
+    // כמה units כבר ב-targets פעילים לתלמיד.ה הזה (פידבק מספרי + state של הכפתור)
+    let targetCount = 0;
+    try {
+      const SU = window.AvneiSkillUnits;
+      if (SU && typeof SU.getTargets === 'function') {
+        targetCount = (SU.getTargets(sid) || []).length;
+      }
+    } catch (e) { /* swallow */ }
+
+    // Primary button — דינמי לפי targetCount (משוב מיידי למורה)
+    const primaryBtn = targetCount > 0
+      ? '<button type="button" class="ta-action-btn ta-action-undo" data-cancel-push-solo="' + escapeHtml(sid) + '">↺ בטלי תרגול אישי (' + targetCount + ')</button>'
+      : '<button type="button" class="ta-action-btn ta-action-primary" data-push-solo="' + escapeHtml(sid) + '">📲 שלחי תרגול ממוקד למכשיר</button>';
+
     return '<div class="ta-solo-card" style="margin-bottom:8px;">' +
       '<div class="ta-solo-head">' +
         '<button class="ta-solo-name" type="button" data-go-student="' + escapeHtml(sid) + '">' + escapeHtml(stu.name || sid) + '</button>' +
         '<span class="ta-badge ta-badge-waiting">ממתינ.ה לקבוצה</span>' +
       '</div>' +
       '<div class="ta-solo-need">צורך: ' + escapeHtml(need || 'תרגול ממוקד') + '</div>' +
-      '<div class="ta-solo-microcopy">כרגע יש צורך בתרגול, אבל אין מספיק תלמידים לפתיחת קבוצה מתאימה. בינתיים כדאי לתת תרגול אישי קצר.</div>' +
+      '<div class="ta-solo-microcopy">' +
+        (targetCount > 0
+          ? '✓ נשלחו ' + targetCount + ' נקודות לתרגול אישי במכשיר. המכשיר יתעדף אותן בסשן הבא.'
+          : 'אין מספיק תלמידים לפתיחת קבוצה. אפשר לשלוח את ה-3 הנקודות החלשות ביותר לתרגול ממוקד במכשיר.') +
+      '</div>' +
       '<div class="ta-card-actions">' +
-        '<button type="button" class="ta-action-btn ta-action-primary" data-open-solo="' + escapeHtml(sid) + '">📋 פתחי תרגול אישי</button>' +
+        primaryBtn +
         '<button type="button" class="ta-action-btn ta-action-mark' + (isDone ? ' is-done' : '') + '" data-mark-solo="' + escapeHtml(sid) + '">' +
-          (isDone ? '✓ בוטלי סימון' : '✓ סמני שטופל היום') +
+          (isDone ? '✓ בוטלי סימון' : '✓ סמני שטופל בכיתה') +
         '</button>' +
       '</div>' +
     '</div>';
@@ -923,10 +987,38 @@ function renderSoloStudents(ctx) {
       window.location.href = 'teacher-rama.html?student=' + encodeURIComponent(sid);
     });
   });
-  list.querySelectorAll('button[data-open-solo]').forEach(function (btn) {
+  // 📲 שלחי תרגול ממוקד למכשיר — דוחף top-3 weak units ל-targets + מסמן ב-log
+  list.querySelectorAll('button[data-push-solo]').forEach(function (btn) {
     btn.addEventListener('click', function () {
-      const sid = btn.dataset.openSolo;
-      openSoloInterventionModal(sid, ctx);
+      const sid = btn.dataset.pushSolo;
+      const SU = window.AvneiSkillUnits;
+      if (!SU) return;
+      const units = SU.getWeakUnits(sid, 3) || [];
+      let pushed = 0;
+      units.forEach(function (u) {
+        if (SU.addTarget(sid, u, 'teacher-send-solo')) pushed++;
+      });
+      // mark action log (אם לא כבר היום)
+      const indivKey = H.logEntryKey('individual', sid);
+      if (H.statusForEntry('individual', indivKey, ctx.log, Date.now()) !== 'today') {
+        H.appendActionLog({ type: 'individual', key: indivKey });
+      }
+      render();
+    });
+  });
+  // ↺ בטלי תרגול אישי — מסיר את כל ה-targets + frozen
+  list.querySelectorAll('button[data-cancel-push-solo]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const sid = btn.dataset.cancelPushSolo;
+      const SU = window.AvneiSkillUnits;
+      if (!SU) return;
+      const targets = SU.getTargets(sid) || [];
+      targets.forEach(function (u) {
+        SU.removeTarget(sid, u);
+        SU.removeFrozen(sid, u);
+      });
+      // לא מבטל את ה-action log — היא עדיין סימנה אותו כבוצע היום
+      render();
     });
   });
   list.querySelectorAll('button[data-mark-solo]').forEach(function (btn) {
@@ -1023,25 +1115,166 @@ function renderMoyAlerts(ctx) {
   });
 }
 
-// ===== Letters Section =====
+// ===== Skill Units Section (A+B integration · unit-agnostic) =====
+// "🎯 נקודות לחיזוק היום" — היום: אותיות (sub-BKT). post-pilot: תנועות, מילים,
+// מורפמות, מיומנויות פונולוגיות וכו'. כל זה דרך AvneiSkillUnits שמסיג את
+// הסוג הספציפי. ה-UI אגנוסטי — לא יודע אם זה אות או תנועה.
+//
+// פר תלמיד.ה: top-1 unit חלש (frozen excluded · auto-covered hidden).
+// פר unit: badge סטטוס + 2 כפתורים:
+//   📲 שלחי לתרגול אישי (B) → SU.addTarget(sid, unit) + הקפאה אוטומטית
+//   ✓ טיפלתי בכיתה (A)     → SU.markFrozen(sid, unit) בלבד
 function renderLettersSection(ctx) {
   const H = window.AvneiF21EHelpers;
-  const wrap = document.getElementById('lettersSection');
-  const rows = ctx.students.map(function (s) {
-    const top = H.getTopWeakLetters(s.id, 3);
-    if (top.length === 0) return null;
-    const ltrs = top.map(function (l) {
-      return '<span class="ta-letter">' + escapeHtml(l) + '</span>';
-    }).join('');
-    return '<div class="ta-letters-row"><strong>' + escapeHtml(s.name || s.id) + ':</strong> ' + ltrs + '</div>';
-  }).filter(Boolean);
+  const SU = window.AvneiSkillUnits;
+  const PB = window.AvneiPackBridge;
 
-  if (rows.length === 0) {
-    // לפי spec §5.6 - אם 0 תלמידים → לא להציג בכלל. כאן מציגים empty יחיד אם המורה פתחה ולא ראתה — UX יותר ברור.
-    wrap.innerHTML = '<div class="ta-empty">עדיין אין מספיק נתונים על אותיות חלשות.</div>';
+  const wrap = document.getElementById('lettersSection');
+  if (!SU) {
+    wrap.innerHTML = '<div class="ta-empty">לא הצלחנו לטעון את מנגנון הטרגוט. נסי לרענן.</div>';
     return;
   }
-  wrap.innerHTML = '<div class="ta-letters-list">' + rows.join('') + '</div>';
+
+  // current pack context — לפי תאריך, fallback ל-september-2026
+  let pack = null;
+  try { pack = PB && PB.loadCurrentPack ? PB.loadCurrentPack() : null; }
+  catch (e) { pack = null; }
+  if (!pack && PB && typeof PB.loadPack === 'function') {
+    try { pack = PB.loadPack('september-2026'); }
+    catch (e) { /* swallow */ }
+  }
+
+  // Demo cap: 1 unit פר תלמיד.ה. + סינון auto-covered.
+  const MAX_UNITS_PER_STUDENT = 1;
+
+  // getUnitStatus — מחזיר 'targeted' | 'auto-covered' | 'pack-misses' | 'pack-off' | 'unknown'
+  // היום עובד רק עבור type='letter'. post-pilot — להרחיב פר type.
+  function getUnitStatus(sid, unit) {
+    if (unit.type === 'letter') {
+      return H.getLetterStatus(sid, unit.id, pack);
+    }
+    // לא-letter (vowel/word/...): מחזירים 'pack-off' כסטטוס ניטרלי
+    // עד שיוסיף תמיכה ספציפית בפאקים.
+    return 'pack-off';
+  }
+
+  // unitStatusLabel — שפת מורה (לא טכני; spec §1.4)
+  function unitStatusLabel(status) {
+    if (status === 'targeted') return '📲 בתרגול אישי';
+    if (status === 'auto-covered') return '✓ בתרגול היומי במכשיר';
+    if (status === 'pack-misses' || status === 'pack-off') return '⚠ דרושה החלטה שלך';
+    return '';
+  }
+
+  const blocks = ctx.students.map(function (s) {
+    // 📲 קודם כל — targets פעילים (פירות של auto-push מ-B.7 או "שלחי" ידני)
+    const activeTargets = SU.getTargets(s.id);
+
+    const allWeak = SU.getWeakUnits(s.id, 6);  // משוך יותר ל-filtering (frozen כבר מסונן)
+
+    // Option 1: hide auto-covered (הפאק כבר מתעדף אותן אוטומטית)
+    const units = allWeak.filter(function (u) {
+      return getUnitStatus(s.id, u) !== 'auto-covered';
+    }).slice(0, MAX_UNITS_PER_STUDENT);
+
+    // אם אין targets ואין weak units — לא להציג
+    if (activeTargets.length === 0 && units.length === 0) return null;
+
+    // Summary line של targets — מציג את כל ה-units שנשלחו, עם undo כללי
+    let targetSummaryHtml = '';
+    if (activeTargets.length > 0) {
+      const displayList = activeTargets.map(function (u) {
+        return SU.unitToDisplayHe(u);
+      }).join(' · ');
+      targetSummaryHtml = '<div class="ta-letter-item ta-letter-summary">' +
+        '<span class="ta-letter-status is-targeted">📲 ' + activeTargets.length + ' בתרגול אישי</span>' +
+        '<span class="ta-letter-targets-list">' + escapeHtml(displayList) + '</span>' +
+        '<span class="ta-letter-spacer"></span>' +
+        '<button type="button" class="ta-letter-btn is-secondary" data-action="untarget-all" data-sid="' + escapeHtml(s.id) + '">↺ בטלי הכל</button>' +
+      '</div>';
+    }
+
+    const itemsHtml = units.map(function (unit) {
+      const status = getUnitStatus(s.id, unit);
+      const statusLabel = unitStatusLabel(status);
+      const statusClass = ({
+        'targeted': 'is-targeted',
+        'auto-covered': 'is-auto',
+        'pack-misses': 'is-miss',
+        'pack-off': 'is-off'
+      })[status] || '';
+      const displayHe = SU.unitToDisplayHe(unit);
+      const dataAttrs = 'data-sid="' + escapeHtml(s.id) + '" ' +
+                       'data-unit-type="' + escapeHtml(unit.type) + '" ' +
+                       'data-unit-id="' + escapeHtml(unit.id) + '"';
+
+      // Targeted → רק badge + "בטלי"
+      if (status === 'targeted') {
+        return '<div class="ta-letter-item">' +
+          '<span class="ta-letter">' + escapeHtml(displayHe) + '</span>' +
+          '<span class="ta-letter-status ' + statusClass + '">' + escapeHtml(statusLabel) + '</span>' +
+          '<span class="ta-letter-spacer"></span>' +
+          '<button type="button" class="ta-letter-btn is-secondary" data-action="untarget" ' + dataAttrs + '>↺ בטלי</button>' +
+        '</div>';
+      }
+
+      return '<div class="ta-letter-item">' +
+        '<span class="ta-letter">' + escapeHtml(displayHe) + '</span>' +
+        (statusLabel ? '<span class="ta-letter-status ' + statusClass + '">' + escapeHtml(statusLabel) + '</span>' : '') +
+        '<span class="ta-letter-spacer"></span>' +
+        '<button type="button" class="ta-letter-btn" data-action="target" ' + dataAttrs + ' title="שלחי לתרגול אישי במכשיר">📲 שלחי לתרגול</button>' +
+        '<button type="button" class="ta-letter-btn is-secondary" data-action="handle" ' + dataAttrs + ' title="הקפאה 3 ימים בלי שליחה">✓ טיפלתי בכיתה</button>' +
+      '</div>';
+    }).join('');
+
+    return '<div class="ta-letter-block">' +
+      '<div class="ta-letter-stu-name">' + escapeHtml(s.name || s.id) + '</div>' +
+      targetSummaryHtml +
+      itemsHtml +
+    '</div>';
+  }).filter(Boolean);
+
+  if (blocks.length === 0) {
+    wrap.innerHTML = '<div class="ta-empty">אין כרגע נקודות פעילות לחיזוק. ייתכן שהכל בהקפאה (טופלו ב-3 הימים האחרונים).</div>';
+    return;
+  }
+
+  wrap.innerHTML = '<div class="ta-letters-list">' + blocks.join('') + '</div>';
+
+  // unified click handler — קורא data-action + type/id מה-button
+  function _unitFromBtn(btn) {
+    return {
+      type: btn.dataset.unitType,
+      id: btn.dataset.unitId,
+      displayHe: btn.dataset.unitId  // letter: id IS display
+    };
+  }
+  wrap.querySelectorAll('button[data-action]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const action = btn.dataset.action;
+      const sid = btn.dataset.sid;
+      if (action === 'untarget-all') {
+        // בטלי הכל — מסיר את כל ה-targets + frozen של התלמיד.ה
+        const targets = SU.getTargets(sid) || [];
+        targets.forEach(function (u) {
+          SU.removeTarget(sid, u);
+          SU.removeFrozen(sid, u);
+        });
+        render();
+        return;
+      }
+      const unit = _unitFromBtn(btn);
+      if (action === 'target') {
+        SU.addTarget(sid, unit, 'teacher-send');  // אוטומטית מקפיא
+      } else if (action === 'handle') {
+        SU.markFrozen(sid, unit, 'teacher-handled');
+      } else if (action === 'untarget') {
+        SU.removeTarget(sid, unit);
+        SU.removeFrozen(sid, unit);
+      }
+      render();
+    });
+  });
 }
 
 // ===== Execution Tracking =====
@@ -1311,6 +1544,40 @@ function openInterventionModal(groupIdx) {
           { duration_minutes: dur.total_planned || 12, success_check: 'מהיר', teacher_note: '' }
         );
       } catch (e) { /* swallow */ }
+
+      // 🎯 Auto-push לתרגול במכשיר — סוגרת את הפער בין Tier-2 (מורה) ל-Tier-1 (פאק).
+      // המורה לחצה "ביצעתי" → המערכת אוטומטית מסנכרנת units חלשים פר חבר.ת קבוצה
+      // ל-pack engine. כך התרגול ב-MV ממשיך מה שהמורה עשתה.
+      try {
+        const SU = window.AvneiSkillUnits;
+        if (SU && typeof SU.addTarget === 'function') {
+          grp.students.forEach(function (s) {
+            let unitsToPush = [];
+            // letter_knowledge: זוג האותיות המתבלבלות (לא BKT-driven)
+            if (grp.patternId === 'letter_knowledge' &&
+                grp.groupCommonDetails && Array.isArray(grp.groupCommonDetails.confused_pair)) {
+              grp.groupCommonDetails.confused_pair.forEach(function (letter) {
+                unitsToPush.push(SU.makeLetterUnit(letter));
+              });
+            }
+            // letter_cluster: weak_letters פר תלמיד (מ-detectForStudent)
+            else if (grp.patternId === 'letter_cluster' &&
+                     s.details && Array.isArray(s.details.weak_letters)) {
+              s.details.weak_letters.slice(0, 3).forEach(function (letter) {
+                unitsToPush.push(SU.makeLetterUnit(letter));
+              });
+            }
+            // phonological / decoding / fluency: top-3 weak units כללי
+            else {
+              unitsToPush = SU.getWeakUnits(s.id, 3) || [];
+            }
+            unitsToPush.forEach(function (u) {
+              SU.addTarget(s.id, u, 'auto-from-b7-completion');
+            });
+          });
+        }
+      } catch (e) { /* swallow — auto-push לא קריטי לסגירת ה-flow */ }
+
       // וגם ב-action log המקומי שלנו
       const H = window.AvneiF21EHelpers;
       const groupKey = grp._mgSourced

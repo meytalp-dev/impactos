@@ -59,6 +59,18 @@
     return null;
   }
 
+  function _getLetterTargets() {
+    if (typeof window !== 'undefined' && window.AvneiLetterTargets) return window.AvneiLetterTargets;
+    if (typeof global !== 'undefined' && global.AvneiLetterTargets) return global.AvneiLetterTargets;
+    return null;
+  }
+
+  function _getPackBridge() {
+    if (typeof window !== 'undefined' && window.AvneiPackBridge) return window.AvneiPackBridge;
+    if (typeof global !== 'undefined' && global.AvneiPackBridge) return global.AvneiPackBridge;
+    return null;
+  }
+
   function _getLocalStorage() {
     if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
     if (typeof global !== 'undefined' && global.localStorage) return global.localStorage;
@@ -67,6 +79,8 @@
 
   // --------------------------------------------------------------------------
   // getTopWeakLetters — wrapper מעל AvneiBKT.getWeakestLetters שמחזיר תווים
+  // מסנן אותיות "מוקפאות" — אחרי שמורה לחצה "שלחי לתרגול" או "טיפלתי בכיתה",
+  // האות לא תופיע ברשימה למשך 3 ימים (TARGET FREEZE).
   // --------------------------------------------------------------------------
   function getTopWeakLetters(sid, n) {
     const limit = (typeof n === 'number' && n > 0) ? n : 3;
@@ -74,12 +88,73 @@
     const BKT = _getBKT();
     if (!BKT || typeof BKT.getWeakestLetters !== 'function') return [];
     let weakest;
-    try { weakest = BKT.getWeakestLetters(sid, limit); }
+    // משוך יותר כדי לפצות על הסינון של frozen (כפול n כספרינג)
+    try { weakest = BKT.getWeakestLetters(sid, limit * 3); }
     catch (e) { return []; }
     if (!Array.isArray(weakest) || weakest.length === 0) return [];
-    return weakest
+
+    const LT = _getLetterTargets();
+    const frozenSet = {};
+    if (LT && typeof LT.getFrozen === 'function') {
+      try { (LT.getFrozen(sid) || []).forEach(function (l) { frozenSet[l] = true; }); }
+      catch (e) { /* swallow */ }
+    }
+    const filtered = weakest
       .map(function (entry) { return entry && entry.letter ? entry.letter : null; })
-      .filter(Boolean);
+      .filter(Boolean)
+      .filter(function (letter) { return !frozenSet[letter]; });
+    return filtered.slice(0, limit);
+  }
+
+  // --------------------------------------------------------------------------
+  // getLetterStatus(sid, letter, packContext?) — מחזיר סטטוס פר אות
+  //   packContext = { letters_in_focus, allows_weakness_targeting } (אופציונלי)
+  //   אם packContext לא נמסר — מנסה לטעון פאק נוכחי דרך AvneiPackBridge.
+  //
+  // statuses:
+  //   'targeted'      — המורה ביקשה לתרגל (ב-targets active)
+  //   'auto-covered'  — הפאק מכיל את האות + allows_weakness_targeting דלוק
+  //   'pack-misses'   — הפאק לא מכיל את האות (letters_in_focus סגור)
+  //   'pack-off'      — הפאק מכיל את האות אבל targeting כבוי
+  //   'unknown'       — אין מספיק מידע
+  // --------------------------------------------------------------------------
+  function getLetterStatus(sid, letter, packContext) {
+    if (!sid || !letter) return 'unknown';
+    // 1. teacher target?
+    const LT = _getLetterTargets();
+    if (LT && typeof LT.getTargets === 'function') {
+      try {
+        const targets = LT.getTargets(sid) || [];
+        if (targets.indexOf(letter) !== -1) return 'targeted';
+      } catch (e) { /* swallow */ }
+    }
+
+    // 2. pack context
+    let pack = packContext;
+    if (!pack) {
+      const PB = _getPackBridge();
+      if (PB && typeof PB.loadCurrentPack === 'function') {
+        try { pack = PB.loadCurrentPack(); } catch (e) { pack = null; }
+      }
+    }
+    if (!pack) return 'unknown';
+
+    const inFocus = Array.isArray(pack.letters_in_focus) &&
+                    pack.letters_in_focus.indexOf(letter) !== -1;
+    if (!inFocus) return 'pack-misses';
+    if (pack.allows_weakness_targeting === true) return 'auto-covered';
+    return 'pack-off';
+  }
+
+  // letterStatusSimpleHe — תרגום לשפה פשוטה למורה
+  function letterStatusSimpleHe(status) {
+    switch (status) {
+      case 'targeted':     return '📲 בתרגול אישי';
+      case 'auto-covered': return '✓ מטופל אוטומטית';
+      case 'pack-misses':  return '⚠ פאק לא מכסה';
+      case 'pack-off':     return '⚠ אוטומציה כבויה';
+      default:             return '';
+    }
   }
 
   // --------------------------------------------------------------------------
@@ -342,7 +417,11 @@
     // Translations
     patternToSimpleHe: patternToSimpleHe,
     reasonByEvidence: reasonByEvidence,
-    moyAlertSimpleHe: moyAlertSimpleHe
+    moyAlertSimpleHe: moyAlertSimpleHe,
+
+    // Letter targeting / status (A+B integration)
+    getLetterStatus: getLetterStatus,
+    letterStatusSimpleHe: letterStatusSimpleHe
   };
 
   if (typeof window !== 'undefined') {

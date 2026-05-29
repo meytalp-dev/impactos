@@ -388,6 +388,17 @@
     return false;
   }
 
+  // _getLetterTargets — pulls teacher-requested letters (F.21E "שלחי לתרגול")
+  // Always respected, regardless of pack.allows_weakness_targeting.
+  // Logic-only: returns array of letters (strings), or [] if module/data missing.
+  function _getLetterTargets(studentId) {
+    const LT = (typeof window !== 'undefined' && window.AvneiLetterTargets) ||
+               (typeof global !== 'undefined' && global.AvneiLetterTargets) || null;
+    if (!LT || typeof LT.getTargets !== 'function') return [];
+    try { return LT.getTargets(studentId) || []; }
+    catch (e) { return []; }
+  }
+
   function selectItemsForStudent(studentId, packId) {
     const decision = selectTierForStudent(studentId, packId);
     const pack = loadPack(packId);
@@ -395,21 +406,32 @@
     const items = pack.tiers[String(decision.tier)].items || [];
     if (items.length === 0) return [];
 
-    // 1. פאק לא מתיר targeting — חזרה רגילה
-    if (!pack.allows_weakness_targeting) return items;
+    // 1. בנה רשימת weak-letters אפקטיבית: auto (אם פאק מתיר) ∪ teacher targets (תמיד)
+    const teacherTargets = _getLetterTargets(studentId);
+    let autoWeakLetters = [];
 
-    // 2. משוך top-N weak letters
     const bkt = (typeof window !== 'undefined' && window.AvneiBKT) ||
                 (typeof global !== 'undefined' && global.AvneiBKT) || null;
-    if (!bkt || typeof bkt.getWeakLetters !== 'function') return items;
 
-    const weakLetters = bkt.getWeakLetters(studentId, {
-      threshold: WEAKNESS_THRESHOLD,
-      minAttempts: MIN_ATTEMPTS_FOR_WEAK,
-      max: MAX_WEAK_LETTERS_TARGETED
-    });
+    if (pack.allows_weakness_targeting && bkt && typeof bkt.getWeakLetters === 'function') {
+      autoWeakLetters = bkt.getWeakLetters(studentId, {
+        threshold: WEAKNESS_THRESHOLD,
+        minAttempts: MIN_ATTEMPTS_FOR_WEAK,
+        max: MAX_WEAK_LETTERS_TARGETED
+      }) || [];
+    }
 
-    if (!weakLetters || weakLetters.length === 0) return items;
+    // איחוד: teacher first (priority), then auto. ללא כפילויות.
+    const seen = {};
+    const weakLetters = [];
+    teacherTargets.forEach(function (l) { if (!seen[l]) { seen[l] = true; weakLetters.push(l); } });
+    autoWeakLetters.forEach(function (l) { if (!seen[l]) { seen[l] = true; weakLetters.push(l); } });
+
+    // אין כלום מטרגט + פאק כבוי → התנהגות מקורית (כל ה-items)
+    if (weakLetters.length === 0) {
+      if (!pack.allows_weakness_targeting) return items;
+      return items;  // BKT לא החזיר weak letters
+    }
 
     // 3. סנן ל-2 קבוצות
     const targetedPool = items.filter(i => _itemMatchesWeakLetters(i, weakLetters));
