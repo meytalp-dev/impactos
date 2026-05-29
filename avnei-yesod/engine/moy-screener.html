@@ -160,6 +160,29 @@ button { font-family: inherit; cursor: pointer; }
   border-color: var(--indigo);
   background: var(--lavender-light);
 }
+.option-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+.option-row .option-btn { flex: 1; }
+.option-audio-btn {
+  background: #FFF;
+  border: 2px solid var(--violet);
+  color: var(--violet);
+  width: 56px;
+  border-radius: 14px;
+  font-size: 22px;
+  flex-shrink: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.option-audio-btn:hover { background: #F5F3FF; }
+.option-audio-btn:disabled { opacity: 0.5; cursor: default; }
 
 .progress {
   display: flex;
@@ -599,12 +622,28 @@ function showQuestionForCurrent() {
   const container = $('optionsContainer');
   container.innerHTML = '';
   (item.options || []).forEach((opt, idx) => {
+    const row = document.createElement('div');
+    row.className = 'option-row';
+
     const btn = document.createElement('button');
     btn.className = 'option-btn';
     btn.type = 'button';
     btn.textContent = opt.text;
     btn.addEventListener('click', () => onAnswer(idx));
-    container.appendChild(btn);
+    row.appendChild(btn);
+
+    const audioBtn = document.createElement('button');
+    audioBtn.className = 'option-audio-btn';
+    audioBtn.type = 'button';
+    audioBtn.textContent = '🔊';
+    audioBtn.setAttribute('aria-label', 'הַקְרָאַת הַתְּשׁוּבָה');
+    audioBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      speakHebrew(opt.audio_text || opt.text);
+    });
+    row.appendChild(audioBtn);
+
+    container.appendChild(row);
   });
 }
 
@@ -635,6 +674,9 @@ function onAnswer(idx) {
   document.querySelectorAll('#optionsContainer .option-btn').forEach((btn, i) => {
     btn.disabled = true;
     if (i === idx) btn.classList.add('selected');
+  });
+  document.querySelectorAll('#optionsContainer .option-audio-btn').forEach(btn => {
+    btn.disabled = true;
   });
 
   const isCorrect = !!(chosen && chosen.correct === true);

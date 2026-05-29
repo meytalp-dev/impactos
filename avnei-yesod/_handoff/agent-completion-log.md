@@ -7,6 +7,76 @@
 
 ---
 
+## 🔊 סוכן 26 — MOY-Lite Options Fix (IPA → עברית + audio per option)
+
+**סטטוס:** ✅ הסתיים · 90/90 options ב-task_4 עברית מנוקדת + audio_text · 🔊 ליד כל אופציה · 17/17 test suites ✓ · ממתין לאישור פוש
+**תאריך:** 2026-05-29 (ערב)
+**שיחה:** Claude Code · Opus 4.7 · 1M context · VS Code · impactos
+**Handoff:** `_handoff/2026-05-29-moy-options-fix-agent-prompt.md`
+
+### Bug fix
+
+1. **🔴 102 options ב-IPA אנגלי** (לפי bootstrap — בפועל 90 ב-options) → **תוקן ל-100%**: 0 IPA נשארו ב-`"text"` של options. כל אופציה: עברית מנוקדת + `audio_text`.
+2. **🟠 אין אודיו ליד תשובות** → **תוקן**: כפתור 🔊 ליד כל אופציה ב-`moy-screener.html`. שימוש חוזר ב-`speakHebrew()` הקיים (Web Speech he-IL · rate 0.85).
+
+### מה שונה — `moy-items.json`
+
+| sub_type | items | מה שונה |
+|---|---|---|
+| opening_phoneme | 5 | IPA → אות + ניקוד · audio_text "הַצְּלִיל X" / "הַתְּנוּעָה X" |
+| closing_phoneme | 5 | IPA → אות + ניקוד · audio_text "הַצְּלִיל X" |
+| phoneme_isolation | 4 | IPA → אות + ניקוד · כולל **/f/ → פ** (פ' רפויה, אישור מיטל — שורה חדשה לטבלה) |
+| phoneme_match | 3 | options עברית נשמרה · audio_text מילים נפרדות בנקודה ("שֶׁמֶש. שִׁיר.") |
+| count_syllables | 10 | options מספרים נשמרו · audio_text "הֲבָרָה אַחַת / שְׁתֵּי הֲבָרוֹת / שָׁלוֹשׁ הֲבָרוֹת / אַרְבַּע הֲבָרוֹת" |
+| phoneme_count | 3 | options מספרים נשמרו · audio_text "צְלִיל אֶחָד / שְׁנֵי / שְׁלוֹשָׁה / אַרְבָּעָה / חֲמִשָּׁה / שִׁשָּׁה צְלִילִים" |
+
+**שדות פנימיים נשארו ב-IPA** (לא מוצגים לתלמידה, החלטת מיטל): `phonemes_breakdown`, `target_phoneme`, `audio_strategy`, `word_phonetic`.
+
+### החלטות פדגוגיות (מיטל אישרה תוך כדי)
+
+1. **`/f/ → פ`** (לא היה בטבלה) · audio_text "הַצְּלִיל פ" · רציונל: פ' רפויה (סֵפֶר, אַף, נוֹף) — מקובל לכיתה א'.
+2. **terminology מלא ב-audio_text** של מספרים — לא לסמוך על Web Speech לקריאת ספרות.
+3. **נקודה ולא פסיק** ב-phoneme_match audio_text — Web Speech עוצר ~500ms בנקודה (רווח עיבוד לכיתה א').
+4. **שדות פנימיים נשארו ב-IPA** — minimum-risk: ולידציה 28.5 התייחסה רק למה שתלמידה רואה.
+5. **תנועות = "הַתְּנוּעָה X"** (אַ / אֶ / אִ / אוֹ / אוּ) · עיצורים = "הַצְּלִיל X" — תואם טבלת bootstrap.
+
+### מה שונה — `moy-screener.html`
+
+- **CSS חדש**: `.option-row` (flex container) · `.option-audio-btn` (56px, var(--violet), עגול)
+- **Render**: כל option עטוף ב-`<div class="option-row">` עם 2 כפתורים (option + audio)
+- **Handler**: `audioBtn.click → e.stopPropagation() + speakHebrew(opt.audio_text || opt.text)`
+- **onAnswer disable**: גם `.option-audio-btn` מקבל `disabled=true` אחרי בחירה
+- **שימוש חוזר**: `speakHebrew()` הקיים (שורות 439-454), לא נוצר חדש
+
+### בדיקות
+
+- `test-moy-assessments.js` — **51/51** ✓
+- `test-moy-intervention-link.js` — **51/51** ✓
+- 17/17 test suites כולל BKT/F.21E/interventions/pack-bridge — **0 רגרסיות**
+- JSON validation — תקין · 60 items · 0 IPA ב-options ב-task_4
+
+### Acceptance Criteria ✓
+
+- ✅ אפס `/[a-z]+/` IPA ב-options של `moy-items.json` task_4
+- ✅ כל option עם `text` (עברית מנוקדת) + `audio_text` (משפט מלא) + `correct`
+- ✅ `_meta.corrections_applied` עודכן
+- ✅ UI: 🔊 ליד כל אופציה
+- ✅ Audio: Web Speech he-IL פועל בלחיצה (דרך `speakHebrew()` הקיים)
+- ✅ Audio לא בוחר את האופציה (stopPropagation)
+- ✅ 51+51 tests עוברים
+
+### השאלות הפתוחות שעלו
+
+- **טבלת IPA → עברית** — להוסיף שורה לטבלה ב-bootstrap (`/f/ → פ`, audio_text "הַצְּלִיל פ", הערה: פ' רפויה). מיטל ביקשה בפירוש: זה ה-IPA היחיד שחסר ב-mapping.
+
+### Files Changed
+
+- `avnei-yesod/engine/moy-items.json` (102 IPA → עברית + audio_text · 21 פריטים נגעו)
+- `avnei-yesod/engine/moy-screener.html` (CSS .option-row/.option-audio-btn · render עטיפה ב-row · onAnswer disable)
+- `avnei-yesod/_handoff/agent-completion-log.md` (this entry)
+
+---
+
 ## 📦 סוכן 23 — 6 packs items (October 2026 → March 2027)
 
 **סטטוס:** ✅ הסתיים · 5 פאקים חדשים + October אומת · 8/8 validate ✓ · 75/75 bridge tests ✓ · 0 רגרסיות · ב-working tree (טרם נדחף — ממתין לאישור פוש)
