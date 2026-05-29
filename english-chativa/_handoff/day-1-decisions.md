@@ -125,9 +125,18 @@
 
 ## פעולות נדרשות ממיטל לפני Phase 2
 
-1. **לבקר** `curriculum/_schema/extracted/*.json` — לאשר draft → approved, או לסמן שינויים.
-2. **לאשר רשימת sight words** — 33 חסרים. ההמלצה: Dolch Pre-Primer (~30 מילים). אישור או רשימה אחרת.
-3. **לאשר Story arc characters** — אם Sarah (דמות-על) — להגיד באיזה מקומות (London שגרירות → ?).
+1. ✅ **כל קבצי `curriculum/_schema/extracted/*.json` ו-`cefr-targets/*.json`** — אושרו ע"י מיטל 29.5.2026 (status: approved).
+2. ✅ **רשימת 50 sight words** — 17 explicit מ-tnufa + 29 Dolch Pre-Primer + 4 completion (this/that/yes/no). אושרה.
+3. ✅ **Sarah's Year Around the World** — narrative arc אושרה. 8 מקומות: Tel Aviv → London → Mumbai → Tokyo → Barcelona → Mexico City → New York → Tel Aviv. ראה `curriculum/_schema/narrative-arc-grade7.json`.
+
+## End of Day 1 — סטטוס סופי
+
+| Layer | סטטוס |
+|---|---|
+| Architecture (3-layer) | ✅ approved |
+| Phase 0 (clone) | ✅ committed (b2163d1) |
+| Phase 1 (schema + extracted + cefr-targets + narrative) | ✅ approved · ready to commit |
+| Phase 2 (First Pack) | ⏳ ממתין אישור התחלה |
 
 ## אסור (יורש מאבני יסוד)
 
