@@ -242,8 +242,8 @@ setupBktMock({
 }, {}, ['ב', 'ר']);  // mock: יש weak letters, אבל הפאק לא מתיר
 
 const itemsNoTarget = Bridge.selectItemsForStudent('student-no-target', 'september-2026');
-assert('פאק עם allows_weakness_targeting=false → מחזיר את כל ה-tier items', itemsNoTarget.length === 4,
-       'got ' + itemsNoTarget.length + ' items (expected 4 ב-Tier 3)');
+assert('פאק עם allows_weakness_targeting=false → מחזיר את כל ה-tier items', itemsNoTarget.length === 10,
+       'got ' + itemsNoTarget.length + ' items (expected 10 ב-Tier 3 אחרי השלמת סוכן 19 ל-40 items)');
 
 section('PART B · BLOCK 9 — אין weak letters → החזרה רגילה (גם אם הפאק מתיר)');
 
