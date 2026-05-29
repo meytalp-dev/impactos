@@ -7,6 +7,159 @@
 
 ---
 
+## 📦 סוכן 19 — השלמת september-2026 pack (29.5.2026)
+
+**סטטוס:** ✅ הסתיים · 21 פריטים נוספו · 75/75 tests ✓ · ב-working tree (טרם נדחף — ממתין לאישור מיטל)
+**תאריך:** 2026-05-29
+**שיחה:** Claude Code · Opus 4.7 · 1M context · VS Code · impactos
+**Handoff:** `_handoff/2026-05-29-september-pack-items-agent-prompt.md`
+
+### קובץ יחיד שונה
+
+| קובץ | שינוי |
+|---|---|
+| `curriculum/packs/grade1-tashpaz/september-2026.json` | 19 → **40** items · הוסף `recommended_items_by_tier: {1:10,2:10,3:10,4:10}` · `metadata.items_count: 40` · `metadata.updated_at: 2026-05-29` |
+
+### פירוט 21 הפריטים שנוספו (פר tier פר אות)
+
+יעד לכל tier מלא: **ש=3, ל=3, נ=2, א=2** (10 פר tier · 2-3 פר אות לפי schema).
+
+**Tier 1 — בסיסי** (+5: ש+1, ל+2, נ+1, א+1) · כל הפריטים `tap-all` + `no-distractors`
+- `pack9-t1-shin-03` · `pack9-t1-lamed-02` · `pack9-t1-lamed-03` · `pack9-t1-nun-02` · `pack9-t1-alef-02`
+
+**Tier 2 — ליבה** (+5: ש+1, ל+2, נ+1, א+1) · `tap-all`/`pick` + `with-distractor`
+- `pack9-t2-shin-03` (pick) · `pack9-t2-lamed-02` (tap-all) · `pack9-t2-lamed-03` (pick) · `pack9-t2-nun-02` (pick) · `pack9-t2-alef-02` (tap-all)
+
+**Tier 3 — מתקדם** (+6: ש+2, ל+2, נ+1, א+1) · `pick`/`memory-pair` + `with-niqud` + שדה `word` מנוקד
+- `pack9-t3-shin-02` "שָׁלוֹם" (pick) · `pack9-t3-shin-03` "שִׁיר" (memory-pair)
+- `pack9-t3-lamed-02` "לֶחֶם" (memory-pair) · `pack9-t3-lamed-03` "לֵב" (pick)
+- `pack9-t3-nun-02` "נֵר" (pick) · `pack9-t3-alef-02` "אִמָּא" (memory-pair)
+
+**Tier 4 — מאסטר** (+5: ש+1, ל+2, נ+1, א+1) · `memory-pair`/`sort-by-letter` + `discrimination-*`/`mixed-letters`
+- `pack9-t4-shin-03` "שֶׁלֶג" (memory-pair, mixed-letters)
+- `pack9-t4-lamed-02` "לְבָנָה" (memory-pair, mixed-letters) · `pack9-t4-lamed-03` (sort-by-letter, mixed-letters)
+- `pack9-t4-nun-02` "נָחָש" (memory-pair, mixed-letters)
+- `pack9-t4-alef-02` (sort-by-letter, mixed-letters)
+
+### החלטות + סטיות מה-handoff
+
+1. **`challenge` labels — סטטה מה-handoff, התיישרה לקיים** (לפי הוראת ה-handoff "להעדיף את הקיים").
+   - Tier 2: `with-distractor` (לא `1-distractor`).
+   - Tier 3: `with-niqud` (לא `2-distractors`).
+   - Tier 4: `discrimination-*` / `mixed-letters` (לא `cross-content`).
+2. **`letters_involved` ב-Tier 4 mixed-letters — נשמר אות אחת** (לפי הקיים), למרות שה-handoff וגם §4.4 ב-schema אומרים 2-3 אותיות. הקיים סותר; ה-handoff אומר במפורש להעדיף את הקיים.
+3. **לא נוסף `type: "new"` ב-items** — לא קיים בכלל בקובץ המקורי, ו-`test-pack-bridge.js` עובר בלעדיו. ה-schema המקורי (§4.1) קורא לו "required" אבל הוא מיושן (גרסה 2.0 הפילה את השדה).
+4. **`recommended_items_by_tier`** — נוסף כ-top-level key מיד אחרי `tiers` (לפי הוראת ה-handoff).
+5. **`_meta`** — בקובץ הקיים השדה נקרא `metadata`, לא `_meta`. הוספתי `items_count: 40` ועדכנתי `updated_at: 2026-05-29`. **לא** הוספתי `version: 1.0` כי `schema_version: 2.0` כבר קיים.
+
+### Tests
+
+```
+node underwater-app/scripts/test-pack-bridge.js
+→ 75/75 assertions עברו (זהה ל-baseline · 0 רגרסיות)
+```
+
+נבדק במיוחד BLOCK 14 (`getItemsForStudent` מ-Tier 3 בממוצע 0.705) — items נטענו תקין.
+
+### ממתין ממיטל
+
+- 🟡 **אישור push** — handoff דורש "אל תדחוף בלי אישור מפורש".
+- 🟡 **בדיקת מילים מנוקדות** — 6 מילים חדשות (שָׁלוֹם · שִׁיר · לֶחֶם · לֵב · נֵר · אִמָּא · שֶׁלֶג · לְבָנָה · נָחָש). אם יש מילה שאינה באוצר כיתה א' לפי `vocab-bank.json` או שיקול פדגוגי — להחליף.
+
+### מה זה פתח
+
+- ✅ פיילוט ספטמבר 2026 לא חסום בתוכן (40/40 items מאוזנים).
+- ✅ `AvneiPackBridge.selectItemsForStudent('student-X', 'september-2026')` יחזיר עכשיו 10 items פר tier בכל ארבעת ה-tiers.
+
+---
+
+## 🌅 סוכן קוד F.21E — Action Dashboard (29.5.2026)
+
+**סטטוס:** ✅ הושלם · 112/112 ✓ (test-f21e-helpers חדש) + רגרסיה 503/503 ב-12 suites קיימים · 0 רגרסיות
+**תאריך:** 2026-05-29 (סוכן ייעודי לפי `_handoff/2026-05-29-F21E-code-agent-prompt.md` + spec v2)
+**שיחה:** Claude Code · Opus 4.7 · 1M context · VS Code · impactos
+
+### 3 קבצים חדשים + 1 שינוי קל + 3 handoff updates
+
+| # | קובץ | סטטוס | תיאור |
+|---|---|---|---|
+| 1 | `underwater-app/teacher-action.html` | **חדש** (~880 שורות) | מסך חדש: PIN gate (משותף עם F.21A) · Header (חזרה · כיתה א'1 קבוע · תאריך · רענון) · Hero (greeting by hour + sentence by 4 rules + 4 KPI tiles) · Action List (עד 5 B.9 cards · "למה עכשיו" משפה פשוטה · "אותיות רלוונטיות" רק ל-letter_knowledge/letter_cluster · שכפול B.7 modal עם שימוש ב-AvneiInterventions APIs) · תלמידים ללא קבוצה (B.8 filter · microcopy "תרגול אישי קצר" · לינק שם → Student View) · MOY Alerts (פעולה + סימון טופל + מבט תלמיד.ה) · אותיות שכדאי לשלב היום (top-3 פר תלמיד.ה) · Execution tracking widget · refresh על focus + ידני. RTL מלא · mobile-first + 2 cols ≥ 1024px · 44px touch targets. |
+| 2 | `underwater-app/js/shared/f21e-helpers.js` | **חדש** (~280 שורות) | helpers ל-F.21E (נחשפים כ-`window.AvneiF21EHelpers` · לא API ציבורי). הופרדו לקובץ כדי להיות בני-בדיקה ב-Node: `getTopWeakLetters(sid, n=3)` (wrapper על `AvneiBKT.getWeakestLetters`, מחזיר תווים) · `groupLetterOverlap(sids)` (intersection ≥3 ב-top-5) · `getGreetingByHour` · `buildHeroSentence` (4 rules + MOY≥2 priority) · `isSameCalendarDay` · `startOfWeekTimestamp` (Sunday) · `getActionLog`/`appendActionLog`/`removeActionLog` (schema `avnei-action-log-v1`) · `countCompletedToday`/`countCompletedThisWeek` · `statusForEntry` · `logEntryKey` · `patternToSimpleHe` (5 patterns) · `reasonByEvidence` (epa/moy/combined) · `moyAlertSimpleHe`. |
+| 3 | `underwater-app/scripts/test-f21e-helpers.js` | **חדש** (~340 שורות) | 12 בלוקים · **112 assertions ✓** · mock של AvneiBKT + localStorage. כיסוי: API surface · getTopWeakLetters (empty · data · ordering · n=3/5 · throw) · groupLetterOverlap (3+ · <3 · empty · single · missing student) · greeting (4 buckets · גבולות) · buildHeroSentence (4 rules + MOY priority + singular/plural) · isSameCalendarDay (same/different days · null) · startOfWeekTimestamp (Sunday 00:00) · action log (append · dedupe · remove · counts today/week) · statusForEntry (today/week/none) · logEntryKey (3 formats) · patternToSimpleHe (5 patterns + unknown + null) · reasonByEvidence (4 מקורות + ריק) · moyAlertSimpleHe (null/future/fail/suggested/near/pass). |
+| 4 | `underwater-app/teacher-rama.html` | שינוי **יחיד** (1 שורה) | הוספת לינק `🌅 עברי לפעולה →` בראש `#classView` (מעל `#morningGroupSuggestions`) · static element עם inline styles → מופיע **תמיד** (גם כשאין קבוצות, לפי spec §15 שאלה 4). אין שינוי functional ב-F.21A. |
+| + | `_handoff/2026-05-26-architecture-tasks-tracker.html` | שינוי קל | F.21E spec ⏳→✅ + F.21E code ⏳→✅ + entry F.21E ☐→checked עם תיאור מלא. |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש בראש | הבלוק הזה. |
+| + | `_handoff/pending-commits.md` | בלוק חדש בראש | קבוצת F.21E. |
+
+### החלטה ארכיטקטונית — modal duplication
+
+ה-spec §6.2 + §10.4 דורש "reuse של B.7 modal הקיים · אין modal חדש". `AvneiInterventions` מספק את כל ה-data flow (`loadScript` · `interpolateScript` · `recordIntervention` · `getInterventionsFor` · `detectForStudent` להעשרה), אבל ה-entry point `openInterventionModal(idx)` של teacher-rama תלוי ב-state פנימי: `_activeGroups` · `IV_PATTERN_LABELS` · `escapeHtml` · `_fmtDate` · `_getGroupSharedLetterDetails` · `closeInterventionModal`. שינוי teacher-rama מעבר ל-1 לינק אסור (constraint מהתל"מ).
+
+**בחירה:** שיכפול UI של ה-modal ל-teacher-action.html (CSS `.iv-*` + render logic ~250 שורות). **לא שיכפול business logic** — כל הקריאות הולכות לאותם APIs של `AvneiInterventions`. למשתמש זה אותו modal בדיוק (אותו תוכן, אותו flow, אותה התנהגות). זה "reuse" סמנטי גם אם מבחינת קוד יש שתי copies של ה-renderer.
+
+חלופה שנדחתה: לעבור ל-teacher-rama עם URL param שפותח modal — דורש שינוי teacher-rama מעבר ל-1 לינק.
+
+### החלטות קטנות נוספות
+
+- **PIN key:** ה-spec §10.2 אמר `avnei-rama-auth=1`, אבל הקוד הקיים ב-teacher-rama משתמש ב-`teacher_authed`. עקבתי אחרי הקוד הקיים (אחרת ה-PIN לא משותף בפועל).
+- **Students key:** הקוד הקיים משתמש ב-`avnei-yesod-students` (לא `underwater-app:students` כפי ש-spec §2.4 רומז). עקבתי אחרי הקוד הקיים — אותו source לשני המסכים.
+- **Solo students "מבט תלמיד.ה" לינק:** לחיצה על השם או הכפתור → `teacher-rama.html?student=<sid>` (לפי spec §10.11). יוצא מ-F.21E ונכנס ל-F.21A · history.back() מחזיר. teacher-rama עוד לא מפענח את ה-param הזה — זה תלוי בבחירת מיטל לשדרג את F.21A ב-post-pilot.
+- **Modal "סמני שביצעתי":** רושם הן ב-`AvneiInterventions.recordIntervention` (תואם teacher-rama) והן ב-`avnei-action-log-v1` המקומי. ה-action log משפיע על badge ב-card אבל **לא על B.9** (לפי spec §6.8).
+- **Helpers location:** בקובץ נפרד `f21e-helpers.js` (לא inline ב-HTML) — spec אמר "in-file" אבל הפרדה נדרשת לטסטים. ה-namespace `window.AvneiF21EHelpers` מסומן כ-private (לא public API).
+- **בכרטיס "סטטוס: בוצע השבוע":** הוצג רק אם הקבוצה סומנה היום או השבוע, badge בהתאם.
+
+### Acceptance Criteria (spec §10.1-10.12) — כולם ✓
+
+- ✅ `teacher-action.html` חדש קיים
+- ✅ F.21A נשאר זהה functionally (רק 1 לינק נוסף)
+- ✅ PIN gate משותף (sessionStorage `teacher_authed`)
+- ✅ "כיתה א'1" טקסט קבוע (אין dropdown אמיתי)
+- ✅ עד 5 קבוצות מ-B.9 · כפתור "פתחי תרגול" → modal · אין modal חדש (UI מועתק עם same APIs)
+- ✅ אותיות בכרטיס קבוצה רק עבור `letter_knowledge`/`letter_cluster`
+- ✅ תלמידים ללא קבוצה — באזור נפרד · "תרגול אישי קצר"
+- ✅ MOY alerts עם פעולה + סימון "טופל"
+- ✅ `getTopWeakLetters` helper מקומי · לא משנה bkt.js · לא חושף pKnown
+- ✅ Execution log: `avnei-action-log-v1` · UI flag בלבד · לא משפיע על B.9
+- ✅ שפה: 0 BKT/EPA/strands/confidence במסך · 0 ניקוד
+- ✅ RTL מלא · mobile-first · 44px touch · 2 cols ≥ 1024px
+- ✅ `history.back()` לחזרה · URL pattern של Student View
+- ✅ empty/loading/error states מכוסים (§7.1-7.7)
+- ✅ **0 רגרסיות** בכל 12 ה-suites הקיימים
+- ✅ test-f21e-helpers ✓ 112 assertions
+
+### Verification — 112 חדש + 503 רגרסיה
+
+```text
+test-f21e-helpers.js (חדש)        ✓ 112/112
+test-bkt-letters.js                ✓  53/53
+test-group-suggester.js            ✓  77/77
+test-intervention-matcher.js       ✓  57/57
+test-interventions.js              ✓  78/78
+test-moy-assessments.js            ✓  51/51
+test-moy-intervention-link.js      ✓  51/51
+test-pack-bridge.js                ✓  75/75
+test-weakness-targeting.js         ✓  38/38
+test-bkt.js                        ✓ PASS (4 פערים)
+test-cold-start.js                 ✓ PASS
+test-event-logger-fields.js        ✓ PASS
+test-rama-task-status.js           ✓ PASS
+──────────────────────────────────────
+סה"כ: 615+ assertions ירוקים · 0 רגרסיות
+```
+
+**Smoke ידני נדרש מהמשתמשת:**
+1. פתחי `teacher-action.html` ב-browser → PIN → דשבורד
+2. "פתחי תרגול" מכרטיס → modal B.7 (תוכן זהה) נפתח
+3. שם תלמיד.ה → `teacher-rama.html?student=<sid>` (אם F.21A יודע לפענח)
+4. "סמני כבוצע" → badge מתעדכן → רענון → סטטוס נשאר
+5. ב-teacher-rama → ראי לינק "🌅 עברי לפעולה" → קליק → history.back() חוזר
+
+### אסור (לא נגעתי)
+
+`bkt.js` · `epa.js` · `assessments.js` · `interventions.js` · `intervention-matcher.js` · `group-suggester.js` · `pack-bkt-bridge.js` · `mastery-check.js` · `event-logger.js` · `profile-classifier.js` · 5 קבצי `interventions/*.json` · `moy-items.json` · `moy-intervention-map.json` · 22 `stage-3-*.html` · onboarding · packs/scripts/audio · planning packs untracked של מיטל · מסמכי-אם. ל-`teacher-rama.html` — שינוי יחיד של 1 לינק.
+
+---
+
 ## 🎼 Orchestrator — סגירת יום 28.5.2026 ערב + Pre-Pilot Roadmap
 
 **סטטוס:** ✅ סוף יום · 15+ commits ב-origin · המסלול הראשון נסגר · Roadmap למסלול 2 נכתב

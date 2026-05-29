@@ -4,6 +4,128 @@
 
 ---
 
+## 🌅 קבוצה F21E — Action Dashboard (UI + helpers · סוכן קוד F.21E · 29.5.2026)
+
+**סטטוס:** 🟢 הסתיים — **615+/615+ ✓** (112 חדש + 503 רגרסיה ב-12 suites) · ממתין לאישור push
+**תאריך:** 2026-05-29 (סוכן קוד F.21E · אחרי spec v2 שמיטל אישרה בבוקר)
+**3 קבצים חדשים + 1 שינוי קל + 3 handoff updates · חבילה גדולה (~1500 שורות net)**
+
+| # | קובץ | סטטוס | הערה |
+|---|---|---|---|
+| 1 | `underwater-app/teacher-action.html` | **חדש** (~880 שורות) | מסך F.21E מלא · skeleton + CSS + JS. PIN gate (משותף · key `teacher_authed` · PIN `4521`) · Header (חזרה via `history.back()` · "כיתה א'1" קבוע · `he-IL` date · רענון ידני) · Hero (greeting by hour + sentence by 4 rules + MOY≥2 priority + 4 KPI tiles) · Action List (עד 5 B.9 cards · `IV_PATTERN_LABELS` משוכפל · "למה עכשיו" → `reasonByEvidence` · אותיות רק ל-letter_knowledge/letter_cluster · badge today/week/none) · Solo students (B.8 filter · microcopy · לינק שם → `teacher-rama.html?student=<sid>`) · MOY alerts (`getMOYStatus` + מבט תלמיד.ה + סימון "טופל") · Letters Section (top-3 פר תלמיד.ה) · Execution widget (`avnei-action-log-v1` · UI flag · לא משפיע על B.9) · refresh על focus + ידני. שכפול UI של B.7 modal (CSS `.iv-*` + render) — אותם APIs של `AvneiInterventions`. RTL · mobile-first · 2 cols ≥ 1024px · 44px touch · 0 ניקוד · 0 BKT/EPA/strands/confidence ב-UI. |
+| 2 | `underwater-app/js/shared/f21e-helpers.js` | **חדש** (~280 שורות) | helpers בני-בדיקה (namespace פרטי `window.AvneiF21EHelpers` · לא public API): `getTopWeakLetters(sid, n=3)` (wrapper על `AvneiBKT.getWeakestLetters` שמחזיר תווים בלבד · לא חושף pKnown) · `groupLetterOverlap(sids)` (intersect top-5 · ≥3 → רשימה · אחרת `[]`) · `getGreetingByHour(h)` (4 buckets §5.2) · `buildHeroSentence(state)` (4 rules §9.4 + priority MOY≥2 · singular/plural) · `isSameCalendarDay` · `startOfWeekTimestamp` (Sunday 00:00) · `getActionLog`/`appendActionLog` (dedupe יומי)/`removeActionLog` · `countCompletedToday`/`countCompletedThisWeek` · `statusForEntry` (today/week/none) · `logEntryKey` (canonical) · `patternToSimpleHe` (5 patterns) · `reasonByEvidence` · `moyAlertSimpleHe`. |
+| 3 | `underwater-app/scripts/test-f21e-helpers.js` | **חדש** (~340 שורות) | 12 בלוקים · **112 assertions ✓** · mocks של AvneiBKT + localStorage. כיסוי מלא לכל ה-helpers + edge cases. |
+| 4 | `underwater-app/teacher-rama.html` | שינוי **יחיד** (1 שורה) | הוספת `<a href="teacher-action.html" class="mg-action-link" style="..."`> בראש `#classView` (mg-action-link · static · inline styles · hover transform · **תמיד מופיע** לפי §15 שאלה 4). אין שינוי functional ב-F.21A. |
+| + | `_handoff/2026-05-26-architecture-tasks-tracker.html` | שינוי קל | F.21E spec ⏳→✅ + F.21E code ⏳→✅ + F.21E entry checked. |
+| + | `_handoff/agent-completion-log.md` | בלוק חדש בראש | תיעוד F.21E מלא + decisions. |
+| + | `_handoff/pending-commits.md` | בלוק חדש בראש (זה) | הקבוצה הזו. |
+
+**מהות התוצר:**
+"🌅 בבוקר המורה פותחת teacher-action.html ב-3 דקות יוצאת עם תכנית פעולה." F.21E משלים את שלשת F.21A (תצפית · קיים) + B.7/B.8/B.9/MOY (כל הלוגיקה · קיים) → המסך הפעולתי שמפיק החלטה ניהולית פשוטה: אילו קבוצות לפתוח · מי בלי קבוצה · אילו התראות אמצע שנה · אילו אותיות לשלב. הכל בשפה פשוטה (לא BKT/EPA), הכל RTL, הכל mobile-first.
+
+**יחס למה שכבר נדחף / ממתין:**
+
+- ✅ B.7 (`0dbbf4e` · סוכן 9) — `AvneiInterventions` נצרך לטעינת scripts, interpolate, recordIntervention, detectForStudent להעשרה. **לא שיניתי.**
+- ✅ B.8 (`a831a62` · סוכן 17) — `AvneiInterventionMatcher.matchForStudent` נצרך ל-solo filter ולכרטיסי solo. **לא שיניתי.**
+- ✅ B.9 (`9605470` · סוכן 18) — `AvneiGroupSuggester.suggestGroups` נצרך לבניית Action List. **לא שיניתי.**
+- ✅ MOY-Lite (`93dbd4a` + `7a70a03` · סוכן 10, 12) — `AvneiAssessments.getMOYStatus` נצרך ל-MOY alerts. **לא שיניתי.**
+- ✅ MOY × B.7 link (`31c9f00` · סוכן 14) + UI (`1d11f14` · סוכן 16) — לא חופף DOM (F.21A's `moyInterventionBanners` נשאר).
+- ✅ Finding B fix (`3ef476b` · סוכן 15) — אימצתי את אותו pattern (`setTimeout(boot, 0)` ב-IIFE).
+- ✅ F.21A (קיים) — שינוי יחיד של 1 לינק · לא נגעתי במנגנונים.
+
+**🎯 פונקציות חדשות שנחשפות:**
+- `window.AvneiF21EHelpers` — namespace פרטי עם 16 helpers (לעיל). לא public API — קיים רק כדי לאפשר טסטים.
+
+**🎯 קבצים חדשים זמינים ל-F.20/F.21 בעתיד:**
+- `teacher-action.html` יכול לשמש דוגמה למסך הבא של המנהלת / מפקחת (UI + grids + helpers דומים).
+
+**אסור לגעת ב- (לא נגעתי):**
+
+- `bkt.js` · `epa.js` · `assessments.js` · `interventions.js` · `intervention-matcher.js` · `group-suggester.js` · `pack-bkt-bridge.js` · `mastery-check.js` · `event-logger.js` · `profile-classifier.js` (קריאה בלבד)
+- `interventions/*.json` (5 קבצים) · `moy-intervention-map.json` · `moy-items.json` (60 פריטים)
+- `moy-screener.html` · `screener.html` · `data-export.html`
+- 22 `stage-3-*.html` · 7 planning packs · 2 dummy packs · onboarding
+- 7 untracked `curriculum/packs/grade1-tashpaz/{month}.json` + `engine/demo-day2/` + `perplexity-shatil-share-2003-validation-2026-05-25.json` (תוכן של מיטל)
+- מסמכי-אם + F.21A functionality (רק 1 לינק נוסף)
+
+**מה לבדוק לפני push (אוטומטי + ידני קל):**
+
+```powershell
+cd c:\Users\meyta\Downloads\impactos\avnei-yesod\underwater-app
+
+# 1. הטסט החדש
+node scripts/test-f21e-helpers.js
+# → 112/112 ✓
+
+# 2. רגרסיות (12 suites)
+node scripts/test-bkt.js
+node scripts/test-bkt-letters.js           # 53/53
+node scripts/test-cold-start.js
+node scripts/test-event-logger-fields.js
+node scripts/test-group-suggester.js       # 77/77
+node scripts/test-intervention-matcher.js  # 57/57
+node scripts/test-interventions.js         # 78/78
+node scripts/test-moy-assessments.js       # 51/51
+node scripts/test-moy-intervention-link.js # 51/51
+node scripts/test-pack-bridge.js           # 75/75
+node scripts/test-rama-task-status.js
+node scripts/test-weakness-targeting.js    # 38/38
+# → 503/503 ✓ · 0 רגרסיות
+
+# 3. Smoke ידני (3 דקות):
+#    a. פתחי teacher-action.html בדפדפן → PIN 4521 → צריך לראות Hero + sections (גם אם empty)
+#    b. ב-teacher-rama → לראות "🌅 עברי לפעולה" מעל "קבוצות בוקר מוצעות"
+#    c. קליק על הלינק → ניווט → חזרה דרך כפתור "חזרה" (`history.back()`)
+#    d. (אם יש קבוצות) "פתחי תרגול" → modal עם תוכן B.7 → סגירה דרך ESC או X
+#    e. "סמני כבוצע" → רענון → badge נשאר "בוצע היום"
+```
+
+**Commit message מוצע (HEREDOC):**
+
+```text
+F.21E — Action Dashboard (UI + helpers + tests · code agent)
+
+מסך חדש teacher-action.html — דשבורד פעולת בוקר למורה.
+מבוסס על spec v2 (_handoff/2026-05-29-F21E-ux-spec-v2.md).
+
+UI:
+  Hero (greeting by hour · 4 rules + MOY≥2 priority · 4 KPI tiles)
+  Action List (B.9 cards · "למה עכשיו" משפה פשוטה · letters רק
+    ל-letter_knowledge/letter_cluster · שכפול UI של B.7 modal
+    דרך אותם APIs של AvneiInterventions)
+  תלמידים ללא קבוצה (B.8 filter · "תרגול אישי קצר" · לינק → Student View)
+  MOY Alerts (פעולה + סימון "טופל" + מבט תלמיד.ה)
+  אותיות שכדאי לשלב היום (top-3 פר תלמיד.ה)
+  Execution tracking widget (avnei-action-log-v1 · UI flag בלבד)
+
+Helpers (js/shared/f21e-helpers.js · namespace פרטי):
+  getTopWeakLetters · groupLetterOverlap · getGreetingByHour ·
+  buildHeroSentence · isSameCalendarDay · startOfWeekTimestamp ·
+  getActionLog/appendActionLog/removeActionLog · statusForEntry ·
+  countCompletedToday/Week · logEntryKey · patternToSimpleHe ·
+  reasonByEvidence · moyAlertSimpleHe
+
+Integration:
+  teacher-rama.html — 1 לינק נוסף "🌅 עברי לפעולה" בראש
+  #classView (תמיד מופיע · לפי spec §15 שאלה 4)
+
+Tests:
+  scripts/test-f21e-helpers.js — 112 assertions ✓ (12 בלוקים)
+
+אסור (לא נגעתי):
+  bkt.js · group-suggester.js · intervention-matcher.js ·
+  interventions.js · assessments.js · pack-bkt-bridge.js ·
+  interventions/*.json · moy-items.json ·
+  F.21A functionality (רק 1 לינק נוסף)
+
+אימות: 615+/615+ ✓ (test-f21e-helpers 112/112 חדש + רגרסיה 503/503
+ב-12 suites קיימים · 0 רגרסיות)
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+```
+
+---
+
 ## 🟢 קבוצה Z4 — B.9 Group Suggestion Engine (logic + UI · סוכן 18)
 
 **סטטוס:** 🟢 הסתיים — 503/503 ✓ (77 חדש + 426 רגרסיה ב-12 suites) · ממתין לאישור push
