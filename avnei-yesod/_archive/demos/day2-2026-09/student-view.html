@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>שלום, דניאל · אבני יסוד</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&family=Playpen+Sans+Hebrew:wght@500;700;800&family=Frank+Ruhl+Libre:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-sky: linear-gradient(180deg, #B5DCFF 0%, #E8F4FF 60%, #FFF8E7 100%);
+  --bg-island-3: linear-gradient(180deg, #87CEEB 0%, #98D8E8 100%);
+  --tree: #2D6A4F;
+  --tree-light: #52B788;
+  --sand: #F4D58D;
+  --water: #4FA8C9;
+  --ink: #2D1B4E;
+  --ink-soft: #5A4A7E;
+  --gold: #F59E0B;
+  --pink: #EC4899;
+  --green: #10B981;
+  --red: #EF4444;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Heebo', sans-serif;
+  background: var(--bg-sky);
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+h1, h2 { font-family: 'Playpen Sans Hebrew', sans-serif; }
+.hebrew-niqqud { font-family: 'Frank Ruhl Libre', serif; }
+
+/* ─── Top bar with companion ─── */
+.topbar {
+  position: fixed; top: 0; right: 0; left: 0;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(12px);
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(45,27,78,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 50;
+}
+.companion-mini {
+  display: flex; align-items: center; gap: 10px;
+  background: white;
+  padding: 6px 14px 6px 8px;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(45,27,78,0.1);
+}
+.companion-svg { width: 36px; height: 36px; }
+.companion-name { font-weight: 700; font-size: 14px; }
+.companion-name small { font-size: 11px; color: var(--ink-soft); display: block; font-weight: 500; }
+
+.gems {
+  display: flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, var(--gold), #FBBF24);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+/* ─── Stage / sections ─── */
+.stage {
+  min-height: 100vh;
+  padding: 80px 16px 30px;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+}
+.stage.active {
+  display: flex;
+  animation: fadeIn .4s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Stage 1: Welcome / Map ─── */
+.welcome-message {
+  background: white;
+  border-radius: 20px;
+  padding: 24px 28px;
+  box-shadow: 0 8px 24px rgba(45,27,78,0.12);
+  margin-bottom: 20px;
+  max-width: 480px;
+  text-align: center;
+}
+.welcome-message h1 {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 10px;
+  color: var(--ink);
+}
+.welcome-message p {
+  font-size: 16px;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+.welcome-message .companion-big {
+  width: 80px; height: 80px;
+  margin: 0 auto 12px;
+  display: block;
+  animation: bounce 2s infinite;
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* ─── Map ─── */
+.map-container {
+  position: relative;
+  width: 100%;
+  max-width: 540px;
+  height: 480px;
+  background: var(--bg-sky);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(45,27,78,0.15);
+  margin-bottom: 20px;
+}
+.map-svg-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.island {
+  position: absolute;
+  width: 70px; height: 70px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: transform .15s;
+}
+.island:hover { transform: scale(1.08); }
+.island.locked { opacity: 0.35; pointer-events: none; }
+.island.mastered { }
+.island.current {
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); filter: drop-shadow(0 0 16px rgba(245,158,11,0.6)); }
+}
+.island svg { width: 60px; height: 60px; }
+.island-label {
+  position: absolute;
+  bottom: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+.island-label.current { background: var(--gold); color: white; }
+.island-label.locked { background: #ccc; }
+
+.go-btn {
+  padding: 16px 36px;
+  background: linear-gradient(135deg, var(--gold), #FB923C);
+  color: white;
+  border: none;
+  border-radius: 999px;
+  font-family: 'Playpen Sans Hebrew', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(245,158,11,0.4);
+  transition: transform .15s;
+}
+.go-btn:hover { transform: translateY(-2px) scale(1.03); }
+
+/* ─── Stage 2-3: Island 3 — Letter tree ─── */
+.island-stage {
+  background: var(--bg-island-3);
+  min-height: 100vh;
+  padding: 80px 16px 30px;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+}
+.island-stage.active { display: flex; }
+
+.island-header {
+  text-align: center;
+  background: white;
+  padding: 14px 24px;
+  border-radius: 16px;
+  margin-bottom: 18px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+.island-header h2 { font-size: 18px; font-weight: 700; color: var(--ink); }
+.island-header small { font-size: 12px; color: var(--ink-soft); }
+
+.progress-pearls {
+  display: flex; gap: 6px; margin-bottom: 16px;
+}
+.pearl {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+  border: 2px solid white;
+}
+.pearl.done { background: var(--green); }
+.pearl.current { background: var(--gold); animation: pulse 1.5s infinite; }
+
+.exercise-card {
+  background: white;
+  border-radius: 24px;
+  padding: 28px 24px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 16px 48px rgba(45,27,78,0.18);
+  text-align: center;
+}
+.exercise-prompt {
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.audio-btn {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--water), #5BBED3);
+  border: none;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px;
+  box-shadow: 0 6px 16px rgba(79,168,201,0.4);
+  transition: transform .15s;
+}
+.audio-btn:hover { transform: scale(1.08); }
+.audio-btn svg { width: 32px; height: 32px; color: white; }
+
+.letter-highlight {
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 80px;
+  font-weight: 800;
+  color: var(--pink);
+  margin: 10px 0;
+  text-shadow: 0 4px 12px rgba(236,72,153,0.3);
+  animation: scaffold-glow 2s infinite;
+}
+@keyframes scaffold-glow {
+  0%, 100% { color: var(--pink); }
+  50% { color: #f472b6; filter: drop-shadow(0 0 12px rgba(236,72,153,0.6)); }
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.option {
+  background: #FFF8E7;
+  border: 3px solid transparent;
+  border-radius: 16px;
+  padding: 18px 14px;
+  cursor: pointer;
+  transition: all .15s;
+  text-align: center;
+}
+.option:hover { transform: translateY(-2px); border-color: var(--gold); }
+.option.correct {
+  border-color: var(--green);
+  background: #d1fae5;
+  animation: ding .5s;
+}
+.option.incorrect {
+  border-color: var(--red);
+  background: #fee2e2;
+  animation: shake .4s;
+}
+@keyframes ding {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+.option-icon {
+  width: 60px; height: 60px;
+  margin: 0 auto 8px;
+  background: white;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px;
+}
+.option-text {
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* ─── Scaffold annotation (level 3) ─── */
+.scaffold-note {
+  position: absolute;
+  top: 90px;
+  left: 16px;
+  background: rgba(245,158,11,0.92);
+  color: white;
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  max-width: 220px;
+  line-height: 1.4;
+  z-index: 40;
+}
+
+/* ─── Feedback bubble ─── */
+.feedback-bubble {
+  position: fixed;
+  bottom: 30px;
+  right: 50%;
+  transform: translateX(50%);
+  background: white;
+  padding: 14px 24px;
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(45,27,78,0.2);
+  display: none;
+  align-items: center;
+  gap: 10px;
+  z-index: 60;
+}
+.feedback-bubble.show { display: flex; animation: bubbleIn .3s; }
+@keyframes bubbleIn {
+  from { transform: translateX(50%) translateY(20px); opacity: 0; }
+  to { transform: translateX(50%) translateY(0); opacity: 1; }
+}
+.feedback-bubble .companion-svg { width: 32px; height: 32px; }
+.feedback-text { font-weight: 700; }
+
+/* ─── Stage end / Summary ─── */
+.summary-stage {
+  text-align: center;
+  background: var(--bg-sky);
+  padding: 80px 20px 40px;
+  min-height: 100vh;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.summary-stage.active { display: flex; }
+.summary-card {
+  background: white;
+  border-radius: 24px;
+  padding: 36px 28px;
+  max-width: 440px;
+  box-shadow: 0 16px 48px rgba(45,27,78,0.15);
+}
+.summary-companion {
+  width: 100px; height: 100px;
+  margin: 0 auto 16px;
+}
+.summary-card h2 {
+  font-size: 26px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+.summary-card p {
+  color: var(--ink-soft);
+  margin-bottom: 18px;
+}
+.gem-burst {
+  display: flex; justify-content: center; gap: 10px;
+  margin-bottom: 20px;
+}
+.gem-burst .gem {
+  font-size: 32px;
+  animation: gemPop .6s ease;
+  animation-delay: calc(var(--i) * 0.1s);
+  animation-fill-mode: both;
+}
+@keyframes gemPop {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* ─── Teacher-side overlay (debug, hidden by default) ─── */
+.debug-overlay {
+  position: fixed;
+  bottom: 12px;
+  left: 12px;
+  background: rgba(45,27,78,0.92);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-family: 'Inter', monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  max-width: 280px;
+  display: none;
+  z-index: 100;
+}
+.debug-overlay.show { display: block; }
+.debug-toggle {
+  position: fixed;
+  bottom: 12px;
+  left: 12px;
+  background: rgba(45,27,78,0.7);
+  color: white;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  z-index: 99;
+  border: none;
+}
+</style>
+</head>
+<body>
+
+<!-- ─── Topbar ─── -->
+<div class="topbar">
+  <div class="companion-mini">
+    <svg class="companion-svg" viewBox="0 0 80 80">
+      <ellipse cx="40" cy="50" rx="30" ry="28" fill="#A78BFA"/>
+      <ellipse cx="40" cy="45" rx="32" ry="30" fill="#C4B5FD" opacity="0.6"/>
+      <circle cx="32" cy="42" r="4" fill="#1E1B4B"/>
+      <circle cx="48" cy="42" r="4" fill="#1E1B4B"/>
+      <circle cx="33" cy="40" r="1.5" fill="white"/>
+      <circle cx="49" cy="40" r="1.5" fill="white"/>
+      <path d="M 32 55 Q 40 60 48 55" stroke="#1E1B4B" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <circle cx="22" cy="55" r="2.5" fill="#EC4899" opacity="0.6"/>
+      <circle cx="58" cy="55" r="2.5" fill="#EC4899" opacity="0.6"/>
+    </svg>
+    <div class="companion-name">סלע<small>החברה שלך</small></div>
+  </div>
+  <div class="gems">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 2L2 12l10 10 10-10L12 2zm0 4l6 6-6 6-6-6 6-6z"/></svg>
+    <span id="gem-count">3</span>
+  </div>
+</div>
+
+<!-- ─── Stage 1: Welcome + Map ─── -->
+<div class="stage active" id="stage-welcome">
+  <div class="welcome-message">
+    <svg class="companion-big" viewBox="0 0 80 80">
+      <ellipse cx="40" cy="50" rx="30" ry="28" fill="#A78BFA"/>
+      <ellipse cx="40" cy="45" rx="32" ry="30" fill="#C4B5FD" opacity="0.6"/>
+      <circle cx="32" cy="42" r="4" fill="#1E1B4B"/>
+      <circle cx="48" cy="42" r="4" fill="#1E1B4B"/>
+      <circle cx="33" cy="40" r="1.5" fill="white"/>
+      <circle cx="49" cy="40" r="1.5" fill="white"/>
+      <path d="M 32 55 Q 40 60 48 55" stroke="#1E1B4B" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    </svg>
+    <h1>בוקר טוב, דניאל!</h1>
+    <p>סלע מחכה לך להפליג ליבשה.<br>היום נבקר ב-<b>אי האותיות</b>.</p>
+  </div>
+
+  <div class="map-container">
+    <svg class="map-svg-bg" viewBox="0 0 400 380" preserveAspectRatio="xMidYMid slice">
+      <!-- Ocean texture -->
+      <rect width="400" height="380" fill="#B5DCFF"/>
+      <path d="M 0 200 Q 100 180, 200 200 T 400 200 L 400 380 L 0 380 Z" fill="#87CEEB" opacity="0.4"/>
+      <path d="M 0 240 Q 100 220, 200 240 T 400 240 L 400 380 L 0 380 Z" fill="#5BB6E3" opacity="0.3"/>
+      <!-- Wave dots -->
+      <circle cx="60" cy="160" r="3" fill="white" opacity="0.6"/>
+      <circle cx="300" cy="100" r="3" fill="white" opacity="0.6"/>
+      <circle cx="180" cy="120" r="2" fill="white" opacity="0.5"/>
+      <circle cx="350" cy="180" r="2" fill="white" opacity="0.5"/>
+      <!-- Cloud -->
+      <ellipse cx="80" cy="50" rx="35" ry="12" fill="white" opacity="0.7"/>
+      <ellipse cx="320" cy="60" rx="30" ry="10" fill="white" opacity="0.6"/>
+    </svg>
+
+    <!-- Island 1 — mastered -->
+    <div class="island mastered" style="top: 50px; right: 30px;">
+      <svg viewBox="0 0 80 80">
+        <ellipse cx="40" cy="60" rx="32" ry="14" fill="#F4D58D"/>
+        <circle cx="40" cy="40" r="20" fill="#52B788"/>
+        <text x="40" y="48" text-anchor="middle" fill="white" font-family="Playpen Sans Hebrew" font-size="20" font-weight="800">🥁</text>
+      </svg>
+      <div class="island-label">1 · צלילים ✓</div>
+    </div>
+
+    <!-- Island 2 — current focus (B group) -->
+    <div class="island current" style="top: 90px; left: 110px;">
+      <svg viewBox="0 0 80 80">
+        <ellipse cx="40" cy="60" rx="32" ry="14" fill="#F4D58D"/>
+        <path d="M 20 40 Q 40 25, 60 40 Q 50 50, 40 48 Q 30 50, 20 40" fill="#5BBED3"/>
+        <text x="40" y="50" text-anchor="middle" font-size="24">🌊</text>
+      </svg>
+      <div class="island-label current">2 · גלי-קול</div>
+    </div>
+
+    <!-- Island 3 — main focus today -->
+    <div class="island current" style="top: 180px; right: 90px;" onclick="goToIsland3()">
+      <svg viewBox="0 0 80 80">
+        <ellipse cx="40" cy="65" rx="36" ry="12" fill="#F4D58D"/>
+        <rect x="38" y="35" width="4" height="22" fill="#7C3F00"/>
+        <circle cx="40" cy="30" r="18" fill="#2D6A4F"/>
+        <text x="40" y="35" text-anchor="middle" fill="#FBBF24" font-family="Frank Ruhl Libre" font-size="16" font-weight="800">מ</text>
+      </svg>
+      <div class="island-label current">3 · עץ האותיות</div>
+    </div>
+
+    <!-- Island 4 — locked -->
+    <div class="island locked" style="top: 260px; left: 60px;">
+      <svg viewBox="0 0 80 80">
+        <ellipse cx="40" cy="60" rx="30" ry="12" fill="#cccccc"/>
+        <rect x="25" y="30" width="30" height="25" fill="#aaa" rx="4"/>
+        <rect x="35" y="38" width="10" height="10" fill="#ccc"/>
+      </svg>
+      <div class="island-label locked">4 · CV 🔒</div>
+    </div>
+
+    <!-- Island 5 — locked -->
+    <div class="island locked" style="top: 290px; right: 30px;">
+      <svg viewBox="0 0 80 80">
+        <ellipse cx="40" cy="60" rx="30" ry="12" fill="#cccccc"/>
+        <path d="M 15 50 Q 20 35, 35 35 L 45 35 Q 60 35, 65 50" fill="#aaa" stroke="#888" stroke-width="1.5"/>
+      </svg>
+      <div class="island-label locked">5 · מילים 🔒</div>
+    </div>
+  </div>
+
+  <button class="go-btn" onclick="goToIsland3()">לכי לאי 3 ←</button>
+</div>
+
+<!-- ─── Stage 2: Island 3 — Practice ─── -->
+<div class="island-stage" id="stage-island-3">
+  <div class="scaffold-note">
+    💡 רמה 3 — סלע מציע לך רמזים אחרי 5 שניות
+  </div>
+
+  <div class="island-header">
+    <h2>🌳 עץ האותיות</h2>
+    <small>סלע מטפסת לאסוף אותיות</small>
+  </div>
+
+  <div class="progress-pearls">
+    <div class="pearl done"></div>
+    <div class="pearl done"></div>
+    <div class="pearl current"></div>
+    <div class="pearl"></div>
+    <div class="pearl"></div>
+    <div class="pearl"></div>
+  </div>
+
+  <div class="exercise-card">
+    <button class="audio-btn" onclick="playSound()">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+    </button>
+    <div class="exercise-prompt">
+      בְּאֵיזוֹ תְּמוּנָה שׁוֹמְעִים אֶת הַצְּלִיל
+      <div class="letter-highlight">מ</div>
+      בְּהַתְחָלָה?
+    </div>
+
+    <div class="options-grid">
+      <div class="option" onclick="checkAnswer(this, true)">
+        <div class="option-icon">🥣</div>
+        <div class="option-text">מָרָק</div>
+      </div>
+      <div class="option" onclick="checkAnswer(this, false)">
+        <div class="option-icon">🌧️</div>
+        <div class="option-text">בָּרָק</div>
+      </div>
+      <div class="option" onclick="checkAnswer(this, false)">
+        <div class="option-icon">🍅</div>
+        <div class="option-text">תַּפּוּז</div>
+      </div>
+      <div class="option" onclick="checkAnswer(this, false)">
+        <div class="option-icon">🐌</div>
+        <div class="option-text">נְמָלָה</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Stage 3: Summary ─── -->
+<div class="summary-stage" id="stage-summary">
+  <div class="summary-card">
+    <svg class="summary-companion" viewBox="0 0 80 80">
+      <ellipse cx="40" cy="50" rx="30" ry="28" fill="#A78BFA"/>
+      <ellipse cx="40" cy="45" rx="32" ry="30" fill="#C4B5FD" opacity="0.6"/>
+      <circle cx="32" cy="42" r="4" fill="#1E1B4B"/>
+      <circle cx="48" cy="42" r="4" fill="#1E1B4B"/>
+      <circle cx="33" cy="40" r="1.5" fill="white"/>
+      <circle cx="49" cy="40" r="1.5" fill="white"/>
+      <path d="M 30 53 Q 40 62 50 53" stroke="#1E1B4B" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <!-- Confetti -->
+      <circle cx="15" cy="20" r="3" fill="#F59E0B"/>
+      <circle cx="65" cy="20" r="3" fill="#EC4899"/>
+      <circle cx="20" cy="70" r="2" fill="#10B981"/>
+      <circle cx="60" cy="70" r="2" fill="#4F46E5"/>
+    </svg>
+    <h2>כל הכבוד, דניאל! 🎉</h2>
+    <p>סלע אספה <b>5 אבני-קסם</b> חדשות. למדנו את האות <b style="color: var(--pink); font-family: 'Frank Ruhl Libre';">מ</b> וחזרנו על <b style="color: var(--pink); font-family: 'Frank Ruhl Libre';">ת</b>.</p>
+
+    <div class="gem-burst">
+      <span class="gem" style="--i:0">💎</span>
+      <span class="gem" style="--i:1">💎</span>
+      <span class="gem" style="--i:2">💎</span>
+      <span class="gem" style="--i:3">💎</span>
+      <span class="gem" style="--i:4">💎</span>
+    </div>
+
+    <p style="font-size: 14px; color: var(--ink-soft);">
+      מחר נמשיך באי האותיות. סלע כבר מחכה לך!
+    </p>
+  </div>
+</div>
+
+<!-- ─── Feedback bubble ─── -->
+<div class="feedback-bubble" id="feedback">
+  <svg class="companion-svg" viewBox="0 0 80 80">
+    <ellipse cx="40" cy="50" rx="30" ry="28" fill="#A78BFA"/>
+    <circle cx="32" cy="42" r="4" fill="#1E1B4B"/>
+    <circle cx="48" cy="42" r="4" fill="#1E1B4B"/>
+    <path d="M 32 55 Q 40 60 48 55" stroke="#1E1B4B" stroke-width="2.5" fill="none"/>
+  </svg>
+  <span class="feedback-text" id="feedback-text">יופי!</span>
+</div>
+
+<!-- ─── Debug overlay (teacher-side data view) ─── -->
+<button class="debug-toggle" onclick="toggleDebug()" title="הצג נתונים (תצוגת מורה)">🔬</button>
+<div class="debug-overlay" id="debug">
+  <b>נתונים שנאספים בזמן אמת</b>
+  <hr style="border-color: rgba(255,255,255,0.2); margin: 6px 0;">
+  <div id="debug-content">
+    תלמיד: דניאל (stu-01)<br>
+    אי: 3 (זיהוי אותיות)<br>
+    רמה: 3<br>
+    פריט: 3 מתוך 6<br>
+    אות בפוקוס: מ<br>
+    <br>
+    BKT state (אי 3):<br>
+    &nbsp;&nbsp;p = 0.32 (Day 1) → ...<br>
+    &nbsp;&nbsp;יעדכן אחרי הפריט<br>
+    <br>
+    מטריקות נאספות:<br>
+    &nbsp;&nbsp;זמן תגובה: __<br>
+    &nbsp;&nbsp;ניחושים: 0<br>
+    &nbsp;&nbsp;רמזים: 0<br>
+    &nbsp;&nbsp;ניסיונות חוזרים: 0<br>
+  </div>
+</div>
+
+<script>
+const startTime = Date.now();
+let itemsCompleted = 2; // Already on item 3
+
+function goToIsland3() {
+  document.getElementById('stage-welcome').classList.remove('active');
+  document.getElementById('stage-island-3').classList.add('active');
+  // Play sound automatically when arriving
+  setTimeout(playSound, 600);
+}
+
+function playSound() {
+  showFeedback('מ', 1200);
+}
+
+function checkAnswer(el, correct) {
+  const responseTime = ((Date.now() - startTime) / 1000).toFixed(1);
+
+  if (correct) {
+    el.classList.add('correct');
+    showFeedback('יופי, דניאל!', 1500);
+    document.getElementById('gem-count').textContent = parseInt(document.getElementById('gem-count').textContent) + 1;
+    document.getElementById('debug-content').innerHTML = `
+      תלמיד: דניאל (stu-01)<br>
+      אי: 3 (זיהוי אותיות)<br>
+      רמה: 3<br>
+      פריט: 3 מתוך 6 ✓<br>
+      אות בפוקוס: מ<br>
+      <br>
+      <b style="color:#10B981;">תוצאה: נכון!</b><br>
+      <br>
+      BKT state (אי 3):<br>
+      &nbsp;&nbsp;p = 0.32 → <b style="color:#10B981;">0.47</b><br>
+      &nbsp;&nbsp;(p_T=0.15, ניסיון נכון)<br>
+      <br>
+      מטריקות:<br>
+      &nbsp;&nbsp;זמן תגובה: <b>${responseTime}s</b><br>
+      &nbsp;&nbsp;רמזים: 0<br>
+      &nbsp;&nbsp;ניסיונות: 1<br>
+    `;
+    setTimeout(() => {
+      // Move to next stage (summary, since this is final demo item)
+      document.getElementById('stage-island-3').classList.remove('active');
+      document.getElementById('stage-summary').classList.add('active');
+    }, 1800);
+  } else {
+    el.classList.add('incorrect');
+    showFeedback('ננסה שוב יחד 💜', 1800);
+    document.getElementById('debug-content').innerHTML = `
+      תלמיד: דניאל (stu-01)<br>
+      אי: 3 (זיהוי אותיות)<br>
+      רמה: 3<br>
+      פריט: 3 מתוך 6<br>
+      אות בפוקוס: מ<br>
+      <br>
+      <b style="color:#EF4444;">תוצאה: לא נכון</b><br>
+      <br>
+      פעולת המערכת:<br>
+      &nbsp;&nbsp;אין הורדת רמה — Stairstep<br>
+      &nbsp;&nbsp;רמז ויזואלי: האות מ תודגש<br>
+      &nbsp;&nbsp;זמן: 5 שניות → רמז<br>
+      <br>
+      BKT state (אי 3):<br>
+      &nbsp;&nbsp;p = 0.32 → 0.28 (קל)<br>
+      &nbsp;&nbsp;(p_S=0.10 — אולי slip)<br>
+    `;
+    setTimeout(() => {
+      el.classList.remove('incorrect');
+    }, 2000);
+  }
+}
+
+function showFeedback(text, duration) {
+  const bubble = document.getElementById('feedback');
+  document.getElementById('feedback-text').textContent = text;
+  bubble.classList.add('show');
+  setTimeout(() => bubble.classList.remove('show'), duration);
+}
+
+function toggleDebug() {
+  document.getElementById('debug').classList.toggle('show');
+}
+</script>
+</body>
+</html>
