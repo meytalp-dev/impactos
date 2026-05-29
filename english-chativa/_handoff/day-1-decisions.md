@@ -104,16 +104,30 @@
 
 ## Phases הבאים — תוכנית מסלול
 
-לפי bootstrap המקורי:
+לפי bootstrap המקורי + התאמה אחרי החקירה:
 
-- **Phase 1 (2h)** — Engine sharing decision (נסגר: Copy decoupled · refactor ל-shared/ post-pilot)
-- **Phase 2 (5h)** — Content scaffolding: יצירת `curriculum/vocab-bank.json` skeleton מתנופה + `curriculum/packs/october-2026.json` skeleton
-- **Phase 3 (15h)** — Engine adaptations: shadow `engine/teacher-rama.html` ל-`teacher-rama-en.html` + RTL→LTR · font swap · TTS · niqud removal
-- **Phase 4 (8h)** — Skill Units English adapter: letter · word · sight-words · phonics
-- **Phase 5 (10h)** — First Game: stage-1-alphabet.html (alphabet recognition · 1 משחקון demo)
-- **Phase 6 (1h)** — Handoff log + push (אישור מיטל)
+- ✅ **Phase 0** — Setup + cp avnei-yesod → english-chativa (DONE · commit `b2163d1`)
+- ✅ **Phase 1** — Schema layer (DONE · commit pending)
+  - `curriculum/_schema/curriculum-2020-master.md` (מסמך-אם)
+  - `curriculum/_schema/item-schema.json` (item JSON Schema)
+  - `curriculum/_schema/extracted/sight-words-bridge.json` (50 words · 17 explicit + 33 TBD)
+  - `curriculum/_schema/extracted/vocab-band-1-grade7.json` (~80 chunks · 8 Units)
+  - `curriculum/_schema/extracted/grammar-structures-grade7.json` (14 structures · 8 Units)
+  - `curriculum/_schema/extracted/can-do-statements-grade7.json` (36 can-dos · 8 Units)
+  - `curriculum/cefr-targets/grade-7-pre-a1-to-a1.json` (4 Tracks × CEFR mapping)
+- ⏳ **Phase 2 (5-8h)** — First Pack: `curriculum/packs/october-2026-bridge.json` (40 items × 4 tracks · משתמש ב-ids מ-extracted/)
+- ⏳ **Phase 3 (15h)** — UI refactor: RTL → LTR + Inter font + Web Speech en-US TTS + remove niqud + תרגום strings
+- ⏳ **Phase 4 (8h)** — Skill Units English adapter: vocab-cluster / grammar-pattern / sight-word / phon-skill (במקום letter/vowel)
+- ⏳ **Phase 5 (10h)** — First Game: `stage-bridge-sight-words.html` — משחקון ראשון לתלמיד.ה ז'
+- ⏳ **Phase 6 (1h)** — Handoff log + push (אישור מיטל)
 
-**זמן כולל מעריך לראשון Game playable:** ~40h עבודה לסוכן 1 (אינו תזמורת).
+**זמן כולל מעריך לראשון Game playable:** ~30-35h עבודה לסוכן 1 (Phase 2-5).
+
+## פעולות נדרשות ממיטל לפני Phase 2
+
+1. **לבקר** `curriculum/_schema/extracted/*.json` — לאשר draft → approved, או לסמן שינויים.
+2. **לאשר רשימת sight words** — 33 חסרים. ההמלצה: Dolch Pre-Primer (~30 מילים). אישור או רשימה אחרת.
+3. **לאשר Story arc characters** — אם Sarah (דמות-על) — להגיד באיזה מקומות (London שגרירות → ?).
 
 ## אסור (יורש מאבני יסוד)
 

@@ -39,11 +39,21 @@ english-chativa/
 │   ├── narrative-spec.md
 │   └── spec-audit-2026-05-21.md
 ├── curriculum/
+│   ├── _schema/                 ← 🆕 מקור-אמת תוכן · master schema (Phase 1)
+│   │   ├── curriculum-2020-master.md       (מסמך-אם פדגוגי)
+│   │   ├── item-schema.json                (JSON Schema של פריט בודד)
+│   │   └── extracted/
+│   │       ├── sight-words-bridge.json     (50 sight words · Bridge)
+│   │       ├── vocab-band-1-grade7.json    (80 chunks פר Unit)
+│   │       ├── grammar-structures-grade7.json  (14 structures)
+│   │       └── can-do-statements-grade7.json   (36 CEFR can-dos)
+│   ├── cefr-targets/            ← 🆕 4 Tracks × Pre-A1→A1+ targets (Phase 1)
+│   │   └── grade-7-pre-a1-to-a1.json
 │   ├── tnufa-plans/             ← תוכניות שנתיות תנופה ז'-ח'-ט' (קיימים!)
 │   │   ├── english-tnufa-grade7.json   (32 שבועות · 128h · 8 units)
 │   │   ├── english-tnufa-grade8.json
 │   │   └── english-tnufa-grade9.json
-│   ├── packs/                   ← חבילות חודשיות (TODO · ראה README)
+│   ├── packs/                   ← חבילות חודשיות (Phase 2 · TODO)
 │   ├── blueprint/               ← תבניות איים (יידרש adapter אנגלית)
 │   ├── knowledge-base/          ← מקורות מחקריים
 │   ├── yearly-plan/             ← פיוז עתידי בין tnufa-plans לבין מערכת ה-BKT

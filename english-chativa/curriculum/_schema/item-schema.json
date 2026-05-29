@@ -1,0 +1,221 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://english-chativa/curriculum/_schema/item-schema.json",
+  "title": "English Chativa · Practice Item Schema (Grade 7)",
+  "description": "Schema of one practice item. Maps to Curriculum 2020 master (curriculum-2020-master.md) across 3 layers: content (can-do + vocab + grammar + domain), measurement (LSRW + EPA), and organization (unit + track + envelope).",
+  "version": "1.0.0",
+  "lastUpdated": "2026-05-29",
+  "type": "object",
+  "required": [
+    "item_id",
+    "can_do_id",
+    "lsrw_primary",
+    "unit_id",
+    "track",
+    "cefr_level",
+    "domain",
+    "envelope"
+  ],
+  "properties": {
+    "item_id": {
+      "type": "string",
+      "pattern": "^u[0-7]-[a-z0-9-]+-\\d{3}$",
+      "description": "Stable id. Pattern: u{unit}-{slug}-{seq}. Example: 'u1-tobe-affirmative-001'",
+      "examples": ["u1-tobe-affirmative-001", "u3-school-vocab-mcq-042"]
+    },
+
+    "content_layer": {
+      "type": "object",
+      "description": "Curriculum 2020 master tags (the WHAT — pedagogical content)",
+      "properties": {
+        "can_do_id": {
+          "type": "string",
+          "description": "CEFR can-do statement id. References can-do-statements-grade7.json. Example: 'self-introduce-3-sentences'.",
+          "examples": ["self-introduce-3-sentences", "read-simple-notice", "write-message-20-words"]
+        },
+        "vocab_ids": {
+          "type": "array",
+          "description": "Vocabulary items used. References vocab-band-1-grade7.json. Empty array if grammar-only or phonics-only.",
+          "items": { "type": "string" },
+          "examples": [["name", "from", "live-in"], ["family", "mother", "father"]]
+        },
+        "grammar_id": {
+          "type": ["string", "null"],
+          "description": "Grammar structure exercised. References grammar-structures-grade7.json. Null if vocab-only or listening comprehension.",
+          "examples": ["to-be-affirmative", "present-simple-3rd-singular", "possessive-s", "frequency-adverbs"]
+        },
+        "domain": {
+          "type": "string",
+          "enum": [
+            "social_interaction",
+            "access_to_information",
+            "presentation",
+            "appreciation_literature_culture",
+            "language"
+          ],
+          "description": "One of 5 Curriculum 2020 domains. Reported to teacher/inspector — NOT shown to student."
+        }
+      },
+      "required": ["can_do_id", "domain"]
+    },
+
+    "measurement_layer": {
+      "type": "object",
+      "description": "What BKT and EPA will track when this item runs",
+      "properties": {
+        "lsrw_primary": {
+          "type": "string",
+          "enum": ["Listening", "Speaking", "Reading", "Writing", "Language"],
+          "description": "Primary BKT axis updated. One of 5. 'Language' = grammar/vocab integrated."
+        },
+        "lsrw_secondary": {
+          "type": "array",
+          "description": "Additional BKT axes touched (e.g. Listen-then-Speak). May be empty.",
+          "items": {
+            "type": "string",
+            "enum": ["Listening", "Speaking", "Reading", "Writing", "Language"]
+          }
+        },
+        "tnufa_measured": {
+          "type": "boolean",
+          "description": "True if this skill is measured by official Tnufa Grade 9 (Reading, Writing, Language). False for Listening + Speaking (enrichment only)."
+        },
+        "expected_failure_axes": {
+          "type": "object",
+          "description": "EPA tagging — what failure pattern is THIS item likely to expose. Used by intervention-matcher post-hoc, NOT during selection.",
+          "properties": {
+            "failure_types": {
+              "type": "array",
+              "items": { "type": "string" },
+              "examples": [["grammar_form_mismatch"], ["vocab_recognition"], ["text_inference"]]
+            },
+            "contexts": {
+              "type": "array",
+              "items": { "type": "string" },
+              "examples": [["isolation"], ["short_sentence"], ["paragraph"], ["dialogue"]]
+            },
+            "tasks": {
+              "type": "array",
+              "items": { "type": "string" },
+              "enum_values_hint": ["recognition", "production", "matching", "inference", "transformation"]
+            }
+          }
+        }
+      },
+      "required": ["lsrw_primary", "tnufa_measured"]
+    },
+
+    "organization_layer": {
+      "type": "object",
+      "description": "How this item is filed, scheduled, and presented",
+      "properties": {
+        "unit_id": {
+          "type": "string",
+          "enum": [
+            "bridge",
+            "u1-aboutme",
+            "u2-family",
+            "u3-school",
+            "u4-routine",
+            "u5-food",
+            "u6-city",
+            "u7-project"
+          ],
+          "description": "Which Tnufa Unit this item belongs to. Aligned with curriculum/tnufa-plans/english-tnufa-grade7.json."
+        },
+        "track": {
+          "type": "integer",
+          "enum": [1, 2, 3, 4],
+          "description": "1=Basic(red·Pre-A1) · 2=Intermediate(orange·A1-) · 3=Advanced(yellow·A1) · 4=Extension(green·A1+). Track 4 may include scaffolding from earlier units."
+        },
+        "cefr_level": {
+          "type": "string",
+          "enum": ["Pre-A1", "A1-", "A1", "A1+"],
+          "description": "CEFR sub-level. Determines item difficulty parameters."
+        },
+        "envelope": {
+          "type": "string",
+          "enum": [
+            "tap-match",
+            "drag-build",
+            "mcq",
+            "listen-mcq",
+            "listen-then-tap",
+            "open-input",
+            "story-sequence",
+            "fill-blank",
+            "pair-interview"
+          ],
+          "description": "Game mechanic / interaction type. Maps to one of the existing JS mechanic templates in underwater-app/js/templates/."
+        }
+      },
+      "required": ["unit_id", "track", "cefr_level", "envelope"]
+    },
+
+    "content": {
+      "type": "object",
+      "description": "The actual content rendered to the student. Schema varies by envelope.",
+      "examples": [
+        {
+          "prompt_text": "Sarah moved to London last month. She _____ from Tel Aviv.",
+          "options": ["am", "is", "are"],
+          "correct_index": 1,
+          "audio_text": null
+        },
+        {
+          "prompt_text": "Listen and pick the picture.",
+          "audio_text": "He is tall.",
+          "options": [
+            { "image": "boy-tall.svg", "alt": "tall boy" },
+            { "image": "boy-short.svg", "alt": "short boy" }
+          ],
+          "correct_index": 0
+        }
+      ]
+    },
+
+    "narrative_context": {
+      "type": ["object", "null"],
+      "description": "Optional story-arc threading. Allows items to reference the year-long character journey (e.g. Sarah in London → Mumbai). NOT required for all items.",
+      "properties": {
+        "character_id": {
+          "type": "string",
+          "examples": ["sarah"]
+        },
+        "location_id": {
+          "type": "string",
+          "examples": ["london", "mumbai", "tokyo", "barcelona"]
+        }
+      }
+    },
+
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "created_at": { "type": "string", "format": "date" },
+        "approved_by": {
+          "type": "string",
+          "description": "מי אישר פדגוגית. Empty until Meytal or PA reviewer signs off.",
+          "examples": ["meytal", "TBD"]
+        },
+        "source": {
+          "type": "string",
+          "description": "Where the content came from. Examples: 'tnufa-grade7-week-6', 'CEFR-A1-can-do-1', 'original'.",
+          "examples": ["tnufa-grade7-week-6", "original"]
+        }
+      },
+      "required": ["approved_by"]
+    }
+  },
+
+  "additionalProperties": false,
+
+  "_design_notes": [
+    "3-layer separation enforced: content / measurement / organization in named sub-objects.",
+    "BKT will update ONLY measurement_layer.lsrw_primary (and lsrw_secondary if present). NO sub-BKT per can-do/vocab/grammar — that would cause Q-matrix collapse.",
+    "EPA reads expected_failure_axes only AFTER an attempt — it's tagging, not selection criteria.",
+    "Track determines difficulty, NOT student level. A student can be on Track 4 of Unit 3 while still on Track 2 of Unit 4 — independent per Unit.",
+    "narrative_context is optional. MVP can ship without it. Story arc is enrichment, not mechanical.",
+    "Inherits from avnei-yesod item schema (architecture-mvp.md §6.3) — same separation principles, different axis names."
+  ]
+}
