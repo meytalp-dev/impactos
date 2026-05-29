@@ -37,7 +37,7 @@
 
 **Tier 4 — מאסטר** (+5: ש+1, ל+2, נ+1, א+1) · `memory-pair`/`sort-by-letter` + `discrimination-*`/`mixed-letters`
 - `pack9-t4-shin-03` "שֶׁלֶג" (memory-pair, mixed-letters)
-- `pack9-t4-lamed-02` "לְבָנָה" (memory-pair, mixed-letters) · `pack9-t4-lamed-03` (sort-by-letter, mixed-letters)
+- `pack9-t4-lamed-02` "לִיצָן" (memory-pair, mixed-letters) · `pack9-t4-lamed-03` (sort-by-letter, mixed-letters)
 - `pack9-t4-nun-02` "נָחָש" (memory-pair, mixed-letters)
 - `pack9-t4-alef-02` (sort-by-letter, mixed-letters)
 
