@@ -137,8 +137,15 @@ gh pr create \
 
 | # | Slide | סוכן | branch ב-fork | PR ל-fork | status |
 |---|---|---|---|---|---|
-| 23 | English Chativa summary | התזמורת | `english-chativa-summary-slide` | — (push ישיר ללירון נסגר 403) | ⏳ open ב-`golanliron/impactso#1` |
-| ?? | (slide הבא) | ? | ? | ? | ? |
+| 23 | English Chativa summary | התזמורת | `english-chativa-summary-slide` | `meytalp-dev/impactso#1` | ✅ MERGED ל-fork main (30.5.2026) |
+| ?? | (slide הבא) | ? | ? | ? | ⏳ pending |
+
+## עדכון 30.5.2026 — אסטרטגיה: batch only
+
+מיטל בחרה: **כל ה-slides ב-batch אחד ללירון**.
+- PR ראשון ללירון (`golanliron/impactso#1`) נסגר 30.5.2026.
+- slide 23 כבר merged ל-`meytalp-dev:main` של ה-fork.
+- כשעוד 2-3 slides הצטרפו ל-fork main → PR מאוחד ללירון.
 
 ---
 
