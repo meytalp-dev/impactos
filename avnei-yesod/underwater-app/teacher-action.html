@@ -827,9 +827,15 @@ function _fmtDateHe(date) {
 // Boot
 // ============================================================
 function boot() {
-  // Presentation mode (?presentation=1) — מסתיר sections secondary לדמואים.
+  // Presentation mode (?presentation=1) — מסתיר sections secondary + עיצוב יפה + auto-seed לדמואים.
   if (new URLSearchParams(window.location.search).has('presentation')) {
     document.body.classList.add('presentation');
+    // אם אין דמו data — redirect ל-seed-demo עם autoseed (יחזיר אוטומטית עם presentation=1)
+    const _students = JSON.parse(localStorage.getItem('avnei-yesod-students') || '[]');
+    if (_students.length === 0) {
+      window.location.href = 'seed-demo.html?autoseed=1';
+      return;
+    }
   }
 
   // header sub

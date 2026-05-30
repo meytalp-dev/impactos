@@ -271,6 +271,21 @@ document.getElementById('seedOnlyBtn').addEventListener('click', function () {
 });
 
 document.getElementById('clearBtn').addEventListener('click', clearAll);
+
+// Auto-seed mode (?autoseed=1) — נקרא מ-teacher-action.html?presentation=1 כשאין דמו data.
+// זורע אוטומטית ומחזיר ל-teacher-action.html?presentation=1.
+(function autoSeedFromUrl() {
+  const params = new URLSearchParams(location.search);
+  if (!params.has('autoseed')) return;
+  if (seedDemo()) {
+    showStatus('🎬 דאטה דמו נזרע. פותחת dashboard...', false);
+    setTimeout(function () {
+      location.href = 'teacher-action.html?presentation=1';
+    }, 500);
+  } else {
+    showStatus('❌ auto-seed נכשל. ראי console.', true);
+  }
+})();
 </script>
 
 </body>
