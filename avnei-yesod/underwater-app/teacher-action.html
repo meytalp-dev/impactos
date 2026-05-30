@@ -705,7 +705,10 @@ function computeKpis(students) {
 
   let suggestions = [];
   if (G && typeof G.suggestGroups === 'function') {
-    try { suggestions = G.suggestGroups(studentIds) || []; }
+    // min_confidence:'low' = פיילוט בית הערבה (החלטת מיטל 29.5.2026 · OBS-2).
+    // ילדה עם MOY-fail בלי EPA-signal תיכנס לרשימת קבוצת הבוקר — מורה תחליט.
+    // לחזור ל-'med' (ברירת המחדל של ה-suggester) אחרי 2-3 שבועות פיילוט.
+    try { suggestions = G.suggestGroups(studentIds, { min_confidence: 'low' }) || []; }
     catch (e) { suggestions = []; }
   }
 
