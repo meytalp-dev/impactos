@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Chativa · Teacher Dashboard · Morning view</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FAFAF7;
+  --surface: #FFFFFF;
+  --ink: #0A0A0A;
+  --ink-soft: #525252;
+  --ink-mute: #A3A3A3;
+  --line: #E5E5E5;
+  --line-soft: #F4F4F4;
+
+  --t1: #C03847;
+  --t2: #E07A2E;
+  --t3: #E8A849;
+  --t4: #4A9B7F;
+  --t1-soft: #FBEEF0;
+  --t2-soft: #FCEFE2;
+  --t3-soft: #FCF5E5;
+  --t4-soft: #EDF6F1;
+
+  --green: #4A9B7F;
+  --yellow: #E8A849;
+  --red: #C03847;
+
+  --radius: 12px;
+  --radius-lg: 20px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 8px 24px rgba(0,0,0,0.06);
+  --shadow-lg: 0 20px 60px rgba(0,0,0,0.10);
+}
+
+[data-theme="dark"] {
+  --bg: #0F0F0F; --surface: #1A1A1A; --ink: #FAFAFA;
+  --ink-soft: #A3A3A3; --ink-mute: #525252;
+  --line: #2A2A2A; --line-soft: #1F1F1F;
+  --t1-soft: #2A1518; --t2-soft: #2A1C12;
+  --t3-soft: #2A2415; --t4-soft: #152620;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg); color: var(--ink);
+  font-size: 16px; line-height: 1.5;
+  font-feature-settings: 'cv11', 'ss01';
+  min-height: 100vh;
+}
+
+/* ==================== TOP BAR ==================== */
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  padding: 16px 32px;
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  backdrop-filter: blur(10px);
+}
+.brand-name { font-weight: 800; font-size: 15px; letter-spacing: -0.01em; }
+.brand-sub { font-size: 11px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.08em; }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.theme-toggle, .nav-link {
+  background: none; border: 1px solid var(--line);
+  color: var(--ink-soft); cursor: pointer;
+  padding: 6px 12px; border-radius: 8px;
+  font-family: inherit; font-size: 12px;
+  text-decoration: none;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.theme-toggle:hover, .nav-link:hover { background: var(--line-soft); color: var(--ink); }
+
+/* ==================== CONTAINER ==================== */
+.container { max-width: 1080px; margin: 0 auto; padding: 0 32px; }
+
+/* ==================== MORNING GREETING ==================== */
+.greeting {
+  padding: 56px 0 32px;
+}
+.greeting-eyebrow {
+  font-size: 12px; font-weight: 700; color: var(--ink-mute);
+  text-transform: uppercase; letter-spacing: 0.12em;
+}
+.greeting-title {
+  font-size: 44px; font-weight: 800; letter-spacing: -0.03em;
+  line-height: 1.1; margin: 10px 0;
+}
+.greeting-sub {
+  font-size: 15px; color: var(--ink-soft);
+}
+
+/* ==================== OVERVIEW STATS ==================== */
+.stats-row {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+  padding-bottom: 40px;
+}
+.stat-card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 18px 20px;
+}
+.stat-value {
+  font-size: 28px; font-weight: 800; letter-spacing: -0.02em;
+  line-height: 1;
+}
+.stat-label {
+  font-size: 11px; font-weight: 700; color: var(--ink-mute);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  margin-top: 8px;
+}
+.stat-delta {
+  font-size: 12px; color: var(--ink-soft);
+  margin-top: 6px;
+}
+.stat-delta.up { color: var(--green); }
+.stat-delta.down { color: var(--red); }
+
+/* ==================== SECTION ==================== */
+.section { padding: 24px 0 32px; }
+.section-header {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.section-title {
+  font-size: 22px; font-weight: 800; letter-spacing: -0.02em;
+}
+.section-sub {
+  font-size: 13px; color: var(--ink-mute);
+}
+
+/* ==================== GROUPS ==================== */
+.groups { display: flex; flex-direction: column; gap: 12px; }
+.group-card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius-lg); padding: 20px 24px;
+  display: flex; align-items: center; gap: 20px;
+  cursor: pointer; transition: all .2s;
+  position: relative;
+  border-left-width: 5px;
+}
+.group-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.group-card.advance { border-left-color: var(--green); }
+.group-card.practice { border-left-color: var(--yellow); }
+.group-card.attention { border-left-color: var(--red); }
+.group-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.group-card.advance .group-icon { background: var(--t4-soft); color: var(--green); }
+.group-card.practice .group-icon { background: var(--t3-soft); color: var(--yellow); }
+.group-card.attention .group-icon { background: var(--t1-soft); color: var(--red); }
+.group-body { flex: 1; }
+.group-title { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+.group-students { font-size: 13px; color: var(--ink-soft); margin-top: 4px; }
+.group-insight {
+  font-size: 13px; color: var(--ink-soft);
+  margin-top: 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+.group-insight::before {
+  content: "💡"; font-size: 11px;
+}
+.group-action {
+  background: var(--ink); color: var(--bg); border: none;
+  padding: 9px 16px; border-radius: 999px;
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  cursor: pointer; flex-shrink: 0;
+}
+.group-action.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+
+/* ==================== STUDENT GRID ==================== */
+.students-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;
+}
+.student-card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius-lg); padding: 20px;
+  cursor: pointer; transition: all .2s;
+  position: relative;
+  border-top-width: 4px;
+}
+.student-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.student-card[data-track="1"] { border-top-color: var(--t1); }
+.student-card[data-track="2"] { border-top-color: var(--t2); }
+.student-card[data-track="3"] { border-top-color: var(--t3); }
+.student-card[data-track="4"] { border-top-color: var(--t4); }
+
+.student-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.avatar {
+  width: 44px; height: 44px; border-radius: 999px;
+  background: var(--line-soft); color: var(--ink);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 18px;
+  flex-shrink: 0;
+}
+.student-card[data-track="1"] .avatar { background: var(--t1-soft); color: var(--t1); }
+.student-card[data-track="2"] .avatar { background: var(--t2-soft); color: var(--t2); }
+.student-card[data-track="3"] .avatar { background: var(--t3-soft); color: var(--t3); }
+.student-card[data-track="4"] .avatar { background: var(--t4-soft); color: var(--t4); }
+.student-meta-top { flex: 1; }
+.student-name { font-weight: 700; font-size: 15px; }
+.student-track-label { font-size: 11px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+
+.student-mastery-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 12px; color: var(--ink-soft);
+}
+.mastery-bar {
+  height: 6px; background: var(--line); border-radius: 999px;
+  overflow: hidden; margin: 6px 0 12px;
+}
+.mastery-fill {
+  height: 100%; border-radius: 999px;
+  transition: width .5s;
+}
+.student-card[data-track="1"] .mastery-fill { background: var(--t1); }
+.student-card[data-track="2"] .mastery-fill { background: var(--t2); }
+.student-card[data-track="3"] .mastery-fill { background: var(--t3); }
+.student-card[data-track="4"] .mastery-fill { background: var(--t4); }
+
+.student-yest {
+  font-size: 12px; color: var(--ink-soft);
+  padding-top: 12px; border-top: 1px solid var(--line-soft);
+}
+.student-yest b { color: var(--ink); }
+
+.student-flag {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 700;
+  padding: 3px 8px; border-radius: 6px;
+  margin-top: 8px;
+}
+.student-flag.win { background: var(--t4-soft); color: var(--t4); }
+.student-flag.watch { background: var(--t3-soft); color: var(--t3); }
+.student-flag.alert { background: var(--t1-soft); color: var(--t1); }
+
+/* ==================== PATTERNS ==================== */
+.patterns-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+}
+.pattern-card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius-lg); padding: 20px 24px;
+}
+.pattern-eyebrow {
+  font-size: 11px; font-weight: 700; color: var(--ink-mute);
+  text-transform: uppercase; letter-spacing: 0.1em;
+}
+.pattern-title {
+  font-size: 17px; font-weight: 700; margin: 8px 0 12px;
+  letter-spacing: -0.01em;
+}
+.pattern-list { font-size: 14px; color: var(--ink-soft); }
+.pattern-list li {
+  display: flex; justify-content: space-between;
+  padding: 8px 0; border-top: 1px solid var(--line-soft);
+}
+.pattern-list li:first-child { border-top: 0; }
+.pattern-list b { color: var(--ink); font-weight: 600; }
+
+/* ==================== INSIGHT BAR ==================== */
+.insight-bar { padding: 24px 0 80px; }
+.insight-card {
+  background: var(--ink); color: var(--bg);
+  border-radius: var(--radius-lg); padding: 28px 32px;
+}
+.insight-eyebrow { font-size: 11px; font-weight: 700; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.12em; }
+.insight-title { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; margin: 8px 0 16px; }
+.insight-text { font-size: 14px; opacity: 0.9; line-height: 1.6; }
+
+/* ==================== MODAL (Student detail) ==================== */
+.modal-bg {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
+  display: none; align-items: center; justify-content: center;
+  padding: 24px; z-index: 100;
+}
+.modal-bg.open { display: flex; }
+.modal {
+  background: var(--surface); border-radius: var(--radius-lg);
+  max-width: 640px; width: 100%;
+  max-height: 90vh; overflow-y: auto;
+  padding: 32px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+}
+.modal-close {
+  position: absolute; right: 16px; top: 16px;
+  background: none; border: 1px solid var(--line);
+  color: var(--ink-soft); cursor: pointer;
+  width: 32px; height: 32px; border-radius: 999px;
+  font-size: 18px;
+}
+.modal-close:hover { background: var(--line-soft); color: var(--ink); }
+.modal-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+.modal-name { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+.modal-desc { font-size: 14px; color: var(--ink-soft); margin-top: 4px; }
+.lsrw-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 20px 0; }
+.lsrw-card {
+  background: var(--line-soft); border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.lsrw-label { font-size: 11px; font-weight: 700; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.08em; }
+.lsrw-bar { height: 5px; background: var(--line); border-radius: 999px; margin: 8px 0 6px; overflow: hidden; }
+.lsrw-fill { height: 100%; background: var(--ink); border-radius: 999px; }
+.lsrw-pct { font-size: 13px; font-weight: 700; }
+.recent-items { margin-top: 16px; }
+.recent-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0; border-top: 1px solid var(--line-soft);
+  font-size: 14px;
+}
+.recent-item:first-child { border-top: 0; }
+.recent-mark {
+  width: 20px; height: 20px; border-radius: 999px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800;
+  flex-shrink: 0;
+}
+.recent-mark.ok { background: var(--t4-soft); color: var(--t4); }
+.recent-mark.fail { background: var(--t1-soft); color: var(--t1); }
+
+@media (max-width: 720px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .patterns-grid { grid-template-columns: 1fr; }
+  .group-card { flex-direction: column; align-items: flex-start; }
+  .greeting-title { font-size: 32px; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div>
+    <div class="brand-name">English Chativa</div>
+    <div class="brand-sub">Teacher Dashboard · Morning</div>
+  </div>
+  <div class="topbar-right">
+    <a href="differentiation-demo.html" class="nav-link">← Student view</a>
+    <button class="theme-toggle" onclick="toggleTheme()">◐ Theme</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Morning greeting -->
+  <section class="greeting">
+    <div class="greeting-eyebrow">Wednesday · Oct 14, 2026 · 07:40</div>
+    <h1 class="greeting-title">Good morning, Mrs. Cohen 🌅</h1>
+    <p class="greeting-sub">Here's a 60-second read of your class before the bell.</p>
+  </section>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-value">24</div>
+      <div class="stat-label">Students in class 7A</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">18</div>
+      <div class="stat-label">Active yesterday</div>
+      <div class="stat-delta up">▲ 3 from Monday</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">62%</div>
+      <div class="stat-label">Class avg mastery</div>
+      <div class="stat-delta up">▲ 4 pts this week</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">3</div>
+      <div class="stat-label">Today's groups</div>
+      <div class="stat-delta">Auto-suggested</div>
+    </div>
+  </div>
+
+  <!-- TODAY'S SUGGESTED GROUPS -->
+  <section class="section">
+    <div class="section-header">
+      <h2 class="section-title">Today's suggested groups</h2>
+      <div class="section-sub">3 groups · 4 clicks to approve</div>
+    </div>
+
+    <div class="groups">
+      <div class="group-card advance" onclick="alert('Approval flow — would open group settings')">
+        <div class="group-icon">🌱</div>
+        <div class="group-body">
+          <div class="group-title">Ready to advance · Track 3 → Track 4</div>
+          <div class="group-students">Maya, Daniel, Tom · 3 students</div>
+          <div class="group-insight">All 3 mastered the verb "is" (Pre-A1). Worksheet challenge or move to plural forms.</div>
+        </div>
+        <button class="group-action">Approve →</button>
+      </div>
+
+      <div class="group-card practice" onclick="alert('Approval flow — would open group settings')">
+        <div class="group-icon">📝</div>
+        <div class="group-body">
+          <div class="group-title">Practicing 'is' vs 'are'</div>
+          <div class="group-students">Tamar, Roni, Noa, Lior, Yael · 5 students</div>
+          <div class="group-insight">Confused 'is' with 'are' in 7/12 items yesterday — Hebrew interference pattern. 10 min targeted practice.</div>
+        </div>
+        <button class="group-action">Approve →</button>
+      </div>
+
+      <div class="group-card attention" onclick="alert('Approval flow — would open group settings')">
+        <div class="group-icon">🤝</div>
+        <div class="group-body">
+          <div class="group-title">Need 1:1 attention</div>
+          <div class="group-students">Adam, Yossi · 2 students</div>
+          <div class="group-insight">Sight words below 35% last week. Consider sitting with them while others work independently.</div>
+        </div>
+        <button class="group-action">Approve →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ALL STUDENTS GRID -->
+  <section class="section">
+    <div class="section-header">
+      <h2 class="section-title">All students</h2>
+      <div class="section-sub">Click a student for details</div>
+    </div>
+
+    <div class="students-grid" id="students-grid"></div>
+  </section>
+
+  <!-- PATTERNS -->
+  <section class="section">
+    <div class="section-header">
+      <h2 class="section-title">This week's patterns</h2>
+      <div class="section-sub">Auto-detected from 312 attempts</div>
+    </div>
+
+    <div class="patterns-grid">
+      <div class="pattern-card">
+        <div class="pattern-eyebrow">Top struggle</div>
+        <div class="pattern-title">Subject-verb agreement</div>
+        <ul class="pattern-list">
+          <li><span>'is' instead of 'are'</span><b>15× wrong</b></li>
+          <li><span>'am' for 3rd person</span><b>9× wrong</b></li>
+          <li><span>'are' for singular</span><b>7× wrong</b></li>
+        </ul>
+      </div>
+
+      <div class="pattern-card">
+        <div class="pattern-eyebrow">Top win</div>
+        <div class="pattern-title">Sight word recognition</div>
+        <ul class="pattern-list">
+          <li><span>'is'</span><b>94% accuracy</b></li>
+          <li><span>'the'</span><b>91% accuracy</b></li>
+          <li><span>'my'</span><b>89% accuracy</b></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSIGHT -->
+  <section class="insight-bar">
+    <div class="insight-card">
+      <div class="insight-eyebrow">The 60-second principle</div>
+      <div class="insight-title">Differentiation, ready before the bell.</div>
+      <div class="insight-text">
+        The engine ran overnight on yesterday's 312 attempts. It scored each student's mastery,
+        flagged the top struggle ('is' vs 'are'), and proposed 3 groups for today.
+        Your job: 4 clicks to approve — or override if you know something the engine doesn't.
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal-bg" onclick="closeModal(event)">
+  <div class="modal" id="modal" onclick="event.stopPropagation()">
+    <!-- populated by JS -->
+  </div>
+</div>
+
+<script>
+// ==================== STUDENTS ====================
+const STUDENTS = [
+  {
+    id: "roni",
+    name: "Roni",
+    initials: "R",
+    track: 1,
+    trackName: "Foundation · Pre-A1",
+    description: "Just starting English. Recognizes some letters. No reading yet.",
+    mastery: 22,
+    yesterday: { items: 8, correct: 6 },
+    flag: { type: "watch", label: "🤝 Needs 1:1" },
+    lsrw: { Listening: 35, Speaking: 25, Reading: 18, Writing: 10 },
+    recent: [
+      { ok: true, text: "Tapped 'is' (audio)" },
+      { ok: true, text: "Tapped 'the' (audio)" },
+      { ok: false, text: "Confused 'is' / 'are' in image-match" },
+      { ok: true, text: "Listened to 'My name is Sarah'" },
+      { ok: false, text: "Skipped 2 items after long pause" }
+    ]
+  },
+  {
+    id: "tamar",
+    name: "Tamar",
+    initials: "T",
+    track: 2,
+    trackName: "Intermediate · Pre-A1+",
+    description: "Reads simple sentences. Sometimes mixes up 'is' and 'are'.",
+    mastery: 48,
+    yesterday: { items: 14, correct: 10 },
+    flag: { type: "watch", label: "📝 Practice 'is'/'are'" },
+    lsrw: { Listening: 58, Speaking: 50, Reading: 55, Writing: 35 },
+    recent: [
+      { ok: true, text: "Sarah ___ from Tel Aviv. → 'is' ✓" },
+      { ok: false, text: "We ___ in class 7. → chose 'is' (×) — should be 'are'" },
+      { ok: true, text: "Built sentence: 'My name is Sarah' ✓" },
+      { ok: false, text: "My brother ___ in class 8. → chose 'are' (×)" },
+      { ok: true, text: "Listening: identified 'is' correctly" }
+    ]
+  },
+  {
+    id: "maya",
+    name: "Maya",
+    initials: "M",
+    track: 3,
+    trackName: "Advanced · A1",
+    description: "Confident with basics. Reads short paragraphs. Catches her own mistakes.",
+    mastery: 78,
+    yesterday: { items: 16, correct: 14 },
+    flag: { type: "win", label: "🌱 Ready to advance" },
+    lsrw: { Listening: 82, Speaking: 70, Reading: 85, Writing: 72 },
+    recent: [
+      { ok: true, text: "Multi-blank fill 'is, am' ✓" },
+      { ok: true, text: "Sequence MCQ: 'My name is Sarah. I'm from Tel Aviv.' ✓" },
+      { ok: true, text: "Multi-select: chose 'She is' + 'It is' ✓" },
+      { ok: false, text: "Tricky distractor: missed contraction error" },
+      { ok: true, text: "Read flyer: 3/3 questions ✓" }
+    ]
+  },
+  {
+    id: "daniel",
+    name: "Daniel",
+    initials: "D",
+    track: 4,
+    trackName: "Extension · A1+",
+    description: "Loves a challenge. Writes short sentences on his own. Ready to produce.",
+    mastery: 92,
+    yesterday: { items: 12, correct: 11 },
+    flag: { type: "win", label: "🌱 Ready to advance" },
+    lsrw: { Listening: 90, Speaking: 88, Reading: 94, Writing: 95 },
+    recent: [
+      { ok: true, text: "Wrote: 'My friend is funny and tall.' ✓" },
+      { ok: true, text: "Wrote 3 sentences about Tel Aviv using 'is' ✓" },
+      { ok: true, text: "Self-introduction (open input · 30 words) ✓" },
+      { ok: true, text: "Built sentence in 3 sec — fastest in class" },
+      { ok: false, text: "Spelling: 'frend' for 'friend'" }
+    ]
+  }
+];
+
+// ==================== RENDER STUDENT GRID ====================
+function renderStudents() {
+  const el = document.getElementById('students-grid');
+  el.innerHTML = STUDENTS.map(s => `
+    <div class="student-card" data-track="${s.track}" onclick="openModal('${s.id}')">
+      <div class="student-header">
+        <div class="avatar">${s.initials}</div>
+        <div class="student-meta-top">
+          <div class="student-name">${s.name}</div>
+          <div class="student-track-label">${s.trackName}</div>
+        </div>
+      </div>
+
+      <div class="student-mastery-row">
+        <span>Mastery</span><b>${s.mastery}%</b>
+      </div>
+      <div class="mastery-bar"><div class="mastery-fill" style="width:${s.mastery}%"></div></div>
+
+      <div class="student-yest">
+        Yesterday: <b>${s.yesterday.correct}/${s.yesterday.items}</b> correct
+      </div>
+      <div class="student-flag ${s.flag.type}">${s.flag.label}</div>
+    </div>
+  `).join('');
+}
+
+// ==================== MODAL ====================
+function openModal(id) {
+  const s = STUDENTS.find(s => s.id === id);
+  const modal = document.getElementById('modal');
+  modal.innerHTML = `
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-header">
+      <div class="avatar" style="width:56px;height:56px;font-size:22px;background:var(--t${s.track}-soft);color:var(--t${s.track})">${s.initials}</div>
+      <div>
+        <div class="modal-name">${s.name}</div>
+        <div class="modal-desc">${s.description}</div>
+        <div style="font-size:12px;color:var(--ink-mute);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-top:6px">${s.trackName} · ${s.mastery}% mastery</div>
+      </div>
+    </div>
+
+    <div style="font-size:11px;font-weight:700;color:var(--ink-mute);text-transform:uppercase;letter-spacing:0.1em;margin-top:8px">By skill (LSRW)</div>
+    <div class="lsrw-grid">
+      ${Object.entries(s.lsrw).map(([k, v]) => `
+        <div class="lsrw-card">
+          <div class="lsrw-label">${k}</div>
+          <div class="lsrw-bar"><div class="lsrw-fill" style="width:${v}%"></div></div>
+          <div class="lsrw-pct">${v}%</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div style="font-size:11px;font-weight:700;color:var(--ink-mute);text-transform:uppercase;letter-spacing:0.1em;margin-top:16px">Recent items (yesterday)</div>
+    <div class="recent-items">
+      ${s.recent.map(r => `
+        <div class="recent-item">
+          <div class="recent-mark ${r.ok ? 'ok' : 'fail'}">${r.ok ? '✓' : '✗'}</div>
+          <div>${r.text}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  document.getElementById('modal-bg').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e && e.target.closest('.modal') && !e.target.classList.contains('modal-close') && !e.target.classList.contains('modal-bg')) return;
+  document.getElementById('modal-bg').classList.remove('open');
+}
+
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  document.documentElement.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+}
+
+// ==================== INIT ====================
+renderStudents();
+</script>
+
+</body>
+</html>
