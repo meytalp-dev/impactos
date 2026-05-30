@@ -290,6 +290,32 @@ h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
   margin-top: 4px;
 }
 
+/* ═══════ LAYER VIEW (PRINCIPAL) ═══════ */
+.layer-classes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 18px; }
+.class-card { background: var(--white); border-radius: 16px; padding: 16px 18px; box-shadow: var(--shadow-sm); border-top: 4px solid var(--class-color, var(--primary)); cursor: pointer; transition: transform .15s, box-shadow .15s; }
+.class-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.class-card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 10px; }
+.class-card-name { font-family: 'Rubik'; font-weight: 800; font-size: 1.1rem; }
+.class-card-teacher { font-size: 0.75rem; color: var(--text-light); margin-top: 2px; }
+.class-card-status { font-size: 0.7rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }
+.class-card-mini-bars { display: flex; flex-direction: column; gap: 6px; margin: 12px 0; }
+.class-mini-row { display: grid; grid-template-columns: 50px 1fr 28px; gap: 8px; align-items: center; font-size: 0.78rem; }
+.class-mini-name { font-weight: 700; }
+.class-mini-bar { height: 7px; background: rgba(0,0,0,.05); border-radius: 4px; position: relative; overflow: hidden; }
+.class-mini-bar-fill { position: absolute; top: 0; right: 0; height: 100%; border-radius: 4px; transition: width .6s ease-out; }
+.class-mini-score { text-align: center; font-family: 'Rubik'; font-weight: 800; }
+.class-card-response { font-size: 0.78rem; color: var(--text-light); margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,.04); }
+.class-card-cta { display: block; text-align: center; padding: 8px; margin-top: 8px; background: rgba(46,125,140,.06); border-radius: 8px; font-size: 0.78rem; font-weight: 700; color: var(--primary-dark); }
+@media (max-width: 720px) { .layer-classes { grid-template-columns: 1fr; } }
+
+.layer-section-title { font-size: 0.85rem; font-weight: 700; color: var(--text-light); margin: 22px 0 10px; letter-spacing: 0.04em; padding-right: 4px; }
+.layer-attention-list { display: flex; flex-direction: column; gap: 6px; }
+.layer-attention-row { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center; padding: 10px 14px; background: var(--white); border-radius: 10px; font-size: 0.88rem; border-right: 3px solid #C04860; box-shadow: var(--shadow-sm); }
+.layer-attention-name { font-weight: 600; }
+.layer-attention-class { color: var(--text-light); font-size: 0.78rem; margin-right: 6px; }
+.layer-attention-reds { color: #8B3A4A; font-weight: 700; font-size: 0.82rem; }
+.layer-attention-empty { padding: 16px; background: rgba(74,155,127,.08); border: 1px solid rgba(74,155,127,.18); border-radius: 12px; color: #2f7a66; font-size: 0.9rem; text-align: center; font-weight: 600; }
+
 /* ═══════ STUDENT MAP ═══════ */
 .map-card { background: var(--white); border-radius: 18px; padding: 22px 22px 18px; box-shadow: var(--shadow-sm); margin-top: 18px; }
 .map-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; gap: 16px; flex-wrap: wrap; }
@@ -363,8 +389,10 @@ h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
   </div>
   <div class="topbar-meta">
     <select class="class-select" id="class-select">
+      <option value="layer">🏫 מבט שכבה א׳</option>
       <option value="א1">כיתה א1</option>
       <option value="א2">כיתה א2</option>
+      <option value="א3">כיתה א3</option>
     </select>
     <span id="biweek-label">פולס #4 · 28.5.26</span>
   </div>
@@ -401,27 +429,79 @@ function clearData() {
   }
 }
 
-// 18 ילדים עם פטרנים יציבים פר מימד (baseP=0.85 → רוב פעמים 3, baseP=0.30 → רוב פעמים 1)
+// 3 כיתות בשכבת א'. כל כיתה עם מחנכת + צבע. עוזר ל-layer view.
+const CLASS_META = {
+  'א1': { name: 'כיתה א1', teacher: 'רחל אלמוג',   color: '#F2B844' },
+  'א2': { name: 'כיתה א2', teacher: 'שירית גנדלמן', color: '#5BC0A8' },
+  'א3': { name: 'כיתה א3', teacher: 'מיכל אופק',    color: '#8B6BC0' }
+};
+
+// 54 ילדים בשכבה. baseP פר מימד יציב (baseP=0.85 → רוב פעמים 3, baseP=0.30 → רוב פעמים 1).
+// א1 מעורבת · א2 חזקה · א3 מאתגרת (יותר ילדים בתשומת לב — כדי שיהיה signal למנהלת).
 const KIDS = [
-  { id: 'k01', name: 'אדם לוי',      base: { adjust: 0.85, friend: 0.80, emotion: 0.65, joy: 0.85 } },
-  { id: 'k02', name: 'תמר כהן',     base: { adjust: 0.40, friend: 0.55, emotion: 0.45, joy: 0.50 } },
-  { id: 'k03', name: 'יואב מזרחי',  base: { adjust: 0.80, friend: 0.75, emotion: 0.85, joy: 0.70 } },
-  { id: 'k04', name: 'נועה ברק',    base: { adjust: 0.55, friend: 0.25, emotion: 0.50, joy: 0.60 } },
-  { id: 'k05', name: 'אריאל פרץ',   base: { adjust: 0.70, friend: 0.65, emotion: 0.60, joy: 0.65 } },
-  { id: 'k06', name: 'מאיה גולן',   base: { adjust: 0.90, friend: 0.85, emotion: 0.75, joy: 0.90 } },
-  { id: 'k07', name: 'איתי שלום',   base: { adjust: 0.35, friend: 0.40, emotion: 0.30, joy: 0.45 } },
-  { id: 'k08', name: 'שירה דהן',    base: { adjust: 0.75, friend: 0.70, emotion: 0.55, joy: 0.55 } },
-  { id: 'k09', name: 'רוני בן-דוד', base: { adjust: 0.60, friend: 0.65, emotion: 0.70, joy: 0.35 } },
-  { id: 'k10', name: 'יונתן אבני',  base: { adjust: 0.80, friend: 0.60, emotion: 0.75, joy: 0.70 } },
-  { id: 'k11', name: 'אבישג טל',    base: { adjust: 0.65, friend: 0.55, emotion: 0.50, joy: 0.60 } },
-  { id: 'k12', name: 'אורי קליין',  base: { adjust: 0.50, friend: 0.25, emotion: 0.55, joy: 0.65 } },
-  { id: 'k13', name: 'נעמה רוזן',   base: { adjust: 0.85, friend: 0.75, emotion: 0.80, joy: 0.85 } },
-  { id: 'k14', name: 'איתמר רז',    base: { adjust: 0.55, friend: 0.60, emotion: 0.35, joy: 0.50 } },
-  { id: 'k15', name: 'יעל פלד',     base: { adjust: 0.70, friend: 0.70, emotion: 0.65, joy: 0.75 } },
-  { id: 'k16', name: 'רועי שמש',    base: { adjust: 0.80, friend: 0.65, emotion: 0.70, joy: 0.60 } },
-  { id: 'k17', name: 'ליה אזולאי',  base: { adjust: 0.45, friend: 0.50, emotion: 0.55, joy: 0.40 } },
-  { id: 'k18', name: 'נועם חיים',   base: { adjust: 0.75, friend: 0.80, emotion: 0.70, joy: 0.65 } }
+  // ─── א1 · 18 ילדים · מעורבת ───
+  { id: 'a1-01', class: 'א1', name: 'אדם לוי',      base: { adjust: 0.85, friend: 0.80, emotion: 0.65, joy: 0.85 } },
+  { id: 'a1-02', class: 'א1', name: 'תמר כהן',     base: { adjust: 0.40, friend: 0.55, emotion: 0.45, joy: 0.50 } },
+  { id: 'a1-03', class: 'א1', name: 'יואב מזרחי',  base: { adjust: 0.80, friend: 0.75, emotion: 0.85, joy: 0.70 } },
+  { id: 'a1-04', class: 'א1', name: 'נועה ברק',    base: { adjust: 0.55, friend: 0.25, emotion: 0.50, joy: 0.60 } },
+  { id: 'a1-05', class: 'א1', name: 'אריאל פרץ',   base: { adjust: 0.70, friend: 0.65, emotion: 0.60, joy: 0.65 } },
+  { id: 'a1-06', class: 'א1', name: 'מאיה גולן',   base: { adjust: 0.90, friend: 0.85, emotion: 0.75, joy: 0.90 } },
+  { id: 'a1-07', class: 'א1', name: 'איתי שלום',   base: { adjust: 0.35, friend: 0.40, emotion: 0.30, joy: 0.45 } },
+  { id: 'a1-08', class: 'א1', name: 'שירה דהן',    base: { adjust: 0.75, friend: 0.70, emotion: 0.55, joy: 0.55 } },
+  { id: 'a1-09', class: 'א1', name: 'רוני בן-דוד', base: { adjust: 0.60, friend: 0.65, emotion: 0.70, joy: 0.35 } },
+  { id: 'a1-10', class: 'א1', name: 'יונתן אבני',  base: { adjust: 0.80, friend: 0.60, emotion: 0.75, joy: 0.70 } },
+  { id: 'a1-11', class: 'א1', name: 'אבישג טל',    base: { adjust: 0.65, friend: 0.55, emotion: 0.50, joy: 0.60 } },
+  { id: 'a1-12', class: 'א1', name: 'אורי קליין',  base: { adjust: 0.50, friend: 0.25, emotion: 0.55, joy: 0.65 } },
+  { id: 'a1-13', class: 'א1', name: 'נעמה רוזן',   base: { adjust: 0.85, friend: 0.75, emotion: 0.80, joy: 0.85 } },
+  { id: 'a1-14', class: 'א1', name: 'איתמר רז',    base: { adjust: 0.55, friend: 0.60, emotion: 0.35, joy: 0.50 } },
+  { id: 'a1-15', class: 'א1', name: 'יעל פלד',     base: { adjust: 0.70, friend: 0.70, emotion: 0.65, joy: 0.75 } },
+  { id: 'a1-16', class: 'א1', name: 'רועי שמש',    base: { adjust: 0.80, friend: 0.65, emotion: 0.70, joy: 0.60 } },
+  { id: 'a1-17', class: 'א1', name: 'ליה אזולאי',  base: { adjust: 0.45, friend: 0.50, emotion: 0.55, joy: 0.40 } },
+  { id: 'a1-18', class: 'א1', name: 'נועם חיים',   base: { adjust: 0.75, friend: 0.80, emotion: 0.70, joy: 0.65 } },
+
+  // ─── א2 · 19 ילדים · חזקה ───
+  { id: 'a2-01', class: 'א2', name: 'דניאל אלקיים', base: { adjust: 0.80, friend: 0.85, emotion: 0.80, joy: 0.85 } },
+  { id: 'a2-02', class: 'א2', name: 'הילה פרידמן',  base: { adjust: 0.85, friend: 0.80, emotion: 0.75, joy: 0.80 } },
+  { id: 'a2-03', class: 'א2', name: 'רן בן-נתן',    base: { adjust: 0.75, friend: 0.85, emotion: 0.70, joy: 0.85 } },
+  { id: 'a2-04', class: 'א2', name: 'עינב סלע',     base: { adjust: 0.90, friend: 0.85, emotion: 0.85, joy: 0.80 } },
+  { id: 'a2-05', class: 'א2', name: 'עמית גרינברג', base: { adjust: 0.85, friend: 0.75, emotion: 0.80, joy: 0.75 } },
+  { id: 'a2-06', class: 'א2', name: 'אלון שגיא',    base: { adjust: 0.70, friend: 0.65, emotion: 0.60, joy: 0.70 } },
+  { id: 'a2-07', class: 'א2', name: 'נטע יוסף',     base: { adjust: 0.80, friend: 0.80, emotion: 0.85, joy: 0.85 } },
+  { id: 'a2-08', class: 'א2', name: 'אסף הראל',     base: { adjust: 0.65, friend: 0.55, emotion: 0.45, joy: 0.60 } },
+  { id: 'a2-09', class: 'א2', name: 'נאור אזולאי',  base: { adjust: 0.85, friend: 0.80, emotion: 0.75, joy: 0.80 } },
+  { id: 'a2-10', class: 'א2', name: 'עידן ניר',      base: { adjust: 0.75, friend: 0.85, emotion: 0.80, joy: 0.75 } },
+  { id: 'a2-11', class: 'א2', name: 'רחלי ורדי',    base: { adjust: 0.80, friend: 0.70, emotion: 0.85, joy: 0.85 } },
+  { id: 'a2-12', class: 'א2', name: 'גיא מרציאנו',  base: { adjust: 0.85, friend: 0.80, emotion: 0.70, joy: 0.80 } },
+  { id: 'a2-13', class: 'א2', name: 'שרה בנימין',   base: { adjust: 0.90, friend: 0.85, emotion: 0.80, joy: 0.85 } },
+  { id: 'a2-14', class: 'א2', name: 'אביב סטרוק',   base: { adjust: 0.70, friend: 0.75, emotion: 0.65, joy: 0.70 } },
+  { id: 'a2-15', class: 'א2', name: 'הדס פולק',     base: { adjust: 0.85, friend: 0.85, emotion: 0.80, joy: 0.90 } },
+  { id: 'a2-16', class: 'א2', name: 'תום ביטון',    base: { adjust: 0.75, friend: 0.70, emotion: 0.75, joy: 0.65 } },
+  { id: 'a2-17', class: 'א2', name: 'אלה דגן',      base: { adjust: 0.85, friend: 0.80, emotion: 0.85, joy: 0.80 } },
+  { id: 'a2-18', class: 'א2', name: 'יהונתן ארד',   base: { adjust: 0.80, friend: 0.85, emotion: 0.70, joy: 0.75 } },
+  { id: 'a2-19', class: 'א2', name: 'שני וקנין',    base: { adjust: 0.70, friend: 0.60, emotion: 0.65, joy: 0.55 } },
+
+  // ─── א3 · 17 ילדים · מאתגרת ───
+  { id: 'a3-01', class: 'א3', name: 'רעות אביטל',   base: { adjust: 0.65, friend: 0.55, emotion: 0.45, joy: 0.55 } },
+  { id: 'a3-02', class: 'א3', name: 'מתן ברוך',     base: { adjust: 0.40, friend: 0.35, emotion: 0.30, joy: 0.45 } },
+  { id: 'a3-03', class: 'א3', name: 'ספיר אלמלם',   base: { adjust: 0.55, friend: 0.60, emotion: 0.50, joy: 0.60 } },
+  { id: 'a3-04', class: 'א3', name: 'אופק יששכר',   base: { adjust: 0.50, friend: 0.40, emotion: 0.45, joy: 0.40 } },
+  { id: 'a3-05', class: 'א3', name: 'לי עוז',        base: { adjust: 0.75, friend: 0.70, emotion: 0.65, joy: 0.70 } },
+  { id: 'a3-06', class: 'א3', name: 'עומר נחום',    base: { adjust: 0.45, friend: 0.55, emotion: 0.35, joy: 0.50 } },
+  { id: 'a3-07', class: 'א3', name: 'מיכאל בנדה',   base: { adjust: 0.30, friend: 0.40, emotion: 0.35, joy: 0.55 } },
+  { id: 'a3-08', class: 'א3', name: 'רומי טאוב',    base: { adjust: 0.70, friend: 0.65, emotion: 0.60, joy: 0.65 } },
+  { id: 'a3-09', class: 'א3', name: 'עדן יעקובי',   base: { adjust: 0.60, friend: 0.45, emotion: 0.55, joy: 0.50 } },
+  { id: 'a3-10', class: 'א3', name: 'שחר אבוטבול',  base: { adjust: 0.50, friend: 0.30, emotion: 0.40, joy: 0.45 } },
+  { id: 'a3-11', class: 'א3', name: 'נווה רובין',   base: { adjust: 0.85, friend: 0.80, emotion: 0.75, joy: 0.80 } },
+  { id: 'a3-12', class: 'א3', name: 'נריה גולדמן',  base: { adjust: 0.65, friend: 0.70, emotion: 0.55, joy: 0.60 } },
+  { id: 'a3-13', class: 'א3', name: 'מירב חזן',     base: { adjust: 0.55, friend: 0.50, emotion: 0.45, joy: 0.55 } },
+  { id: 'a3-14', class: 'א3', name: 'גלעד שני',     base: { adjust: 0.75, friend: 0.65, emotion: 0.70, joy: 0.70 } },
+  { id: 'a3-15', class: 'א3', name: 'אביעד מאור',   base: { adjust: 0.40, friend: 0.45, emotion: 0.30, joy: 0.40 } },
+  { id: 'a3-16', class: 'א3', name: 'רותם זילבר',   base: { adjust: 0.70, friend: 0.75, emotion: 0.65, joy: 0.70 } },
+  { id: 'a3-17', class: 'א3', name: 'אסיה חביב',    base: { adjust: 0.50, friend: 0.55, emotion: 0.40, joy: 0.45 } }
 ];
+
+// ילדים שלא ענו בפולס האחרון (חיסור רגיל בכיתה א')
+const MISSING_LATEST = new Set(['a1-06', 'a1-15', 'a2-08', 'a3-04', 'a3-11']);
 
 // Hash דטרמיניסטי — אותם seeds תמיד = אותו pattern (לדמו יציב בין refreshes)
 function pseudoRand(seed) {
@@ -438,8 +518,7 @@ function seedData() {
   for (let week = 1; week <= 4; week++) {
     const weekTs = new Date(now - (4 - week) * 14 * 24 * 3600 * 1000);
     KIDS.forEach(kid => {
-      // 2 ילדים לא ענו בפולס האחרון (חולים/חיסור) — דוגמה רגילה בכיתה א'
-      if (week === 4 && (kid.id === 'k06' || kid.id === 'k15')) return;
+      if (week === 4 && MISSING_LATEST.has(kid.id)) return;
 
       const responses = DIMENSIONS.map(d => {
         // Drift: מקום משתפר לאט (התאקלמות) · לגלות יורד לאט (אופייני אחרי תחילת שנה)
@@ -457,7 +536,7 @@ function seedData() {
 
       seeds.push({
         school: 'demo',
-        class: 'א1',
+        class: kid.class,
         sid: kid.id,
         sidName: kid.name,
         biweek: week,
@@ -641,10 +720,138 @@ function renderStudentMapRows(classId, biweek) {
   }).join('');
 }
 
+// ═══════ LAYER (PRINCIPAL) VIEW ═══════
+function switchToClass(classId) {
+  document.getElementById('class-select').value = classId;
+  render();
+}
+
+function classStatus(lowAvg) {
+  if (lowAvg >= 2.7) return { label: 'יציב',         bg: 'rgba(74,155,127,.15)',  color: '#2f7a66' };
+  if (lowAvg >= 2.3) return { label: 'שווה לבדוק',   bg: 'rgba(242,184,68,.18)',  color: '#8E5A1E' };
+  return                    { label: 'תשומת לב',     bg: 'rgba(192,72,96,.15)',   color: '#8B3A4A' };
+}
+
+function renderLayerView(container) {
+  const classes = Object.keys(CLASS_META).map(classId => ({
+    id: classId,
+    meta: CLASS_META[classId],
+    total: KIDS.filter(k => k.class === classId).length,
+    data: aggregateClass(classId)
+  }));
+
+  const allHaveData = classes.every(c => c.data);
+  if (!allHaveData) {
+    container.innerHTML = `
+      <div class="empty">
+        <h3>עדיין אין מספיק נתונים לשכבה</h3>
+        <p>חלק מהכיתות לא ענו. לחצי "טען דוגמה" לראות את המבט המלא.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const totalKids = classes.reduce((s, c) => s + c.total, 0);
+  const totalResponded = classes.reduce((s, c) => s + c.data.responseCount, 0);
+  const allAvgs = classes.flatMap(c => Object.values(c.data.dimAverages));
+  const gradeAvg = allAvgs.reduce((a, b) => a + b, 0) / allAvgs.length;
+
+  const classCards = classes.map(c => {
+    const d = c.data;
+    const dimBars = DIMENSIONS.map(dim => {
+      const avg = d.dimAverages[dim.id] || 0;
+      const widthPct = (avg / 3) * 100;
+      return `
+        <div class="class-mini-row">
+          <div class="class-mini-name" style="color:${dim.color}">${dim.name}</div>
+          <div class="class-mini-bar"><div class="class-mini-bar-fill" style="background:${dim.color}; width:${widthPct}%;"></div></div>
+          <div class="class-mini-score" style="color:${dim.color}">${avg.toFixed(1)}</div>
+        </div>
+      `;
+    }).join('');
+
+    const lowestDim = Object.keys(d.dimAverages).reduce((a, b) => d.dimAverages[a] < d.dimAverages[b] ? a : b);
+    const lowAvg = d.dimAverages[lowestDim];
+    const st = classStatus(lowAvg);
+
+    return `
+      <div class="class-card" style="--class-color:${c.meta.color}" onclick="switchToClass('${c.id}')">
+        <div class="class-card-head">
+          <div>
+            <div class="class-card-name">${c.meta.name}</div>
+            <div class="class-card-teacher">מחנכת: ${c.meta.teacher}</div>
+          </div>
+          <div class="class-card-status" style="background:${st.bg}; color:${st.color};">${st.label}</div>
+        </div>
+        <div class="class-card-mini-bars">${dimBars}</div>
+        <div class="class-card-response">${d.responseCount} מתוך ${c.total} ענו · פולס #${d.biweek}</div>
+        <div class="class-card-cta">פתחי כיתה ←</div>
+      </div>
+    `;
+  }).join('');
+
+  // ילדים בתשומת לב חוצי-שכבה
+  const attention = [];
+  classes.forEach(c => {
+    const studentMap = getStudentMap(c.id, c.data.biweek);
+    studentMap.forEach(s => {
+      if (s.status === 'attention') {
+        attention.push({ ...s, className: c.meta.name });
+      }
+    });
+  });
+  attention.sort((a, b) => b.reds - a.reds);
+
+  const attentionHTML = attention.length === 0 ? `
+    <div class="layer-attention-empty">✓ אין תלמידים ב"תשומת לב" בשכבה השבוע</div>
+  ` : `
+    <div class="layer-attention-list">
+      ${attention.map(s => `
+        <div class="layer-attention-row">
+          <div>
+            <span class="layer-attention-name">${s.name}</span>
+            <span class="layer-attention-class">· ${s.className}</span>
+          </div>
+          <div class="layer-attention-reds">${s.reds} אדומים</div>
+          <span class="map-status status-attention">תשומת לב</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  container.innerHTML = `
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-num" style="color:${DIMENSIONS[0].color}">${classes.length}</div>
+        <div class="stat-label">כיתות בשכבה</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" style="color:${DIMENSIONS[1].color}">${totalResponded}/${totalKids}</div>
+        <div class="stat-label">ענו השבוע</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" style="color:${DIMENSIONS[3].color}">${gradeAvg.toFixed(1)}</div>
+        <div class="stat-label">ממוצע שכבה</div>
+      </div>
+    </div>
+
+    <div class="layer-section-title">סטטוס כיתות · לחיצה על כרטיס פותחת תצוגת כיתה</div>
+    <div class="layer-classes">${classCards}</div>
+
+    <div class="layer-section-title">תלמידים בתשומת לב בשכבה · ${attention.length}</div>
+    ${attentionHTML}
+  `;
+}
+
 // ═══════ RENDER ═══════
 function render() {
   const classId = document.getElementById('class-select').value;
   const container = document.getElementById('container');
+
+  if (classId === 'layer') {
+    return renderLayerView(container);
+  }
+
   const data = aggregateClass(classId);
 
   if (!data) {
