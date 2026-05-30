@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Chativa · Preview · Bridge Pack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FAFAF7;
+  --surface: #FFFFFF;
+  --ink: #0A0A0A;
+  --ink-soft: #525252;
+  --ink-mute: #A3A3A3;
+  --line: #E5E5E5;
+  --line-soft: #F4F4F4;
+
+  /* Track colors (from cefr-targets) */
+  --t1: #C03847;
+  --t2: #E07A2E;
+  --t3: #E8A849;
+  --t4: #4A9B7F;
+
+  --t1-soft: #FBEEF0;
+  --t2-soft: #FCEFE2;
+  --t3-soft: #FCF5E5;
+  --t4-soft: #EDF6F1;
+
+  --radius: 12px;
+  --radius-lg: 20px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 8px 24px rgba(0,0,0,0.06);
+}
+
+[data-theme="dark"] {
+  --bg: #0F0F0F;
+  --surface: #1A1A1A;
+  --ink: #FAFAFA;
+  --ink-soft: #A3A3A3;
+  --ink-mute: #525252;
+  --line: #2A2A2A;
+  --line-soft: #1F1F1F;
+  --t1-soft: #2A1518;
+  --t2-soft: #2A1C12;
+  --t3-soft: #2A2415;
+  --t4-soft: #152620;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.5;
+  font-feature-settings: 'cv11', 'ss01';
+  min-height: 100vh;
+  transition: background .3s, color .3s;
+}
+
+/* ==================== TOP BAR ==================== */
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  padding: 16px 24px;
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  backdrop-filter: blur(10px);
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-name {
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+.brand-sub { font-size: 11px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.08em; }
+.topbar-right { display: flex; align-items: center; gap: 16px; }
+.streak {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 14px; font-weight: 600;
+  padding: 6px 12px;
+  background: var(--t2-soft);
+  color: var(--t2);
+  border-radius: 999px;
+}
+.user-name { font-size: 14px; font-weight: 600; }
+.theme-toggle {
+  background: none; border: 1px solid var(--line);
+  color: var(--ink-soft); cursor: pointer;
+  padding: 6px 10px; border-radius: 8px;
+  font-family: inherit; font-size: 12px;
+}
+.theme-toggle:hover { background: var(--line-soft); }
+
+/* ==================== UNIT HEADER ==================== */
+.unit-header {
+  max-width: 720px; margin: 32px auto 16px; padding: 0 24px;
+}
+.unit-label {
+  font-size: 11px; font-weight: 700; color: var(--ink-mute);
+  text-transform: uppercase; letter-spacing: 0.12em;
+}
+.unit-title {
+  font-size: 28px; font-weight: 800; letter-spacing: -0.02em;
+  margin-top: 4px;
+}
+.unit-sub { color: var(--ink-soft); font-size: 14px; margin-top: 4px; }
+
+.progress-bar {
+  height: 4px; background: var(--line); border-radius: 999px;
+  margin: 24px 0 8px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; background: var(--ink);
+  border-radius: 999px; transition: width .3s;
+}
+.progress-text { font-size: 12px; color: var(--ink-mute); }
+
+/* ==================== TRACK SELECTOR ==================== */
+.tracks {
+  display: flex; gap: 8px; max-width: 720px; margin: 24px auto;
+  padding: 0 24px; overflow-x: auto;
+}
+.track-chip {
+  background: var(--surface); border: 1px solid var(--line);
+  padding: 8px 16px; border-radius: 999px; cursor: pointer;
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  color: var(--ink-soft);
+  transition: all .15s;
+  white-space: nowrap;
+  display: flex; align-items: center; gap: 8px;
+}
+.track-chip:hover { color: var(--ink); border-color: var(--ink-mute); }
+.track-chip.active { color: var(--ink); border-width: 2px; padding: 7px 15px; }
+.track-chip[data-track="1"].active { border-color: var(--t1); background: var(--t1-soft); }
+.track-chip[data-track="2"].active { border-color: var(--t2); background: var(--t2-soft); }
+.track-chip[data-track="3"].active { border-color: var(--t3); background: var(--t3-soft); }
+.track-chip[data-track="4"].active { border-color: var(--t4); background: var(--t4-soft); }
+.track-dot { width: 8px; height: 8px; border-radius: 999px; }
+.track-chip[data-track="1"] .track-dot { background: var(--t1); }
+.track-chip[data-track="2"] .track-dot { background: var(--t2); }
+.track-chip[data-track="3"] .track-dot { background: var(--t3); }
+.track-chip[data-track="4"] .track-dot { background: var(--t4); }
+
+/* ==================== ITEM CARD ==================== */
+.item-card {
+  max-width: 720px; margin: 0 auto 32px; padding: 0 24px;
+}
+.card-inner {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 40px 32px;
+  box-shadow: var(--shadow-md);
+}
+.narrative-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--line-soft);
+  color: var(--ink-soft);
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 600;
+  margin-bottom: 20px;
+  letter-spacing: 0.02em;
+}
+.narrative-chip::before { content: "·"; color: var(--ink-mute); }
+
+.prompt-text {
+  font-size: 22px; font-weight: 600; line-height: 1.4;
+  letter-spacing: -0.01em;
+  margin-bottom: 28px;
+}
+.audio-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--ink); color: var(--bg);
+  border: none; padding: 12px 20px; border-radius: 999px;
+  font-family: inherit; font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: transform .15s;
+  margin-bottom: 24px;
+}
+.audio-btn:hover { transform: scale(1.03); }
+.audio-btn:active { transform: scale(0.98); }
+
+/* ==================== OPTIONS (MCQ / tap-match / fill-blank) ==================== */
+.options { display: flex; flex-direction: column; gap: 10px; }
+.option {
+  background: var(--surface); border: 1.5px solid var(--line);
+  border-radius: var(--radius); padding: 16px 20px;
+  font-family: inherit; font-size: 16px; font-weight: 500; color: var(--ink);
+  cursor: pointer; transition: all .15s;
+  text-align: left;
+  display: flex; align-items: center; gap: 12px;
+}
+.option:hover { border-color: var(--ink-mute); transform: translateY(-1px); }
+.option.selected { border-color: var(--ink); border-width: 2px; padding: 15px 19px; }
+.option.correct { background: var(--t4-soft); border-color: var(--t4); color: var(--t4); }
+.option.wrong { background: var(--t1-soft); border-color: var(--t1); color: var(--t1); }
+.option-letter {
+  width: 24px; height: 24px; border-radius: 999px;
+  background: var(--line-soft); color: var(--ink-soft);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+}
+
+/* ==================== DRAG-BUILD ==================== */
+.drag-bank { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.drag-target {
+  border: 2px dashed var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  min-height: 60px;
+  display: flex; flex-wrap: wrap; gap: 8px;
+  align-items: center;
+}
+.drag-word {
+  background: var(--ink); color: var(--bg);
+  padding: 8px 14px; border-radius: 8px;
+  font-weight: 600; font-size: 15px;
+  cursor: grab;
+  user-select: none;
+}
+.drag-word:active { cursor: grabbing; }
+
+/* ==================== OPEN INPUT ==================== */
+.open-input {
+  width: 100%;
+  padding: 16px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  font-family: inherit; font-size: 16px;
+  background: var(--surface); color: var(--ink);
+  resize: vertical;
+  min-height: 80px;
+}
+.open-input:focus {
+  outline: none; border-color: var(--ink); border-width: 2px; padding: 15px;
+}
+.input-hint { font-size: 12px; color: var(--ink-mute); margin-top: 8px; }
+
+/* ==================== NAV ==================== */
+.nav-row {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 32px;
+}
+.btn {
+  background: var(--ink); color: var(--bg);
+  border: none; padding: 12px 24px; border-radius: 999px;
+  font-family: inherit; font-size: 14px; font-weight: 600;
+  cursor: pointer;
+}
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-ghost {
+  background: transparent; color: var(--ink); border: 1px solid var(--line);
+}
+.btn-ghost:hover { border-color: var(--ink-mute); }
+
+/* ==================== ITEM META ==================== */
+.item-meta {
+  display: flex; gap: 12px; flex-wrap: wrap;
+  font-size: 11px; color: var(--ink-mute);
+  margin-top: 16px;
+  padding-top: 16px; border-top: 1px solid var(--line-soft);
+  letter-spacing: 0.02em; text-transform: uppercase;
+}
+.item-meta span { font-weight: 600; }
+
+/* ==================== FOOTER ==================== */
+.foot {
+  text-align: center; padding: 40px 24px;
+  color: var(--ink-mute); font-size: 12px;
+}
+
+@media (max-width: 600px) {
+  .topbar { padding: 12px 16px; }
+  .brand-sub { display: none; }
+  .unit-title { font-size: 22px; }
+  .card-inner { padding: 28px 20px; }
+  .prompt-text { font-size: 18px; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div>
+      <div class="brand-name">English Chativa</div>
+      <div class="brand-sub">Preview · Bridge Pack</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <button class="theme-toggle" onclick="toggleTheme()">◐ Theme</button>
+    <div class="streak">🔥 5</div>
+    <div class="user-name">Maya</div>
+  </div>
+</header>
+
+<section class="unit-header">
+  <div class="unit-label">Unit 0 · Bridge</div>
+  <h1 class="unit-title">Preparing for the journey</h1>
+  <div class="unit-sub">Week 1 of 32 · Sarah is packing for London</div>
+  <div class="progress-bar"><div class="progress-fill" id="progress" style="width:8%"></div></div>
+  <div class="progress-text" id="progress-text">Item 1 of 12</div>
+</section>
+
+<nav class="tracks" id="tracks">
+  <!-- populated by JS -->
+</nav>
+
+<main class="item-card">
+  <div class="card-inner" id="item-card">
+    <!-- populated by JS -->
+  </div>
+</main>
+
+<footer class="foot">
+  English Chativa · Preview · 12 items showing the 6 mechanics<br>
+  Modern Editorial design · Inter font · LTR · Web Speech en-US
+</footer>
+
+<script>
+// ==================== SAMPLE ITEMS (extracted from october-2026-bridge.json) ====================
+const ITEMS = [
+  // Track 1 — 3 items
+  {
+    id: "br-sw-the-t1-001",
+    track: 1, level: "Pre-A1", envelope: "tap-match",
+    sw: "the", domain: "language", lsrw: "Reading + Listening",
+    narrative: { char: "Sarah", loc: "Tel Aviv" },
+    prompt: "Listen and tap the word you hear.",
+    audio: "the",
+    options: [
+      { text: "the", correct: true },
+      { text: "a", correct: false }
+    ]
+  },
+  {
+    id: "br-phon-ch-t1-025",
+    track: 1, level: "Pre-A1", envelope: "listen-mcq",
+    sw: "ch sound", domain: "language", lsrw: "Listening",
+    prompt: "Listen and tap the word that STARTS with 'ch'.",
+    audio: "chair",
+    options: [
+      { text: "chair", correct: true },
+      { text: "share", correct: false }
+    ]
+  },
+  {
+    id: "br-chunk-name-is-t1-033",
+    track: 1, level: "Pre-A1", envelope: "listen-mcq",
+    sw: "my name is", domain: "social_interaction", lsrw: "Listening",
+    narrative: { char: "Sarah", loc: "Tel Aviv" },
+    prompt: "Listen. What does Sarah say?",
+    audio: "My name is Sarah.",
+    options: [
+      { text: "My name is Sarah.", correct: true },
+      { text: "I am Sarah.", correct: false }
+    ]
+  },
+  // Track 2 — 3 items
+  {
+    id: "br-sw-is-t2-010",
+    track: 2, level: "Pre-A1+", envelope: "fill-blank",
+    sw: "is", domain: "social_interaction", lsrw: "Reading",
+    narrative: { char: "Sarah", loc: "Tel Aviv" },
+    prompt: "Sarah ___ from Tel Aviv.",
+    options: [
+      { text: "is", correct: true },
+      { text: "are", correct: false },
+      { text: "am", correct: false }
+    ]
+  },
+  {
+    id: "br-chunk-name-is-t2-034",
+    track: 2, level: "Pre-A1+", envelope: "drag-build",
+    sw: "my name is", domain: "social_interaction", lsrw: "Reading",
+    narrative: { char: "Sarah", loc: "Tel Aviv" },
+    prompt: "Build the sentence — drag in order.",
+    words: ["name", "Sarah", "My", "is"],
+    correct: ["My", "name", "is", "Sarah"]
+  },
+  {
+    id: "br-phon-ch-t2-026",
+    track: 2, level: "Pre-A1+", envelope: "mcq",
+    sw: "ch sound", domain: "language", lsrw: "Reading",
+    prompt: "Pick the word with the 'ch' sound.",
+    options: [
+      { text: "chocolate", correct: true },
+      { text: "school", correct: false },
+      { text: "shop", correct: false }
+    ]
+  },
+  // Track 3 — 3 items
+  {
+    id: "br-sw-is-t3-011",
+    track: 3, level: "A1", envelope: "fill-blank",
+    sw: "is, am", domain: "access_to_information", lsrw: "Reading",
+    narrative: { char: "Sarah", loc: "Tel Aviv" },
+    prompt: "My name ___ Sarah. I ___ from Tel Aviv.",
+    options: [
+      { text: "is, am", correct: true },
+      { text: "am, is", correct: false },
+      { text: "is, is", correct: false }
+    ]
+  },
+  {
+    id: "br-phon-ch-t3-027",
+    track: 3, level: "A1", envelope: "mcq",
+    sw: "ch vs sh", domain: "language", lsrw: "Reading",
+    multi: true,
+    prompt: "Pick TWO words with 'ch' sound (NOT 'sh').",
+    options: [
+      { text: "chair", correct: true },
+      { text: "much", correct: true },
+      { text: "fish", correct: false },
+      { text: "shop", correct: false }
+    ]
+  },
+  {
+    id: "br-chunk-im-from-t3-039",
+    track: 3, level: "A1", envelope: "mcq",
+    sw: "intro sequence", domain: "presentation", lsrw: "Reading",
+    narrative: { char: "Sarah", loc: "London" },
+    prompt: "Sarah meets a kid in London. She says...",
+    options: [
+      { text: "My name is Sarah. I'm from Tel Aviv.", correct: true },
+      { text: "Tel Aviv name is. From Sarah.", correct: false },
+      { text: "I'm Sarah from name Tel Aviv.", correct: false }
+    ]
+  },
+  // Track 4 — 3 items
+  {
+    id: "br-sw-is-t4-012",
+    track: 4, level: "A1+", envelope: "open-input",
+    sw: "is", domain: "presentation", lsrw: "Writing",
+    prompt: "Write one sentence about yourself using 'is'.",
+    example: "My friend is funny.",
+    validation: { must_include: ["is"], min_words: 4 }
+  },
+  {
+    id: "br-phon-silent-k-t4-032",
+    track: 4, level: "A1+", envelope: "open-input",
+    sw: "silent k", domain: "language", lsrw: "Writing",
+    prompt: "Write 2 words that start with silent 'k' (kn-).",
+    example: "knee",
+    validation: { min_words: 2, max_words: 3, exclude: ["knee"] }
+  },
+  {
+    id: "br-chunk-im-from-t4-040",
+    track: 4, level: "A1+", envelope: "open-input",
+    sw: "my name is + I'm from", domain: "presentation", lsrw: "Writing",
+    prompt: "Write 2 sentences introducing yourself: name + where you're from.",
+    example: "My name is Maya. I'm from Israel.",
+    validation: { min_sentences: 2, min_words: 8 }
+  }
+];
+
+// ==================== STATE ====================
+let currentIdx = 0;
+let currentTrack = 1;
+let userAnswer = null;
+let answered = false;
+
+// ==================== TRACK SELECTOR ====================
+function renderTracks() {
+  const tracks = [
+    { id: 1, name: "Foundation", level: "Pre-A1" },
+    { id: 2, name: "Intermediate", level: "Pre-A1+" },
+    { id: 3, name: "Advanced", level: "A1" },
+    { id: 4, name: "Extension", level: "A1+" }
+  ];
+  const el = document.getElementById('tracks');
+  el.innerHTML = tracks.map(t => `
+    <button class="track-chip ${t.id === currentTrack ? 'active' : ''}" data-track="${t.id}" onclick="switchTrack(${t.id})">
+      <span class="track-dot"></span>${t.name} · ${t.level}
+    </button>
+  `).join('');
+}
+
+function switchTrack(t) {
+  currentTrack = t;
+  const trackItems = ITEMS.filter(i => i.track === t);
+  if (trackItems.length > 0) {
+    currentIdx = ITEMS.indexOf(trackItems[0]);
+    answered = false;
+    userAnswer = null;
+    renderTracks();
+    renderItem();
+  }
+}
+
+// ==================== RENDER ITEM ====================
+function renderItem() {
+  const item = ITEMS[currentIdx];
+  const trackItems = ITEMS.filter(i => i.track === currentTrack);
+  const idxInTrack = trackItems.indexOf(item) + 1;
+
+  document.getElementById('progress').style.width = (((currentIdx + 1) / ITEMS.length) * 100) + '%';
+  document.getElementById('progress-text').textContent = `Item ${idxInTrack} of ${trackItems.length} · Track ${currentTrack}`;
+
+  let html = '';
+
+  if (item.narrative) {
+    html += `<div class="narrative-chip">${item.narrative.char} · ${item.narrative.loc}</div>`;
+  }
+
+  html += `<div class="prompt-text">${item.prompt}</div>`;
+
+  if (item.audio) {
+    html += `<button class="audio-btn" onclick="playAudio('${item.audio.replace(/'/g, "\\'")}')">▶ Play audio</button>`;
+  }
+
+  if (item.envelope === 'tap-match' || item.envelope === 'listen-mcq' || item.envelope === 'mcq' || item.envelope === 'fill-blank') {
+    html += `<div class="options">`;
+    item.options.forEach((opt, i) => {
+      const letter = String.fromCharCode(65 + i);
+      html += `<button class="option" onclick="selectOption(${i})" data-i="${i}"><span class="option-letter">${letter}</span>${opt.text}</button>`;
+    });
+    html += `</div>`;
+    if (item.multi) {
+      html += `<div class="input-hint">Multi-select · pick all that apply</div>`;
+    }
+  } else if (item.envelope === 'drag-build') {
+    html += `<div class="drag-bank" id="drag-bank">`;
+    item.words.forEach((w, i) => {
+      html += `<span class="drag-word" draggable="true" data-word="${w}">${w}</span>`;
+    });
+    html += `</div>`;
+    html += `<div class="drag-target" id="drag-target"><span style="color:var(--ink-mute);font-size:13px">Drop words here in order</span></div>`;
+  } else if (item.envelope === 'open-input') {
+    html += `<textarea class="open-input" placeholder="Your answer here..." id="open-input"></textarea>`;
+    if (item.example) {
+      html += `<div class="input-hint">Example: ${item.example}</div>`;
+    }
+  }
+
+  html += `<div class="nav-row">
+    <button class="btn btn-ghost" onclick="prevItem()" ${currentIdx === 0 ? 'disabled' : ''}>← Back</button>
+    <button class="btn" onclick="nextItem()">Continue →</button>
+  </div>`;
+
+  html += `<div class="item-meta">
+    <span>Track ${item.track}</span>
+    <span>${item.level}</span>
+    <span>${item.envelope}</span>
+    <span>${item.lsrw}</span>
+    <span>${item.domain}</span>
+  </div>`;
+
+  document.getElementById('item-card').innerHTML = html;
+
+  if (item.envelope === 'drag-build') setupDragDrop();
+}
+
+// ==================== INTERACTIONS ====================
+function selectOption(i) {
+  const item = ITEMS[currentIdx];
+  const buttons = document.querySelectorAll('.option');
+
+  if (item.multi) {
+    buttons[i].classList.toggle('selected');
+    return;
+  }
+
+  if (answered) return;
+  answered = true;
+  buttons.forEach((b, idx) => {
+    if (item.options[idx].correct) b.classList.add('correct');
+    if (idx === i && !item.options[idx].correct) b.classList.add('wrong');
+    b.disabled = true;
+  });
+}
+
+function playAudio(text) {
+  if (!window.speechSynthesis) {
+    alert("Speech not supported");
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-US';
+  u.rate = 0.9;
+  window.speechSynthesis.speak(u);
+}
+
+function setupDragDrop() {
+  const bank = document.getElementById('drag-bank');
+  const target = document.getElementById('drag-target');
+  const items = bank.querySelectorAll('.drag-word');
+
+  items.forEach(item => {
+    item.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/plain', item.dataset.word);
+      e.dataTransfer.effectAllowed = 'move';
+    });
+  });
+
+  target.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
+  target.addEventListener('drop', e => {
+    e.preventDefault();
+    const word = e.dataTransfer.getData('text/plain');
+    const source = bank.querySelector(`[data-word="${word}"]`);
+    if (source) {
+      if (target.querySelector('span[style]')) target.innerHTML = '';
+      target.appendChild(source);
+    }
+  });
+
+  // Allow tap on mobile / click as fallback
+  items.forEach(item => {
+    item.addEventListener('click', () => {
+      if (target.querySelector('span[style]')) target.innerHTML = '';
+      target.appendChild(item);
+    });
+  });
+}
+
+function nextItem() {
+  answered = false;
+  userAnswer = null;
+  if (currentIdx < ITEMS.length - 1) {
+    currentIdx++;
+    if (ITEMS[currentIdx].track !== currentTrack) currentTrack = ITEMS[currentIdx].track;
+    renderTracks();
+    renderItem();
+  } else {
+    document.getElementById('item-card').innerHTML = `
+      <div style="text-align:center; padding: 60px 20px;">
+        <div style="font-size: 48px; margin-bottom: 20px;">🎉</div>
+        <div style="font-size: 24px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px;">Preview complete</div>
+        <div style="color: var(--ink-soft); margin-bottom: 32px;">12 of 12 items shown · all 6 mechanics covered</div>
+        <button class="btn" onclick="currentIdx=0;currentTrack=1;renderTracks();renderItem();">Start over</button>
+      </div>
+    `;
+  }
+}
+
+function prevItem() {
+  answered = false;
+  userAnswer = null;
+  if (currentIdx > 0) {
+    currentIdx--;
+    if (ITEMS[currentIdx].track !== currentTrack) currentTrack = ITEMS[currentIdx].track;
+    renderTracks();
+    renderItem();
+  }
+}
+
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  document.documentElement.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+}
+
+// ==================== INIT ====================
+renderTracks();
+renderItem();
+</script>
+
+</body>
+</html>
