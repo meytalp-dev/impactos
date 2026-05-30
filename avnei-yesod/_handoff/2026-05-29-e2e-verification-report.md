@@ -182,3 +182,67 @@ avnei-yesod/scripts/e2e/test-results/
 ---
 
 *Verified by סוכן 28 · 2026-05-29 ערב · Playwright 1.60.0 · Chromium 1223 + WebKit 26.4*
+
+---
+
+## Addendum — סוכן Fix A/G-1 · 2026-05-30
+
+> סוכן fix A/G-1 הריץ את הbootstrap [2026-05-29-agent-fix-AG1-b7-print-button-bootstrap.md](./2026-05-29-agent-fix-AG1-b7-print-button-bootstrap.md). שני תיקונים לדיווח המקורי + finding חדש.
+
+### תיקון ל-A/G-1 — הדיווח המקורי היה חצי-נכון
+
+**הדיווח המקורי טען:** "B.7 modal has no print/PDF button" — כך נקבע בלי הפרדה בין שני המסכים שמשתמשים ב-B.7 modal.
+
+**המצב בפועל (ב-snapshot 30.5.2026):**
+
+| מסך | כפתור print | listener | print CSS | פונקציה |
+|------|-------------|----------|-----------|---------|
+| [teacher-rama.html](../underwater-app/teacher-rama.html) | ✅ קיים (line 2940) | ✅ (line 2967) | ✅ (line 1147-1191) | ✅ `printInterventionGroup` (line 2998-3059) — בונה print-area נקי A4 RTL |
+| [teacher-action.html](../underwater-app/teacher-action.html) | ❌ חסר | ❌ | ❌ | ❌ |
+
+כלומר: ה-B.7 modal עצמו (המוגדר ב-2 מסכים) **חלקי** — `teacher-rama` שלם, `teacher-action` היה חסר. ה-test ב-`06-pdf-print.spec.js` בודק רק את `teacher-rama` (`page.goto('/underwater-app/teacher-rama.html')` — line 24), שם הכפתור היה קיים כל הזמן.
+
+**תיקון שבוצע ע"י סוכן fix A/G-1 (30.5.2026):** הוסף ב-`teacher-action.html`:
+- כפתור `iv-btn-print` ב-`iv-actions` (לפני `iv-btn-done`) — pattern זהה לbootstrap (`data-iv-print`, aria-label, 🖨️).
+- listener על `[data-iv-print]` שקורא ל-`window.print()`.
+- CSS לכפתור (`#2c7a7b` · hover `#1e5f5f`) — תואם ל-`teacher-rama`.
+- `@media print` ב-`<style>` עם `visibility` toggle על `[data-iv-modal]`, הסתרת `iv-close/iv-btn-*` ו-backdrop, A4 + 1.5cm margins + RTL Heebo.
+
+### 🔴 A/G-2 — finding חדש: ה-test fail ב-`06-pdf-print` היה blocker setup, לא חוסר כפתור
+
+ה-test לא היה skipped בקוד (אין `test.skip()` חוץ מבתוך branches שלא נכנסו). הוא רץ ו-נכשל ב-line 25 (`page.locator('#morningGroupSuggestions button.mg-open').first().click()` → timeout 30s). הדיווח המקורי קרא לזה "skipped עם annotation app-gap" — אבל ב-snapshot של 30.5 הוא **כשל בפועל**, לא skipped.
+
+**Root cause:**
+- ה-HTTP server על port 8765 רץ מ-`impactos/` (root) במקום מ-`avnei-yesod/`.
+- `page.goto('/underwater-app/teacher-rama.html')` החזיר 404 (`Error code: 404 — File not found`) כי הנתיב הנכון מ-root הוא `/avnei-yesod/underwater-app/teacher-rama.html`.
+- ה-test לעולם לא הגיע ל-modal — נכשל ב-`button.mg-open` selector שלא היה ב-error page.
+- ה-page snapshot מ-`test-results/06-pdf-print-*/error-context.md` מציג: `heading "Error response" · paragraph "Error code: 404"`.
+
+**זה לא bug ב-test ולא bug ב-app — זה bug ב-runner setup.** הוראות ההרצה ב-[§הוראות הרצה](#הוראות-הרצה-לסוכן-הבא--qa) (line 116) כן ציינו `cd avnei-yesod && python -m http.server 8765` — אבל ה-server שרץ ב-snapshot של מיטל הופעל מ-impactos/.
+
+**תיקון:** סוכן fix הרג את ה-python process (PID 20684) והפעיל מחדש את ה-server מ-`avnei-yesod/`. אחרי זה — **52/52 ירוקים** (26 tests × 2 projects), כולל `06-pdf-print` שכבר עובר על שני ה-projects בלי skip.
+
+**המלצה:** להוסיף `webServer` ל-`playwright.config.js` שירוץ אוטומטית מ-`avnei-yesod/` — כדי ש-bug זה לא יחזור. הצעה:
+```js
+webServer: {
+  command: 'python -m http.server 8765',
+  url: 'http://localhost:8765/',
+  cwd: '../..',  // = avnei-yesod
+  reuseExistingServer: !process.env.CI,
+  timeout: 10_000,
+},
+```
+זה יחליף את ההרצה הידנית של ה-server, וגם יבטיח שב-CI ה-cwd יהיה הנכון.
+
+### תוצאות הריצה — אחרי תיקון A/G-1 + A/G-2
+
+```
+desktop-chrome  · 26/26 passed
+mobile-iphone   · 26/26 passed
+─────────────────────────────────
+סה"כ E2E       · 52/52
+unit suites    · 19/19 PASS (test-*.js)
+```
+
+(הדיווח המקורי דיבר על 21/21 × 2 = 42; הסוויטה כיום יש בה 26 tests פר project, כולל screenshots — 52 בסך הכל.)
+

@@ -131,6 +131,22 @@ header('3. buildCV / parseCV / cvKey');
   assert(VA.buildCV('ק', 'kamatz') === 'קָ', 'buildCV(ק, kamatz) = קָ');
   assert(VA.buildCV('ת', 'shva') === 'תְ', 'buildCV(ת, shva) = תְ');
 
+  // ב/כ/פ — חובה דגש קל (אחרת AvriNeural מבטא /v·x·f/, ראה
+  // reference-hebrew-bgd-kpt-dagesh-rule). נוסף 30.5.2026.
+  assert(VA.buildCV('ב', 'patach') === 'בַּ',  'buildCV(ב, patach) = בַּ (דגש)');
+  assert(VA.buildCV('ב', 'kamatz') === 'בָּ',  'buildCV(ב, kamatz) = בָּ (דגש)');
+  assert(VA.buildCV('ב', 'shva')   === 'בְּ',  'buildCV(ב, shva) = בְּ (דגש)');
+  assert(VA.buildCV('כ', 'patach') === 'כַּ',  'buildCV(כ, patach) = כַּ (דגש)');
+  assert(VA.buildCV('כ', 'hiriq')  === 'כִּ',  'buildCV(כ, hiriq) = כִּ (דגש)');
+  assert(VA.buildCV('פ', 'patach') === 'פַּ',  'buildCV(פ, patach) = פַּ (דגש)');
+  assert(VA.buildCV('פ', 'tzere')  === 'פֵּ',  'buildCV(פ, tzere) = פֵּ (דגש)');
+  // אותיות אחרות לא משתנות (ג/ד/ת קלות לא רלוונטי בעברית מודרנית)
+  assert(VA.buildCV('ד', 'patach') === 'דַ',  'buildCV(ד, patach) = דַ (ללא דגש)');
+  assert(VA.buildCV('ג', 'kamatz') === 'גָ',  'buildCV(ג, kamatz) = גָ (ללא דגש)');
+  // Constants חשופים
+  assert(Array.isArray(VA.BKP_LETTERS) && VA.BKP_LETTERS.length === 3, 'BKP_LETTERS = [ב,כ,פ]');
+  assert(VA.DAGESH === 'ּ', 'DAGESH = U+05BC');
+
   // invalid inputs
   assert(VA.buildCV('Z', 'patach') === '', 'buildCV(Z, patach) → "" (אות לא חוקית)');
   assert(VA.buildCV('מ', 'bogus') === '', 'buildCV(מ, bogus) → "" (vowel לא חוקי)');

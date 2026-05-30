@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#7CC4FF">
+  <title>אי 14 · סדר אירועים</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+
+  <style>
+    :root {
+      --isle14-indigo: #4F46E5;
+      --isle14-indigo-deep: #3730A3;
+      --isle14-violet: #8B5CF6;
+      --isle14-bg: linear-gradient(180deg, #C7E9FF 0%, #7CC4FF 60%, #4A9CE8 100%);
+      --isle14-card: #FFFFFF;
+      --isle14-text: #1E1B4B;
+      --isle14-text-soft: #475569;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Heebo', sans-serif;
+      background: var(--isle14-bg);
+      color: var(--isle14-text);
+      line-height: 1.5;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    h1, h2, h3 { font-family: 'Rubik', sans-serif; line-height: 1.2; }
+
+    .page-wrap { max-width: 760px; margin: 0 auto; padding: 80px 16px 60px; }
+
+    .top-bar {
+      position: fixed; top: 0; left: 0; right: 0;
+      padding: 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      z-index: 50;
+    }
+    .icon-btn {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: rgba(255,255,255,0.92); border: 1.5px solid rgba(255,255,255,0.95);
+      box-shadow: 0 6px 16px rgba(38,80,92,0.15);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--isle14-text); text-decoration: none;
+    }
+    .icon-btn:active { transform: scale(0.92); }
+    .title-pill {
+      background: rgba(255,255,255,0.92);
+      padding: 8px 22px; border-radius: 999px;
+      font-weight: 900; font-size: 18px; color: var(--isle14-indigo-deep);
+      box-shadow: 0 6px 16px rgba(38,80,92,0.15);
+    }
+
+    /* Intro card (level picker) */
+    .intro-card {
+      background: var(--isle14-card); border-radius: 24px; padding: 28px 24px;
+      box-shadow: 0 20px 50px rgba(30,27,75,0.18); text-align: center;
+      animation: fade-up 600ms ease-out;
+    }
+    @keyframes fade-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .intro-title { font-size: 26px; color: var(--isle14-indigo-deep); margin-bottom: 8px; }
+    .intro-sub { color: var(--isle14-text-soft); font-size: 16px; margin-bottom: 22px; }
+    .level-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+    .level-card {
+      background: linear-gradient(135deg, var(--isle14-indigo), var(--isle14-violet));
+      color: #fff; border: none; border-radius: 18px; padding: 18px 14px;
+      font-family: inherit; font-weight: 800; font-size: 17px;
+      cursor: pointer; box-shadow: 0 8px 20px rgba(139,92,246,0.32);
+    }
+    .level-card .lc-num { font-family: 'Rubik', sans-serif; font-size: 30px; display: block; margin-bottom: 4px; }
+    .level-card .lc-desc { font-weight: 500; font-size: 13px; opacity: 0.9; }
+
+    /* Mechanic */
+    .mechanic-story-sequence { animation: fade-up 600ms ease-out; display: flex; flex-direction: column; gap: 16px; }
+    .mss-progress {
+      align-self: center;
+      font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 16px;
+      color: var(--isle14-indigo-deep);
+      background: rgba(255,255,255,0.85);
+      padding: 6px 18px; border-radius: 999px;
+      box-shadow: 0 4px 12px rgba(38,80,92,0.1);
+    }
+    .mss-passage-card, .mss-order-card {
+      background: var(--isle14-card);
+      border-radius: 22px; padding: 22px;
+      box-shadow: 0 16px 40px rgba(30,27,75,0.14);
+    }
+    .mss-instruction {
+      font-size: clamp(18px, 3.5vw, 22px); color: var(--isle14-indigo-deep);
+      direction: rtl; text-align: right; margin-bottom: 12px;
+    }
+    .mss-audio-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: linear-gradient(135deg, var(--isle14-indigo), var(--isle14-violet));
+      color: #fff; border: none; padding: 12px 22px; border-radius: 999px;
+      font-family: inherit; font-weight: 800; font-size: 15px;
+      cursor: pointer; box-shadow: 0 6px 14px rgba(139,92,246,0.32);
+    }
+    .mss-section-title { color: var(--isle14-text-soft); font-size: 16px; margin-bottom: 10px; }
+    .mss-section-title + .mss-section-title { margin-top: 18px; }
+
+    .mss-answer-slots {
+      list-style: none; padding: 0; margin: 0;
+      display: grid; gap: 8px;
+      counter-reset: slot;
+      margin-bottom: 18px;
+    }
+    .mss-slot {
+      counter-increment: slot;
+      background: #f1f5f9; border: 2px dashed #94a3b8;
+      border-radius: 12px; padding: 14px 18px 14px 56px;
+      font-family: 'Rubik', sans-serif; font-weight: 600; font-size: 17px;
+      direction: rtl; text-align: right;
+      position: relative; min-height: 50px;
+      color: #94a3b8;
+      transition: background 200ms ease, border-color 200ms ease, color 200ms ease;
+    }
+    .mss-slot::before {
+      content: counter(slot);
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--isle14-indigo); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 15px;
+    }
+    .mss-slot--empty { color: #94a3b8; }
+    .mss-slot--filled { background: #ede9fe; border-color: var(--isle14-violet); border-style: solid; color: var(--isle14-text); }
+    .mss-slot--correct { background: #dcfce7; border-color: #16a34a; border-style: solid; color: #14532d; }
+    .mss-slot--wrong   { background: #fee2e2; border-color: #dc2626; border-style: solid; color: #7f1d1d; }
+
+    .mss-choices { display: grid; gap: 10px; }
+    .mss-choice {
+      background: #fafafa; border: 2.5px solid #cbd5e1;
+      border-radius: 14px; padding: 14px 18px;
+      font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 17px;
+      color: var(--isle14-text);
+      direction: rtl; text-align: right;
+      cursor: pointer; transition: transform 150ms ease, border-color 180ms ease;
+    }
+    .mss-choice:hover:not(:disabled) {
+      border-color: var(--isle14-violet);
+      transform: translateY(-1px);
+    }
+    .mss-choice--used { opacity: 0.35; cursor: default; }
+
+    .mss-feedback { min-height: 22px; text-align: right; font-weight: 700; margin-top: 14px; direction: rtl; }
+    .mss-feedback--ok   { color: #15803d; }
+    .mss-feedback--miss { color: #b45309; }
+
+    .mss-actions {
+      display: flex; gap: 12px; justify-content: space-between;
+      margin-top: 18px; flex-wrap: wrap;
+    }
+    .mss-btn {
+      background: linear-gradient(135deg, var(--isle14-indigo), var(--isle14-violet));
+      color: #fff; border: none; padding: 12px 22px; border-radius: 999px;
+      font-family: inherit; font-weight: 800; font-size: 15px;
+      cursor: pointer; box-shadow: 0 6px 14px rgba(139,92,246,0.32);
+    }
+    .mss-btn:disabled { opacity: 0.45; cursor: default; box-shadow: none; }
+    .mss-btn--ghost {
+      background: transparent; color: var(--isle14-indigo-deep);
+      border: 2px solid var(--isle14-indigo); box-shadow: none;
+    }
+
+    .mss-error {
+      background: #fef3c7; border: 1px dashed #f59e0b; border-radius: 12px;
+      padding: 16px; color: #92400e; text-align: center; font-weight: 600;
+    }
+
+    .summary-card {
+      background: var(--isle14-card); border-radius: 24px; padding: 28px 22px;
+      text-align: center; box-shadow: 0 16px 40px rgba(30,27,75,0.14);
+      animation: fade-up 600ms ease-out;
+    }
+    .summary-title { font-size: 24px; color: var(--isle14-indigo-deep); margin-bottom: 8px; }
+    .summary-score { font-family: 'Rubik', sans-serif; font-size: 48px; font-weight: 900; color: var(--isle14-violet); margin: 12px 0; }
+    .summary-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
+    .summary-btn {
+      background: linear-gradient(135deg, var(--isle14-indigo), var(--isle14-violet));
+      color: #fff; border: none; padding: 14px 26px; border-radius: 999px;
+      font-family: inherit; font-weight: 800; font-size: 16px; cursor: pointer;
+      box-shadow: 0 8px 20px rgba(139,92,246,0.3); text-decoration: none; display: inline-block;
+    }
+    .summary-btn--ghost {
+      background: transparent; color: var(--isle14-indigo-deep);
+      border: 2px solid var(--isle14-indigo); box-shadow: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .intro-card, .mechanic-story-sequence, .summary-card { animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="top-bar">
+  <a href="stage-14-island.html" class="icon-btn" aria-label="חזרה לאי 14">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+  <div class="title-pill">סדר אירועים</div>
+  <div style="width:52px;height:52px;" aria-hidden="true"></div>
+</header>
+
+<main class="page-wrap">
+
+  <section id="introSection" class="intro-card">
+    <h1 class="intro-title">בחרי רמה</h1>
+    <p class="intro-sub">סיפור בינוני או ארוך — את תסדרי את האירועים בסדר הנכון.</p>
+    <div class="level-grid" role="group">
+      <button class="level-card" data-level="2" type="button">
+        <span class="lc-num">2</span>
+        <span class="lc-desc">סיפורים בינוניים</span>
+      </button>
+      <button class="level-card" data-level="3" type="button">
+        <span class="lc-num">3</span>
+        <span class="lc-desc">סיפורים ארוכים</span>
+      </button>
+    </div>
+  </section>
+
+  <section id="gameRoot" style="display:none;"></section>
+
+  <section id="summarySection" class="summary-card" style="display:none;">
+    <h1 class="summary-title">סיימת!</h1>
+    <div class="summary-score" id="summaryScore">— / —</div>
+    <p id="summaryMsg" style="color:var(--isle14-text-soft);"></p>
+    <div class="summary-actions">
+      <button class="summary-btn" id="playAgainBtn" type="button">סבב חדש</button>
+      <a class="summary-btn summary-btn--ghost" href="stage-14-island.html">חזרה לאי 14</a>
+    </div>
+  </section>
+
+</main>
+
+<script src="js/state.js"></script>
+<script src="js/shared/bkt.js"></script>
+<script src="js/shared/oral-skill-adapter.js"></script>
+<script src="js/templates/mechanic-story-sequence.js"></script>
+
+<script>
+  (function () {
+    const studentId = localStorage.getItem('avnei-yesod-current-student') || 'local';
+    const intro   = document.getElementById('introSection');
+    const root    = document.getElementById('gameRoot');
+    const summary = document.getElementById('summarySection');
+    const score   = document.getElementById('summaryScore');
+    const msg     = document.getElementById('summaryMsg');
+    const again   = document.getElementById('playAgainBtn');
+
+    const params = new URLSearchParams(location.search);
+    const presetLevel = parseInt(params.get('level'), 10);
+    if ([2,3].includes(presetLevel)) startLevel(presetLevel);
+
+    document.querySelectorAll('.level-card').forEach(btn => {
+      btn.addEventListener('click', () => startLevel(parseInt(btn.dataset.level, 10)));
+    });
+
+    let currentLevel = null;
+    function startLevel(level) {
+      currentLevel = level;
+      intro.style.display = 'none';
+      summary.style.display = 'none';
+      root.style.display = '';
+      root.innerHTML = '';
+
+      window.AvneiMechanicStorySequence.init({
+        studentId, level,
+        batchSize: 4,
+        mountRoot: root,
+        onComplete: (payload) => {
+          root.style.display = 'none';
+          summary.style.display = '';
+          const pct = payload.total > 0 ? Math.round((payload.correct / payload.total) * 100) : 0;
+          score.textContent = payload.correct + ' / ' + payload.total;
+          msg.textContent = (pct >= 70)
+            ? 'כל הכבוד! הצלחת ב-' + pct + '%.'
+            : 'ענית נכון על ' + pct + '%. ננסה שוב?';
+        },
+      });
+      window.AvneiMechanicStorySequence.start();
+    }
+
+    again.addEventListener('click', () => {
+      if (currentLevel) startLevel(currentLevel);
+      else { summary.style.display = 'none'; intro.style.display = ''; }
+    });
+  })();
+</script>
+
+</body>
+</html>

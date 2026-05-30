@@ -7,6 +7,85 @@
 
 ---
 
+## 🖨️ סוכן Fix A/G-1 — B.7 modal print button (teacher-action) + test setup fix
+
+**סטטוס:** ✅ הסתיים · 52/52 E2E ירוקים (story 7 כבר לא skipped) · 19/19 unit suites ירוקים · 0 regressions · ממתין לאישור פוש
+**תאריך:** 2026-05-30
+**שיחה:** Claude Code · Opus 4.7 · 1M context · VS Code · impactos · Fresh Context
+**Handoff:** `_handoff/2026-05-29-agent-fix-AG1-b7-print-button-bootstrap.md` (commit 6a68d9b)
+**Commit:** טרם נדחף (ממתין לאישור מיטל)
+
+**גילוי לפני עבודה — bootstrap היה מבוסס על הנחה שגויה:**
+- bootstrap קבע שכפתור הדפסה חסר ב-**שני** המסכים. בפועל teacher-rama.html כבר היה עם הכל (כפתור line 2940 · listener line 2967 · CSS line 1121 · `printInterventionGroup` 2998-3059). רק teacher-action.html היה חסר.
+- ה-test לא היה skipped בקוד — הוא רץ ונכשל ב-line 25 כי ה-HTTP server על port 8765 רץ מ-`impactos/` במקום מ-`avnei-yesod/` → 404 על `/underwater-app/teacher-rama.html`.
+
+**משימה כפי שמיטל אישרה (אחרי בירור):** גם וגם — להוסיף ב-teacher-action.html + לחקור ה-test fail + לעדכן את ה-e2e report.
+
+**קבצים שעודכנו:**
+- `avnei-yesod/underwater-app/teacher-action.html`:
+  - כפתור `iv-btn-print` ב-`iv-actions` (לפני `iv-btn-done`) — `data-iv-print`, `aria-label="הדפיסי את הסקריפט"`, 🖨️ הדפיסי.
+  - `backdrop.querySelectorAll('[data-iv-print]')...click → window.print()`.
+  - CSS לכפתור (`#2c7a7b` · hover `#1e5f5f`) — תואם teacher-rama.
+  - `@media print` בסוף `<style>`: `visibility` toggle על `[data-iv-modal]`, הסתרת iv-close/btn-*, A4 + 1.5cm margins + RTL Heebo, `page-break-inside: avoid` ל-`.iv-stage`.
+- `avnei-yesod/_handoff/2026-05-29-e2e-verification-report.md`:
+  - Addendum בסוף: תיקון לדיווח המקורי של A/G-1 (הוא היה חצי-נכון), finding חדש A/G-2 (test setup blocker), המלצה ל-`webServer` ב-playwright.config.
+
+**אסור-לגעת (לא נגעתי):**
+- ✅ `teacher-rama.html` (כפתור הדפסה היה קיים, לא נדרשה עבודה)
+- ✅ `bodyHtml` / logic של `recordIntervention`
+- ✅ interventions/*.json · moy-items.json · packs/*
+- ✅ קבצים של סוכנים 29/31 (js/shared/* · stage-4-* · stage-14-*)
+
+**Decisions:**
+- ✅ הרגתי python process (PID 20684) שרץ מ-impactos/ ב-port 8765 + הפעלתי מחדש מ-avnei-yesod/ (אחרי אישור מיטל).
+- ✅ Pattern הדפסה ב-teacher-action = הפשוט (visibility toggle על modal) כפי ש-bootstrap הציע, ולא print-area pattern של teacher-rama. הסיבה: teacher-action בונה את ה-modal עם כל המידע כבר ב-DOM; teacher-rama צריך rebuild כי הוא מציג גם group-students עם פרטי-ילדה שלא במודל. שני ה-patterns תקפים — בחרתי לכל מסך את מה שמתאים לו.
+
+**Findings:**
+1. **🟡 A/G-2 (חדש):** `webServer` חסר ב-`playwright.config.js`. כל המקום שמתעד הרצה (`_handoff/2026-05-29-e2e-verification-report.md` line 116) מציין `cd avnei-yesod && python -m http.server 8765` אבל זה ידני; אם ה-server שכבר רץ הופעל מ-cwd שגוי, כל ה-tests נכשלים על 404. המלצה ב-addendum.
+2. **🟢 print-area discrepancy:** teacher-rama משתמש ב-print-area pattern (build clean A4 layout), teacher-action משתמש ב-visibility-toggle pattern. שניהם עובדים. post-pilot להחליט אם לאחד.
+
+**Test results:**
+- ✅ E2E: **52/52 ירוקים** (26 tests × 2 projects). `06-pdf-print.spec.js` עובר על desktop-chrome ו-mobile-iphone — לא skipped.
+- ✅ Unit suites: **19/19 PASS** ב-`underwater-app/scripts/test-*.js` (כל אחד דרך `node test-*.js`).
+- ⚠️ בדיקה ידנית: לא בוצעה (אין dev server browser במהלך הסשן). הקוד בדוק דרך ה-E2E test ש-stubs את `window.print` ומאמת `__printCalled >= 1`.
+
+---
+
+## 🐟 סוכן Fix אי 4 — Completion (welcome buffer + cv-build standalone)
+
+**סטטוס:** ✅ הסתיים · 18/18 test suites ירוקים · 0 regressions · ממתין לאישור פוש
+**תאריך:** 2026-05-30 (יום)
+**שיחה:** המשך אותו סשן של סוכן 29 (Opus 4.7 · 1M context · קונטקסט טרי) · ראה decision ב-bootstrap v2 line על "ממשיך בעצמך"
+**Handoff:** `_handoff/2026-05-30-island-04-completion-bootstrap.md` (v2 · commit 0d828e2)
+**Commit:** טרם נדחף (ממתין לאישור מיטל)
+
+**קבצים שנוצרו:**
+- `avnei-yesod/underwater-app/stage-4-island.html` — welcome buffer קצר: hero noni + 5 דגים + narrative card + CTA primary ל-cv-tap + CTA secondary ל-cv-build
+- `avnei-yesod/underwater-app/stage-4-cv-build.html` — standalone constructive mechanic
+- `avnei-yesod/underwater-app/js/templates/mechanic-cv-build.js` — 2-column chooser (אותיות × ניקודים) → CV מורכב + צליל MP3 + anchor word display
+
+**קבצים שעודכנו:**
+- `avnei-yesod/underwater-app/map.html` — נקודת אי 4 הוספה (right: 62% · top: 35% · בין אי 3 לאי 14)
+
+**אסור-לגעת (לא נגעתי):**
+- ✅ `stage-4-cv-tap.html` · `vowel-adapter.js` · `cv-pairs.json` · 175 MP3 · 4 mechanics קיימים (סוכן 29)
+- ✅ `bkt.js` · `mastery-check.js` · `skill-units.js` (כבר תומכים באי 4 דרך מנגנון per_letter)
+
+**Decisions:**
+- ✅ cv-build = standalone (לא mechanic 5 בסשן · נימוק נכנס ל-bootstrap v2)
+- ✅ access ל-cv-build = CTA secondary ב-island.html (לא Cardback אחרי cv-tap · ילדה רואה את 2 הפעילויות מההתחלה)
+
+**Findings:**
+1. **כפילות SVG defs** — `#fishIcon` symbol מוגדר ב-2 קבצים (stage-4-cv-tap + stage-4-cv-build). כל קובץ עצמאי = OK ל-MVP, post-pilot לחלץ ל-shared SVG include.
+2. **mechanic-cv-build לא מעדכן Sub-BKT באופן משמעותי** — כל בחירה מוגדרת `is_correct: true` (constructive, אין wrong). זה מעדכן p(שולטת) באופן חיובי דרך bktUpdate. אם פדגוגית רוצים שcv-build יהיה "exploration neutral" (לא משפיע על BKT) — צריך flag חדש ב-event-logger לדלג ingestEvent. **לא קריטי לפיילוט.**
+3. **cv-build לא משתמש ב-narrative דגים מלא** — הדג גלוי במרכז המסך, שר כשמרכיבים CV, אבל אין סבבים/journey-strip/completion overlay. זה מכוון — exploration mechanic, לא session structure.
+
+**Test results:**
+- 18/18 test suites passing · 0 regressions · 0 new tests (mechanic-cv-build הוא UI בלבד, אין logic adapter שמצדיק unit tests; sub-BKT updates נטסטים דרך test-bkt + test-event-logger הקיימים)
+- Manual smoke: 3 URLs נפתחו (map.html, stage-4-island.html, stage-4-cv-build.html). map node 4 נראה. island הוא welcome buffer. cv-build chooser עובד (לא נבדק אישית - ממתין למיטל)
+
+---
+
 ## 🧪 סוכן 28 — Verification E2E (Playwright)
 
 **סטטוס:** ✅ הסתיים · 42/42 tests ירוקים (21 desktop-chrome + 21 mobile-iphone WebKit) · 0 regressions ב-16 test suites קיימים · 2 findings מדווחים · ממתין לאישור פוש

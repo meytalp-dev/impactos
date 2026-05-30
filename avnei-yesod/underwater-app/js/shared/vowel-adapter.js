@@ -99,6 +99,12 @@
     'ל','מ','נ','ס','ע','פ','צ','ק','ר','ש','ת',
   ]);
 
+  // ב/כ/פ דורשות דגש קל ב-CV של תחילת הברה (אחרת נשמעות /v·x·f/ זהה ל-ו·ך·ף).
+  // ראה: reference-hebrew-bgd-kpt-dagesh-rule. נוסף 30.5.2026 (אחרי finding מיטל).
+  // ג·ד·ת היסטוריות הקלות בכ"ב — בעברית מודרנית לא נשמעות שונות, אין צורך בדגש לאבחנה.
+  const BKP_LETTERS = Object.freeze(['ב', 'כ', 'פ']);
+  const DAGESH = 'ּ';   // HEBREW POINT DAGESH OR MAPIQ (ּ)
+
   // letter → letter_key — תואם sound-<key>.mp3 הקיים באי 3 +
   // cv-<key>-<vowel>.mp3 שנוצר באי 4 (generate-island-04-cv-audio.py).
   const LETTER_KEY = Object.freeze({
@@ -267,6 +273,12 @@
     if (!letter || !ALL_HEBREW_LETTERS_22.includes(letter)) return '';
     const v = VOWELS_BY_ID[vowelId];
     if (!v) return '';
+    // ב/כ/פ בתחילת CV → תמיד עם דגש קל (אחרת AvriNeural ו-קוראים מבטאים /v·x·f/).
+    // Unicode order: letter + vowel + dagesh (5d1 5b7 5bc) — תואם input methods טיפוסיים
+    // ולקריאת AvriNeural. החריג היחיד הוא שווא נח באמצע מילה — לא רלוונטי ב-CV pair בודד.
+    if (BKP_LETTERS.includes(letter)) {
+      return letter + v.symbol + DAGESH;
+    }
     return letter + v.symbol;
   }
 
@@ -585,6 +597,8 @@
     PHONEME_GROUP_HE: PHONEME_GROUP_HE,
     LETTER_KEY: LETTER_KEY,
     ALL_HEBREW_LETTERS_22: ALL_HEBREW_LETTERS_22,
+    BKP_LETTERS: BKP_LETTERS,
+    DAGESH: DAGESH,
     TARGETS_KEY: TARGETS_KEY,
     FREEZE_KEY: FREEZE_KEY,
     TARGET_DURATION_DAYS: TARGET_DURATION_DAYS,

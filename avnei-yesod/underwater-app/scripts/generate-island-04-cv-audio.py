@@ -57,9 +57,16 @@ VOWELS = [
     {'id': 'segol',  'symbol': 'ֶ'},   # ֶ
 ]
 
-# טקסט שיוקרא ע"י AvriNeural — CV כ-string (אות + ניקוד).
-# AvriNeural מצוין בקריאת ניקוד בודדות, מבטא נכון.
+# טקסט שיוקרא ע"י AvriNeural — CV כ-string (אות + ניקוד + דגש אם רלוונטי).
+# ב/כ/פ בתחילת הברה חייבות דגש קל כדי שמיטל לא תקבל /v·x·f/.
+# ראה: reference-hebrew-bgd-kpt-dagesh-rule. נוסף 30.5.2026.
+BKP_LETTERS = {'ב', 'כ', 'פ'}
+DAGESH = 'ּ'   # HEBREW POINT DAGESH OR MAPIQ
+
 def cv_text(letter: str, vowel_symbol: str) -> str:
+    """letter + vowel + dagesh (אם ב/כ/פ). סדר Unicode 5d1 5b7 5bc תואם vowel-adapter."""
+    if letter in BKP_LETTERS:
+        return letter + vowel_symbol + DAGESH
     return letter + vowel_symbol
 
 

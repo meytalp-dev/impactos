@@ -428,6 +428,10 @@
     font-size: 14px; font-weight: 700; cursor: pointer;
     min-height: 44px;
   }
+  .iv-actions button.iv-btn-print {
+    background: #2c7a7b; color: white;
+  }
+  .iv-actions button.iv-btn-print:hover { background: #1e5f5f; }
   .iv-actions button.iv-btn-done {
     background: #38a169; color: white;
   }
@@ -465,6 +469,22 @@
     .ta-section { padding: 12px 12px; }
     .ta-card { padding: 12px 12px; }
     .ta-action-btn { width: 100%; }
+  }
+
+  /* Print mode — מסך B.7 modal נקי ל-A4 RTL */
+  @media print {
+    body * { visibility: hidden; }
+    [data-iv-modal], [data-iv-modal] * { visibility: visible; }
+    [data-iv-modal] {
+      position: absolute; inset: 0;
+      background: white; padding: 1cm;
+      direction: rtl; font-family: 'Heebo', system-ui, sans-serif;
+      color: #1a2332;
+    }
+    .iv-close, .iv-btn-print, .iv-btn-done, .iv-btn-cancel { display: none !important; }
+    .iv-modal-backdrop { background: transparent !important; }
+    .iv-stage { page-break-inside: avoid; }
+    @page { size: A4; margin: 1.5cm; }
   }
 </style>
 </head>
@@ -1505,6 +1525,7 @@ function openInterventionModal(groupIdx) {
     stagesHtml +
     evidenceHtml +
     '<div class="iv-actions">' +
+      '<button type="button" class="iv-btn-print" data-iv-print aria-label="הדפיסי את הסקריפט">🖨️ הדפיסי</button>' +
       '<button type="button" class="iv-btn-done" data-iv-done="' + groupIdx + '" aria-label="סמני שביצעתי היום">✓ סמני שביצעתי היום</button>' +
       '<button type="button" class="iv-btn-cancel" data-iv-cancel aria-label="סגירה">× סגירה</button>' +
     '</div>';
@@ -1533,6 +1554,9 @@ function openInterventionModal(groupIdx) {
   });
   backdrop.querySelectorAll('[data-iv-cancel]').forEach(function (btn) {
     btn.addEventListener('click', closeInterventionModal);
+  });
+  backdrop.querySelectorAll('[data-iv-print]').forEach(function (btn) {
+    btn.addEventListener('click', function () { window.print(); });
   });
   backdrop.querySelectorAll('[data-iv-done]').forEach(function (btn) {
     btn.addEventListener('click', function () {
