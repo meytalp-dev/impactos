@@ -502,6 +502,10 @@
 
   const QUESTS_STORAGE_KEY = 'island3-quests:completed';
 
+  // Demo mode: ?demo=1 ב-URL פותח את כל ה-22 quests לדמו/הצגה ללקוחות.
+  // לא משפיע על localStorage או על mastery — רק על תצוגה ונגישות לחיצה.
+  const DEMO_MODE = new URLSearchParams(window.location.search).has('demo');
+
   function getCompletedQuests() {
     try {
       return JSON.parse(localStorage.getItem(QUESTS_STORAGE_KEY) || '[]');
@@ -524,6 +528,7 @@
   function getQuestState(quest, prevQuestCompleted) {
     if (!quest.built) return 'coming-soon';
     if (isQuestCompleted(quest)) return 'completed';
+    if (DEMO_MODE) return 'current';   // demo: כל ה-quests פתוחים לדמו ללקוחות
     if (prevQuestCompleted) return 'current';
     return 'locked';
   }
