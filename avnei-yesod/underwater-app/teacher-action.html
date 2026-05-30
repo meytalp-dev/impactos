@@ -486,6 +486,18 @@
     .iv-stage { page-break-inside: avoid; }
     @page { size: A4; margin: 1.5cm; }
   }
+
+  /* === Presentation mode (?presentation=1) ===
+     מסתיר sections secondary לדמואים ללקוחות. 30.5.2026.
+     להפעיל: ?presentation=1 ב-URL. הפיך — בלי הפרמטר הכל חוזר. */
+  body.presentation #refreshBtn,
+  body.presentation .ta-solo-microcopy,
+  body.presentation [data-go-student-moy] {
+    display: none !important;
+  }
+  body.presentation .ta-hide-in-presentation {
+    display: none !important;
+  }
 </style>
 </head>
 <body>
@@ -557,12 +569,12 @@
         <div id="moyAlerts"></div>
       </div>
 
-      <div class="ta-section" style="margin-top: 12px;">
+      <div class="ta-section ta-hide-in-presentation" style="margin-top: 12px;">
         <h2 class="ta-section-title" style="margin-bottom: 10px;">🎯 נקודות לחיזוק היום</h2>
         <div id="lettersSection"></div>
       </div>
 
-      <div class="ta-section" style="margin-top: 12px;">
+      <div class="ta-section ta-hide-in-presentation" style="margin-top: 12px;">
         <h2 class="ta-section-title" style="margin-bottom: 10px;">✓ מעקב ביצוע</h2>
         <div id="executionTracking"></div>
       </div>
@@ -681,6 +693,11 @@ function _fmtDateHe(date) {
 // Boot
 // ============================================================
 function boot() {
+  // Presentation mode (?presentation=1) — מסתיר sections secondary לדמואים.
+  if (new URLSearchParams(window.location.search).has('presentation')) {
+    document.body.classList.add('presentation');
+  }
+
   // header sub
   const headerSub = document.getElementById('headerSub');
   if (headerSub) {
