@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>פולס · השונית של נוני · כיתה א׳</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --dim-adjust: #F2B844;
+  --dim-friend: #E08FAF;
+  --dim-emotion: #8B6BC0;
+  --dim-joy: #5BC0A8;
+  --reef-water: #DCEEF0;
+  --reef-sand: #FFF6E8;
+  --text: #2C2622;
+  --text-light: #6E6258;
+  --white: #FDFCFA;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: 'Heebo', sans-serif;
+  background: linear-gradient(180deg, var(--reef-water) 0%, var(--reef-sand) 100%);
+  color: var(--text);
+  user-select: none;
+  -webkit-user-select: none;
+  overscroll-behavior: contain;
+}
+
+/* ═══════ APP SHELL ═══════ */
+.app {
+  width: 100%; height: 100vh; height: 100dvh;
+  display: flex; flex-direction: column;
+  position: relative; overflow: hidden;
+}
+
+/* Reef bubbles bg */
+.bg-bubbles { position: absolute; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.bubble {
+  position: absolute;
+  background: rgba(255,255,255,.45);
+  border-radius: 50%;
+  animation: rise linear infinite;
+}
+@keyframes rise {
+  0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
+  10% { opacity: 0.7; }
+  90% { opacity: 0.4; }
+  100% { transform: translateY(-100px) scale(1); opacity: 0; }
+}
+
+/* ═══════ PROGRESS ═══════ */
+.progress {
+  position: relative; z-index: 5;
+  padding: 16px 20px 8px;
+  display: flex; gap: 6px;
+  visibility: hidden;
+}
+.progress.shown { visibility: visible; }
+.progress-dot {
+  flex: 1; height: 8px; border-radius: 4px;
+  background: rgba(0,0,0,.08); transition: background .3s;
+}
+.progress-dot.active { background: var(--dim-current, var(--dim-adjust)); }
+
+/* ═══════ SCREEN ═══════ */
+.screen {
+  flex: 1; position: relative; z-index: 1;
+  display: none; flex-direction: column;
+  padding: 12px 20px 24px;
+  overflow: hidden;
+  animation: fadeIn .35s ease-out;
+}
+.screen.active { display: flex; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════ INTRO ═══════ */
+.intro {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 32px 24px;
+}
+.intro-title {
+  font-size: 2rem; font-weight: 900;
+  margin: 20px 0 12px;
+  line-height: 1.25;
+}
+.intro-sub {
+  font-size: 1.05rem; font-weight: 500;
+  color: var(--text-light);
+  max-width: 320px;
+  line-height: 1.65;
+  margin-bottom: 28px;
+}
+.intro-nuni {
+  width: 170px; height: 178px;
+  filter: drop-shadow(0 12px 24px rgba(159,144,216,.4));
+  animation: noni-float 4s ease-in-out infinite;
+}
+@keyframes noni-float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-10px) scale(1.02); }
+}
+@keyframes noni-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.025); }
+}
+.btn-start {
+  background: linear-gradient(135deg, var(--dim-adjust), var(--dim-friend));
+  color: var(--white);
+  border: none; border-radius: 999px;
+  padding: 16px 44px;
+  font-family: 'Heebo'; font-weight: 800; font-size: 1.25rem;
+  cursor: pointer;
+  box-shadow: 0 10px 28px rgba(0,0,0,.18);
+  transition: transform .15s;
+}
+.btn-start:active { transform: scale(0.96); }
+
+/* ═══════ BRIDGE ═══════ */
+.bridge {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 32px 24px;
+}
+.bridge-scene {
+  width: 220px; height: 200px;
+  position: relative;
+  margin-bottom: 20px;
+}
+.bridge-nuni {
+  position: absolute; top: 50%; left: 50%;
+  width: 120px; height: 126px;
+  filter: drop-shadow(0 8px 16px rgba(159,144,216,.35));
+  animation: bridge-float 4s ease-in-out infinite;
+  transform-origin: center;
+}
+@keyframes bridge-float {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -55%) scale(1.03); }
+}
+.bridge-bubble {
+  position: absolute;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; font-weight: 800;
+  color: var(--white);
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  animation: floatBubble 3s ease-in-out infinite;
+}
+.bridge-bubble:nth-child(1) { background: var(--dim-adjust); top: 0; right: 10%; animation-delay: 0s; }
+.bridge-bubble:nth-child(2) { background: var(--dim-friend); top: 30%; left: 0; animation-delay: 0.4s; }
+.bridge-bubble:nth-child(3) { background: var(--dim-emotion); bottom: 10%; right: 5%; animation-delay: 0.8s; }
+.bridge-bubble:nth-child(4) { background: var(--dim-joy); bottom: 25%; left: 10%; animation-delay: 1.2s; }
+@keyframes floatBubble {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.bridge-text {
+  font-size: 1.1rem; font-weight: 600;
+  line-height: 1.8;
+  max-width: 340px;
+  color: var(--text);
+}
+.bridge-foot {
+  text-align: center;
+  padding: 20px 20px 16px;
+  position: relative; z-index: 5;
+}
+
+/* ═══════ SETUP ═══════ */
+.setup-header {
+  text-align: center;
+  padding-top: 8px;
+}
+.dim-pill {
+  display: inline-block;
+  font-weight: 700; font-size: 0.95rem;
+  padding: 6px 18px; border-radius: 999px;
+  color: var(--white);
+  margin-bottom: 12px;
+  letter-spacing: 0.05em;
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+}
+.setup-scene-wrap {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center;
+  padding: 8px 0;
+  min-height: 180px;
+}
+.setup-scene-wrap svg {
+  width: 100%; max-width: 380px;
+  height: auto; max-height: 260px;
+}
+.setup-narrative {
+  font-size: 1.15rem; font-weight: 600;
+  text-align: center; line-height: 1.8;
+  color: var(--text);
+  padding: 4px 12px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* ═══════ AUDIO BTN ═══════ */
+.audio-btn {
+  margin: 12px auto 0;
+  background: rgba(255,255,255,.85);
+  border: 1.5px solid rgba(0,0,0,.06);
+  border-radius: 999px;
+  padding: 8px 18px;
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Heebo'; font-size: 0.85rem;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: transform .15s;
+}
+.audio-btn:active { transform: scale(0.95); }
+.audio-btn.playing .audio-icon {
+  animation: pulse 0.6s ease-in-out infinite;
+}
+@keyframes pulse { 50% { transform: scale(1.25); } }
+
+/* ═══════ FOOTER ═══════ */
+.foot {
+  position: relative; z-index: 5;
+  padding: 16px 20px 24px;
+  text-align: center;
+}
+.btn-next {
+  background: var(--dim-current, var(--dim-adjust));
+  color: var(--white);
+  border: none; border-radius: 999px;
+  padding: 14px 36px;
+  font-family: 'Heebo';
+  font-weight: 800; font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0,0,0,.18);
+  transition: transform .15s, opacity .25s;
+  min-width: 180px;
+}
+.btn-next:active { transform: scale(0.96); }
+.btn-next:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: 0 4px 12px rgba(0,0,0,.1);
+}
+
+/* ═══════ QUESTION SCREEN ═══════ */
+.q-header { text-align: center; padding-top: 8px; }
+.screen-question {
+  font-size: 1.2rem; font-weight: 700;
+  text-align: center; line-height: 1.6;
+  color: var(--text);
+  margin: 4px 0 6px;
+  padding: 0 8px;
+}
+
+.game-area {
+  flex: 1; position: relative;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 320px;
+  margin: 8px 0;
+}
+.coral-track {
+  position: relative;
+  width: 220px; height: 100%;
+  max-height: 420px;
+  display: flex; flex-direction: column;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+.coral-pole {
+  position: absolute;
+  left: 50%; top: 8%; bottom: 8%;
+  width: 8px;
+  background: linear-gradient(180deg, #FF9D7A 0%, #E07B5C 50%, #C95A3F 100%);
+  border-radius: 4px;
+  transform: translateX(-50%);
+  box-shadow: 0 4px 16px rgba(201,90,63,.25);
+}
+.coral-pole::before, .coral-pole::after {
+  content: ''; position: absolute;
+  width: 18px; height: 18px;
+  background: inherit;
+  border-radius: 50%;
+}
+.coral-pole::before { top: -8px; left: -5px; }
+.coral-pole::after { bottom: -8px; left: -5px; }
+
+.face-stop {
+  position: relative; z-index: 2;
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px;
+}
+.face-circle {
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 3px solid rgba(0,0,0,.08);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.1rem;
+  box-shadow: 0 6px 16px rgba(0,0,0,.08);
+  transition: transform .25s, border-color .25s;
+}
+.face-stop.snapped .face-circle {
+  border-color: var(--dim-current, var(--dim-adjust));
+  transform: scale(1.18);
+  box-shadow: 0 10px 28px rgba(0,0,0,.18);
+}
+.face-stop[data-pos="top"] .face-circle {
+  background: linear-gradient(135deg, #FFF0AC, #FFE066);
+}
+.face-stop[data-pos="middle"] .face-circle {
+  background: linear-gradient(135deg, #FFF8E8, #F5E8C7);
+}
+.face-stop[data-pos="bottom"] .face-circle {
+  background: linear-gradient(135deg, #D6E4FF, #B0C6F0);
+}
+.face-label {
+  font-weight: 700; font-size: 0.92rem;
+  color: var(--text);
+  background: rgba(255,255,255,.7);
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+.nuni-track {
+  position: absolute;
+  left: 50%; top: 0; bottom: 0;
+  width: 100px;
+  transform: translateX(-50%);
+  z-index: 3;
+}
+.nuni {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 95px; height: 100px;
+  cursor: grab;
+  touch-action: none;
+  transition: top .35s cubic-bezier(.34,1.56,.64,1);
+  filter: drop-shadow(0 6px 14px rgba(159,144,216,.4));
+}
+.nuni.dragging {
+  cursor: grabbing;
+  transition: none;
+  filter: drop-shadow(0 12px 22px rgba(159,144,216,.55));
+  z-index: 10;
+}
+.nuni img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+.intro-nuni, .bridge-nuni { object-fit: contain; }
+
+/* ═══════ THANKS TOAST ═══════ */
+.thanks-toast {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  background: linear-gradient(135deg, rgba(255,255,255,0.96), rgba(220,238,240,0.96));
+  border: 1.5px solid rgba(0,0,0,.06);
+  padding: 22px 32px;
+  border-radius: 20px;
+  box-shadow: 0 16px 48px rgba(0,0,0,.18);
+  font-size: 1.15rem; font-weight: 700;
+  color: var(--text);
+  text-align: center;
+  z-index: 30;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .35s, transform .35s;
+  max-width: 320px;
+}
+.thanks-toast.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* ═══════ OUTRO ═══════ */
+.outro {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 32px 24px;
+}
+.outro-title {
+  font-size: 1.8rem; font-weight: 900;
+  margin: 20px 0 10px;
+  line-height: 1.3;
+}
+.outro-sub {
+  font-size: 1rem;
+  color: var(--text-light);
+  max-width: 320px;
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+.sticker {
+  width: 180px; height: 180px;
+  background: var(--white);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+  margin: 12px 0 22px;
+  box-shadow: 0 16px 40px rgba(0,0,0,.18);
+  position: relative;
+  animation: stickerPop .8s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes stickerPop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.sticker::before {
+  content: '';
+  position: absolute; inset: -8px;
+  border-radius: 50%;
+  background: conic-gradient(var(--dim-adjust), var(--dim-friend), var(--dim-emotion), var(--dim-joy), var(--dim-adjust));
+  z-index: -1;
+  animation: spin 12s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.sticker-emoji { font-size: 4.2rem; }
+.sticker-label {
+  font-weight: 800; font-size: 0.95rem;
+  color: var(--text);
+  margin-top: 4px;
+}
+
+/* ═══════ DEMO BANNER ═══════ */
+.demo-banner {
+  position: fixed; bottom: 4px; left: 4px;
+  background: rgba(0,0,0,.5); color: white;
+  font-size: 0.65rem; padding: 3px 8px;
+  border-radius: 4px; z-index: 100;
+  font-family: monospace;
+}
+
+@media (max-height: 640px) {
+  .screen-question { font-size: 1.08rem; }
+  .setup-narrative { font-size: 1.02rem; }
+  .face-circle { width: 52px; height: 52px; font-size: 1.8rem; }
+  .nuni { width: 82px; height: 86px; }
+  .coral-track { max-height: 360px; }
+  .setup-scene-wrap { min-height: 140px; }
+  .bridge-scene { width: 180px; height: 160px; }
+  .bridge-nuni { width: 100px; height: 105px; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Bubbles bg -->
+  <div class="bg-bubbles" id="bubbles"></div>
+
+  <!-- Progress (hidden during intro/bridge) -->
+  <div class="progress" id="progress">
+    <div class="progress-dot"></div>
+    <div class="progress-dot"></div>
+    <div class="progress-dot"></div>
+    <div class="progress-dot"></div>
+  </div>
+
+  <!-- ═══════ INTRO ═══════ -->
+  <div class="screen active" id="screen-intro">
+    <div class="intro">
+      <img class="intro-nuni" src="assets/noni-happy.png" alt="נוני">
+      <h1 class="intro-title">שָׁלוֹם!<br>אֲנִי נוּנִי 🐠</h1>
+      <p class="intro-sub">עִזְרוּ לִי לְהָבִין<br>אֵיךְ הָיָה לִי בַּשּׁוֹנִית הַשָּׁבוּעַ</p>
+      <button class="btn-start" onclick="goBridge()">בּוֹאוּ נַתְחִיל ←</button>
+    </div>
+  </div>
+
+  <!-- ═══════ BRIDGE ═══════ -->
+  <div class="screen" id="screen-bridge">
+    <div class="bridge">
+      <div class="bridge-scene">
+        <div class="bridge-bubble">1</div>
+        <div class="bridge-bubble">2</div>
+        <div class="bridge-bubble">3</div>
+        <div class="bridge-bubble">4</div>
+        <img class="bridge-nuni" src="assets/noni-idle.png" alt="נוני">
+      </div>
+      <p class="bridge-text">
+        נוּנִי צָרִיךְ עֶזְרָה קְטַנָּה.<br>
+        בְּכָל פַּעַם תִּבְחֲרוּ אֵיךְ נִרְאֶה לָכֶם שֶׁנוּנִי מַרְגִּישׁ.<br>
+        <span style="color: var(--text-light); font-size: 0.95rem;">אֵין תְּשׁוּבָה נְכוֹנָה אוֹ לֹא נְכוֹנָה.</span>
+      </p>
+      <button class="audio-btn" onclick="playBridgeAudio()">
+        <span class="audio-icon">🔊</span>
+        <span>שִׁמְעוּ שׁוּב</span>
+      </button>
+    </div>
+    <div class="bridge-foot">
+      <button class="btn-next" id="btn-bridge-next" onclick="startFirstDim()" style="--dim-current: var(--dim-adjust);">מוּכָנִים? ←</button>
+    </div>
+  </div>
+
+  <!-- ═══════ SETUP (content swapped per dim) ═══════ -->
+  <div class="screen" id="screen-setup">
+    <div class="setup-header">
+      <span class="dim-pill" id="setup-pill"></span>
+    </div>
+    <div class="setup-scene-wrap" id="setup-scene"></div>
+    <p class="setup-narrative" id="setup-narrative"></p>
+    <button class="audio-btn" id="setup-audio-btn" onclick="playSetupAudio()">
+      <span class="audio-icon">🔊</span>
+      <span>שִׁמְעוּ שׁוּב</span>
+    </button>
+    <div class="foot">
+      <button class="btn-next" id="btn-setup-next" disabled onclick="goQuestion()">מוּכָנִים? ←</button>
+    </div>
+  </div>
+
+  <!-- ═══════ QUESTION (content swapped per dim) ═══════ -->
+  <div class="screen" id="screen-question">
+    <div class="q-header">
+      <span class="dim-pill" id="q-pill"></span>
+      <h2 class="screen-question" id="question-text"></h2>
+      <button class="audio-btn" id="q-audio-btn" onclick="playQuestionAudio()">
+        <span class="audio-icon">🔊</span>
+        <span>שִׁמְעוּ שׁוּב</span>
+      </button>
+    </div>
+
+    <div class="game-area">
+      <div class="coral-track">
+        <div class="coral-pole"></div>
+
+        <div class="face-stop" data-pos="top" data-score="3">
+          <div class="face-circle">😊</div>
+          <span class="face-label">כֵּן, הַרְבֵּה</span>
+        </div>
+
+        <div class="face-stop" data-pos="middle" data-score="2">
+          <div class="face-circle">😐</div>
+          <span class="face-label">קְצָת</span>
+        </div>
+
+        <div class="face-stop" data-pos="bottom" data-score="1">
+          <div class="face-circle">😞</div>
+          <span class="face-label">לֹא</span>
+        </div>
+
+        <div class="nuni-track">
+          <div class="nuni" id="nuni" style="top: 50%;">
+            <img src="assets/noni-idle.png" alt="נוני" draggable="false">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <button class="btn-next" id="btn-q-next" disabled onclick="answerAndAdvance()">הַבָּאָה ←</button>
+    </div>
+  </div>
+
+  <!-- ═══════ OUTRO ═══════ -->
+  <div class="screen" id="screen-outro">
+    <div class="outro">
+      <h1 class="outro-title">תּוֹדָה שֶׁעֲזַרְתֶּם לְנוּנִי 🐠</h1>
+      <div class="sticker">
+        <div class="sticker-emoji" id="sticker-emoji">⭐</div>
+        <div class="sticker-label" id="sticker-label">כּוֹכָב הַשּׁוֹנִית</div>
+      </div>
+      <p class="outro-sub">נִתְרָאֶה בַּשּׁוֹנִית<br>בַּפַּעַם הַבָּאָה 🌊</p>
+      <button class="btn-start" onclick="resetDemo()">פּוֹלְס חָדָשׁ</button>
+    </div>
+  </div>
+
+  <!-- Thanks toast -->
+  <div class="thanks-toast" id="thanks-toast"></div>
+
+  <!-- Demo banner -->
+  <div class="demo-banner">DEMO v3 · audio=TTS</div>
+</div>
+
+<!-- Shared NUNI SVG — Real NUNI octopus from avnei-yesod -->
+<svg width="0" height="0" style="position:absolute;">
+  <defs>
+    <symbol id="nuni-svg" viewBox="0 0 400 420">
+      <!-- Gradients -->
+      <radialGradient id="nuni-body-grad" cx="42%" cy="38%" r="62%">
+        <stop offset="0%" stop-color="#EFE9FF"/>
+        <stop offset="55%" stop-color="#D9D2FF"/>
+        <stop offset="100%" stop-color="#BFB4F2"/>
+      </radialGradient>
+      <radialGradient id="nuni-belly-grad" cx="50%" cy="35%" r="65%">
+        <stop offset="0%" stop-color="#FFE7EA"/>
+        <stop offset="70%" stop-color="#FFD3D8"/>
+        <stop offset="100%" stop-color="#F5B8C0"/>
+      </radialGradient>
+      <radialGradient id="nuni-eye-shine" cx="32%" cy="28%" r="60%">
+        <stop offset="0%" stop-color="#3A3556"/>
+        <stop offset="100%" stop-color="#1E1A38"/>
+      </radialGradient>
+      <clipPath id="nuni-belly-clip"><ellipse cx="200" cy="215" rx="92" ry="74"/></clipPath>
+      <clipPath id="nuni-eye-l-clip"><circle cx="158" cy="175" r="22"/></clipPath>
+      <clipPath id="nuni-eye-r-clip"><circle cx="242" cy="175" r="22"/></clipPath>
+
+      <!-- 8 Arms -->
+      <path d="M 132 270 C 90 305, 65 340, 60 380 C 60 392, 78 396, 88 386 C 96 360, 112 335, 138 318 Z" fill="url(#nuni-body-grad)" stroke="#9D90D8" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M 142 280 C 122 330, 108 360, 110 400 C 110 412, 128 414, 134 402 C 140 370, 148 340, 162 312 Z" fill="url(#nuni-body-grad)" stroke="#9D90D8" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M 162 296 C 158 342, 156 372, 168 402 C 172 412, 188 410, 188 398 C 186 366, 188 336, 182 304 Z" fill="url(#nuni-body-grad)" stroke="#9D90D8" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M 188 302 C 196 348, 200 380, 210 408 C 214 418, 230 416, 228 404 C 224 374, 216 344, 208 308 Z" fill="url(#nuni-body-grad)" stroke="#9D90D8" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M 212 302 C 220 348, 226 380, 238 408 C 242 418, 258 416, 256 404 C 252 374, 244 344, 236 308 Z" fill="url(#nuni-body-grad)" stroke="#9D90D8" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M 238 296 C 242 342, 244 372, 232 402 C 228 412, 212 410, 212 398 C 214 366, 212 336, 218 304 Z" fill="url(#nuni-body-grad)" stroke="#9D90D8" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M 258 280 C 278 330, 292 360, 290 400 C 290 412, 272 414, 266 402 C 260 370, 252 340, 238 312 Z" fill="url(#nuni-body-grad)" stroke="#9D90D8" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M 268 270 C 310 305, 335 340, 340 380 C 340 392, 322 396, 312 386 C 304 360, 288 335, 262 318 Z" fill="url(#nuni-body-grad)" stroke="#9D90D8" stroke-width="2" stroke-linejoin="round"/>
+
+      <!-- Head/Body -->
+      <path d="M 200 70 C 130 70, 90 130, 90 200 C 90 250, 110 285, 130 300 L 270 300 C 290 285, 310 250, 310 200 C 310 130, 270 70, 200 70 Z" fill="url(#nuni-body-grad)" stroke="#9D90D8" stroke-width="2.5" stroke-linejoin="round"/>
+
+      <!-- Belly -->
+      <g clip-path="url(#nuni-belly-clip)">
+        <rect x="100" y="140" width="200" height="180" fill="url(#nuni-belly-grad)"/>
+        <circle cx="178" cy="245" r="3.5" fill="#FFF" opacity="0.7"/>
+        <circle cx="208" cy="262" r="2.5" fill="#FFF" opacity="0.6"/>
+        <circle cx="232" cy="240" r="3" fill="#FFF" opacity="0.65"/>
+      </g>
+      <ellipse cx="200" cy="215" rx="92" ry="74" fill="none" stroke="#E8C8CE" stroke-width="1.5" opacity="0.6"/>
+
+      <!-- Head highlights -->
+      <ellipse cx="158" cy="118" rx="22" ry="12" fill="#FFFFFF" opacity="0.55" transform="rotate(-22 158 118)"/>
+      <ellipse cx="138" cy="138" rx="8" ry="5" fill="#FFFFFF" opacity="0.4" transform="rotate(-22 138 138)"/>
+
+      <!-- Cheeks -->
+      <circle cx="138" cy="200" r="14" fill="#FFD3D8" opacity="0.7"/>
+      <circle cx="262" cy="200" r="14" fill="#FFD3D8" opacity="0.7"/>
+
+      <!-- Left eye -->
+      <circle cx="158" cy="175" r="22" fill="#FFFFFF"/>
+      <circle cx="158" cy="175" r="20" fill="url(#nuni-eye-shine)"/>
+      <circle cx="152" cy="168" r="6.5" fill="#FFFFFF"/>
+      <circle cx="164" cy="180" r="2.5" fill="#FFFFFF" opacity="0.8"/>
+
+      <!-- Right eye -->
+      <circle cx="242" cy="175" r="22" fill="#FFFFFF"/>
+      <circle cx="242" cy="175" r="20" fill="url(#nuni-eye-shine)"/>
+      <circle cx="236" cy="168" r="6.5" fill="#FFFFFF"/>
+      <circle cx="248" cy="180" r="2.5" fill="#FFFFFF" opacity="0.8"/>
+
+      <!-- Mouth -->
+      <path d="M 188 232 Q 200 246 212 232" fill="none" stroke="#9D6B73" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 196 238 Q 200 243 204 238 Q 204 242 200 242 Q 196 242 196 238 Z" fill="#FFB0B8" opacity="0.85"/>
+    </symbol>
+  </defs>
+</svg>
+
+<script>
+// ═══════ DIMENSIONS — V3 with setups ═══════
+const DIMENSIONS = [
+  {
+    id: 'adjust',
+    name: 'מָקוֹם',
+    color: '#F2B844',
+    setupNarrative: 'כָּל בֹּקֶר נוּנִי מַגִּיעַ לַשּׁוֹנִית.<br>יֵשׁ בְּקָרִים שֶׁקַּל לוֹ,<br>וְיֵשׁ בְּקָרִים שֶׁקְּצָת פָּחוֹת.',
+    setupSpeak: 'כל בוקר נוני מגיע לשונית. יש בקרים שקל לו, ויש בקרים שקצת פחות.',
+    question: 'הַאִם נוּנִי מַרְגִּישׁ טוֹב<br>כְּשֶׁהוּא בָּא לַשּׁוֹנִית בַּבֹּקֶר?',
+    questionSpeak: 'האם נוני מרגיש טוב כשהוא בא לשונית בבוקר?',
+    scene: sceneAdjust
+  },
+  {
+    id: 'friend',
+    name: 'חֲבֵרִים',
+    color: '#E08FAF',
+    setupNarrative: 'בַּשּׁוֹנִית יֵשׁ דָּגִים שֶׁאוֹהֲבִים לְשַׂחֵק יַחַד.<br>לִפְעָמִים נוּנִי מִצְטָרֵף,<br>וְלִפְעָמִים הוּא מְחַפֵּשׂ עִם מִי.',
+    setupSpeak: 'בשונית יש דגים שאוהבים לשחק יחד. לפעמים נוני מצטרף, ולפעמים הוא מחפש עם מי.',
+    question: 'הַאִם יֵשׁ לְנוּנִי<br>עִם מִי לְשַׂחֵק בַּשּׁוֹנִית?',
+    questionSpeak: 'האם יש לנוני עם מי לשחק בשונית?',
+    scene: sceneFriend
+  },
+  {
+    id: 'emotion',
+    name: 'רֶגֶשׁ',
+    color: '#8B6BC0',
+    setupNarrative: 'לִפְעָמִים קוֹרֶה מַשֶּׁהוּ מַרְגִּיז.<br>נוּנִי עוֹצֵר רֶגַע,<br>וּמְנַסֶּה לְהֵרָגַע.',
+    setupSpeak: 'לפעמים קורה משהו מרגיז. נוני עוצר רגע, ומנסה להירגע.',
+    question: 'כְּשֶׁנוּנִי כּוֹעֵס,<br>הַאִם יֵשׁ מַשֶּׁהוּ שֶׁעוֹזֵר לוֹ לְהֵרָגַע?',
+    questionSpeak: 'כשנוני כועס, האם יש משהו שעוזר לו להירגע?',
+    scene: sceneEmotion
+  },
+  {
+    id: 'joy',
+    name: 'לִגַּלּוֹת',
+    color: '#5BC0A8',
+    setupNarrative: 'נוּנִי מָצָא בַּשּׁוֹנִית מַשֶּׁהוּ שֶׁעוֹד לֹא הִכִּיר.<br>הוּא מִסְתַּכֵּל,<br>וְחוֹשֵׁב מָה זֶה.',
+    setupSpeak: 'נוני מצא בשונית משהו שעוד לא הכיר. הוא מסתכל, וחושב מה זה.',
+    question: 'הַאִם כֵּיף לְנוּנִי<br>לְגַלּוֹת מַשֶּׁהוּ חָדָשׁ?',
+    questionSpeak: 'האם כיף לנוני לגלות משהו חדש?',
+    scene: sceneJoy
+  }
+];
+
+// Universal face labels
+const FACE_LABELS = { top: 'כֵּן, הַרְבֵּה', middle: 'קְצָת', bottom: 'לֹא' };
+
+// Thanks transitions — random, neutral, plural form
+const THANKS = [
+  { display: 'תּוֹדָה שֶׁעֲזַרְתֶּם לִי.', speak: 'תודה שעזרתם לי.' },
+  { display: 'זֶה עוֹזֵר לִי לְהָבִין.', speak: 'זה עוזר לי להבין.' },
+  { display: 'תּוֹדָה. נַעֲבֹר לַבּוּעָה הַבָּאָה.', speak: 'תודה. נעבור לבועה הבאה.' },
+  { display: 'שָׁמַעְתִּי אֶת הַתְּשׁוּבָה.', speak: 'שמעתי את התשובה.' }
+];
+
+const STICKERS = [
+  { emoji: '⭐', label: 'כּוֹכַב הַשּׁוֹנִית' },
+  { emoji: '🐚', label: 'צֶדֶף הַזָּהָב' },
+  { emoji: '🪸', label: 'אַלְמוֹג מְיֻחָד' },
+  { emoji: '🐢', label: 'הַצָּב הֶחָכָם' },
+  { emoji: '🌊', label: 'גַּל הַחֲבֵרוּת' },
+  { emoji: '🦀', label: 'הַסַּרְטָן הַשָּׂמֵחַ' },
+  { emoji: '🐙', label: 'הַתַּמְנוּן הַזָּרִיז' }
+];
+
+// ═══════ SETUP SCENES (inline SVG per dim) ═══════
+function sceneAdjust() {
+  return `<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="morn" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#FFF0C8" stop-opacity="0.7"/>
+        <stop offset="1" stop-color="#DCEEF0" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <rect x="0" y="0" width="400" height="180" fill="url(#morn)"/>
+    <!-- Sand bottom -->
+    <path d="M0 240 Q200 230 400 240 L400 260 L0 260 Z" fill="#FFE8C0" opacity="0.7"/>
+    <!-- Reef arch on left -->
+    <path d="M40 250 Q40 80 110 70 Q180 90 180 250" fill="#E08FAF" opacity="0.4"/>
+    <path d="M60 250 Q60 110 110 100 Q160 115 160 250" fill="#E08FAF" opacity="0.6"/>
+    <ellipse cx="110" cy="80" rx="40" ry="20" fill="#E08FAF" opacity="0.5"/>
+    <!-- Light rays -->
+    <path d="M120 0 L100 200" stroke="#FFE066" stroke-width="2" opacity="0.3"/>
+    <path d="M160 0 L150 200" stroke="#FFE066" stroke-width="2" opacity="0.2"/>
+    <!-- NUNI on right -->
+    <image href="assets/noni-idle.png" x="220" y="50" width="140" height="140" preserveAspectRatio="xMidYMid meet"/>
+    <!-- Bubbles -->
+    <circle cx="350" cy="70" r="4" fill="white" opacity="0.7"/>
+    <circle cx="360" cy="50" r="2.5" fill="white" opacity="0.6"/>
+  </svg>`;
+}
+
+function sceneFriend() {
+  return `<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
+    <!-- Sand bottom -->
+    <path d="M0 240 Q200 230 400 240 L400 260 L0 260 Z" fill="#FFE8C0" opacity="0.7"/>
+    <!-- Small fish on left, playing together -->
+    <g>
+      <!-- fish 1 (turquoise) -->
+      <ellipse cx="80" cy="100" rx="20" ry="14" fill="#5BC0A8"/>
+      <path d="M95 100 L110 90 L110 110 Z" fill="#5BC0A8"/>
+      <circle cx="72" cy="96" r="3" fill="white"/>
+      <circle cx="72" cy="96" r="1.5" fill="#2C2622"/>
+      <!-- fish 2 (purple) -->
+      <ellipse cx="130" cy="140" rx="22" ry="15" fill="#8B6BC0"/>
+      <path d="M147 140 L163 130 L163 150 Z" fill="#8B6BC0"/>
+      <circle cx="121" cy="136" r="3" fill="white"/>
+      <circle cx="121" cy="136" r="1.5" fill="#2C2622"/>
+      <!-- fish 3 (yellow, turned right toward NUNI) -->
+      <ellipse cx="190" cy="115" rx="18" ry="12" fill="#F2B844"/>
+      <path d="M175 115 L160 107 L160 123 Z" fill="#F2B844"/>
+      <circle cx="198" cy="112" r="3" fill="white"/>
+      <circle cx="200" cy="112" r="1.5" fill="#2C2622"/>
+      <!-- bubbles between -->
+      <circle cx="110" cy="65" r="4" fill="white" opacity="0.6"/>
+      <circle cx="155" cy="80" r="3" fill="white" opacity="0.5"/>
+    </g>
+    <!-- NUNI on right, a bit larger -->
+    <image href="assets/noni-idle.png" x="240" y="55" width="140" height="140" preserveAspectRatio="xMidYMid meet"/>
+  </svg>`;
+}
+
+function sceneEmotion() {
+  return `<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
+    <!-- Sand bottom -->
+    <path d="M0 240 Q200 230 400 240 L400 260 L0 260 Z" fill="#FFE8C0" opacity="0.7"/>
+    <!-- Tipped shell on left -->
+    <g transform="translate(80, 200) rotate(-25)">
+      <path d="M0 0 Q-20 -25 0 -40 Q20 -25 0 0 Z" fill="#FFB8C8" opacity="0.85"/>
+      <path d="M0 0 Q-10 -15 0 -25 Q10 -15 0 0 Z" fill="#FFA0B5" opacity="0.6"/>
+      <path d="M-2 -3 L2 -3" stroke="#8B3A4A" stroke-width="1.5" opacity="0.5"/>
+    </g>
+    <!-- Red bubble (top right) -->
+    <circle cx="280" cy="60" r="16" fill="#D86060" opacity="0.55"/>
+    <circle cx="276" cy="56" r="4" fill="white" opacity="0.7"/>
+    <!-- Blue calm bubble (top left) -->
+    <circle cx="140" cy="80" r="16" fill="#7BA3E0" opacity="0.55"/>
+    <circle cx="136" cy="76" r="4" fill="white" opacity="0.7"/>
+    <!-- NUNI center, pausing -->
+    <image href="assets/noni-thinking.png" x="140" y="55" width="140" height="140" preserveAspectRatio="xMidYMid meet"/>
+    <!-- Subtle question mark above NUNI -->
+    <text x="280" y="80" font-size="22" fill="#8B6BC0" opacity="0.55" font-weight="700">?</text>
+  </svg>`;
+}
+
+function sceneJoy() {
+  return `<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
+    <!-- Sand bottom -->
+    <path d="M0 240 Q200 230 400 240 L400 260 L0 260 Z" fill="#FFE8C0" opacity="0.7"/>
+    <!-- New plant on left, glowing -->
+    <g transform="translate(80, 235)">
+      <path d="M0 0 Q-12 -50 -6 -90 Q-2 -100 0 -90" stroke="#5BC0A8" stroke-width="3" fill="none"/>
+      <path d="M0 0 Q14 -45 6 -85 Q2 -95 0 -85" stroke="#7AC8B0" stroke-width="3" fill="none"/>
+      <ellipse cx="-7" cy="-70" rx="6" ry="3" fill="#FFE066" opacity="0.7"/>
+      <ellipse cx="5" cy="-55" rx="5" ry="2.5" fill="#FFE066" opacity="0.5"/>
+      <!-- glow -->
+      <circle cx="0" cy="-70" r="35" fill="#FFE066" opacity="0.15"/>
+    </g>
+    <!-- Sparkles -->
+    <text x="110" y="110" font-size="18" fill="#FFD040" opacity="0.7">✨</text>
+    <text x="60" y="160" font-size="14" fill="#FFD040" opacity="0.6">✨</text>
+    <!-- NUNI on right, tilted curious -->
+    <image href="assets/noni-surprised.png" x="220" y="50" width="140" height="140" preserveAspectRatio="xMidYMid meet"/>
+    <!-- Bubble -->
+    <circle cx="370" cy="80" r="4" fill="white" opacity="0.6"/>
+  </svg>`;
+}
+
+// ═══════ STATE ═══════
+let currentDim = 0;
+let responses = [];
+let interactionStartTime = 0;
+let nuniMoved = false;
+let snappedPosition = null;
+const Q_TIME_GATE_MS = 1200;
+const SETUP_TIME_GATE_MS = 2500;
+
+// URL params
+const params = new URLSearchParams(window.location.search);
+const classId = params.get('class') || 'א1';
+const sid = params.get('sid') || 'test-' + Math.random().toString(36).slice(2, 7);
+const biweek = params.get('biweek') || '1';
+const sessionId = 's-' + Date.now();
+
+// ═══════ BUBBLES BG ═══════
+(function createBubbles() {
+  const container = document.getElementById('bubbles');
+  for (let i = 0; i < 18; i++) {
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    const size = 4 + Math.random() * 18;
+    b.style.width = b.style.height = size + 'px';
+    b.style.left = Math.random() * 100 + '%';
+    b.style.animationDuration = (8 + Math.random() * 10) + 's';
+    b.style.animationDelay = (-Math.random() * 15) + 's';
+    container.appendChild(b);
+  }
+})();
+
+// ═══════ AUDIO — Web Speech API ═══════
+let hebrewVoice = null;
+function pickHebrewVoice() {
+  const voices = speechSynthesis.getVoices();
+  hebrewVoice = voices.find(v => v.lang === 'he-IL' || v.lang === 'he')
+    || voices.find(v => v.lang.startsWith('he'))
+    || null;
+}
+speechSynthesis.onvoiceschanged = pickHebrewVoice;
+pickHebrewVoice();
+
+function speak(text, onEnd) {
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'he-IL';
+  u.rate = 0.85;
+  u.pitch = 1.1;
+  if (hebrewVoice) u.voice = hebrewVoice;
+  if (onEnd) {
+    u.onend = onEnd;
+    u.onerror = onEnd;
+  }
+  speechSynthesis.speak(u);
+}
+
+function pulseBtn(btnId) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.classList.add('playing');
+  return () => btn.classList.remove('playing');
+}
+
+// ═══════ FLOW ═══════
+function goBridge() {
+  showScreen('screen-bridge');
+  // Show progress dots starting now
+  document.getElementById('progress').classList.add('shown');
+  // Unlock audio (needs user gesture first)
+  setTimeout(() => playBridgeAudio(), 400);
+  // Time-gate for bridge next button
+  setTimeout(() => {
+    document.getElementById('btn-bridge-next').disabled = false;
+  }, SETUP_TIME_GATE_MS);
+  document.getElementById('btn-bridge-next').disabled = true;
+}
+
+function playBridgeAudio() {
+  const stop = pulseBtn('btn-bridge-next');
+  const txt = 'נוני צריך עזרה קטנה. בכל פעם תבחרו איך נראה לכם שנוני מרגיש. אין תשובה נכונה או לא נכונה.';
+  speak(txt, stop);
+}
+
+function startFirstDim() {
+  currentDim = 0;
+  responses = [];
+  showSetup(0);
+}
+
+function showSetup(idx) {
+  currentDim = idx;
+  const dim = DIMENSIONS[idx];
+  document.documentElement.style.setProperty('--dim-current', dim.color);
+
+  // Pill
+  const pill = document.getElementById('setup-pill');
+  pill.textContent = dim.name;
+  pill.style.background = dim.color;
+
+  // Scene
+  document.getElementById('setup-scene').innerHTML = dim.scene();
+
+  // Narrative
+  document.getElementById('setup-narrative').innerHTML = dim.setupNarrative;
+
+  // Reset progress dots — keep prior, add current as "in progress"
+  document.querySelectorAll('.progress-dot').forEach((d, i) => {
+    d.classList.toggle('active', i <= idx);
+  });
+
+  // Next button
+  document.getElementById('btn-setup-next').disabled = true;
+
+  showScreen('screen-setup');
+
+  // Auto-play setup audio + time-gate
+  setTimeout(() => playSetupAudio(), 400);
+  setTimeout(() => {
+    document.getElementById('btn-setup-next').disabled = false;
+  }, SETUP_TIME_GATE_MS);
+}
+
+function playSetupAudio() {
+  const dim = DIMENSIONS[currentDim];
+  const btn = document.getElementById('setup-audio-btn');
+  btn.classList.add('playing');
+  speak(dim.setupSpeak, () => btn.classList.remove('playing'));
+}
+
+function goQuestion() {
+  const dim = DIMENSIONS[currentDim];
+
+  // Pill
+  const pill = document.getElementById('q-pill');
+  pill.textContent = dim.name;
+  pill.style.background = dim.color;
+
+  // Question text
+  document.getElementById('question-text').innerHTML = dim.question;
+
+  // Reset NUNI to middle
+  const nuni = document.getElementById('nuni');
+  nuni.style.top = '50%';
+  document.querySelectorAll('.face-stop').forEach(f => f.classList.remove('snapped'));
+
+  // Reset state
+  interactionStartTime = Date.now();
+  nuniMoved = false;
+  snappedPosition = null;
+  document.getElementById('btn-q-next').disabled = true;
+
+  showScreen('screen-question');
+
+  // Auto-play question audio
+  setTimeout(() => playQuestionAudio(), 300);
+}
+
+function playQuestionAudio() {
+  const dim = DIMENSIONS[currentDim];
+  const btn = document.getElementById('q-audio-btn');
+  btn.classList.add('playing');
+  speak(dim.questionSpeak, () => btn.classList.remove('playing'));
+}
+
+function answerAndAdvance() {
+  const dim = DIMENSIONS[currentDim];
+  const score = snappedPosition === 'top' ? 3 : snappedPosition === 'middle' ? 2 : 1;
+  responses.push({ dim: dim.id, score, ts: new Date().toISOString() });
+
+  // Show thanks toast briefly, then advance
+  const thanks = THANKS[Math.floor(Math.random() * THANKS.length)];
+  showThanks(thanks);
+
+  setTimeout(() => {
+    if (currentDim < DIMENSIONS.length - 1) {
+      showSetup(currentDim + 1);
+    } else {
+      showOutro();
+    }
+  }, 1700);
+}
+
+function showThanks(thanks) {
+  const toast = document.getElementById('thanks-toast');
+  toast.textContent = thanks.display;
+  toast.classList.add('show');
+  speak(thanks.speak);
+  setTimeout(() => toast.classList.remove('show'), 1500);
+}
+
+function showOutro() {
+  // Save to localStorage
+  const submission = {
+    school: 'demo', class: classId, sid, biweek, sessionId,
+    submittedAt: new Date().toISOString(),
+    responses
+  };
+  const existing = JSON.parse(localStorage.getItem('pulse-demo-responses') || '[]');
+  existing.push(submission);
+  localStorage.setItem('pulse-demo-responses', JSON.stringify(existing));
+  console.log('[PULSE] Saved submission:', submission);
+
+  // Pick sticker
+  const sticker = STICKERS[Math.floor(Math.random() * STICKERS.length)];
+  document.getElementById('sticker-emoji').textContent = sticker.emoji;
+  document.getElementById('sticker-label').textContent = sticker.label;
+
+  showScreen('screen-outro');
+  document.querySelectorAll('.progress-dot').forEach(d => d.classList.add('active'));
+
+  // Outro speech
+  setTimeout(() => speak('תודה שעזרתם לנוני. נתראה בשונית בפעם הבאה.'), 400);
+}
+
+function resetDemo() {
+  speechSynthesis.cancel();
+  document.getElementById('progress').classList.remove('shown');
+  document.querySelectorAll('.progress-dot').forEach(d => d.classList.remove('active'));
+  showScreen('screen-intro');
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ═══════ NUNI DRAG MECHANIC ═══════
+const nuni = document.getElementById('nuni');
+let isDragging = false;
+let trackRect = null;
+let dragStartY = 0;
+let dragStartTop = 0;
+const SNAP_POSITIONS = { top: 8, middle: 50, bottom: 92 };
+
+function getEventY(e) {
+  return e.touches ? e.touches[0].clientY : e.clientY;
+}
+
+function startDrag(e) {
+  e.preventDefault();
+  isDragging = true;
+  nuni.classList.add('dragging');
+  trackRect = document.querySelector('.nuni-track').getBoundingClientRect();
+  dragStartY = getEventY(e);
+  const computedTop = parseFloat(getComputedStyle(nuni).top);
+  const trackHeight = trackRect.height;
+  dragStartTop = (computedTop / trackHeight) * 100;
+}
+
+function moveDrag(e) {
+  if (!isDragging) return;
+  e.preventDefault();
+  const deltaY = getEventY(e) - dragStartY;
+  const trackHeight = trackRect.height;
+  let newPct = dragStartTop + (deltaY / trackHeight) * 100;
+  newPct = Math.max(5, Math.min(95, newPct));
+  nuni.style.top = newPct + '%';
+  if (!nuniMoved) nuniMoved = true;
+}
+
+function endDrag(e) {
+  if (!isDragging) return;
+  isDragging = false;
+  nuni.classList.remove('dragging');
+  snapToNearest();
+}
+
+function snapToNearest() {
+  const currentPct = parseFloat(nuni.style.top);
+  const distances = {
+    top: Math.abs(currentPct - SNAP_POSITIONS.top),
+    middle: Math.abs(currentPct - SNAP_POSITIONS.middle),
+    bottom: Math.abs(currentPct - SNAP_POSITIONS.bottom)
+  };
+  const nearest = Object.keys(distances).reduce((a, b) =>
+    distances[a] < distances[b] ? a : b
+  );
+  nuni.style.top = SNAP_POSITIONS[nearest] + '%';
+  snappedPosition = nearest;
+  document.querySelectorAll('.face-stop').forEach(f => {
+    f.classList.toggle('snapped', f.dataset.pos === nearest);
+  });
+  // Time-gate
+  const elapsed = Date.now() - interactionStartTime;
+  if (elapsed >= Q_TIME_GATE_MS) {
+    document.getElementById('btn-q-next').disabled = false;
+  } else {
+    setTimeout(() => {
+      document.getElementById('btn-q-next').disabled = false;
+    }, Q_TIME_GATE_MS - elapsed);
+  }
+}
+
+nuni.addEventListener('mousedown', startDrag);
+nuni.addEventListener('touchstart', startDrag, { passive: false });
+document.addEventListener('mousemove', moveDrag);
+document.addEventListener('touchmove', moveDrag, { passive: false });
+document.addEventListener('mouseup', endDrag);
+document.addEventListener('touchend', endDrag);
+document.addEventListener('touchcancel', endDrag);
+nuni.addEventListener('contextmenu', e => e.preventDefault());
+
+// Tap on a face directly
+document.querySelectorAll('.face-stop').forEach(stop => {
+  stop.addEventListener('click', () => {
+    const pos = stop.dataset.pos;
+    nuni.style.top = SNAP_POSITIONS[pos] + '%';
+    snappedPosition = pos;
+    nuniMoved = true;
+    document.querySelectorAll('.face-stop').forEach(f => {
+      f.classList.toggle('snapped', f.dataset.pos === pos);
+    });
+    const elapsed = Date.now() - interactionStartTime;
+    if (elapsed >= Q_TIME_GATE_MS) {
+      document.getElementById('btn-q-next').disabled = false;
+    } else {
+      setTimeout(() => {
+        document.getElementById('btn-q-next').disabled = false;
+      }, Q_TIME_GATE_MS - elapsed);
+    }
+  });
+});
+</script>
+
+</body>
+</html>
