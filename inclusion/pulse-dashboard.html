@@ -383,10 +383,10 @@ h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
 
 <script>
 const DIMENSIONS = [
-  { id: 'adjust', name: 'הִסְתַּגְּלוּת', color: '#F2B844' },
-  { id: 'friend', name: 'חַ בְ ר וּ ת', color: '#E08FAF' },
-  { id: 'emotion', name: 'שָׂפָה רִגְשִׁית', color: '#8B6BC0' },
-  { id: 'joy', name: 'שִׂמְחָה לִלְמֹד', color: '#5BC0A8' }
+  { id: 'adjust', name: 'מקום', color: '#F2B844' },
+  { id: 'friend', name: 'חברים', color: '#E08FAF' },
+  { id: 'emotion', name: 'רגש', color: '#8B6BC0' },
+  { id: 'joy', name: 'לגלות', color: '#5BC0A8' }
 ];
 
 // ═══════ DATA LAYER (localStorage for demo) ═══════
@@ -401,38 +401,71 @@ function clearData() {
   }
 }
 
+// 18 ילדים עם פטרנים יציבים פר מימד (baseP=0.85 → רוב פעמים 3, baseP=0.30 → רוב פעמים 1)
+const KIDS = [
+  { id: 'k01', name: 'אדם לוי',      base: { adjust: 0.85, friend: 0.80, emotion: 0.65, joy: 0.85 } },
+  { id: 'k02', name: 'תמר כהן',     base: { adjust: 0.40, friend: 0.55, emotion: 0.45, joy: 0.50 } },
+  { id: 'k03', name: 'יואב מזרחי',  base: { adjust: 0.80, friend: 0.75, emotion: 0.85, joy: 0.70 } },
+  { id: 'k04', name: 'נועה ברק',    base: { adjust: 0.55, friend: 0.25, emotion: 0.50, joy: 0.60 } },
+  { id: 'k05', name: 'אריאל פרץ',   base: { adjust: 0.70, friend: 0.65, emotion: 0.60, joy: 0.65 } },
+  { id: 'k06', name: 'מאיה גולן',   base: { adjust: 0.90, friend: 0.85, emotion: 0.75, joy: 0.90 } },
+  { id: 'k07', name: 'איתי שלום',   base: { adjust: 0.35, friend: 0.40, emotion: 0.30, joy: 0.45 } },
+  { id: 'k08', name: 'שירה דהן',    base: { adjust: 0.75, friend: 0.70, emotion: 0.55, joy: 0.55 } },
+  { id: 'k09', name: 'רוני בן-דוד', base: { adjust: 0.60, friend: 0.65, emotion: 0.70, joy: 0.35 } },
+  { id: 'k10', name: 'יונתן אבני',  base: { adjust: 0.80, friend: 0.60, emotion: 0.75, joy: 0.70 } },
+  { id: 'k11', name: 'אבישג טל',    base: { adjust: 0.65, friend: 0.55, emotion: 0.50, joy: 0.60 } },
+  { id: 'k12', name: 'אורי קליין',  base: { adjust: 0.50, friend: 0.25, emotion: 0.55, joy: 0.65 } },
+  { id: 'k13', name: 'נעמה רוזן',   base: { adjust: 0.85, friend: 0.75, emotion: 0.80, joy: 0.85 } },
+  { id: 'k14', name: 'איתמר רז',    base: { adjust: 0.55, friend: 0.60, emotion: 0.35, joy: 0.50 } },
+  { id: 'k15', name: 'יעל פלד',     base: { adjust: 0.70, friend: 0.70, emotion: 0.65, joy: 0.75 } },
+  { id: 'k16', name: 'רועי שמש',    base: { adjust: 0.80, friend: 0.65, emotion: 0.70, joy: 0.60 } },
+  { id: 'k17', name: 'ליה אזולאי',  base: { adjust: 0.45, friend: 0.50, emotion: 0.55, joy: 0.40 } },
+  { id: 'k18', name: 'נועם חיים',   base: { adjust: 0.75, friend: 0.80, emotion: 0.70, joy: 0.65 } }
+];
+
+// Hash דטרמיניסטי — אותם seeds תמיד = אותו pattern (לדמו יציב בין refreshes)
+function pseudoRand(seed) {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i++) {
+    h = Math.imul(h ^ seed.charCodeAt(i), 16777619);
+  }
+  return ((h >>> 0) % 10000) / 10000;
+}
+
 function seedData() {
-  // Generate ~20 mock submissions for class א1
   const seeds = [];
   const now = Date.now();
-  // Build trend: weeks 1-4 with mild variation
   for (let week = 1; week <= 4; week++) {
     const weekTs = new Date(now - (4 - week) * 14 * 24 * 3600 * 1000);
-    for (let kid = 0; kid < 18; kid++) {
+    KIDS.forEach(kid => {
+      // 2 ילדים לא ענו בפולס האחרון (חולים/חיסור) — דוגמה רגילה בכיתה א'
+      if (week === 4 && (kid.id === 'k06' || kid.id === 'k15')) return;
+
       const responses = DIMENSIONS.map(d => {
-        // Simulate: adjust improving, friend stable, emotion middling, joy declining
-        let basePct;
-        if (d.id === 'adjust') basePct = 0.4 + week * 0.07;
-        else if (d.id === 'friend') basePct = 0.65;
-        else if (d.id === 'emotion') basePct = 0.55;
-        else basePct = 0.75 - week * 0.08;
-        const r = Math.random();
+        // Drift: מקום משתפר לאט (התאקלמות) · לגלות יורד לאט (אופייני אחרי תחילת שנה)
+        const drift = d.id === 'adjust' ? (week - 1) * 0.03
+                    : d.id === 'joy'    ? -(week - 1) * 0.04
+                    : 0;
+        const p = Math.max(0.05, Math.min(0.95, kid.base[d.id] + drift));
+        const r = pseudoRand(kid.id + ':' + d.id + ':' + week);
         let score;
-        if (r < basePct) score = 3;
-        else if (r < basePct + 0.25) score = 2;
+        if (r < p) score = 3;
+        else if (r < p + (1 - p) * 0.6) score = 2;
         else score = 1;
         return { dim: d.id, score, ts: weekTs.toISOString() };
       });
+
       seeds.push({
         school: 'demo',
         class: 'א1',
-        sid: 'kid-' + kid,
+        sid: kid.id,
+        sidName: kid.name,
         biweek: week,
-        sessionId: 's-' + weekTs.getTime() + '-' + kid,
+        sessionId: 's-' + weekTs.getTime() + '-' + kid.id,
         submittedAt: weekTs.toISOString(),
         responses
       });
-    }
+    });
   }
   localStorage.setItem('pulse-demo-responses', JSON.stringify(seeds));
   render();
@@ -541,6 +574,73 @@ function generateHero(data) {
   return { status, statusColor, line, action };
 }
 
+// ═══════ STUDENT MAP ═══════
+let mapSortBy = 'concern';
+
+function changeMapSort(value) {
+  mapSortBy = value;
+  render();
+}
+
+function getStudentMap(classId, biweek) {
+  const all = getSubmissions().filter(s => s.class === classId);
+  const latest = all.filter(s => +s.biweek === biweek);
+  const nameById = {};
+  all.forEach(s => { if (s.sidName) nameById[s.sid] = s.sidName; });
+  const allSids = [...new Set(all.map(s => s.sid))];
+
+  return allSids.map(sid => {
+    const sub = latest.find(s => s.sid === sid);
+    const dims = {};
+    DIMENSIONS.forEach(d => {
+      const r = sub?.responses.find(rr => rr.dim === d.id);
+      dims[d.id] = r ? r.score : null;
+    });
+    const reds = Object.values(dims).filter(s => s === 1).length;
+    const yellows = Object.values(dims).filter(s => s === 2).length;
+    let status;
+    if (!sub) status = 'missing';
+    else if (reds >= 2) status = 'attention';
+    else if (reds >= 1 || yellows >= 3) status = 'watch';
+    else status = 'stable';
+    return { sid, name: nameById[sid] || sid, dims, status, reds, yellows };
+  });
+}
+
+function renderStudentMapRows(classId, biweek) {
+  const rows = getStudentMap(classId, biweek);
+
+  if (mapSortBy === 'name') {
+    rows.sort((a, b) => a.name.localeCompare(b.name, 'he'));
+  } else {
+    const order = { attention: 0, watch: 1, stable: 2, missing: 3 };
+    rows.sort((a, b) => (order[a.status] - order[b.status]) || (b.reds - a.reds));
+  }
+
+  const STATUS_LABEL = {
+    stable: 'יציב',
+    watch: 'שווה לבדוק',
+    attention: 'תשומת לב',
+    missing: 'טרם ענה'
+  };
+
+  return rows.map(r => {
+    const cells = DIMENSIONS.map(d => {
+      const s = r.dims[d.id];
+      const cls = s === 3 ? 'dot-green' : s === 2 ? 'dot-yellow' : s === 1 ? 'dot-red' : 'dot-gray';
+      const title = s ? `${s}/3` : 'אין תשובה';
+      return `<td class="map-cell"><span class="dot ${cls}" title="${title}"></span></td>`;
+    }).join('');
+    return `
+      <tr>
+        <td class="map-name">${r.name}</td>
+        ${cells}
+        <td class="map-cell"><span class="map-status status-${r.status}">${STATUS_LABEL[r.status]}</span></td>
+      </tr>
+    `;
+  }).join('');
+}
+
 // ═══════ RENDER ═══════
 function render() {
   const classId = document.getElementById('class-select').value;
@@ -586,6 +686,8 @@ function render() {
     return `<div class="trend-bar" style="height:${h}%;" data-week="פולס ${w.week}"></div>`;
   }).join('');
 
+  const overallAvg = Object.values(data.dimAverages).reduce((a,b) => a+b, 0) / 4;
+
   container.innerHTML = `
     <div class="stats">
       <div class="stat">
@@ -597,7 +699,7 @@ function render() {
         <div class="stat-label">מספר פולס</div>
       </div>
       <div class="stat">
-        <div class="stat-num" style="color:${DIMENSIONS[3].color}">${Object.values(data.dimAverages).reduce((a,b)=>a+b,0)/4 | 0 || '—'}.${(Math.round((Object.values(data.dimAverages).reduce((a,b)=>a+b,0)/4)*10)%10)}</div>
+        <div class="stat-num" style="color:${DIMENSIONS[3].color}">${overallAvg ? overallAvg.toFixed(1) : '—'}</div>
         <div class="stat-label">ממוצע כיתתי</div>
       </div>
     </div>
@@ -622,6 +724,38 @@ function render() {
     </div>
 
     ${data.alertText ? `<div class="alert">⚠️ ${data.alertText}</div>` : ''}
+
+    <div class="map-card">
+      <div class="map-header">
+        <div>
+          <h3>מיפוי תלמידים · פולס #${data.biweek}</h3>
+          <div class="map-sub">מי שווה מבט השבוע · ${data.responseCount} ענו</div>
+        </div>
+        <select class="map-sort" onchange="changeMapSort(this.value)">
+          <option value="concern" ${mapSortBy === 'concern' ? 'selected' : ''}>מיון: רמת דאגה</option>
+          <option value="name" ${mapSortBy === 'name' ? 'selected' : ''}>מיון: שם</option>
+        </select>
+      </div>
+      <div class="map-legend">
+        <span><i class="dot dot-green"></i>כן, הרבה</span>
+        <span><i class="dot dot-yellow"></i>קצת</span>
+        <span><i class="dot dot-red"></i>לא</span>
+        <span><i class="dot dot-gray"></i>טרם ענה</span>
+      </div>
+      <table class="map-table">
+        <thead>
+          <tr>
+            <th>תלמיד.ה</th>
+            ${DIMENSIONS.map(d => `<th class="col-dim" style="color:${d.color}">${d.name}</th>`).join('')}
+            <th class="col-dim">סטטוס</th>
+          </tr>
+        </thead>
+        <tbody>${renderStudentMapRows(classId, data.biweek)}</tbody>
+      </table>
+      <div class="map-caveat">
+        💡 הפולס הוא <strong>איתות</strong>, לא אבחנה. תלמיד.ה ב"תשומת לב" 3 פולסים → להוסיף תצפית מורה + לדבר עם היועצת לפני כל החלטה.
+      </div>
+    </div>
   `;
 }
 
