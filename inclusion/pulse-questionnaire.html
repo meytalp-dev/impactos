@@ -584,7 +584,7 @@ body {
   <div class="thanks-toast" id="thanks-toast"></div>
 
   <!-- Demo banner -->
-  <div class="demo-banner">DEMO v3 · audio=TTS</div>
+  <div class="demo-banner">DEMO v3 · audio=MP3 (Hila)</div>
 </div>
 
 <!-- Shared NUNI SVG — Real NUNI octopus from avnei-yesod -->
@@ -859,7 +859,28 @@ const sessionId = 's-' + Date.now();
   }
 })();
 
-// ═══════ AUDIO — Web Speech API ═══════
+// ═══════ AUDIO — MP3 (Hila Neural) + Web Speech fallback ═══════
+// 14 קליפי MP3 מוקלטים מראש ב-assets/audio/. Web Speech רץ רק אם MP3 חסר/חסום.
+const AUDIO_MAP = {
+  'נוני צריך עזרה קטנה. בכל פעם תבחרו איך נראה לכם שנוני מרגיש. אין תשובה נכונה או לא נכונה.': 'bridge',
+  'כל בוקר נוני מגיע לשונית. יש בקרים שקל לו, ויש בקרים שקצת פחות.': 'setup-adjust',
+  'בשונית יש דגים שאוהבים לשחק יחד. לפעמים נוני מצטרף, ולפעמים הוא מחפש עם מי.': 'setup-friend',
+  'לפעמים קורה משהו מרגיז. נוני עוצר רגע, ומנסה להירגע.': 'setup-emotion',
+  'נוני מצא בשונית משהו שעוד לא הכיר. הוא מסתכל, וחושב מה זה.': 'setup-joy',
+  'האם נוני מרגיש טוב כשהוא בא לשונית בבוקר?': 'question-adjust',
+  'האם יש לנוני עם מי לשחק בשונית?': 'question-friend',
+  'כשנוני כועס, האם יש משהו שעוזר לו להירגע?': 'question-emotion',
+  'האם כיף לנוני לגלות משהו חדש?': 'question-joy',
+  'תודה שעזרתם לי.': 'thanks-1',
+  'זה עוזר לי להבין.': 'thanks-2',
+  'תודה. נעבור לבועה הבאה.': 'thanks-3',
+  'שמעתי את התשובה.': 'thanks-4',
+  'תודה שעזרתם לנוני. נתראה בשונית בפעם הבאה.': 'outro'
+};
+
+const audioElement = new Audio();
+audioElement.preload = 'auto';
+
 let hebrewVoice = null;
 function pickHebrewVoice() {
   const voices = speechSynthesis.getVoices();
@@ -871,7 +892,31 @@ speechSynthesis.onvoiceschanged = pickHebrewVoice;
 pickHebrewVoice();
 
 function speak(text, onEnd) {
+  try { audioElement.pause(); audioElement.currentTime = 0; } catch (_) {}
   speechSynthesis.cancel();
+
+  const fileKey = AUDIO_MAP[text];
+  if (!fileKey) return speakViaTTS(text, onEnd);
+
+  let handled = false;
+  const finish = (err) => {
+    if (handled) return;
+    handled = true;
+    if (err) speakViaTTS(text, onEnd);
+    else if (onEnd) onEnd();
+  };
+
+  audioElement.src = `assets/audio/${fileKey}.mp3`;
+  audioElement.onended = () => finish(null);
+  audioElement.onerror = () => finish('load-error');
+
+  const playPromise = audioElement.play();
+  if (playPromise && typeof playPromise.catch === 'function') {
+    playPromise.catch(() => finish('play-error'));
+  }
+}
+
+function speakViaTTS(text, onEnd) {
   const u = new SpeechSynthesisUtterance(text);
   u.lang = 'he-IL';
   u.rate = 0.85;
