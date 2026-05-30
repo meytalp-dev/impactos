@@ -152,6 +152,38 @@
 - ❌ `git add -A` / `.` — commit סלקטיבי בלבד
 - ❌ לעדכן `_reference/` (זה copy של אבני יסוד · context בלבד)
 
+## עקרונות פדגוגיים — Distractor Design (חובה אם יוצרים items חדשים)
+
+> **התגלה ע"י מיטל ב-preview 30.5:** distractors absurd ("Tel Aviv name is. From Sarah.") חסרי-ערך פדגוגית. תלמיד.ה יבחר.ת נכון בלי לדעת אנגלית. distractors **חייבים לשקף misconceptions אמיתיים** של תלמיד.ת ז' ESL ישראלית.
+
+### Principles
+1. **Hebrew interference** — חיסור של copula 'is/am/are' (עברית אין copula present). דוגמה: "My name Sarah" (במקום "My name is Sarah").
+2. **Preposition confusion** — מקום: in/from/at/to. דוגמה: "I'm in Tel Aviv" במקום "I'm from Tel Aviv".
+3. **Person/number agreement** — am/is/are mix-ups. דוגמה: "I is" / "He am" / "We is".
+4. **Incomplete contractions** — "I from" (drop of 'm) / "She is from" vs "She from".
+5. **Word order errors שמשקפים Hebrew calque** — לא absurd random shuffles.
+6. **Spelling vs sound confusion** — `chair` (ch=/tʃ/) vs `school` (ch=/k/) — בודק misconception שכל 'ch' אותו צליל.
+7. **Common contraction errors** — `I'm` vs `Im` vs `I am` — בודק spelling standards.
+
+### Anti-patterns (אסור)
+- ❌ Distractors שאף תלמיד.ה לא היה כותב.ת אותם (random word order)
+- ❌ Distractors שמרגישים "ילדותיים מדי" (silly nonsense)
+- ❌ Distractors שכל-כך obviously wrong שגם תלמיד.ה ב-Track 1 ילחץ.ת על הנכונה ללא חשיבה
+- ❌ Distractors שכולם בודקים את אותה misconception — diversify
+
+### תיוג ב-JSON
+כל distractor חדש חייב `"_why": "<misconception קצר באנגלית/עברית>"` — לתיעוד פדגוגי + EPA tracking.
+
+דוגמה:
+```json
+{ "text": "My name Sarah. I'm from Tel Aviv.", "correct": false, "_why": "Hebrew interference — drops copula 'is'" }
+```
+
+### תקציר — 3 distractors per item (Tracks 2-3)
+1. אחד שבודק form/inflection error (am/is/are)
+2. אחד שבודק structural error (drop of copula / contraction)
+3. אחד שבודק preposition/word-choice error
+
 ## מותר לך
 
 - ✅ לערוך `english-chativa/underwater-app/` במלואו

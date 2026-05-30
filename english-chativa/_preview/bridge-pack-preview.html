@@ -95,6 +95,14 @@ body {
   font-family: inherit; font-size: 12px;
 }
 .theme-toggle:hover { background: var(--line-soft); }
+.voice-select {
+  background: var(--surface); border: 1px solid var(--line);
+  color: var(--ink-soft); cursor: pointer;
+  padding: 6px 8px; border-radius: 8px;
+  font-family: inherit; font-size: 11px;
+  max-width: 180px;
+}
+.voice-select:hover { border-color: var(--ink-mute); color: var(--ink); }
 
 /* ==================== UNIT HEADER ==================== */
 .unit-header {
@@ -311,6 +319,9 @@ body {
     </div>
   </div>
   <div class="topbar-right">
+    <select id="voice-select" class="voice-select" onchange="onVoiceChange(this.value)" title="Choose voice — Natural/Online sound best">
+      <option>Loading voices…</option>
+    </select>
     <button class="theme-toggle" onclick="toggleTheme()">◐ Theme</button>
     <div class="streak">🔥 5</div>
     <div class="user-name">Maya</div>
@@ -421,8 +432,9 @@ const ITEMS = [
     prompt: "My name ___ Sarah. I ___ from Tel Aviv.",
     options: [
       { text: "is, am", correct: true },
-      { text: "am, is", correct: false },
-      { text: "is, is", correct: false }
+      { text: "am, is", correct: false, _why: "reversed person assignment" },
+      { text: "are, am", correct: false, _why: "wrong number on 1st blank (should be singular)" },
+      { text: "is, is", correct: false, _why: "overuse of 'is' — fails to distinguish 1st vs 3rd person" }
     ]
   },
   {
@@ -446,8 +458,9 @@ const ITEMS = [
     prompt: "Sarah meets a kid in London. She says...",
     options: [
       { text: "My name is Sarah. I'm from Tel Aviv.", correct: true },
-      { text: "Tel Aviv name is. From Sarah.", correct: false },
-      { text: "I'm Sarah from name Tel Aviv.", correct: false }
+      { text: "My name Sarah. I'm from Tel Aviv.", correct: false, _why: "Hebrew interference — drops copula 'is'" },
+      { text: "My name is Sarah. I'm in Tel Aviv.", correct: false, _why: "preposition error — 'in' vs 'from'" },
+      { text: "My name is Sarah. I from Tel Aviv.", correct: false, _why: "incomplete contraction — drops 'm" }
     ]
   },
   // Track 4 — 3 items
@@ -594,15 +607,71 @@ function selectOption(i) {
   });
 }
 
+// ==================== VOICE SELECTION ====================
+let bestVoice = null;
+let allEnVoices = [];
+
+function rankVoice(v) {
+  const name = v.name.toLowerCase();
+  // Quality tiers (higher = better)
+  if (name.includes('natural')) return 100;        // Microsoft Aria/Guy/Jenny Natural
+  if (name.includes('neural')) return 95;
+  if (name.includes('online')) return 90;          // Microsoft Online voices
+  if (name.includes('google')) return 85;          // Google US English (Chrome)
+  if (name.includes('siri') || name.includes('samantha')) return 80; // Apple
+  if (name.includes('premium')) return 75;
+  if (name.includes('enhanced')) return 70;
+  if (name.includes('aria') || name.includes('jenny') || name.includes('guy')) return 60;
+  if (name.includes('zira') || name.includes('mark') || name.includes('david')) return 30; // robotic Windows defaults
+  return 50;
+}
+
+function pickBestVoice() {
+  const voices = window.speechSynthesis.getVoices();
+  allEnVoices = voices.filter(v => v.lang.startsWith('en'));
+  if (allEnVoices.length === 0) return null;
+  // Sort by quality ranking, prefer en-US
+  allEnVoices.sort((a, b) => {
+    const ra = rankVoice(a) + (a.lang === 'en-US' ? 10 : 0);
+    const rb = rankVoice(b) + (b.lang === 'en-US' ? 10 : 0);
+    return rb - ra;
+  });
+  bestVoice = allEnVoices[0];
+  updateVoiceUI();
+  return bestVoice;
+}
+
+function updateVoiceUI() {
+  const sel = document.getElementById('voice-select');
+  if (!sel) return;
+  sel.innerHTML = allEnVoices.map((v, i) =>
+    `<option value="${i}" ${v === bestVoice ? 'selected' : ''}>${v.name} (${v.lang})</option>`
+  ).join('');
+}
+
+function onVoiceChange(idx) {
+  bestVoice = allEnVoices[parseInt(idx, 10)];
+}
+
+// Voices load async in some browsers
+if (typeof window !== 'undefined' && window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = pickBestVoice;
+  // try immediately too (Chrome sometimes has them ready)
+  setTimeout(pickBestVoice, 100);
+}
+
 function playAudio(text) {
   if (!window.speechSynthesis) {
-    alert("Speech not supported");
+    alert("Speech not supported in this browser");
     return;
   }
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = 'en-US';
-  u.rate = 0.9;
+  u.rate = 0.85;     // slower for A1 learners
+  u.pitch = 1.0;
+  u.volume = 1.0;
+  if (bestVoice) u.voice = bestVoice;
   window.speechSynthesis.speak(u);
 }
 
