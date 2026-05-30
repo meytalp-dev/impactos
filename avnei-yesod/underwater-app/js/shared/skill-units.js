@@ -46,13 +46,16 @@
 //   unitKey(unit)                     → canonical "type:id" string
 //
 // Pluggable per-type adapters:
-//   _LETTER_ADAPTER  → AvneiLetterTargets (קיים)
-//   _VOWEL_ADAPTER   → ⏳ post-pilot
+//   _LETTER_ADAPTER     → AvneiLetterTargets (קיים)
+//   _VOWEL_ADAPTER      → AvneiVowelAdapter (סוכן 29 · 29.5.2026 · אי 4 CV)
+//   _ORAL_SKILL_ADAPTER → AvneiOralSkillAdapter (סוכן 31 · 29.5.2026 · אי 14)
 //   _PHON_SKILL_ADAPTER → ⏳ post-pilot
 //
 // תלות:
-//   window.AvneiLetterTargets  — להתאמת type='letter'
-//   window.AvneiBKT            — להגעה ל-getWeakestLetters עבור type='letter'
+//   window.AvneiLetterTargets      — להתאמת type='letter'
+//   window.AvneiVowelAdapter       — להתאמת type='vowel'
+//   window.AvneiOralSkillAdapter   — להתאמת type='oral-skill'
+//   window.AvneiBKT                — getWeakestLetters/getWeakestOralSkills
 //
 // טסטים: scripts/test-skill-units.js
 // ============================================================================
@@ -97,6 +100,18 @@
     return null;
   }
 
+  function _getVowelAdapter() {
+    if (typeof window !== 'undefined' && window.AvneiVowelAdapter) return window.AvneiVowelAdapter;
+    if (typeof global !== 'undefined' && global.AvneiVowelAdapter) return global.AvneiVowelAdapter;
+    return null;
+  }
+
+  function _getOralSkillAdapter() {
+    if (typeof window !== 'undefined' && window.AvneiOralSkillAdapter) return window.AvneiOralSkillAdapter;
+    if (typeof global !== 'undefined' && global.AvneiOralSkillAdapter) return global.AvneiOralSkillAdapter;
+    return null;
+  }
+
   function _getBKT() {
     if (typeof window !== 'undefined' && window.AvneiBKT) return window.AvneiBKT;
     if (typeof global !== 'undefined' && global.AvneiBKT) return global.AvneiBKT;
@@ -119,6 +134,18 @@
   function unitToDisplayHe(unit) {
     if (!_isValidUnit(unit)) return '';
     if (unit.displayHe) return unit.displayHe;
+    // vowel + letter → CV display ("מַ"), אחרת "תנועת <שם>".
+    if (unit.type === UNIT_TYPES.VOWEL) {
+      const VA = _getVowelAdapter();
+      if (unit.letter && VA && typeof VA.buildCV === 'function') {
+        const cv = VA.buildCV(unit.letter, unit.id);
+        if (cv) return cv;
+      }
+      if (VA && typeof VA.getVowelById === 'function') {
+        const v = VA.getVowelById(unit.id);
+        if (v) return 'תנועת ' + v.displayHe;
+      }
+    }
     const prefix = DISPLAY_PREFIX_BY_TYPE[unit.type] || '';
     return prefix + unit.id;
   }
@@ -138,6 +165,12 @@
       if (!LT || typeof LT.addTarget !== 'function') return false;
       return LT.addTarget(sid, unit.id, source);
     }
+    // vowel + letter → CV pair target.
+    if (unit.type === UNIT_TYPES.VOWEL && unit.letter) {
+      const VA = _getVowelAdapter();
+      if (!VA || typeof VA.addTarget !== 'function') return false;
+      return VA.addTarget(sid, unit.letter, unit.id, source);
+    }
     // Future types: no-op for now (returns false to surface "not yet supported")
     return false;
   }
@@ -148,6 +181,11 @@
       const LT = _getLetterTargets();
       if (!LT || typeof LT.removeTarget !== 'function') return false;
       return LT.removeTarget(sid, unit.id);
+    }
+    if (unit.type === UNIT_TYPES.VOWEL && unit.letter) {
+      const VA = _getVowelAdapter();
+      if (!VA || typeof VA.removeTarget !== 'function') return false;
+      return VA.removeTarget(sid, unit.letter, unit.id);
     }
     return false;
   }
@@ -164,7 +202,22 @@
         });
       } catch (e) { /* swallow */ }
     }
-    // Future types: append here
+    // vowel delegate (CV pairs)
+    const VA = _getVowelAdapter();
+    if (VA && typeof VA.getTargets === 'function') {
+      try {
+        (VA.getTargets(sid) || []).forEach(function (entry) {
+          if (!entry || !entry.letter || !entry.vowelId) return;
+          out.push({
+            type: UNIT_TYPES.VOWEL,
+            id: entry.vowelId,
+            letter: entry.letter,
+            displayHe: entry.cv,
+            strand: 1,
+          });
+        });
+      } catch (e) { /* swallow */ }
+    }
     return out;
   }
 
@@ -174,6 +227,11 @@
       const LT = _getLetterTargets();
       if (!LT || typeof LT.markFrozen !== 'function') return false;
       return LT.markFrozen(sid, unit.id, source);
+    }
+    if (unit.type === UNIT_TYPES.VOWEL && unit.letter) {
+      const VA = _getVowelAdapter();
+      if (!VA || typeof VA.markFrozen !== 'function') return false;
+      return VA.markFrozen(sid, unit.letter, unit.id, source);
     }
     return false;
   }
@@ -185,6 +243,11 @@
       if (!LT || typeof LT.removeFrozen !== 'function') return false;
       return LT.removeFrozen(sid, unit.id);
     }
+    if (unit.type === UNIT_TYPES.VOWEL && unit.letter) {
+      const VA = _getVowelAdapter();
+      if (!VA || typeof VA.removeFrozen !== 'function') return false;
+      return VA.removeFrozen(sid, unit.letter, unit.id);
+    }
     return false;
   }
 
@@ -194,6 +257,11 @@
       const LT = _getLetterTargets();
       if (!LT || typeof LT.isFrozen !== 'function') return false;
       return LT.isFrozen(sid, unit.id);
+    }
+    if (unit.type === UNIT_TYPES.VOWEL && unit.letter) {
+      const VA = _getVowelAdapter();
+      if (!VA || typeof VA.isFrozen !== 'function') return false;
+      return VA.isFrozen(sid, unit.letter, unit.id);
     }
     return false;
   }
@@ -206,6 +274,21 @@
       try {
         (LT.getFrozen(sid) || []).forEach(function (letter) {
           out.push({ type: UNIT_TYPES.LETTER, id: letter, displayHe: letter });
+        });
+      } catch (e) { /* swallow */ }
+    }
+    const VA = _getVowelAdapter();
+    if (VA && typeof VA.getFrozen === 'function') {
+      try {
+        (VA.getFrozen(sid) || []).forEach(function (entry) {
+          if (!entry || !entry.letter || !entry.vowelId) return;
+          out.push({
+            type: UNIT_TYPES.VOWEL,
+            id: entry.vowelId,
+            letter: entry.letter,
+            displayHe: entry.cv,
+            strand: 1,
+          });
         });
       } catch (e) { /* swallow */ }
     }
@@ -243,9 +326,23 @@
       } catch (e) { /* swallow */ }
     }
 
-    // Future: vowels (post-pilot)
-    // const VOWELS = _getVowelEngine();
-    // if (VOWELS && ...) { ... }
+    // Oral-skills (אי 14 · סטרנד 3) — סוכן 31 · 29.5.2026
+    if (BKT && typeof BKT.getWeakestOralSkills === 'function') {
+      try {
+        const weakOrals = BKT.getWeakestOralSkills(sid, limit);
+        if (Array.isArray(weakOrals)) {
+          weakOrals.forEach(function (entry) {
+            if (!entry || !entry.skill) return;
+            out.push({
+              type: UNIT_TYPES.ORAL_SKILL,
+              id: entry.skill,
+              displayHe: entry.displayHe || entry.skill,
+              strand: 3,
+            });
+          });
+        }
+      } catch (e) { /* swallow */ }
+    }
 
     // Future: phon-skills (post-pilot)
     // ...
@@ -258,6 +355,24 @@
   // --------------------------------------------------------------------------
   function makeLetterUnit(letter) {
     return { type: UNIT_TYPES.LETTER, id: letter, displayHe: letter, strand: 1 };
+  }
+
+  // CV pair shorthand — type='vowel' with letter attached.
+  function makeCVUnit(letter, vowelId) {
+    const unit = { type: UNIT_TYPES.VOWEL, id: vowelId, letter: letter, strand: 1 };
+    const VA = _getVowelAdapter();
+    if (VA && typeof VA.buildCV === 'function') {
+      const cv = VA.buildCV(letter, vowelId);
+      if (cv) unit.displayHe = cv;
+    }
+    return unit;
+  }
+
+  // Oral-skill shorthand — type='oral-skill' (אי 14 · סטרנד 3).
+  function makeOralSkillUnit(skillId) {
+    const OSA = _getOralSkillAdapter();
+    const displayHe = (OSA && OSA.SKILL_DISPLAY_HE && OSA.SKILL_DISPLAY_HE[skillId]) || skillId;
+    return { type: UNIT_TYPES.ORAL_SKILL, id: skillId, displayHe: displayHe, strand: 3 };
   }
 
   // --------------------------------------------------------------------------
@@ -286,6 +401,8 @@
 
     // Convenience
     makeLetterUnit: makeLetterUnit,
+    makeCVUnit: makeCVUnit,
+    makeOralSkillUnit: makeOralSkillUnit,
 
     // Validation (לטסטים)
     _isValidUnit: _isValidUnit

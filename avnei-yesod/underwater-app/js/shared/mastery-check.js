@@ -114,6 +114,17 @@ window.AvneiMasteryCheck = (function () {
       fluency_source: 'internal',
       mvp_letter_count_proxy: null,
     },
+    // אי 14 — הבנת הנשמע (סוכן 31 · 29.5.2026). מקביל ישירות ל-RAMA task 3.
+    // BKT proxy: aggregate_pKnown של 3 sub-skills (identify-hero/sequence/inference).
+    // אין סף זמן פדגוגי לפעימה 2 — fluency_source 'internal'.
+    14: {
+      rama_task: 3,
+      rama_task_name: 'הבנת טקסט מושמע',
+      accuracy_threshold_pKnown: 0.70,    // pilot: pal mastery threshold per oral-skill
+      fluency_threshold_seconds: null,    // no fluency requirement for comprehension
+      fluency_source: 'internal',
+      mvp_letter_count_proxy: null,
+    },
   });
 
   const MIN_ITEMS_PER_SESSION_DAY = 5;
@@ -645,7 +656,7 @@ window.AvneiMasteryCheck = (function () {
   const RAMA_TASKS = Object.freeze({
     1:  { name: 'זיהוי שמות אותיות',         value_threshold: 18, value_max: 22, time_threshold_sec: null, pulse: 1, islands: [3]      },
     2:  { name: 'מודעות פונולוגית',           value_threshold: 5,  value_max: 6,  time_threshold_sec: null, pulse: 1, islands: [2]      },
-    3:  { name: 'הבנת טקסט מושמע',           value_threshold: 7,  value_max: 10, time_threshold_sec: null, pulse: 2, islands: [13, 15] },
+    3:  { name: 'הבנת טקסט מושמע',           value_threshold: 7,  value_max: 10, time_threshold_sec: null, pulse: 2, islands: [13, 14, 15] },
     4:  { name: 'מודעות לשונית',              value_threshold: 16, value_max: 22, time_threshold_sec: null, pulse: 2, islands: [11]     },
     5:  { name: 'קריאת 45 צירופים מנוקדים',  value_threshold: 38, value_max: 45, time_threshold_sec: 90,   pulse: 3, islands: [4, 5]   },
     6:  { name: 'קריאת 20 מילים מוכרות',     value_threshold: 18, value_max: 20, time_threshold_sec: 70,   pulse: 3, islands: [6, 12]  },

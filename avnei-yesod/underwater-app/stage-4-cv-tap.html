@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>השונית השקטה · אי 4 · הדגים שאיבדו את הצליל</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- אותם tokens.css של איים 1-3 — מקור-אמת לצבעים/spacing/radius -->
+  <link rel="stylesheet" href="css/tokens.css?v=2026-05-30b">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
+  <style>
+    /* === aliases לוקאליים לוקחים מ-tokens.css === */
+    :root {
+      --accent: var(--text-main);            /* #26505C */
+      --accent-2: #4FB8C9;
+      --tile-bg: #FFFFFF;
+      --tile-border: rgba(38,80,92,0.18);
+      --tile-bg-lit: var(--mint);            /* #B8F2CF */
+      --tile-border-lit: #6BCB9A;
+      --tile-shadow: 0 2px 10px rgba(38,80,92,0.15);
+      --tile-shadow-lit: 0 0 32px rgba(115, 217, 209, 0.55);
+      --hint-glow: var(--hint);              /* #FFE7A8 */
+      --tile-radius: var(--radius-md);       /* 24px */
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; height: 100%;
+      font-family: 'Heebo', sans-serif;
+      /* רקע ים זהה ל-fish-schools (אי 2) */
+      background: linear-gradient(180deg, #BFF1FF 0%, #A8E8FF 40%, #73D9D1 100%);
+      color: var(--text-main);
+      direction: rtl;
+      overscroll-behavior: contain;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+    /* scene-bg PNG — אותה אסתטיקה של שונית מאיים 1-3 */
+    .scene-bg {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center bottom;
+      z-index: 0;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* === top bar — זהה לעיצוב fish-schools === */
+    .top-bar {
+      position: sticky; top: 0; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px;
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255,255,255,0.6);
+    }
+    .top-bar a {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.85);
+      color: var(--text-main);
+      display: inline-flex; align-items: center; justify-content: center;
+      text-decoration: none;
+      box-shadow: 0 2px 10px rgba(38,80,92,0.15);
+    }
+    .top-bar .counter {
+      font-family: 'Heebo', sans-serif;
+      font-weight: 700; font-size: 16px;
+      color: var(--text-main);
+      background: rgba(255,255,255,0.85);
+      padding: 8px 18px; border-radius: var(--radius-pill);
+    }
+
+    main {
+      padding: 16px;
+      max-width: 720px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* --- tap-cv mechanic --- */
+    .tap-cv-prompt {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      margin: 14px 0 8px;
+      font-size: clamp(18px, 4vw, 24px);
+      font-weight: 600;
+      flex-wrap: wrap;
+    }
+    .tap-cv-prompt__label { color: var(--accent); }
+    .tap-cv-prompt__or {
+      color: #5a7a8a; font-weight: 600;
+    }
+    .tap-cv-prompt__cv {
+      font-family: inherit;
+      font-size: clamp(40px, 9vw, 64px);
+      font-weight: 900;
+      line-height: 1;
+      padding: 8px 24px;
+      border-radius: 20px;
+      border: 3px solid var(--accent-2);
+      background: white;
+      color: var(--accent);
+      cursor: pointer;
+      box-shadow: var(--tile-shadow);
+      transition: transform 0.15s ease;
+    }
+    .tap-cv-prompt__cv--sister { border-color: #B8F2CF; }
+    .tap-cv-prompt__cv:active { transform: scale(0.96); }
+    .tap-cv-subtitle {
+      text-align: center;
+      font-size: clamp(13px, 2.8vw, 15px);
+      color: #5a7a8a;
+      margin: 0 0 18px;
+      font-style: italic;
+    }
+
+    .tap-cv-field {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 6px;
+    }
+    @media (min-width: 540px) {
+      .tap-cv-field { grid-template-columns: repeat(4, 1fr); gap: 18px; }
+    }
+    @media (max-width: 360px) {
+      .tap-cv-field { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    }
+
+    .tap-cv-tile {
+      aspect-ratio: 1 / 1;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--tile-bg);
+      border: 2px solid var(--tile-border);
+      border-radius: var(--tile-radius);
+      box-shadow: var(--tile-shadow);
+      cursor: pointer;
+      font-family: inherit;
+      color: var(--accent);
+      padding: 4px;
+      transition: transform 0.15s ease, background 0.25s ease, border-color 0.25s ease;
+    }
+    .tap-cv-tile__cv {
+      font-size: clamp(38px, 8vw, 56px);
+      font-weight: 900;
+      line-height: 1;
+    }
+    .tap-cv-tile:hover { transform: scale(1.03); }
+    .tap-cv-tile:active { transform: scale(0.96); }
+
+    .tap-cv-tile.lit {
+      background: var(--tile-bg-lit);
+      border-color: var(--tile-border-lit);
+      box-shadow: var(--tile-shadow-lit);
+      animation: pop 0.45s ease-out;
+    }
+    @keyframes pop {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.18); }
+      100% { transform: scale(1); }
+    }
+
+    .tap-cv-tile.wrong-sway {
+      animation: shake 0.55s cubic-bezier(.36,.07,.19,.97);
+    }
+    @keyframes shake {
+      10%, 90% { transform: translateX(-1px); }
+      20%, 80% { transform: translateX(2px); }
+      30%, 50%, 70% { transform: translateX(-4px); }
+      40%, 60% { transform: translateX(4px); }
+    }
+
+    .tap-cv-tile.hint-glow {
+      box-shadow: 0 0 0 4px var(--hint-glow), 0 6px 22px rgba(255, 200, 100, 0.5);
+      animation: glow 1.2s ease-in-out infinite alternate;
+    }
+    @keyframes glow {
+      from { box-shadow: 0 0 0 3px var(--hint-glow), 0 6px 16px rgba(255, 200, 100, 0.35); }
+      to   { box-shadow: 0 0 0 6px var(--hint-glow), 0 8px 24px rgba(255, 200, 100, 0.55); }
+    }
+
+    /* --- overlay screens — שונית נשארת גלויה מאחור --- */
+    .overlay {
+      position: fixed; inset: 0;
+      background: radial-gradient(circle at 50% 35%, rgba(184, 232, 224, 0.35), rgba(99, 216, 208, 0.55));
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: var(--space-m);
+      padding: var(--space-l);
+      text-align: center;
+      z-index: 300;
+    }
+    /* כרטיס לבן/שקוף לטקסט שיגן על קריאות מעל השונית */
+    .overlay > h1,
+    .overlay > p {
+      background: rgba(255,255,255,0.85);
+      padding: 14px 22px;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 8px 24px rgba(38,80,92,0.18);
+      max-width: 560px;
+    }
+    .overlay.hidden { display: none; }
+    .overlay h1 {
+      font-size: clamp(28px, 6vw, 42px);
+      font-weight: 900;
+      color: var(--text-main);
+      margin: 0;
+    }
+    .overlay p {
+      font-size: clamp(16px, 3.5vw, 20px);
+      max-width: 540px;
+      margin: 0;
+      line-height: 1.5;
+      color: var(--text-main);
+    }
+    .overlay .cv-big {
+      font-size: clamp(60px, 16vw, 120px);
+      font-weight: 900;
+      color: var(--text-main);
+      margin: 0;
+      padding: 20px 40px;
+      border-radius: var(--radius-lg);
+      background: white;
+      box-shadow: 0 12px 28px rgba(115, 217, 209, 0.5);
+    }
+    .overlay button, .overlay a.btn {
+      height: 72px;
+      padding: 0 56px;
+      background: var(--water-secondary);
+      color: white; border: none;
+      border-radius: var(--radius-pill);
+      font-family: inherit;
+      font-size: clamp(22px, 5vw, 28px);
+      font-weight: 800;
+      cursor: pointer; text-decoration: none;
+      box-shadow: 0 12px 28px rgba(115, 217, 209, 0.5);
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .overlay .secondary {
+      background: white;
+      color: var(--text-main);
+      box-shadow: 0 6px 18px rgba(38, 80, 92, 0.18);
+      height: 56px;
+      padding: 0 36px;
+      font-size: clamp(16px, 3.5vw, 20px);
+    }
+
+    /* --- round dots (זהה ל-fish-schools.css) --- */
+    .round-dots {
+      display: flex; justify-content: center; gap: 6px;
+      margin: 4px 0 6px;
+    }
+    .round-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.6);
+      border: 1.5px solid rgba(38,80,92,0.18);
+      transition: background 0.3s ease, transform 0.3s ease;
+    }
+    .round-dot.done { background: var(--mint); border-color: #6BCB9A; transform: scale(1.15); }
+    .round-dot.current { background: var(--hint); border-color: #C49A2D; transform: scale(1.15); }
+
+    .vowel-label {
+      text-align: center;
+      font-size: 14px;
+      color: #5a7a8a;
+      margin-top: -6px;
+      margin-bottom: 12px;
+    }
+
+    /* --- mechanic badge (shows current mechanic) --- */
+    .mechanic-badge {
+      display: inline-block;
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(74, 157, 196, 0.15);
+      color: var(--accent);
+      margin: 0 auto 8px;
+      font-weight: 600;
+    }
+
+    /* --- word-match tiles (for match-cv-to-word mechanic) --- */
+    .word-match-tile {
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      background: var(--tile-bg);
+      border: 2px solid var(--tile-border);
+      border-radius: var(--tile-radius);
+      box-shadow: var(--tile-shadow);
+      cursor: pointer;
+      font-family: inherit;
+      color: var(--accent);
+      padding: 16px 20px;
+      min-height: 70px;
+      transition: transform 0.15s ease, background 0.25s ease, border-color 0.25s ease;
+    }
+    .word-match-tile:hover { transform: scale(1.02); }
+    .word-match-tile:active { transform: scale(0.97); }
+    .word-match-tile.lit {
+      background: var(--tile-bg-lit);
+      border-color: var(--tile-border-lit);
+      box-shadow: var(--tile-shadow-lit);
+      animation: pop 0.45s ease-out;
+    }
+    .word-match-tile.wrong-sway { animation: shake 0.55s cubic-bezier(.36,.07,.19,.97); }
+    .word-match-tile.hint-glow {
+      box-shadow: 0 0 0 4px var(--hint-glow), 0 6px 22px rgba(255, 200, 100, 0.5);
+      animation: glow 1.2s ease-in-out infinite alternate;
+    }
+    .word-match-word {
+      font-size: clamp(24px, 5vw, 32px);
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    .word-match-speaker {
+      font-size: 22px;
+      opacity: 0.65;
+    }
+
+    /* listen-speaker buttons */
+    .listen-speaker {
+      font-size: clamp(32px, 7vw, 48px) !important;
+      padding: 12px 20px !important;
+    }
+
+    /* ===== Noni character + speech bubble (סיפור מסגרת אי 4) ===== */
+    .noni-fixed {
+      position: fixed;
+      bottom: 14px;
+      right: 14px;
+      width: 96px;
+      height: 96px;
+      object-fit: contain;
+      z-index: 5;
+      pointer-events: auto;
+      cursor: pointer;
+      transition: transform 0.25s ease;
+      filter: drop-shadow(0 6px 14px rgba(40, 90, 120, 0.18));
+    }
+    .noni-fixed:hover { transform: translateY(-4px) rotate(-4deg); }
+    .noni-fixed.noni-hint { animation: noniBob 0.6s ease-in-out infinite alternate; }
+    .noni-fixed.noni-cheering { animation: noniDance 0.8s ease-in-out infinite; }
+    @keyframes noniBob {
+      from { transform: translateY(0) rotate(-3deg); }
+      to   { transform: translateY(-6px) rotate(3deg); }
+    }
+    @keyframes noniDance {
+      0%   { transform: rotate(-8deg) translateY(0); }
+      25%  { transform: rotate(8deg) translateY(-10px); }
+      50%  { transform: rotate(-8deg) translateY(0); }
+      75%  { transform: rotate(8deg) translateY(-6px); }
+      100% { transform: rotate(-8deg) translateY(0); }
+    }
+
+    .noni-bubble {
+      position: fixed;
+      bottom: 110px;
+      right: 18px;
+      max-width: min(280px, 70vw);
+      background: white;
+      border-radius: 22px;
+      padding: 12px 18px;
+      box-shadow: 0 8px 24px rgba(40, 90, 120, 0.18);
+      font-size: clamp(14px, 3.2vw, 17px);
+      font-weight: 600;
+      color: var(--accent);
+      line-height: 1.35;
+      z-index: 6;
+      opacity: 0;
+      transform: translateY(8px) scale(0.92);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      pointer-events: none;
+    }
+    .noni-bubble.show { opacity: 1; transform: translateY(0) scale(1); }
+    .noni-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      right: 28px;
+      width: 0; height: 0;
+      border: 10px solid transparent;
+      border-top-color: white;
+      border-bottom: 0;
+    }
+
+    /* בועות רקע עדינות — מעל ה-scene-bg, מתחת ל-main */
+    .bg-bubbles {
+      position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 1;
+    }
+    .bg-bubble {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.85), rgba(184,242,207,0.35));
+      box-shadow: inset -2px -3px 6px rgba(255,255,255,0.5);
+      animation: bgFloat linear infinite;
+      bottom: -60px;
+    }
+    @keyframes bgFloat {
+      0%   { transform: translateY(0) translateX(0); opacity: 0; }
+      10%  { opacity: 0.7; }
+      90%  { opacity: 0.7; }
+      100% { transform: translateY(-110vh) translateX(20px); opacity: 0; }
+    }
+    main { position: relative; z-index: 1; }
+
+    /* journey strip — 5 fish (one per letter) showing reef progress */
+    .journey-strip {
+      display: flex; justify-content: center; gap: 12px;
+      padding: 4px 12px;
+      margin: 0 auto 4px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+    .journey-fish {
+      position: relative;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 50px; height: 36px;
+      transition: all 0.3s ease;
+      filter: grayscale(0.7) opacity(0.4);
+    }
+    .journey-fish__svg {
+      width: 100%; height: 100%;
+      color: #8aacbb;
+      transition: color 0.3s ease;
+    }
+    .journey-fish__letter {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -55%);
+      font-size: 14px; font-weight: 800;
+      color: white;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+    .journey-fish.current {
+      filter: grayscale(0) opacity(1);
+      transform: scale(1.18);
+    }
+    .journey-fish.current .journey-fish__svg { color: var(--accent-2); }
+    .journey-fish.done {
+      filter: grayscale(0) opacity(1) drop-shadow(0 0 12px var(--hint));
+      animation: fishSwim 1.4s ease-in-out infinite alternate;
+    }
+    .journey-fish.done .journey-fish__svg { color: #6BCB9A; }
+    /* "just done" pulse — קופץ בגדול לרגע אחרי שהסבב הושלם */
+    .journey-fish.just-done {
+      animation: fishJustDone 1.2s ease-out;
+    }
+    @keyframes fishJustDone {
+      0%   { transform: scale(1.18); }
+      30%  { transform: scale(1.8); filter: grayscale(0) drop-shadow(0 0 24px var(--hint)) drop-shadow(0 0 40px #6BCB9A); }
+      100% { transform: scale(1.18); }
+    }
+    @keyframes fishSwim {
+      from { transform: translateX(0); }
+      to   { transform: translateX(4px) rotate(-3deg); }
+    }
+
+    /* fish-reveal — large fish shown above the mechanic during the round */
+    .fish-reveal {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 4px;
+      margin: 0 auto 12px;
+      max-width: 380px;
+    }
+    .fish-reveal__svg {
+      width: 110px; height: 80px;
+      color: var(--accent-2);
+      filter: drop-shadow(0 6px 12px rgba(74, 157, 196, 0.3));
+      animation: fishSwim 1.5s ease-in-out infinite alternate;
+    }
+    .fish-reveal__caption {
+      font-size: clamp(13px, 2.8vw, 15px);
+      color: #5a7a8a;
+      font-weight: 600;
+    }
+    .fish-reveal.silent .fish-reveal__svg {
+      color: #8aacbb;
+      filter: grayscale(0.6) drop-shadow(0 4px 8px rgba(40,90,120,0.15));
+      animation: none;
+    }
+    .fish-reveal.silent .fish-reveal__caption { color: #9aacbb; font-style: italic; }
+    .fish-reveal.singing .fish-reveal__svg {
+      animation: fishHappy 0.6s ease-in-out 3;
+    }
+    @keyframes fishHappy {
+      0%, 100% { transform: translateY(0) rotate(-4deg); }
+      50%      { transform: translateY(-10px) rotate(4deg); }
+    }
+    /* music notes when fish sings */
+    .fish-reveal.singing::after {
+      content: '🎵';
+      position: absolute;
+      font-size: 22px;
+      animation: noteFloat 1.2s ease-out forwards;
+      opacity: 0;
+    }
+    @keyframes noteFloat {
+      0%   { opacity: 0; transform: translateY(0); }
+      30%  { opacity: 1; }
+      100% { opacity: 0; transform: translateY(-40px) translateX(20px); }
+    }
+</style>
+</head>
+<body>
+
+  <header class="top-bar">
+    <a href="map.html" aria-label="חזרה למפה">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+    <div class="counter" id="counter">סבב 1/5</div>
+    <div style="width:44px"></div>
+  </header>
+
+  <!-- רקע שונית (אותה תמונה כמו אי 3) -->
+  <img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true"
+       onerror="this.style.display='none'">
+
+  <!-- בועות רקע -->
+  <div class="bg-bubbles" id="bgBubbles" aria-hidden="true"></div>
+
+  <!-- SVG defs לדגים -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="fishIcon" viewBox="0 0 100 70">
+        <path d="M 88 35 L 100 14 L 100 56 Z" fill="currentColor" opacity="0.85"/>
+        <ellipse cx="48" cy="35" rx="42" ry="25" fill="currentColor"/>
+        <path d="M 36 12 Q 48 4, 60 14 L 56 22 Q 46 16, 38 20 Z" fill="currentColor" opacity="0.7"/>
+        <path d="M 36 58 Q 48 66, 60 56 L 56 50 Q 46 54, 38 50 Z" fill="currentColor" opacity="0.7"/>
+        <ellipse cx="44" cy="44" rx="22" ry="8" fill="#FFFFFF" opacity="0.55"/>
+        <circle cx="20" cy="30" r="5" fill="#FFFFFF"/>
+        <circle cx="20" cy="30" r="2.5" fill="#26505C"/>
+        <path d="M 12 38 Q 18 42, 26 38" stroke="#26505C" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <main>
+    <div class="round-dots" id="roundDots"></div>
+    <div class="journey-strip" id="journeyStrip" aria-label="חמשת הדגים של השונית"></div>
+    <div style="text-align:center">
+      <div class="mechanic-badge" id="mechanicBadge"></div>
+    </div>
+    <div class="fish-reveal silent" id="fishReveal" style="display:none">
+      <svg class="fish-reveal__svg" viewBox="0 0 100 70"><use href="#fishIcon"/></svg>
+      <div class="fish-reveal__caption" id="fishCaption">הדג הזה איבד את הצליל…</div>
+    </div>
+    <div class="vowel-label" id="vowelLabel"></div>
+    <div id="gameRoot"></div>
+  </main>
+
+  <!-- נוני — דמות קבועה (לפי דפוס איים 1-3) -->
+  <img class="noni-fixed" id="noniImg" src="assets/noni-idle.png" alt="נוני">
+  <div class="noni-bubble" id="noniBubble"></div>
+
+  <!-- Start overlay — הצגת הסיפור -->
+  <div class="overlay" id="startOverlay">
+    <img src="assets/noni-hero-transparent.png" alt="נוני"
+         style="width:160px;height:160px;object-fit:contain;margin-bottom:4px"
+         onerror="this.src='assets/noni-idle.png'">
+    <h1>השונית השקטה</h1>
+    <div style="display:flex;gap:8px;margin:8px 0 14px;font-size:34px">
+      🐟 🐟 🐟 🐟 🐟
+    </div>
+    <p style="max-width:480px">
+      בשונית של נוני חיים <strong>חמישה דגים</strong> שכל אחד שר צליל אחר.<br>
+      אבל היום הים שקט — <strong id="startVowelInline">הדגים שכחו את הצליל שלהם</strong>.<br>
+      בואי נעזור לכל דג להיזכר!
+    </p>
+    <button id="startBtn">בואי נצלול</button>
+    <button class="secondary" id="speakBtn">🔊 הקשיבי לסיפור</button>
+  </div>
+
+  <!-- Completion overlay -->
+  <div class="overlay hidden" id="doneOverlay">
+    <img src="assets/noni-kiss.png" alt="נוני שמח"
+         style="width:160px;height:160px;object-fit:contain;margin-bottom:4px;filter:drop-shadow(0 8px 18px rgba(38,80,92,0.25))"
+         onerror="this.src='assets/noni-happy.png'">
+    <h1>השונית שרה!</h1>
+    <div style="display:flex;gap:8px;margin:8px 0 14px;font-size:34px">
+      🐟 🐟 🐟 🐟 🐟
+    </div>
+    <p style="max-width:480px">
+      כל חמשת הדגים מצאו את הצליל שלהם 🎵<br>
+      <span id="doneCVInline" style="font-size: 0.92em; color:#5a7a8a"></span>
+    </p>
+    <a class="btn" href="map.html">חזרה למפה</a>
+  </div>
+
+  <!-- Adapters (חובה לטעון לפני המכניקה) -->
+  <script src="js/shared/audio.js" onerror="window._audioMissing=true"></script>
+  <script src="js/shared/noni.js" onerror="window._noniMissing=true"></script>
+  <script src="js/shared/vowel-adapter.js"></script>
+  <script src="js/shared/event-logger.js" onerror="window._evlogMissing=true"></script>
+  <script src="js/shared/bkt.js" onerror="window._bktMissing=true"></script>
+  <script src="js/templates/mechanic-tap-cv.js"></script>
+  <script src="js/templates/mechanic-listen-cv.js"></script>
+  <script src="js/templates/mechanic-cv-vs-cv.js"></script>
+  <script src="js/templates/mechanic-match-cv-to-word.js"></script>
+
+  <script>
+    // Global error trap — מציג כל שגיאה במסך גלוי (לאיתור באג)
+    window.addEventListener('error', function (e) {
+      const box = document.createElement('div');
+      box.style.cssText = 'position:fixed;top:60px;left:20px;right:20px;background:#FFD3D8;color:#9c1a3a;padding:14px;border-radius:10px;z-index:99999;font-family:monospace;font-size:11px;direction:ltr;text-align:left;white-space:pre-wrap;max-height:50vh;overflow:auto';
+      box.textContent = 'JS ERROR: ' + (e.message || 'unknown') + '\nFile: ' + (e.filename || '?') + ':' + (e.lineno || '?') + '\n\n' + (e.error && e.error.stack ? e.error.stack : '');
+      document.body.appendChild(box);
+    });
+
+    (function () {
+      'use strict';
+
+      // ===== URL params =====
+      // Pack mode (DEFAULT):
+      //   ?pack=a-pilot      — 5 CVs מאותה phoneme group, אות שונה לכל סבב
+      //   ?vowels=a&letters=מ,ב,ר,ק,ת — custom
+      //   ?vowels=a          — group /a/ על 5 אותיות פיילוט (מ,ב,ר,ק,ת)
+      //
+      // Single-CV mode (legacy):
+      //   ?cv=מ:patach       — אותו CV בכל הסבבים
+      //   ?letter=מ&vowel=patach
+      const params = new URLSearchParams(location.search);
+      const VA = window.AvneiVowelAdapter;
+
+      // 5 אותיות פיילוט = אלה עם anchor words ב-vocab-bank (מ,ב,ר,ק,ת — אי 3
+      // הקיים. בעתיד יורחב ל-22 כשיתווסף vocab).
+      const PILOT_LETTERS = ['מ', 'ב', 'ר', 'ק', 'ת'];
+
+      // === Build session = sequence of {letter, vowelId} for rounds ===
+      let session = [];
+
+      // 1. ?pack= predefined packs
+      const pack = params.get('pack');
+      if (pack === 'a-pilot') {
+        // 5 אותיות פיילוט × patach (sister kamatz מתקבל אוטומטית במכניקה)
+        session = PILOT_LETTERS.map(function (L) { return { letter: L, vowelId: 'patach' }; });
+      } else if (pack === 'e-pilot') {
+        session = PILOT_LETTERS.map(function (L) { return { letter: L, vowelId: 'tzere' }; });
+      } else if (pack === 'i-pilot') {
+        session = PILOT_LETTERS.map(function (L) { return { letter: L, vowelId: 'hiriq' }; });
+      }
+
+      // 2. ?vowels=a (+ optional ?letters=מ,ב)
+      if (session.length === 0 && params.get('vowels')) {
+        const groupId = params.get('vowels');
+        // לוקחים vowel הראשון בקבוצה (מספיק — sister vowel מתקבל אוטומטית).
+        const groupVowels = VA.getVowelsInGroup(groupId);
+        if (groupVowels.length > 0) {
+          const primary = groupVowels[0].id;
+          const lettersParam = params.get('letters');
+          const letters = lettersParam
+            ? lettersParam.split(',').filter(function (L) { return VA.ALL_HEBREW_LETTERS_22.includes(L); })
+            : PILOT_LETTERS;
+          session = letters.map(function (L) { return { letter: L, vowelId: primary }; });
+        }
+      }
+
+      // 3. ?cv= or ?letter+vowel — single-CV legacy mode
+      if (session.length === 0) {
+        let letter, vowelId;
+        if (params.get('cv')) {
+          const parsed = VA.parseCV(params.get('cv'));
+          if (parsed) { letter = parsed.letter; vowelId = parsed.vowelId; }
+        } else if (params.get('letter') && params.get('vowel')) {
+          const L = params.get('letter');
+          const V = params.get('vowel');
+          if (VA.ALL_HEBREW_LETTERS_22.includes(L) && VA.getVowelById(V)) {
+            letter = L; vowelId = V;
+          }
+        }
+        if (letter && vowelId) {
+          const totalRounds = Math.max(1, Math.min(20, parseInt(params.get('rounds') || '5', 10) || 5));
+          for (let i = 0; i < totalRounds; i++) {
+            session.push({ letter: letter, vowelId: vowelId });
+          }
+        }
+      }
+
+      // 4. Default fallback — pack=a-pilot (פדגוגית הנכון: 5 אותיות שונות עם /a/)
+      if (session.length === 0) {
+        session = PILOT_LETTERS.map(function (L) { return { letter: L, vowelId: 'patach' }; });
+      }
+
+      const totalRounds = session.length;
+      const firstCV = VA.buildCV(session[0].letter, session[0].vowelId);
+      const firstVowelHe = (VA.getVowelById(session[0].vowelId) || {}).displayHe || session[0].vowelId;
+      // describe the session for the user
+      const sessionGroup = VA.getPhonemeGroup(session[0].vowelId);
+      const groupHe = (VA.PHONEME_GROUP_HE && VA.PHONEME_GROUP_HE[sessionGroup]) || firstVowelHe;
+      const allLetters = session.map(function (s) { return s.letter; }).join(' · ');
+
+      // ===== UI updates (start overlay נרטיב הדגים — קבוע, לא מתעדכן פר CV) =====
+      // הסרתי #startCV ו-#doneCV מה-overlay (הוחלף בנרטיב). guard לכל מקרה.
+      const _setText = function (id, text) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text;
+      };
+      // אם startVowelInline קיים — overrides את ה-strong שב-overlay (מצב single-CV legacy).
+      // ב-default fish narrative, אנחנו רוצים לשמור את הטקסט המקורי, לכן רק אם total !== 5
+      // (הסשנים של הסיפור הם תמיד 5; אם השתמשו ב-?cv= legacy → 1-20 סבבים אחרים).
+      if (totalRounds !== 5 || !!params.get('cv') || !!params.get('letter')) {
+        _setText('startVowelInline',
+          totalRounds === 1
+            ? '(האות ' + session[0].letter + ' עם ' + firstVowelHe + ')'
+            : 'נתרגל ' + totalRounds + ' סבבים — תנועת ' + groupHe + ' על: ' + allLetters);
+      }
+      _setText('vowelLabel', '');
+
+      const dotsEl = document.getElementById('roundDots');
+      for (let i = 0; i < totalRounds; i++) {
+        const d = document.createElement('div');
+        d.className = 'round-dot';
+        dotsEl.appendChild(d);
+      }
+      function paintDots(roundIdx) {
+        const dots = dotsEl.children;
+        for (let i = 0; i < dots.length; i++) {
+          dots[i].classList.remove('done', 'current');
+          if (i < roundIdx) dots[i].classList.add('done');
+          else if (i === roundIdx) dots[i].classList.add('current');
+        }
+      }
+
+      // journey strip — 5 דגים (דג פר אות) שמתעוררים לפי ההתקדמות
+      const journeyEl = document.getElementById('journeyStrip');
+      session.forEach(function (s) {
+        const wrap = document.createElement('div');
+        wrap.className = 'journey-fish';
+        wrap.innerHTML =
+          '<svg class="journey-fish__svg" viewBox="0 0 100 70"><use href="#fishIcon"/></svg>' +
+          '<span class="journey-fish__letter">' + s.letter + '</span>';
+        journeyEl.appendChild(wrap);
+      });
+      function paintJourney(roundIdx) {
+        const fish = journeyEl.children;
+        for (let i = 0; i < fish.length; i++) {
+          fish[i].classList.remove('done', 'current');
+          if (i < roundIdx) fish[i].classList.add('done');
+          else if (i === roundIdx) fish[i].classList.add('current');
+        }
+      }
+
+      // ===== Noni speech bubble — per round =====
+      const noniBubble = document.getElementById('noniBubble');
+      let bubbleHideTimer = null;
+      function noniSay(text, durationMs) {
+        noniBubble.textContent = text;
+        noniBubble.classList.add('show');
+        if (bubbleHideTimer) clearTimeout(bubbleHideTimer);
+        bubbleHideTimer = setTimeout(function () {
+          noniBubble.classList.remove('show');
+        }, durationMs || 4500);
+      }
+
+      // ===== Background bubbles =====
+      (function spawnBgBubbles() {
+        const layer = document.getElementById('bgBubbles');
+        for (let i = 0; i < 12; i++) {
+          const b = document.createElement('span');
+          b.className = 'bg-bubble';
+          const size = 16 + Math.random() * 36;
+          b.style.width = size + 'px';
+          b.style.height = size + 'px';
+          b.style.left = (Math.random() * 95) + 'vw';
+          b.style.animationDuration = (12 + Math.random() * 14) + 's';
+          b.style.animationDelay = (Math.random() * 12) + 's';
+          layer.appendChild(b);
+        }
+      })();
+      function setCounter(roundIdx) {
+        const r = session[roundIdx];
+        const cv = VA.buildCV(r.letter, r.vowelId);
+        document.getElementById('counter').textContent =
+          'סבב ' + (roundIdx + 1) + '/' + totalRounds + ' · ' + cv;
+      }
+      function setVowelLabel(roundIdx) {
+        const r = session[roundIdx];
+        const cv = VA.buildCV(r.letter, r.vowelId);
+        const vHe = (VA.getVowelById(r.vowelId) || {}).displayHe || r.vowelId;
+        document.getElementById('vowelLabel').textContent =
+          r.letter + ' + ' + vHe + ' = ' + cv;
+      }
+      paintDots(0); setCounter(0);
+
+      // ===== Mechanic rotation per round =====
+      // נרטיב: הדגים שאיבדו את הצליל. נוני עוזר לכל דג להיזכר.
+      // לכל מכניקה — משפט קצר שמשייך את הפעולה לדג הנוכחי.
+      function noniLine(mechId, cv, letter) {
+        const fishName = 'הדג ' + letter;
+        switch (mechId) {
+          case 'cv-vs-cv':
+            return fishName + ' שומע שני צלילים — איזה מהם הצליל שלו? ' + cv;
+          case 'tap-cv':
+            return fishName + ' מחפש את הצליל שלו ' + cv + ' — איספי הכל בשבילו!';
+          case 'listen-cv':
+            return fishName + ' שר חלש — הקשיבי לצליל שלו ובחרי איפה הוא מתחבא.';
+          case 'match-cv-to-word':
+            return fishName + ' מחפש מילה ידידה שמתחילה כמוהו (' + cv + ').';
+          default:
+            return fishName + ' צריך עזרה!';
+        }
+      }
+      const MECHANIC_ROTATION = [
+        { id: 'cv-vs-cv',          badge: '🔊 בחרי בין 2', missionAudio: 'mission-isl04-cv-vs-cv',  opts: { numTrials: 5 } },
+        { id: 'tap-cv',            badge: '👁 ציד CV',     missionAudio: 'mission-isl04-tap-cv',    opts: { totalTiles: 12, numTargets: 5 } },
+        { id: 'listen-cv',         badge: '🔊 שמיעה',      missionAudio: 'mission-isl04-listen-cv', opts: { numTrials: 5 } },
+        { id: 'match-cv-to-word',  badge: '📖 מילה',        missionAudio: 'mission-isl04-match',     opts: { numTrials: 3 } },
+        { id: 'tap-cv',            badge: '👁 ציד CV',     missionAudio: 'mission-isl04-tap-cv',    opts: { totalTiles: 12, numTargets: 5 } },
+      ];
+
+      function pickMechanic(roundIdx) {
+        return MECHANIC_ROTATION[roundIdx % MECHANIC_ROTATION.length];
+      }
+
+      // ===== Round driver =====
+      let currentRound = 0;
+      let currentMechanic = null;
+      let vowelId = session[0].vowelId;  // for speakBtn convenience
+      let letter = session[0].letter;
+
+      function startRound() {
+        const root = document.getElementById('gameRoot');
+        const r = session[currentRound];
+        letter = r.letter; vowelId = r.vowelId;
+        paintDots(currentRound);
+        paintJourney(currentRound);
+        setCounter(currentRound);
+        setVowelLabel(currentRound);
+
+        const mech = pickMechanic(currentRound);
+        document.getElementById('mechanicBadge').textContent = mech.badge;
+
+        // הצג fish-reveal: הדג של הסבב הזה (silent — עוד לא שר)
+        const fishEl = document.getElementById('fishReveal');
+        fishEl.style.display = 'flex';
+        fishEl.classList.remove('singing');
+        fishEl.classList.add('silent');
+        document.getElementById('fishCaption').textContent =
+          'הדג ' + r.letter + ' איבד את הצליל…';
+
+        // נוני מציג את הסבב
+        const cv = VA.buildCV(r.letter, r.vowelId);
+        noniSay(noniLine(mech.id, cv, r.letter));
+        if (window.AvneiNoni) try { window.AvneiNoni.setState('idle'); } catch (e) {}
+        // השמע את הוראת המכניקה (AvriNeural) — פעם אחת בתחילת הסבב
+        if (mech.missionAudio) setTimeout(function () { playNarration(mech.missionAudio); }, 600);
+
+        const mechanicImpl = window.AvneiMechanics[mech.id];
+        if (!mechanicImpl) {
+          console.error('mechanic not loaded: ' + mech.id);
+          return;
+        }
+
+        const merged = Object.assign({
+          letter: r.letter,
+          vowelId: r.vowelId,
+          questId: 'isl04-' + mech.id + '-' + r.letter + '-' + r.vowelId + '-round-' + (currentRound + 1),
+          onUnitWon: function () {
+            // הקשה נכונה — נוני שמח רגעית
+            if (window.AvneiNoni) try { window.AvneiNoni.setState('cheer'); } catch (e) {}
+            setTimeout(function () {
+              if (window.AvneiNoni) try { window.AvneiNoni.setState('idle'); } catch (e) {}
+            }, 600);
+          },
+          onComplete: function () {
+            // הדג שר! מעדכן את ה-fish-reveal עם אנימציה
+            const fishEl = document.getElementById('fishReveal');
+            fishEl.classList.remove('silent');
+            fishEl.classList.add('singing');
+            document.getElementById('fishCaption').textContent =
+              'הדג ' + r.letter + ' שר ' + cv + '! 🎵';
+            // השמע את ה-CV כצליל הדג
+            try {
+              const audioKey = VA.cvAudioKey(r.letter, r.vowelId);
+              if (audioKey && window.AvneiAudio) window.AvneiAudio.play(audioKey);
+            } catch (e) {}
+
+            // מדגיש את הדג ב-journey strip שזה עתה השלים (just-done pulse)
+            const justDoneFish = journeyEl.children[currentRound];
+            if (justDoneFish) {
+              justDoneFish.classList.add('done', 'just-done');
+              setTimeout(function () { justDoneFish.classList.remove('just-done'); }, 1200);
+            }
+
+            currentRound++;
+            // המתן רגע על האנימציה של הדג ששר לפני שמתקדמים
+            setTimeout(function () {
+              if (currentMechanic && currentMechanic.unmount) currentMechanic.unmount();
+              if (currentRound >= totalRounds) {
+                paintJourney(totalRounds);  // צבע הכל done
+                document.getElementById('fishReveal').style.display = 'none';
+                document.getElementById('doneCVInline').textContent =
+                  totalRounds === 1 ? firstCV : 'תנועת ' + groupHe + ' (' + allLetters + ')';
+                document.getElementById('doneOverlay').classList.remove('hidden');
+                if (window.AvneiNoni) try { window.AvneiNoni.setState('cheer'); } catch (e) {}
+                playNarration('completion-isl04');  // "השונית שרה!"
+              } else {
+                const remaining = totalRounds - currentRound;
+                noniSay('כל הכבוד! עוד ' + remaining + ' דגים מחכים…', 2200);
+                setTimeout(startRound, 1100);
+              }
+            }, 1800);
+          },
+        }, mech.opts);
+
+        currentMechanic = mechanicImpl.mount(root, merged);
+      }
+
+      // נוני clickable — חוזר על המשפט של הסבב הנוכחי
+      document.getElementById('noniImg').addEventListener('click', function () {
+        if (currentRound >= totalRounds) return;
+        const r = session[currentRound];
+        const mech = pickMechanic(currentRound);
+        const cv = VA.buildCV(r.letter, r.vowelId);
+        noniSay(noniLine(mech.id, cv, r.letter));
+      });
+
+      // ===== Audio (AvneiAudio MP3 + Web Speech fallback) =====
+      function playCV(vowelIdLocal) {
+        if (window.AvneiAudio && typeof window.AvneiAudio.play === 'function') {
+          const key = VA.cvAudioKey(letter, vowelIdLocal);
+          if (key) { window.AvneiAudio.play(key); return; }
+        }
+        if (!('speechSynthesis' in window)) return;
+        try {
+          const u = new SpeechSynthesisUtterance(VA.buildCV(letter, vowelIdLocal));
+          u.lang = 'he-IL'; u.rate = 0.85;
+          window.speechSynthesis.cancel();
+          window.speechSynthesis.speak(u);
+        } catch (e) {}
+      }
+
+      // השמע narration MP3 (intro / completion / mission per mechanic)
+      function playNarration(key) {
+        if (window.AvneiAudio && typeof window.AvneiAudio.play === 'function') {
+          window.AvneiAudio.play(key);
+        }
+      }
+
+      // ===== Start button =====
+      document.getElementById('startBtn').addEventListener('click', function () {
+        try {
+          if (window.AvneiAudio && typeof window.AvneiAudio.unlock === 'function') {
+            try { window.AvneiAudio.unlock(); } catch (e) {}
+          }
+          document.getElementById('startOverlay').classList.add('hidden');
+          startRound();
+        } catch (e) {
+          const errBox = document.createElement('div');
+          errBox.style.cssText = 'position:fixed;top:60px;left:20px;right:20px;background:#FFD3D8;color:#9c1a3a;padding:14px;border-radius:10px;z-index:9999;font-family:monospace;font-size:12px;direction:ltr;text-align:left';
+          errBox.textContent = 'ERROR: ' + (e && e.message ? e.message : String(e)) + '\n' + (e && e.stack ? e.stack.split('\n').slice(0,5).join('\n') : '');
+          document.body.appendChild(errBox);
+          console.error('startRound failed:', e);
+        }
+      });
+      document.getElementById('speakBtn').addEventListener('click', function () {
+        if (window.AvneiAudio && typeof window.AvneiAudio.unlock === 'function') {
+          try { window.AvneiAudio.unlock(); } catch (e) {}
+        }
+        playNarration('intro-isl04');
+      });
+    })();
+  </script>
+</body>
+</html>

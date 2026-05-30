@@ -78,6 +78,9 @@ window.AvneiBKT = (function() {
     7: { pL0: 0.10, pT: 0.10, pG: 0.15, pS: 0.08 },
     8: { pL0: 0.15, pT: 0.15, pG: 0.20, pS: 0.05 },
     9: { pL0: 0.10, pT: 0.10, pG: 0.20, pS: 0.10 },
+    // אי 14 (סוכן 31 · 29.5.2026) — תואם PARAMS_PER_STRAND[3]. pL0 גבוה — ילדה בכיתה א'
+    // כבר באה עם שפה דבורה רחבה. pG גבוה (3/3 ניחוש = 1/3). pS = 0.10 (קשב).
+    14: { pL0: 0.30, pT: 0.15, pG: 0.25, pS: 0.10 },
   };
 
   // Per-strand params — ברירות מחדל. ילדים מגיעים עם פערים שונים בכל סטרנד:
@@ -118,7 +121,7 @@ window.AvneiBKT = (function() {
   // ISLAND_3_LETTERS = 5 אותיות עם משחקון פעיל היום (מ/ק/ב/ר/ת).
   // משמש בלוגיקת mastery של אי 3 (A0.3 mastery-check ידרוש את כולן) — נשמר ב-5 עד D.15.
   const ISLAND_3_LETTERS = ['ת', 'מ', 'ר', 'ב', 'ק'];
-  const ISLANDS_WITH_SUB_BKT = [3];  // איים שמשתמשים ב-sub-BKT פר-אות
+  const ISLANDS_WITH_SUB_BKT = [3, 14];  // איים שמשתמשים ב-sub-BKT (אי 3 פר-אות, אי 14 פר-oral-skill)
 
   // A.4 — כל 22 האותיות לסטרנד 1 (per_letter). סדר אלפבתי קנוני (תואם D.14 _schema.md).
   // משמש לאתחול ה-per_letter ולחישוב distribution / weakest. עצמאי מ-ISLAND_3_LETTERS.
@@ -130,6 +133,21 @@ window.AvneiBKT = (function() {
   // ספי distribution פר-אות (A.4) — תואם getWeakLettersIn3 הקיים (>= 3 attempts, p < 0.70).
   const LETTER_WEAK_THRESHOLD = 0.70;
   const LETTER_MIN_ATTEMPTS_FOR_BUCKET = 3;
+
+  // אי 14 (הבנת הנשמע, סטרנד 3) — Sub-BKT פר 3 sub-skills פדגוגיים.
+  // סוכן 31 · 29.5.2026 — אומת ע"י מיטל ("Sub-BKT per skill"). מקביל ל-ISLAND_3_LETTERS.
+  // identify-hero = "מי גיבור? מה הוא עשה? איפה?" (פרט מפורש בטקסט)
+  // sequence       = "מה קרה ראשון? בסוף?" (סדר אירועים)
+  // inference      = "למה הרגיש X? מה כנראה יקרה?" (היסק — לא מילולי בטקסט)
+  const ISLAND_14_ORAL_SKILLS = Object.freeze(['identify-hero', 'sequence', 'inference']);
+  const ORAL_SKILL_WEAK_THRESHOLD = 0.70;
+  const ORAL_SKILL_MIN_ATTEMPTS_FOR_BUCKET = 3;
+  // תוויות תצוגה (עברית, ללא ניקוד — מסך מורה. מסך תלמידה לא חושף sub-skills.)
+  const ORAL_SKILL_DISPLAY_HE = Object.freeze({
+    'identify-hero': 'זיהוי גיבור ופרטים',
+    'sequence':      'רצף אירועים',
+    'inference':     'הסקת מסקנות',
+  });
 
   // ============================================================
   // ניהול state — שני stores (dual-write)
@@ -220,6 +238,50 @@ window.AvneiBKT = (function() {
     return changed;
   }
 
+  // אי 14 (סוכן 31 · 29.5.2026) — emptyIsland14Record + ensureAllOralSkillsIn.
+  // אותו מבנה כמו island 3 (per_X, aggregate, total_attempts) רק עם 3 sub-skills בלבד.
+  function emptyIsland14Record() {
+    const params = PARAMS_PER_ISLAND[14] || DEFAULT_PARAMS;
+    const per_oral_skill = {};
+    ISLAND_14_ORAL_SKILLS.forEach(s => {
+      per_oral_skill[s] = {
+        pKnown: params.pL0,
+        attempts: 0,
+        correct: 0,
+        wrong: 0,
+        responseTimesMs: [],
+        masteryAchievedAt: null,
+      };
+    });
+    return {
+      per_oral_skill,
+      aggregate_pKnown: params.pL0,
+      total_attempts: 0,
+      sessionsAtMastery: 0,
+      lastSessionId: null,
+      masteryAchievedAt: null,
+    };
+  }
+
+  function ensureAllOralSkillsIn(perOralSkill, pL0) {
+    if (!perOralSkill || typeof perOralSkill !== 'object') return false;
+    let changed = false;
+    ISLAND_14_ORAL_SKILLS.forEach(s => {
+      if (!perOralSkill[s]) {
+        perOralSkill[s] = {
+          pKnown: pL0,
+          attempts: 0,
+          correct: 0,
+          wrong: 0,
+          responseTimesMs: [],
+          masteryAchievedAt: null,
+        };
+        changed = true;
+      }
+    });
+    return changed;
+  }
+
   function emptyStrandRecord(strandId) {
     const params = PARAMS_PER_STRAND[strandId] || DEFAULT_PARAMS;
     const rec = {
@@ -255,17 +317,33 @@ window.AvneiBKT = (function() {
     return state[studentId];
   }
 
+  function _emptySubBktRecord(islandId) {
+    if (islandId === 3) return emptyIsland3Record();
+    if (islandId === 14) return emptyIsland14Record();
+    return emptyIslandRecord(islandId);
+  }
+
   function getIslandState(studentId, islandId) {
     const student = getStudentState(studentId);
     if (!student[islandId]) {
       student[islandId] = ISLANDS_WITH_SUB_BKT.includes(islandId)
-        ? emptyIsland3Record()
+        ? _emptySubBktRecord(islandId)
         : emptyIslandRecord(islandId);
     }
     // A.4: מיגרציה — אי 3 עם 5 אותיות בלבד מתרחב ל-22.
     if (islandId === 3 && student[islandId].per_letter) {
       const params = PARAMS_PER_ISLAND[3];
       if (ensureAllLettersIn(student[islandId].per_letter, params.pL0)) {
+        const state = loadState();
+        if (!state[studentId]) state[studentId] = {};
+        state[studentId][islandId] = student[islandId];
+        saveState(state);
+      }
+    }
+    // אי 14 (סוכן 31) — מיגרציה non-destructive ל-3 sub-skills.
+    if (islandId === 14 && student[islandId].per_oral_skill) {
+      const params = PARAMS_PER_ISLAND[14];
+      if (ensureAllOralSkillsIn(student[islandId].per_oral_skill, params.pL0)) {
         const state = loadState();
         if (!state[studentId]) state[studentId] = {};
         state[studentId][islandId] = student[islandId];
@@ -390,6 +468,79 @@ window.AvneiBKT = (function() {
       letter: letter,
       masteryAchieved: !!island.masteryAchievedAt,
       letter_mastery: !!letterState.masteryAchievedAt,
+    };
+  }
+
+  // ============================================================
+  // עדכון אי 14 (sub-BKT פר oral-skill) — סוכן 31 · 29.5.2026
+  // מקביל ל-ingestIsland3Event רק עם 3 sub-skills במקום 22 אותיות.
+  // ============================================================
+  function ingestIsland14Event(state, studentId, evt) {
+    const island = state[studentId][14];
+    const skill = evt.target_oral_skill;
+
+    if (!skill || !ISLAND_14_ORAL_SKILLS.includes(skill)) {
+      console.warn('BKT island 14: event without valid target_oral_skill', evt);
+      return null;
+    }
+
+    const params = PARAMS_PER_ISLAND[14] || DEFAULT_PARAMS;
+    ensureAllOralSkillsIn(island.per_oral_skill, params.pL0);
+    const skillState = island.per_oral_skill[skill];
+
+    skillState.attempts++;
+    island.total_attempts++;
+    if (evt.is_correct) skillState.correct++;
+    else skillState.wrong++;
+
+    if (typeof evt.response_time_ms === 'number' && evt.response_time_ms > 0) {
+      skillState.responseTimesMs.push(evt.response_time_ms);
+      if (skillState.responseTimesMs.length > 100) {
+        skillState.responseTimesMs = skillState.responseTimesMs.slice(-100);
+      }
+    }
+
+    skillState.pKnown = bktUpdate(skillState.pKnown, evt.is_correct === true, params);
+
+    // mastery פר skill — שטף לא נדרש בהבנת הנשמע (אין רף זמן פדגוגי לפעימה 2)
+    if (
+      !skillState.masteryAchievedAt &&
+      skillState.pKnown >= MASTERY_THRESHOLD
+    ) {
+      skillState.masteryAchievedAt = Date.now();
+    }
+
+    // aggregate — ממוצע של skills שתורגלו
+    const practiced = Object.values(island.per_oral_skill).filter(s => s.attempts > 0);
+    if (practiced.length > 0) {
+      island.aggregate_pKnown = practiced.reduce((s, x) => s + x.pKnown, 0) / practiced.length;
+    }
+
+    // consolidation — סיום סשן
+    if (evt.session_id && evt.session_id !== island.lastSessionId) {
+      const allMastered = ISLAND_14_ORAL_SKILLS.every(s =>
+        island.per_oral_skill[s].masteryAchievedAt !== null
+      );
+      if (allMastered) island.sessionsAtMastery++;
+      else island.sessionsAtMastery = 0;
+      island.lastSessionId = evt.session_id;
+    }
+
+    // mastery של האי כולו — כל 3 הsub-skills + 2 סשנים רצופים
+    if (
+      !island.masteryAchievedAt &&
+      ISLAND_14_ORAL_SKILLS.every(s => island.per_oral_skill[s].masteryAchievedAt !== null) &&
+      island.sessionsAtMastery >= 2
+    ) {
+      island.masteryAchievedAt = Date.now();
+    }
+
+    return {
+      pKnown_skill: skillState.pKnown,
+      pKnown_island: island.aggregate_pKnown,
+      oral_skill: skill,
+      masteryAchieved: !!island.masteryAchievedAt,
+      skill_mastery: !!skillState.masteryAchievedAt,
     };
   }
 
@@ -536,13 +687,15 @@ window.AvneiBKT = (function() {
     if (!state[studentId]) state[studentId] = {};
     if (!state[studentId][islandId]) {
       state[studentId][islandId] = ISLANDS_WITH_SUB_BKT.includes(islandId)
-        ? emptyIsland3Record()
+        ? _emptySubBktRecord(islandId)
         : emptyIslandRecord(islandId);
     }
 
     let islandResult;
-    if (ISLANDS_WITH_SUB_BKT.includes(islandId)) {
+    if (islandId === 3) {
       islandResult = ingestIsland3Event(state, studentId, evt);
+    } else if (islandId === 14) {
+      islandResult = ingestIsland14Event(state, studentId, evt);
     } else {
       islandResult = ingestRegularIslandEvent(state, studentId, islandId, evt);
     }
@@ -572,7 +725,7 @@ window.AvneiBKT = (function() {
     if (!state[studentId]) state[studentId] = {};
     if (!state[studentId][islandId]) {
       state[studentId][islandId] = ISLANDS_WITH_SUB_BKT.includes(islandId)
-        ? emptyIsland3Record()
+        ? _emptySubBktRecord(islandId)
         : emptyIslandRecord(islandId);
     }
 
@@ -678,7 +831,7 @@ window.AvneiBKT = (function() {
   function checkMastery(studentId, islandId) {
     const island = getIslandState(studentId, islandId);
 
-    if (ISLANDS_WITH_SUB_BKT.includes(islandId)) {
+    if (islandId === 3) {
       // אי 3 — בדיקה פר-אות
       const lettersStatus = {};
       let weakLetters = [];
@@ -706,6 +859,37 @@ window.AvneiBKT = (function() {
           ? 'mastered'
           : weakLetters.length > 0
             ? `אותיות חלשות: ${weakLetters.join(', ')}`
+            : `דורש שני סשנים רצופים — כרגע ${island.sessionsAtMastery}`,
+      };
+    }
+
+    if (islandId === 14) {
+      // אי 14 — בדיקה פר oral-skill (סוכן 31 · 29.5.2026)
+      const skillsStatus = {};
+      const weakSkills = [];
+      ISLAND_14_ORAL_SKILLS.forEach(s => {
+        const ss = island.per_oral_skill[s];
+        const mastered = ss.masteryAchievedAt !== null;
+        skillsStatus[s] = {
+          pKnown: ss.pKnown,
+          mastered,
+          attempts: ss.attempts,
+          accuracy: ss.attempts > 0 ? ss.correct / ss.attempts : null,
+        };
+        if (!mastered && ss.attempts > 0 && ss.pKnown < MASTERY_THRESHOLD) {
+          weakSkills.push(s);
+        }
+      });
+      return {
+        mastered: !!island.masteryAchievedAt,
+        aggregate_pKnown: island.aggregate_pKnown,
+        per_oral_skill: skillsStatus,
+        weak_oral_skills: weakSkills,
+        consolidationOk: island.sessionsAtMastery >= 2,
+        reason: island.masteryAchievedAt
+          ? 'mastered'
+          : weakSkills.length > 0
+            ? `יכולות חלשות: ${weakSkills.map(s => ORAL_SKILL_DISPLAY_HE[s] || s).join(', ')}`
             : `דורש שני סשנים רצופים — כרגע ${island.sessionsAtMastery}`,
       };
     }
@@ -1009,6 +1193,101 @@ window.AvneiBKT = (function() {
     return dist;
   }
 
+  // ============================================================
+  // API חדש — Sub-BKT פר oral-skill (אי 14, סוכן 31 · 29.5.2026)
+  // מקביל ל-getLetterState/getWeakestLetters/getLetterMasteryDistribution.
+  // ============================================================
+
+  function _resolvePerOralSkill(studentId) {
+    const state = loadState();
+    const s = state[studentId];
+    if (!s || !s[14] || !s[14].per_oral_skill) return null;
+    const params = PARAMS_PER_ISLAND[14];
+    if (ensureAllOralSkillsIn(s[14].per_oral_skill, params.pL0)) saveState(state);
+    return s[14].per_oral_skill;
+  }
+
+  function getOralSkillState(studentId, skill) {
+    if (!ISLAND_14_ORAL_SKILLS.includes(skill)) return null;
+    const perSkill = _resolvePerOralSkill(studentId);
+    if (!perSkill || !perSkill[skill]) return null;
+    const ss = perSkill[skill];
+    return {
+      skill,
+      displayHe: ORAL_SKILL_DISPLAY_HE[skill],
+      pKnown: ss.pKnown,
+      attempts: ss.attempts || 0,
+      correct: ss.correct || 0,
+      wrong: ss.wrong || 0,
+      accuracy: (ss.attempts > 0) ? (ss.correct / ss.attempts) : null,
+      median_response_time_ms: median((ss.responseTimesMs || []).slice(-20)),
+      mastered: ss.masteryAchievedAt !== null && ss.masteryAchievedAt !== undefined,
+      masteryAchievedAt: ss.masteryAchievedAt || null,
+    };
+  }
+
+  function getWeakestOralSkills(studentId, n, opts) {
+    const limit = (typeof n === 'number' && n > 0) ? n : 3;
+    const options = opts || {};
+    const includeUntouched = options.includeUntouched === true;
+    const perSkill = _resolvePerOralSkill(studentId);
+    if (!perSkill) {
+      return includeUntouched
+        ? ISLAND_14_ORAL_SKILLS.map(s => ({ skill: s, displayHe: ORAL_SKILL_DISPLAY_HE[s], pKnown: PARAMS_PER_ISLAND[14].pL0, attempts: 0, accuracy: null }))
+        : [];
+    }
+    const entries = ISLAND_14_ORAL_SKILLS
+      .map(skill => {
+        const ss = perSkill[skill];
+        if (!ss) return null;
+        const attempts = ss.attempts || 0;
+        if (!includeUntouched && attempts < ORAL_SKILL_MIN_ATTEMPTS_FOR_BUCKET) return null;
+        if (ss.masteryAchievedAt) return null;
+        return {
+          skill,
+          displayHe: ORAL_SKILL_DISPLAY_HE[skill],
+          pKnown: ss.pKnown,
+          attempts,
+          accuracy: attempts > 0 ? (ss.correct / attempts) : null,
+        };
+      })
+      .filter(Boolean);
+    entries.sort((a, b) => a.pKnown - b.pKnown);
+    return entries.slice(0, limit);
+  }
+
+  function getOralSkillMasteryDistribution(studentId) {
+    const perSkill = _resolvePerOralSkill(studentId);
+    const dist = {
+      mastered: 0,
+      in_progress: 0,
+      weak: 0,
+      untouched: 0,
+      by_bucket: { mastered: [], in_progress: [], weak: [], untouched: [] },
+      total: ISLAND_14_ORAL_SKILLS.length,
+    };
+    if (!perSkill) {
+      dist.untouched = ISLAND_14_ORAL_SKILLS.length;
+      dist.by_bucket.untouched = ISLAND_14_ORAL_SKILLS.slice();
+      return dist;
+    }
+    ISLAND_14_ORAL_SKILLS.forEach(skill => {
+      const ss = perSkill[skill];
+      if (!ss) { dist.untouched++; dist.by_bucket.untouched.push(skill); return; }
+      const attempts = ss.attempts || 0;
+      if (ss.masteryAchievedAt) {
+        dist.mastered++; dist.by_bucket.mastered.push(skill);
+      } else if (attempts < ORAL_SKILL_MIN_ATTEMPTS_FOR_BUCKET) {
+        dist.untouched++; dist.by_bucket.untouched.push(skill);
+      } else if (ss.pKnown < ORAL_SKILL_WEAK_THRESHOLD) {
+        dist.weak++; dist.by_bucket.weak.push(skill);
+      } else {
+        dist.in_progress++; dist.by_bucket.in_progress.push(skill);
+      }
+    });
+    return dist;
+  }
+
   return {
     // ---- Legacy API (תאימות 1:1 ל-A0.1, A0.3, event-logger, test-bkt) ----
     ingestEvent,
@@ -1058,5 +1337,14 @@ window.AvneiBKT = (function() {
     ALL_HEBREW_LETTERS_22,
     LETTER_WEAK_THRESHOLD,
     LETTER_MIN_ATTEMPTS_FOR_BUCKET,
+
+    // ---- API חדש — Sub-BKT פר oral-skill (אי 14, סוכן 31 · 29.5.2026) ----
+    getOralSkillState,
+    getWeakestOralSkills,
+    getOralSkillMasteryDistribution,
+    ISLAND_14_ORAL_SKILLS,
+    ORAL_SKILL_DISPLAY_HE,
+    ORAL_SKILL_WEAK_THRESHOLD,
+    ORAL_SKILL_MIN_ATTEMPTS_FOR_BUCKET,
   };
 })();

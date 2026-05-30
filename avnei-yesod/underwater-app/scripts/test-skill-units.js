@@ -33,11 +33,14 @@ function makeLocalStorageMock() {
 function clearMocks() {
   global.localStorage = null;
   global.AvneiLetterTargets = null;
+  global.AvneiVowelAdapter = null;
   global.AvneiBKT = null;
   const pSU = path.resolve(__dirname, '..', 'js', 'shared', 'skill-units.js');
   const pLT = path.resolve(__dirname, '..', 'js', 'shared', 'letter-targets.js');
+  const pVA = path.resolve(__dirname, '..', 'js', 'shared', 'vowel-adapter.js');
   delete require.cache[pSU];
   delete require.cache[pLT];
+  delete require.cache[pVA];
 }
 
 function loadSU() {
@@ -48,6 +51,12 @@ function loadSU() {
 
 function loadLT() {
   const p = path.resolve(__dirname, '..', 'js', 'shared', 'letter-targets.js');
+  delete require.cache[p];
+  return require(p);
+}
+
+function loadVA() {
+  const p = path.resolve(__dirname, '..', 'js', 'shared', 'vowel-adapter.js');
   delete require.cache[p];
   return require(p);
 }
@@ -89,6 +98,7 @@ header('1. API surface + constants');
   assert(typeof SU.unitToDisplayHe === 'function', 'unitToDisplayHe');
   assert(typeof SU.unitKey === 'function', 'unitKey');
   assert(typeof SU.makeLetterUnit === 'function', 'makeLetterUnit');
+  assert(typeof SU.makeCVUnit === 'function', 'makeCVUnit');
   assert(SU.UNIT_TYPES.LETTER === 'letter', 'UNIT_TYPES.LETTER');
   assert(SU.UNIT_TYPES.VOWEL === 'vowel', 'UNIT_TYPES.VOWEL');
   assert(SU.UNIT_TYPES.WORD === 'word', 'UNIT_TYPES.WORD');
@@ -233,10 +243,11 @@ header('8. Non-letter types — graceful fallback (post-pilot)');
   global.AvneiLetterTargets = loadLT();
   const SU = loadSU();
 
-  const vowel = { type: 'vowel', id: 'kamatz', displayHe: 'תנועת קמץ' };
-  assert(SU.addTarget('s1', vowel) === false, 'vowel addTarget → false (post-pilot)');
-  assert(SU.markFrozen('s1', vowel) === false, 'vowel markFrozen → false');
-  assert(SU.isFrozen('s1', vowel) === false, 'vowel isFrozen → false');
+  // vowel ללא letter (abstract vowel) → post-pilot, false
+  const vowelOnly = { type: 'vowel', id: 'kamatz', displayHe: 'תנועת קמץ' };
+  assert(SU.addTarget('s1', vowelOnly) === false, 'vowel ללא letter addTarget → false');
+  assert(SU.markFrozen('s1', vowelOnly) === false, 'vowel ללא letter markFrozen → false');
+  assert(SU.isFrozen('s1', vowelOnly) === false, 'vowel ללא letter isFrozen → false');
 
   const word = { type: 'word', id: 'שולחן' };
   assert(SU.addTarget('s1', word) === false, 'word addTarget → false (post-pilot)');
@@ -244,7 +255,66 @@ header('8. Non-letter types — graceful fallback (post-pilot)');
   // getTargets/getFrozen מחזירים רק letter units (delegation)
   global.AvneiLetterTargets.addTarget('s1', 'מ');
   const t = SU.getTargets('s1');
-  assert(t.length === 1 && t[0].type === 'letter', 'getTargets רק letters היום');
+  assert(t.length === 1 && t[0].type === 'letter', 'getTargets רק letters (אין vowel adapter)');
+}
+
+// --------------------------------------------------------
+header('10. Vowel + CV — סוכן 29 · אי 4');
+{
+  clearMocks();
+  global.localStorage = makeLocalStorageMock();
+  global.AvneiLetterTargets = loadLT();
+  global.AvneiVowelAdapter = loadVA();
+  const SU = loadSU();
+
+  // makeCVUnit
+  const cv = SU.makeCVUnit('מ', 'patach');
+  assert(cv.type === 'vowel' && cv.id === 'patach' && cv.letter === 'מ' && cv.strand === 1,
+    'makeCVUnit מבנה נכון');
+  assert(cv.displayHe === 'מַ', 'displayHe = מַ');
+
+  // unitToDisplayHe — vowel + letter
+  assert(SU.unitToDisplayHe(cv) === 'מַ', 'unitToDisplayHe(CV) = מַ');
+  // unitToDisplayHe — vowel ללא letter (abstract vowel)
+  const abstractKamatz = { type: 'vowel', id: 'kamatz' };
+  assert(SU.unitToDisplayHe(abstractKamatz) === 'תנועת קמץ',
+    'unitToDisplayHe(vowel abstract) = "תנועת <שם>"');
+
+  // addTarget — CV pair
+  assert(SU.addTarget('s1', cv, 'teacher-send') === true, 'addTarget(CV) מצליח');
+  // auto-freeze בעקבות add (מוסבר ב-vowel-adapter)
+  assert(SU.isFrozen('s1', cv) === true, 'auto-freeze אחרי addTarget');
+  const targets = SU.getTargets('s1');
+  const cvTargets = targets.filter(function (t) { return t.type === 'vowel'; });
+  assert(cvTargets.length === 1, '1 CV target ב-getTargets');
+  assert(cvTargets[0].letter === 'מ' && cvTargets[0].id === 'patach', 'מ + patach');
+  assert(cvTargets[0].displayHe === 'מַ', 'cv display ב-target');
+
+  // removeTarget
+  assert(SU.removeTarget('s1', cv) === true, 'removeTarget(CV) מצליח');
+  const remainingTargets = SU.getTargets('s1');
+  assert(remainingTargets.filter(function (t) { return t.type === 'vowel'; }).length === 0,
+    'אין CV targets אחרי remove');
+
+  // markFrozen + getFrozen — CV pair (ה-auto-freeze מ-addTarget הקודם נשאר ב-frozen
+  // 3 ימים, אז יש כעת 2 entries; בודקים שהחדש מופיע)
+  const cv2 = SU.makeCVUnit('ב', 'shva');
+  assert(SU.markFrozen('s1', cv2, 'teacher-handled') === true, 'markFrozen(CV) מצליח');
+  assert(SU.isFrozen('s1', cv2) === true, 'isFrozen(CV) = true');
+  const frozenCVs = SU.getFrozen('s1').filter(function (f) { return f.type === 'vowel'; });
+  assert(frozenCVs.find(function (f) { return f.letter === 'ב' && f.id === 'shva'; }),
+    'getFrozen כולל ב:shva');
+  assert(SU.removeFrozen('s1', cv2) === true, 'removeFrozen(CV) מצליח');
+  assert(SU.isFrozen('s1', cv2) === false, 'isFrozen(CV) = false אחרי remove');
+
+  // mixed: גם letter target וגם CV target ב-getTargets
+  global.AvneiLetterTargets.addTarget('s1', 'ר');
+  SU.addTarget('s1', SU.makeCVUnit('ק', 'kamatz'));
+  const mixed = SU.getTargets('s1');
+  const letterCount = mixed.filter(function (m) { return m.type === 'letter'; }).length;
+  const vowelCount = mixed.filter(function (m) { return m.type === 'vowel'; }).length;
+  assert(letterCount === 1, '1 letter target');
+  assert(vowelCount === 1, '1 vowel target');
 }
 
 // --------------------------------------------------------
