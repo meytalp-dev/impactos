@@ -206,7 +206,14 @@ body {
 }
 
 /* ==================== DRAG-BUILD ==================== */
-.drag-bank { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.drag-bank {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;
+  min-height: 50px;
+  border: 2px dashed transparent;
+  border-radius: var(--radius);
+  padding: 8px;
+  transition: all .15s;
+}
 .drag-target {
   border: 2px dashed var(--line);
   border-radius: var(--radius);
@@ -214,6 +221,12 @@ body {
   min-height: 60px;
   display: flex; flex-wrap: wrap; gap: 8px;
   align-items: center;
+  transition: all .15s;
+}
+.drag-bank.drag-over,
+.drag-target.drag-over {
+  border-color: var(--ink);
+  background: var(--line-soft);
 }
 .drag-word {
   background: var(--ink); color: var(--bg);
@@ -221,8 +234,14 @@ body {
   font-weight: 600; font-size: 15px;
   cursor: grab;
   user-select: none;
+  transition: opacity .15s;
 }
+.drag-word:hover { opacity: 0.85; }
 .drag-word:active { cursor: grabbing; }
+.drag-word.dragging { opacity: 0.4; }
+.drag-hint {
+  font-size: 12px; color: var(--ink-mute); margin-top: 8px;
+}
 
 /* ==================== OPEN INPUT ==================== */
 .open-input {
@@ -524,12 +543,13 @@ function renderItem() {
       html += `<div class="input-hint">Multi-select · pick all that apply</div>`;
     }
   } else if (item.envelope === 'drag-build') {
+    html += `<div class="drag-target" id="drag-target"><span style="color:var(--ink-mute);font-size:13px">Drop words here in order</span></div>`;
+    html += `<div class="drag-hint">Tap or drag to move. Click a placed word to send it back.</div>`;
     html += `<div class="drag-bank" id="drag-bank">`;
-    item.words.forEach((w, i) => {
+    item.words.forEach((w) => {
       html += `<span class="drag-word" draggable="true" data-word="${w}">${w}</span>`;
     });
     html += `</div>`;
-    html += `<div class="drag-target" id="drag-target"><span style="color:var(--ink-mute);font-size:13px">Drop words here in order</span></div>`;
   } else if (item.envelope === 'open-input') {
     html += `<textarea class="open-input" placeholder="Your answer here..." id="open-input"></textarea>`;
     if (item.example) {
@@ -589,33 +609,68 @@ function playAudio(text) {
 function setupDragDrop() {
   const bank = document.getElementById('drag-bank');
   const target = document.getElementById('drag-target');
-  const items = bank.querySelectorAll('.drag-word');
 
-  items.forEach(item => {
-    item.addEventListener('dragstart', e => {
-      e.dataTransfer.setData('text/plain', item.dataset.word);
-      e.dataTransfer.effectAllowed = 'move';
-    });
-  });
+  function clearPlaceholder(zone) {
+    const ph = zone.querySelector('span[style]');
+    if (ph) ph.remove();
+  }
 
-  target.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
-  target.addEventListener('drop', e => {
-    e.preventDefault();
-    const word = e.dataTransfer.getData('text/plain');
-    const source = bank.querySelector(`[data-word="${word}"]`);
-    if (source) {
-      if (target.querySelector('span[style]')) target.innerHTML = '';
-      target.appendChild(source);
+  function restorePlaceholderIfEmpty() {
+    if (target.children.length === 0) {
+      target.innerHTML = '<span style="color:var(--ink-mute);font-size:13px">Drop words here in order</span>';
     }
-  });
+  }
 
-  // Allow tap on mobile / click as fallback
-  items.forEach(item => {
-    item.addEventListener('click', () => {
-      if (target.querySelector('span[style]')) target.innerHTML = '';
-      target.appendChild(item);
+  function attachWordHandlers(word) {
+    word.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/plain', word.dataset.word);
+      e.dataTransfer.effectAllowed = 'move';
+      word.classList.add('dragging');
     });
-  });
+    word.addEventListener('dragend', () => {
+      word.classList.remove('dragging');
+    });
+    // Click / tap: move to opposite zone
+    word.addEventListener('click', () => {
+      if (word.parentElement === bank) {
+        clearPlaceholder(target);
+        target.appendChild(word);
+      } else {
+        bank.appendChild(word);
+        restorePlaceholderIfEmpty();
+      }
+    });
+  }
+
+  function setupDropZone(zone, otherZone) {
+    zone.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      zone.classList.add('drag-over');
+    });
+    zone.addEventListener('dragleave', e => {
+      if (e.target === zone) zone.classList.remove('drag-over');
+    });
+    zone.addEventListener('drop', e => {
+      e.preventDefault();
+      zone.classList.remove('drag-over');
+      const wordText = e.dataTransfer.getData('text/plain');
+      const source = document.querySelector(`.drag-word[data-word="${wordText}"]`);
+      if (source && source.parentElement !== zone) {
+        if (zone === target) clearPlaceholder(target);
+        zone.appendChild(source);
+        if (source.parentElement !== bank) restorePlaceholderIfEmpty();
+      }
+      if (otherZone === target) restorePlaceholderIfEmpty();
+    });
+  }
+
+  // Attach handlers to all words
+  document.querySelectorAll('.drag-word').forEach(attachWordHandlers);
+
+  // Both zones accept drops
+  setupDropZone(bank, target);
+  setupDropZone(target, bank);
 }
 
 function nextItem() {
