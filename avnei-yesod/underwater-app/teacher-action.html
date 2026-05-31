@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>דשבורד פעולת בוקר · אבני יסוד</title>
 
+<!-- Google Fonts — Assistant (תואם teacher-rama.html / F.21A) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
+
 <!--
   ============================================================
   F.21E — דשבורד פעולת בוקר למורה
@@ -327,6 +332,21 @@
   }
   .iv-modal .iv-title { font-size: 19px; font-weight: 800; color: #744210; }
   .iv-modal .iv-sub { font-size: 13px; color: #92400e; margin-top: 4px; }
+  .iv-modal .iv-head-actions {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .iv-modal .iv-head-print {
+    background: white; border: 1px solid #fde68a;
+    color: #744210; padding: 7px 14px;
+    border-radius: 8px; font-family: inherit;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    box-shadow: 0 1px 2px rgba(116, 66, 16, 0.08);
+    transition: background 0.15s, box-shadow 0.15s;
+  }
+  .iv-modal .iv-head-print:hover {
+    background: #fef9ec; box-shadow: 0 2px 6px rgba(116, 66, 16, 0.14);
+  }
   .iv-modal .iv-close {
     background: transparent; border: 0;
     width: 32px; height: 32px; border-radius: 50%;
@@ -763,6 +783,16 @@ let _activeGroups = [];
   const input = document.getElementById('pinInput');
   const err = document.getElementById('pinErr');
 
+  // bypass עבור מצג מהמצגת — ?presentation=1 או ?guest=1
+  const _qs = new URLSearchParams(location.search);
+  if (_qs.get('presentation') === '1' || _qs.get('guest') === '1') {
+    sessionStorage.setItem(SESSION_AUTH_KEY, '1');
+    gate.style.display = 'none';
+    main.style.display = 'block';
+    setTimeout(boot, 0);
+    return;
+  }
+
   if (sessionStorage.getItem(SESSION_AUTH_KEY) === '1') {
     gate.style.display = 'none';
     main.style.display = 'block';
@@ -1066,7 +1096,7 @@ function renderActionList(ctx) {
       '<div class="ta-card-why"><span class="ta-card-why-label">למה עכשיו?</span> ' + escapeHtml(why) + '</div>' +
       lettersHtml +
       '<div class="ta-card-actions">' +
-        '<button type="button" class="ta-action-btn ta-action-primary" data-open-group="' + idx + '" aria-label="פתחי תרגול קבוצתי">📋 פתחי תרגול</button>' +
+        '<button type="button" class="ta-action-btn ta-action-primary" data-open-group="' + idx + '" aria-label="פתחי תרגול לכיתה">📋 פתחי תרגול לכיתה</button>' +
         '<button type="button" class="ta-action-btn ta-action-mark' + (isDone ? ' is-done' : '') + '" data-mark-group="' + idx + '" data-group-key="' + escapeHtml(groupKey) + '" aria-label="סמני שטופל בכיתה">' +
           (isDone ? '✓ בוטלי סימון' : '✓ סמני כבוצע') +
         '</button>' +
@@ -1255,7 +1285,7 @@ function renderMoyAlerts(ctx) {
       (taskLabel ? '<div class="ta-moy-task">' + escapeHtml(taskLabel) + '</div>' : '') +
       '<div class="ta-card-actions">' +
         (st.suggested_intervention
-          ? '<button type="button" class="ta-action-btn ta-action-primary" data-open-moy-sid="' + escapeHtml(sid) + '" data-pattern="' + escapeHtml(st.suggested_intervention.patternId) + '" aria-label="פתחי תרגול ממוקד MOY">📋 פתחי תרגול</button>'
+          ? '<button type="button" class="ta-action-btn ta-action-primary" data-open-moy-sid="' + escapeHtml(sid) + '" data-pattern="' + escapeHtml(st.suggested_intervention.patternId) + '" aria-label="פתחי תרגול אישי איתך">📋 פתחי תרגול אישי (איתך)</button>'
           : '') +
         '<button type="button" class="ta-action-btn ta-action-mark' + (isDone ? ' is-done' : '') + '" data-mark-moy="' + escapeHtml(sid) + '" aria-label="סמני שטופל">' +
           (isDone ? '✓ בוטלי סימון' : '✓ סמני שטופל') +
@@ -1682,7 +1712,6 @@ function openInterventionModal(groupIdx) {
     stagesHtml +
     evidenceHtml +
     '<div class="iv-actions">' +
-      '<button type="button" class="iv-btn-print" data-iv-print aria-label="הדפיסי את הסקריפט">🖨️ הדפיסי</button>' +
       '<button type="button" class="iv-btn-done" data-iv-done="' + groupIdx + '" aria-label="סמני שביצעתי היום">✓ סמני שביצעתי היום</button>' +
       '<button type="button" class="iv-btn-cancel" data-iv-cancel aria-label="סגירה">× סגירה</button>' +
     '</div>';
@@ -1697,7 +1726,10 @@ function openInterventionModal(groupIdx) {
           '<div class="iv-title" id="ivModalTitle">' + meta.icon + ' ' + escapeHtml(interp.title || meta.label) + '</div>' +
           '<div class="iv-sub">' + escapeHtml(meta.label) + '</div>' +
         '</div>' +
-        '<button type="button" class="iv-close" data-iv-cancel aria-label="סגירה">×</button>' +
+        '<div class="iv-head-actions">' +
+          '<button type="button" class="iv-head-print" data-iv-print aria-label="הדפיסי את הסקריפט">🖨️ הדפיסי</button>' +
+          '<button type="button" class="iv-close" data-iv-cancel aria-label="סגירה">×</button>' +
+        '</div>' +
       '</div>' +
       '<div class="iv-body">' + bodyHtml + '</div>' +
     '</div>';

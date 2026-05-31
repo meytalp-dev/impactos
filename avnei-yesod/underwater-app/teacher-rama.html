@@ -1328,6 +1328,17 @@ let viewState = {
   const input = document.getElementById('pinInput');
   const err = document.getElementById('pinErr');
 
+  // bypass עבור מצג מהמצגת — ?presentation=1 או ?guest=1
+  // (מאפשר ללחוץ על קישור הדמו במצגת ולראות את הדשבורד ללא PIN)
+  const _qs = new URLSearchParams(location.search);
+  if (_qs.get('presentation') === '1' || _qs.get('guest') === '1') {
+    sessionStorage.setItem(SESSION_AUTH_KEY, '1');
+    gate.style.display = 'none';
+    main.style.display = 'block';
+    setTimeout(boot, 0);
+    return;
+  }
+
   // bypass אם כבר מאומתת בלשונית הזו
   if (sessionStorage.getItem(SESSION_AUTH_KEY) === '1') {
     gate.style.display = 'none';
