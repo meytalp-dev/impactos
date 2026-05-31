@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#FAFAF7" />
+  <title>English · Bridge</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="css/student-tokens.css" />
+  <link rel="stylesheet" href="css/student.css" />
+
+  <style>
+    /* Inter Tight as display face — slightly tighter, more editorial. */
+    :root { --font-display: 'Inter Tight', 'Inter', system-ui, sans-serif; }
+  </style>
+</head>
+<body>
+
+  <main class="app-shell" id="app">
+
+    <!-- ===== Top bar ===== -->
+    <header class="top-bar">
+      <div class="top-bar__identity">
+        <div class="avatar" id="avatar" aria-hidden="true">M</div>
+        <div class="greeting" id="greeting">Welcome</div>
+      </div>
+      <div style="display:flex; gap: var(--space-2); align-items: center;">
+        <span class="streak" id="streak">
+          <span class="streak__icon" aria-hidden="true">●</span>
+          <span id="streak-count">5</span>
+        </span>
+        <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- ===== Stage ===== -->
+    <section class="item-stage" id="stage">
+      <header class="unit-header" id="unit-header">
+        <div style="display:flex; align-items:center; gap: var(--space-3);">
+          <span class="eyebrow" id="unit-eyebrow">Unit 0 · Bridge</span>
+          <span class="track-chip" id="track-chip">Track</span>
+        </div>
+        <h1 class="unit-title" id="unit-title">Sight words &amp; first chunks</h1>
+        <div class="unit-meta">
+          <span id="unit-meta-weeks">Weeks 1–5</span>
+          <span class="unit-meta__divider" aria-hidden="true"></span>
+          <span id="unit-meta-track">Track 2 · Intermediate</span>
+        </div>
+      </header>
+
+      <div id="item-card-mount"></div>
+
+      <p class="feedback" id="feedback" data-state=""></p>
+    </section>
+
+    <!-- ===== Footer ===== -->
+    <footer class="footer">
+      <div class="progress-dots" id="progress-dots" aria-label="Progress"></div>
+      <p class="progress-label" id="progress-label">0 of 10</p>
+      <div class="btn-row">
+        <button class="btn btn--ghost" id="track-switch" type="button" hidden>Change level</button>
+        <button class="btn btn--primary" id="continue-btn" type="button" aria-disabled="true" disabled>
+          Continue
+        </button>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- ===== Templates ===== -->
+
+  <!-- Name modal -->
+  <template id="tpl-name-modal">
+    <div class="modal-backdrop" id="name-modal">
+      <div class="modal" role="dialog" aria-labelledby="name-modal-title">
+        <h2 class="modal__title" id="name-modal-title">Welcome to English · Bridge</h2>
+        <p class="modal__sub">What should we call you? Just a first name is fine.</p>
+        <input type="text" class="text-input" id="name-input" placeholder="Your name" maxlength="20" autocomplete="off" />
+        <button class="btn btn--primary" id="name-save" type="button">Let's start</button>
+      </div>
+    </div>
+  </template>
+
+  <!-- Track switch modal -->
+  <template id="tpl-track-modal">
+    <div class="modal-backdrop" id="track-modal">
+      <div class="modal" role="dialog" aria-labelledby="track-modal-title">
+        <h2 class="modal__title" id="track-modal-title">Pick your level</h2>
+        <p class="modal__sub">Not sure? Most people start on Track 2.</p>
+        <div style="display:grid; gap: var(--space-3);">
+          <button class="option" type="button" data-track="1">Track 1 · Foundation <span style="opacity:.55; margin-left:8px;">listen + tap</span></button>
+          <button class="option" type="button" data-track="2">Track 2 · Intermediate <span style="opacity:.55; margin-left:8px;">read + choose</span></button>
+          <button class="option" type="button" data-track="3">Track 3 · Advanced <span style="opacity:.55; margin-left:8px;">no hints</span></button>
+          <button class="option" type="button" data-track="4">Track 4 · Extension <span style="opacity:.55; margin-left:8px;">write your own</span></button>
+        </div>
+        <button class="btn btn--ghost" id="track-cancel" type="button">Cancel</button>
+      </div>
+    </div>
+  </template>
+
+  <!-- Completion -->
+  <template id="tpl-completion">
+    <div class="completion">
+      <div class="completion__emoji" aria-hidden="true">✦</div>
+      <h2 class="completion__title">Day 1 of Bridge complete</h2>
+      <p class="completion__sub">
+        <span id="completion-streak">5</span>-day streak · <span id="completion-score">0/10</span> correct
+      </p>
+      <div class="btn-row">
+        <button class="btn btn--primary" id="restart-btn" type="button">Practice again</button>
+        <button class="btn btn--ghost" id="restart-pick-btn" type="button" hidden>Change level</button>
+      </div>
+    </div>
+  </template>
+
+  <script src="js/shared/audio.js"></script>
+  <script src="js/shared/pack-loader.js"></script>
+  <script src="js/shared/item-renderer.js"></script>
+
+  <script>
+  (function() {
+    'use strict';
+
+    // ---- state -------------------------------------------------
+
+    const PACK_ID = 'october-2026-bridge';
+    const STORAGE_KEYS = {
+      name: 'ec.student.name',
+      track: 'ec.student.track',
+      streak: 'ec.student.streak',
+      theme: 'ec.student.theme',
+    };
+
+    // Debug mode: ?debug=1 exposes the track picker. In production the
+    // system places the student on a track per skill via BKT — students
+    // never see "Pick your level". See cefr-targets/grade-7-pre-a1-to-a1.json
+    // and _handoff/phase-3-decisions-needed.md #1.
+    const DEBUG = new URLSearchParams(location.search).get('debug') === '1';
+
+    const LOCATION_NAMES = {
+      'tel-aviv': 'Tel Aviv',
+      'london': 'London',
+      'mumbai': 'Mumbai',
+      'tokyo': 'Tokyo',
+      'barcelona': 'Barcelona',
+      'mexico-city': 'Mexico City',
+      'new-york': 'New York',
+    };
+
+    const TRACK_NAMES = {
+      1: { en: 'Foundation', sub: 'Pre-A1' },
+      2: { en: 'Intermediate', sub: 'A1−' },
+      3: { en: 'Advanced', sub: 'A1' },
+      4: { en: 'Extension', sub: 'A1+' },
+    };
+
+    const state = {
+      name: localStorage.getItem(STORAGE_KEYS.name) || '',
+      track: parseInt(localStorage.getItem(STORAGE_KEYS.track), 10) || 2,
+      streak: parseInt(localStorage.getItem(STORAGE_KEYS.streak), 10) || 5,
+      pack: null,
+      itemsForTrack: [],
+      currentIndex: 0,
+      currentController: null,
+      currentItem: null,
+      revealed: false,
+      correctCount: 0,
+    };
+
+    // ---- DOM refs ---------------------------------------------
+
+    const $ = (id) => document.getElementById(id);
+
+    const app = $('app');
+    const avatar = $('avatar');
+    const greeting = $('greeting');
+    const streakCount = $('streak-count');
+    const themeToggle = $('theme-toggle');
+    const unitTitle = $('unit-title');
+    const unitEyebrow = $('unit-eyebrow');
+    const trackChip = $('track-chip');
+    const unitMetaWeeks = $('unit-meta-weeks');
+    const unitMetaTrack = $('unit-meta-track');
+    const stage = $('stage');
+    const cardMount = $('item-card-mount');
+    const feedback = $('feedback');
+    const progressDots = $('progress-dots');
+    const progressLabel = $('progress-label');
+    const continueBtn = $('continue-btn');
+    const trackSwitchBtn = $('track-switch');
+
+    // ---- theme -----------------------------------------------
+
+    function applyTheme(theme) {
+      if (theme === 'dark' || theme === 'light') {
+        document.documentElement.setAttribute('data-theme', theme);
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+      }
+    }
+    applyTheme(localStorage.getItem(STORAGE_KEYS.theme));
+    themeToggle.addEventListener('click', () => {
+      const cur = document.documentElement.getAttribute('data-theme');
+      const next = cur === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+      localStorage.setItem(STORAGE_KEYS.theme, next);
+    });
+
+    // ---- avatar + greeting -----------------------------------
+
+    function paintIdentity() {
+      const n = state.name || 'You';
+      avatar.textContent = n.charAt(0).toUpperCase();
+      greeting.textContent = `Hi, ${n}`;
+      streakCount.textContent = state.streak;
+    }
+
+    // ---- name onboarding -------------------------------------
+
+    function showNameModal() {
+      const tpl = $('tpl-name-modal').content.firstElementChild.cloneNode(true);
+      document.body.appendChild(tpl);
+      const input = tpl.querySelector('#name-input');
+      const save = tpl.querySelector('#name-save');
+      setTimeout(() => input.focus(), 100);
+      const submit = () => {
+        const value = input.value.trim();
+        if (!value) { input.focus(); return; }
+        state.name = value;
+        localStorage.setItem(STORAGE_KEYS.name, value);
+        tpl.remove();
+        paintIdentity();
+        // First user gesture — unlock audio.
+        if (window.AvneiAudio && window.AvneiAudio.unlock) window.AvneiAudio.unlock();
+        startRun();
+      };
+      save.addEventListener('click', submit);
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
+    }
+
+    // ---- track switch ----------------------------------------
+
+    function showTrackModal(onPick) {
+      const tpl = $('tpl-track-modal').content.firstElementChild.cloneNode(true);
+      document.body.appendChild(tpl);
+      tpl.querySelectorAll('[data-track]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const t = parseInt(btn.getAttribute('data-track'), 10);
+          tpl.remove();
+          onPick(t);
+        });
+      });
+      tpl.querySelector('#track-cancel').addEventListener('click', () => tpl.remove());
+    }
+
+    trackSwitchBtn.addEventListener('click', () => {
+      showTrackModal((t) => {
+        state.track = t;
+        localStorage.setItem(STORAGE_KEYS.track, String(t));
+        PackLoader.resetCursor(PACK_ID);
+        startRun();
+      });
+    });
+
+    if (DEBUG) {
+      trackSwitchBtn.hidden = false;
+    }
+
+    // ---- unit header -----------------------------------------
+
+    function paintUnitHeader() {
+      const meta = (state.pack && state.pack.meta) || {};
+      unitEyebrow.textContent = (meta.title && meta.title.replace(/Pack$/i, '').trim())
+                                  || `Unit ${meta.unit_id || ''}`;
+      unitMetaWeeks.textContent = meta.weeks_covered ? `Weeks ${meta.weeks_covered}` : '';
+      const tn = TRACK_NAMES[state.track];
+      unitMetaTrack.textContent = tn ? `Track ${state.track} · ${tn.en}` : '';
+      trackChip.className = `track-chip track-chip--${state.track}`;
+      trackChip.textContent = `Track ${state.track}`;
+      // Friendly unit title for grade-7 bridge.
+      unitTitle.textContent = pickUnitTitleForTrack(state.track);
+    }
+
+    function pickUnitTitleForTrack(track) {
+      switch (track) {
+        case 1: return 'Listen and tap.';
+        case 2: return 'Read and choose.';
+        case 3: return 'Find the right form.';
+        case 4: return 'Write your own.';
+        default: return 'Sight words & first chunks';
+      }
+    }
+
+    // ---- progress dots ---------------------------------------
+
+    function paintProgress() {
+      const total = state.itemsForTrack.length;
+      progressDots.innerHTML = '';
+      for (let i = 0; i < total; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'progress-dots__dot';
+        if (i < state.currentIndex) dot.setAttribute('data-state', 'done');
+        else if (i === state.currentIndex) dot.setAttribute('data-state', 'current');
+        progressDots.appendChild(dot);
+      }
+      progressLabel.textContent = `${Math.min(state.currentIndex + 1, total)} of ${total}`;
+    }
+
+    // ---- run lifecycle ---------------------------------------
+
+    function startRun() {
+      state.currentIndex = 0;
+      state.correctCount = 0;
+      state.itemsForTrack = PackLoader.getItemsForTrack(state.track);
+      paintUnitHeader();
+      paintProgress();
+      renderCurrentItem();
+    }
+
+    function renderCurrentItem() {
+      if (state.autoAdvanceTimer) {
+        clearTimeout(state.autoAdvanceTimer);
+        state.autoAdvanceTimer = null;
+      }
+      feedback.textContent = '';
+      feedback.removeAttribute('data-state');
+      state.revealed = false;
+
+      const total = state.itemsForTrack.length;
+      if (state.currentIndex >= total) {
+        renderCompletion();
+        return;
+      }
+
+      const item = state.itemsForTrack[state.currentIndex];
+      state.currentItem = item;
+
+      // Build the card shell.
+      cardMount.innerHTML = '';
+      const card = document.createElement('div');
+      card.className = 'item-card';
+      card.setAttribute('data-track', String(state.track));
+      card.setAttribute('data-anim', 'enter');
+      card.appendChild(makeStripe());
+
+      // Sarah location chip (when item has narrative_context).
+      const nc = item.narrative_context;
+      if (nc && nc.character_id === 'sarah' && nc.location_id) {
+        const chip = document.createElement('div');
+        chip.className = 'location-chip';
+        const pin = document.createElement('span');
+        pin.className = 'location-chip__pin';
+        chip.appendChild(pin);
+        const label = document.createElement('span');
+        label.textContent = `Sarah · ${LOCATION_NAMES[nc.location_id] || nc.location_id}`;
+        chip.appendChild(label);
+        card.appendChild(chip);
+      }
+
+      // Renderer mount target.
+      const rendererMount = document.createElement('div');
+      rendererMount.style.display = 'grid';
+      rendererMount.style.gap = 'var(--space-5)';
+      card.appendChild(rendererMount);
+      cardMount.appendChild(card);
+
+      // Render the envelope.
+      state.currentController = ItemRenderer.render(item, rendererMount, onAnswerChange);
+
+      setContinueState();
+      paintProgress();
+    }
+
+    function makeStripe() {
+      const s = document.createElement('div');
+      s.className = 'item-card__stripe';
+      return s;
+    }
+
+    function onAnswerChange() {
+      if (state.revealed) return;
+      setContinueState();
+    }
+
+    function setContinueState() {
+      const ctrl = state.currentController;
+      const has = ctrl && ctrl.hasAnswer();
+      continueBtn.disabled = !has;
+      if (has) continueBtn.removeAttribute('aria-disabled');
+      else continueBtn.setAttribute('aria-disabled', 'true');
+      continueBtn.textContent = state.revealed ? 'Next ›' : 'Check answer';
+    }
+
+    function clearAutoAdvance() {
+      if (state.autoAdvanceTimer) {
+        clearTimeout(state.autoAdvanceTimer);
+        state.autoAdvanceTimer = null;
+      }
+    }
+
+    continueBtn.addEventListener('click', () => {
+      const ctrl = state.currentController;
+      if (!ctrl) return;
+      if (!state.revealed) {
+        if (!ctrl.hasAnswer()) return;
+        const result = ctrl.evaluate();
+        ctrl.reveal(result);
+        state.revealed = true;
+        if (result.correct) state.correctCount += 1;
+        feedback.textContent = result.feedback || '';
+        feedback.setAttribute('data-state', result.correct ? 'correct' : 'wrong');
+        continueBtn.textContent = 'Next ›';
+        // Auto-advance: short pause for correct, longer for wrong so the
+        // learner can read the feedback. Second click on Continue skips.
+        const wait = result.correct ? 1100 : 1900;
+        state.autoAdvanceTimer = setTimeout(() => {
+          state.autoAdvanceTimer = null;
+          if (state.revealed) {
+            state.currentIndex += 1;
+            renderCurrentItem();
+          }
+        }, wait);
+      } else {
+        clearAutoAdvance();
+        state.currentIndex += 1;
+        renderCurrentItem();
+      }
+    });
+
+    function renderCompletion() {
+      const tpl = $('tpl-completion').content.firstElementChild.cloneNode(true);
+      cardMount.innerHTML = '';
+      feedback.textContent = '';
+      feedback.removeAttribute('data-state');
+      tpl.querySelector('#completion-streak').textContent = state.streak;
+      tpl.querySelector('#completion-score').textContent =
+        `${state.correctCount}/${state.itemsForTrack.length}`;
+      tpl.querySelector('#restart-btn').addEventListener('click', () => {
+        // Same track restart — pedagogically what a student should
+        // see ("practice more"). Track placement is system-decided.
+        PackLoader.resetCursor(PACK_ID, state.track);
+        startRun();
+      });
+      const pickBtn = tpl.querySelector('#restart-pick-btn');
+      if (DEBUG) {
+        pickBtn.hidden = false;
+        pickBtn.addEventListener('click', () => {
+          showTrackModal((t) => {
+            state.track = t;
+            localStorage.setItem(STORAGE_KEYS.track, String(t));
+            PackLoader.resetCursor(PACK_ID);
+            startRun();
+          });
+        });
+      }
+      cardMount.appendChild(tpl);
+      continueBtn.disabled = true;
+      continueBtn.setAttribute('aria-disabled', 'true');
+      continueBtn.textContent = 'Done';
+      paintProgress();
+    }
+
+    // ---- boot --------------------------------------------------
+
+    function showError(msg) {
+      cardMount.innerHTML = '';
+      const e = document.createElement('div');
+      e.className = 'item-card';
+      e.setAttribute('data-track', String(state.track || 2));
+      e.appendChild(makeStripe());
+      const p = document.createElement('p');
+      p.className = 'prompt';
+      p.textContent = 'Could not load the pack.';
+      e.appendChild(p);
+      const hint = document.createElement('p');
+      hint.className = 'open-input-hint';
+      hint.textContent = msg;
+      e.appendChild(hint);
+      cardMount.appendChild(e);
+    }
+
+    // Aggressively unlock audio on the very first pointer interaction
+    // (covers returning users who skip the name modal).
+    function installAudioUnlockOnce() {
+      const handler = () => {
+        if (window.AvneiAudio && window.AvneiAudio.unlock) window.AvneiAudio.unlock();
+        document.removeEventListener('pointerdown', handler, true);
+        document.removeEventListener('keydown', handler, true);
+      };
+      document.addEventListener('pointerdown', handler, true);
+      document.addEventListener('keydown', handler, true);
+    }
+
+    function boot() {
+      installAudioUnlockOnce();
+      paintIdentity();
+      PackLoader.loadPack(PACK_ID)
+        .then(pack => {
+          state.pack = pack;
+          if (!state.name) {
+            showNameModal();
+          } else {
+            startRun();
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          showError(err.message || 'Unknown error');
+        });
+    }
+
+    boot();
+  })();
+  </script>
+
+</body>
+</html>
