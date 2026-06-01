@@ -49,12 +49,14 @@
 //   _LETTER_ADAPTER     → AvneiLetterTargets (קיים)
 //   _VOWEL_ADAPTER      → AvneiVowelAdapter (סוכן 29 · 29.5.2026 · אי 4 CV)
 //   _ORAL_SKILL_ADAPTER → AvneiOralSkillAdapter (סוכן 31 · 29.5.2026 · אי 14)
+//   _WORD_ADAPTER       → AvneiWordAdapter (סוכן 30 · 30.5.2026 · אי 5 מילים)
 //   _PHON_SKILL_ADAPTER → ⏳ post-pilot
 //
 // תלות:
 //   window.AvneiLetterTargets      — להתאמת type='letter'
 //   window.AvneiVowelAdapter       — להתאמת type='vowel'
 //   window.AvneiOralSkillAdapter   — להתאמת type='oral-skill'
+//   window.AvneiWordAdapter        — להתאמת type='word'
 //   window.AvneiBKT                — getWeakestLetters/getWeakestOralSkills
 //
 // טסטים: scripts/test-skill-units.js
@@ -109,6 +111,14 @@
   function _getOralSkillAdapter() {
     if (typeof window !== 'undefined' && window.AvneiOralSkillAdapter) return window.AvneiOralSkillAdapter;
     if (typeof global !== 'undefined' && global.AvneiOralSkillAdapter) return global.AvneiOralSkillAdapter;
+    return null;
+  }
+
+  // אי 5 (סוכן 30 · 30.5.2026) — word adapter.
+  // unit.id = text המנוקד של המילה (לדוגמה 'בַּת'). delegate ב-1:1 ל-AvneiWordAdapter.
+  function _getWordAdapter() {
+    if (typeof window !== 'undefined' && window.AvneiWordAdapter) return window.AvneiWordAdapter;
+    if (typeof global !== 'undefined' && global.AvneiWordAdapter) return global.AvneiWordAdapter;
     return null;
   }
 
@@ -171,6 +181,12 @@
       if (!VA || typeof VA.addTarget !== 'function') return false;
       return VA.addTarget(sid, unit.letter, unit.id, source);
     }
+    // word → delegate ל-AvneiWordAdapter. unit.id = word text (מנוקד).
+    if (unit.type === UNIT_TYPES.WORD) {
+      const WA = _getWordAdapter();
+      if (!WA || typeof WA.addTarget !== 'function') return false;
+      return WA.addTarget(sid, unit.id, source);
+    }
     // Future types: no-op for now (returns false to surface "not yet supported")
     return false;
   }
@@ -186,6 +202,11 @@
       const VA = _getVowelAdapter();
       if (!VA || typeof VA.removeTarget !== 'function') return false;
       return VA.removeTarget(sid, unit.letter, unit.id);
+    }
+    if (unit.type === UNIT_TYPES.WORD) {
+      const WA = _getWordAdapter();
+      if (!WA || typeof WA.removeTarget !== 'function') return false;
+      return WA.removeTarget(sid, unit.id);
     }
     return false;
   }
@@ -218,6 +239,23 @@
         });
       } catch (e) { /* swallow */ }
     }
+    // word delegate (אי 5 · סוכן 30 · 30.5.2026)
+    const WA = _getWordAdapter();
+    if (WA && typeof WA.getTargets === 'function') {
+      try {
+        (WA.getTargets(sid) || []).forEach(function (entry) {
+          if (!entry || !entry.text) return;
+          out.push({
+            type: UNIT_TYPES.WORD,
+            id: entry.text,
+            displayHe: entry.text,
+            first_letter: entry.first_letter,
+            level: entry.level,
+            strand: 1,
+          });
+        });
+      } catch (e) { /* swallow */ }
+    }
     return out;
   }
 
@@ -232,6 +270,11 @@
       const VA = _getVowelAdapter();
       if (!VA || typeof VA.markFrozen !== 'function') return false;
       return VA.markFrozen(sid, unit.letter, unit.id, source);
+    }
+    if (unit.type === UNIT_TYPES.WORD) {
+      const WA = _getWordAdapter();
+      if (!WA || typeof WA.markFrozen !== 'function') return false;
+      return WA.markFrozen(sid, unit.id, source);
     }
     return false;
   }
@@ -248,6 +291,11 @@
       if (!VA || typeof VA.removeFrozen !== 'function') return false;
       return VA.removeFrozen(sid, unit.letter, unit.id);
     }
+    if (unit.type === UNIT_TYPES.WORD) {
+      const WA = _getWordAdapter();
+      if (!WA || typeof WA.removeFrozen !== 'function') return false;
+      return WA.removeFrozen(sid, unit.id);
+    }
     return false;
   }
 
@@ -262,6 +310,11 @@
       const VA = _getVowelAdapter();
       if (!VA || typeof VA.isFrozen !== 'function') return false;
       return VA.isFrozen(sid, unit.letter, unit.id);
+    }
+    if (unit.type === UNIT_TYPES.WORD) {
+      const WA = _getWordAdapter();
+      if (!WA || typeof WA.isFrozen !== 'function') return false;
+      return WA.isFrozen(sid, unit.id);
     }
     return false;
   }
@@ -287,6 +340,23 @@
             id: entry.vowelId,
             letter: entry.letter,
             displayHe: entry.cv,
+            strand: 1,
+          });
+        });
+      } catch (e) { /* swallow */ }
+    }
+    // word delegate (אי 5 · סוכן 30 · 30.5.2026)
+    const WA = _getWordAdapter();
+    if (WA && typeof WA.getFrozen === 'function') {
+      try {
+        (WA.getFrozen(sid) || []).forEach(function (entry) {
+          if (!entry || !entry.text) return;
+          out.push({
+            type: UNIT_TYPES.WORD,
+            id: entry.text,
+            displayHe: entry.text,
+            first_letter: entry.first_letter,
+            level: entry.level,
             strand: 1,
           });
         });
@@ -375,6 +445,26 @@
     return { type: UNIT_TYPES.ORAL_SKILL, id: skillId, displayHe: displayHe, strand: 3 };
   }
 
+  // Word shorthand — type='word' (אי 5 · סוכן 30 · 30.5.2026 · סטרנד 1).
+  // id = text המנוקד של המילה. level נגזר אוטומטית אם WA זמין.
+  function makeWordUnit(text) {
+    const unit = { type: UNIT_TYPES.WORD, id: text, displayHe: text, strand: 1 };
+    const WA = _getWordAdapter();
+    if (WA) {
+      try {
+        const w = (typeof WA.getWordByText === 'function') ? WA.getWordByText(text) : null;
+        if (w) {
+          unit.first_letter = w.first_letter;
+          unit.key = w.key;
+        }
+        if (typeof WA.classifyWordLevel === 'function') {
+          unit.level = WA.classifyWordLevel(text);
+        }
+      } catch (e) { /* swallow */ }
+    }
+    return unit;
+  }
+
   // --------------------------------------------------------------------------
   // export
   // --------------------------------------------------------------------------
@@ -403,6 +493,7 @@
     makeLetterUnit: makeLetterUnit,
     makeCVUnit: makeCVUnit,
     makeOralSkillUnit: makeOralSkillUnit,
+    makeWordUnit: makeWordUnit,
 
     // Validation (לטסטים)
     _isValidUnit: _isValidUnit

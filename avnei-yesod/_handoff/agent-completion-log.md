@@ -7,6 +7,78 @@
 
 ---
 
+## 🐚 סוכן 30 — אי 5 (מיזוג צירופים למילים)
+
+**סטטוס:** ✅ הסתיים · 169/169 unit assertions ירוקים (word-adapter + integration) · 0 רגרסיות ב-12 test suites קיימים · ממתין לאישור מיטל על vocab gaps + ועל פוש
+**תאריך:** 2026-05-30
+**שיחה:** Claude Code · Opus 4.7 · 1M context · VS Code · impactos · עברתי על Bootstrap v2
+**Handoff:** `avnei-yesod/_handoff/2026-05-29-island-5-blending-code-agent-prompt.md` v2 (30.5.2026)
+**Completion report:** `_handoff/2026-05-30-island-05-completion-report.md`
+**Vocab gaps:** `_handoff/2026-05-30-island-05-vocab-gaps.md`
+**Commit:** טרם נדחף (ממתין לאישור מיטל)
+
+**מה נמסר:**
+- `js/shared/word-adapter.js` (586 שורות) — 5-tier API: decompose/validate/getWords/getTopWeakWords/target/freeze.
+- `js/shared/skill-units.js` — wired type='word' (delegate ל-AvneiWordAdapter, ב-7 functions + makeWordUnit).
+- `js/shared/bkt.js` — אי 5 sub-BKT פר אורך-מילה: `ISLANDS_WITH_SUB_BKT=[3,5,14]` · `PARAMS_PER_ISLAND[5]` · `emptyIsland5Record` · `ingestIsland5Event` · `ISLAND_5_WORD_LENGTHS` · `getWordLengthState` · `getWeakestWordLengths` · `getWordLengthMasteryDistribution`. **בלוק חדש בתוך פטרן אי 14 — לא דרסתי קוד של 29/31.**
+- `data/island-05-words/`: `_schema.md` + 3 JSONs (9 + 30 + 10 = **49 מילים מאומתות מ-vocab-bank**). כל מילה: text מנוקד מלא + key ASCII slug + first_letter + level + meaning_he + source.
+- `stage-5-island.html` — welcome buffer קצר (hero noni + narrative 3 פסקאות + 2 CTAs · auto-play intro-isl05.mp3).
+- `stage-5-word-merge.html` — session-runner של 5 סבבים עם רוטציה: word-merge → tap-word → word-vs-word → match-word-to-image → word-merge. נרטיב צדפים + נוני + journey strip.
+- `stage-5-word-build.html` — standalone exploration (vowel-bar + letter-grid + undo/play/clear).
+- `js/templates/mechanic-word-merge.js` — המכניקה הליבתית (slot-by-slot build + distractors + hint).
+- `js/templates/mechanic-tap-word.js` — בחירת מילה אחת מ-4.
+- `js/templates/mechanic-word-vs-word.js` — אבחנה דקה בין 2 מילים דומות.
+- `js/templates/mechanic-match-word-to-image.js` — מילה ↔ תמונה (fallback: gloss טקסטואלי, anchor_image=null ב-MVP).
+- `js/templates/mechanic-word-build.js` — standalone constructive.
+- `scripts/generate-island-05-word-audio.py` — edge-tts/AvriNeural · 49 words + intro + completion · ב/כ/פ validation.
+- `scripts/test-word-adapter.js` — 120 assertions, 12 קטגוריות + JSON↔adapter sync.
+- `scripts/test-island-5-integration.js` — 49 assertions (BKT + skill-units + event-logger + mastery-check).
+- `map.html` — node אי 5 (`right:48%; top:30%`) בין אי 4 לאי 14.
+
+**Acceptance criteria status:**
+- [x] word-adapter.js + 30+ tests → **120 tests, 0 fail**
+- [x] bkt.js ISLANDS_WITH_SUB_BKT=[3,5,14] + island-5 functions (לא דרס 14)
+- [x] 3 משחקוני stage-5-*.html
+- [⚠️] ≥ 65 מילים → **49 (פער 16, vocab-bank ריק במילים בנות 2 אותיות — מתועד ב-vocab-gaps)**
+- [ ] 65+ MP3 → **לא הפקתי בפועל (זמן/edge-tts deps). הסקריפט מוכן לרוץ.**
+- [x] 5 mechanics ב-js/templates/
+- [x] integration עם vowel-adapter (CV pairs ב-word-build)
+- [x] mastery-check (line 77 כבר היה תקין) + ISLAND_TO_STRAND (line 62 כבר היה תקין) → **2 משימות D הוסבו ל-verify-only**
+- [x] map.html כולל data-island-id="5"
+- [x] **0 רגרסיות** ב-12 test suites
+- [ ] בדיקה ידנית בbrowser → **לא בוצעה** (סוכן 30 לא יכול להפעיל browser)
+- [x] completion report ב-_handoff/
+
+**מה ש-Bootstrap טען שהוא משימה אבל בפועל כבר תקין:**
+- D.10: mastery-check.js Island 5 — `ISLAND_TO_RAMA[5] = {rama_task: 6, accuracy_threshold_pKnown: 0.90, fluency_threshold_seconds: 3.5}` כבר ב-line 77 (תוקן בעבר).
+- D.11: event-logger.js — `ISLAND_TO_STRAND[5] = 1` כבר ב-line 62 (E.17, 28.5.2026).
+- **שתי המשימות הוסבו ל-verification וכלולות בטסטים.**
+
+**Bootstrap-orchestrator inconsistencies שזיהיתי:**
+1. ה-bootstrap כתב שאי 5 מקבל "4 mechanics", אבל גם דרש standalone build → הבנתי כ-5 mechanics סה"כ (1 primary + 3 alternates ב-rotation + 1 standalone). זה תואם את הbootstrap בפיסקה אחרת.
+2. הbootstrap הביא "פֶּרַח · גֶּשֶׁר" כדוגמא ל-"4-CV", אבל שתיהן 3 letters בסיס. **הולכתי לפי letter_count אמיתי** (countBaseLetters). תיעדתי ב-`_schema.md`.
+3. הbootstrap נתן example לעמדה ב-map.html של אי 5 (`right:50%; top:30%`) שחפף עם אי 4. שיניתי ל-`right:48%` בכדי לא לחפוף.
+
+**Vocab gaps שדורשים אישור מיטל:**
+- Level 1 (2cv): רק 9 מילים מאומתות (היעד 20). חסרות מילים בסיסיות כמו יָם, גַּן, אַח, אָב, בָּא, חַם, נֵר.
+- Level 3 (4cv): רק 10 מילים מאומתות (היעד 15). חסרות מילים כמו מַחְשֵׁב, צִינוֹר.
+- ראה: `_handoff/2026-05-30-island-05-vocab-gaps.md` — רשימה מפורטת + 3 אפשרויות החלטה.
+
+**מה שלא בוצע (מחוץ ל-scope ידני):**
+- בדיקה ידנית בdpdפן.
+- הפקת 49+ MP3 בפועל דרך `generate-island-05-word-audio.py`.
+
+**מומלץ ל-Meytal בעת קבלה:**
+1. לקרוא `_handoff/2026-05-30-island-05-vocab-gaps.md` ולהחליט.
+2. להריץ `python scripts/generate-island-05-word-audio.py` (5-10 דקות + חיבור אינטרנט).
+3. לפתוח `underwater-app/map.html` ולנווט: אי 5 → stage-5-island.html → "בואו נתחיל" → 5 סבבים.
+4. לבדוק ב/כ/פ הגייה (לא /v·x·f/) על מילים: בַּת · בָּרָק · בַּיִת · כַּף · פִּיל.
+5. אם הכל תקין → push.
+
+**קבצי-מקור שלא נגעתי בהם:** stage-4-*.html, stage-14-*.html, stage-3-*.html, mechanic-tap-cv/listen-cv/cv-vs-cv/match-cv-to-word/cv-build, vowel-adapter.js (רק קראתי), oral-skill-adapter.js, moy-items, packs, מסמכי-אם.
+
+---
+
 ## 🖨️ סוכן Fix A/G-1 — B.7 modal print button (teacher-action) + test setup fix
 
 **סטטוס:** ✅ הסתיים · 52/52 E2E ירוקים (story 7 כבר לא skipped) · 19/19 unit suites ירוקים · 0 regressions · ממתין לאישור פוש

@@ -81,6 +81,11 @@ window.AvneiBKT = (function() {
     // אי 14 (סוכן 31 · 29.5.2026) — תואם PARAMS_PER_STRAND[3]. pL0 גבוה — ילדה בכיתה א'
     // כבר באה עם שפה דבורה רחבה. pG גבוה (3/3 ניחוש = 1/3). pS = 0.10 (קשב).
     14: { pL0: 0.30, pT: 0.15, pG: 0.25, pS: 0.10 },
+    // אי 5 (סוכן 30 · 30.5.2026) — מיזוג צירופים למילים. סטרנד 1, אחרי אי 4 (CV).
+    // pL0=0.10 — דורש פענוח אקטיבי של 2+ CV pairs רצופים. pT=0.15 (למידה הדרגתית).
+    // pG=0.18 — ניחוש מסתכם בלחיצה על מילה אחת מ-4 (≈25%) אבל phoneme group accept מפחית.
+    // pS=0.07 — שטף בקריאת מילה מנוקדת ראשונה דורש זהירות.
+    5: { pL0: 0.10, pT: 0.15, pG: 0.18, pS: 0.07 },
   };
 
   // Per-strand params — ברירות מחדל. ילדים מגיעים עם פערים שונים בכל סטרנד:
@@ -121,7 +126,9 @@ window.AvneiBKT = (function() {
   // ISLAND_3_LETTERS = 5 אותיות עם משחקון פעיל היום (מ/ק/ב/ר/ת).
   // משמש בלוגיקת mastery של אי 3 (A0.3 mastery-check ידרוש את כולן) — נשמר ב-5 עד D.15.
   const ISLAND_3_LETTERS = ['ת', 'מ', 'ר', 'ב', 'ק'];
-  const ISLANDS_WITH_SUB_BKT = [3, 14];  // איים שמשתמשים ב-sub-BKT (אי 3 פר-אות, אי 14 פר-oral-skill)
+  // אי 3 פר-אות · אי 5 פר-אורך-מילה · אי 14 פר-oral-skill.
+  // סוכן 30 הוסיף את 5 ב-30.5.2026 — pattern של אי 14 (3 buckets · ingestIsland5Event).
+  const ISLANDS_WITH_SUB_BKT = [3, 5, 14];
 
   // A.4 — כל 22 האותיות לסטרנד 1 (per_letter). סדר אלפבתי קנוני (תואם D.14 _schema.md).
   // משמש לאתחול ה-per_letter ולחישוב distribution / weakest. עצמאי מ-ISLAND_3_LETTERS.
@@ -147,6 +154,20 @@ window.AvneiBKT = (function() {
     'identify-hero': 'זיהוי גיבור ופרטים',
     'sequence':      'רצף אירועים',
     'inference':     'הסקת מסקנות',
+  });
+
+  // אי 5 (מיזוג צירופים למילים, סטרנד 1) — סוכן 30 · 30.5.2026.
+  // Sub-BKT פר אורך-מילה (3 buckets). זהה למבנה אי 14 (per_oral_skill) רק עם buckets שונים.
+  // החלטת תזמורת מיטל: מעקב פר 2cv/3cv/4cv כדי לזהות אם ילדה תקועה ברמת מורכבות מסוימת.
+  // מתעדכן ע"י mechanic-* של אי 5 דרך event.target_word_length.
+  const ISLAND_5_WORD_LENGTHS = Object.freeze(['2cv', '3cv', '4cv']);
+  const WORD_LENGTH_WEAK_THRESHOLD = 0.70;
+  const WORD_LENGTH_MIN_ATTEMPTS_FOR_BUCKET = 3;
+  // תוויות תצוגה (עברית, ללא ניקוד — מסך מורה).
+  const WORD_LENGTH_DISPLAY_HE = Object.freeze({
+    '2cv': 'מילים של 2 אותיות',
+    '3cv': 'מילים של 3 אותיות',
+    '4cv': 'מילים של 4 אותיות',
   });
 
   // ============================================================
@@ -282,6 +303,50 @@ window.AvneiBKT = (function() {
     return changed;
   }
 
+  // אי 5 (סוכן 30 · 30.5.2026) — emptyIsland5Record + ensureAllWordLengthsIn.
+  // מבנה מקביל לאי 14: per_word_length, aggregate, total_attempts, sessionsAtMastery.
+  function emptyIsland5Record() {
+    const params = PARAMS_PER_ISLAND[5] || DEFAULT_PARAMS;
+    const per_word_length = {};
+    ISLAND_5_WORD_LENGTHS.forEach(w => {
+      per_word_length[w] = {
+        pKnown: params.pL0,
+        attempts: 0,
+        correct: 0,
+        wrong: 0,
+        responseTimesMs: [],
+        masteryAchievedAt: null,
+      };
+    });
+    return {
+      per_word_length,
+      aggregate_pKnown: params.pL0,
+      total_attempts: 0,
+      sessionsAtMastery: 0,
+      lastSessionId: null,
+      masteryAchievedAt: null,
+    };
+  }
+
+  function ensureAllWordLengthsIn(perWordLength, pL0) {
+    if (!perWordLength || typeof perWordLength !== 'object') return false;
+    let changed = false;
+    ISLAND_5_WORD_LENGTHS.forEach(w => {
+      if (!perWordLength[w]) {
+        perWordLength[w] = {
+          pKnown: pL0,
+          attempts: 0,
+          correct: 0,
+          wrong: 0,
+          responseTimesMs: [],
+          masteryAchievedAt: null,
+        };
+        changed = true;
+      }
+    });
+    return changed;
+  }
+
   function emptyStrandRecord(strandId) {
     const params = PARAMS_PER_STRAND[strandId] || DEFAULT_PARAMS;
     const rec = {
@@ -319,6 +384,7 @@ window.AvneiBKT = (function() {
 
   function _emptySubBktRecord(islandId) {
     if (islandId === 3) return emptyIsland3Record();
+    if (islandId === 5) return emptyIsland5Record();
     if (islandId === 14) return emptyIsland14Record();
     return emptyIslandRecord(islandId);
   }
@@ -344,6 +410,16 @@ window.AvneiBKT = (function() {
     if (islandId === 14 && student[islandId].per_oral_skill) {
       const params = PARAMS_PER_ISLAND[14];
       if (ensureAllOralSkillsIn(student[islandId].per_oral_skill, params.pL0)) {
+        const state = loadState();
+        if (!state[studentId]) state[studentId] = {};
+        state[studentId][islandId] = student[islandId];
+        saveState(state);
+      }
+    }
+    // אי 5 (סוכן 30 · 30.5.2026) — מיגרציה non-destructive ל-3 word length buckets.
+    if (islandId === 5 && student[islandId].per_word_length) {
+      const params = PARAMS_PER_ISLAND[5];
+      if (ensureAllWordLengthsIn(student[islandId].per_word_length, params.pL0)) {
         const state = loadState();
         if (!state[studentId]) state[studentId] = {};
         state[studentId][islandId] = student[islandId];
@@ -545,6 +621,81 @@ window.AvneiBKT = (function() {
   }
 
   // ============================================================
+  // עדכון אי 5 (sub-BKT פר אורך-מילה) — סוכן 30 · 30.5.2026
+  // מקביל ל-ingestIsland14Event עם buckets שונים: 2cv / 3cv / 4cv.
+  // event.target_word_length חייב להיות אחד מ-ISLAND_5_WORD_LENGTHS.
+  // ============================================================
+  function ingestIsland5Event(state, studentId, evt) {
+    const island = state[studentId][5];
+    const wordLength = evt.target_word_length;
+
+    if (!wordLength || !ISLAND_5_WORD_LENGTHS.includes(wordLength)) {
+      console.warn('BKT island 5: event without valid target_word_length', evt);
+      return null;
+    }
+
+    const params = PARAMS_PER_ISLAND[5] || DEFAULT_PARAMS;
+    ensureAllWordLengthsIn(island.per_word_length, params.pL0);
+    const lenState = island.per_word_length[wordLength];
+
+    lenState.attempts++;
+    island.total_attempts++;
+    if (evt.is_correct) lenState.correct++;
+    else lenState.wrong++;
+
+    if (typeof evt.response_time_ms === 'number' && evt.response_time_ms > 0) {
+      lenState.responseTimesMs.push(evt.response_time_ms);
+      if (lenState.responseTimesMs.length > 100) {
+        lenState.responseTimesMs = lenState.responseTimesMs.slice(-100);
+      }
+    }
+
+    lenState.pKnown = bktUpdate(lenState.pKnown, evt.is_correct === true, params);
+
+    // mastery פר bucket — בלי דרישת שטף קשיחה ב-MVP (קריאת מילה ראשונה דורשת זהירות,
+    // לא מהירות). אם רוצים שטף — להוסיף hasGoodStrandFluency(times, 1) ב-V2.
+    if (
+      !lenState.masteryAchievedAt &&
+      lenState.pKnown >= MASTERY_THRESHOLD
+    ) {
+      lenState.masteryAchievedAt = Date.now();
+    }
+
+    // aggregate — ממוצע של buckets שתורגלו
+    const practiced = Object.values(island.per_word_length).filter(l => l.attempts > 0);
+    if (practiced.length > 0) {
+      island.aggregate_pKnown = practiced.reduce((s, l) => s + l.pKnown, 0) / practiced.length;
+    }
+
+    // consolidation — סיום סשן
+    if (evt.session_id && evt.session_id !== island.lastSessionId) {
+      const allMastered = ISLAND_5_WORD_LENGTHS.every(w =>
+        island.per_word_length[w].masteryAchievedAt !== null
+      );
+      if (allMastered) island.sessionsAtMastery++;
+      else island.sessionsAtMastery = 0;
+      island.lastSessionId = evt.session_id;
+    }
+
+    // mastery של האי כולו — כל 3 ה-buckets + 2 סשנים רצופים
+    if (
+      !island.masteryAchievedAt &&
+      ISLAND_5_WORD_LENGTHS.every(w => island.per_word_length[w].masteryAchievedAt !== null) &&
+      island.sessionsAtMastery >= 2
+    ) {
+      island.masteryAchievedAt = Date.now();
+    }
+
+    return {
+      pKnown_word_length: lenState.pKnown,
+      pKnown_island: island.aggregate_pKnown,
+      word_length: wordLength,
+      masteryAchieved: !!island.masteryAchievedAt,
+      bucket_mastery: !!lenState.masteryAchievedAt,
+    };
+  }
+
+  // ============================================================
   // עדכון אי רגיל
   // ============================================================
   function ingestRegularIslandEvent(state, studentId, islandId, evt) {
@@ -694,6 +845,9 @@ window.AvneiBKT = (function() {
     let islandResult;
     if (islandId === 3) {
       islandResult = ingestIsland3Event(state, studentId, evt);
+    } else if (islandId === 5) {
+      // אי 5 (סוכן 30 · 30.5.2026) — sub-BKT פר אורך-מילה.
+      islandResult = ingestIsland5Event(state, studentId, evt);
     } else if (islandId === 14) {
       islandResult = ingestIsland14Event(state, studentId, evt);
     } else {
@@ -859,6 +1013,37 @@ window.AvneiBKT = (function() {
           ? 'mastered'
           : weakLetters.length > 0
             ? `אותיות חלשות: ${weakLetters.join(', ')}`
+            : `דורש שני סשנים רצופים — כרגע ${island.sessionsAtMastery}`,
+      };
+    }
+
+    if (islandId === 5) {
+      // אי 5 (סוכן 30 · 30.5.2026) — בדיקה פר אורך-מילה.
+      const lenStatus = {};
+      const weakLengths = [];
+      ISLAND_5_WORD_LENGTHS.forEach(w => {
+        const ls = island.per_word_length[w];
+        const mastered = ls.masteryAchievedAt !== null;
+        lenStatus[w] = {
+          pKnown: ls.pKnown,
+          mastered,
+          attempts: ls.attempts,
+          accuracy: ls.attempts > 0 ? ls.correct / ls.attempts : null,
+        };
+        if (!mastered && ls.attempts > 0 && ls.pKnown < MASTERY_THRESHOLD) {
+          weakLengths.push(w);
+        }
+      });
+      return {
+        mastered: !!island.masteryAchievedAt,
+        aggregate_pKnown: island.aggregate_pKnown,
+        per_word_length: lenStatus,
+        weak_word_lengths: weakLengths,
+        consolidationOk: island.sessionsAtMastery >= 2,
+        reason: island.masteryAchievedAt
+          ? 'mastered'
+          : weakLengths.length > 0
+            ? `אורכי מילים חלשים: ${weakLengths.map(w => WORD_LENGTH_DISPLAY_HE[w] || w).join(', ')}`
             : `דורש שני סשנים רצופים — כרגע ${island.sessionsAtMastery}`,
       };
     }
@@ -1256,6 +1441,107 @@ window.AvneiBKT = (function() {
     return entries.slice(0, limit);
   }
 
+  // ============================================================
+  // API חדש — Sub-BKT פר אורך-מילה (אי 5, סוכן 30 · 30.5.2026)
+  // מקביל ל-getOralSkillState/getWeakestOralSkills/getOralSkillMasteryDistribution.
+  // ============================================================
+
+  function _resolvePerWordLength(studentId) {
+    const state = loadState();
+    const s = state[studentId];
+    if (!s || !s[5] || !s[5].per_word_length) return null;
+    const params = PARAMS_PER_ISLAND[5];
+    if (ensureAllWordLengthsIn(s[5].per_word_length, params.pL0)) saveState(state);
+    return s[5].per_word_length;
+  }
+
+  function getWordLengthState(studentId, wordLength) {
+    if (!ISLAND_5_WORD_LENGTHS.includes(wordLength)) return null;
+    const perLen = _resolvePerWordLength(studentId);
+    if (!perLen || !perLen[wordLength]) return null;
+    const ls = perLen[wordLength];
+    return {
+      word_length: wordLength,
+      displayHe: WORD_LENGTH_DISPLAY_HE[wordLength],
+      pKnown: ls.pKnown,
+      attempts: ls.attempts || 0,
+      correct: ls.correct || 0,
+      wrong: ls.wrong || 0,
+      accuracy: (ls.attempts > 0) ? (ls.correct / ls.attempts) : null,
+      median_response_time_ms: median((ls.responseTimesMs || []).slice(-20)),
+      mastered: ls.masteryAchievedAt !== null && ls.masteryAchievedAt !== undefined,
+      masteryAchievedAt: ls.masteryAchievedAt || null,
+    };
+  }
+
+  function getWeakestWordLengths(studentId, n, opts) {
+    const limit = (typeof n === 'number' && n > 0) ? n : 3;
+    const options = opts || {};
+    const includeUntouched = options.includeUntouched === true;
+    const perLen = _resolvePerWordLength(studentId);
+    if (!perLen) {
+      return includeUntouched
+        ? ISLAND_5_WORD_LENGTHS.map(w => ({
+            word_length: w,
+            displayHe: WORD_LENGTH_DISPLAY_HE[w],
+            pKnown: PARAMS_PER_ISLAND[5].pL0,
+            attempts: 0,
+            accuracy: null
+          }))
+        : [];
+    }
+    const entries = ISLAND_5_WORD_LENGTHS
+      .map(w => {
+        const ls = perLen[w];
+        if (!ls) return null;
+        const attempts = ls.attempts || 0;
+        if (!includeUntouched && attempts < WORD_LENGTH_MIN_ATTEMPTS_FOR_BUCKET) return null;
+        if (ls.masteryAchievedAt) return null;
+        return {
+          word_length: w,
+          displayHe: WORD_LENGTH_DISPLAY_HE[w],
+          pKnown: ls.pKnown,
+          attempts,
+          accuracy: attempts > 0 ? (ls.correct / attempts) : null,
+        };
+      })
+      .filter(Boolean);
+    entries.sort((a, b) => a.pKnown - b.pKnown);
+    return entries.slice(0, limit);
+  }
+
+  function getWordLengthMasteryDistribution(studentId) {
+    const perLen = _resolvePerWordLength(studentId);
+    const dist = {
+      mastered: 0,
+      in_progress: 0,
+      weak: 0,
+      untouched: 0,
+      by_bucket: { mastered: [], in_progress: [], weak: [], untouched: [] },
+      total: ISLAND_5_WORD_LENGTHS.length,
+    };
+    if (!perLen) {
+      dist.untouched = ISLAND_5_WORD_LENGTHS.length;
+      dist.by_bucket.untouched = ISLAND_5_WORD_LENGTHS.slice();
+      return dist;
+    }
+    ISLAND_5_WORD_LENGTHS.forEach(w => {
+      const ls = perLen[w];
+      if (!ls) { dist.untouched++; dist.by_bucket.untouched.push(w); return; }
+      const attempts = ls.attempts || 0;
+      if (ls.masteryAchievedAt) {
+        dist.mastered++; dist.by_bucket.mastered.push(w);
+      } else if (attempts < WORD_LENGTH_MIN_ATTEMPTS_FOR_BUCKET) {
+        dist.untouched++; dist.by_bucket.untouched.push(w);
+      } else if (ls.pKnown < WORD_LENGTH_WEAK_THRESHOLD) {
+        dist.weak++; dist.by_bucket.weak.push(w);
+      } else {
+        dist.in_progress++; dist.by_bucket.in_progress.push(w);
+      }
+    });
+    return dist;
+  }
+
   function getOralSkillMasteryDistribution(studentId) {
     const perSkill = _resolvePerOralSkill(studentId);
     const dist = {
@@ -1346,5 +1632,14 @@ window.AvneiBKT = (function() {
     ORAL_SKILL_DISPLAY_HE,
     ORAL_SKILL_WEAK_THRESHOLD,
     ORAL_SKILL_MIN_ATTEMPTS_FOR_BUCKET,
+
+    // ---- API חדש — Sub-BKT פר אורך-מילה (אי 5, סוכן 30 · 30.5.2026) ----
+    getWordLengthState,
+    getWeakestWordLengths,
+    getWordLengthMasteryDistribution,
+    ISLAND_5_WORD_LENGTHS,
+    WORD_LENGTH_DISPLAY_HE,
+    WORD_LENGTH_WEAK_THRESHOLD,
+    WORD_LENGTH_MIN_ATTEMPTS_FOR_BUCKET,
   };
 })();
