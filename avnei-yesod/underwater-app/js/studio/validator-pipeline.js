@@ -318,6 +318,15 @@
       if (typeof txt !== 'string' || !txt.trim()) continue;
       if (!isHebrewWord(txt)) continue;
 
+      // אי 3 (זיהוי אותיות): אות בודדת עירומה מ-22 הקנוניות = פדגוגית נכון.
+      // הילדה לומדת את צורת האות, לא צליל מנוקד. לא מחילים niqud_missing.
+      // (island_id חי ב-_studio כי pack-schema לא מכיל אותו ישירות)
+      const itemIslandId = item.island_id ?? (item._studio && item._studio.island_id);
+      const stripped = stripNiqud(txt).trim();
+      if (itemIslandId === 3 && stripped.length === 1 && ALL_HEBREW_LETTERS_22.includes(stripped)) {
+        continue;
+      }
+
       if (!hasNiqud(txt)) {
         foundMissingNiqud = true;
         continue; // ה-bgdkpt check מסתמך על marks; דלג

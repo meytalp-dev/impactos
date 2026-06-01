@@ -297,6 +297,41 @@ async function runAll() {
     assert.ok(!distractorsHaveConfusion('ב', ['שָ']));
   });
 
+  test('VL-14: island 3 bare-letter distractors do NOT trigger niqud_missing', () => {
+    // אי 3 = זיהוי אותיות. distractors הם אותיות עירומות מ-22 הקנוניות.
+    // הילדה לומדת צורת אות, לא צליל מנוקד. validator לא חוסם.
+    const item = autoTag({
+      island_id: 3, mechanic: 'tap-all', letter: 'מ',
+      distractors: ['ב', 'נ', 'ר']  // bare letters, no niqud
+    });
+    const r = validateContent(item);
+    assert.ok(!r.errors.some(e => e.code === 'niqud_missing'),
+      'niqud_missing should not fire for bare letters in island 3');
+    assert.ok(r.valid, 'item should pass full validation');
+  });
+
+  test('VL-15: island 3 bare-letter exception does NOT leak to other islands', () => {
+    // אותו פריט עם אות בודדת ב-island 5 = כן דורש ניקוד (מילים, לא זיהוי אות)
+    const item = autoTag({
+      island_id: 5, mechanic: 'memory-pair',
+      custom_words: ['ב']  // bare letter as "word" in word-reading island
+    });
+    const r = validateContent(item);
+    assert.ok(r.errors.some(e => e.code === 'niqud_missing'),
+      'niqud_missing should still fire on island 5 for bare Hebrew');
+  });
+
+  test('VL-16: island 3 still rejects multi-char text without niqud', () => {
+    // 2+ אותיות באי 3 = טקסט, צריך ניקוד
+    const item = autoTag({
+      island_id: 3, mechanic: 'pick', letter: 'מ',
+      distractors: ['בו', 'נא', 'רי']  // 2-char each, no niqud
+    });
+    const r = validateContent(item);
+    assert.ok(r.errors.some(e => e.code === 'niqud_missing'),
+      'multi-char text without niqud must still be caught');
+  });
+
   // ========================================================
   // TTS (Phase C)
   // ========================================================
