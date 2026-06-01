@@ -44,10 +44,11 @@ test.describe('Story 13b · Studio screenshots', () => {
     await page.locator('[data-mechanic="tap-all"]').click();
     await page.locator('#navNext').click();
     await page.selectOption('[data-field="letter"]', 'מ');
-    const suggestions = page.locator('[data-chip-suggest]');
-    await suggestions.nth(0).click();
-    await suggestions.nth(0).click();
-    await suggestions.nth(0).click();
+    const chipField = page.locator('[data-chip-add]');
+    for (const letter of ['סַ', 'טַ', 'הַ']) {
+      await chipField.fill(letter);
+      await chipField.press('Enter');
+    }
     await page.waitForTimeout(700);
     await page.screenshot({ path: path.join(OUTPUT_DIR, '03-step2-tap-all-with-preview.png'), fullPage: false });
   });
@@ -59,10 +60,11 @@ test.describe('Story 13b · Studio screenshots', () => {
     await page.locator('[data-mechanic="tap-all"]').click();
     await page.locator('#navNext').click();
     await page.selectOption('[data-field="letter"]', 'מ');
-    const suggestions = page.locator('[data-chip-suggest]');
-    await suggestions.nth(0).click();
-    await suggestions.nth(0).click();
-    await suggestions.nth(0).click();
+    const chipField = page.locator('[data-chip-add]');
+    for (const letter of ['סַ', 'טַ', 'הַ']) {
+      await chipField.fill(letter);
+      await chipField.press('Enter');
+    }
     await page.locator('#navNext').click();
     await page.waitForSelector('.checklist');
     await page.screenshot({ path: path.join(OUTPUT_DIR, '04-step3-review.png'), fullPage: false });
