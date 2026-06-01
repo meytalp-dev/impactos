@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>ניהול כיתה · אבני יסוד</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+
+  <style>
+    body {
+      font-family: 'Heebo', sans-serif;
+      background: linear-gradient(180deg, #B9F0E8 0%, #7FD8D2 100%);
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px;
+      color: var(--text-main);
+    }
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--warm-white);
+      border-radius: var(--radius-md, 24px);
+      padding: 16px 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 16px rgba(38, 80, 92, 0.08);
+    }
+    .topbar .greeting {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--deep);
+    }
+    .topbar .greeting .small {
+      display: block;
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--text-soft);
+      margin-top: 4px;
+    }
+    .topbar a.logout {
+      color: var(--text-soft);
+      font-size: 14px;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: var(--radius-pill, 999px);
+      transition: background 0.2s;
+    }
+    .topbar a.logout:hover { background: var(--water-soft); color: var(--deep); }
+
+    .card {
+      background: var(--warm-white);
+      border-radius: var(--radius-lg, 28px);
+      padding: 28px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 32px rgba(38, 80, 92, 0.10);
+    }
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      color: var(--deep);
+      font-weight: 700;
+    }
+    .card .subtitle {
+      margin: 0 0 20px;
+      color: var(--text-soft);
+      font-size: 14px;
+    }
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+    .form-group input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 2px solid var(--water-depth);
+      border-radius: var(--radius-sm, 16px);
+      font-family: 'Heebo', sans-serif;
+      font-size: 16px;
+      background: white;
+      box-sizing: border-box;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--water-secondary);
+      box-shadow: 0 0 0 4px rgba(115, 217, 209, 0.2);
+    }
+    .btn-primary {
+      padding: 12px 24px;
+      background: var(--water-secondary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm, 16px);
+      font-family: 'Heebo', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-primary:hover { background: #5fc4be; }
+    .btn-primary:disabled { background: var(--stone); cursor: wait; }
+
+    .btn-secondary {
+      padding: 10px 18px;
+      background: white;
+      color: var(--deep);
+      border: 2px solid var(--water-depth);
+      border-radius: var(--radius-sm, 16px);
+      font-family: 'Heebo', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-secondary:hover { background: var(--water-soft); }
+
+    .btn-icon {
+      padding: 6px 10px;
+      background: none;
+      border: 1px solid var(--water-depth);
+      border-radius: var(--radius-sm, 16px);
+      font-family: 'Heebo', sans-serif;
+      font-size: 13px;
+      color: var(--text-soft);
+      cursor: pointer;
+      margin-right: 6px;
+    }
+    .btn-icon:hover { background: var(--water-soft); color: var(--deep); }
+
+    .student-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid var(--water-depth);
+      border-radius: var(--radius-md, 24px);
+      margin-bottom: 10px;
+      background: white;
+    }
+    .student-row .name {
+      flex: 1;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--deep);
+    }
+    .student-row .actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .add-row {
+      display: flex;
+      gap: 10px;
+      align-items: end;
+    }
+    .add-row .form-group {
+      flex: 1;
+      margin-bottom: 0;
+    }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: var(--radius-sm, 16px);
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+    .alert-error { background: #FFE5E5; color: #B33A3A; border: 1px solid #F5C2C2; }
+    .alert-success { background: #E5F8EF; color: #1F7A4D; border: 1px solid #BDE6CF; }
+    .alert-info { background: #FFF4C2; color: #7A5C0E; border: 1px solid #F0DE8A; }
+
+    .empty {
+      text-align: center;
+      padding: 24px;
+      color: var(--text-soft);
+      font-size: 14px;
+    }
+
+    /* QR modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(38, 80, 92, 0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+    }
+    .modal-backdrop.active { display: flex; }
+    .modal {
+      background: white;
+      border-radius: var(--radius-lg, 28px);
+      padding: 32px;
+      max-width: 500px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal h3 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      color: var(--deep);
+      text-align: center;
+    }
+    .modal .student-name {
+      text-align: center;
+      font-size: 16px;
+      color: var(--text-soft);
+      margin-bottom: 20px;
+    }
+    .qr-container {
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 16px;
+      background: white;
+      border: 2px dashed var(--water-depth);
+      border-radius: var(--radius-md, 24px);
+    }
+    .url-box {
+      padding: 12px 14px;
+      background: var(--water-soft);
+      border-radius: var(--radius-sm, 16px);
+      font-family: monospace;
+      font-size: 12px;
+      word-break: break-all;
+      color: var(--deep);
+      direction: ltr;
+      text-align: left;
+      margin-bottom: 12px;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    .modal .help {
+      font-size: 13px;
+      color: var(--text-soft);
+      line-height: 1.6;
+      margin-top: 16px;
+      padding: 12px;
+      background: var(--water-soft);
+      border-radius: var(--radius-sm, 16px);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-soft);
+    }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="topbar">
+    <div class="greeting" id="greeting">
+      <span class="loading">טוען...</span>
+    </div>
+    <a href="#" class="logout" id="logout-btn">יציאה</a>
+  </div>
+
+  <div id="alert"></div>
+
+  <!-- View: No class yet → create class -->
+  <div class="card hidden" id="view-create-class">
+    <h2>צרי כיתה</h2>
+    <p class="subtitle">פעם אחת — כל התלמידים יקושרו לכיתה הזו.</p>
+    <form id="create-class-form">
+      <div class="form-group">
+        <label for="class-name">שם הכיתה</label>
+        <input type="text" id="class-name" required maxlength="80"
+               placeholder="לדוגמה: כיתת מיטל">
+      </div>
+      <button type="submit" class="btn-primary" id="create-class-btn">צרי כיתה</button>
+    </form>
+  </div>
+
+  <!-- View: Class exists → manage students -->
+  <div id="view-manage" class="hidden">
+    <div class="card">
+      <h2 id="class-name-display">כיתה</h2>
+      <p class="subtitle">תלמידי הכיתה — לחיצה על "קישור והדפסה" תפתח QR שאפשר לשלוח להורה.</p>
+
+      <div id="students-list"></div>
+
+      <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--water-depth);">
+        <form id="add-student-form" class="add-row">
+          <div class="form-group">
+            <label for="student-name">הוסיפי תלמיד.ה</label>
+            <input type="text" id="student-name" required maxlength="80"
+                   placeholder="שם מלא">
+          </div>
+          <button type="submit" class="btn-primary" id="add-student-btn">הוסיפי</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>מסך פעולה</h2>
+      <p class="subtitle">אחרי שהוספת תלמידים — את יכולה לעבור לדשבורד הפעולה.</p>
+      <a href="teacher-action.html" class="btn-primary" style="text-decoration: none; display: inline-block;">
+        ←&nbsp;עברי לדשבורד
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<!-- QR Modal -->
+<div class="modal-backdrop" id="qr-modal">
+  <div class="modal">
+    <h3>קישור לתלמיד.ה</h3>
+    <p class="student-name" id="qr-student-name"></p>
+    <div class="qr-container" id="qr-canvas"></div>
+    <div class="url-box" id="qr-url"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="qr-copy-btn">העתיקי קישור</button>
+      <button class="btn-secondary" id="qr-close-btn">סגירה</button>
+    </div>
+    <div class="help">
+      <strong>איך לשלוח להורה:</strong><br>
+      1. העתיקי את הקישור או צלמי את ה-QR<br>
+      2. שלחי בוואטסאפ / דוא"ל להורה<br>
+      3. ההורה פותח את הקישור בטאבלט של הילד.ה<br>
+      4. "הוסף למסך הבית" — והקישור הופך לאייקון
+    </div>
+  </div>
+</div>
+
+<!-- Cloud stack -->
+<script src="js/shared/cloud-config.js"></script>
+<script src="js/shared/runtime-mode.js"></script>
+<script type="module" src="js/shared/cloud-client.js"></script>
+
+<!-- QR code library (CDN, ~20KB) -->
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+<script type="module">
+  async function waitForClient(timeout = 3000) {
+    const start = Date.now();
+    while (!window.AvneiCloudClient) {
+      if (Date.now() - start > timeout) throw new Error('Cloud client failed to load');
+      await new Promise(r => setTimeout(r, 50));
+    }
+    return window.AvneiCloudClient;
+  }
+
+  const greetingEl = document.getElementById('greeting');
+  const alertEl    = document.getElementById('alert');
+  const viewCreate = document.getElementById('view-create-class');
+  const viewManage = document.getElementById('view-manage');
+  const classNameDisplay = document.getElementById('class-name-display');
+  const studentsList = document.getElementById('students-list');
+  const logoutBtn  = document.getElementById('logout-btn');
+
+  const createClassForm = document.getElementById('create-class-form');
+  const classNameInput  = document.getElementById('class-name');
+  const createClassBtn  = document.getElementById('create-class-btn');
+
+  const addStudentForm = document.getElementById('add-student-form');
+  const studentNameInput = document.getElementById('student-name');
+  const addStudentBtn   = document.getElementById('add-student-btn');
+
+  const qrModal = document.getElementById('qr-modal');
+  const qrStudentName = document.getElementById('qr-student-name');
+  const qrCanvas = document.getElementById('qr-canvas');
+  const qrUrlEl  = document.getElementById('qr-url');
+  const qrCopyBtn = document.getElementById('qr-copy-btn');
+  const qrCloseBtn = document.getElementById('qr-close-btn');
+
+  function showAlert(message, type = 'error') {
+    alertEl.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+    setTimeout(() => { if (type === 'success') alertEl.innerHTML = ''; }, 4000);
+  }
+
+  const client = await waitForClient();
+  const supabase = client.supabase;
+
+  // Auth gate
+  const teacher = await client.getCurrentTeacher();
+  if (!teacher) {
+    window.location.href = 'teacher-login.html';
+    throw new Error('redirect');
+  }
+
+  greetingEl.innerHTML = `שלום, ${teacher.name}<span class="small">${teacher.email}</span>`;
+
+  logoutBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    await supabase.auth.signOut();
+    window.location.href = 'teacher-login.html';
+  });
+
+  // Load classes
+  async function loadClass() {
+    const { data, error } = await supabase
+      .from('classes')
+      .select('id, name')
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      console.error(error);
+      showAlert('לא הצלחנו לטעון את הכיתה.', 'error');
+      return null;
+    }
+    return data;
+  }
+
+  async function loadStudents(classId) {
+    const { data, error } = await supabase
+      .from('students')
+      .select('id, name, token, active, created_at')
+      .eq('class_id', classId)
+      .order('created_at', { ascending: true });
+    if (error) {
+      console.error(error);
+      showAlert('לא הצלחנו לטעון את התלמידים.', 'error');
+      return [];
+    }
+    return data;
+  }
+
+  function studentUrl(token) {
+    const base = window.location.origin + window.location.pathname.replace(/teacher-setup\.html$/, '');
+    return base + 'student.html?token=' + encodeURIComponent(token);
+  }
+
+  function renderStudents(students) {
+    if (students.length === 0) {
+      studentsList.innerHTML = '<div class="empty">עוד אין תלמידים. הוסיפי את הראשונ.ה למטה.</div>';
+      return;
+    }
+    studentsList.innerHTML = students.map(s => `
+      <div class="student-row" data-id="${s.id}" data-token="${s.token}" data-name="${escapeHtml(s.name)}">
+        <span class="name">${escapeHtml(s.name)}</span>
+        <div class="actions">
+          <button class="btn-icon btn-qr">קישור והדפסה</button>
+          <button class="btn-icon btn-remove">הסירי</button>
+        </div>
+      </div>
+    `).join('');
+
+    studentsList.querySelectorAll('.btn-qr').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const row = e.target.closest('.student-row');
+        openQrModal(row.dataset.name, row.dataset.token);
+      });
+    });
+    studentsList.querySelectorAll('.btn-remove').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const row = e.target.closest('.student-row');
+        if (!confirm(`להסיר את ${row.dataset.name} מהכיתה?\n(הנתונים נשמרים, אבל הקישור יפסיק לעבוד.)`)) return;
+        const { error } = await supabase
+          .from('students')
+          .update({ active: false })
+          .eq('id', row.dataset.id);
+        if (error) {
+          showAlert('לא הצלחנו להסיר את התלמיד.ה.', 'error');
+        } else {
+          refresh();
+        }
+      });
+    });
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+
+  function openQrModal(name, token) {
+    qrStudentName.textContent = name;
+    const url = studentUrl(token);
+    qrUrlEl.textContent = url;
+    qrCanvas.innerHTML = '';
+    new QRCode(qrCanvas, {
+      text: url,
+      width: 240,
+      height: 240,
+      colorDark: '#1E3D47',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M,
+    });
+    qrModal.classList.add('active');
+  }
+
+  qrCloseBtn.addEventListener('click', () => qrModal.classList.remove('active'));
+  qrModal.addEventListener('click', (e) => {
+    if (e.target === qrModal) qrModal.classList.remove('active');
+  });
+  qrCopyBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(qrUrlEl.textContent);
+      qrCopyBtn.textContent = '✓ הועתק';
+      setTimeout(() => { qrCopyBtn.textContent = 'העתיקי קישור'; }, 1500);
+    } catch {
+      showAlert('לא הצלחנו להעתיק. סמני ידנית.', 'error');
+    }
+  });
+
+  // Create class
+  createClassForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    createClassBtn.disabled = true;
+    createClassBtn.textContent = 'יוצרת...';
+    const name = classNameInput.value.trim();
+    const { error } = await supabase
+      .from('classes')
+      .insert({ name, teacher_id: teacher.id });
+    if (error) {
+      console.error(error);
+      showAlert('לא הצלחנו ליצור את הכיתה.', 'error');
+      createClassBtn.disabled = false;
+      createClassBtn.textContent = 'צרי כיתה';
+      return;
+    }
+    await refresh();
+  });
+
+  // Add student
+  addStudentForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const klass = await loadClass();
+    if (!klass) return;
+    addStudentBtn.disabled = true;
+    addStudentBtn.textContent = 'מוסיפה...';
+    const name = studentNameInput.value.trim();
+    const { error } = await supabase
+      .from('students')
+      .insert({ name, class_id: klass.id });
+    if (error) {
+      console.error(error);
+      showAlert('לא הצלחנו להוסיף את התלמיד.ה.', 'error');
+    } else {
+      studentNameInput.value = '';
+      showAlert(`${name} נוסף.ה לכיתה.`, 'success');
+      await refresh();
+    }
+    addStudentBtn.disabled = false;
+    addStudentBtn.textContent = 'הוסיפי';
+    studentNameInput.focus();
+  });
+
+  async function refresh() {
+    const klass = await loadClass();
+    if (!klass) {
+      viewCreate.classList.remove('hidden');
+      viewManage.classList.add('hidden');
+      classNameInput.value = 'כיתת ' + teacher.name.split(' ')[0];
+      classNameInput.focus();
+      return;
+    }
+    viewCreate.classList.add('hidden');
+    viewManage.classList.remove('hidden');
+    classNameDisplay.textContent = klass.name;
+    const students = await loadStudents(klass.id);
+    renderStudents(students.filter(s => s.active));
+  }
+
+  await refresh();
+</script>
+
+</body>
+</html>

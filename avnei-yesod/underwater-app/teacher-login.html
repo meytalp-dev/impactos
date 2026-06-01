@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>כניסת מורים · אבני יסוד</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+
+  <style>
+    body {
+      font-family: 'Heebo', sans-serif;
+      background: linear-gradient(180deg, #B9F0E8 0%, #7FD8D2 100%);
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: var(--text-main);
+    }
+    .login-card {
+      background: var(--warm-white);
+      border-radius: var(--radius-lg, 28px);
+      padding: 40px 32px;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(38, 80, 92, 0.18);
+    }
+    .login-card h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--deep);
+      text-align: center;
+    }
+    .login-card p.subtitle {
+      margin: 0 0 32px;
+      font-size: 16px;
+      color: var(--text-soft);
+      text-align: center;
+    }
+    .form-group { margin-bottom: 20px; }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+    .form-group input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid var(--water-depth);
+      border-radius: var(--radius-sm, 16px);
+      font-family: 'Heebo', sans-serif;
+      font-size: 16px;
+      background: white;
+      color: var(--text-main);
+      box-sizing: border-box;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--water-secondary);
+      box-shadow: 0 0 0 4px rgba(115, 217, 209, 0.2);
+    }
+    .form-group input[dir="ltr"] {
+      text-align: left;
+    }
+    .btn-primary {
+      width: 100%;
+      padding: 16px;
+      background: var(--water-secondary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm, 16px);
+      font-family: 'Heebo', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.1s, background 0.2s;
+    }
+    .btn-primary:hover { background: #5fc4be; }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-primary:disabled {
+      background: var(--stone);
+      cursor: wait;
+    }
+    .btn-link {
+      display: block;
+      width: 100%;
+      margin-top: 16px;
+      padding: 12px;
+      background: none;
+      color: var(--text-soft);
+      border: none;
+      font-family: 'Heebo', sans-serif;
+      font-size: 15px;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+    .btn-link:hover { color: var(--deep); }
+    .alert {
+      margin-bottom: 20px;
+      padding: 14px 16px;
+      border-radius: var(--radius-sm, 16px);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .alert-error {
+      background: #FFE5E5;
+      color: #B33A3A;
+      border: 1px solid #F5C2C2;
+    }
+    .alert-success {
+      background: #E5F8EF;
+      color: #1F7A4D;
+      border: 1px solid #BDE6CF;
+    }
+    .alert-info {
+      background: #FFF4C2;
+      color: #7A5C0E;
+      border: 1px solid #F0DE8A;
+    }
+    .logo {
+      text-align: center;
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-card">
+  <div class="logo">🐟</div>
+  <h1>אבני יסוד</h1>
+  <p class="subtitle">כניסה למורים</p>
+
+  <div id="alert"></div>
+
+  <form id="login-form">
+    <div class="form-group">
+      <label for="email">דואר אלקטרוני</label>
+      <input type="email" id="email" name="email" required dir="ltr"
+             placeholder="name@example.com" autocomplete="email">
+    </div>
+
+    <div class="form-group">
+      <label for="password">סיסמה</label>
+      <input type="password" id="password" name="password" required dir="ltr"
+             autocomplete="current-password">
+    </div>
+
+    <button type="submit" class="btn-primary" id="submit-btn">היכנסי</button>
+    <button type="button" class="btn-link" id="forgot-btn">שכחתי סיסמה</button>
+  </form>
+</div>
+
+<!-- Cloud config + runtime mode + Supabase client -->
+<script src="js/shared/cloud-config.js"></script>
+<script src="js/shared/runtime-mode.js"></script>
+<script type="module" src="js/shared/cloud-client.js"></script>
+
+<script type="module">
+  // Wait for cloud-client to initialize (it's a module, runs async)
+  async function waitForClient(timeout = 3000) {
+    const start = Date.now();
+    while (!window.AvneiCloudClient) {
+      if (Date.now() - start > timeout) throw new Error('Cloud client failed to load');
+      await new Promise(r => setTimeout(r, 50));
+    }
+    return window.AvneiCloudClient;
+  }
+
+  const alertEl = document.getElementById('alert');
+  const form = document.getElementById('login-form');
+  const submitBtn = document.getElementById('submit-btn');
+  const forgotBtn = document.getElementById('forgot-btn');
+  const emailEl = document.getElementById('email');
+  const passwordEl = document.getElementById('password');
+
+  function showAlert(message, type = 'error') {
+    alertEl.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+  }
+  function clearAlert() { alertEl.innerHTML = ''; }
+
+  let client;
+  try {
+    client = await waitForClient();
+  } catch (e) {
+    showAlert('לא הצלחנו להתחבר לשרת. נסי לרענן.', 'error');
+  }
+
+  // If already logged in → check if teacher row exists, then redirect
+  if (client && client.supabase) {
+    const { data: { user } } = await client.supabase.auth.getUser();
+    if (user) {
+      await ensureTeacherRow(user);
+      window.location.href = 'teacher-action.html';
+    }
+  }
+
+  // Backup: if trigger didn't create teacher row, create it now (defensive)
+  async function ensureTeacherRow(user) {
+    const { data, error } = await client.supabase
+      .from('teachers')
+      .select('id')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (!data && !error) {
+      // Row missing — insert
+      await client.supabase.from('teachers').insert({
+        id: user.id,
+        email: user.email,
+        name: user.email.split('@')[0],
+      });
+    }
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearAlert();
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'מתחברת...';
+
+    try {
+      const { data, error } = await client.supabase.auth.signInWithPassword({
+        email: emailEl.value.trim(),
+        password: passwordEl.value,
+      });
+
+      if (error) {
+        const msg = error.message.includes('Invalid')
+          ? 'דואר אלקטרוני או סיסמה שגויים'
+          : 'אירעה שגיאה בכניסה. נסי שוב.';
+        showAlert(msg, 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'היכנסי';
+        return;
+      }
+
+      await ensureTeacherRow(data.user);
+
+      // Redirect to setup if no class, else dashboard
+      const { data: classes } = await client.supabase
+        .from('classes')
+        .select('id')
+        .limit(1);
+
+      const next = (classes && classes.length > 0)
+        ? 'teacher-action.html'
+        : 'teacher-setup.html';
+      window.location.href = next;
+    } catch (err) {
+      console.error(err);
+      showAlert('אירעה שגיאה לא צפויה. נסי שוב.', 'error');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'היכנסי';
+    }
+  });
+
+  forgotBtn.addEventListener('click', async () => {
+    const email = emailEl.value.trim();
+    if (!email) {
+      showAlert('הכניסי קודם את כתובת הדואר האלקטרוני, ואז לחצי "שכחתי סיסמה".', 'info');
+      emailEl.focus();
+      return;
+    }
+    clearAlert();
+    forgotBtn.disabled = true;
+    forgotBtn.textContent = 'שולחת...';
+    try {
+      const { error } = await client.supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/avnei-yesod/underwater-app/teacher-login.html',
+      });
+      if (error) {
+        showAlert('לא הצלחנו לשלוח. בדקי את כתובת הדוא"ל ונסי שוב.', 'error');
+      } else {
+        showAlert('שלחנו לך דוא"ל לאיפוס סיסמה. בדקי את התיבה (וגם תיקיית ספאם).', 'success');
+      }
+    } finally {
+      forgotBtn.disabled = false;
+      forgotBtn.textContent = 'שכחתי סיסמה';
+    }
+  });
+</script>
+
+</body>
+</html>

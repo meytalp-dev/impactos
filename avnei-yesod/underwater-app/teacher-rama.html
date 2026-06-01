@@ -1282,6 +1282,64 @@
 <script src="js/shared/intervention-matcher.js?v=1"></script>
 <script src="js/shared/group-suggester.js?v=1"></script>
 
+<!-- Cloud stack (1.6.2026) — additive · demo path untouched -->
+<script src="js/shared/cloud-config.js"></script>
+<script src="js/shared/runtime-mode.js"></script>
+
+<!--
+  Cloud auth gate: runs BEFORE the legacy PIN gate.
+  Same logic as teacher-action.html — see the comment there for details.
+-->
+<script type="module">
+  if (window.AvneiRuntimeMode && window.AvneiRuntimeMode.isCloud) {
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.45.4');
+    const supabase = createClient(
+      window.AvneiCloudConfig.SUPABASE_URL,
+      window.AvneiCloudConfig.SUPABASE_PUBLISHABLE_KEY,
+      {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          storage: window.localStorage,
+          storageKey: 'avnei-yesod-supabase-auth',
+        },
+      }
+    );
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      window.location.replace('teacher-login.html');
+    } else {
+      try {
+        const { data: classes } = await supabase
+          .from('classes')
+          .select('id, name')
+          .eq('teacher_id', user.id)
+          .limit(1);
+
+        if (classes && classes.length > 0) {
+          const { data: students } = await supabase
+            .from('students')
+            .select('id, name')
+            .eq('class_id', classes[0].id)
+            .eq('active', true)
+            .order('created_at');
+          if (students) {
+            window.localStorage.setItem('avnei-yesod-students', JSON.stringify(students));
+          }
+        } else {
+          window.location.replace('teacher-setup.html');
+        }
+      } catch (e) {
+        console.error('[cloud] Failed to fetch class/students:', e);
+      }
+
+      window.sessionStorage.setItem('teacher_authed', '1');
+      window._cloudTeacher = user;
+      window._cloudSupabase = supabase;
+    }
+  }
+</script>
+
 <script>
 // ============================================================
 // F.21A — teacher-rama.html

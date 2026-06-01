@@ -860,6 +860,17 @@ window.AvneiBKT = (function() {
     const strandResult = ingestStrandEvent(strandState, studentId, evt);
     saveStrandStateRaw(strandState);
 
+    // ---- 3) Cloud sync (1.6.2026) — additive, debounced, cloud mode only ----
+    // Debounce aggregates rapid event bursts into a single BKT upsert (every 3s).
+    // No-op in demo mode (window.AvneiCloudSync stub).
+    if (window.AvneiCloudSync) {
+      try {
+        AvneiCloudSync.queueBktSync(state[studentId] || {}, strandState[studentId] || {});
+      } catch (e) {
+        console.warn('Cloud BKT sync queue failed:', e);
+      }
+    }
+
     // החזרה — שדות ישנים נשמרים, וגם strand info מצורף ל-callers חדשים
     if (!islandResult) return null;
     if (strandResult) {

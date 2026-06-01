@@ -752,6 +752,72 @@
 <script src="js/shared/skill-units.js?v=1"></script>
 <script src="js/shared/f21e-helpers.js?v=1"></script>
 
+<!-- Cloud stack (1.6.2026) — additive · demo path untouched -->
+<script src="js/shared/cloud-config.js"></script>
+<script src="js/shared/runtime-mode.js"></script>
+
+<!--
+  Cloud auth gate: runs BEFORE the legacy PIN gate.
+  - Demo mode (?presentation=1 / ?guest=1) → falls through to legacy PIN flow.
+  - Cloud mode + not logged in → redirect to teacher-login.html.
+  - Cloud mode + logged in → fetch own class students into localStorage
+    (so the legacy code that reads STUDENTS_KEY keeps working unchanged)
+    and mark teacher_authed=1 to bypass the PIN gate.
+-->
+<script type="module">
+  if (window.AvneiRuntimeMode && window.AvneiRuntimeMode.isCloud) {
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.45.4');
+    const supabase = createClient(
+      window.AvneiCloudConfig.SUPABASE_URL,
+      window.AvneiCloudConfig.SUPABASE_PUBLISHABLE_KEY,
+      {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          storage: window.localStorage,
+          storageKey: 'avnei-yesod-supabase-auth',
+        },
+      }
+    );
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      window.location.replace('teacher-login.html');
+    } else {
+      // Pull this teacher's class + students → mirror into localStorage
+      // so the existing dashboard code (which reads from localStorage) is scoped correctly.
+      try {
+        const { data: classes } = await supabase
+          .from('classes')
+          .select('id, name')
+          .eq('teacher_id', user.id)
+          .limit(1);
+
+        if (classes && classes.length > 0) {
+          const { data: students } = await supabase
+            .from('students')
+            .select('id, name')
+            .eq('class_id', classes[0].id)
+            .eq('active', true)
+            .order('created_at');
+          if (students) {
+            window.localStorage.setItem('avnei-yesod-students', JSON.stringify(students));
+          }
+        } else {
+          // No class yet → redirect to setup
+          window.location.replace('teacher-setup.html');
+        }
+      } catch (e) {
+        console.error('[cloud] Failed to fetch class/students:', e);
+      }
+
+      // Mark session — legacy PIN gate will see this and skip
+      window.sessionStorage.setItem('teacher_authed', '1');
+      window._cloudTeacher = user;
+      window._cloudSupabase = supabase;
+    }
+  }
+</script>
+
 <script>
 // ============================================================
 // F.21E — teacher-action.html

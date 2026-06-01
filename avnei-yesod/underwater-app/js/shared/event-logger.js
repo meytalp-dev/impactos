@@ -4,6 +4,43 @@
 // כל event יכול להזין את מודל ה-BKT (primary + secondary islands)
 // ============================================================
 
+// Auto-load cloud stack on first page load (1.6.2026).
+// This avoids editing all 33 stage-*.html files individually.
+// In demo mode (?presentation=1 / ?guest=1), cloud-sync becomes a no-op stub.
+(function autoloadCloudStack() {
+  if (typeof document === 'undefined') return;
+  if (window.AvneiCloudSync) return;  // already loaded
+
+  function loadScript(src, type) {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src;
+      if (type) s.type = type;
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
+  // Load order: config → runtime-mode → cloud-client (module) → cloud-sync
+  loadScript('js/shared/cloud-config.js')
+    .then(() => loadScript('js/shared/runtime-mode.js'))
+    .then(() => loadScript('js/shared/cloud-client.js', 'module'))
+    .then(() => {
+      // Wait briefly for cloud-client (module) to initialize window.AvneiCloudClient
+      const start = Date.now();
+      return new Promise(resolve => {
+        const tick = () => {
+          if (window.AvneiCloudClient || Date.now() - start > 3000) resolve();
+          else setTimeout(tick, 50);
+        };
+        tick();
+      });
+    })
+    .then(() => loadScript('js/shared/cloud-sync.js'))
+    .catch(err => console.warn('[event-logger] Cloud stack autoload failed:', err));
+})();
+
 window.AvneiEventLogger = (function() {
 
   // session_id נוצר פעם אחת בטעינת הדף
@@ -117,6 +154,17 @@ window.AvneiEventLogger = (function() {
         AvneiEPA.ingestEvent(evt);
       } catch (e) {
         console.warn('EPA update failed:', e);
+      }
+    }
+
+    // Cloud sync (1.6.2026) — additive · cloud mode only · no-op in demo.
+    // AvneiCloudSync queues the event to localStorage, then pushes to Supabase
+    // in background (5s interval + on reconnect). Failures don't block the UI.
+    if (window.AvneiCloudSync) {
+      try {
+        AvneiCloudSync.queueEvent(activity, evt, new Date(evt.timestamp).toISOString());
+      } catch (e) {
+        console.warn('Cloud sync queue failed:', e);
       }
     }
 
