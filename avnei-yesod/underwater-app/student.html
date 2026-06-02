@@ -155,6 +155,13 @@
 
 </div>
 
+<!-- SkillUnits + dependencies (needed to restore cloud-pushed targets) -->
+<script src="js/state.js"></script>
+<script src="js/shared/letter-targets.js"></script>
+<script src="js/shared/vowel-adapter.js"></script>
+<script src="js/shared/word-adapter.js"></script>
+<script src="js/shared/skill-units.js"></script>
+
 <!-- Cloud stack -->
 <script src="js/shared/cloud-config.js"></script>
 <script src="js/shared/runtime-mode.js"></script>
@@ -261,6 +268,24 @@
     }
   } catch (e) {
     console.warn('[student] Could not fetch BKT state from cloud:', e);
+  }
+
+  // Pull teacher-pushed practice targets (2.6.2026) — restore them directly
+  // into local SkillUnits storage so the existing game logic picks them up.
+  try {
+    const { data: targets } = await client.supabase.rpc('get_student_targets', { p_token: token });
+    if (targets && targets.length > 0 && window.AvneiSkillUnits) {
+      const SU = window.AvneiSkillUnits;
+      for (const t of targets) {
+        try {
+          SU.addTarget(profile.student_id, t.unit_data, t.source || 'cloud-pull');
+        } catch (e) {
+          console.warn('[student] target restore failed for', t.id, e);
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('[student] Could not fetch targets from cloud:', e);
   }
 
   showWelcome(profile.student_name, profile.class_name);

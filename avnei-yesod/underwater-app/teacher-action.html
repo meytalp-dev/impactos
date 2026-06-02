@@ -1304,7 +1304,7 @@ function renderSoloStudents(ctx) {
   });
   // 📲 שלחי תרגול ממוקד למכשיר — דוחף top-3 weak units ל-targets + מסמן ב-log
   list.querySelectorAll('button[data-push-solo]').forEach(function (btn) {
-    btn.addEventListener('click', function () {
+    btn.addEventListener('click', async function () {
       const sid = btn.dataset.pushSolo;
       const SU = window.AvneiSkillUnits;
       if (!SU) return;
@@ -1313,6 +1313,17 @@ function renderSoloStudents(ctx) {
       units.forEach(function (u) {
         if (SU.addTarget(sid, u, 'teacher-send-solo')) pushed++;
       });
+
+      // Cloud sync (2.6.2026) — push to Supabase so the student's tablet picks it up
+      if (window._cloudSupabase && pushed > 0) {
+        try {
+          const rows = units.map(function (u) {
+            return { student_id: sid, unit_data: u, source: 'teacher-send-solo' };
+          });
+          await window._cloudSupabase.from('student_targets').insert(rows);
+        } catch (e) { console.warn('[cloud] push targets failed:', e); }
+      }
+
       // mark action log (אם לא כבר היום)
       const indivKey = H.logEntryKey('individual', sid);
       if (H.statusForEntry('individual', indivKey, ctx.log, Date.now()) !== 'today') {
@@ -1323,7 +1334,7 @@ function renderSoloStudents(ctx) {
   });
   // ↺ בטלי תרגול אישי — מסיר את כל ה-targets + frozen
   list.querySelectorAll('button[data-cancel-push-solo]').forEach(function (btn) {
-    btn.addEventListener('click', function () {
+    btn.addEventListener('click', async function () {
       const sid = btn.dataset.cancelPushSolo;
       const SU = window.AvneiSkillUnits;
       if (!SU) return;
@@ -1332,6 +1343,18 @@ function renderSoloStudents(ctx) {
         SU.removeTarget(sid, u);
         SU.removeFrozen(sid, u);
       });
+
+      // Cloud cleanup — delete this student's active targets from Supabase
+      if (window._cloudSupabase) {
+        try {
+          await window._cloudSupabase
+            .from('student_targets')
+            .delete()
+            .eq('student_id', sid)
+            .is('completed_at', null);
+        } catch (e) { console.warn('[cloud] cancel targets failed:', e); }
+      }
+
       // לא מבטל את ה-action log — היא עדיין סימנה אותו כבוצע היום
       render();
     });

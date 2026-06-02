@@ -73,6 +73,15 @@ window.AvneiEventLogger = (function() {
     'trail':        3,   // אות ר
     'house':        3,   // אות ב
     'shell':        3,   // אות מ
+    // אי 1 — מודעות פונולוגית בסיסית (מ-2.6.2026)
+    'bubbleRise':   1,
+    'choirGame':    1,
+    'countBubbles': 1,
+    'mergeBubble':  1,
+    // אי 2 — מודעות לצליל פותח / השוואת צלילים (מ-2.6.2026)
+    'fish-schools':  2,
+    'twin-seaweeds': 2,
+    'whispers':      2,
   };
 
   const SECONDARY_ISLANDS = {
@@ -86,6 +95,15 @@ window.AvneiEventLogger = (function() {
     'trail':        [2],   // identify target letter among distractors
     'house':        [],
     'shell':        [],
+    // אי 1 — left as [] until pedagogical review confirms secondary contributions
+    'bubbleRise':   [],
+    'choirGame':    [],
+    'countBubbles': [],
+    'mergeBubble':  [],
+    // אי 2 — same, pending review
+    'fish-schools':  [],
+    'twin-seaweeds': [],
+    'whispers':      [],
   };
 
   // ============================================================
