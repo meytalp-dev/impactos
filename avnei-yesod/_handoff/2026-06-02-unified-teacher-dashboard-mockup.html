@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>דשבורד מורה — מוקאפ (2.6.2026)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Heebo', system-ui, sans-serif;
+    background: #F5F7FA;
+    color: #0F172A;
+    direction: rtl;
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  button { font-family: inherit; cursor: pointer; }
+
+  /* ============ TOPBAR ============ */
+  .topbar {
+    background: white;
+    border-bottom: 1px solid #E2E8F0;
+    padding: 14px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+  }
+  .topbar .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .topbar .brand h1 {
+    font-size: 18px;
+    font-weight: 800;
+    margin: 0;
+    color: #0F172A;
+  }
+  .topbar .brand .class-name {
+    font-size: 13px;
+    color: #64748B;
+    padding: 4px 10px;
+    background: #F1F5F9;
+    border-radius: 999px;
+  }
+  .topbar .actions { display: flex; gap: 8px; }
+  .topbar .actions button {
+    background: white;
+    border: 1px solid #E2E8F0;
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #475569;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .topbar .actions button:hover {
+    background: #F8FAFC;
+    border-color: #CBD5E1;
+  }
+  .topbar .actions .rama-btn {
+    color: #3B82F6;
+    border-color: #BFDBFE;
+    background: #EFF6FF;
+  }
+  .topbar .actions .rama-btn:hover {
+    background: #DBEAFE;
+  }
+
+  /* ============ LAYOUT ============ */
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 300px;  /* main | sidebar (RTL: visually right) */
+    gap: 20px;
+    padding: 20px 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+    align-items: start;
+  }
+
+  /* ============ SIDEBAR (YEARLY PLAN) ============ */
+  .sidebar {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid #E2E8F0;
+    padding: 16px 0;
+    position: sticky;
+    top: 20px;
+    max-height: calc(100vh - 40px);
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar-head {
+    padding: 0 18px 14px;
+    border-bottom: 1px solid #F1F5F9;
+  }
+  .sidebar-head h3 {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0 0 4px;
+    color: #0F172A;
+  }
+  .sidebar-head .meta {
+    font-size: 12px;
+    color: #64748B;
+  }
+  .sidebar-head .progress {
+    margin-top: 10px;
+    height: 4px;
+    background: #F1F5F9;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .sidebar-head .progress > div {
+    height: 100%;
+    background: linear-gradient(90deg, #3B82F6, #6366F1);
+    border-radius: 999px;
+  }
+  .lessons-list {
+    list-style: none;
+    margin: 0;
+    padding: 8px 0;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .lessons-list li {
+    padding: 9px 18px;
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    gap: 10px;
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.12s;
+    border-right: 3px solid transparent;
+  }
+  .lessons-list li:hover { background: #F8FAFC; }
+  .lessons-list li .num {
+    font-size: 11px;
+    font-weight: 700;
+    color: #94A3B8;
+    text-align: center;
+  }
+  .lessons-list li .title {
+    font-size: 13px;
+    color: #334155;
+    font-weight: 500;
+  }
+  .lessons-list li.done .num::before { content: '✓'; color: #10B981; font-size: 14px; }
+  .lessons-list li.done .num { color: transparent; }
+  .lessons-list li.done .title { color: #94A3B8; }
+  .lessons-list li.active {
+    background: linear-gradient(90deg, #EFF6FF 0%, #F5F3FF 100%);
+    border-right-color: #3B82F6;
+  }
+  .lessons-list li.active .num { color: #3B82F6; }
+  .lessons-list li.active .title { color: #1E3A8A; font-weight: 700; }
+  .lessons-list li.active .num::after { content: '●'; }
+  .lessons-list li.active .num { content: ''; }
+  .lessons-list .month-head {
+    padding: 10px 18px 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #94A3B8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: default;
+    background: #FAFBFC;
+    border-top: 1px solid #F1F5F9;
+  }
+  .lessons-list .month-head:first-child { border-top: none; }
+  .lessons-list li.placeholder .title { color: #CBD5E1; font-style: italic; }
+
+  /* ============ MAIN COLUMN ============ */
+  .main { display: flex; flex-direction: column; gap: 16px; }
+
+  /* Lesson hero */
+  .hero {
+    background: linear-gradient(135deg, #F0F9FF 0%, #F5F3FF 100%);
+    border: 1px solid #BFDBFE;
+    border-radius: 16px;
+    padding: 22px 26px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 20px;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(59, 130, 246, 0.06);
+  }
+  .hero .label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    color: #3B82F6;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .hero h2 {
+    font-size: 26px;
+    font-weight: 800;
+    color: #1E3A8A;
+    margin: 0 0 4px;
+    line-height: 1.15;
+  }
+  .hero .objective {
+    font-size: 14px;
+    color: #475569;
+    margin: 0;
+  }
+  .hero .actions { display: flex; flex-direction: column; gap: 8px; min-width: 145px; }
+  .hero .actions button {
+    background: white;
+    border: 1px solid #CBD5E1;
+    color: #1E3A8A;
+    padding: 9px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .hero .actions button:hover {
+    background: #EFF6FF;
+    border-color: #3B82F6;
+  }
+
+  /* Practice strip — what the lesson currently expands to */
+  .practice-strip {
+    background: white;
+    border: 1px dashed #CBD5E1;
+    border-radius: 12px;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    font-size: 13px;
+  }
+  .practice-strip .ps-text { color: #475569; }
+  .practice-strip .ps-text strong { color: #1E3A8A; }
+  .practice-strip .ps-chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .practice-strip .chip {
+    background: #F1F5F9;
+    color: #1E3A8A;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* Students section */
+  .students-card {
+    background: white;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .students-head {
+    padding: 16px 22px;
+    border-bottom: 1px solid #F1F5F9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .students-head h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0;
+    color: #0F172A;
+  }
+  .students-head .live-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #ECFDF5;
+    color: #047857;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .students-head .live-pill::before {
+    content: '';
+    width: 7px; height: 7px;
+    background: #10B981;
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  table.students {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  table.students thead th {
+    text-align: right;
+    font-size: 11px;
+    font-weight: 700;
+    color: #94A3B8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 10px 22px;
+    background: #FAFBFC;
+    border-bottom: 1px solid #F1F5F9;
+  }
+  table.students tbody td {
+    padding: 14px 22px;
+    border-bottom: 1px solid #F1F5F9;
+    vertical-align: middle;
+  }
+  table.students tbody tr:last-child td { border-bottom: none; }
+  table.students tbody tr:hover { background: #FAFBFC; }
+  table.students .stu-name {
+    font-weight: 600;
+    color: #0F172A;
+    font-size: 14px;
+  }
+  table.students .stu-name .live-dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #10B981;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  table.students .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  table.students .badge .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+  .badge.lead    { background: #ECFDF5; color: #047857; }
+  .badge.lead .dot { background: #10B981; }
+  .badge.build   { background: #FEF3C7; color: #B45309; }
+  .badge.build .dot { background: #F59E0B; }
+  .badge.support { background: #FEE2E2; color: #B91C1C; }
+  .badge.support .dot { background: #EF4444; }
+
+  .recommendation {
+    font-size: 13px;
+    color: #334155;
+    line-height: 1.4;
+  }
+  .recommendation .rec-tag {
+    font-size: 11px;
+    color: #64748B;
+    margin-left: 4px;
+  }
+
+  .row-actions { display: flex; gap: 6px; justify-content: flex-end; }
+  .row-actions button {
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .row-actions .btn-tablet {
+    background: #3B82F6;
+    color: white;
+  }
+  .row-actions .btn-tablet:hover { background: #2563EB; }
+  .row-actions .btn-classroom {
+    background: white;
+    color: #475569;
+    border-color: #CBD5E1;
+  }
+  .row-actions .btn-classroom:hover { background: #F1F5F9; }
+
+  /* Footer summary */
+  .summary {
+    background: white;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 14px 22px;
+    display: flex;
+    justify-content: space-around;
+    gap: 16px;
+  }
+  .summary .stat {
+    text-align: center;
+  }
+  .summary .stat .v {
+    font-size: 20px;
+    font-weight: 800;
+    color: #1E3A8A;
+  }
+  .summary .stat .l {
+    font-size: 12px;
+    color: #64748B;
+    margin-top: 2px;
+  }
+
+  /* ============ STUDENT DETAIL DRAWER ============ */
+  .drawer-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(15, 23, 42, 0.35);
+    display: none;
+    z-index: 150;
+  }
+  .drawer-backdrop.open { display: block; }
+  .drawer {
+    position: fixed;
+    top: 0;
+    right: -480px;
+    width: 460px;
+    height: 100vh;
+    background: white;
+    box-shadow: -8px 0 24px rgba(15, 23, 42, 0.12);
+    transition: right 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 151;
+    display: flex;
+    flex-direction: column;
+  }
+  .drawer.open { right: 0; }
+  .drawer-head {
+    padding: 18px 22px;
+    border-bottom: 1px solid #E2E8F0;
+    background: linear-gradient(135deg, #F0F9FF 0%, #F5F3FF 100%);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .drawer-head .stu-info { flex: 1; }
+  .drawer-head h2 {
+    font-size: 22px;
+    font-weight: 800;
+    margin: 0;
+    color: #0F172A;
+  }
+  .drawer-head .stu-sub {
+    font-size: 12px;
+    color: #64748B;
+    margin-top: 2px;
+  }
+  .drawer-head .close-btn {
+    background: white;
+    border: 1px solid #E2E8F0;
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    font-size: 18px;
+    color: #64748B;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+  }
+  .drawer-section {
+    padding: 16px 22px;
+    border-bottom: 1px solid #F1F5F9;
+  }
+  .drawer-section:last-child { border-bottom: none; }
+  .drawer-section h3 {
+    font-size: 13px;
+    font-weight: 700;
+    margin: 0 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #0F172A;
+  }
+  .drawer-section h3 .count {
+    background: #F1F5F9;
+    color: #475569;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+  /* Quick stats grid */
+  .quick-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .quick-stats .qs {
+    background: #F8FAFC;
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+  }
+  .quick-stats .qs .v {
+    font-size: 17px;
+    font-weight: 700;
+    color: #1E3A8A;
+  }
+  .quick-stats .qs .l {
+    font-size: 11px;
+    color: #64748B;
+    margin-top: 2px;
+  }
+  /* Mastered list */
+  .ms-list { list-style: none; padding: 0; margin: 0; }
+  .ms-list li {
+    padding: 6px 0;
+    font-size: 13px;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ms-list li::before {
+    content: '✓';
+    color: #10B981;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  /* In-progress list */
+  .ip-list { list-style: none; padding: 0; margin: 0; }
+  .ip-list li {
+    padding: 10px 0;
+    border-bottom: 1px dashed #F1F5F9;
+  }
+  .ip-list li:last-child { border-bottom: none; }
+  .ip-list .ip-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #334155;
+    margin-bottom: 4px;
+  }
+  .ip-list .ip-row .pct { color: #64748B; font-weight: 600; }
+  .ip-list .ip-bar {
+    height: 5px;
+    background: #F1F5F9;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .ip-list .ip-bar > div {
+    height: 100%;
+    background: linear-gradient(90deg, #F59E0B, #FBBF24);
+    border-radius: 999px;
+  }
+  /* Errors */
+  .err-list { list-style: none; padding: 0; margin: 0; }
+  .err-list li {
+    padding: 10px 12px;
+    margin: 6px 0;
+    background: #FEF2F2;
+    border-right: 3px solid #EF4444;
+    border-radius: 6px;
+  }
+  .err-list .err-pattern {
+    font-size: 13px;
+    color: #7F1D1D;
+    font-weight: 600;
+    margin-bottom: 3px;
+  }
+  .err-list .err-meta {
+    font-size: 11px;
+    color: #991B1B;
+    opacity: 0.85;
+  }
+  /* Recommendations */
+  .rec-list { list-style: none; padding: 0; margin: 0; }
+  .rec-list li {
+    padding: 10px 12px;
+    margin: 6px 0;
+    background: #EFF6FF;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #1E3A8A;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .rec-list li::before {
+    content: '🎯';
+    flex-shrink: 0;
+  }
+  /* Footer actions */
+  .drawer-foot {
+    padding: 14px 22px;
+    border-top: 1px solid #E2E8F0;
+    background: #FAFBFC;
+    display: flex;
+    gap: 8px;
+  }
+  .drawer-foot button {
+    flex: 1;
+    padding: 11px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: pointer;
+  }
+  .drawer-foot .send {
+    background: #3B82F6;
+    color: white;
+  }
+  .drawer-foot .send:hover { background: #2563EB; }
+  .drawer-foot .class-work {
+    background: white;
+    color: #475569;
+    border-color: #CBD5E1;
+  }
+  .drawer-foot .class-work:hover { background: #F1F5F9; }
+
+  /* Make student names look clickable */
+  table.students tbody td.stu-name {
+    cursor: pointer;
+    color: #1E3A8A;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+  }
+  table.students tbody td.stu-name:hover {
+    text-decoration: underline;
+  }
+  @media (max-width: 600px) {
+    .drawer { width: 100vw; right: -100vw; }
+  }
+
+  /* ============ TOAST ============ */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #0F172A;
+    color: white;
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  .toast .check { color: #10B981; margin-left: 8px; font-weight: 700; }
+
+  /* ============ MODAL ============ */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 20px;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 560px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+  }
+  .modal-head {
+    padding: 18px 24px;
+    border-bottom: 1px solid #E2E8F0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-head h3 { margin: 0; font-size: 17px; font-weight: 700; color: #0F172A; }
+  .modal-head button.close {
+    background: none; border: none; font-size: 24px;
+    cursor: pointer; color: #94A3B8; padding: 0; line-height: 1;
+  }
+  .modal-body { padding: 20px 24px; overflow-y: auto; }
+
+  /* Practice builder modal */
+  .pb-section { margin-bottom: 18px; }
+  .pb-section h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    margin: 0 0 10px;
+  }
+  .pb-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pb-chip {
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: #475569;
+    transition: all 0.12s;
+  }
+  .pb-chip:hover { background: #F1F5F9; }
+  .pb-chip.selected {
+    background: #DBEAFE;
+    border-color: #3B82F6;
+    color: #1E40AF;
+  }
+  .pb-preview {
+    background: #F8FAFC;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: #475569;
+  }
+  .pb-preview strong { color: #1E3A8A; }
+  .modal-foot {
+    padding: 14px 24px;
+    border-top: 1px solid #F1F5F9;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .modal-foot button {
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid transparent;
+  }
+  .modal-foot .save {
+    background: #3B82F6;
+    color: white;
+  }
+  .modal-foot .save:hover { background: #2563EB; }
+  .modal-foot .cancel {
+    background: white;
+    color: #475569;
+    border-color: #CBD5E1;
+  }
+
+  /* Lesson picker modal items */
+  .picker-item {
+    padding: 11px 14px;
+    margin: 3px 0;
+    border-radius: 10px;
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: center;
+    transition: background 0.12s;
+  }
+  .picker-item:hover { background: #F8FAFC; }
+  .picker-item.current { background: #EFF6FF; }
+  .picker-item .seq {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748B;
+    background: #F1F5F9;
+    border-radius: 6px;
+    padding: 4px 8px;
+    min-width: 36px;
+    text-align: center;
+  }
+  .picker-item.current .seq { background: #DBEAFE; color: #1E3A8A; }
+  .picker-item .pt-title { font-size: 14px; font-weight: 600; color: #1E3A8A; }
+  .picker-item .pt-obj { font-size: 12px; color: #64748B; }
+  .picker-item.current .badge-here {
+    font-size: 11px;
+    font-weight: 700;
+    color: #3B82F6;
+  }
+
+  /* Mockup banner */
+  .mockup-banner {
+    background: #FEF3C7;
+    color: #78350F;
+    padding: 8px 24px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    border-bottom: 1px solid #FBBF24;
+  }
+
+  @media (max-width: 960px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { position: static; max-height: 320px; order: 2; }
+    .main { order: 1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="mockup-banner">
+  🎨 מוקאפ לבדיקה · 2.6.2026 · דשבורד מורה מאוחד · תוכנית שנתית אמיתית מ-grade1-daily-tashpaz.json (154 ימים, רצף מטח/משה"ח)
+</div>
+
+<!-- ============ TOPBAR ============ -->
+<header class="topbar">
+  <div class="brand">
+    <h1>דשבורד מורה</h1>
+    <div class="class-name">כיתה א׳ · מיטל פלג</div>
+  </div>
+  <div class="actions">
+    <button class="rama-btn" onclick="alert('מעבר למסך תוצאות מבחני ראמ"ה (3 פעימות × 10 משימות)')">📊 מבחני ראמ"ה</button>
+    <button>← יציאה</button>
+  </div>
+</header>
+
+<!-- ============ LAYOUT ============ -->
+<div class="layout">
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+
+    <!-- HERO — Today's lesson -->
+    <section class="hero">
+      <div>
+        <div class="label">השיעור היום · ב' תמוז</div>
+        <h2 id="heroTitle">חיריק עם ב</h2>
+        <p class="objective" id="heroObjective">בִּ עם דגש קל — /bi/ · קריאה, זיהוי והפקה</p>
+      </div>
+      <div class="actions">
+        <button onclick="openPicker()">📚 שינוי נושא</button>
+        <button onclick="openPracticeBuilder()">🎯 שינוי תרגול</button>
+      </div>
+    </section>
+
+    <!-- PRACTICE STRIP — what gets practiced -->
+    <div class="practice-strip">
+      <div class="ps-text">
+        <strong>תרגול ברירת מחדל:</strong> זוהה והפק את /bi/ בהקשר CV
+      </div>
+      <div class="ps-chips" id="practiceChips">
+        <span class="chip">בִּ</span>
+        <span class="chip">בִּי</span>
+        <span class="chip">בִּית</span>
+      </div>
+    </div>
+
+    <!-- STUDENTS -->
+    <section class="students-card">
+      <div class="students-head">
+        <h3>5 תלמידות · המלצות אישיות</h3>
+        <div class="live-pill">2 מתרגלות עכשיו</div>
+      </div>
+
+      <table class="students">
+        <thead>
+          <tr>
+            <th>תלמידה</th>
+            <th>רמה</th>
+            <th>המלצה לפי הנתונים</th>
+            <th style="text-align:left;">פעולות</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="stu-name" onclick="openStudentDetail('שרה')">שרה<span class="live-dot" title="מתרגלת עכשיו"></span></td>
+            <td><span class="badge build"><span class="dot"></span>בונה · 62%</span></td>
+            <td class="recommendation">
+              חזרה על פתח עם א
+              <span class="rec-tag">(טעויות חוזרות ב-אַ)</span>
+            </td>
+            <td>
+              <div class="row-actions">
+                <button class="btn-tablet" onclick="sendToTablet('שרה')">📱 לטאבלט</button>
+                <button class="btn-classroom" onclick="classroomPractice('שרה')">👥 בכיתה</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="stu-name" onclick="openStudentDetail('דנה')">דנה<span class="live-dot" title="מתרגלת עכשיו"></span></td>
+            <td><span class="badge lead"><span class="dot"></span>מובילה · 85%</span></td>
+            <td class="recommendation">
+              קדימה לחיריק עם ג, ד
+              <span class="rec-tag">(מוכנה להרחבה)</span>
+            </td>
+            <td>
+              <div class="row-actions">
+                <button class="btn-tablet" onclick="sendToTablet('דנה')">📱 לטאבלט</button>
+                <button class="btn-classroom" onclick="classroomPractice('דנה')">👥 בכיתה</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="stu-name" onclick="openStudentDetail('יערה')">יערה</td>
+            <td><span class="badge support"><span class="dot"></span>צריכה תמיכה · 35%</span></td>
+            <td class="recommendation">
+              חזרה על הכרת האות א
+              <span class="rec-tag">(מבלבלת בין אותיות דומות)</span>
+            </td>
+            <td>
+              <div class="row-actions">
+                <button class="btn-tablet" onclick="sendToTablet('יערה')">📱 לטאבלט</button>
+                <button class="btn-classroom" onclick="classroomPractice('יערה')">👥 בכיתה</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="stu-name" onclick="openStudentDetail('תמר')">תמר</td>
+            <td><span class="badge build"><span class="dot"></span>בונה · 68%</span></td>
+            <td class="recommendation">
+              המשיכי בחיריק עם ב (הנושא היום)
+              <span class="rec-tag">(בקצב הכיתתי)</span>
+            </td>
+            <td>
+              <div class="row-actions">
+                <button class="btn-tablet" onclick="sendToTablet('תמר')">📱 לטאבלט</button>
+                <button class="btn-classroom" onclick="classroomPractice('תמר')">👥 בכיתה</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="stu-name" onclick="openStudentDetail('מיה')">מיה</td>
+            <td><span class="badge lead"><span class="dot"></span>מובילה · 80%</span></td>
+            <td class="recommendation">
+              המשיכי בחיריק עם ב (הנושא היום)
+              <span class="rec-tag">(שולטת היטב)</span>
+            </td>
+            <td>
+              <div class="row-actions">
+                <button class="btn-tablet" onclick="sendToTablet('מיה')">📱 לטאבלט</button>
+                <button class="btn-classroom" onclick="classroomPractice('מיה')">👥 בכיתה</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- SUMMARY -->
+    <div class="summary">
+      <div class="stat">
+        <div class="v">2</div>
+        <div class="l">בנושא היום</div>
+      </div>
+      <div class="stat">
+        <div class="v">2</div>
+        <div class="l">צריכות חזרה</div>
+      </div>
+      <div class="stat">
+        <div class="v">1</div>
+        <div class="l">מוכנות לקדימה</div>
+      </div>
+      <div class="stat">
+        <div class="v">2/5</div>
+        <div class="l">מתרגלות עכשיו</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============ SIDEBAR — YEARLY PLAN ============ -->
+  <aside class="sidebar">
+    <div class="sidebar-head">
+      <h3>תוכנית שנתית</h3>
+      <div class="meta">32 שיעורים · אנחנו בשיעור 7</div>
+      <div class="progress"><div style="width: 22%;"></div></div>
+    </div>
+    <ol class="lessons-list" id="lessonsList">
+      <li style="padding:20px;color:#94A3B8;font-size:13px;cursor:default;">טוען תוכנית שנתית…</li>
+    </ol>
+  </aside>
+
+</div>
+
+<!-- ============ LESSON PICKER MODAL ============ -->
+<div class="modal-backdrop" id="pickerBackdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>שינוי נושא השיעור</h3>
+      <button class="close" onclick="closePicker()">×</button>
+    </div>
+    <div class="modal-body" id="pickerBody"></div>
+  </div>
+</div>
+
+<!-- ============ PRACTICE BUILDER MODAL ============ -->
+<div class="modal-backdrop" id="pbBackdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>התאמת תרגול</h3>
+      <button class="close" onclick="closePracticeBuilder()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="pb-section">
+        <h4>תנועות לתרגול</h4>
+        <div class="pb-chips" id="vowelChips">
+          <div class="pb-chip" data-v="patach">פתח</div>
+          <div class="pb-chip" data-v="kamatz">קמץ</div>
+          <div class="pb-chip selected" data-v="hiriq">חיריק</div>
+          <div class="pb-chip" data-v="cholam">חולם</div>
+          <div class="pb-chip" data-v="shuruk">שורוק</div>
+          <div class="pb-chip" data-v="tzere">צירה</div>
+          <div class="pb-chip" data-v="segol">סגול</div>
+        </div>
+      </div>
+      <div class="pb-section">
+        <h4>אותיות לתרגול</h4>
+        <div class="pb-chips" id="letterChips"></div>
+      </div>
+      <div class="pb-section">
+        <h4>תצוגה מקדימה</h4>
+        <div class="pb-preview" id="pbPreview"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="cancel" onclick="closePracticeBuilder()">ביטול</button>
+      <button class="save" onclick="savePracticeBuilder()">החל על השיעור</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ STUDENT DETAIL DRAWER ============ -->
+<div class="drawer-backdrop" id="drawerBackdrop" onclick="closeStudentDetail()"></div>
+<aside class="drawer" id="studentDrawer" role="dialog" aria-labelledby="drawerTitle">
+  <header class="drawer-head">
+    <div class="stu-info">
+      <h2 id="drawerTitle">—</h2>
+      <div class="stu-sub" id="drawerSub"></div>
+    </div>
+    <button class="close-btn" onclick="closeStudentDetail()" aria-label="סגירה">×</button>
+  </header>
+
+  <div class="drawer-body">
+    <!-- Quick stats -->
+    <div class="drawer-section">
+      <div class="quick-stats" id="drawerStats"></div>
+    </div>
+
+    <!-- Mastered -->
+    <div class="drawer-section">
+      <h3>✓ שולטת היטב <span class="count" id="drawerMasteredCount">0</span></h3>
+      <ul class="ms-list" id="drawerMastered"></ul>
+    </div>
+
+    <!-- In progress -->
+    <div class="drawer-section">
+      <h3>⏳ עוד בתהליך <span class="count" id="drawerProgressCount">0</span></h3>
+      <ul class="ip-list" id="drawerProgress"></ul>
+    </div>
+
+    <!-- Errors -->
+    <div class="drawer-section" id="drawerErrorsSection">
+      <h3>⚠ טעויות נפוצות <span class="count" id="drawerErrorsCount">0</span></h3>
+      <ul class="err-list" id="drawerErrors"></ul>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="drawer-section">
+      <h3>🎯 המלצה לעבודה</h3>
+      <ul class="rec-list" id="drawerRecs"></ul>
+    </div>
+  </div>
+
+  <footer class="drawer-foot">
+    <button class="send" id="drawerSendBtn">📱 שליחה לטאבלט</button>
+    <button class="class-work" id="drawerClassBtn">👥 עבודה בכיתה</button>
+  </footer>
+</aside>
+
+<!-- ============ TOAST ============ -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ============================================================
+  // Mockup interactions — loads REAL curriculum from
+  // ../curriculum/yearly-plan/grade1-daily-tashpaz.json
+  // (Matakh "קסם וחברים" sequence, MoE תשפ"ו 2026, verified)
+  // ============================================================
+
+  let LESSONS = [];   // populated from JSON
+  let currentSeq = 51;  // first חיריק day per real curriculum (December → January)
+  let TOTAL_DAYS = 0;
+
+  async function loadCurriculum() {
+    try {
+      const res = await fetch('../curriculum/yearly-plan/grade1-daily-tashpaz.json');
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      LESSONS = (data.days || []).map(d => {
+        const t = d.axis_1_teaching || {};
+        return {
+          seq: d.day,
+          date: d.date || '',
+          month: d.month || '',
+          title: t.topic || d.topic_short || '(טרם פורט)',
+          obj: t.sub_skill || (t.teaching_notes ? t.teaching_notes.slice(0, 90) : ''),
+          pack: d.pack_id || '',
+          axis_2: d.axis_2_practice_avnei_yesod || {},
+          axis_3: d.axis_3_enrichment || {},
+          letters_today: t.letters_introduced_today || [],
+          letters_featured: t.letters_featured || [],
+          words: t.words_to_introduce || [],
+          is_placeholder: !t.topic && !!d.topic_short
+        };
+      });
+      TOTAL_DAYS = LESSONS.length;
+      renderSidebar();
+      jumpToCurrent();
+      updateProgressMeta();
+    } catch (e) {
+      console.error('[mockup] curriculum load failed:', e);
+      document.getElementById('lessonsList').innerHTML =
+        '<li style="padding:20px;color:#EF4444;font-size:13px;cursor:default;">' +
+        'שגיאה בטעינת התוכנית.<br>פתחי דרך השרת ב-127.0.0.1.</li>';
+    }
+  }
+
+  function renderSidebar() {
+    const list = document.getElementById('lessonsList');
+    list.innerHTML = '';
+    let lastMonth = null;
+    LESSONS.forEach(l => {
+      if (l.month && l.month !== lastMonth) {
+        const head = document.createElement('li');
+        head.className = 'month-head';
+        head.textContent = l.month;
+        list.appendChild(head);
+        lastMonth = l.month;
+      }
+      const li = document.createElement('li');
+      const cls = [];
+      if (l.seq < currentSeq) cls.push('done');
+      if (l.seq === currentSeq) cls.push('active');
+      if (l.is_placeholder) cls.push('placeholder');
+      if (cls.length) li.className = cls.join(' ');
+      li.innerHTML = `<div class="num">${l.seq}</div><div class="title">${escapeHtml(l.title)}</div>`;
+      li.addEventListener('click', () => selectLesson(l.seq));
+      list.appendChild(li);
+    });
+  }
+
+  function selectLesson(seq) {
+    const lesson = LESSONS.find(l => l.seq === seq);
+    if (!lesson) return;
+    currentSeq = seq;
+    document.getElementById('heroTitle').textContent = lesson.title;
+    document.getElementById('heroObjective').textContent = lesson.obj || '(אין יעד מפורט עדיין)';
+
+    // Update hero meta line (date)
+    const labelEl = document.querySelector('.hero .label');
+    const dateStr = lesson.date ? ` · ${lesson.month} (${lesson.date.slice(5)})` : ` · ${lesson.month || ''}`;
+    labelEl.textContent = 'השיעור היום' + dateStr;
+
+    // Update practice strip from axis_2
+    const a2 = lesson.axis_2 || {};
+    const practiceText = document.querySelector('.practice-strip .ps-text');
+    if (a2.tier_2 || a2.tier_1) {
+      practiceText.innerHTML =
+        `<strong>תרגול ברירת מחדל:</strong> ${escapeHtml(a2.tier_2 || a2.tier_1)}`;
+    } else {
+      practiceText.innerHTML = `<strong>תרגול:</strong> טרם הוגדר ליום זה.`;
+    }
+    const chips = document.getElementById('practiceChips');
+    const items = [...(lesson.letters_today || []), ...(lesson.words || []).slice(0, 2)];
+    chips.innerHTML = items.length
+      ? items.slice(0, 4).map(x => `<span class="chip">${escapeHtml(x)}</span>`).join('')
+      : '<span class="chip" style="opacity:0.5;">—</span>';
+
+    renderSidebar();
+    updateProgressMeta();
+  }
+
+  function jumpToCurrent() {
+    selectLesson(currentSeq);
+    // Scroll the active item into view in the sidebar
+    setTimeout(() => {
+      const active = document.querySelector('.lessons-list li.active');
+      if (active) active.scrollIntoView({block: 'center', behavior: 'instant'});
+    }, 50);
+  }
+
+  function updateProgressMeta() {
+    const pct = TOTAL_DAYS ? Math.min(100, (currentSeq / TOTAL_DAYS) * 100) : 0;
+    document.querySelector('.progress > div').style.width = pct + '%';
+    document.querySelector('.sidebar-head .meta').textContent =
+      `${TOTAL_DAYS} ימי לימוד · אנחנו ביום ${currentSeq}`;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+
+  // Start loading curriculum immediately
+  loadCurriculum();
+
+  // ----- Toast -----
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.innerHTML = msg + ' <span class="check">✓</span>';
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2200);
+  }
+
+  // ----- Send to tablet -----
+  function sendToTablet(name) {
+    toast('נשלח תרגול לטאבלט של ' + name);
+  }
+  function classroomPractice(name) {
+    toast('פתח דף תרגול בכיתה ל-' + name);
+  }
+
+  // ----- Lesson picker -----
+  function openPicker() {
+    const body = document.getElementById('pickerBody');
+    body.innerHTML = LESSONS.map(l => `
+      <div class="picker-item ${l.seq === currentSeq ? 'current' : ''}" data-seq="${l.seq}">
+        <div class="seq">#${l.seq}</div>
+        <div>
+          <div class="pt-title">${escapeHtml(l.title)}</div>
+          <div class="pt-obj">${escapeHtml(l.month || '')} · ${escapeHtml(l.obj || '')}</div>
+        </div>
+        ${l.seq === currentSeq ? '<div class="badge-here">היום</div>' : '<div></div>'}
+      </div>
+    `).join('');
+    body.querySelectorAll('.picker-item').forEach(node => {
+      node.addEventListener('click', () => {
+        const seq = parseInt(node.dataset.seq, 10);
+        const lesson = LESSONS.find(l => l.seq === seq);
+        if (!lesson) return;
+        selectLesson(seq);
+        closePicker();
+        toast('עברנו לשיעור: ' + lesson.title);
+      });
+    });
+    document.getElementById('pickerBackdrop').classList.add('open');
+    // scroll the current item into view inside the modal
+    setTimeout(() => {
+      const current = body.querySelector('.picker-item.current');
+      if (current) current.scrollIntoView({block: 'center', behavior: 'instant'});
+    }, 50);
+  }
+  function closePicker() {
+    document.getElementById('pickerBackdrop').classList.remove('open');
+  }
+  document.getElementById('pickerBackdrop').addEventListener('click', (e) => {
+    if (e.target.id === 'pickerBackdrop') closePicker();
+  });
+
+  // ----- Practice builder -----
+  const HEB_LETTERS = ['א','ב','ג','ד','ה','ו','ז','ח','ט','י','כ','ל','מ','נ','ס','ע','פ','צ','ק','ר','ש','ת'];
+  const selectedLetters = new Set(['א','ב','ג']);
+  const selectedVowels = new Set(['hiriq']);
+  const VOWEL_LABELS = {
+    patach:'פתח', kamatz:'קמץ', hiriq:'חיריק', cholam:'חולם',
+    shuruk:'שורוק', tzere:'צירה', segol:'סגול'
+  };
+
+  function renderLetterChips() {
+    const c = document.getElementById('letterChips');
+    c.innerHTML = HEB_LETTERS.map(l =>
+      `<div class="pb-chip ${selectedLetters.has(l) ? 'selected' : ''}" data-l="${l}">${l}</div>`
+    ).join('');
+    c.querySelectorAll('.pb-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const l = chip.dataset.l;
+        if (selectedLetters.has(l)) selectedLetters.delete(l);
+        else selectedLetters.add(l);
+        chip.classList.toggle('selected');
+        renderPbPreview();
+      });
+    });
+  }
+  function bindVowelChips() {
+    document.querySelectorAll('#vowelChips .pb-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const v = chip.dataset.v;
+        if (selectedVowels.has(v)) selectedVowels.delete(v);
+        else selectedVowels.add(v);
+        chip.classList.toggle('selected');
+        renderPbPreview();
+      });
+    });
+  }
+  function renderPbPreview() {
+    const vNames = Array.from(selectedVowels).map(v => VOWEL_LABELS[v]).join(' + ');
+    const lList = Array.from(selectedLetters).join(', ');
+    const total = selectedVowels.size * selectedLetters.size;
+    document.getElementById('pbPreview').innerHTML =
+      `<strong>${total}</strong> כרטיסי תרגול · ` +
+      `<strong>${vNames || 'בחרי תנועה'}</strong> × ` +
+      `<strong>${lList || 'בחרי אות'}</strong>`;
+  }
+
+  function openPracticeBuilder() {
+    renderLetterChips();
+    renderPbPreview();
+    document.getElementById('pbBackdrop').classList.add('open');
+  }
+  function closePracticeBuilder() {
+    document.getElementById('pbBackdrop').classList.remove('open');
+  }
+  function savePracticeBuilder() {
+    const total = selectedVowels.size * selectedLetters.size;
+    const vNames = Array.from(selectedVowels).map(v => VOWEL_LABELS[v]).join(' + ');
+    const lList = Array.from(selectedLetters).join(', ');
+    document.querySelector('.practice-strip .ps-text').innerHTML =
+      `<strong>תרגול מותאם:</strong> ${vNames} × ${lList} — ${total} כרטיסים`;
+    document.getElementById('practiceChips').innerHTML =
+      Array.from(selectedVowels).slice(0,1).flatMap(v =>
+        Array.from(selectedLetters).slice(0,3).map(l => `<span class="chip">${l}+${VOWEL_LABELS[v]}</span>`)
+      ).join('');
+    closePracticeBuilder();
+    toast('התרגול עודכן ל-' + total + ' כרטיסים');
+  }
+  document.getElementById('pbBackdrop').addEventListener('click', (e) => {
+    if (e.target.id === 'pbBackdrop') closePracticeBuilder();
+  });
+  bindVowelChips();
+
+  // Sidebar click handlers are attached inside renderSidebar() — no global binding needed.
+
+  // ============================================================
+  // Student detail drawer — mock data aligned with day-51 state
+  // (everyone has Sep+Oct letters; חיריק just starting)
+  // ============================================================
+  const STUDENT_PROFILES = {
+    'שרה': {
+      level_label: 'בונה · 62%',
+      level_class: 'build',
+      stats: [
+        { v: 'אתמול', l: 'תרגלה לאחרונה' },
+        { v: '87 דק׳', l: 'השבוע' },
+        { v: '3/5', l: 'דירוג בכיתה' },
+      ],
+      mastered: [
+        '11 אותיות ספטמבר (ת, מ, ר, ב, ק, א, י, ל, ש, ח, נ)',
+        '6 אותיות אוקטובר (ד, פ, ה, ס, ג, ע)',
+        'קמץ-פתח כיחידה אחת',
+        'מודעות הברתית (חלוקה ל-2-3 הברות)',
+      ],
+      in_progress: [
+        { topic: 'שווא נח', pct: 75 },
+        { topic: 'אותיות כ, צ (סוף אוקטובר)', pct: 60 },
+        { topic: 'חיריק עם ת (היום)', pct: 25 },
+      ],
+      errors: [
+        { pattern: 'מבלבלת בין ב ו-ו', count: 8, last: 'לפני 5 ימים' },
+        { pattern: 'משמיטה ניקוד במילים מוכרות', count: 5, last: 'אתמול' },
+        { pattern: 'מערבת בין קמץ ופתח (ראשי מילים)', count: 3, last: 'אתמול' },
+      ],
+      recs: [
+        'תרגול ממוקד ב מול ו — 10 דק׳ בכיתה היום',
+        'חזרה על קמץ-פתח עם דגש על מיקום בתחילת מילה',
+        'מבדק תיווך לזיהוי ניקוד — לפני שמשיכים לחיריק',
+      ],
+    },
+    'דנה': {
+      level_label: 'מובילה · 85%',
+      level_class: 'lead',
+      stats: [
+        { v: 'היום', l: 'תרגלה לאחרונה' },
+        { v: '124 דק׳', l: 'השבוע' },
+        { v: '1/5', l: 'דירוג בכיתה' },
+      ],
+      mastered: [
+        'כל אותיות ספטמבר-אוקטובר (17 אותיות)',
+        'קמץ-פתח · שווא נח · שווא נע',
+        'חיריק עם ת, מ, ר (הוקדם מהקצב הכיתתי)',
+        'קריאת מילים בנות 2 הברות',
+      ],
+      in_progress: [
+        { topic: 'חיריק עם ב, ק (היום)', pct: 80 },
+        { topic: 'הקדמה לחולם', pct: 15 },
+      ],
+      errors: [
+        { pattern: 'לעיתים מאריכה תנועה (לא בשגיאה — סגנון קריאה)', count: 2, last: 'לפני שבוע' },
+      ],
+      recs: [
+        'קדימה לחיריק עם אותיות שטרם פגשה (ל, ש, ח)',
+        'תרגול אתגר — מילים בנות 3 הברות',
+        'יכולה לעזור לחברה — שיבוץ עבודה בזוגות',
+      ],
+    },
+    'יערה': {
+      level_label: 'צריכה תמיכה · 35%',
+      level_class: 'support',
+      stats: [
+        { v: 'לפני 4 ימים', l: 'תרגלה לאחרונה' },
+        { v: '23 דק׳', l: 'השבוע' },
+        { v: '5/5', l: 'דירוג בכיתה' },
+      ],
+      mastered: [
+        'אותיות בסיס: ת, מ, ר (זיהוי בלבד)',
+        'מודעות הברתית — מילים דו-הברתיות',
+      ],
+      in_progress: [
+        { topic: 'אותיות ב, ק', pct: 50 },
+        { topic: 'אותיות א, י', pct: 40 },
+        { topic: 'קמץ-פתח', pct: 30 },
+      ],
+      errors: [
+        { pattern: 'מבלבלת בין ת ו-מ (אותיות דומות חזותית)', count: 12, last: 'בכל סשן' },
+        { pattern: 'קושי בזיהוי הניקוד מתחת לאות', count: 9, last: 'אתמול' },
+        { pattern: 'משמיטה אותיות במילה (קוראת רק ראשונות)', count: 7, last: 'אתמול' },
+        { pattern: 'מערבת ר ו-ד (אותיות תאומות)', count: 5, last: 'לפני 4 ימים' },
+      ],
+      recs: [
+        '🔴 חזרה לבסיס — תרגול ממוקד ת מול מ עם תמיכה ויזואלית (דף עזר עם תמונות)',
+        'שיחה אישית לאחר מבדק על הסיבה לתדירות הירידה (תיווך 1:1)',
+        'מומלץ להפנות להערכה מקצועית — דפוס שגיאות עקבי',
+      ],
+    },
+    'תמר': {
+      level_label: 'בונה · 68%',
+      level_class: 'build',
+      stats: [
+        { v: 'היום', l: 'תרגלה לאחרונה' },
+        { v: '76 דק׳', l: 'השבוע' },
+        { v: '4/5', l: 'דירוג בכיתה' },
+      ],
+      mastered: [
+        'כל אותיות ספטמבר (11 אותיות)',
+        'אותיות אוקטובר (ד, פ, ה, ס, ג, ע — חלקיות)',
+        'קמץ-פתח עם רוב האותיות',
+      ],
+      in_progress: [
+        { topic: 'שווא (נח + נע)', pct: 60 },
+        { topic: 'אותיות כ, צ, ט, ז, ו (מסיים אוקטובר)', pct: 45 },
+        { topic: 'חיריק תחילת רכישה', pct: 30 },
+      ],
+      errors: [
+        { pattern: 'מבלבלת שווא נח מול שווא נע', count: 4, last: 'לפני יומיים' },
+        { pattern: 'דילוג אקראי על תנועה', count: 3, last: 'אתמול' },
+      ],
+      recs: [
+        'המשך עם הנושא היום (חיריק) — בקצב הכיתה',
+        'תרגול נוסף על הבחנת שווא נח/נע — 5 דק׳ ביום',
+      ],
+    },
+    'מיה': {
+      level_label: 'מובילה · 80%',
+      level_class: 'lead',
+      stats: [
+        { v: 'היום', l: 'תרגלה לאחרונה' },
+        { v: '105 דק׳', l: 'השבוע' },
+        { v: '2/5', l: 'דירוג בכיתה' },
+      ],
+      mastered: [
+        'כל אותיות ספטמבר-אוקטובר (17 אותיות)',
+        'קמץ-פתח · שווא',
+        'תחילת חיריק (ת, מ, ר)',
+      ],
+      in_progress: [
+        { topic: 'חיריק עם ב, ק (היום)', pct: 70 },
+        { topic: 'מילים בנות 3 הברות', pct: 50 },
+      ],
+      errors: [
+        { pattern: 'מהירות גבוהה — לעיתים מדלגת על תנועה', count: 3, last: 'לפני 3 ימים' },
+      ],
+      recs: [
+        'המשך עם הנושא היום + תרגול אוצר מילים מורכב יותר',
+        'עידוד להאט בקריאה ראשונה — דגש על ניקוד מלא',
+      ],
+    },
+  };
+
+  function openStudentDetail(name) {
+    const p = STUDENT_PROFILES[name];
+    if (!p) return;
+    document.getElementById('drawerTitle').textContent = name;
+    document.getElementById('drawerSub').innerHTML =
+      `<span class="badge ${p.level_class}"><span class="dot"></span>${escapeHtml(p.level_label)}</span>`;
+
+    // Stats
+    document.getElementById('drawerStats').innerHTML = p.stats.map(s =>
+      `<div class="qs"><div class="v">${escapeHtml(s.v)}</div><div class="l">${escapeHtml(s.l)}</div></div>`
+    ).join('');
+
+    // Mastered
+    document.getElementById('drawerMasteredCount').textContent = p.mastered.length;
+    document.getElementById('drawerMastered').innerHTML =
+      p.mastered.map(m => `<li>${escapeHtml(m)}</li>`).join('');
+
+    // In progress
+    document.getElementById('drawerProgressCount').textContent = p.in_progress.length;
+    document.getElementById('drawerProgress').innerHTML =
+      p.in_progress.map(ip => `
+        <li>
+          <div class="ip-row">
+            <span>${escapeHtml(ip.topic)}</span>
+            <span class="pct">${ip.pct}%</span>
+          </div>
+          <div class="ip-bar"><div style="width:${ip.pct}%"></div></div>
+        </li>
+      `).join('');
+
+    // Errors
+    const errSection = document.getElementById('drawerErrorsSection');
+    if (p.errors && p.errors.length) {
+      errSection.style.display = '';
+      document.getElementById('drawerErrorsCount').textContent = p.errors.length;
+      document.getElementById('drawerErrors').innerHTML =
+        p.errors.map(e => `
+          <li>
+            <div class="err-pattern">${escapeHtml(e.pattern)}</div>
+            <div class="err-meta">${e.count} מופעים · נצפה ${escapeHtml(e.last)}</div>
+          </li>
+        `).join('');
+    } else {
+      errSection.style.display = 'none';
+    }
+
+    // Recommendations
+    document.getElementById('drawerRecs').innerHTML =
+      p.recs.map(r => `<li>${escapeHtml(r)}</li>`).join('');
+
+    // Footer actions
+    document.getElementById('drawerSendBtn').onclick = () => {
+      closeStudentDetail();
+      toast('נשלח תרגול מותאם לטאבלט של ' + name);
+    };
+    document.getElementById('drawerClassBtn').onclick = () => {
+      closeStudentDetail();
+      toast('פתח דף תרגול בכיתה ל-' + name);
+    };
+
+    document.getElementById('studentDrawer').classList.add('open');
+    document.getElementById('drawerBackdrop').classList.add('open');
+  }
+
+  function closeStudentDetail() {
+    document.getElementById('studentDrawer').classList.remove('open');
+    document.getElementById('drawerBackdrop').classList.remove('open');
+  }
+
+  // ESC to close drawer
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.getElementById('studentDrawer').classList.contains('open')) {
+      closeStudentDetail();
+    }
+  });
+</script>
+
+</body>
+</html>
