@@ -1641,23 +1641,40 @@
 
     const [evRes, bktRes] = await Promise.all([
       supabase.from('events')
-        .select('student_id, client_timestamp')
+        .select('student_id, event_type, payload, client_timestamp')
         .in('student_id', studentIds)
         .order('client_timestamp', { ascending: false })
-        .limit(2000),
+        .limit(3000),
       supabase.from('bkt_state')
         .select('student_id, legacy_bkt, strand_bkt')
         .in('student_id', studentIds),
     ]);
 
     for (const sid of studentIds) {
-      profiles[sid] = { last: null, weekCount: 0, mastered: [], inProgress: [], avgKnown: null, bktStrand: null };
+      profiles[sid] = { last: null, weekCount: 0, mastered: [], inProgress: [], avgKnown: null, bktStrand: null, errors: [] };
     }
+    const errorsByStudent = {};   // sid → array of failure events
     for (const ev of (evRes.data || [])) {
       const p = profiles[ev.student_id];
       if (!p) continue;
       if (!p.last || ev.client_timestamp > p.last) p.last = ev.client_timestamp;
       if (ev.client_timestamp >= weekAgo) p.weekCount++;
+      // Collect failures for EPA computation
+      const payload = ev.payload || {};
+      if (payload.is_correct === false) {
+        (errorsByStudent[ev.student_id] = errorsByStudent[ev.student_id] || []).push({
+          target_letter:     payload.target_letter,
+          activity_type:     payload.activity_type,
+          letter_position:   payload.letter_position,
+          failure_type:      payload.failure_type,
+          task_type:         payload.task_type,
+          primary_island_id: payload.primary_island_id,
+          client_timestamp:  ev.client_timestamp,
+        });
+      }
+    }
+    for (const sid of studentIds) {
+      profiles[sid].errors = computeErrorPatterns(errorsByStudent[sid] || []);
     }
     for (const row of (bktRes.data || [])) {
       const p = profiles[row.student_id];
@@ -1758,6 +1775,84 @@ function renderCloudStudents(students, profiles) {
   });
 }
 
+// EPA-lite — pure function over failure events.
+// Mirrors AvneiEPA logic (axes: failure × context × task) but doesn't touch localStorage.
+const ACTIVITY_TO_FAILURE = {
+  soundMatch:'Sound', 'storm-quest':'Sound', rescue:'Sound', trail:'Sound', house:'Sound', shell:'Sound',
+  letterShapeA:'Name', letterShapeB:'Name', findLetter:'Name', tracePath:'Direction',
+};
+const ACTIVITY_TO_TASK = {
+  soundMatch:'recognition', 'storm-quest':'recognition', rescue:'recognition', trail:'recognition',
+  house:'recognition', shell:'recognition', letterShapeA:'recognition', letterShapeB:'recognition',
+  findLetter:'find', tracePath:'write',
+};
+const FAILURE_HE = {
+  Sound:    'בלבול צלילים',
+  Shape:    'בלבול בצורת אות',
+  Name:     'שיום אות חסר',
+  Direction:'בלבול כיוון אות',
+};
+const TASK_HE = {
+  recognition:'זיהוי',
+  find:       'איתור במילה',
+  name:       'שיום',
+  write:      'כתיבה',
+};
+
+function deriveFailure(e) {
+  if (e.failure_type && FAILURE_HE[e.failure_type]) return e.failure_type;
+  return ACTIVITY_TO_FAILURE[e.activity_type] || null;
+}
+function deriveTask(e) {
+  if (e.task_type && TASK_HE[e.task_type]) return e.task_type;
+  return ACTIVITY_TO_TASK[e.activity_type] || null;
+}
+
+function computeErrorPatterns(failures) {
+  // Aggregate by (failure_axis, letter). Keep most-recent timestamp per group.
+  const byFailureLetter = new Map();   // key: `${failure}|${letter}` → { failure, letter, count, lastTs }
+  const byTask = new Map();            // key: task → { task, count, lastTs }
+  for (const f of failures) {
+    const failure = deriveFailure(f);
+    const task = deriveTask(f);
+    const letter = f.target_letter;
+    const ts = f.client_timestamp;
+    if (failure && letter) {
+      const key = `${failure}|${letter}`;
+      const rec = byFailureLetter.get(key) || { failure, letter, count: 0, lastTs: null };
+      rec.count++;
+      if (!rec.lastTs || ts > rec.lastTs) rec.lastTs = ts;
+      byFailureLetter.set(key, rec);
+    }
+    if (task && task !== 'recognition') {  // recognition is too generic, skip
+      const rec = byTask.get(task) || { task, count: 0, lastTs: null };
+      rec.count++;
+      if (!rec.lastTs || ts > rec.lastTs) rec.lastTs = ts;
+      byTask.set(task, rec);
+    }
+  }
+  // Convert to display patterns, keep only count >= 3 (EPA's MIN_FAILURES_FOR_PATTERN)
+  const patterns = [];
+  for (const rec of byFailureLetter.values()) {
+    if (rec.count < 3) continue;
+    patterns.push({
+      text: `${FAILURE_HE[rec.failure]} — אות ${rec.letter}`,
+      count: rec.count,
+      lastTs: rec.lastTs,
+    });
+  }
+  for (const rec of byTask.values()) {
+    if (rec.count < 3) continue;
+    patterns.push({
+      text: `קושי ב${TASK_HE[rec.task]}`,
+      count: rec.count,
+      lastTs: rec.lastTs,
+    });
+  }
+  patterns.sort((a, b) => b.count - a.count);
+  return patterns.slice(0, 5);
+}
+
 function levelFromBkt(p) {
   if (p.avgKnown == null && !p.mastered.length && !p.inProgress.length) {
     return { cls: 'support', label: p.last ? 'תלמידה חדשה' : 'טרם תרגלה' };
@@ -1828,11 +1923,22 @@ function openCloudStudentDetail(sid, name) {
     : '<li style="opacity:0.6;">אין אותיות בתהליך כרגע</li>';
 
   // Errors — Phase B-2
-  document.getElementById('drawerErrorsSection').style.display = 'none';
+  const errorsSection = document.getElementById('drawerErrorsSection');
+  const errs = p.errors || [];
+  if (errs.length) {
+    errorsSection.style.display = '';
+    document.getElementById('drawerErrorsCount').textContent = errs.length;
+    document.getElementById('drawerErrors').innerHTML = errs.map(e => `
+      <li>
+        <div class="err-pattern">${escapeHtmlSafe(e.text)}</div>
+        <div class="err-meta">${e.count} מופעים · נצפה ${escapeHtmlSafe(shortLastActive(e.lastTs))}</div>
+      </li>`).join('');
+  } else {
+    errorsSection.style.display = 'none';
+  }
 
-  // Recommendations — Phase B-2 (after EPA wired)
-  document.getElementById('drawerRecs').innerHTML =
-    '<li style="opacity:0.7;">המלצות מבוססות שגיאות יחושבו בשלב הבא.</li>';
+  // Recommendations — derived from top error pattern + in-progress letters
+  document.getElementById('drawerRecs').innerHTML = buildRecsHtml(p);
 
   document.getElementById('drawerSendBtn').onclick = () => {
     closeStudentDetail();
@@ -1844,6 +1950,25 @@ function openCloudStudentDetail(sid, name) {
   };
   document.getElementById('studentDrawer').classList.add('open');
   document.getElementById('drawerBackdrop').classList.add('open');
+}
+
+function buildRecsHtml(p) {
+  const recs = [];
+  if ((p.errors || []).length) {
+    const top = p.errors[0];
+    recs.push(`תרגול ממוקד: ${top.text} (${top.count} שגיאות)`);
+  }
+  if ((p.inProgress || []).length) {
+    const lowest = p.inProgress[p.inProgress.length - 1];
+    recs.push(`חיזוק אות "${lowest.letter}" — כרגע ב-${lowest.pct}%`);
+  }
+  if (!recs.length && (p.mastered || []).length) {
+    recs.push('הילדה בקצב טוב — אפשר להעלות לרמת אתגר הבאה');
+  }
+  if (!recs.length) {
+    recs.push('עוד אין מספיק נתונים לבניית המלצה אוטומטית');
+  }
+  return recs.map(r => `<li>${escapeHtmlSafe(r)}</li>`).join('');
 }
 
 function shortLastActive(iso) {
