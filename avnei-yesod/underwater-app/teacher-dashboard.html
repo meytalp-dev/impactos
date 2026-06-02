@@ -1632,28 +1632,54 @@
     .order('created_at');
   if (stuErr) { console.error(stuErr); bootMsg.textContent = 'שגיאה בטעינת תלמידות.'; return; }
 
-  // Per-student activity from events table
-  bootMsg.textContent = 'מסכם פעילות…';
+  // Per-student activity (events) + mastery (BKT) — parallel fetch
+  bootMsg.textContent = 'טוען פעילות + BKT…';
   const studentIds = (students || []).map(s => s.id);
-  const activity = {};
+  const profiles = {};   // { student_id → full profile object }
   if (studentIds.length) {
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    const { data: events } = await supabase
-      .from('events')
-      .select('student_id, client_timestamp')
-      .in('student_id', studentIds)
-      .order('client_timestamp', { ascending: false })
-      .limit(2000);
 
-    for (const ev of (events || [])) {
-      const a = activity[ev.student_id] = activity[ev.student_id] || { last: null, weekCount: 0 };
-      if (!a.last || ev.client_timestamp > a.last) a.last = ev.client_timestamp;
-      if (ev.client_timestamp >= weekAgo) a.weekCount++;
+    const [evRes, bktRes] = await Promise.all([
+      supabase.from('events')
+        .select('student_id, client_timestamp')
+        .in('student_id', studentIds)
+        .order('client_timestamp', { ascending: false })
+        .limit(2000),
+      supabase.from('bkt_state')
+        .select('student_id, legacy_bkt, strand_bkt')
+        .in('student_id', studentIds),
+    ]);
+
+    for (const sid of studentIds) {
+      profiles[sid] = { last: null, weekCount: 0, mastered: [], inProgress: [], avgKnown: null, bktStrand: null };
+    }
+    for (const ev of (evRes.data || [])) {
+      const p = profiles[ev.student_id];
+      if (!p) continue;
+      if (!p.last || ev.client_timestamp > p.last) p.last = ev.client_timestamp;
+      if (ev.client_timestamp >= weekAgo) p.weekCount++;
+    }
+    for (const row of (bktRes.data || [])) {
+      const p = profiles[row.student_id];
+      if (!p) continue;
+      const strand1 = (row.strand_bkt || {})['1'] || {};
+      p.bktStrand = strand1;
+      p.avgKnown = (typeof strand1.pKnown === 'number') ? strand1.pKnown : null;
+      const perLetter = strand1.per_letter || {};
+      for (const [letter, st] of Object.entries(perLetter)) {
+        const pct = Math.round((st.pKnown || 0) * 100);
+        if (pct >= 90) p.mastered.push({ letter, pct });
+        else if (pct >= 50) p.inProgress.push({ letter, pct });
+      }
+      // Sort: highest mastery first
+      p.mastered.sort((a, b) => b.pct - a.pct);
+      p.inProgress.sort((a, b) => b.pct - a.pct);
     }
   }
 
   // Render real students into the existing tbody
-  renderCloudStudents(students || [], activity);
+  renderCloudStudents(students || [], profiles);
+  window._dashboardProfiles = profiles;
 
   // Update class name in topbar
   const classNameEl = document.querySelector('.topbar .class-name');
@@ -1683,7 +1709,7 @@
   window._dashboardStudents = students;
 })();
 
-function renderCloudStudents(students, activity) {
+function renderCloudStudents(students, profiles) {
   const tbody = document.querySelector('table.students tbody');
   if (!tbody) return;
   if (!students.length) {
@@ -1695,29 +1721,32 @@ function renderCloudStudents(students, activity) {
   }
 
   tbody.innerHTML = students.map(s => {
-    const act = activity[s.id] || { last: null, weekCount: 0 };
-    const lastStr = formatLastActive(act.last);
-    const live = isRecent(act.last, 10 * 60 * 1000);  // 10 min
+    const p = profiles[s.id] || { last: null, weekCount: 0, mastered: [], inProgress: [], avgKnown: null };
+    const lastStr = formatLastActive(p.last);
+    const live = isRecent(p.last, 10 * 60 * 1000);
+    const level = levelFromBkt(p);
+    const recText = p.mastered.length || p.inProgress.length
+      ? `${p.mastered.length} שולטת · ${p.inProgress.length} בתהליך`
+      : (p.last ? 'נתוני BKT עוד לא הצטברו' : 'טרם תרגלה');
     return `
-      <tr>
-        <td class="stu-name" data-name="${escapeHtmlSafe(s.name)}">${escapeHtmlSafe(s.name)}${live ? '<span class="live-dot" title="פעילה כעת"></span>' : ''}</td>
-        <td><span class="badge ${act.weekCount > 0 ? 'lead' : 'support'}"><span class="dot"></span>${act.weekCount > 0 ? 'פעילה' : 'לא תרגלה השבוע'}</span></td>
+      <tr data-sid="${escapeHtmlSafe(s.id)}">
+        <td class="stu-name" data-name="${escapeHtmlSafe(s.name)}" data-sid="${escapeHtmlSafe(s.id)}">${escapeHtmlSafe(s.name)}${live ? '<span class="live-dot" title="פעילה כעת"></span>' : ''}</td>
+        <td><span class="badge ${level.cls}"><span class="dot"></span>${escapeHtmlSafe(level.label)}</span></td>
         <td class="recommendation">
-          ${escapeHtmlSafe(lastStr)}
-          <span class="rec-tag">${act.weekCount} פריטים השבוע</span>
+          ${escapeHtmlSafe(recText)}
+          <span class="rec-tag">${escapeHtmlSafe(lastStr)} · ${p.weekCount} השבוע</span>
         </td>
         <td>
           <div class="row-actions">
-            <button class="btn-tablet" data-action="tablet" data-name="${escapeHtmlSafe(s.name)}">📱 לטאבלט</button>
-            <button class="btn-classroom" data-action="class" data-name="${escapeHtmlSafe(s.name)}">👥 בכיתה</button>
+            <button class="btn-tablet" data-action="tablet" data-name="${escapeHtmlSafe(s.name)}" data-sid="${escapeHtmlSafe(s.id)}">📱 לטאבלט</button>
+            <button class="btn-classroom" data-action="class" data-name="${escapeHtmlSafe(s.name)}" data-sid="${escapeHtmlSafe(s.id)}">👥 בכיתה</button>
           </div>
         </td>
       </tr>`;
   }).join('');
 
-  // Wire up clicks (delegation)
   tbody.querySelectorAll('td.stu-name').forEach(td => {
-    td.addEventListener('click', () => openCloudStudentDetail(td.dataset.name));
+    td.addEventListener('click', () => openCloudStudentDetail(td.dataset.sid, td.dataset.name));
   });
   tbody.querySelectorAll('button[data-action]').forEach(b => {
     b.addEventListener('click', () => {
@@ -1727,6 +1756,17 @@ function renderCloudStudents(students, activity) {
       if (window.toast) window.toast(msg); else alert(msg);
     });
   });
+}
+
+function levelFromBkt(p) {
+  if (p.avgKnown == null && !p.mastered.length && !p.inProgress.length) {
+    return { cls: 'support', label: p.last ? 'תלמידה חדשה' : 'טרם תרגלה' };
+  }
+  const k = p.avgKnown != null ? p.avgKnown : (p.mastered.length / Math.max(1, p.mastered.length + p.inProgress.length));
+  const pct = Math.round(k * 100);
+  if (k >= 0.7) return { cls: 'lead',    label: `מובילה · ${pct}%` };
+  if (k >= 0.5) return { cls: 'build',   label: `בונה · ${pct}%` };
+  return            { cls: 'support', label: `צריכה תמיכה · ${pct}%` };
 }
 
 function formatLastActive(iso) {
@@ -1751,20 +1791,49 @@ function escapeHtmlSafe(s) {
   }[c]));
 }
 
-function openCloudStudentDetail(name) {
-  // Phase B will compute mastered/in-progress/errors from BKT+EPA.
-  // For now show a placeholder that explicitly says it.
+function openCloudStudentDetail(sid, name) {
+  const profiles = window._dashboardProfiles || {};
+  const p = profiles[sid] || { mastered: [], inProgress: [], last: null, weekCount: 0, avgKnown: null };
+
   document.getElementById('drawerTitle').textContent = name;
+  const level = levelFromBkt(p);
   document.getElementById('drawerSub').innerHTML =
-    '<span class="badge build"><span class="dot"></span>נתוני BKT עוד לא חוברו</span>';
-  document.getElementById('drawerStats').innerHTML =
-    '<div class="qs" style="grid-column:1/-1;"><div class="l" style="padding:8px;">פירוט אישי (שולטת ב- / בתהליך / טעויות) — Phase B</div></div>';
-  document.getElementById('drawerMasteredCount').textContent = '—';
-  document.getElementById('drawerMastered').innerHTML = '<li style="opacity:0.5;">יחושב מ-BKT בעתיד</li>';
-  document.getElementById('drawerProgressCount').textContent = '—';
-  document.getElementById('drawerProgress').innerHTML = '';
+    `<span class="badge ${level.cls}"><span class="dot"></span>${escapeHtmlSafe(level.label)}</span>`;
+
+  // Quick stats
+  const lastShort = p.last ? shortLastActive(p.last) : 'טרם';
+  document.getElementById('drawerStats').innerHTML = `
+    <div class="qs"><div class="v">${escapeHtmlSafe(lastShort)}</div><div class="l">תרגלה לאחרונה</div></div>
+    <div class="qs"><div class="v">${p.weekCount}</div><div class="l">פריטים השבוע</div></div>
+    <div class="qs"><div class="v">${p.mastered.length}</div><div class="l">שולטת באותיות</div></div>
+  `;
+
+  // Mastered list
+  document.getElementById('drawerMasteredCount').textContent = p.mastered.length;
+  document.getElementById('drawerMastered').innerHTML = p.mastered.length
+    ? p.mastered.map(m => `<li>אות ${escapeHtmlSafe(m.letter)} · ${m.pct}%</li>`).join('')
+    : '<li style="opacity:0.6;">עוד לא צברה אותיות בשליטה מלאה</li>';
+
+  // In-progress list
+  document.getElementById('drawerProgressCount').textContent = p.inProgress.length;
+  document.getElementById('drawerProgress').innerHTML = p.inProgress.length
+    ? p.inProgress.map(ip => `
+        <li>
+          <div class="ip-row">
+            <span>אות ${escapeHtmlSafe(ip.letter)}</span>
+            <span class="pct">${ip.pct}%</span>
+          </div>
+          <div class="ip-bar"><div style="width:${ip.pct}%"></div></div>
+        </li>`).join('')
+    : '<li style="opacity:0.6;">אין אותיות בתהליך כרגע</li>';
+
+  // Errors — Phase B-2
   document.getElementById('drawerErrorsSection').style.display = 'none';
-  document.getElementById('drawerRecs').innerHTML = '<li style="opacity:0.7;">המלצות אוטומטיות יתווספו כש-BKT יחובר.</li>';
+
+  // Recommendations — Phase B-2 (after EPA wired)
+  document.getElementById('drawerRecs').innerHTML =
+    '<li style="opacity:0.7;">המלצות מבוססות שגיאות יחושבו בשלב הבא.</li>';
+
   document.getElementById('drawerSendBtn').onclick = () => {
     closeStudentDetail();
     if (window.toast) window.toast('נשלח תרגול לטאבלט של ' + name);
@@ -1775,6 +1844,19 @@ function openCloudStudentDetail(name) {
   };
   document.getElementById('studentDrawer').classList.add('open');
   document.getElementById('drawerBackdrop').classList.add('open');
+}
+
+function shortLastActive(iso) {
+  if (!iso) return '—';
+  const ms = Date.now() - new Date(iso).getTime();
+  const h = Math.floor(ms / (1000 * 60 * 60));
+  const d = Math.floor(h / 24);
+  if (h < 1) return 'היום';
+  if (h < 6) return `${h} שע׳`;
+  if (h < 24) return 'היום';
+  if (d === 1) return 'אתמול';
+  if (d < 7) return `לפני ${d} ימים`;
+  return 'מעל שבוע';
 }
 
 // Expose toast for the cloud handlers (it's defined as const in the IIFE-less outer script)
