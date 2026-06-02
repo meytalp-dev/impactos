@@ -1315,13 +1315,19 @@ function renderSoloStudents(ctx) {
       });
 
       // Cloud sync (2.6.2026) — push to Supabase so the student's tablet picks it up
+      console.log('[cloud] push targets — cloudSupabase?', !!window._cloudSupabase, 'pushed=', pushed);
       if (window._cloudSupabase && pushed > 0) {
         try {
           const rows = units.map(function (u) {
             return { student_id: sid, unit_data: u, source: 'teacher-send-solo' };
           });
-          await window._cloudSupabase.from('student_targets').insert(rows);
-        } catch (e) { console.warn('[cloud] push targets failed:', e); }
+          const { data, error } = await window._cloudSupabase.from('student_targets').insert(rows).select();
+          if (error) {
+            console.error('[cloud] push targets FAILED:', error.message, error.details || '', error.hint || '');
+          } else {
+            console.log('[cloud] push targets OK — inserted', (data || []).length, 'rows');
+          }
+        } catch (e) { console.error('[cloud] push targets EXCEPTION:', e); }
       }
 
       // mark action log (אם לא כבר היום)
