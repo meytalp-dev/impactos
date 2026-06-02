@@ -1207,7 +1207,11 @@
   }
 
   // Start loading curriculum immediately
-  loadCurriculum();
+  loadCurriculum().then(() => {
+    // Expose for the module bootstrap (send-to-tablet target derivation)
+    window.AvneiDashLessons = LESSONS;
+    window.AvneiDashGetCurrentSeq = () => currentSeq;
+  });
 
   // ----- Toast -----
   function toast(msg) {
@@ -1766,13 +1770,65 @@ function renderCloudStudents(students, profiles) {
     td.addEventListener('click', () => openCloudStudentDetail(td.dataset.sid, td.dataset.name));
   });
   tbody.querySelectorAll('button[data-action]').forEach(b => {
-    b.addEventListener('click', () => {
-      const msg = b.dataset.action === 'tablet'
-        ? 'נשלח תרגול לטאבלט של ' + b.dataset.name
-        : 'פתח דף תרגול בכיתה ל-' + b.dataset.name;
-      if (window.toast) window.toast(msg); else alert(msg);
+    b.addEventListener('click', async () => {
+      if (b.dataset.action === 'tablet') {
+        await sendTargetToTablet(b.dataset.sid, b.dataset.name, b);
+      } else {
+        if (window.toast) window.toast('פתח דף תרגול בכיתה ל-' + b.dataset.name);
+      }
     });
   });
+}
+
+// Pick the SkillUnit to send. Priority:
+//   1. The current lesson's letters_introduced_today[0] (if any)
+//   2. Student's lowest in-progress letter (BKT)
+//   3. Any letter from the current lesson's letters_featured
+async function pickUnitForStudent(sid) {
+  const lessons = window.AvneiDashLessons || [];
+  const curSeq = (window.AvneiDashGetCurrentSeq && window.AvneiDashGetCurrentSeq()) || null;
+  const lesson = lessons.find(l => l.seq === curSeq);
+  if (lesson && (lesson.letters_today || []).length) {
+    const letter = lesson.letters_today[0];
+    return { type: 'letter', id: letter, displayHe: letter, strand: 1 };
+  }
+  const profile = (window._dashboardProfiles || {})[sid];
+  if (profile && profile.inProgress && profile.inProgress.length) {
+    const lowest = profile.inProgress[profile.inProgress.length - 1];
+    return { type: 'letter', id: lowest.letter, displayHe: lowest.letter, strand: 1 };
+  }
+  if (lesson && (lesson.letters_featured || []).length) {
+    const letter = lesson.letters_featured[0];
+    return { type: 'letter', id: letter, displayHe: letter, strand: 1 };
+  }
+  return null;
+}
+
+async function sendTargetToTablet(sid, name, buttonEl) {
+  const sb = window._dashboardSupabase;
+  if (!sb) { if (window.toast) window.toast('אין חיבור ענן'); return; }
+
+  const unit = await pickUnitForStudent(sid);
+  if (!unit) {
+    if (window.toast) window.toast(`אין מספיק נתונים לבחירת תרגול ל-${name}`);
+    return;
+  }
+
+  if (buttonEl) { buttonEl.disabled = true; buttonEl.textContent = '⏳ שולח…'; }
+  try {
+    const { error } = await sb.from('student_targets').insert({
+      student_id: sid,
+      unit_data: unit,
+      source: 'teacher-dashboard',
+    });
+    if (error) throw error;
+    if (window.toast) window.toast(`נשלחה אות ${unit.id} לטאבלט של ${name}`);
+    if (buttonEl) { buttonEl.textContent = '✓ נשלח'; setTimeout(() => { if (buttonEl) { buttonEl.disabled = false; buttonEl.textContent = '📱 לטאבלט'; }}, 2500); }
+  } catch (e) {
+    console.error('[dashboard] send target failed:', e);
+    if (window.toast) window.toast('שגיאה: ' + (e.message || 'לא ידוע'));
+    if (buttonEl) { buttonEl.disabled = false; buttonEl.textContent = '📱 לטאבלט'; }
+  }
 }
 
 // EPA-lite — pure function over failure events.
@@ -1940,9 +1996,9 @@ function openCloudStudentDetail(sid, name) {
   // Recommendations — derived from top error pattern + in-progress letters
   document.getElementById('drawerRecs').innerHTML = buildRecsHtml(p);
 
-  document.getElementById('drawerSendBtn').onclick = () => {
+  document.getElementById('drawerSendBtn').onclick = async () => {
+    await sendTargetToTablet(sid, name);
     closeStudentDetail();
-    if (window.toast) window.toast('נשלח תרגול לטאבלט של ' + name);
   };
   document.getElementById('drawerClassBtn').onclick = () => {
     closeStudentDetail();
