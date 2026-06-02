@@ -1710,9 +1710,8 @@
   const sh = document.querySelector('.students-head h3');
   if (sh) sh.textContent = `${(students || []).length} תלמידות · נתונים חיים`;
 
-  // Live pill — hide for now (Phase C will compute "practicing now" via realtime)
-  const livePill = document.querySelector('.students-head .live-pill');
-  if (livePill) livePill.style.display = 'none';
+  // Live pill — initial count + Realtime updates
+  updateLivePill(profiles);
 
   // Hide summary stats — they're mock numbers
   const summaryEl = document.querySelector('.summary');
@@ -1728,6 +1727,59 @@
   window._dashboardSupabase = supabase;
   window._dashboardClass = klass;
   window._dashboardStudents = students;
+
+  // -------- Realtime: live updates as events stream in --------
+  // RLS scopes events to this teacher; Realtime respects RLS.
+  // If Realtime is not enabled for the events table in Supabase,
+  // this subscription stays silent — UI still works (just no live updates).
+  try {
+    supabase.channel('teacher-dashboard-' + klass.id)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'events',
+      }, (msg) => {
+        const evt = msg.new;
+        if (!evt || !window._dashboardProfiles) return;
+        const p = window._dashboardProfiles[evt.student_id];
+        if (!p) return;   // not one of our students
+        p.last = evt.client_timestamp;
+        p.weekCount = (p.weekCount || 0) + 1;
+        // Also re-bucket as a failure if applicable (so error patterns stay fresh)
+        const payload = evt.payload || {};
+        if (payload.is_correct === false && (payload.target_letter || payload.activity_type)) {
+          const failures = [{
+            target_letter:   payload.target_letter,
+            activity_type:   payload.activity_type,
+            letter_position: payload.letter_position,
+            failure_type:    payload.failure_type,
+            task_type:       payload.task_type,
+            client_timestamp: evt.client_timestamp,
+          }];
+          // Recompute by merging the current errors (cheap heuristic — just re-rank)
+          const existing = (p.errors || []).map(e => ({
+            target_letter: '?',
+            activity_type: null,
+            client_timestamp: e.lastTs,
+            __pre: e,
+          }));
+          // Keep it simple: bump the count of the matched pattern if found, else add fresh
+          p.errors = computeErrorPatterns(failures.concat(
+            (p.__rawFailures || [])
+          ));
+          p.__rawFailures = (p.__rawFailures || []).concat(failures);
+        }
+        updateStudentRow(evt.student_id);
+        updateLivePill(window._dashboardProfiles);
+        flashRow(evt.student_id);
+      })
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') console.log('[dashboard] realtime subscribed');
+        if (status === 'CHANNEL_ERROR') console.warn('[dashboard] realtime channel error — live updates disabled');
+      });
+  } catch (e) {
+    console.warn('[dashboard] realtime setup failed:', e);
+  }
 })();
 
 function renderCloudStudents(students, profiles) {
@@ -1907,6 +1959,86 @@ function computeErrorPatterns(failures) {
   }
   patterns.sort((a, b) => b.count - a.count);
   return patterns.slice(0, 5);
+}
+
+function updateLivePill(profiles) {
+  if (!profiles) return;
+  const recentWindow = 10 * 60 * 1000;   // 10 minutes
+  let count = 0;
+  for (const p of Object.values(profiles)) {
+    if (p.last && (Date.now() - new Date(p.last).getTime()) < recentWindow) count++;
+  }
+  const pill = document.querySelector('.students-head .live-pill');
+  if (!pill) return;
+  pill.style.display = count > 0 ? '' : 'none';
+  pill.textContent = count + ' מתרגלות עכשיו';
+}
+
+// Re-evaluate "live" status every minute so the green dots fade out automatically
+// even without new events. (Realtime brings them BACK on new events.)
+setInterval(() => {
+  if (!window._dashboardProfiles) return;
+  updateLivePill(window._dashboardProfiles);
+  for (const sid of Object.keys(window._dashboardProfiles)) {
+    updateStudentRow(sid);
+  }
+}, 60_000);
+
+function updateStudentRow(sid) {
+  const students = window._dashboardStudents || [];
+  const profiles = window._dashboardProfiles || {};
+  const stu = students.find(s => s.id === sid);
+  if (!stu) return;
+  const p = profiles[sid] || { last: null, weekCount: 0, mastered: [], inProgress: [], avgKnown: null };
+  const tr = document.querySelector(`tr[data-sid="${cssEscape(sid)}"]`);
+  if (!tr) return;
+  const lastStr = formatLastActive(p.last);
+  const live = isRecent(p.last, 10 * 60 * 1000);
+  const level = levelFromBkt(p);
+  const recText = p.mastered.length || p.inProgress.length
+    ? `${p.mastered.length} שולטת · ${p.inProgress.length} בתהליך`
+    : (p.last ? 'נתוני BKT עוד לא הצטברו' : 'טרם תרגלה');
+
+  tr.innerHTML = `
+    <td class="stu-name" data-name="${escapeHtmlSafe(stu.name)}" data-sid="${escapeHtmlSafe(sid)}">${escapeHtmlSafe(stu.name)}${live ? '<span class="live-dot" title="פעילה כעת"></span>' : ''}</td>
+    <td><span class="badge ${level.cls}"><span class="dot"></span>${escapeHtmlSafe(level.label)}</span></td>
+    <td class="recommendation">
+      ${escapeHtmlSafe(recText)}
+      <span class="rec-tag">${escapeHtmlSafe(lastStr)} · ${p.weekCount} השבוע</span>
+    </td>
+    <td>
+      <div class="row-actions">
+        <button class="btn-tablet" data-action="tablet" data-name="${escapeHtmlSafe(stu.name)}" data-sid="${escapeHtmlSafe(sid)}">📱 לטאבלט</button>
+        <button class="btn-classroom" data-action="class" data-name="${escapeHtmlSafe(stu.name)}" data-sid="${escapeHtmlSafe(sid)}">👥 בכיתה</button>
+      </div>
+    </td>`;
+
+  // Re-wire row handlers
+  tr.querySelector('td.stu-name').addEventListener('click', () =>
+    openCloudStudentDetail(sid, stu.name)
+  );
+  tr.querySelectorAll('button[data-action]').forEach(b => {
+    b.addEventListener('click', async () => {
+      if (b.dataset.action === 'tablet') {
+        await sendTargetToTablet(b.dataset.sid, b.dataset.name, b);
+      } else if (window.toast) {
+        window.toast('פתח דף תרגול בכיתה ל-' + b.dataset.name);
+      }
+    });
+  });
+}
+
+function flashRow(sid) {
+  const tr = document.querySelector(`tr[data-sid="${cssEscape(sid)}"]`);
+  if (!tr) return;
+  tr.style.transition = 'background 0.3s ease';
+  tr.style.background = '#ECFDF5';
+  setTimeout(() => { tr.style.background = ''; }, 1500);
+}
+
+function cssEscape(s) {
+  // Simple CSS attribute-value escape for selector use
+  return String(s).replace(/[^a-zA-Z0-9\-_]/g, '\\$&');
 }
 
 function levelFromBkt(p) {
