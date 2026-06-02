@@ -1325,6 +1325,45 @@
             .order('created_at');
           if (students) {
             window.localStorage.setItem('avnei-yesod-students', JSON.stringify(students));
+
+            // Pull events + BKT state for these students (RLS scopes to this teacher).
+            const ids = students.map(s => s.id);
+            if (ids.length > 0) {
+              const [evRes, bktRes] = await Promise.all([
+                supabase.from('events')
+                  .select('payload, client_timestamp, student_id')
+                  .in('student_id', ids)
+                  .order('client_timestamp', { ascending: true })
+                  .limit(1000),
+                supabase.from('bkt_state')
+                  .select('student_id, legacy_bkt, strand_bkt')
+                  .in('student_id', ids),
+              ]);
+
+              if (evRes.data && evRes.data.length > 0) {
+                const reconstructed = evRes.data.map(e => {
+                  const evt = e.payload || {};
+                  evt.student_id = e.student_id;
+                  if (!evt.timestamp) evt.timestamp = new Date(e.client_timestamp).getTime();
+                  return evt;
+                });
+                const stateKey = 'underwater-app:v1';
+                const state = JSON.parse(window.localStorage.getItem(stateKey) || '{}');
+                state.events = reconstructed;
+                window.localStorage.setItem(stateKey, JSON.stringify(state));
+              }
+
+              if (bktRes.data && bktRes.data.length > 0) {
+                const legacyAll = {};
+                const strandAll = {};
+                for (const row of bktRes.data) {
+                  if (row.legacy_bkt && Object.keys(row.legacy_bkt).length) legacyAll[row.student_id] = row.legacy_bkt;
+                  if (row.strand_bkt && Object.keys(row.strand_bkt).length) strandAll[row.student_id] = row.strand_bkt;
+                }
+                if (Object.keys(legacyAll).length) window.localStorage.setItem('avnei-bkt-v1', JSON.stringify(legacyAll));
+                if (Object.keys(strandAll).length) window.localStorage.setItem('avnei-bkt-strand-v1', JSON.stringify(strandAll));
+              }
+            }
           }
         } else {
           window.location.replace('teacher-setup.html');
