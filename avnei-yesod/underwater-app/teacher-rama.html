@@ -1207,6 +1207,158 @@
       padding-top: 6px;
     }
   }
+
+  /* ============ Today's Lesson widget (Phase A — curriculum) ============ */
+  .lesson-today {
+    background: linear-gradient(135deg, #F0F9FF 0%, #F5F3FF 100%);
+    border: 1px solid #BFDBFE;
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin: 0 0 16px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.06);
+  }
+  .lesson-today .lt-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #3B82F6;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .lesson-today .lt-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #1E3A8A;
+    line-height: 1.2;
+    margin: 0 0 4px;
+  }
+  .lesson-today .lt-objective {
+    font-size: 14px;
+    color: #475569;
+    line-height: 1.4;
+    margin: 0;
+  }
+  .lesson-today .lt-meta {
+    font-size: 12px;
+    color: #64748B;
+    margin-top: 8px;
+  }
+  .lesson-today .lt-meta strong { color: #1E3A8A; }
+  .lesson-today .lt-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 130px;
+  }
+  .lesson-today .lt-btn {
+    padding: 9px 14px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: inherit;
+  }
+  .lesson-today .lt-btn-primary {
+    background: #3B82F6;
+    color: white;
+  }
+  .lesson-today .lt-btn-primary:hover { background: #2563EB; }
+  .lesson-today .lt-btn-ghost {
+    background: white;
+    color: #475569;
+    border-color: #CBD5E1;
+  }
+  .lesson-today .lt-btn-ghost:hover { background: #F1F5F9; }
+  .lesson-today.lt-empty {
+    background: #F8FAFC;
+    border-color: #E2E8F0;
+  }
+  .lesson-today.lt-empty .lt-title { color: #64748B; font-weight: 600; font-size: 16px; }
+  @media (max-width: 720px) {
+    .lesson-today { grid-template-columns: 1fr; }
+    .lesson-today .lt-actions { flex-direction: row; }
+  }
+
+  /* ============ Curriculum picker modal ============ */
+  .cp-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+  .cp-backdrop.open { display: flex; }
+  .cp-modal {
+    background: white;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 640px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+  }
+  .cp-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid #E2E8F0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .cp-header h3 { margin: 0; font-size: 18px; font-weight: 700; color: #1E3A8A; }
+  .cp-header .cp-close {
+    background: none; border: none; font-size: 24px;
+    cursor: pointer; color: #64748B; padding: 0; line-height: 1;
+  }
+  .cp-body { overflow-y: auto; padding: 12px 8px 16px; }
+  .cp-item {
+    padding: 12px 14px;
+    margin: 4px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: center;
+    transition: background 0.12s ease;
+    border: 1px solid transparent;
+  }
+  .cp-item:hover { background: #F1F5F9; }
+  .cp-item.cp-current {
+    background: #EFF6FF;
+    border-color: #BFDBFE;
+  }
+  .cp-item .cp-seq {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748B;
+    background: #F1F5F9;
+    border-radius: 6px;
+    padding: 4px 8px;
+    min-width: 36px;
+    text-align: center;
+  }
+  .cp-item.cp-current .cp-seq { background: #DBEAFE; color: #1E3A8A; }
+  .cp-item .cp-text .cp-title {
+    font-size: 14px; font-weight: 600; color: #1E3A8A; margin: 0 0 2px;
+  }
+  .cp-item .cp-text .cp-obj {
+    font-size: 12px; color: #64748B; margin: 0;
+  }
+  .cp-item .cp-badge {
+    font-size: 11px;
+    color: #3B82F6;
+    font-weight: 700;
+  }
 </style>
 </head>
 <body>
@@ -1238,6 +1390,20 @@
   <div class="meta" id="metaBar"></div>
 </header>
 
+<!-- ============ Today's Lesson (Phase A — curriculum) ============ -->
+<div class="lesson-today" id="lessonToday" style="display:none;">
+  <div class="lt-content">
+    <div class="lt-label">השיעור היום</div>
+    <h2 class="lt-title" id="lessonTitle">—</h2>
+    <p class="lt-objective" id="lessonObjective"></p>
+    <div class="lt-meta" id="lessonMeta"></div>
+  </div>
+  <div class="lt-actions">
+    <button class="lt-btn lt-btn-primary" id="lessonAdvanceBtn">✓ סיימנו, קדמי</button>
+    <button class="lt-btn lt-btn-ghost" id="lessonPickBtn">שיעור אחר…</button>
+  </div>
+</div>
+
 <!-- View toggle -->
 <div class="toggle-bar">
   <button class="toggle-btn active" data-view="class">מבט כיתה</button>
@@ -1251,7 +1417,7 @@
 
 <!-- ============ CLASS VIEW ============ -->
 <div id="classView">
-  <a href="teacher-action.html" class="mg-action-link" style="display:inline-flex;align-items:center;gap:6px;margin:0 0 10px;padding:8px 14px;background:linear-gradient(135deg,#E8F7F3 0%,#EEF4FF 100%);border:1px solid #4FB6A8;border-radius:999px;color:#1a4d4d;font-size:13px;font-weight:700;text-decoration:none;transition:transform 0.15s ease;" title="פתחי דשבורד פעולת בוקר" onmouseover="this.style.transform='translateX(-2px)'" onmouseout="this.style.transform='translateX(0)'">🌅 עברי לפעולה →</a>
+  <a href="teacher-dashboard.html" class="mg-action-link" style="display:inline-flex;align-items:center;gap:6px;margin:0 0 10px;padding:8px 14px;background:linear-gradient(135deg,#EFF6FF 0%,#F5F3FF 100%);border:1px solid #3B82F6;border-radius:999px;color:#1E3A8A;font-size:13px;font-weight:700;text-decoration:none;transition:transform 0.15s ease;" title="חזרה לדשבורד שיעור" onmouseover="this.style.transform='translateX(-2px)'" onmouseout="this.style.transform='translateX(0)'">← חזרה לדשבורד</a>
   <div id="morningGroupSuggestions"></div>
   <div id="moyInterventionBanners" class="iv-banners-wrap"></div>
   <div id="interventionTriggers" class="iv-banners-wrap"></div>
@@ -3206,6 +3372,268 @@ function promptInterventionDoneForGroup(group) {
     alert('שגיאה בשמירת התיעוד.');
   }
 }
+</script>
+
+<!-- ============ Curriculum picker modal (Phase A) ============ -->
+<div class="cp-backdrop" id="cpBackdrop">
+  <div class="cp-modal" role="dialog" aria-labelledby="cpTitle">
+    <div class="cp-header">
+      <h3 id="cpTitle">בחירת שיעור</h3>
+      <button class="cp-close" id="cpClose" aria-label="סגירה">×</button>
+    </div>
+    <div class="cp-body" id="cpBody">
+      <div style="padding:24px;text-align:center;color:#64748B;">טוען…</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// Phase A — Curriculum + Today's Lesson
+// Reads/writes via Supabase RPCs (get/set/advance_current_lesson).
+// Falls back to localStorage placeholder when offline / no cloud.
+// ============================================================
+(function curriculumWidget() {
+  const LS_KEY_CURRICULUM = 'avnei-curriculum-cache-v1';   // [{seq_index,title,objective,default_units,notes}]
+  const LS_KEY_CURRENT_SEQ = 'avnei-class-current-seq-v1';
+
+  // Demo seed — mirrors migration 0003 seed. Used in ?guest=1 / ?presentation=1
+  // and as a fallback when cloud is unreachable and cache is empty.
+  const DEMO_LESSONS = [
+    { seq_index: 1,  title: 'הכרת האות א',        objective: 'זיהוי האות א בהקשרים שונים',
+      default_units: [{type:'letter', id:'א', displayHe:'א', strand:1}], notes: 'שיעור ראשון. להציג את האות בלי ניקוד עדיין.' },
+    { seq_index: 2,  title: 'פתח עם א',           objective: 'הברה /a/ עם האות א — קְרִיאָה והפקה',
+      default_units: [{type:'vowel', id:'patach', letter:'א', displayHe:'אַ', strand:1}], notes: 'התחלת הצמדת תנועה לאות.' },
+    { seq_index: 3,  title: 'קמץ עם א',           objective: 'הברה /a/ עם קמץ',
+      default_units: [{type:'vowel', id:'kamatz', letter:'א', displayHe:'אָ', strand:1}], notes: 'קמץ נשמע כמו פתח.' },
+    { seq_index: 4,  title: 'הכרת האות ב',        objective: 'זיהוי האות ב + ההבדל ב/ו',
+      default_units: [{type:'letter', id:'ב', displayHe:'ב', strand:1}], notes: 'דגש קל = /b/. בלי דגש = /v/.' },
+    { seq_index: 5,  title: 'פתח עם ב',           objective: 'בַּ עם דגש קל — /ba/',
+      default_units: [{type:'vowel', id:'patach', letter:'ב', displayHe:'בַּ', strand:1}], notes: 'דגש קל חובה ב-CV של ב/כ/פ.' },
+    { seq_index: 6,  title: 'חיריק עם א',         objective: 'הברה /i/ עם חיריק',
+      default_units: [{type:'vowel', id:'hiriq', letter:'א', displayHe:'אִ', strand:1}], notes: 'תנועה חדשה — חיוך גדול.' },
+    { seq_index: 7,  title: 'חיריק עם ב',         objective: 'בִּ עם דגש קל — /bi/',
+      default_units: [{type:'vowel', id:'hiriq', letter:'ב', displayHe:'בִּ', strand:1}], notes: '' },
+    { seq_index: 8,  title: 'חיריק עם ג, ד, ה',   objective: 'הרחבת חיריק לאותיות נוספות',
+      default_units: [
+        {type:'vowel', id:'hiriq', letter:'ג', displayHe:'גִ', strand:1},
+        {type:'vowel', id:'hiriq', letter:'ד', displayHe:'דִ', strand:1},
+        {type:'vowel', id:'hiriq', letter:'ה', displayHe:'הִ', strand:1},
+      ], notes: 'שיעור מרוכב — 3 אותיות.' },
+    { seq_index: 9,  title: 'חזרה: פתח + חיריק',   objective: 'הבחנה בין /a/ ל-/i/',
+      default_units: [
+        {type:'vowel', id:'patach', letter:'א', displayHe:'אַ', strand:1},
+        {type:'vowel', id:'hiriq',  letter:'א', displayHe:'אִ', strand:1},
+      ], notes: 'שיעור חזרה — זוגות בניגוד.' },
+    { seq_index: 10, title: 'מילים קצרות: אבא, אמא', objective: 'קריאת מילים בנות 2 הברות',
+      default_units: [
+        {type:'word', id:'אבא', displayHe:'אַבָּא', strand:1},
+        {type:'word', id:'אמא', displayHe:'אִמָּא', strand:1},
+      ], notes: 'מעבר ראשון מ-CV למילה שלמה.' },
+  ];
+
+  const _qs = new URLSearchParams(location.search);
+  const isGuestMode = _qs.get('guest') === '1' || _qs.get('presentation') === '1';
+
+  const el = {
+    card:      document.getElementById('lessonToday'),
+    title:     document.getElementById('lessonTitle'),
+    objective: document.getElementById('lessonObjective'),
+    meta:      document.getElementById('lessonMeta'),
+    advance:   document.getElementById('lessonAdvanceBtn'),
+    pick:      document.getElementById('lessonPickBtn'),
+    backdrop:  document.getElementById('cpBackdrop'),
+    body:      document.getElementById('cpBody'),
+    close:     document.getElementById('cpClose'),
+  };
+
+  let classId = null;
+  let lessons = [];        // all lessons (for picker)
+  let currentSeq = null;   // pointer into the sequence
+
+  function getSupabase() { return window._cloudSupabase || null; }
+  function getClassId()  { return window._cloudClass?.id || null; }
+
+  async function loadAllLessons(sb) {
+    const { data, error } = await sb
+      .from('curriculum_lessons')
+      .select('id, seq_index, title, objective, default_units, notes')
+      .eq('active', true)
+      .order('seq_index');
+    if (error) throw error;
+    return data || [];
+  }
+
+  async function loadCurrentSeq(sb, cid) {
+    const { data, error } = await sb
+      .from('classes')
+      .select('current_lesson_seq')
+      .eq('id', cid)
+      .single();
+    if (error) throw error;
+    return data?.current_lesson_seq ?? 1;
+  }
+
+  function findBySeq(seq) {
+    return lessons.find(l => l.seq_index === seq) || null;
+  }
+
+  function renderCard() {
+    const lesson = findBySeq(currentSeq);
+    if (!lesson) {
+      el.card.classList.add('lt-empty');
+      el.title.textContent = 'אין שיעור פעיל';
+      el.objective.textContent = 'התוכנית עוד לא נטענה או הסתיימה.';
+      el.meta.innerHTML = '';
+      el.advance.style.display = 'none';
+      el.card.style.display = 'grid';
+      return;
+    }
+    el.card.classList.remove('lt-empty');
+    el.title.textContent = lesson.title;
+    el.objective.textContent = lesson.objective || '';
+    const total = lessons.length;
+    const items = Array.isArray(lesson.default_units) ? lesson.default_units : [];
+    const itemPreview = items.slice(0, 4).map(u => u.displayHe || u.id || '?').join(' · ');
+    el.meta.innerHTML =
+      `<strong>שיעור ${lesson.seq_index}</strong> מתוך ${total}` +
+      (itemPreview ? ` · ${itemPreview}` : '');
+    el.advance.style.display = '';
+    el.card.style.display = 'grid';
+  }
+
+  async function advance() {
+    const sb = getSupabase();
+    if (sb && classId) {
+      try {
+        const { data, error } = await sb.rpc('advance_lesson', { p_class_id: classId });
+        if (error) throw error;
+        if (typeof data === 'number') currentSeq = data;
+      } catch (e) {
+        console.error('[curriculum] advance failed:', e);
+        // fall back to local advance
+        const next = lessons.find(l => l.seq_index > currentSeq);
+        if (next) currentSeq = next.seq_index;
+      }
+    } else {
+      const next = lessons.find(l => l.seq_index > currentSeq);
+      if (next) currentSeq = next.seq_index;
+    }
+    localStorage.setItem(LS_KEY_CURRENT_SEQ, String(currentSeq));
+    renderCard();
+  }
+
+  async function jumpTo(seq) {
+    const sb = getSupabase();
+    if (sb && classId) {
+      try {
+        const { error } = await sb.rpc('set_current_lesson', { p_class_id: classId, p_seq: seq });
+        if (error) throw error;
+      } catch (e) {
+        console.error('[curriculum] set_current failed:', e);
+      }
+    }
+    currentSeq = seq;
+    localStorage.setItem(LS_KEY_CURRENT_SEQ, String(seq));
+    renderCard();
+    closePicker();
+  }
+
+  function openPicker() {
+    el.body.innerHTML = lessons.map(l => `
+      <div class="cp-item ${l.seq_index === currentSeq ? 'cp-current' : ''}" data-seq="${l.seq_index}">
+        <div class="cp-seq">#${l.seq_index}</div>
+        <div class="cp-text">
+          <p class="cp-title">${escapeHtml(l.title)}</p>
+          ${l.objective ? `<p class="cp-obj">${escapeHtml(l.objective)}</p>` : ''}
+        </div>
+        ${l.seq_index === currentSeq ? '<div class="cp-badge">היום</div>' : '<div></div>'}
+      </div>
+    `).join('');
+    el.body.querySelectorAll('.cp-item').forEach(node => {
+      node.addEventListener('click', () => {
+        const seq = parseInt(node.dataset.seq, 10);
+        if (!Number.isNaN(seq)) jumpTo(seq);
+      });
+    });
+    el.backdrop.classList.add('open');
+  }
+
+  function closePicker() { el.backdrop.classList.remove('open'); }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+
+  el.advance.addEventListener('click', advance);
+  el.pick.addEventListener('click', openPicker);
+  el.close.addEventListener('click', closePicker);
+  el.backdrop.addEventListener('click', (e) => {
+    if (e.target === el.backdrop) closePicker();
+  });
+
+  // Cache class id from the earlier cloud-auth block (stash it where we can find it).
+  // teacher-rama's cloud-auth pulls only the first class — mirror that decision here.
+  async function resolveClassId(sb) {
+    if (getClassId()) return getClassId();
+    const user = window._cloudTeacher;
+    if (!user) return null;
+    const { data, error } = await sb
+      .from('classes')
+      .select('id')
+      .eq('teacher_id', user.id)
+      .limit(1)
+      .maybeSingle();
+    if (error || !data) return null;
+    window._cloudClass = data;
+    return data.id;
+  }
+
+  async function init() {
+    // Guest / presentation mode → demo seed, no network, no class id.
+    if (isGuestMode) {
+      lessons = DEMO_LESSONS.slice();
+      currentSeq = parseInt(localStorage.getItem(LS_KEY_CURRENT_SEQ) || '1', 10);
+      renderCard();
+      return;
+    }
+
+    const sb = getSupabase();
+    if (sb) {
+      try {
+        classId = await resolveClassId(sb);
+        if (!classId) { renderOfflineFromCache(); return; }
+        lessons = await loadAllLessons(sb);
+        currentSeq = await loadCurrentSeq(sb, classId);
+        localStorage.setItem(LS_KEY_CURRICULUM, JSON.stringify(lessons));
+        localStorage.setItem(LS_KEY_CURRENT_SEQ, String(currentSeq));
+        renderCard();
+        return;
+      } catch (e) {
+        console.warn('[curriculum] cloud load failed, falling back to cache:', e);
+      }
+    }
+    renderOfflineFromCache();
+  }
+
+  function renderOfflineFromCache() {
+    try { lessons = JSON.parse(localStorage.getItem(LS_KEY_CURRICULUM) || '[]'); }
+    catch { lessons = []; }
+    if (lessons.length === 0) lessons = DEMO_LESSONS.slice();  // last-resort: show demo so widget renders
+    currentSeq = parseInt(localStorage.getItem(LS_KEY_CURRENT_SEQ) || '1', 10);
+    renderCard();
+  }
+
+  // Run after the cloud-auth block has had a chance to populate window._cloud*.
+  // teacher-rama uses setTimeout(boot, 0) after auth; we ride the same task queue.
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(init, 50));
+  } else {
+    setTimeout(init, 50);
+  }
+})();
 </script>
 
 </body>
