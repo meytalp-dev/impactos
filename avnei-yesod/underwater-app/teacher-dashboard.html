@@ -1679,7 +1679,18 @@
       }
     }
     for (const sid of studentIds) {
-      profiles[sid].errors = computeErrorPatterns(errorsByStudent[sid] || []);
+      const failures = errorsByStudent[sid] || [];
+      profiles[sid].errors = computeErrorPatterns(failures);
+      // Distinct letters she failed on (any count, no threshold) — used as picker fallback
+      const seenLetters = new Set();
+      profiles[sid].errorLetters = [];
+      for (const f of failures) {
+        if (f.target_letter && !seenLetters.has(f.target_letter)) {
+          seenLetters.add(f.target_letter);
+          profiles[sid].errorLetters.push(f.target_letter);
+        }
+      }
+      profiles[sid].__rawFailures = failures;   // kept for realtime re-bucketing
     }
     for (const row of (bktRes.data || [])) {
       const p = profiles[row.student_id];
@@ -1690,12 +1701,12 @@
       const perLetter = strand1.per_letter || {};
       for (const [letter, st] of Object.entries(perLetter)) {
         const pct = Math.round((st.pKnown || 0) * 100);
+        const attempts = st.attempts || 0;
         if (pct >= 90) p.mastered.push({ letter, pct });
-        else if (pct >= 50) p.inProgress.push({ letter, pct });
+        else if (attempts > 0) p.inProgress.push({ letter, pct });   // any letter she actually tried — even after one mistake
       }
-      // Sort: highest mastery first
       p.mastered.sort((a, b) => b.pct - a.pct);
-      p.inProgress.sort((a, b) => b.pct - a.pct);
+      p.inProgress.sort((a, b) => b.pct - a.pct);   // lowest pct = end of array = "weakest" — used by pickUnitForStudent
     }
   }
 
@@ -1841,18 +1852,26 @@ async function pickUnitForStudent(sid) {
   const lessons = window.AvneiDashLessons || [];
   const curSeq = (window.AvneiDashGetCurrentSeq && window.AvneiDashGetCurrentSeq()) || null;
   const lesson = lessons.find(l => l.seq === curSeq);
+  const profile = (window._dashboardProfiles || {})[sid] || {};
+
+  const make = (letter) => ({ type: 'letter', id: letter, displayHe: letter, strand: 1 });
+
+  // Priority 1 — letter she just failed on (most actionable for the teacher)
+  if (profile.errorLetters && profile.errorLetters.length) {
+    return make(profile.errorLetters[0]);
+  }
+  // Priority 2 — her weakest BKT letter (any letter she's tried but not mastered)
+  if (profile.inProgress && profile.inProgress.length) {
+    const weakest = profile.inProgress[profile.inProgress.length - 1];
+    return make(weakest.letter);
+  }
+  // Priority 3 — today's new letter from the curriculum
   if (lesson && (lesson.letters_today || []).length) {
-    const letter = lesson.letters_today[0];
-    return { type: 'letter', id: letter, displayHe: letter, strand: 1 };
+    return make(lesson.letters_today[0]);
   }
-  const profile = (window._dashboardProfiles || {})[sid];
-  if (profile && profile.inProgress && profile.inProgress.length) {
-    const lowest = profile.inProgress[profile.inProgress.length - 1];
-    return { type: 'letter', id: lowest.letter, displayHe: lowest.letter, strand: 1 };
-  }
+  // Priority 4 — any featured letter from today's lesson
   if (lesson && (lesson.letters_featured || []).length) {
-    const letter = lesson.letters_featured[0];
-    return { type: 'letter', id: letter, displayHe: letter, strand: 1 };
+    return make(lesson.letters_featured[0]);
   }
   return null;
 }
