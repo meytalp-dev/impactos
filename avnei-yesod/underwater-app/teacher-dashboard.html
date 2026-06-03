@@ -2423,7 +2423,7 @@ function getTodayPracticeTarget() {
   const curSeq = (window.AvneiDashGetCurrentSeq && window.AvneiDashGetCurrentSeq()) || null;
   const lesson = lessons.find(l => l.seq === curSeq);
   if (!lesson) {
-    return { kind: 'fallback', label: 'מפת איים', url: 'map.html?guest=1', sublabel: 'לבחירה ידנית' };
+    return { kind: 'fallback', label: 'אי 3 — לבחירה', url: 'stage-3-island.html?guest=1', sublabel: 'לא נטענה תוכנית — בחרי אות' };
   }
   const topic = (lesson.title || '') + ' ' + (lesson.obj || '');
 
@@ -2450,7 +2450,34 @@ function getTodayPracticeTarget() {
     }
   }
 
-  // 3. Featured letters but no new letter → Island 3 for first featured
+  // 3. Try to extract a specific Hebrew letter from the topic text.
+  //    Catches phrases like "אות ב", "ב — הכרה", "המשך ת", "ת + חזרה", etc.
+  //    Looks for a single Hebrew letter that has a known Island-3 page.
+  const HEB = 'א-ת';
+  const letterRe = new RegExp(`(?:אות\\s+)?([${HEB}])(?=[\\s,.\\u2014\\u2013+()]|$)`, 'g');
+  const candidates = [];
+  let m;
+  while ((m = letterRe.exec(topic)) !== null) {
+    const cand = m[1];
+    // Reject common 1-letter Hebrew prepositions/connectors that appear as full words
+    if (['ו','ב','ל','מ','כ','ש','ה'].includes(cand)) {
+      // Only accept if preceded by "אות " (explicit letter mention)
+      const before = topic.slice(Math.max(0, m.index - 5), m.index);
+      if (!/אות\s$/.test(before)) continue;
+    }
+    if (ISLAND3_LETTER_PAGES[cand]) candidates.push(cand);
+  }
+  if (candidates.length) {
+    const letter = candidates[0];
+    return {
+      kind: 'letter',
+      label: `אות ${letter} (אי 3)`,
+      url: pageForLetter(letter, 3) + '?guest=1',
+      sublabel: `נגזר מנושא השיעור: "${lesson.title}"`,
+    };
+  }
+
+  // 4. Featured letters → Island 3 for first featured
   if ((lesson.letters_featured || []).length) {
     const letter = lesson.letters_featured[0];
     return {
@@ -2461,8 +2488,23 @@ function getTodayPracticeTarget() {
     };
   }
 
-  // 4. Fallback — open the islands map
-  return { kind: 'fallback', label: 'מפת איים', url: 'map.html?guest=1', sublabel: 'בחרי בעצמך' };
+  // 5. Words-focused day (e.g., "מילים בנות 2 הברות") → Island 5 (words)
+  if (/מילים|מילה/.test(topic) && (lesson.words || []).length) {
+    return {
+      kind: 'fallback',
+      label: 'אי 5 — מילים',
+      url: 'stage-5-island.html?guest=1',
+      sublabel: `מילים של היום: ${(lesson.words || []).slice(0, 3).join(' · ')}`,
+    };
+  }
+
+  // 6. Final fallback — Island 3 hub (better than the global map)
+  return {
+    kind: 'fallback',
+    label: 'אי 3 — לבחירה',
+    url: 'stage-3-island.html?guest=1',
+    sublabel: `לא זוהה תרגול ספציפי ל"${lesson.title}" — בחרי אות באי`,
+  };
 }
 
 function refreshOpenPracticeCta() {
