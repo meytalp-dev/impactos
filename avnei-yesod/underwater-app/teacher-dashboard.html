@@ -256,6 +256,64 @@
     font-weight: 600;
   }
 
+  /* Open-practice CTA — "פתח תרגול לכיתה" (B) */
+  .open-practice {
+    background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);
+    color: #1E3A8A;
+    border-radius: 14px;
+    padding: 16px 22px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(245, 158, 11, 0.15);
+  }
+  .open-practice .op-text { font-size: 14px; }
+  .open-practice .op-text strong { font-size: 16px; display: block; margin-bottom: 2px; }
+  .open-practice .op-btn {
+    background: #1E3A8A;
+    color: white;
+    padding: 12px 22px;
+    border-radius: 10px;
+    border: none;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.12s;
+  }
+  .open-practice .op-btn:hover { transform: scale(1.03); background: #0F172A; }
+
+  /* Per-row "open" icon in plan-card (A) */
+  .plan-list .plan-open-btn {
+    background: white;
+    border: 1px solid #BFDBFE;
+    color: #1E3A8A;
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0;
+    transition: all 0.12s;
+  }
+  .plan-list .plan-open-btn:hover {
+    background: #DBEAFE;
+    border-color: #3B82F6;
+    transform: scale(1.08);
+  }
+
+  /* "View as student" button in drawer (C) */
+  .drawer-foot .view-btn {
+    background: white;
+    color: #0F172A;
+    border: 1px solid #CBD5E1;
+  }
+  .drawer-foot .view-btn:hover { background: #F1F5F9; }
+
   /* Plan card — "תרגול היום" preview + send */
   .plan-card {
     background: white;
@@ -1022,6 +1080,15 @@
       </div>
     </div>
 
+    <!-- OPEN-PRACTICE CTA (B) — primary button for class demo -->
+    <div class="open-practice" id="openPracticeCard">
+      <div class="op-text">
+        <strong>תרגול לכיתה: <span id="openPracticeLetter">—</span></strong>
+        <span>פתחי על המסך הגדול כדי ללמד את כל הילדות יחד</span>
+      </div>
+      <button class="op-btn" id="openPracticeBtn">🎮 פתחי תרגול לכיתה</button>
+    </div>
+
     <!-- PLAN CARD — "תרגול היום" preview + send-all (Phase D · cloud-only) -->
     <section class="plan-card" id="planCard">
       <div class="plan-head">
@@ -1284,7 +1351,8 @@
 
   <footer class="drawer-foot">
     <button class="send" id="drawerSendBtn">📱 שליחה לטאבלט</button>
-    <button class="class-work" id="drawerClassBtn">👥 עבודה בכיתה</button>
+    <button class="view-btn" id="drawerViewBtn" title="פתחי במצב הדגמה — לא פוגע בנתונים שלה">👁 צפי בתרגול</button>
+    <button class="class-work" id="drawerClassBtn">👥 בכיתה</button>
   </footer>
 </aside>
 
@@ -1750,6 +1818,16 @@
       closeStudentDetail();
       toast('פתח דף תרגול בכיתה ל-' + name);
     };
+    // C — view as student (guest mode, no data pollution).
+    // In guest/demo mode we just open today's primary letter.
+    document.getElementById('drawerViewBtn').onclick = () => {
+      closeStudentDetail();
+      const today = (typeof getTodayPrimaryLetter === 'function') ? getTodayPrimaryLetter() : { letter: 'ק', island: 3 };
+      const opener = (typeof openLetterPractice === 'function')
+        ? openLetterPractice
+        : (l, i) => window.open(`stage-${i || 3}-island.html?guest=1`, '_blank');
+      opener(today.letter, today.island);
+    };
 
     document.getElementById('studentDrawer').classList.add('open');
     document.getElementById('drawerBackdrop').classList.add('open');
@@ -1786,6 +1864,9 @@
     banner.style.display = '';
     banner.textContent = '🎨 מצב הדגמה · נתונים מקודדים · ה-URL הציבורי שניתן לשתף';
     bootScreen.style.display = 'none';
+    // Wire B (open-practice CTA) — also works in guest mode, opens today's letter in demo
+    setTimeout(refreshOpenPracticeCta, 200);
+    setInterval(refreshOpenPracticeCta, 2000);   // until curriculum loads
     return;
   }
 
@@ -1948,6 +2029,7 @@
 
   // Build "תרגול היום" plan from profiles + current lesson
   buildAndRenderPlan();
+  refreshOpenPracticeCta();
   await loadActiveTargets();   // pre-fill status cells with existing pending targets
 
   // -------- Realtime: live updates as events stream in --------
@@ -2279,6 +2361,62 @@ function cssEscape(s) {
 // ============================================================
 const HEB_LETTERS_FULL = ['א','ב','ג','ד','ה','ו','ז','ח','ט','י','כ','ל','מ','נ','ס','ע','פ','צ','ק','ר','ש','ת'];
 
+// Letter → Island-3 page (verified by event-logger activity_type ↔ letter map)
+const ISLAND3_LETTER_PAGES = {
+  'א': 'stage-3-alef.html',
+  'ב': 'stage-3-house.html',
+  'ג': 'stage-3-gimel.html',
+  'ד': 'stage-3-dalet.html',
+  'ה': 'stage-3-hey.html',
+  'ו': 'stage-3-vav.html',
+  'ז': 'stage-3-zayin.html',
+  'ח': 'stage-3-het.html',
+  'ט': 'stage-3-tet.html',
+  'י': 'stage-3-yud.html',
+  'כ': 'stage-3-kaf.html', 'ך': 'stage-3-kaf.html',
+  'ל': 'stage-3-lamed.html',
+  'מ': 'stage-3-shell.html', 'ם': 'stage-3-shell.html',
+  'נ': 'stage-3-nun.html',   'ן': 'stage-3-nun.html',
+  'ס': 'stage-3-samekh.html',
+  'ע': 'stage-3-ayin.html',
+  'פ': 'stage-3-pey.html',   'ף': 'stage-3-pey.html',
+  'צ': 'stage-3-tzadi.html', 'ץ': 'stage-3-tzadi.html',
+  'ק': 'stage-3-rescue.html',
+  'ר': 'stage-3-trail-resh.html',
+  'ת': 'stage-3-storm.html',
+  // 'ש' not yet available — falls back to island hub
+};
+
+function pageForLetter(letter, island) {
+  if (island === 3 && ISLAND3_LETTER_PAGES[letter]) return ISLAND3_LETTER_PAGES[letter];
+  // fallback to the island hub if no per-letter page
+  return 'stage-' + (island || 3) + '-island.html';
+}
+
+// Open a letter's practice page in a new tab (guest mode — no data pollution)
+function openLetterPractice(letter, island) {
+  const page = pageForLetter(letter, island || 3);
+  window.open(page + '?guest=1', '_blank');
+}
+
+// Today's main letter for class demo (B button)
+function getTodayPrimaryLetter() {
+  const lessons = window.AvneiDashLessons || [];
+  const curSeq = (window.AvneiDashGetCurrentSeq && window.AvneiDashGetCurrentSeq()) || null;
+  const lesson = lessons.find(l => l.seq === curSeq);
+  if (lesson && (lesson.letters_today || []).length) return { letter: lesson.letters_today[0], island: 3 };
+  if (lesson && (lesson.letters_featured || []).length) return { letter: lesson.letters_featured[0], island: 3 };
+  return { letter: 'ת', island: 3 };
+}
+
+function refreshOpenPracticeCta() {
+  const { letter, island } = getTodayPrimaryLetter();
+  const el = document.getElementById('openPracticeLetter');
+  if (el) el.textContent = `אות ${letter} (אי ${island})`;
+  const btn = document.getElementById('openPracticeBtn');
+  if (btn) btn.onclick = () => openLetterPractice(letter, island);
+}
+
 // Returns { unit, reason, island, customized: false } per the 6-level priority
 function computeTodayPlan(p, lesson) {
   const make = (letter, island, reason) => ({
@@ -2357,9 +2495,22 @@ function renderPlanCard() {
           <span class="plan-pick">${escapeHtmlSafe(u.id || '?')} (אי ${pl.island || '?'})</span>
           <span class="plan-reason"> · ${escapeHtmlSafe(pl.reason || '')}</span>
         </div>
-        <div>${pl.customized ? '<span class="plan-customized">מותאם ידנית</span>' : ''}</div>
+        <div>
+          ${pl.customized ? '<span class="plan-customized">מותאם ידנית</span> ' : ''}
+          <button class="plan-open-btn" title="פתח את התרגול הזה (במצב הדגמה)" data-letter="${escapeHtmlSafe(u.id || '')}" data-island="${pl.island || 3}">🎮</button>
+        </div>
       </li>`;
   }).join('');
+
+  // Wire A: per-row open buttons
+  document.querySelectorAll('.plan-list .plan-open-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const letter = btn.dataset.letter;
+      const island = parseInt(btn.dataset.island, 10) || 3;
+      if (letter) openLetterPractice(letter, island);
+    });
+  });
 
   // Action buttons (reset to planning mode)
   document.getElementById('planActions').innerHTML = `
@@ -2670,6 +2821,21 @@ function openCloudStudentDetail(sid, name) {
   document.getElementById('drawerClassBtn').onclick = () => {
     closeStudentDetail();
     if (window.toast) window.toast('פתח דף תרגול בכיתה ל-' + name);
+  };
+  // C — view as student (guest mode, no data pollution)
+  document.getElementById('drawerViewBtn').onclick = () => {
+    const active = (window._dashboardActiveTargets || {})[sid];
+    let letter = null, island = 3;
+    if (active && active.unit && active.unit.id) {
+      letter = active.unit.id;
+    } else if (p.inProgress && p.inProgress.length) {
+      letter = p.inProgress[p.inProgress.length - 1].letter;
+    } else {
+      const today = getTodayPrimaryLetter();
+      letter = today.letter; island = today.island;
+    }
+    closeStudentDetail();
+    openLetterPractice(letter, island);
   };
   document.getElementById('studentDrawer').classList.add('open');
   document.getElementById('drawerBackdrop').classList.add('open');
