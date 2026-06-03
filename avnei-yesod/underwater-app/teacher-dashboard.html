@@ -256,6 +256,168 @@
     font-weight: 600;
   }
 
+  /* Plan card — "תרגול היום" preview + send */
+  .plan-card {
+    background: white;
+    border: 1px solid #BFDBFE;
+    border-radius: 14px;
+    padding: 18px 22px;
+    box-shadow: 0 1px 3px rgba(59,130,246,0.06);
+    display: none;   /* shown by JS in cloud mode after profiles load */
+  }
+  .plan-card.show { display: block; }
+  .plan-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .plan-head h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #0F172A;
+  }
+  .plan-head .summary-text {
+    font-size: 12px;
+    color: #64748B;
+  }
+  .plan-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .plan-list li {
+    display: grid;
+    grid-template-columns: 24px 90px 1fr auto;
+    gap: 10px;
+    align-items: center;
+    font-size: 13px;
+    color: #334155;
+    padding: 8px 4px;
+    border-bottom: 1px dashed #F1F5F9;
+  }
+  .plan-list li:last-child { border-bottom: none; }
+  .plan-list .plan-stu-name { font-weight: 600; color: #0F172A; }
+  .plan-list .plan-pick {
+    color: #1E3A8A;
+    font-weight: 600;
+  }
+  .plan-list .plan-reason {
+    color: #64748B;
+    font-size: 12px;
+  }
+  .plan-list .plan-customized {
+    background: #FEF3C7;
+    color: #92400E;
+    padding: 2px 7px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .plan-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+  .plan-actions button {
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: pointer;
+  }
+  .plan-actions .plan-send {
+    background: #3B82F6;
+    color: white;
+  }
+  .plan-actions .plan-send:hover { background: #2563EB; }
+  .plan-actions .plan-send:disabled { background: #94A3B8; cursor: not-allowed; }
+  .plan-actions .plan-edit {
+    background: white;
+    color: #475569;
+    border-color: #CBD5E1;
+  }
+  .plan-actions .plan-edit:hover { background: #F1F5F9; }
+
+  /* After-send "מצב כיתה" mode of the plan card */
+  .plan-card.sent {
+    background: linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%);
+    border-color: #10B981;
+  }
+  .plan-card.sent .plan-head h3::before {
+    content: '✓ ';
+    color: #10B981;
+  }
+  .plan-card.sent .status-icon {
+    font-size: 14px;
+    width: 18px;
+    text-align: center;
+  }
+
+  /* Edit-plan modal */
+  .ep-row {
+    padding: 12px 0;
+    border-bottom: 1px solid #F1F5F9;
+  }
+  .ep-row:last-child { border-bottom: none; }
+  .ep-row-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+  }
+  .ep-row-head .ep-name { font-size: 14px; font-weight: 700; color: #0F172A; }
+  .ep-row-head .ep-default { font-size: 12px; color: #64748B; }
+  .ep-letters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 6px;
+  }
+  .ep-letters .ep-letter {
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: #F1F5F9;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    transition: all 0.12s;
+  }
+  .ep-letters .ep-letter:hover { background: #E2E8F0; }
+  .ep-letters .ep-letter.selected {
+    background: #DBEAFE;
+    color: #1E40AF;
+    border-color: #3B82F6;
+  }
+
+  /* Status column in students table */
+  table.students .status-cell {
+    font-size: 12px;
+    color: #64748B;
+    line-height: 1.4;
+  }
+  table.students .status-cell .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .status-pill.pending  { background: #F1F5F9; color: #64748B; }
+  .status-pill.progress { background: #FEF3C7; color: #B45309; }
+  .status-pill.done     { background: #D1FAE5; color: #047857; }
+  .status-pill.idle     { background: #F8FAFC; color: #94A3B8; }
+
   /* Students section */
   .students-card {
     background: white;
@@ -860,6 +1022,19 @@
       </div>
     </div>
 
+    <!-- PLAN CARD — "תרגול היום" preview + send-all (Phase D · cloud-only) -->
+    <section class="plan-card" id="planCard">
+      <div class="plan-head">
+        <h3 id="planTitle">🎯 תרגול היום</h3>
+        <div class="summary-text" id="planSummary"></div>
+      </div>
+      <ul class="plan-list" id="planList"></ul>
+      <div class="plan-actions" id="planActions">
+        <button class="plan-edit" id="planEditBtn">⚙ עריכה פר תלמידה</button>
+        <button class="plan-send" id="planSendBtn">📱 שלחי לכל הכיתה</button>
+      </div>
+    </section>
+
     <!-- STUDENTS -->
     <section class="students-card">
       <div class="students-head">
@@ -873,6 +1048,7 @@
             <th>תלמידה</th>
             <th>רמה</th>
             <th>המלצה לפי הנתונים</th>
+            <th>מצב תרגול</th>
             <th style="text-align:left;">פעולות</th>
           </tr>
         </thead>
@@ -883,6 +1059,9 @@
             <td class="recommendation">
               חזרה על פתח עם א
               <span class="rec-tag">(טעויות חוזרות ב-אַ)</span>
+            </td>
+            <td class="status-cell">
+              <span class="status-pill progress">⏳ באמצע</span><br><small>6/15 פריטים</small>
             </td>
             <td>
               <div class="row-actions">
@@ -898,6 +1077,9 @@
               קדימה לחיריק עם ג, ד
               <span class="rec-tag">(מוכנה להרחבה)</span>
             </td>
+            <td class="status-cell">
+              <span class="status-pill done">✓ סיימה</span><br><small>12 דק׳ · 14/15 נכון</small>
+            </td>
             <td>
               <div class="row-actions">
                 <button class="btn-tablet" onclick="sendToTablet('דנה')">📱 לטאבלט</button>
@@ -911,6 +1093,9 @@
             <td class="recommendation">
               חזרה על הכרת האות א
               <span class="rec-tag">(מבלבלת בין אותיות דומות)</span>
+            </td>
+            <td class="status-cell">
+              <span class="status-pill pending">📭 ממתינה</span><br><small>תרגול הוקצה</small>
             </td>
             <td>
               <div class="row-actions">
@@ -926,6 +1111,9 @@
               המשיכי בחיריק עם ב (הנושא היום)
               <span class="rec-tag">(בקצב הכיתתי)</span>
             </td>
+            <td class="status-cell">
+              <span class="status-pill progress">⏳ באמצע</span><br><small>9/15 פריטים</small>
+            </td>
             <td>
               <div class="row-actions">
                 <button class="btn-tablet" onclick="sendToTablet('תמר')">📱 לטאבלט</button>
@@ -939,6 +1127,9 @@
             <td class="recommendation">
               המשיכי בחיריק עם ב (הנושא היום)
               <span class="rec-tag">(שולטת היטב)</span>
+            </td>
+            <td class="status-cell">
+              <span class="status-pill done">✓ סיימה</span><br><small>8 דק׳ · 15/15 נכון</small>
             </td>
             <td>
               <div class="row-actions">
@@ -1030,6 +1221,21 @@
     <div class="modal-foot">
       <button class="cancel" onclick="closePracticeBuilder()">ביטול</button>
       <button class="save" onclick="savePracticeBuilder()">החל על השיעור</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ EDIT-PLAN MODAL (per-student override) ============ -->
+<div class="modal-backdrop" id="epBackdrop">
+  <div class="modal" style="max-width: 640px;">
+    <div class="modal-head">
+      <h3>עריכת תרגול היום פר תלמידה</h3>
+      <button class="close" onclick="closePlanEditModal()" aria-label="סגירה">×</button>
+    </div>
+    <div class="modal-body" id="epBody"></div>
+    <div class="modal-foot">
+      <button class="cancel" onclick="closePlanEditModal()">ביטול</button>
+      <button class="save" onclick="savePlanEdit()">שמור</button>
     </div>
   </div>
 </div>
@@ -1740,6 +1946,10 @@
   window._dashboardClass = klass;
   window._dashboardStudents = students;
 
+  // Build "תרגול היום" plan from profiles + current lesson
+  buildAndRenderPlan();
+  await loadActiveTargets();   // pre-fill status cells with existing pending targets
+
   // -------- Realtime: live updates as events stream in --------
   // RLS scopes events to this teacher; Realtime respects RLS.
   // If Realtime is not enabled for the events table in Supabase,
@@ -1784,6 +1994,7 @@
         updateStudentRow(evt.student_id);
         updateLivePill(window._dashboardProfiles);
         flashRow(evt.student_id);
+        refreshStatusCell(evt.student_id);
       })
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') console.log('[dashboard] realtime subscribed');
@@ -1799,7 +2010,7 @@ function renderCloudStudents(students, profiles) {
   if (!tbody) return;
   if (!students.length) {
     tbody.innerHTML = `
-      <tr><td colspan="4" style="padding:30px;text-align:center;color:#64748B;font-size:13px;">
+      <tr><td colspan="5" style="padding:30px;text-align:center;color:#64748B;font-size:13px;">
         אין עדיין תלמידות בכיתה. <a href="teacher-setup.html" style="color:#3B82F6;font-weight:600;">להוסיף תלמידה →</a>
       </td></tr>`;
     return;
@@ -1821,6 +2032,7 @@ function renderCloudStudents(students, profiles) {
           ${escapeHtmlSafe(recText)}
           <span class="rec-tag">${escapeHtmlSafe(lastStr)} · ${p.weekCount} השבוע</span>
         </td>
+        <td class="status-cell" data-status-sid="${escapeHtmlSafe(s.id)}">${renderStatusCellHtml(s.id)}</td>
         <td>
           <div class="row-actions">
             <button class="btn-tablet" data-action="tablet" data-name="${escapeHtmlSafe(s.name)}" data-sid="${escapeHtmlSafe(s.id)}">📱 לטאבלט</button>
@@ -2026,6 +2238,7 @@ function updateStudentRow(sid) {
       ${escapeHtmlSafe(recText)}
       <span class="rec-tag">${escapeHtmlSafe(lastStr)} · ${p.weekCount} השבוע</span>
     </td>
+    <td class="status-cell" data-status-sid="${escapeHtmlSafe(sid)}">${renderStatusCellHtml(sid)}</td>
     <td>
       <div class="row-actions">
         <button class="btn-tablet" data-action="tablet" data-name="${escapeHtmlSafe(stu.name)}" data-sid="${escapeHtmlSafe(sid)}">📱 לטאבלט</button>
@@ -2059,6 +2272,308 @@ function flashRow(sid) {
 function cssEscape(s) {
   // Simple CSS attribute-value escape for selector use
   return String(s).replace(/[^a-zA-Z0-9\-_]/g, '\\$&');
+}
+
+// ============================================================
+// "תרגול היום" — plan, edit, send, status tracking
+// ============================================================
+const HEB_LETTERS_FULL = ['א','ב','ג','ד','ה','ו','ז','ח','ט','י','כ','ל','מ','נ','ס','ע','פ','צ','ק','ר','ש','ת'];
+
+// Returns { unit, reason, island, customized: false } per the 6-level priority
+function computeTodayPlan(p, lesson) {
+  const make = (letter, island, reason) => ({
+    unit: { type: 'letter', id: letter, displayHe: letter, strand: 1 },
+    reason, island, customized: false,
+  });
+  // 1. Strong pattern (≥3 errors) → that letter
+  if (p.errors && p.errors.length && p.errors[0].count >= 3 && p.errors[0].letter) {
+    return make(p.errors[0].letter, 3, `דפוס: ${p.errors[0].text}`);
+  }
+  // 2. Any error letter (1-2 errors)
+  if (p.errorLetters && p.errorLetters.length) {
+    return make(p.errorLetters[0], 3, 'חיזוק אחרי טעות');
+  }
+  // 3. Lead (avgKnown ≥ 0.7) → today's new letter
+  if ((p.avgKnown || 0) >= 0.7 && lesson && lesson.letters_today && lesson.letters_today.length) {
+    return make(lesson.letters_today[0], 3, 'אות חדשה של היום');
+  }
+  // 4. Build (0.5–0.7) → today's new letter
+  if ((p.avgKnown || 0) >= 0.5 && lesson && lesson.letters_today && lesson.letters_today.length) {
+    return make(lesson.letters_today[0], 3, 'אות חדשה של היום');
+  }
+  // 5. Support (<0.5) → first letter she hasn't mastered (Island 2 review)
+  if (p.inProgress && p.inProgress.length) {
+    const weakest = p.inProgress[p.inProgress.length - 1];
+    return make(weakest.letter, 2, 'חזרה על אות לא נשלטה');
+  }
+  // 6. New student — first letter of curriculum
+  return make('ת', 1, 'התחלת הקצב — אות ראשונה');
+}
+
+function buildAndRenderPlan() {
+  const students = window._dashboardStudents || [];
+  const profiles = window._dashboardProfiles || {};
+  const lessons = window.AvneiDashLessons || [];
+  const curSeq = (window.AvneiDashGetCurrentSeq && window.AvneiDashGetCurrentSeq()) || null;
+  const lesson = lessons.find(l => l.seq === curSeq);
+
+  window._dashboardTodayPlan = {};
+  for (const s of students) {
+    const p = profiles[s.id] || {};
+    window._dashboardTodayPlan[s.id] = computeTodayPlan(p, lesson);
+  }
+  renderPlanCard();
+}
+
+function renderPlanCard() {
+  const card = document.getElementById('planCard');
+  const students = window._dashboardStudents || [];
+  const plan = window._dashboardTodayPlan || {};
+  if (!card || !students.length) return;
+  card.classList.add('show');
+  card.classList.remove('sent');
+
+  // Summary: distinct letters
+  const letterCounts = {};
+  for (const s of students) {
+    const u = plan[s.id]?.unit;
+    if (u) letterCounts[u.id] = (letterCounts[u.id] || 0) + 1;
+  }
+  const summary = Object.entries(letterCounts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([letter, count]) => `${count} × ${letter}`)
+    .join(' · ');
+  document.getElementById('planSummary').textContent = summary || '—';
+  document.getElementById('planTitle').textContent = '🎯 תרגול היום';
+
+  document.getElementById('planList').innerHTML = students.map(s => {
+    const pl = plan[s.id] || {};
+    const u = pl.unit || {};
+    return `
+      <li data-sid="${escapeHtmlSafe(s.id)}">
+        <div class="status-icon">●</div>
+        <div class="plan-stu-name">${escapeHtmlSafe(s.name)}</div>
+        <div>
+          <span class="plan-pick">${escapeHtmlSafe(u.id || '?')} (אי ${pl.island || '?'})</span>
+          <span class="plan-reason"> · ${escapeHtmlSafe(pl.reason || '')}</span>
+        </div>
+        <div>${pl.customized ? '<span class="plan-customized">מותאם ידנית</span>' : ''}</div>
+      </li>`;
+  }).join('');
+
+  // Action buttons (reset to planning mode)
+  document.getElementById('planActions').innerHTML = `
+    <button class="plan-edit" id="planEditBtn">⚙ עריכה פר תלמידה</button>
+    <button class="plan-send" id="planSendBtn">📱 שלחי לכל הכיתה</button>
+  `;
+  document.getElementById('planSendBtn').onclick = sendPlanToAll;
+  document.getElementById('planEditBtn').onclick = openPlanEditModal;
+}
+
+function openPlanEditModal() {
+  const students = window._dashboardStudents || [];
+  const plan = window._dashboardTodayPlan || {};
+  const body = document.getElementById('epBody');
+  if (!body) return;
+  body.innerHTML = students.map(s => {
+    const pl = plan[s.id] || {};
+    const u = pl.unit || {};
+    return `
+      <div class="ep-row" data-sid="${escapeHtmlSafe(s.id)}">
+        <div class="ep-row-head">
+          <div class="ep-name">${escapeHtmlSafe(s.name)}</div>
+          <div class="ep-default">ברירת מחדל: ${escapeHtmlSafe(u.id || '?')} (אי ${pl.island || '?'}) · ${escapeHtmlSafe(pl.reason || '')}</div>
+        </div>
+        <div class="ep-letters">
+          ${HEB_LETTERS_FULL.map(l =>
+            `<div class="ep-letter ${l === u.id ? 'selected' : ''}" data-letter="${l}">${l}</div>`
+          ).join('')}
+        </div>
+      </div>`;
+  }).join('');
+  body.querySelectorAll('.ep-row').forEach(row => {
+    const sid = row.dataset.sid;
+    row.querySelectorAll('.ep-letter').forEach(chip => {
+      chip.addEventListener('click', () => {
+        row.querySelectorAll('.ep-letter').forEach(c => c.classList.remove('selected'));
+        chip.classList.add('selected');
+        const letter = chip.dataset.letter;
+        const cur = window._dashboardTodayPlan[sid] || {};
+        const wasDefaultLetter = cur.unit && cur.unit.id === letter && !cur.customized;
+        window._dashboardTodayPlan[sid] = {
+          unit: { type: 'letter', id: letter, displayHe: letter, strand: 1 },
+          reason: 'בחירה ידנית של המורה',
+          island: cur.island || 3,
+          customized: !wasDefaultLetter,
+        };
+      });
+    });
+  });
+  document.getElementById('epBackdrop').classList.add('open');
+}
+
+function closePlanEditModal() {
+  document.getElementById('epBackdrop').classList.remove('open');
+}
+
+function savePlanEdit() {
+  closePlanEditModal();
+  renderPlanCard();
+  if (window.toast) window.toast('התרגול עודכן');
+}
+
+async function sendPlanToAll() {
+  const sb = window._dashboardSupabase;
+  const students = window._dashboardStudents || [];
+  const plan = window._dashboardTodayPlan || {};
+  if (!sb || !students.length) return;
+
+  const btn = document.getElementById('planSendBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ שולחת…'; }
+
+  const rows = students
+    .filter(s => plan[s.id] && plan[s.id].unit)
+    .map(s => ({
+      student_id: s.id,
+      unit_data: plan[s.id].unit,
+      source: plan[s.id].customized ? 'teacher-dashboard-custom' : 'teacher-dashboard-default',
+    }));
+
+  try {
+    const { data, error } = await sb.from('student_targets').insert(rows).select('id, student_id, created_at');
+    if (error) throw error;
+
+    // Record target ids in profiles for status tracking
+    for (const r of data) {
+      window._dashboardActiveTargets = window._dashboardActiveTargets || {};
+      window._dashboardActiveTargets[r.student_id] = {
+        id: r.id,
+        sentAt: r.created_at,
+        unit: plan[r.student_id].unit,
+        completedCount: 0,
+        completed: false,
+      };
+    }
+    // Refresh status cells
+    for (const sid of Object.keys(window._dashboardActiveTargets || {})) {
+      refreshStatusCell(sid);
+    }
+    // Transition plan card into "sent" mode
+    transitionPlanCardToSent(rows.length);
+    if (window.toast) window.toast(`נשלח תרגול ל-${rows.length} תלמידות`);
+  } catch (e) {
+    console.error('[dashboard] sendPlanToAll failed:', e);
+    if (window.toast) window.toast('שגיאה בשליחה: ' + (e.message || ''));
+    if (btn) { btn.disabled = false; btn.textContent = '📱 שלחי לכל הכיתה'; }
+  }
+}
+
+function transitionPlanCardToSent(count) {
+  const card = document.getElementById('planCard');
+  if (!card) return;
+  card.classList.add('sent');
+  document.getElementById('planTitle').textContent = '🎯 מצב כיתה';
+  document.getElementById('planSummary').textContent = `נשלח לתרגול · ${count} תלמידות`;
+  document.getElementById('planActions').innerHTML = `
+    <button class="plan-edit" id="planResetBtn">↺ תכנון חדש</button>
+  `;
+  document.getElementById('planResetBtn').onclick = () => {
+    window._dashboardActiveTargets = {};
+    buildAndRenderPlan();
+    for (const sid of Object.keys(window._dashboardProfiles || {})) refreshStatusCell(sid);
+  };
+}
+
+// Pull any pending targets from DB so the dashboard reflects state across page-loads
+async function loadActiveTargets() {
+  const sb = window._dashboardSupabase;
+  const students = window._dashboardStudents || [];
+  if (!sb || !students.length) return;
+  const ids = students.map(s => s.id);
+  try {
+    const { data, error } = await sb.from('student_targets')
+      .select('id, student_id, unit_data, created_at, completed_at')
+      .in('student_id', ids)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    const latest = {};
+    for (const t of (data || [])) {
+      if (!latest[t.student_id]) latest[t.student_id] = t;   // newest first
+    }
+    window._dashboardActiveTargets = {};
+    for (const sid of Object.keys(latest)) {
+      const t = latest[sid];
+      window._dashboardActiveTargets[sid] = {
+        id: t.id,
+        sentAt: t.created_at,
+        unit: t.unit_data,
+        completedCount: 0,
+        completed: !!t.completed_at,
+      };
+      refreshStatusCell(sid);
+    }
+  } catch (e) {
+    console.warn('[dashboard] loadActiveTargets failed:', e);
+  }
+}
+
+// Render a status cell's contents based on current target state.
+// Called: after initial load · after send · after each new event (realtime).
+function renderStatusCellHtml(sid) {
+  const t = (window._dashboardActiveTargets || {})[sid];
+  if (!t) return `<span class="status-pill idle">💤 ללא תרגול פעיל</span>`;
+  const letter = (t.unit && t.unit.id) || '?';
+  if (t.completed) {
+    return `<span class="status-pill done">✓ סיימה ${letter}</span>`;
+  }
+  // Count events for this student that arrived after sentAt
+  const profiles = window._dashboardProfiles || {};
+  const p = profiles[sid] || {};
+  const sentMs = t.sentAt ? new Date(t.sentAt).getTime() : 0;
+  let count = 0;
+  const rawFails = p.__rawFailures || [];
+  // Approximation: count failures + a coarse "weekCount delta" not reliable mid-session.
+  // For now: if there's been any event since sent (last > sentAt), say "באמצע"; else "ממתינה".
+  if (p.last && new Date(p.last).getTime() > sentMs) {
+    return `<span class="status-pill progress">⏳ באמצע ${letter}</span>`;
+  }
+  return `<span class="status-pill pending">📭 ממתינה ${letter}</span>`;
+}
+
+function refreshStatusCell(sid) {
+  const cell = document.querySelector(`td.status-cell[data-status-sid="${cssEscape(sid)}"]`);
+  if (cell) cell.innerHTML = renderStatusCellHtml(sid);
+  // Also refresh the dot in the plan-list (sent mode)
+  const li = document.querySelector(`.plan-list li[data-sid="${cssEscape(sid)}"] .status-icon`);
+  if (li) {
+    const t = (window._dashboardActiveTargets || {})[sid];
+    if (!t) li.textContent = '●';
+    else if (t.completed) { li.textContent = '✓'; li.style.color = '#10B981'; }
+    else {
+      const p = (window._dashboardProfiles || {})[sid] || {};
+      const sentMs = t.sentAt ? new Date(t.sentAt).getTime() : 0;
+      if (p.last && new Date(p.last).getTime() > sentMs) { li.textContent = '⏳'; li.style.color = '#F59E0B'; }
+      else { li.textContent = '📭'; li.style.color = '#94A3B8'; }
+    }
+  }
+}
+
+// Expose the modal handlers (inline onclick lives in non-module scope)
+window.closePlanEditModal = closePlanEditModal;
+window.savePlanEdit = savePlanEdit;
+
+// Backdrop-click-to-close for the edit-plan modal
+document.addEventListener('DOMContentLoaded', () => {
+  const bd = document.getElementById('epBackdrop');
+  if (bd) bd.addEventListener('click', (e) => {
+    if (e.target.id === 'epBackdrop') closePlanEditModal();
+  });
+});
+if (document.readyState !== 'loading') {
+  const bd = document.getElementById('epBackdrop');
+  if (bd) bd.addEventListener('click', (e) => {
+    if (e.target.id === 'epBackdrop') closePlanEditModal();
+  });
 }
 
 function levelFromBkt(p) {
