@@ -1043,6 +1043,7 @@
     <div class="class-name">כיתה א׳ · מיטל פלג</div>
   </div>
   <div class="actions">
+    <a href="map.html?guest=1" target="_blank" class="map-link" title="פתחי את מפת האיים בכרטיסיה חדשה" style="background:white;border:1px solid #E2E8F0;padding:7px 12px;border-radius:8px;font-size:13px;color:#475569;font-weight:500;text-decoration:none;display:inline-flex;align-items:center;">🗺 מפת איים</a>
     <a href="teacher-setup.html" class="manage-link" style="background:white;border:1px solid #E2E8F0;padding:7px 14px;border-radius:8px;font-size:13px;color:#475569;font-weight:500;text-decoration:none;display:inline-flex;align-items:center;">⚙ ניהול כיתה</a>
     <button class="rama-btn" onclick="window.location.href='teacher-rama.html'">📊 מבחני ראמ"ה</button>
     <button onclick="if(window._dashboardSupabase){window._dashboardSupabase.auth.signOut().then(()=>location.href='teacher-login.html')}else{location.href='teacher-login.html'}">← יציאה</button>
@@ -1084,7 +1085,7 @@
     <div class="open-practice" id="openPracticeCard">
       <div class="op-text">
         <strong>תרגול לכיתה: <span id="openPracticeLetter">—</span></strong>
-        <span>פתחי על המסך הגדול כדי ללמד את כל הילדות יחד</span>
+        <span id="openPracticeSub">פתחי על המסך הגדול ללמידה משותפת</span>
       </div>
       <button class="op-btn" id="openPracticeBtn">🎮 פתחי תרגול לכיתה</button>
     </div>
@@ -1819,14 +1820,15 @@
       toast('פתח דף תרגול בכיתה ל-' + name);
     };
     // C — view as student (guest mode, no data pollution).
-    // In guest/demo mode we just open today's primary letter.
+    // In demo mode, just open today's class practice (smart router decides letter vs vowel)
     document.getElementById('drawerViewBtn').onclick = () => {
       closeStudentDetail();
-      const today = (typeof getTodayPrimaryLetter === 'function') ? getTodayPrimaryLetter() : { letter: 'ק', island: 3 };
-      const opener = (typeof openLetterPractice === 'function')
-        ? openLetterPractice
-        : (l, i) => window.open(`stage-${i || 3}-island.html?guest=1`, '_blank');
-      opener(today.letter, today.island);
+      if (typeof getTodayPracticeTarget === 'function') {
+        const t = getTodayPracticeTarget();
+        window.open(t.url, '_blank');
+      } else {
+        window.open('stage-3-island.html?guest=1', '_blank');
+      }
     };
 
     document.getElementById('studentDrawer').classList.add('open');
@@ -2399,22 +2401,74 @@ function openLetterPractice(letter, island) {
   window.open(page + '?guest=1', '_blank');
 }
 
-// Today's main letter for class demo (B button)
-function getTodayPrimaryLetter() {
+// Topic → vowel group detection for Island-4 routing.
+// Keys are substrings to look for in the lesson topic/sub_skill.
+const VOWEL_GROUP_FROM_TOPIC = [
+  { match: /חיריק/,    vowelGroup: 'i', label: 'חיריק' },
+  { match: /חולם/,     vowelGroup: 'o', label: 'חולם' },
+  { match: /שורוק|קובוץ/, vowelGroup: 'u', label: 'שורוק/קובוץ' },
+  { match: /צירה|צירי|סגול/, vowelGroup: 'e', label: 'צירי/סגול' },
+  { match: /קמץ|פתח/,  vowelGroup: 'a', label: 'קמץ-פתח' },
+];
+
+// Smart router — given the current lesson, returns the right practice URL.
+// Returns { kind, label, url, sublabel }
+//   kind = 'vowel' | 'letter' | 'fallback'
+function getTodayPracticeTarget() {
   const lessons = window.AvneiDashLessons || [];
   const curSeq = (window.AvneiDashGetCurrentSeq && window.AvneiDashGetCurrentSeq()) || null;
   const lesson = lessons.find(l => l.seq === curSeq);
-  if (lesson && (lesson.letters_today || []).length) return { letter: lesson.letters_today[0], island: 3 };
-  if (lesson && (lesson.letters_featured || []).length) return { letter: lesson.letters_featured[0], island: 3 };
-  return { letter: 'ת', island: 3 };
+  if (!lesson) {
+    return { kind: 'fallback', label: 'מפת איים', url: 'map.html?guest=1', sublabel: 'לבחירה ידנית' };
+  }
+  const topic = (lesson.title || '') + ' ' + (lesson.obj || '');
+
+  // 1. New letter today → Island 3 for that specific letter
+  if ((lesson.letters_today || []).length) {
+    const letter = lesson.letters_today[0];
+    return {
+      kind: 'letter',
+      label: `אות ${letter} (אי 3)`,
+      url: pageForLetter(letter, 3) + '?guest=1',
+      sublabel: `כניסה לעולם של ${letter}`,
+    };
+  }
+
+  // 2. Vowel-focused day → Island 4 CV practice
+  for (const { match, vowelGroup, label } of VOWEL_GROUP_FROM_TOPIC) {
+    if (match.test(topic)) {
+      return {
+        kind: 'vowel',
+        label: `${label} (אי 4)`,
+        url: `stage-4-cv-tap.html?pack=${vowelGroup}-pilot&guest=1`,
+        sublabel: '5 אותיות פיילוט · מ ב ר ק ת',
+      };
+    }
+  }
+
+  // 3. Featured letters but no new letter → Island 3 for first featured
+  if ((lesson.letters_featured || []).length) {
+    const letter = lesson.letters_featured[0];
+    return {
+      kind: 'letter',
+      label: `אות ${letter} (אי 3, חזרה)`,
+      url: pageForLetter(letter, 3) + '?guest=1',
+      sublabel: 'חזרה על האות',
+    };
+  }
+
+  // 4. Fallback — open the islands map
+  return { kind: 'fallback', label: 'מפת איים', url: 'map.html?guest=1', sublabel: 'בחרי בעצמך' };
 }
 
 function refreshOpenPracticeCta() {
-  const { letter, island } = getTodayPrimaryLetter();
-  const el = document.getElementById('openPracticeLetter');
-  if (el) el.textContent = `אות ${letter} (אי ${island})`;
-  const btn = document.getElementById('openPracticeBtn');
-  if (btn) btn.onclick = () => openLetterPractice(letter, island);
+  const t = getTodayPracticeTarget();
+  const labelEl = document.getElementById('openPracticeLetter');
+  const subEl   = document.getElementById('openPracticeSub');
+  const btn     = document.getElementById('openPracticeBtn');
+  if (labelEl) labelEl.textContent = t.label;
+  if (subEl)   subEl.textContent   = t.sublabel || '';
+  if (btn) btn.onclick = () => window.open(t.url, '_blank');
 }
 
 // Returns { unit, reason, island, customized: false } per the 6-level priority
@@ -2825,17 +2879,19 @@ function openCloudStudentDetail(sid, name) {
   // C — view as student (guest mode, no data pollution)
   document.getElementById('drawerViewBtn').onclick = () => {
     const active = (window._dashboardActiveTargets || {})[sid];
-    let letter = null, island = 3;
-    if (active && active.unit && active.unit.id) {
-      letter = active.unit.id;
-    } else if (p.inProgress && p.inProgress.length) {
-      letter = p.inProgress[p.inProgress.length - 1].letter;
-    } else {
-      const today = getTodayPrimaryLetter();
-      letter = today.letter; island = today.island;
-    }
     closeStudentDetail();
-    openLetterPractice(letter, island);
+    if (active && active.unit && active.unit.id) {
+      // Open her specific assigned letter — Island 3
+      openLetterPractice(active.unit.id, 3);
+      return;
+    }
+    if (p.inProgress && p.inProgress.length) {
+      openLetterPractice(p.inProgress[p.inProgress.length - 1].letter, 3);
+      return;
+    }
+    // No specific assignment → fall back to today's class practice (Island 4 if vowel day)
+    const t = getTodayPracticeTarget();
+    window.open(t.url, '_blank');
   };
   document.getElementById('studentDrawer').classList.add('open');
   document.getElementById('drawerBackdrop').classList.add('open');
