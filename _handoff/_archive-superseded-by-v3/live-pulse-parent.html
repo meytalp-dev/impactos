@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#2E7D8C">
+<title>הפולס של אבני יסוד · להורים</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #2E7D8C;
+    --primary-dark: #1F5A66;
+    --primary-soft: #B8DDE2;
+    --accent: #E08FAF;
+    --accent-soft: #FBE3EC;
+    --surface: #FDFCFA;
+    --surface-2: #F4F1ED;
+    --ink: #1F2937;
+    --ink-soft: #6B7280;
+    --ink-mute: #9CA3AF;
+    --success: #5BC0A8;
+    --success-soft: #DCF1EB;
+    --warn: #E8A23B;
+    --whatsapp-bg: #e5ddd5;
+    --whatsapp-green: #128C7E;
+    --shadow-sm: 0 1px 2px rgba(31, 90, 102, 0.06), 0 1px 3px rgba(31, 90, 102, 0.08);
+    --shadow-md: 0 4px 12px rgba(31, 90, 102, 0.08), 0 2px 4px rgba(31, 90, 102, 0.06);
+    --shadow-lg: 0 12px 32px rgba(31, 90, 102, 0.12), 0 4px 8px rgba(31, 90, 102, 0.08);
+    --radius-sm: 12px;
+    --radius-md: 18px;
+    --radius-lg: 24px;
+    --radius-xl: 32px;
+    --transition: 300ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Heebo', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--surface);
+    color: var(--ink);
+    overflow-x: hidden;
+    overscroll-behavior-y: contain;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    justify-content: center;
+    background: linear-gradient(180deg, #F4F1ED 0%, #FDFCFA 100%);
+  }
+
+  .app {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    min-height: 100dvh;
+    position: relative;
+    background: var(--surface);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* --- Screen system --- */
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 22px 110px;
+    opacity: 0;
+    transform: translateX(-30px);
+    pointer-events: none;
+    transition: opacity var(--transition), transform var(--transition);
+    overflow-y: auto;
+  }
+  .screen.active {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+  }
+  .screen.exit-right {
+    transform: translateX(30px);
+  }
+
+  /* --- WhatsApp loader screen 0 --- */
+  #screen-0 {
+    background: var(--whatsapp-bg);
+    background-image:
+      radial-gradient(circle at 10% 20%, rgba(0,0,0,0.04) 1px, transparent 1px),
+      radial-gradient(circle at 80% 70%, rgba(0,0,0,0.04) 1px, transparent 1px),
+      radial-gradient(circle at 50% 50%, rgba(0,0,0,0.03) 1px, transparent 1px);
+    background-size: 40px 40px, 50px 50px, 30px 30px;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .wa-card {
+    background: white;
+    border-radius: 12px;
+    padding: 18px 20px;
+    width: 100%;
+    max-width: 320px;
+    box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    margin-bottom: 18px;
+    position: relative;
+  }
+  .wa-card::before {
+    content: '';
+    position: absolute;
+    top: 0; right: -7px;
+    width: 14px; height: 14px;
+    background: white;
+    clip-path: polygon(0 0, 0 100%, 100% 0);
+  }
+  .wa-avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 18px;
+  }
+  .wa-content { flex: 1; min-width: 0; }
+  .wa-name { font-weight: 600; font-size: 14px; color: var(--whatsapp-green); margin-bottom: 4px; }
+  .wa-msg { font-size: 14px; color: var(--ink); line-height: 1.5; }
+  .wa-link {
+    margin-top: 8px;
+    padding: 10px 12px;
+    background: #f0f0f0;
+    border-radius: 8px;
+    border-right: 3px solid var(--primary);
+    font-size: 13px;
+  }
+  .wa-link-title { font-weight: 600; color: var(--primary); margin-bottom: 2px; }
+  .wa-link-url { color: var(--ink-soft); font-size: 11px; word-break: break-all; }
+  .wa-time {
+    font-size: 11px;
+    color: var(--ink-mute);
+    margin-top: 6px;
+    text-align: left;
+  }
+  .wa-loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    color: var(--ink-soft);
+    font-size: 14px;
+    margin-top: 10px;
+  }
+  .wa-spinner {
+    width: 32px; height: 32px;
+    border: 3px solid rgba(46, 125, 140, 0.15);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* --- Hero & shared elements --- */
+  .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+    min-height: 24px;
+  }
+  .back-btn {
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: background 200ms;
+  }
+  .back-btn:hover { background: var(--surface-2); }
+  .back-btn.hidden { visibility: hidden; }
+
+  .progress-pill {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--primary);
+    background: var(--primary-soft);
+    padding: 4px 12px;
+    border-radius: 999px;
+    letter-spacing: 0.02em;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 4px;
+    background: var(--surface-2);
+    border-radius: 999px;
+    overflow: hidden;
+    margin: 6px 0 28px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    border-radius: 999px;
+    transition: width 500ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+
+  .privacy-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--primary-dark);
+    background: var(--primary-soft);
+    padding: 5px 11px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+    font-weight: 500;
+    align-self: flex-start;
+    position: relative;
+    cursor: help;
+  }
+  .privacy-chip-tooltip {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: var(--ink);
+    color: white;
+    font-size: 11px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    width: 220px;
+    line-height: 1.5;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 200ms;
+    z-index: 10;
+    font-weight: 400;
+  }
+  .privacy-chip-tooltip::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    right: 14px;
+    border: 6px solid transparent;
+    border-bottom-color: var(--ink);
+  }
+  .privacy-chip:hover .privacy-chip-tooltip,
+  .privacy-chip:active .privacy-chip-tooltip {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .question-eyebrow {
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-weight: 500;
+    margin-bottom: 8px;
+    letter-spacing: 0.01em;
+  }
+  .question-title {
+    font-size: 22px;
+    line-height: 1.4;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0 0 26px;
+    letter-spacing: -0.01em;
+  }
+  .question-title strong { color: var(--primary); font-weight: 700; }
+
+  /* --- Option buttons --- */
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 6px;
+  }
+  .opt {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-height: 60px;
+    width: 100%;
+    background: white;
+    border: 2px solid var(--surface-2);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--ink);
+    text-align: right;
+    cursor: pointer;
+    transition: transform 150ms ease, border-color 200ms, background 200ms, box-shadow 200ms;
+    box-shadow: var(--shadow-sm);
+  }
+  .opt:hover { border-color: var(--primary-soft); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+  .opt:active { transform: scale(0.98); }
+  .opt .opt-label { flex: 1; }
+  .opt .opt-emoji { font-size: 22px; line-height: 1; }
+  .opt.selected {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, var(--primary-soft) 0%, white 100%);
+    color: var(--primary-dark);
+    box-shadow: 0 0 0 4px rgba(46, 125, 140, 0.12), var(--shadow-md);
+  }
+  .opt.selected::after {
+    content: '✓';
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 18px;
+    margin-right: 4px;
+    animation: pop 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes pop { 0% { transform: scale(0); opacity: 0;} 100% { transform: scale(1); opacity: 1;} }
+
+  .opt.binary {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 92px;
+    font-size: 22px;
+    font-weight: 600;
+    text-align: center;
+  }
+  .options.binary {
+    flex-direction: row;
+    gap: 12px;
+  }
+  .options.binary .opt { flex: 1; }
+  .opt.binary .opt-emoji { font-size: 30px; margin-bottom: 4px; }
+
+  /* --- Slider (Panorama face scale) --- */
+  .face-scale {
+    background: white;
+    padding: 22px 18px 18px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--surface-2);
+    margin-top: 6px;
+  }
+  .face-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 18px;
+  }
+  .face-emoji {
+    font-size: 76px;
+    line-height: 1;
+    filter: drop-shadow(0 6px 14px rgba(0,0,0,0.08));
+    transition: transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .face-label {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--primary-dark);
+    background: var(--primary-soft);
+    padding: 4px 14px;
+    border-radius: 999px;
+  }
+  .face-value-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+    padding: 0 6px;
+  }
+  .face-value-num { font-size: 13px; color: var(--ink-mute); font-weight: 500; }
+
+  .slider-wrap {
+    position: relative;
+    padding: 6px 0;
+  }
+  input[type=range].face-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    background: linear-gradient(90deg, #FECACA 0%, #FDE68A 25%, #BAE6FD 50%, #BBF7D0 75%, #C7E9D8 100%);
+    border-radius: 999px;
+    outline: none;
+    direction: ltr; /* keep slider left-to-right; visual mapping handled */
+  }
+  input[type=range].face-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 32px;
+    height: 32px;
+    background: white;
+    border: 3px solid var(--primary);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(46, 125, 140, 0.3);
+    transition: transform 150ms;
+  }
+  input[type=range].face-slider::-webkit-slider-thumb:active { transform: scale(1.15); }
+  input[type=range].face-slider::-moz-range-thumb {
+    width: 32px;
+    height: 32px;
+    background: white;
+    border: 3px solid var(--primary);
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  .slider-ticks {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding: 0 4px;
+    direction: ltr;
+  }
+  .slider-tick {
+    font-size: 22px;
+    opacity: 0.4;
+    transition: opacity 200ms, transform 200ms;
+  }
+  .slider-tick.active { opacity: 1; transform: scale(1.25); }
+
+  /* --- Text area --- */
+  .textarea-wrap {
+    position: relative;
+    margin-top: 6px;
+  }
+  textarea.free-text {
+    width: 100%;
+    min-height: 110px;
+    background: white;
+    border: 2px solid var(--surface-2);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    font-family: inherit;
+    font-size: 16px;
+    color: var(--ink);
+    resize: vertical;
+    transition: border-color 200ms, box-shadow 200ms;
+    line-height: 1.55;
+  }
+  textarea.free-text:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(46, 125, 140, 0.12);
+  }
+  textarea.free-text::placeholder { color: var(--ink-mute); font-weight: 400; }
+
+  .privacy-note {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: var(--accent-soft);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink);
+    margin-top: 14px;
+  }
+  .privacy-note-icon { font-size: 18px; line-height: 1.2; }
+  .privacy-note strong { color: var(--accent); }
+
+  /* --- Primary CTA --- */
+  .cta-primary {
+    margin-top: auto;
+    width: 100%;
+    min-height: 60px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(46, 125, 140, 0.3);
+    transition: transform 150ms ease, box-shadow 200ms;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    letter-spacing: 0.01em;
+  }
+  .cta-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(46, 125, 140, 0.4); }
+  .cta-primary:active { transform: translateY(0) scale(0.99); }
+  .cta-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--ink-mute);
+    box-shadow: none;
+  }
+
+  .cta-ghost {
+    background: transparent;
+    border: 2px solid var(--surface-2);
+    color: var(--ink-soft);
+    padding: 12px 18px;
+    border-radius: var(--radius-md);
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color 200ms, color 200ms;
+  }
+  .cta-ghost:hover { border-color: var(--primary-soft); color: var(--primary); }
+
+  /* --- Welcome screen --- */
+  .welcome-art {
+    width: 100%;
+    height: 180px;
+    margin: 8px 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .welcome-bubble {
+    width: 150px;
+    height: 150px;
+    background: linear-gradient(135deg, var(--primary-soft) 0%, var(--accent-soft) 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 70px;
+    box-shadow: 0 20px 40px rgba(46, 125, 140, 0.15);
+    animation: float 4s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  .welcome-hi {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+  .welcome-hi .wave {
+    display: inline-block;
+    animation: wave 1.6s ease-in-out 1s 2;
+    transform-origin: 70% 70%;
+  }
+  @keyframes wave {
+    0%, 100% { transform: rotate(0); }
+    25% { transform: rotate(-12deg); }
+    75% { transform: rotate(12deg); }
+  }
+  .welcome-sub {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    margin: 0 0 18px;
+  }
+  .welcome-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+  }
+  .meta-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface-2);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+  .welcome-privacy {
+    background: var(--success-soft);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--ink);
+    margin-bottom: 18px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .welcome-privacy-icon { font-size: 22px; line-height: 1.1; }
+
+  /* --- Thank you screen --- */
+  #screen-7 { justify-content: center; align-items: center; text-align: center; }
+  .thanks-check {
+    width: 96px;
+    height: 96px;
+    background: var(--success);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+    box-shadow: 0 14px 36px rgba(91, 192, 168, 0.4);
+    animation: thanksPop 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .thanks-check svg { width: 50px; height: 50px; }
+  .thanks-check svg path {
+    stroke-dasharray: 60;
+    stroke-dashoffset: 60;
+    animation: drawCheck 600ms 300ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  }
+  @keyframes thanksPop { from { transform: scale(0); } to { transform: scale(1); } }
+  @keyframes drawCheck { to { stroke-dashoffset: 0; } }
+  .thanks-title { font-size: 28px; font-weight: 800; margin: 0 0 10px; letter-spacing: -0.01em; }
+  .thanks-sub { font-size: 16px; color: var(--ink-soft); line-height: 1.55; max-width: 320px; margin: 0 0 22px; }
+  .next-pulse-card {
+    background: white;
+    border: 1.5px dashed var(--primary-soft);
+    border-radius: var(--radius-md);
+    padding: 16px 18px;
+    width: 100%;
+    max-width: 360px;
+    margin: 0 auto 18px;
+    text-align: right;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+  }
+  .next-pulse-icon {
+    width: 44px; height: 44px; flex-shrink: 0;
+    background: var(--primary-soft);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .next-pulse-text { font-size: 13px; line-height: 1.5; color: var(--ink); }
+  .next-pulse-text strong { color: var(--primary-dark); }
+  .micro-link {
+    background: none;
+    border: none;
+    color: var(--primary);
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    padding: 8px 14px;
+    border-radius: 8px;
+  }
+  .micro-link:hover { background: var(--surface-2); }
+
+  /* --- Micro pulse --- */
+  #screen-8 { padding-top: 30px; }
+  .micro-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 24px 22px;
+    box-shadow: var(--shadow-md);
+    margin: 14px 0;
+  }
+  .micro-eyebrow {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .micro-q {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.4;
+    margin: 0 0 22px;
+  }
+  .nps-scale {
+    display: grid;
+    grid-template-columns: repeat(11, 1fr);
+    gap: 4px;
+    direction: ltr;
+    margin-bottom: 12px;
+  }
+  .nps-btn {
+    aspect-ratio: 1;
+    background: var(--surface-2);
+    border: 2px solid transparent;
+    border-radius: 10px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 150ms;
+  }
+  .nps-btn:hover { background: var(--primary-soft); }
+  .nps-btn.selected {
+    background: var(--primary);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 4px 10px rgba(46, 125, 140, 0.3);
+  }
+  .nps-legend {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--ink-mute);
+    margin-top: 4px;
+    direction: ltr;
+  }
+
+  /* --- Sticky footer --- */
+  .sticky-foot {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(180deg, rgba(253, 252, 250, 0) 0%, rgba(253, 252, 250, 0.95) 35%, var(--surface) 100%);
+    padding: 24px 22px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    pointer-events: none;
+    z-index: 5;
+  }
+  .sticky-foot.hidden { display: none; }
+  .foot-progress {
+    font-size: 12px;
+    color: var(--ink-mute);
+    font-weight: 500;
+    background: rgba(253, 252, 250, 0.85);
+    padding: 4px 10px;
+    border-radius: 999px;
+    backdrop-filter: blur(4px);
+  }
+  .foot-brand {
+    font-size: 11px;
+    color: var(--ink-mute);
+    letter-spacing: 0.02em;
+    background: rgba(253, 252, 250, 0.85);
+    padding: 4px 10px;
+    border-radius: 999px;
+    backdrop-filter: blur(4px);
+  }
+  .foot-brand strong { color: var(--primary); font-weight: 700; }
+
+  /* --- Reset / utility --- */
+  .text-soft { color: var(--ink-soft); }
+  .gap-md { margin-top: 18px; }
+
+  @media (max-height: 700px) {
+    .welcome-art { height: 130px; }
+    .welcome-bubble { width: 110px; height: 110px; font-size: 52px; }
+    .question-title { font-size: 20px; margin-bottom: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- ============ SCREEN 0 — WhatsApp deep-link loader ============ -->
+  <div class="screen active" id="screen-0">
+    <div class="wa-card">
+      <div class="wa-avatar">א״י</div>
+      <div class="wa-content">
+        <div class="wa-name">בית הספר אבני יסוד</div>
+        <div class="wa-msg">היי <span data-parent-name>אמא של דניאל</span> 👋 הגיע הזמן לפולס החודשי. 3 דקות, ועוזר לנו להבין איך <span data-child-name>דניאל</span> פורח.</div>
+        <div class="wa-link">
+          <div class="wa-link-title">הפולס של אבני יסוד · יוני</div>
+          <div class="wa-link-url">pulse.avneyesod.ort.org.il/?child=…</div>
+        </div>
+        <div class="wa-time">14:32 ✓✓</div>
+      </div>
+    </div>
+    <div class="wa-loader">
+      <div class="wa-spinner"></div>
+      <div>פותח קישור...</div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 1 — Welcome ============ -->
+  <div class="screen" id="screen-1">
+    <div class="top-bar">
+      <button class="back-btn hidden">›</button>
+      <span class="meta-chip" style="background: var(--accent-soft); color: var(--accent);">🌱 פולס יוני</span>
+    </div>
+    <div class="welcome-art">
+      <div class="welcome-bubble">🌊</div>
+    </div>
+    <h1 class="welcome-hi">שלום <span data-parent-name>אמא של דניאל</span> <span class="wave">👋</span></h1>
+    <p class="welcome-sub">זה הפולס החודשי שלנו באבני יסוד. הוא עוזר לצוות להבין איך <strong style="color: var(--primary);" data-child-name>דניאל</strong> פורח — בלמידה, בחברה, וברגש.</p>
+    <div class="welcome-meta">
+      <span class="meta-chip">⏱️ ~3 דקות</span>
+      <span class="meta-chip">📝 5 שאלות</span>
+      <span class="meta-chip">📱 גם בטלפון</span>
+    </div>
+    <div class="welcome-privacy">
+      <span class="welcome-privacy-icon">🔒</span>
+      <div><strong>פרטיות:</strong> תשובות רגישות (מצוקה, פחד, בכי) מגיעות <strong>רק ליועצת בית-הספר</strong>, לא למורה הכיתה.</div>
+    </div>
+    <button class="cta-primary" onclick="go(2)">בואי נתחיל <span style="font-size: 20px;">←</span></button>
+  </div>
+
+  <!-- ============ SCREEN 2 — Item 1 · Flourishing (NSCH) ============ -->
+  <div class="screen" id="screen-2">
+    <div class="top-bar">
+      <button class="back-btn" onclick="go(1)">‹ חזרה</button>
+      <span class="progress-pill">1 מתוך 5</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width: 20%;"></div></div>
+
+    <div class="question-eyebrow">🌱 פריחה ולמידה</div>
+    <h2 class="question-title">בשבועיים האחרונים, <strong data-child-name>דניאל</strong> הראה.תה <strong>סקרנות ועניין בלמידה</strong>?</h2>
+
+    <div class="options" data-question="q1">
+      <button class="opt" data-value="1" onclick="pick(this, 3)"><span class="opt-label">לא כלל</span><span class="opt-emoji">😶</span></button>
+      <button class="opt" data-value="2" onclick="pick(this, 3)"><span class="opt-label">מעט</span><span class="opt-emoji">🤏</span></button>
+      <button class="opt" data-value="3" onclick="pick(this, 3)"><span class="opt-label">קצת</span><span class="opt-emoji">🙂</span></button>
+      <button class="opt" data-value="4" onclick="pick(this, 3)"><span class="opt-label">הרבה</span><span class="opt-emoji">✨</span></button>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 3 — Item 2 · Self-regulation (SDQ) ============ -->
+  <div class="screen" id="screen-3">
+    <div class="top-bar">
+      <button class="back-btn" onclick="go(2)">‹ חזרה</button>
+      <span class="progress-pill">2 מתוך 5</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width: 40%;"></div></div>
+
+    <div class="question-eyebrow">💙 ויסות רגשי</div>
+    <h2 class="question-title"><strong data-child-name>דניאל</strong> הצליח.ה <strong>להירגע אחרי תסכול</strong>?</h2>
+
+    <div class="options" data-question="q2">
+      <button class="opt" data-value="1" onclick="pick(this, 4)"><span class="opt-label">כמעט אף פעם</span><span class="opt-emoji">😣</span></button>
+      <button class="opt" data-value="2" onclick="pick(this, 4)"><span class="opt-label">לפעמים</span><span class="opt-emoji">😐</span></button>
+      <button class="opt" data-value="3" onclick="pick(this, 4)"><span class="opt-label">רוב הזמן</span><span class="opt-emoji">🌤️</span></button>
+      <button class="opt" data-value="4" onclick="pick(this, 4)"><span class="opt-label">כמעט תמיד</span><span class="opt-emoji">🌈</span></button>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 4 — Item 3 · School experience (Panorama) ============ -->
+  <div class="screen" id="screen-4">
+    <div class="top-bar">
+      <button class="back-btn" onclick="go(3)">‹ חזרה</button>
+      <span class="progress-pill">3 מתוך 5</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width: 60%;"></div></div>
+
+    <div class="question-eyebrow">🏫 חוויה בית-ספרית</div>
+    <h2 class="question-title">באיזו מידה <strong data-child-name>דניאל</strong> <strong>שמח.ה ללכת לבית הספר</strong> השבוע?</h2>
+
+    <div class="face-scale">
+      <div class="face-display">
+        <div class="face-emoji" id="faceEmoji">🙂</div>
+        <div class="face-label" id="faceLabel">בסדר</div>
+      </div>
+      <div class="slider-wrap">
+        <input type="range" min="1" max="5" value="3" step="1" class="face-slider" id="faceSlider" oninput="updateFace(this.value)">
+        <div class="slider-ticks" id="sliderTicks">
+          <span class="slider-tick" data-v="1">😢</span>
+          <span class="slider-tick" data-v="2">😐</span>
+          <span class="slider-tick active" data-v="3">🙂</span>
+          <span class="slider-tick" data-v="4">😊</span>
+          <span class="slider-tick" data-v="5">🤩</span>
+        </div>
+      </div>
+      <div class="face-value-row">
+        <span class="face-value-num">1 = לא רוצה ללכת</span>
+        <span class="face-value-num">5 = שמח.ה מאוד</span>
+      </div>
+    </div>
+
+    <button class="cta-primary" onclick="go(5)">המשך <span style="font-size: 20px;">←</span></button>
+  </div>
+
+  <!-- ============ SCREEN 5 — Item 4 · Distress signals (SDQ-emotional) ============ -->
+  <div class="screen" id="screen-5">
+    <div class="top-bar">
+      <button class="back-btn" onclick="go(4)">‹ חזרה</button>
+      <span class="progress-pill">4 מתוך 5</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width: 80%;"></div></div>
+
+    <div class="question-eyebrow">🩺 סימני מצוקה</div>
+    <span class="privacy-chip">
+      🔒 שאלה רגישה — רק ליועצת
+      <span class="privacy-chip-tooltip">תשובה זו נשלחת ישירות ליועצת בית-הספר ולא נראית למורה הכיתה.</span>
+    </span>
+    <h2 class="question-title">שמת.ה לב ל<strong>תלונות חוזרות</strong> אצל <strong data-child-name>דניאל</strong>? (כאבי בטן/ראש בבוקר, חלומות רעים, פחד מבית-ספר)</h2>
+
+    <div class="options binary" data-question="q4">
+      <button class="opt binary" data-value="yes" onclick="pickBinary(this)">
+        <span class="opt-emoji">😔</span>
+        <span class="opt-label">כן</span>
+      </button>
+      <button class="opt binary" data-value="no" onclick="pickBinary(this)">
+        <span class="opt-emoji">🌤️</span>
+        <span class="opt-label">לא</span>
+      </button>
+    </div>
+
+    <div id="distressDetail" style="display: none; margin-top: 18px;">
+      <div class="question-eyebrow" style="margin-bottom: 8px;">רוצה לפרט? (אופציונלי)</div>
+      <textarea class="free-text" id="distressText" placeholder="למשל: השבוע סירב.ה לקום שלוש פעמים, אמר.ה שכואבת הבטן..." rows="3"></textarea>
+    </div>
+
+    <button class="cta-primary" onclick="go(6)" id="ctaQ4" style="margin-top: 20px;" disabled>המשך <span style="font-size: 20px;">←</span></button>
+  </div>
+
+  <!-- ============ SCREEN 6 — Item 5 · Parent voice ============ -->
+  <div class="screen" id="screen-6">
+    <div class="top-bar">
+      <button class="back-btn" onclick="go(5)">‹ חזרה</button>
+      <span class="progress-pill">5 מתוך 5</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width: 100%;"></div></div>
+
+    <div class="question-eyebrow">💬 קול ההורה</div>
+    <h2 class="question-title">מה משהו אחד שאת.ה רוצה <strong>שהמורה תדע</strong> השבוע על <strong data-child-name>דניאל</strong>?</h2>
+
+    <div class="textarea-wrap">
+      <textarea class="free-text" id="parentVoice" placeholder="לדוגמה: דניאל שמח שיש בכיתה דוב חדש 🐻. או — הסבא שלו אושפז, אנחנו קצת מתוחים בבית..." rows="4"></textarea>
+    </div>
+
+    <div class="privacy-note">
+      <span class="privacy-note-icon">🔒</span>
+      <div>תשובות שמכילות סימני <strong>מצוקה</strong> (פחד, בכי, משברים) יישלחו <strong>רק ליועצת</strong>. הקלות והעדכונים — למורה.</div>
+    </div>
+
+    <button class="cta-primary" onclick="submit()" style="margin-top: 22px;">שלחי <span style="font-size: 20px;">🚀</span></button>
+  </div>
+
+  <!-- ============ SCREEN 7 — Thank you ============ -->
+  <div class="screen" id="screen-7">
+    <div class="thanks-check">
+      <svg viewBox="0 0 50 50" fill="none">
+        <path d="M14 26 L22 34 L37 17" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <h1 class="thanks-title">תודה רבה! ❤️</h1>
+    <p class="thanks-sub">התשובות נשלחו לבית-הספר. הצוות מקבל את ה-snapshot החודשי של <strong data-child-name>דניאל</strong> מחר בבוקר.</p>
+
+    <div class="next-pulse-card">
+      <div class="next-pulse-icon">📅</div>
+      <div class="next-pulse-text">
+        <strong>הפולס הבא: 4 ביולי</strong><br>
+        בעוד שבועיים תקבלי שאלה אחת מהירה (micro-pulse).
+      </div>
+    </div>
+
+    <button class="micro-link" onclick="go(8)">👀 ראי איך נראה micro-pulse באמצע חודש</button>
+  </div>
+
+  <!-- ============ SCREEN 8 — Micro pulse preview ============ -->
+  <div class="screen" id="screen-8">
+    <div class="top-bar">
+      <button class="back-btn" onclick="go(7)">‹ חזרה לסיום</button>
+      <span class="progress-pill" style="background: var(--accent-soft); color: var(--accent);">🌿 Micro</span>
+    </div>
+
+    <div class="micro-card">
+      <div class="micro-eyebrow">Micro-pulse · 18 ביוני</div>
+      <h2 class="micro-q">באיזו מידה את.ה מרגיש.ה ש<strong data-child-name style="color: var(--primary);">דניאל</strong> פורח.ת השבוע?</h2>
+
+      <div class="nps-scale" id="npsScale">
+        <button class="nps-btn" data-v="0">0</button>
+        <button class="nps-btn" data-v="1">1</button>
+        <button class="nps-btn" data-v="2">2</button>
+        <button class="nps-btn" data-v="3">3</button>
+        <button class="nps-btn" data-v="4">4</button>
+        <button class="nps-btn" data-v="5">5</button>
+        <button class="nps-btn" data-v="6">6</button>
+        <button class="nps-btn" data-v="7">7</button>
+        <button class="nps-btn" data-v="8">8</button>
+        <button class="nps-btn" data-v="9">9</button>
+        <button class="nps-btn" data-v="10">10</button>
+      </div>
+      <div class="nps-legend">
+        <span>בכלל לא</span>
+        <span>פורח מאוד</span>
+      </div>
+    </div>
+
+    <p class="text-soft" style="font-size: 13px; text-align: center; margin: 6px 0 16px;">
+      30 שניות. שאלה אחת. ברגעי הקפה של ההורה.
+    </p>
+
+    <button class="cta-primary" onclick="microSubmit()" id="microCta" disabled>שלח</button>
+  </div>
+
+  <!-- ============ Sticky footer ============ -->
+  <div class="sticky-foot" id="stickyFoot">
+    <span class="foot-progress" id="footProgress">שאלון פתיחה</span>
+    <span class="foot-brand">פולס · <strong>אבני יסוד</strong></span>
+  </div>
+
+</div>
+
+<script>
+  // ---- Pre-fill from URL ----
+  const params = new URLSearchParams(window.location.search);
+  const childName = params.get('child') || 'דניאל';
+  const parentName = params.get('parent') || `אמא של ${childName}`;
+
+  document.querySelectorAll('[data-child-name]').forEach(el => { el.textContent = childName; });
+  document.querySelectorAll('[data-parent-name]').forEach(el => { el.textContent = parentName; });
+
+  // ---- Answers store ----
+  const answers = {
+    parentName, childName,
+    q1: null, q2: null, q3: 3, q4: null, q4_detail: '', q5: '', micro: null,
+    startedAt: Date.now(),
+    submittedAt: null
+  };
+
+  // ---- Screen routing ----
+  let currentScreen = 0;
+  const totalSurveyScreens = 6; // screens 1..6 are the survey
+  const footMap = {
+    0: 'פותח קישור...',
+    1: 'מסך פתיחה',
+    2: 'שאלה 1 מתוך 5',
+    3: 'שאלה 2 מתוך 5',
+    4: 'שאלה 3 מתוך 5',
+    5: 'שאלה 4 מתוך 5',
+    6: 'שאלה 5 מתוך 5',
+    7: 'הושלם ✓',
+    8: 'תצוגה: micro-pulse'
+  };
+  const footEl = document.getElementById('footProgress');
+  const stickyFoot = document.getElementById('stickyFoot');
+
+  function go(n) {
+    if (n === currentScreen) return;
+    const prev = document.getElementById(`screen-${currentScreen}`);
+    const next = document.getElementById(`screen-${n}`);
+    if (!next) return;
+
+    // direction
+    if (n > currentScreen) {
+      prev.classList.remove('active');
+      prev.classList.add('exit-right');
+    } else {
+      prev.classList.remove('active');
+    }
+
+    setTimeout(() => {
+      prev.classList.remove('exit-right');
+    }, 320);
+
+    next.classList.add('active');
+    currentScreen = n;
+    footEl.textContent = footMap[n] || '';
+
+    // hide sticky foot on WA loader + thanks
+    if (n === 0 || n === 7) {
+      stickyFoot.classList.add('hidden');
+    } else {
+      stickyFoot.classList.remove('hidden');
+    }
+
+    // reset scroll
+    next.scrollTop = 0;
+    if (navigator.vibrate) navigator.vibrate(8);
+  }
+
+  // ---- Option pickers ----
+  function pick(btn, nextScreen) {
+    const parent = btn.parentElement;
+    parent.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+    btn.classList.add('selected');
+    const q = parent.dataset.question;
+    answers[q] = btn.dataset.value;
+    if (navigator.vibrate) navigator.vibrate(12);
+
+    // auto-advance after a beat
+    setTimeout(() => go(nextScreen), 420);
+  }
+
+  function pickBinary(btn) {
+    const parent = btn.parentElement;
+    parent.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+    btn.classList.add('selected');
+    const val = btn.dataset.value;
+    answers.q4 = val;
+
+    const detail = document.getElementById('distressDetail');
+    const cta = document.getElementById('ctaQ4');
+    if (val === 'yes') {
+      detail.style.display = 'block';
+    } else {
+      detail.style.display = 'none';
+    }
+    cta.disabled = false;
+    if (navigator.vibrate) navigator.vibrate(12);
+  }
+
+  // ---- Slider (Item 3) ----
+  const faceMap = {
+    1: { emoji: '😢', label: 'לא רוצה ללכת' },
+    2: { emoji: '😐', label: 'קצת קשה' },
+    3: { emoji: '🙂', label: 'בסדר' },
+    4: { emoji: '😊', label: 'שמח.ה' },
+    5: { emoji: '🤩', label: 'מתרגש.ת מאוד' }
+  };
+
+  function updateFace(v) {
+    const val = parseInt(v, 10);
+    answers.q3 = val;
+    const data = faceMap[val];
+    const emojiEl = document.getElementById('faceEmoji');
+    const labelEl = document.getElementById('faceLabel');
+    emojiEl.textContent = data.emoji;
+    labelEl.textContent = data.label;
+    // tiny bump animation
+    emojiEl.style.transform = 'scale(1.18)';
+    setTimeout(() => { emojiEl.style.transform = 'scale(1)'; }, 200);
+
+    document.querySelectorAll('#sliderTicks .slider-tick').forEach(t => {
+      t.classList.toggle('active', parseInt(t.dataset.v, 10) === val);
+    });
+    if (navigator.vibrate) navigator.vibrate(5);
+  }
+
+  // ---- Q5 + submit ----
+  function submit() {
+    answers.q5 = document.getElementById('parentVoice').value.trim();
+    answers.q4_detail = document.getElementById('distressText')?.value.trim() || '';
+    answers.submittedAt = Date.now();
+    answers.durationSec = Math.round((answers.submittedAt - answers.startedAt) / 1000);
+
+    // In production: POST to Supabase. Here: log + transition.
+    console.log('[pulse] submitted', answers);
+    go(7);
+  }
+
+  // ---- Micro pulse ----
+  document.querySelectorAll('#npsScale .nps-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#npsScale .nps-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      answers.micro = parseInt(btn.dataset.v, 10);
+      document.getElementById('microCta').disabled = false;
+      if (navigator.vibrate) navigator.vibrate(10);
+    });
+  });
+
+  function microSubmit() {
+    console.log('[micro-pulse] submitted', { child: childName, score: answers.micro });
+    const btn = document.getElementById('microCta');
+    btn.innerHTML = 'תודה! ✓';
+    btn.disabled = true;
+    btn.style.background = 'var(--success)';
+    setTimeout(() => go(7), 1200);
+  }
+
+  // ---- Auto-transition from WhatsApp loader ----
+  setTimeout(() => {
+    if (currentScreen === 0) go(1);
+  }, 1100);
+</script>
+</body>
+</html>

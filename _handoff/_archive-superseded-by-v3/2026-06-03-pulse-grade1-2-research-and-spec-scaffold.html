@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>פולס א'-ב' · סינתזת מחקר + scaffold לאיפיון</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+  :root {
+    --primary: #2E7D8C; --primary-dark: #1E5A66; --primary-light: #a4eeff;
+    --dim-adjust: #F2B844; --dim-friend: #E08FAF; --dim-emotion: #8B6BC0; --dim-joy: #5BC0A8;
+    --surface: #F5F0E8; --surface-card: #FDFCFA;
+    --on-surface: #1E3D47; --on-surface-muted: #4A453E;
+    --accent: #C88A2E;
+    --tertiary: #8B3A4A;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Heebo', sans-serif;
+    background: var(--surface);
+    color: var(--on-surface);
+    line-height: 1.85;
+    padding: 0;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 3rem 2rem 8rem; }
+  .meta {
+    background: linear-gradient(135deg, var(--dim-adjust), var(--dim-friend), var(--dim-joy));
+    color: white;
+    padding: 2.5rem 2rem;
+    border-radius: 1.5rem;
+    margin-bottom: 3rem;
+    box-shadow: 0 8px 32px rgba(46,125,140,.18);
+  }
+  .meta h1 {
+    font-family: 'Rubik', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 900;
+    line-height: 1.15;
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.02em;
+  }
+  .meta .sub { font-size: 1rem; opacity: 0.95; line-height: 1.7; }
+  .meta .pill {
+    display: inline-block;
+    background: rgba(255,255,255,.22);
+    backdrop-filter: blur(8px);
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin: 0.3rem 0.4rem 0.3rem 0;
+  }
+  #content h1, #content h2, #content h3, #content h4 {
+    font-family: 'Rubik', sans-serif;
+    color: var(--primary-dark);
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    line-height: 1.3;
+  }
+  #content h1 {
+    font-size: 2rem;
+    font-weight: 900;
+    border-bottom: 3px solid var(--primary);
+    padding-bottom: 0.6rem;
+    margin-top: 3.5rem;
+  }
+  #content h2 {
+    font-size: 1.55rem;
+    font-weight: 800;
+    margin-top: 3rem;
+    padding-right: 0.75rem;
+    border-right: 5px solid var(--dim-friend);
+  }
+  #content h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  #content h4 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--tertiary);
+  }
+  #content p { margin: 0.9rem 0; }
+  #content ul, #content ol { margin: 0.9rem 0; padding-right: 1.75rem; }
+  #content li { margin: 0.45rem 0; }
+  #content strong { color: var(--primary-dark); font-weight: 800; }
+  #content em { color: var(--accent); font-style: normal; font-weight: 600; }
+  #content blockquote {
+    background: rgba(46,125,140,.06);
+    border-right: 4px solid var(--primary);
+    padding: 1rem 1.25rem;
+    margin: 1.25rem 0;
+    border-radius: 0.6rem;
+    color: var(--on-surface-muted);
+    font-size: 0.96rem;
+  }
+  #content blockquote strong { color: var(--primary-dark); }
+  #content code {
+    background: rgba(0,0,0,.06);
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.3rem;
+    font-family: 'SF Mono', Consolas, monospace;
+    font-size: 0.88em;
+  }
+  #content pre {
+    background: #1E3D47;
+    color: #DCEEF0;
+    padding: 1.25rem;
+    border-radius: 0.8rem;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+    direction: ltr;
+    text-align: left;
+    line-height: 1.6;
+  }
+  #content pre code {
+    background: none;
+    color: inherit;
+    padding: 0;
+    font-size: 0.85rem;
+    display: block;
+  }
+  #content table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--surface-card);
+    border-radius: 0.9rem;
+    overflow: hidden;
+    margin: 1.5rem 0;
+    box-shadow: 0 4px 20px rgba(46,125,140,.06);
+    font-size: 0.92rem;
+  }
+  #content table th {
+    background: var(--primary);
+    color: white;
+    padding: 0.85rem 1rem;
+    text-align: right;
+    font-family: 'Rubik', sans-serif;
+    font-weight: 700;
+    font-size: 0.92rem;
+  }
+  #content table td {
+    padding: 0.75rem 1rem;
+    text-align: right;
+    border-bottom: 1px solid rgba(0,0,0,.05);
+    vertical-align: top;
+  }
+  #content table tr:last-child td { border-bottom: none; }
+  #content table tr:nth-child(even) td { background: rgba(245,240,232,.5); }
+  #content a {
+    color: var(--primary);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(46,125,140,.3);
+    transition: all 0.15s;
+  }
+  #content a:hover {
+    color: var(--primary-dark);
+    border-bottom-color: var(--primary-dark);
+  }
+  #content hr {
+    border: none;
+    border-top: 2px dashed rgba(46,125,140,.2);
+    margin: 3rem 0;
+  }
+  /* Glossary tables — keep English column LTR for readability */
+  #content table td:first-child {
+    font-family: 'Rubik', 'Heebo', sans-serif;
+    font-weight: 600;
+    color: var(--primary-dark);
+  }
+  @media print {
+    body { background: white; }
+    .meta { background: var(--primary); color: white; box-shadow: none; }
+    #content pre { background: #f5f0e8; color: var(--on-surface); border: 1px solid rgba(0,0,0,.1); }
+  }
+  .loading {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--on-surface-muted);
+    font-size: 1.05rem;
+  }
+  .loading .spinner {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(46,125,140,.2);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-left: 0.75rem;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="meta">
+  <h1>פולס לכיתות א'-ב' · סינתזת מחקר + scaffold לאיפיון</h1>
+  <div class="sub">
+    סינתזה של 5 סוכני מחקר במקביל — ישראל + עולם — על-פני 4 קהלים: תלמיד.ה · מורה · מנהלת · הורים.<br>
+    <span class="pill">📅 2026-06-03</span>
+    <span class="pill">🔬 5 sub-agents</span>
+    <span class="pill">📚 80+ מקורות</span>
+    <span class="pill">🎯 10 החלטות פתוחות</span>
+    <span class="pill">📖 מילון מונחים</span>
+  </div>
+</div>
+
+<div id="content" class="loading">
+  <span class="spinner"></span>טוען את המסמך…
+</div>
+
+</div>
+
+<script id="md-source" type="text/markdown"># פולס לכיתות א'-ב' · סינתזת מחקר + scaffold לאיפיון
+
+**תאריך:** 2026-06-03
+**שלב:** מחקר 5 קהלים הושלם (5 sub-agents במקביל) → איפיון בעבודה משותפת עם מיטל
+**דמו קיים:** `Downloads/system-10-pulse.html`
+**ממדים נוכחיים:** הסתגלות · חברות · שפה רגשית · שמחה ללמוד
+
+---
+
+## 🎯 7 הכותרות שמשנות את האיפיון
+
+1. **השוק הישראלי בכיתה א'-ב' ריק.** ראמ"ה מתחילה ב-ה', שפ"י נשען על תצפית, חוסן לא מודד כמותית בגיל הזה, מנב"ס/אופק = administrative בלבד. **אין מתחרה** — לא Panorama, לא Branching Minds, לא DESSA בעברית. הזירה פתוחה.
+2. **גם בעולם — אף ספק גדול לא פתר K-2 self-report.** Panorama עוצרת בכיתה ג'. DESSA-mini בגיל הזה = teacher-only. BIMAS-2 self-report מגיל 12. הכלים שכן פתרו (Closegap, RULER Mood Meter, Berkeley Puppet) הם character-led, 2-D, או forced-choice — בדיוק הכיוון של נוני.
+3. **המורה היא המדדת העיקרית, לא הילד.ה.** זה הסטנדרט: SDQ, DESSA, BIMAS, CBCL — כולם עם teacher form לגיל הזה, ודיווח-עצמי כתוספת. הילד.ה משחק.ת ב-NUNI = מקור אחד; המורה ממלאה 8 פריטים = מקור עיקרי; ההורה ממלא חודשי = מקור משלים. **טריאנגולציה.**
+4. **כללי "כישורי חיים" של שפ"י מתמפים 1:1 ל-4 הממדים שלנו.** הסתגלות=ספט, חברות=אוק, שפה רגשית=נוב, שמחה ללמוד=מרץ. זה נותן לפולס לגיטימציה פדגוגית רשמית — לא חידוש, אלא מד-תפוקה לתוכנית רשמית.
+5. **80/15/5 הוא הסטנדרט להצגת המצב למנהלת.** Tier 1=80% מסתדרים, Tier 2=15% התערבות קלה, Tier 3=5% מערכת תמיכה. **אם פחות מ-80% ב-Tier 1 — הבעיה היא ההוראה הכיתתית, לא הילדים.** זה message חזק שצריך להופיע בדשבורד.
+6. **תדירויות שונות לקהלים שונים.** ילד.ה = שבועי קצר (60 שנ'). מורה = דו-שבועי (8 פריטים × 25 ילדים). הורה = חודשי (5 פריטים). מנהלת = רואה דשבורד live, מקבלת דיג'סט שבועי. **monthly עדיף על biweekly להורים** — בנצ'מרק מובהק: response rate צונח אחרי 12 גלים/שנה.
+7. **WhatsApp deep-link הוא הערוץ להורים.** 96% מההורים הישראלים על WhatsApp. response rate 62% מול 4.5% ב-SMS. + IVR קולי בעברית/ערבית/רוסית/אמהרית לאוכלוסיות low-literacy.
+
+> **הערה רוחבית** (לפי ההנחיה הגלובלית): כל המנגנונים אנטי-bias שעלו במחקר — forced-choice בין דמויות, vignettes קצרות, סולם 3-נקודות, pre/post loop — תקפים בדיוק לפולס *manager-skip-level* בארגונים, *customer mood tracking* בשיווק, *peer pulse* בסטארטאפים. הקבוצות שונות, המתודה זהה.
+
+---
+
+## 👤 קהל 1: התלמיד.ה (כיתה א'-ב')
+
+### מה הוא.היא ממלא.ת
+משחק 60-90 שניות, פעם בשבוע, ביום קבוע (מומלץ: שני בבוקר אחרי תפילה — קונסיסטנטי על-פני בתי-ספר).
+
+### מה לאמץ מהמחקר (לקח ועדויות)
+
+| מנגנון | מקור | מה זה | למה |
+|---|---|---|---|
+| **3 פנים ולא 5/10** | Five Degrees of Happiness; פולס בית הערבה anti-pattern | סולם **דיסקרטי** של 3-4 אנקרים, לא רציף | ילדי 6-7 מגיבים דיכוטומית. סולם 1-10 = רעש בלבד. |
+| **2-D Mood Quadrants** | RULER Yale (4,000 בתי"ס) | אנרגיה גבוהה/נמוכה × נעים/לא-נעים = 4 רביעיות | מלמד emotional granularity, מאפשר זיהוי "שקט-מנותק" vs "שקט-רגוע" |
+| **Forced-choice בין שני נונים** | Berkeley Puppet Interview (psychometrics K-2 היחידים החזקים) | "נוני א' אומר X, נוני ב' אומר Y — מי דומה לך יותר?" | מנטרל acquiescence bias שילדי 6 חשופים אליו במיוחד |
+| **Pre/Post coping loop** | Closegap | אחרי פעילות הרגעה ("שחי עם נוני 30 שנ'") — לשאול שוב | מגלה over-reporters, נותן לילד.ה agency, מחזק רגולציה |
+| **Anchoring vignette** | OECD SSES | סיפור קצר של דג-חבר במצב X → "ואיך הרגשת היום?" | מכייל את הסקאלה, מנטרל הבדלי משפחה/תרבות |
+| **"נוני רוצה לדבר עם המורה" exit ramp** | Linewize Pulse | כפתור "אני צריך.ה מבוגר" בלי שאלות | בטיחות — נדרש בכל פולס ילדים |
+
+### מבנה הפולס (טיוטה)
+
+```
+1. וינייט-פתיחה (20 שנ', אופציונלי, מסובב פר חודש)
+   "דני הדג בא לכיתה והעט שלו נשבר. איך דני הרגיש?"
+   → קליבר ל-acquiescence
+
+2. שאלת היום על ממד אחד מ-4 (סבב שבועי, ~30 שנ')
+   - או 3-faces drag (כמו בדמו)
+   - או forced-choice 2 נונים
+   - או 2-D reef quadrant tap
+   * המנגנון מתחלף פר שאלה כדי לשבור response set
+
+3. (אם ירוק:) מדבקה רנדומלית · "תודה!"
+   (אם צהוב/אדום:) "רוצה לשחות 30 שנ' עם נוני?" → pre/post loop קצר
+
+4. תמיד נגיש: כפתור "נוני רוצה לדבר עם המורה"
+```
+
+### כמות פריטים במאגר
+
+- **15-20 פריטים פר ממד × 4 ממדים = 60-80 במאגר**
+- כל פולס שולף 1 פריט אקראי מהממד הרלוונטי לחודש
+- כל פריט לא חוזר על אותו ילד.ה תוך 4 שבועות
+- + 4-6 וינייטים לקליבר, + 2-3 פריטי validity-check ("נוני חובש כובע צהוב היום — ראית?")
+
+### מה לא לעשות
+
+- ❌ סולם 1-10 (בית הערבה — לא מתאים לגיל)
+- ❌ פריטי "אני" abstract ("אני אדם שמח") — דורש self-concept שאין
+- ❌ אותו מנגנון על 4 הממדים (response pattern)
+- ❌ ניקוד "טוב/רע" — כל תשובה מתקבלת באהבה (תמיד מדבקה)
+
+---
+
+## 👩‍🏫 קהל 2: המחנכת — כממלאת שאלון
+
+### מה ממלאה
+**טופס פר ילד.ה, 8 פריטים, דו-שבועי, ~21 דקות לכיתה של 25.**
+
+### המנגנון הקריטי: **פריט-פריט על כל הכיתה, לא ילד-ילד על כל הפריטים**
+
+Tripod/BIMAS-2 שניהם משתמשים בזה. **זה הטריק החזק ביותר נגד halo bias.** המורה רואה פריט אחד ("נכנס.ת לכיתה בבוקר בלי קושי") + רשימת 25 ילדים מתחת, מסמנת את כולם לפני שעוברת לפריט הבא.
+
+### סולם
+
+**4 נקודות תדירות:** *לא ראיתי · לפעמים · לעיתים קרובות · כמעט תמיד*
+תקופת ייחוס: **"ב-שבועיים האחרונים"** (לא "באופן כללי")
+
+### טיוטת 8 הפריטים (מסונתז מ-DESSA-mini + SDQ + SSIS-SEL Brief, מותאם עברית כיתה א')
+
+**הסתגלות**
+1. נכנס.ת לכיתה בבוקר ומתחיל.ה את היום בלי קושי משמעותי.
+2. חוזר.ת מתסכול (משחק שנגמר, טעות, ויכוח) תוך כמה דקות בלי התפרצות.
+
+**חברות**
+3. משתף.ת חבר.ה אחר.ת במשהו (חומר, מקום, רעיון) ביוזמה עצמית.
+4. מצטרף.ת לקבוצת ילדים במשחק או בעבודה, ולא נשאר.ת לבד כשלא רוצה.
+
+**שפה רגשית**
+5. אומר.ת במילים מה הוא.היא מרגיש.ה (כועס.ת, עצוב.ת, שמח.ה, מתבייש.ת).
+6. מזהה ש-חבר.ה אחר.ת מרגיש.ה משהו, ומגיב.ה (שואל.ת, מנחם.ת, נותן.ת מרחב).
+
+**שמחה ללמוד**
+7. שואל.ת שאלה ספונטנית או מבקש.ת לדעת עוד על משהו שלמדנו.
+8. ממשיך.ה במשימה כשהיא קצת קשה, ולא מוותר.ת מיד.
+
+### מה להימנע
+
+- ❌ תכונות פנימיות לא-נצפות ("שמח.ה באמת", "אופטימי.ת") — המורה לא יכולה לדעת. halo magnet.
+- ❌ פריטים פסיכופתולוגיים-קליניים (CBCL: "שומע.ת קולות", "מדבר.ת על מוות") — מתאים לאבחון, לא לפולס. גורם חרדת-מורה ולתת-דיווח.
+- ❌ סולם 5 נקודות — מייצר central tendency. 4 נקודות אופטימלי.
+- ❌ כפל-שלילה בעברית — מבלבל את המחנכת.
+
+### עדויות אורך-זמן
+
+DESSA-mini מגיע ל-85%+ completion בארה"ב כי זה דקה לילד. מעבר ל-3 דק'/ילד = drop ל-60% עד אמצע שנה. **8 פריטים × 6 שנ' = 50 שנ'/ילד × 25 = 21 דק' דו-שבועי = 10 דק'/שבוע.** נשמע מקסימום אבל זה הטווח שמורות מאמצות בפועל.
+
+---
+
+## 👩‍🏫 קהל 3: המחנכת — כצופה בדשבורד
+
+(זה הדשבורד הקיים בדמו, מורחב לפי ממצאים)
+
+### מסך הבוקר של המחנכת (7:30 עם קפה)
+
+```
+┌──────────────────────────────────────────────────────┐
+│ 🌅 פולס #4 · 28.5.26 · ברוך השב                       │
+├──────────────────────────────────────────────────────┤
+│                                                       │
+│  💡 השבוע הכיתה כמעט בסדר.                            │
+│  "שמחה ללמוד" ירדה — 4 ילדים דיווחו שמשעמם להם.       │
+│  ✓ כדאי: פעילות בחירה ביום ב'                          │
+│                                                       │
+├──────────────────────────────────────────────────────┤
+│  הסתגלות    4.1  →                                    │
+│  חברות      3.8  ↑                                    │
+│  שפה רגשית  3.4  →                                    │
+│  שמחה ללמוד 2.7  ↓ 4 אדומים                          │
+├──────────────────────────────────────────────────────┤
+│ ⚠️ פולס 3 ברציפות שמחה נמוכה — שווה לדבר עם היועצת    │
+└──────────────────────────────────────────────────────┘
+```
+
+### עיקרון מפתח: דשבורד שלא מציע פעולה = רעש
+
+לכל סיגנל יש **מתכון-פעולה אחד** שהמחנכת יכולה לבצע מחר. (5 מתכונים בדמו → להרחיב ל-15-20 בפיילוט).
+
+### Triangulation: 3 מקורות נתונים על אותו ילד.ה
+
+על מסך drill-down של ילד.ה:
+- 🐠 **תוצאות נוני** (שבועי, ילד.ה מילא.ה)
+- 👩‍🏫 **דירוג מחנכת** (דו-שבועי, את מילאת)
+- 👨‍👩‍👧 **דיווח הורים** (חודשי, ההורה מילא.ה)
+- ⚖️ **מבט משולש**: האם הילד.ה אומר.ת אחרת ממה שאת רואה? מה ההורים אומרים?
+
+**Trigger מובהק**: ילד.ה דיווח.ה "אדום" + את סימנת "כמעט תמיד" בקושי + ההורה כתב "כאבי בטן בבוקר" — = התראה אוטומטית ליועצת.
+
+---
+
+## 👨‍👩‍👧 קהל 4: ההורים
+
+### תדירות
+
+**חודשי** (לא דו-שבועי). הבנצ'מרק מובהק: 12+ גלים/שנה = response rate צונח מ-30% ל-18%. 9-10 חודשים בשנה = שמיש.
+
+**אופציה משולבת**:
+- 1 micro-pulse באמצע חודש (שאלה אחת, NPS-style: "באיזו מידה ילד.ך פורח.ת השבוע? 0-10")
+- 1 שאלון מלא בסוף חודש (5 פריטים)
+
+### ערוץ
+
+**WhatsApp deep-link** עם pre-fill של שם הילד.ה. קליק → טופס נפתח. בלי login. 2-3 דקות.
++ **IVR קולי fallback** בעברית/ערבית/רוסית/אמהרית להורים שלא לחצו תוך 72 שעות (פי 10 response באוכלוסיות low-literacy).
+
+### 5 הפריטים (טיוטה, מתורגם מ-NSCH/SDQ/Panorama Family/Possip)
+
+1. **פריחה** (NSCH adaptation): "ב-שבועיים האחרונים, ילד.י הראה.תה סקרנות ועניין בלמידה?" *(לא כלל / מעט / קצת / הרבה)*
+2. **ויסות** (SDQ adaptation): "ילד.י הצליח.ה להירגע אחרי תסכול?" *(כמעט אף פעם / לפעמים / רוב הזמן / כמעט תמיד)*
+3. **חוויה בית-ספרית** (Panorama School Fit): "באיזו מידה ילד.י שמח.ה ללכת לבית הספר השבוע?" *(1-5)*
+4. **סימני מצוקה** (SDQ-emotional single): "שמת.ה לב לתלונות חוזרות (כאבי בטן/ראש בבוקר, חלומות רעים, פחד מבית-ספר)?" *(כן/לא + text אופציונלי)*
+5. **קול ההורה** (Panorama School Fit + Possip "rose"): "מה משהו אחד שאת.ה רוצה שהמורה תדע השבוע?" *(open text אופציונלי, מסומן "נשלח ליועצת אם תעלה דאגה")*
+
+### כללי escalation — Privacy first
+
+| תוצאה | מי רואה | פעולה אוטומטית |
+|---|---|---|
+| flag בודד | רק יועצת | סימון soft |
+| 2+ flags או "כן" בפריט 4 | יועצת + עותק מסכם למחנכת (בלי ציטוט הורה) | התראה אישית 48 שעות |
+| מילות-מפתח רגישות ב-open text | רק יועצת | התראה דחופה 24 שעות + טלפון |
+| 3 חודשים ברצף ללא תשובה | מחנכת | nudge ידני אישי |
+
+**כלל קריטי**: תשובות הורים **לא נחשפות למורה ברמה הפריטית**. רק aggregate + flags ליועצת. הילד.ה לא יודע.ת מה ההורה כתב.
+
+### תאימות שפה
+
+- תרגום ל-SDQ העברי **קיים ומאומת** (Mansbach-Kleinfeld 2010). תרגום SDQ הערבי קיים (Almakias-Treves).
+- אסור לתרגם ידנית פריטים מ-SDQ/ASQ — שימוש בתרגום validated חיוני ללגיטימציה מול ראמ"ה ושפ"י.
+
+---
+
+## 👩‍💼 קהל 5: המנהלת
+
+### מה היא רואה — 5 ווידג'טים על מסך הבית
+
+**1. "המצב הכללי" (System Health)**
+- 4 דונאטים: % ירוק/צהוב/אדום פר ממד
+- Bar 80/15/5 actual vs. target
+- שורת AI: *"השמחה ללמוד ירדה ב-12% השבוע בכיתה א'2"*
+
+**2. "מפת הכיתות" (Heatmap)**
+- מטריצה: שורות = כיתות, עמודות = 4 ממדים
+- כל תא צבוע + ממוצע
+- לחיצה → drill-down לדשבורד הכיתה (= הדשבורד הקיים של המורה)
+
+**3. "מי זז?" (Movers)**
+- ⬆ עלו (5 ילדים) | ⬇ ירדו (3 ילדים)
+- כפתור "שלחי למורה" שמייצר נוטיפיקציה ממוקדת
+
+**4. "פערים והכלה" (Equity Cuts)**
+- בחירה: מגדר / עולים חדשים / חינוך מיוחד / מדד טיפוח / שפת אם / חודש לידה
+- bar chart השוואה
+- אם פער > 1 SD: התרעה אדומה
+- **n מינימלי = 5 ילדים** לכל cut (פרטיות)
+
+**5. "התערבויות פעילות"**
+- מי, כמה ילדים, איזה ממד, סטטוס (on-track / stuck / completed)
+- כפתור גדול: "הצעי התערבות חדשה" → פותח קטלוג מסונן
+
+### 15 כללי התרעה (אוטומציה)
+
+| # | כלל | למה |
+|---|---|---|
+| 1 | ירידה > 0.5 בממד בודד בכיתה — מחזור אחד | סיגנל חזק |
+| 2 | ירידה רצופה ב-2 מחזורים בכל ממד | trend ≠ blip |
+| 3 | כיתה < percentile 25 בית-ספרי בממד | benchmarking |
+| 4 | > 25% מהכיתה באדום בחברות/שמחה | קבוצתי-קריטי |
+| 5 | % Tier 3 בבי"ס > 7% | אזהרת overflow |
+| 6 | % Tier 1 < 75% | **ההוראה הכיתתית לא עובדת** |
+| 7 | ילד.ה דילג.ה Tier 1 → Tier 3 במחזור | קפיצה אנומלית |
+| 8 | פער > 1 SD עולים חדשים vs ותיקים | equity |
+| 9 | פער > 1 SD בנים vs בנות | equity |
+| 10 | פער > 1 SD רגיל vs חינוך מיוחד | equity |
+| 11 | התערבות פעילה 6 שבועות ללא שיפור | יעילות |
+| 12 | מורה לא ריצת.ה פולס > 2 מחזורים | היגיינת data |
+| 13 | % ירוק כלל-בית-ספרי ירד 10%+ ממחזור | מערכתי |
+| 14 | ילד.ה "אדום" באותו ממד 3 מחזורים → אסקלציה למנהלת | escalation |
+| 15 | כיתה אחת באדום בכל 4 הממדים בו-זמנית | חשד shutdown כיתתי |
+
+### קטלוג התערבויות: **30-50 מתכונים** (לא 5, לא 900)
+
+DESSA = 5 (דליל מדי). Panorama = 900 (מוצף). הסוויט-ספוט לפיילוט = **30-50 קטלוג מאוצר ב-10 קטגוריות**:
+
+1. **בוקר רגוע** (A, C) — טקס מעגל, כרטיסי בוקר, נשימת ים
+2. **שייכות וקשר** (B) — חבר.ה ליום, מעגל הוקרה, כיסא חם
+3. **ויסות רגשי** (C) — פינת רגיעה, מד רגשות 1-5, שמות לרגשות
+4. **מעברים והסתגלות** (A) — טקס מעבר, לוח יום ויזואלי, אזהרת 5 דק'
+5. **הכלת שונות** (B, A) — מילון אישי לעולים, buddy ותיק-חדש
+6. **סקרנות ועניין** (D) — שאלת השבוע, פרויקט תשוקה, מומחה.ת היום
+7. **מסוגלות והצלחה** (D, A) — תיק הצלחות, אתגר היום ברמות
+8. **פתרון קונפליקטים** (B, C) — פינת שלום, אני-מסר, מתווך עמית.ה
+9. **מעורבות הורים** (A, B) — פגישת 1:1, מחברת קשר, הורה מתנדב
+10. **קואצ'ינג למורה** (cross-cutting) — צפיית עמית.ה, וידאו עצמי, מטרת שבוע
+
+**אוטומציה**: כשמורה לוחצת על ילד.ה ב-"אדום" — המערכת מציעה 2-3 התערבויות (כמו DESSA), לא 30. בחירה חופשית רק ב-power-mode.
+
+---
+
+## 🔁 תזרים חודשי משולב (Calendar of All 4 Audiences)
+
+```
+שבוע 1                שבוע 2                שבוע 3                שבוע 4
+─────────────         ─────────────         ─────────────         ─────────────
+🐠 ילד.ה: שבועי       🐠 ילד.ה: שבועי       🐠 ילד.ה: שבועי       🐠 ילד.ה: שבועי
+👩‍🏫 מורה: 8 פריטים    -                     👩‍🏫 מורה: 8 פריטים    -
+👨‍👩‍👧 הורה: micro      -                     -                     👨‍👩‍👧 הורה: 5 פריטים
+👩‍💼 מנהלת: live       👩‍💼 מנהלת: live       👩‍💼 מנהלת: live       👩‍💼 מנהלת: דיג'סט חודשי
+```
+
+= 4 ילד.ה + 2 מורה + 2 הורה + monitor רציף = שמיש על-פני שנה.
+
+---
+
+## ❓ 10 החלטות שנשארו פתוחות (לאיפיון איתך)
+
+1. **2-D vs 3-faces** — לאמץ את ה-mood quadrants של RULER (יותר granular, יותר מורכב) או להישאר ב-3 פנים על קו (פשוט יותר, פחות מדויק)?
+2. **Forced-choice בין שני נונים** — להוסיף כמנגנון נוסף (לא במקום) ל-acquiescence control?
+3. **8 פריטים למורה** — מקובל עליך? או 6 (קל יותר) / 10 (כיסוי טוב יותר)?
+4. **דו-שבועי vs שבועי** למורה? (DESSA = 3x/שנה, אנחנו אגרסיביים יותר)
+5. **חודשי vs דו-שבועי** להורים? (המחקר מצביע בחוזקה על חודשי)
+6. **WhatsApp Business API** — לפיילוט 4 מורות זה overkill או חובה?
+7. **קטלוג 30 vs 50** מתכוני-פעולה ל-launch?
+8. **יועצת כ-gateway escalation** — האם בכל 4 בתי-הספר בפיילוט יש יועצת זמינה? אם לא, מי המוצא?
+9. **CASEL CSI vs ENN שלנו** — להציג למנהלת self-assessment של בית הספר ברוח CASEL (10 אינדיקטורים, פעמיים בשנה)?
+10. **תאימות עתידית לראמ"ה** — לנסח 2-3 פריטי שייכות בצורה תואמת PISA/ראמ"ה כדי שכשהילד.ה יגיע.ה לכיתה ה' יהיה trend?
+
+---
+
+## 📚 מקורות שמומלץ לקרוא לעומק (Top 8)
+
+1. [Closegap](https://www.closegap.org/) — UX of K-2 mood check-in
+2. [Mood Meter / RULER](https://www.themoodmeter.com/implementing-the-mood-meter-in-classroom-settings/) — 2-D quadrants
+3. [DESSA-mini Form 1 PDF](https://www.acer.org/files/DESSA_Mini_Form_1_Paulino_7-30-2015.pdf) — 8-item teacher gold standard
+4. [SDQ Hebrew Validation — Mansbach-Kleinfeld](https://www.frontiersin.org/journals/psychiatry/articles/10.3389/fpsyt.2010.00151/full) — validated translation
+5. [NSCH Flourishing Index — Health Affairs](https://www.healthaffairs.org/doi/10.1377/hlthaff.2018.05425) — 3-item parent gold standard
+6. [Linewize Pulse student protocol](https://pulsehelp.linewize.com/hc/en-gb/articles/9462256647324-How-do-I-check-in-as-a-student) — primary K-6 pulse done right
+7. [Panorama Playbook](https://www.panoramaed.com/products/playbook) — intervention catalog reference (over-shooting on size)
+8. [Branching Minds Tier Movement](https://www.branchingminds.com/blog/understanding-tier-patterns-and-movement-in-mtss) — the KPI we should adopt
+
+---
+
+## 🌐 רלוונטיות מעבר לחינוך
+
+(לפי ההנחיה הגלובלית — כל המנגנונים תקפים גם ל:)
+
+- **ניהול**: pulse manager-skip-level — אותם 3-faces, forced-choice בין סצנריוס, monthly cadence ולא biweekly, אסקלציה דיסקרטית ל-HR Business Partner. WhatsApp deep-link כערוץ.
+- **יזמות / סטארטאפ**: peer pulse בצוותים קטנים — anti-halo (פריט-פריט על כל הצוות, לא person-by-person), 4 ממדים (energy, alignment, blockers, learning), live dashboard למייסד.ת.
+- **שיווק**: customer mood tracking — Closegap pre/post loop = "rate before, rate after experience", anchoring vignettes לקליבר cross-cultural NPS.
+- **שימוש כללי**: forced-choice mascot-style טפסים עוקפים social desirability ב-90% מהמדידות שכוללות ילדים, low-literacy, או רב-תרבותיות.
+
+---
+
+**המסמך הזה הוא scaffold לאיפיון, לא מסמך-אב.** הוא מאחד את ממצאי 5 הסוכנים ומציע ברירות. הצעד הבא: לעבור איתך על 10 ההחלטות הפתוחות, להחליט מה נכנס למסמך האיפיון הסופי, ואז לעדכן את `system-10-pulse.html` או לבנות `system-10-pulse-v2.html` עם 4 הקהלים הצמודים.
+
+---
+
+## 📖 מילון מונחים מקצועיים
+
+### א. מתודולוגיית מדידה ופולס
+
+| באנגלית / קיצור | בעברית | הסבר קצר |
+|---|---|---|
+| **Pulse** | פולס / מדידה תכופה-קצרה | סקר חוזר בקצב קבוע (שבועי/חודשי) שמודד שינויים על-פני זמן. שונה מ-Survey שנתי ארוך. |
+| **Self-report** | דיווח-עצמי | הילד.ה/הנמדד.ת עונה על השאלון בעצמ.ה. |
+| **Teacher-report / Proxy report** | דיווח-מורה / דיווח-פרוקסי | מבוגר.ת ממלא.ת *על* הילד.ה. הסטנדרט לכיתות א'-ב'. |
+| **Triangulation** | טריאנגולציה / הצלבת מקורות | מדידה של אותה תופעה משלושה מקורות (ילד.ה + מורה + הורה) להעלאת מהימנות. |
+| **Item** | פריט / שאלה | יחידת מדידה בודדת בשאלון. |
+| **Item bank** | מאגר פריטים | אוסף של פריטים שמהם בוחרים תת-קבוצה פר פולס. |
+| **Distractor / Validity check** | פריט-הסחה / בדיקת תוקף | פריט שמטרתו לזהות מי לא קרא ("נוני חובש כובע צהוב — ראית?"). |
+| **Cadence / Frequency** | תדירות / קצב | כל כמה זמן מועבר הפולס (שבועי / דו-שבועי / חודשי). |
+| **Drill-down** | צלילה לפרטים | מעבר מתצוגה מצרפית (כיתה) לפרטנית (ילד.ה בודד.ת). |
+| **Aggregate / Aggregation** | מצרפי / מצרוף | סיכום של תשובות הרבה אנשים למספר אחד (ממוצע כיתה). |
+| **Trend** | מגמה | כיוון השינוי על-פני זמן. |
+| **Blip** | קפיצה זמנית / רעש | שינוי חד-פעמי שאינו מגמה (Satchel: "short blip vs. long decline"). |
+| **Trigger** | טריגר / כלל-הפעלה | תנאי שמפעיל פעולה אוטומטית (התראה / אסקלציה). |
+
+### ב. הטיות (Biases) שצריך לנטרל
+
+| באנגלית | בעברית | הסבר |
+|---|---|---|
+| **Acquiescence bias** | הטיית הסכמה | נטייה לומר "כן" לכל שאלה — חזקה במיוחד אצל ילדי 6-7. נוטרלת ע"י forced-choice ו-perspective shift. |
+| **Halo bias / Halo effect** | הטיית הילו / אפקט הילו | רושם כללי על הילד.ה משפיע על כל הדירוגים הספציפיים. נוטרל ע"י "פריט-פריט על כל הכיתה". |
+| **Contrast bias** | הטיית ניגוד | דירוג ילד.ה ביחס לקודמ.ת ברצף, ולא לפי קריטריון מוחלט. |
+| **Central tendency** | נטייה למרכז | סימון "באמצע" באופן אוטומטי בסולם 5-נקודות. נוטרל ע"י סולם 4-נקודות (זוגי). |
+| **Response set / Response pattern** | דפוס תגובה | סימון של אותו ערך לרצף שאלות. נוטרל ע"י מנגנונים מתחלפים. |
+| **Social desirability bias** | הטיית רצייה חברתית | עונים מה ש"רצוי" ולא מה שנכון. נוטרל ע"י anonymized + forced-choice. |
+| **Recall bias** | הטיית זיכרון | קשה להיזכר ב"כל השנה". נוטרל ע"י תקופת ייחוס קצרה ("בשבועיים האחרונים"). |
+
+### ג. מנגנוני שאלון מתקדמים
+
+| באנגלית | בעברית | למה זה עוזר |
+|---|---|---|
+| **Forced-choice** | בחירה כפויה בין אנקרים | מבטל acquiescence — לא ניתן "להסכים לכל" כי חייבים לבחור. |
+| **Anchoring vignette** | וינייט-עיגון / סיפור-קליבר | סיפור קצר על דמות אחרת לפני השאלה האישית — מכייל את הסקאלה. |
+| **Pre/Post loop** | לולאת לפני/אחרי | מדידה לפני התערבות + מדידה אחריה (גם משקפת התערבות וגם מגלה over-reporters). |
+| **Perspective shift** | הסטת פרספקטיבה | במקום "איך את.ה?" — "איך נוני?". מוריד לחץ ומגביר דיוק. |
+| **Exit ramp** | מסלול-יציאה / כפתור עזרה | אופציית פרישה מהשאלון או בקשת מבוגר ("נוני רוצה לדבר עם המורה"). |
+| **Mood granularity** | גרנולריות רגשית | היכולת להבחין בין רגשות עדינים (לא רק שמח/עצוב — גם נרגש/רגוע/מתוסכל). |
+| **Mood quadrants (2-D)** | רביעיות מצב-רוח | סולם דו-ממדי: אנרגיה × נעימות. מודל RULER של ייל. |
+| **Likert scale** | סולם ליקרט | סולם הסכמה (מסכים מאוד → לא מסכים בכלל). |
+| **Frequency Likert** | סולם תדירות | כמה פעמים קרה (אף פעם → תמיד). עדיף בדירוג מורה. |
+
+### ד. מסגרות SEL (Social-Emotional Learning) ושאלונים בינ"ל
+
+| קיצור | מה זה | בעברית |
+|---|---|---|
+| **SEL** | Social-Emotional Learning | למידה רגשית-חברתית |
+| **CASEL** | Collaborative for Academic, Social & Emotional Learning | מסגרת הזהב ל-SEL — 5 כשירויות (מודעות עצמית, ויסות עצמי, מודעות חברתית, כישורים בין-אישיים, קבלת החלטות אחראית) |
+| **SDQ** | Strengths & Difficulties Questionnaire | שאלון חוזקות וקשיים — 25 פריטים, מאומת בעברית וערבית |
+| **DESSA / DESSA-mini** | Devereux Student Strengths Assessment | שאלון מורה לחוזקות רגשיות-חברתיות — מיני = 8 פריטים, דקה לילד |
+| **BIMAS-2** | Behavior Intervention Monitoring Assessment System | מערכת מעקב התערבויות התנהגותיות — 34 פריטים |
+| **BASC-3 BESS** | Behavior Assessment System for Children — Behavioral and Emotional Screening | סקרינר התנהגותי-רגשי לילדים |
+| **CBCL** | Child Behavior Checklist (Achenbach) | רשימת התנהגויות הילד — 100+ פריטים, קליני |
+| **TRF** | Teacher Report Form | טופס דיווח-מורה (גרסת CBCL למורה) |
+| **SSIS-SEL** | Social Skills Improvement System — SEL Edition | מערכת לשיפור כישורים חברתיים, 20 פריטים |
+| **PSC-17** | Pediatric Symptom Checklist | רשימת סימפטומים פדיאטרית — 17 פריטים להורה, 3 דק' |
+| **ASQ:SE-2** | Ages & Stages Questionnaire: Social-Emotional | שאלון גילים ושלבים: רגשי-חברתי, להורה, מיועד לגיל הרך |
+| **NSCH** | National Survey of Children's Health (US) | הסקר הלאומי לבריאות ילדים (ארה"ב) — מקור ל"מדד פריחה" של 3 פריטים |
+| **OECD SSES** | OECD Study on Social and Emotional Skills | סקר OECD למיומנויות רגשיות-חברתיות (גילי 10 ו-15) |
+| **PIRLS** | Progress in International Reading Literacy Study | סקר אוריינות קריאה בינ"ל (כיתה ד') |
+| **PISA** | Programme for International Student Assessment | סקר OECD לתלמידי 15 (אוריינות, מתמטיקה, מדעים) |
+| **RULER** | (לא קיצור) — Yale Center for Emotional Intelligence | תוכנית SEL של ייל — מקור Mood Meter |
+| **Mood Meter** | (כלי של RULER) | "מדד הרגשות" — רביעייה דו-ממדית של אנרגיה × נעימות |
+| **PERMA** | Positive emotion, Engagement, Relationships, Meaning, Accomplishment | מודל סליגמן לרווחה חיובית (Komodo משתמשים) |
+
+### ה. מערכות תמיכה ודרגות
+
+| קיצור | מה זה | בעברית |
+|---|---|---|
+| **MTSS** | Multi-Tiered System of Support | מערכת תמיכה רב-שכבתית — 3 דרגות תמיכה |
+| **RTI** | Response to Intervention | תגובה להתערבות (הגרסה המוקדמת של MTSS, ממוקדת אקדמית) |
+| **PBIS / SWPBIS** | (Schoolwide) Positive Behavior Interventions & Supports | התערבויות ותמיכות התנהגותיות חיוביות (בית-ספריות) |
+| **Tier 1** | דרג 1 — תמיכה אוניברסלית | כל הילדים בכיתה. כלל 80/15/5: ~80% צריכים להסתדר רק עם Tier 1 |
+| **Tier 2** | דרג 2 — התערבות קבוצתית ממוקדת | ~15% של הילדים. עבודה בקבוצות קטנות. |
+| **Tier 3** | דרג 3 — התערבות אינטנסיבית 1:1 | ~5% של הילדים. אבחון פרטני + תמיכה מקצועית. |
+| **Universal screening** | סינון אוניברסלי | בדיקה של כל הילדים (לא רק "מי שמדאיג") — הבסיס למניעה. |
+| **Tier movement** | תנועה בין דרגות | מי עלה/ירד דרגה השבוע — KPI חשוב יותר מ-Tier distribution. |
+| **TFI** | Tiered Fidelity Inventory | מדד נאמנות-יישום של PBIS על-ידי צוות הניהול. |
+
+### ו. UX, טכנולוגיה, פלטפורמה
+
+| באנגלית | בעברית | הסבר |
+|---|---|---|
+| **Dashboard** | דשבורד / לוח-בקרה | מסך הצגת נתונים חי |
+| **Widget** | ווידג'ט / רכיב | רכיב בודד בדשבורד (כרטיס, גרף, סטטיסטיקה) |
+| **Heatmap** | מפת חום | טבלה בה כל תא צבוע לפי ערך (אדום/צהוב/ירוק) |
+| **Drag** | גרירה | מנגנון "נוני הנגרר" בין פנים |
+| **Slider** | סולם הזזה / סלידר | קו רציף עם מצביע |
+| **Tap** | הקשה | לחיצה במגע (טאבלט) |
+| **Audio-first** | אודיו-קודם | האודיו הוא הקלט הראשי, הטקסט משני (חיוני לכיתה א'-ב') |
+| **Character-led** | דמות-מובילה | דמות (נוני) מדריכה במקום טקסט הוראות יבש |
+| **Avatar** | אווטר / דמות | ייצוג ויזואלי של המשתמש או של דמות-משחק |
+| **Exit ramp / Escape hatch** | מסלול-יציאה | אופציה לפרוש מהפולס ולקבל מבוגר |
+| **Deep-link** | קישור עמוק | URL ישיר לטופס מוכן עם פרטים ממולאים מראש |
+| **Pre-fill** | מילוי-מראש | שדות שכבר מולאו (שם הילד.ה) כשהטופס נפתח |
+| **Push notification** | התראת push | הודעה שצצה בטלפון/בטאבלט |
+| **IVR** | Interactive Voice Response — מענה קולי אינטראקטיבי | סקר בטלפון: "להקיש 1 אם... להקיש 2 אם..." |
+| **NPS** | Net Promoter Score | "כמה את.ה ממליץ.ה?" (0-10) — שאלה אחת, אינדיקטור חזק |
+| **Escalation** | אסקלציה / העברה לדרג גבוה יותר | פנייה לבעל-תפקיד בכיר (יועצת → מנהלת → גורם חוץ) |
+| **Notification** | התראה / נוטיפיקציה | הודעה מערכתית למורה / יועצת / מנהלת |
+| **Anonymized / Aggregated** | אנונימי / מצרפי | ללא זיהוי אישי / סוכם על-פני אנשים רבים |
+| **Drill-down rights** | הרשאות צלילה | מי רשאי לראות מי (מורה רואה ילד.ה שלה, מנהלת רואה כל הכיתות) |
+
+### ז. סטטיסטיקה ופסיכומטריקה
+
+| באנגלית | בעברית | הסבר |
+|---|---|---|
+| **Reliability** | מהימנות | האם מדידה חוזרת תיתן תוצאה דומה |
+| **Validity** | תוקף | האם המדידה באמת מודדת את מה שהיא טוענת |
+| **Psychometrics** | פסיכומטריקה | מדע התכנון והבדיקה של שאלונים |
+| **Internal consistency / α (Cronbach's alpha)** | עקביות פנימית / אלפא קרונבך | מדד באיזו מידה פריטי תת-סולם מודדים את אותו דבר. α≥0.7 = טוב, ≥0.8 = מצוין |
+| **Concurrent validity** | תוקף בו-זמני | האם תוצאות השאלון מתואמות עם מדד אחר באותו זמן |
+| **Test-retest reliability** | מהימנות חוזרת | האם מדידה היום שווה למדידה בעוד שבוע |
+| **Sensitivity** | רגישות | % מהילדים בסיכון שהסקר זיהה נכון |
+| **Specificity** | סגוליות | % מהילדים שאינם בסיכון שהסקר זיהה נכון |
+| **Standard Deviation (SD)** | סטיית תקן | מידת הפיזור סביב הממוצע. "פער > 1 SD" = הבדל מובהק. |
+| **Percentile** | אחוזון | מיקום ביחס לקבוצת השוואה (אחוזון 25 = רק 25% נמוכים יותר) |
+| **Norms / Benchmark** | נורמות / סטנדרט השוואה | ממוצעים של אוכלוסייה גדולה ששימשו לבדיקת השאלון |
+| **Cohort** | קוהורט / קבוצת השוואה | קבוצת בני-גיל המשמשת כתחנת ייחוס |
+| **Sample / n** | מדגם / מספר משתתפים | המספר המינימלי לחיתוך statistically meaningful (אנחנו דורשים n≥5 לחיתוכי equity) |
+
+### ח. הכלה, equity, דמוגרפיה
+
+| באנגלית | בעברית | הסבר |
+|---|---|---|
+| **Equity cuts** | חיתוכי שוויון / חיתוכי הכלה | הצגת הנתון בנפרד לתת-קבוצות (מגדר, עולים חדשים, חינוך מיוחד) |
+| **IEP** | Individual Education Plan | תוכנית לימודים אישית (תל"א) — לתלמיד.ת שילוב |
+| **SES** | Socioeconomic Status | מצב סוציו-אקונומי |
+| **EL / ELL** | English Learner / English Language Learner | לומד.ת שפה (לא דובר.ת אנגלית כשפת אם). בישראל: עולים חדשים, לא דוברי עברית. |
+| **SPED** | Special Education | חינוך מיוחד |
+| **K-2** | Kindergarten through 2nd grade | גן עד כיתה ב' (גילי 5-8) |
+| **PK / Pre-K** | Pre-Kindergarten | טרום-חובה (גילי 3-4) |
+| **Gifted / AAP** | Advanced Academic Program | תוכנית מצוינות / מחוננים |
+| **Free/Reduced Lunch** | ארוחות מסובסדות | פרוקסי ל-SES נמוך (ארה"ב). בישראל: מדד טיפוח. |
+
+### ט. פלטפורמות שהוזכרו במחקר
+
+| שם | בקצרה | סוג |
+|---|---|---|
+| **Panorama Education** | פלטפורמת אקלים+SEL גדולה (ארה"ב). 900+ התערבויות. עוצרת בכיתה ג'. | פלטפורמת SEL/אקלים |
+| **Aperture / DESSA** | מבוסס DESSA-mini, ממליץ אוטומטית על 2-3 התערבויות פר ילד.ה | פלטפורמת SEL חוזק-מבוססת |
+| **Closegap** | check-in רגשי יומי לגילי 5-12 עם דמות אסטרונאוט. ה-UX הכי קרוב לנוני. | פלטפורמת רווחה לתלמידים |
+| **RULER (Yale)** | תוכנית SEL של ייל. בעלת ה-Mood Meter. | מסגרת SEL + כלי |
+| **Berkeley Puppet Interview (BPI)** | ראיון עם 2 בובות לילדי 4-7. הכלי היחיד עם psychometrics חזקים ל-K-2 self-report. | כלי מחקרי |
+| **Linewize Pulse** | פולס שבועי לתלמידים בריטים/אוסטרלים. ARACY 6-nests framework. | פלטפורמת רווחה |
+| **Komodo Wellbeing** | פולס PERMA-V שבועי/דו-שבועי. סולם רגשונים + סלידר. | פלטפורמת רווחה |
+| **Class Catalyst** | check-in 2x ביום, מספק אסטרטגיית התמודדות אישית | פלטפורמת רווחה |
+| **Skodel** | check-in שבועי בסטייל "איך את.ה ולמה?" | פלטפורמת רווחה |
+| **Satchel Pulse** | סקרי אקלים + סקרי SEL לבית-ספר. מבחין "blip vs decline". | פלטפורמת אקלים |
+| **Branching Minds** | פלטפורמת MTSS. הפכה את Tier movement ל-KPI מרכזי. | פלטפורמת MTSS |
+| **Kickboard / PowerSchool Behavior** | מעקב התנהגות PBIS — חיובי ושלילי בזמן-אמת | פלטפורמת PBIS |
+| **Tripod** | סקרי תלמיד-על-המורה (7Cs). למנהלות יש השוואה בין כיתות. | סקר תלמידים על מורה |
+| **Possip / ParentSquare / ParentPowered / Talking Points** | פלטפורמות תקשורת בית-הורה. NPS שבועי. דו-לשוני. | פלטפורמת הורים |
+| **Edthena VOSS** | מקשר תוצאות פולס → קואצ'ינג למורה (וידאו + framework) | קואצ'ינג מורים |
+
+### י. מערכות ומונחים ישראליים
+
+| שם | בקצרה |
+|---|---|
+| **ראמ"ה** | הרשות הארצית למדידה והערכה בחינוך. מפעילה את מיצ"ב + סקרי אקלים שנתיים מכיתה ה'. |
+| **שפ"י** | השירות הפסיכולוגי-ייעוצי במשרד החינוך. מפעיל את "כישורי חיים" + ערכת מיפוי SEL. |
+| **מיצ"ב** | מדדי יעילות וצמיחה בית-ספרית. מבחנים + סקרי אקלים, שנתי. |
+| **אח"מ** | אקלים חינוכי מיטבי. השאלון של שפ"י לכיתות ד'-יב'. |
+| **חוסן (חוסן חינוך)** | תוכנית שפ"י תלת-שנתית לחוסן רגשי. בעיקר ה'-ו'. אין שאלון פורמלי ל-א'-ב'. |
+| **כישורי חיים** | תוכנית שפ"י שמועברת ע"י המחנכת. בכיתה א': הסתגלות (ספט) · חברות (אוק) · רגשות (נוב) · ויסות · מסוגלות · קידום בריאות. |
+| **מנב"ס / מנב"סנט** | מערכת ניהול בית-ספרית של משרד החינוך. אדמיניסטרטיבי, לא pulse. |
+| **אופק** | מערכת ניהול מורים + שיבוצים. אדמיניסטרטיבי. |
+| **מנח"י** | מינהל החינוך של עיריית ירושלים. הלקוח המרכזי של "תוכנית החומש להכלה". |
+| **תפ"ק** | תפיסת קשיים והפרעות. ההתאמה הישראלית של SDQ/CBCL. בשימוש מתי"א ושפ"י. |
+| **מתי"א** | מרכז תמיכה יישובי-אזורי. מטפלים בילדי שילוב והפנייה לאבחון. |
+| **מדד טיפוח** | מדד סוציו-אקונומי של משרד החינוך לכל בית-ספר. |
+| **בית הערבה (אורט)** | תיכון אורט בית הערבה ירושלים — מקור הפולס המקורי (5 ממדים, ט'-יב'). |
+| **"אני וכיתתי" / המדחום החברתי** | שאלון אקלים כיתתי ויזואלי לכיתות ג'-ו' (מבוסס מחקר יריב). |
+
+### יא. ר"ת מקצועיות נפוצות שמופיעות במסמך
+
+| ר"ת | פתיחה | בעברית |
+|---|---|---|
+| **K-2** | Kindergarten through 2nd grade | גן עד כיתה ב' |
+| **SEL** | Social-Emotional Learning | למידה רגשית-חברתית |
+| **MTSS** | Multi-Tiered System of Support | מערכת תמיכה רב-שכבתית |
+| **PBIS** | Positive Behavior Interventions & Supports | התערבויות תמיכה התנהגותיות חיוביות |
+| **CASEL** | Collaborative for Academic, Social & Emotional Learning | מסגרת SEL הסטנדרטית |
+| **IEP** | Individual Education Plan | תוכנית לימודים אישית (תל"א) |
+| **SES** | Socioeconomic Status | מצב סוציו-אקונומי |
+| **SD** | Standard Deviation | סטיית תקן |
+| **n** | Sample size | גודל מדגם |
+| **α** | Cronbach's alpha | מדד עקביות פנימית |
+| **NPS** | Net Promoter Score | "כמה תמליץ.י?" 0-10 |
+| **IVR** | Interactive Voice Response | מענה קולי אינטראקטיבי |
+| **API** | Application Programming Interface | ממשק תכנות (חיבור בין מערכות) |
+| **KPI** | Key Performance Indicator | מדד ביצוע מפתח |
+| **UX** | User Experience | חוויית משתמש |
+| **UI** | User Interface | ממשק משתמש |
+</script>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  marked.setOptions({ gfm: true, breaks: false, headerIds: true });
+  const markdownSource = document.getElementById('md-source').textContent;
+  const html = marked.parse(markdownSource);
+  const container = document.getElementById('content');
+  container.classList.remove('loading');
+  container.innerHTML = html;
+});
+</script>
+
+</body>
+</html>

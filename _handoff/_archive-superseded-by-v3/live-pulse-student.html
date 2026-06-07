@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>נוני — הפולס השבועי</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Heebo', sans-serif;
+    background: #0E5A7C;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+  }
+  body {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  /* ============ REEF BACKGROUND ============ */
+  .reef-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #0E5A7C 0%, #2E8BAE 45%, #7CC4D4 80%, #DCEEF0 100%);
+    overflow: hidden;
+    z-index: 0;
+  }
+  .reef-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 90%, rgba(255,179,71,0.15) 0%, transparent 40%),
+      radial-gradient(ellipse at 80% 95%, rgba(255,107,139,0.12) 0%, transparent 40%);
+  }
+  .light-rays {
+    position: absolute;
+    top: -10%;
+    left: 0;
+    width: 100%;
+    height: 80%;
+    background:
+      linear-gradient(95deg, transparent 30%, rgba(220,238,240,0.18) 35%, transparent 40%),
+      linear-gradient(85deg, transparent 55%, rgba(220,238,240,0.12) 60%, transparent 65%),
+      linear-gradient(100deg, transparent 75%, rgba(220,238,240,0.15) 80%, transparent 85%);
+    pointer-events: none;
+    animation: rays-shift 12s ease-in-out infinite alternate;
+  }
+  @keyframes rays-shift {
+    0% { transform: translateX(-20px); opacity: 0.7; }
+    100% { transform: translateX(20px); opacity: 1; }
+  }
+
+  /* coral silhouettes at bottom */
+  .reef-floor {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 30%;
+    pointer-events: none;
+  }
+  .reef-floor svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* rising bubbles */
+  .bubble {
+    position: absolute;
+    bottom: -40px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.7), rgba(255,255,255,0.15));
+    pointer-events: none;
+    animation: rise linear infinite;
+  }
+  @keyframes rise {
+    0%   { transform: translateY(0) translateX(0); opacity: 0; }
+    10%  { opacity: 0.7; }
+    90%  { opacity: 0.7; }
+    100% { transform: translateY(-110vh) translateX(20px); opacity: 0; }
+  }
+
+  /* swimming fish silhouettes */
+  .ambient-fish {
+    position: absolute;
+    pointer-events: none;
+    opacity: 0.35;
+    animation: swim linear infinite;
+  }
+  @keyframes swim {
+    from { transform: translateX(-15vw); }
+    to   { transform: translateX(115vw); }
+  }
+
+  /* ============ APP SHELL ============ */
+  .app {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* top utility bar */
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    gap: 10px;
+    z-index: 5;
+  }
+  .icon-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.92);
+    color: #0E5A7C;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    transition: transform 0.15s ease;
+  }
+  .icon-btn:active { transform: scale(0.92); }
+  .icon-btn.off { background: rgba(255,255,255,0.4); color: #555; }
+
+  .exit-ramp-btn {
+    background: #FFD66B;
+    color: #6B3E0F;
+    border-radius: 26px;
+    width: auto;
+    padding: 0 18px;
+    height: 48px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 15px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .exit-ramp-btn:active { transform: scale(0.95); }
+  .exit-ramp-btn .emoji { font-size: 22px; }
+
+  /* ============ SCREENS ============ */
+  .screen {
+    flex: 1;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 22px 22px;
+    overflow: hidden;
+  }
+  .screen.active {
+    display: flex;
+    animation: screen-in 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @keyframes screen-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ============ NUNI CHARACTER ============ */
+  .nuni-wrap {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .nuni-wrap.floating {
+    animation: float-bob 3s ease-in-out infinite;
+  }
+  @keyframes float-bob {
+    0%, 100% { transform: translateY(-10px); }
+    50%      { transform: translateY(10px); }
+  }
+  .nuni-svg, .nuni-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 8px 20px rgba(0,0,0,0.25));
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+  .nuni-wrap.flip .nuni-svg,
+  .nuni-wrap.flip .nuni-img { transform: scaleX(-1); }
+
+  /* speech bubble */
+  .speech {
+    background: white;
+    border-radius: 24px;
+    padding: 18px 22px;
+    margin: 8px auto 4px;
+    max-width: 560px;
+    text-align: center;
+    color: #0E5A7C;
+    font-size: 26px;
+    font-weight: 500;
+    line-height: 1.45;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+    position: relative;
+    animation: bubble-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes bubble-pop {
+    from { transform: scale(0.7); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+  .speech::after {
+    content: '';
+    position: absolute;
+    bottom: -14px;
+    right: 40px;
+    width: 0;
+    height: 0;
+    border: 14px solid transparent;
+    border-top-color: white;
+    border-bottom: 0;
+    border-left: 0;
+  }
+  .speech.small { font-size: 22px; padding: 14px 18px; }
+
+  /* primary action button */
+  .big-cta {
+    background: linear-gradient(180deg, #FFD66B 0%, #FFB347 100%);
+    color: #5C2C00;
+    border: none;
+    border-radius: 32px;
+    padding: 22px 44px;
+    font-family: inherit;
+    font-size: 28px;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 8px 0 #C77F1F, 0 12px 20px rgba(0,0,0,0.2);
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+    min-height: 68px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .big-cta:active {
+    transform: translateY(4px);
+    box-shadow: 0 4px 0 #C77F1F, 0 6px 10px rgba(0,0,0,0.2);
+  }
+  .big-cta.secondary {
+    background: linear-gradient(180deg, #7DD3FC 0%, #38BDF8 100%);
+    color: #082F49;
+    box-shadow: 0 8px 0 #0369A1, 0 12px 20px rgba(0,0,0,0.2);
+  }
+  .big-cta.secondary:active {
+    box-shadow: 0 4px 0 #0369A1, 0 6px 10px rgba(0,0,0,0.2);
+  }
+  .big-cta.hidden { display: none; }
+
+  /* ============ SCREEN 1: WELCOME ============ */
+  .welcome-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  .welcome-content .nuni-wrap { width: 240px; height: 240px; }
+
+  /* ============ SCREEN 2: VIGNETTE ============ */
+  .vignette-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .dani-fish {
+    width: 160px;
+    height: 160px;
+    filter: drop-shadow(0 6px 14px rgba(0,0,0,0.25));
+    animation: dani-sway 2.5s ease-in-out infinite;
+  }
+  @keyframes dani-sway {
+    0%, 100% { transform: translateX(-8px) rotate(-3deg); }
+    50%      { transform: translateX(8px) rotate(3deg); }
+  }
+  .vignette-text {
+    background: rgba(255,255,255,0.95);
+    border-radius: 22px;
+    padding: 16px 22px;
+    font-size: 22px;
+    line-height: 1.5;
+    color: #0E5A7C;
+    text-align: center;
+    max-width: 560px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+  }
+  .face-row {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .face-btn {
+    width: 110px;
+    height: 130px;
+    border-radius: 24px;
+    border: 4px solid transparent;
+    background: white;
+    font-size: 56px;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+    font-family: inherit;
+  }
+  .face-btn .label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0E5A7C;
+  }
+  .face-btn:active { transform: scale(0.94); }
+  .face-btn.selected {
+    border-color: #FFB347;
+    background: #FFF5E1;
+    transform: scale(1.05);
+  }
+
+  /* ============ SCREEN 3: DRAG-NUNI ============ */
+  .drag-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    gap: 10px;
+    position: relative;
+  }
+  .drag-track-wrap {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    min-height: 380px;
+  }
+  .drag-track {
+    position: relative;
+    width: 140px;
+    height: 360px;
+    border-radius: 80px;
+    background: linear-gradient(180deg, #22C55E 0%, #FFD66B 50%, #EF4444 100%);
+    box-shadow:
+      inset 0 4px 14px rgba(0,0,0,0.18),
+      0 6px 20px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+  }
+  .track-face {
+    width: 64px;
+    height: 64px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 38px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+  }
+  .nuni-draggable {
+    position: absolute;
+    left: 50%;
+    width: 120px;
+    height: 120px;
+    transform: translate(-50%, -50%);
+    cursor: grab;
+    z-index: 10;
+    transition: top 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    touch-action: none;
+  }
+  .nuni-draggable.dragging {
+    cursor: grabbing;
+    transition: none;
+    transform: translate(-50%, -50%) scale(1.1);
+    filter: drop-shadow(0 12px 24px rgba(0,0,0,0.3));
+  }
+  .nuni-draggable .nuni-svg,
+  .nuni-draggable .nuni-img {
+    filter: drop-shadow(0 6px 14px rgba(0,0,0,0.3));
+  }
+  .drag-hint {
+    text-align: center;
+    color: white;
+    font-size: 17px;
+    font-weight: 500;
+    opacity: 0.92;
+    animation: hint-pulse 2s ease-in-out infinite;
+  }
+  @keyframes hint-pulse {
+    0%, 100% { opacity: 0.6; }
+    50%      { opacity: 1; }
+  }
+  .question-card {
+    background: white;
+    border-radius: 22px;
+    padding: 14px 20px;
+    text-align: center;
+    color: #0E5A7C;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.4;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 560px;
+  }
+  .question-card .q-text { flex: 1; text-align: center; }
+  .question-card .q-emoji { font-size: 36px; }
+  .speak-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: none;
+    background: #DCEEF0;
+    color: #0E5A7C;
+    font-size: 22px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .speak-btn:active { transform: scale(0.92); }
+
+  .drag-bottom-actions {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding-bottom: 4px;
+  }
+
+  /* ============ SCREEN 4: CALM LOOP ============ */
+  .calm-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .calm-stage {
+    width: 100%;
+    max-width: 480px;
+    height: 280px;
+    border-radius: 28px;
+    background: linear-gradient(180deg, #2E8BAE 0%, #7CC4D4 100%);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.25);
+  }
+  .calm-stage::before {
+    content: '';
+    position: absolute;
+    top: 30%;
+    left: -20%;
+    width: 140%;
+    height: 20px;
+    background: rgba(255,255,255,0.4);
+    border-radius: 50%;
+    animation: wave-drift 4s ease-in-out infinite;
+  }
+  .calm-stage::after {
+    content: '';
+    position: absolute;
+    top: 55%;
+    left: -20%;
+    width: 140%;
+    height: 16px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+    animation: wave-drift 5s ease-in-out infinite reverse;
+  }
+  @keyframes wave-drift {
+    0%, 100% { transform: translateX(0) skewX(-2deg); }
+    50%      { transform: translateX(40px) skewX(2deg); }
+  }
+  .calm-nuni {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 130px;
+    height: 130px;
+    transform: translate(-50%, -50%);
+    animation: calm-swim 6s ease-in-out infinite;
+    z-index: 2;
+  }
+  @keyframes calm-swim {
+    0%   { transform: translate(-90%, -55%) rotate(-3deg); }
+    25%  { transform: translate(-60%, -40%) rotate(2deg); }
+    50%  { transform: translate(-10%, -60%) rotate(-2deg) scaleX(-1); }
+    75%  { transform: translate(-60%, -45%) rotate(2deg) scaleX(-1); }
+    100% { transform: translate(-90%, -55%) rotate(-3deg); }
+  }
+  .breath-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    border: 4px solid rgba(255,255,255,0.5);
+    transform: translate(-50%, -50%);
+    animation: breath 5s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes breath {
+    0%, 100% { transform: translate(-50%, -50%) scale(0.6); opacity: 0.4; }
+    50%      { transform: translate(-50%, -50%) scale(1.1); opacity: 0.9; }
+  }
+  .countdown {
+    font-size: 64px;
+    font-weight: 900;
+    color: white;
+    text-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    margin-top: 6px;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .calm-instruction {
+    color: white;
+    font-size: 20px;
+    font-weight: 500;
+    text-align: center;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  /* post-comparison */
+  .compare-row {
+    display: flex;
+    justify-content: center;
+    align-items: end;
+    gap: 30px;
+    margin-top: 6px;
+  }
+  .compare-side {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .compare-side .nuni-wrap.before { width: 100px; height: 100px; opacity: 0.7; }
+  .compare-side .nuni-wrap.after  { width: 160px; height: 160px; }
+  .compare-side .label {
+    background: white;
+    color: #0E5A7C;
+    font-weight: 700;
+    padding: 5px 14px;
+    border-radius: 18px;
+    font-size: 16px;
+  }
+  .mini-track {
+    width: 28px;
+    height: 100px;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #22C55E 0%, #FFD66B 50%, #EF4444 100%);
+    align-self: center;
+    position: relative;
+  }
+  .mini-marker {
+    position: absolute;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border: 3px solid #0E5A7C;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  }
+
+  /* ============ SCREEN 5: STICKER / FINISH ============ */
+  .finish-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 12px;
+  }
+  .sticker-frame {
+    position: relative;
+    width: 240px;
+    height: 240px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 50% 50%, #FFD66B 0%, #FFB347 60%, transparent 70%);
+    animation: sticker-glow 2s ease-in-out infinite alternate;
+  }
+  @keyframes sticker-glow {
+    from { transform: scale(1); }
+    to   { transform: scale(1.06); }
+  }
+  .sticker-frame svg {
+    width: 70%;
+    height: 70%;
+    filter: drop-shadow(0 6px 18px rgba(0,0,0,0.3));
+    animation: sticker-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes sticker-pop {
+    0%   { transform: scale(0) rotate(-180deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+  .sticker-name {
+    background: white;
+    color: #0E5A7C;
+    padding: 10px 22px;
+    border-radius: 22px;
+    font-size: 24px;
+    font-weight: 900;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+  }
+  .confetti {
+    position: absolute;
+    pointer-events: none;
+    z-index: 20;
+    width: 12px;
+    height: 12px;
+    animation: confetti-fall 2.5s linear forwards;
+  }
+  @keyframes confetti-fall {
+    0%   { transform: translateY(-100px) rotate(0); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* exit screen */
+  .exit-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    text-align: center;
+  }
+  .exit-card {
+    background: white;
+    border-radius: 28px;
+    padding: 36px 28px;
+    max-width: 480px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+  }
+  .exit-card .heart {
+    font-size: 64px;
+    animation: heart-beat 1.2s ease-in-out infinite;
+  }
+  @keyframes heart-beat {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.15); }
+  }
+  .exit-card .msg {
+    font-size: 24px;
+    color: #0E5A7C;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  /* ============ RESPONSIVE / TABLET ============ */
+  @media (min-width: 768px) {
+    .speech { font-size: 30px; padding: 22px 28px; }
+    .vignette-text { font-size: 26px; }
+    .question-card { font-size: 26px; }
+    .face-btn { width: 130px; height: 150px; font-size: 64px; }
+    .face-btn .label { font-size: 16px; }
+    .big-cta { font-size: 32px; padding: 24px 52px; min-height: 76px; }
+    .nuni-wrap { width: 240px; height: 240px; }
+    .welcome-content .nuni-wrap { width: 280px; height: 280px; }
+  }
+  @media (max-height: 700px) {
+    .nuni-wrap { width: 160px; height: 160px; }
+    .welcome-content .nuni-wrap { width: 200px; height: 200px; }
+    .speech { font-size: 22px; padding: 14px 18px; }
+    .big-cta { padding: 18px 34px; font-size: 24px; min-height: 60px; }
+    .face-btn { width: 95px; height: 115px; font-size: 48px; }
+    .drag-track { height: 300px; }
+    .nuni-draggable { width: 100px; height: 100px; }
+    .drag-track-wrap { min-height: 320px; }
+    .calm-stage { height: 220px; }
+    .countdown { font-size: 48px; min-height: 60px; }
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ BACKGROUND LAYER ============ -->
+<div class="reef-bg" aria-hidden="true">
+  <div class="light-rays"></div>
+  <!-- coral reef floor -->
+  <div class="reef-floor">
+    <svg viewBox="0 0 800 240" preserveAspectRatio="none">
+      <!-- sand -->
+      <path d="M0,180 Q200,160 400,170 T800,180 L800,240 L0,240 Z" fill="#E8C988" opacity="0.85"/>
+      <!-- coral clusters -->
+      <g opacity="0.95">
+        <!-- left coral pink -->
+        <path d="M80,180 C70,150 90,130 80,100 C70,80 95,75 100,95 C105,75 130,80 120,100 C115,130 130,150 120,180 Z" fill="#FF6B8B"/>
+        <circle cx="80" cy="110" r="8" fill="#FF8FA8"/>
+        <circle cx="100" cy="95" r="7" fill="#FF8FA8"/>
+        <circle cx="120" cy="110" r="8" fill="#FF8FA8"/>
+        <!-- mid coral orange branch -->
+        <path d="M280,180 C275,140 290,120 280,90 M280,140 C260,130 250,110 260,95 M280,140 C300,130 310,110 300,95" stroke="#F97316" stroke-width="14" fill="none" stroke-linecap="round"/>
+        <!-- right coral purple fan -->
+        <path d="M520,180 C500,150 480,130 470,100 M520,180 C540,150 560,130 570,100 M520,180 L520,90" stroke="#A855F7" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.85"/>
+        <!-- seaweed -->
+        <path d="M620,180 Q615,140 625,110 Q620,80 630,50" stroke="#16A34A" stroke-width="9" fill="none" stroke-linecap="round" opacity="0.7"/>
+        <path d="M640,180 Q645,150 638,125 Q645,95 635,70" stroke="#16A34A" stroke-width="7" fill="none" stroke-linecap="round" opacity="0.7"/>
+        <path d="M180,180 Q175,150 185,125 Q180,100 190,75" stroke="#15803D" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.7"/>
+        <!-- small far-right coral -->
+        <path d="M720,180 C710,160 715,140 720,125 C725,140 730,160 720,180" fill="#FF6B8B" opacity="0.85"/>
+        <circle cx="720" cy="135" r="6" fill="#FFB347"/>
+      </g>
+    </svg>
+  </div>
+  <!-- ambient bubbles container -->
+  <div id="bubbles-layer"></div>
+  <!-- ambient fish container -->
+  <div id="fish-layer"></div>
+</div>
+
+<!-- ============ APP ============ -->
+<div class="app">
+  <!-- top bar -->
+  <div class="topbar">
+    <button class="icon-btn" id="audio-toggle" aria-label="הפעלת או כיבוי קול" title="קול">🔊</button>
+    <button class="exit-ramp-btn" id="exit-btn" style="display:none;" aria-label="נוני רוצה לדבר עם המורה">
+      <span class="emoji">🆘</span>
+      <span>נוּנִי רוֹצֶה לְדַבֵּר עִם הַמּוֹרָה</span>
+    </button>
+  </div>
+
+  <!-- =========================================================== -->
+  <!-- SCREEN 1: WELCOME -->
+  <!-- =========================================================== -->
+  <section class="screen active" id="screen-welcome">
+    <div class="welcome-content">
+      <div class="nuni-wrap floating" id="welcome-nuni"></div>
+      <div class="speech" id="welcome-speech">
+        שָׁלוֹם! אֲנִי נוּנִי. תַּעַזְרִי לִי לְהָבִין אֵיךְ הָיָה הַשָּׁבוּעַ?
+      </div>
+      <div style="display:flex; gap:14px; align-items:center; margin-top:10px;">
+        <button class="speak-btn" id="welcome-speak" aria-label="להשמיע את ההודעה">🔊</button>
+        <button class="big-cta" id="welcome-go">כֵּן! <span>🌊</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================== -->
+  <!-- SCREEN 2: VIGNETTE (Calibration) -->
+  <!-- =========================================================== -->
+  <section class="screen" id="screen-vignette">
+    <div class="vignette-content">
+      <div class="vignette-text">
+        תַּכִּירִי אֶת דָּנִי הַדָּג. הַיּוֹם בַּכִּיתָּה שֶׁלּוֹ קָרָה מַשֶּׁהוּ:
+      </div>
+
+      <div id="dani-container"></div>
+
+      <div class="vignette-text" id="vignette-story">
+        דָּנִי בָּא בַּבּוֹקֶר, וְהַתִּיק שֶׁלּוֹ נִשְׁבַּר. הָעֵטִים נָפְלוּ. כָּל הַחֲבֵרִים רָאוּ.
+      </div>
+
+      <div class="vignette-text" style="background:#FFF5E1; color:#5C2C00;" id="vignette-question">
+        אֵיךְ אַתְּ חוֹשֶׁבֶת שֶׁדָּנִי הִרְגִּישׁ?
+      </div>
+
+      <div class="face-row" id="vignette-faces" role="group" aria-label="בחירת רגש">
+        <button class="face-btn" data-feel="ok">
+          <span>😊</span>
+          <span class="label">בְּסֵדֶר</span>
+        </button>
+        <button class="face-btn" data-feel="meh">
+          <span>😐</span>
+          <span class="label">קְצָת לֹא נָעִים</span>
+        </button>
+        <button class="face-btn" data-feel="sad">
+          <span>😢</span>
+          <span class="label">מְאוֹד עָצוּב</span>
+        </button>
+      </div>
+
+      <div id="vignette-after" style="display:none; text-align:center; margin-top:8px;">
+        <div class="speech small">תּוֹדָה! זֶה עוֹזֵר לִי לְהָבִין רְגָשׁוֹת.</div>
+        <button class="big-cta" id="vignette-next">עַכְשָׁו הַתּוֹר שֶׁלָּךְ! <span>✨</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================== -->
+  <!-- SCREEN 3: DRAG NUNI -->
+  <!-- =========================================================== -->
+  <section class="screen" id="screen-drag">
+    <div class="drag-content">
+      <div class="question-card">
+        <button class="speak-btn" id="question-speak" aria-label="להשמיע את השאלה">🔊</button>
+        <div class="q-text" id="question-text">עִם אֵילוּ דָּגִים שָׂחִיתָ הַשָּׁבוּעַ?</div>
+        <div class="q-emoji" id="question-emoji">🌸</div>
+      </div>
+
+      <div class="drag-hint" id="drag-hint">גָּרְרִי אֶת נוּנִי לְמַעְלָה אוֹ לְמַטָּה</div>
+
+      <div class="drag-track-wrap" id="drag-track-wrap">
+        <div class="drag-track" id="drag-track">
+          <div class="track-face">😊</div>
+          <div class="track-face">😐</div>
+          <div class="track-face">😞</div>
+        </div>
+        <div class="nuni-draggable" id="nuni-draggable" style="top:50%;">
+          <!-- nuni svg injected by js -->
+        </div>
+      </div>
+
+      <div class="drag-bottom-actions">
+        <button class="big-cta hidden" id="drag-done">סִיַּמְתִּי <span>✨</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================== -->
+  <!-- SCREEN 4: CALM LOOP -->
+  <!-- =========================================================== -->
+  <section class="screen" id="screen-calm">
+    <div class="calm-content" id="calm-step-intro">
+      <div class="speech">אוֹי, נוּנִי מַרְגִּישׁ קְצָת לֹא טוֹב. רוֹצָה לִשְׂחוֹת אִתּוֹ 30 שְׁנִיּוֹת?</div>
+      <button class="big-cta secondary" id="calm-start">כֵּן, בּוֹאִי! <span>🌊</span></button>
+      <button class="big-cta" id="calm-skip" style="background:linear-gradient(180deg,#E5E7EB,#9CA3AF); color:#1F2937; box-shadow:0 8px 0 #6B7280, 0 12px 20px rgba(0,0,0,0.2);">לֹא הַפַּעַם</button>
+    </div>
+
+    <div class="calm-content" id="calm-step-breathing" style="display:none;">
+      <div class="calm-stage">
+        <div class="breath-ring"></div>
+        <div class="calm-nuni" id="calm-nuni-anim"></div>
+      </div>
+      <div class="calm-instruction" id="calm-breath-text">נוֹשְׁמוֹת פְּנִימָה... וְהַחוּצָה...</div>
+      <div class="countdown" id="calm-count">30</div>
+    </div>
+
+    <div class="calm-content" id="calm-step-after" style="display:none;">
+      <div class="question-card">
+        <button class="speak-btn" id="after-speak" aria-label="להשמיע את השאלה">🔊</button>
+        <div class="q-text">אֵיךְ אַתְּ מַרְגִּישָׁה עַכְשָׁו?</div>
+      </div>
+
+      <div class="compare-row">
+        <div class="compare-side">
+          <div class="label">לִפְנֵי</div>
+          <div class="nuni-wrap before" id="compare-before"></div>
+        </div>
+        <div class="mini-track">
+          <div class="mini-marker" id="before-marker" style="top:80%;"></div>
+        </div>
+        <div class="compare-side">
+          <div class="label">אַחֲרֵי</div>
+          <div class="nuni-wrap after floating" id="compare-after"></div>
+        </div>
+      </div>
+
+      <div class="face-row" id="after-faces" role="group" aria-label="איך אני מרגישה עכשיו">
+        <button class="face-btn" data-feel="up">
+          <span>😊</span>
+          <span class="label">טוֹב</span>
+        </button>
+        <button class="face-btn" data-feel="same">
+          <span>😐</span>
+          <span class="label">אוֹתוֹ דָּבָר</span>
+        </button>
+        <button class="face-btn" data-feel="down">
+          <span>😞</span>
+          <span class="label">עֲדַיִן לֹא</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================== -->
+  <!-- SCREEN 5: STICKER & FINISH -->
+  <!-- =========================================================== -->
+  <section class="screen" id="screen-finish">
+    <div class="finish-content">
+      <div class="speech">תּוֹדָה רַבָּה! עָזַרְתְּ לִי הַרְבֵּה!</div>
+      <div class="sticker-frame" id="sticker-frame"></div>
+      <div>
+        <div style="color:white; font-size:20px; font-weight:500; text-shadow:0 2px 6px rgba(0,0,0,0.3); margin-bottom:6px; text-align:center;">הַמַּדְבֵּקָה שֶׁלָּךְ:</div>
+        <div class="sticker-name" id="sticker-name">—</div>
+      </div>
+      <div class="speech small">נֵפְגֵּשׁ שׁוּב בַּשָּׁבוּעַ הַבָּא! <span>🌊</span></div>
+      <button class="big-cta secondary" id="restart-btn" style="margin-top:6px;">לְהַתְחָלָה מֵחָדָשׁ <span>🔄</span></button>
+    </div>
+  </section>
+
+  <!-- =========================================================== -->
+  <!-- EXIT RAMP SCREEN -->
+  <!-- =========================================================== -->
+  <section class="screen" id="screen-exit">
+    <div class="exit-content">
+      <div class="exit-card">
+        <div class="heart">💜</div>
+        <div class="msg">הַמּוֹרָה תָּבוֹא עוֹד רֶגַע. תּוֹדָה שֶׁאָמַרְתְּ לִי!</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ============ SVG SYMBOL DEFINITIONS ============ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- NUNI fallback SVG (NOT in use — real NUNI is the purple-octopus PNG from avnei-yesod assets) -->
+    <symbol id="sym-nuni" viewBox="0 0 200 200">
+      <defs>
+        <radialGradient id="nuni-body-grad" cx="40%" cy="40%" r="65%">
+          <stop offset="0%" stop-color="#FFD89A"/>
+          <stop offset="55%" stop-color="#FFB347"/>
+          <stop offset="100%" stop-color="#E89030"/>
+        </radialGradient>
+        <radialGradient id="nuni-eye-grad" cx="40%" cy="40%" r="60%">
+          <stop offset="0%" stop-color="#FFFFFF"/>
+          <stop offset="100%" stop-color="#F4F4F4"/>
+        </radialGradient>
+      </defs>
+      <!-- back/tail fin -->
+      <path d="M170,100 L195,55 L195,145 Z" fill="#E89030"/>
+      <path d="M170,100 L195,75 L195,125 Z" fill="#FFB347"/>
+      <!-- top fin -->
+      <path d="M80,55 Q100,30 130,55 Q105,52 80,55 Z" fill="#E89030"/>
+      <!-- bottom fin -->
+      <path d="M85,145 Q105,170 130,145 Q105,148 85,145 Z" fill="#E89030"/>
+      <!-- body -->
+      <ellipse cx="100" cy="100" rx="75" ry="50" fill="url(#nuni-body-grad)"/>
+      <!-- side stripe -->
+      <path d="M55,100 Q60,75 90,72 M55,100 Q60,125 90,128" stroke="#E07920" stroke-width="2" fill="none" opacity="0.55"/>
+      <!-- side fin -->
+      <ellipse cx="105" cy="120" rx="22" ry="14" fill="#E89030" transform="rotate(20 105 120)" opacity="0.85"/>
+      <!-- eye -->
+      <circle cx="55" cy="88" r="18" fill="url(#nuni-eye-grad)"/>
+      <circle cx="50" cy="84" r="9" fill="#1F2937"/>
+      <circle cx="48" cy="80" r="3.5" fill="#FFFFFF"/>
+      <!-- cheek blush -->
+      <ellipse cx="68" cy="115" rx="10" ry="5" fill="#FF6B8B" opacity="0.35"/>
+      <!-- smile -->
+      <path d="M40,110 Q48,124 62,118" stroke="#5C2C00" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <!-- bubble at mouth -->
+      <circle cx="28" cy="98" r="5" fill="rgba(255,255,255,0.85)" stroke="rgba(255,255,255,0.95)" stroke-width="1"/>
+      <circle cx="18" cy="85" r="3" fill="rgba(255,255,255,0.7)"/>
+    </symbol>
+
+    <!-- DANI: small sad blue fish -->
+    <symbol id="sym-dani" viewBox="0 0 200 200">
+      <defs>
+        <radialGradient id="dani-body-grad" cx="40%" cy="40%" r="65%">
+          <stop offset="0%" stop-color="#A7D9F5"/>
+          <stop offset="55%" stop-color="#5BAFE0"/>
+          <stop offset="100%" stop-color="#2B7BB8"/>
+        </radialGradient>
+      </defs>
+      <path d="M170,100 L195,60 L195,140 Z" fill="#2B7BB8"/>
+      <path d="M85,60 Q105,40 125,60 Q105,58 85,60 Z" fill="#2B7BB8"/>
+      <path d="M85,140 Q105,160 125,140 Q105,142 85,140 Z" fill="#2B7BB8"/>
+      <ellipse cx="100" cy="100" rx="70" ry="48" fill="url(#dani-body-grad)"/>
+      <ellipse cx="105" cy="120" rx="20" ry="13" fill="#2B7BB8" transform="rotate(20 105 120)" opacity="0.8"/>
+      <circle cx="58" cy="92" r="16" fill="white"/>
+      <circle cx="55" cy="94" r="8" fill="#1F2937"/>
+      <circle cx="53" cy="91" r="3" fill="white"/>
+      <!-- sad mouth -->
+      <path d="M40,118 Q50,108 62,118" stroke="#0E5A7C" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <!-- tear -->
+      <path d="M62,108 Q60,118 64,124 Q68,118 62,108 Z" fill="#A7D9F5" opacity="0.85"/>
+    </symbol>
+
+    <!-- STICKERS -->
+    <symbol id="sticker-star" viewBox="0 0 100 100">
+      <path d="M50,5 L61,38 L96,38 L67,58 L78,92 L50,72 L22,92 L33,58 L4,38 L39,38 Z" fill="#FFD66B" stroke="#C77F1F" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M50,18 L57,40 L80,40 L62,53 L69,76 L50,62 L31,76 L38,53 L20,40 L43,40 Z" fill="#FFE699" opacity="0.6"/>
+    </symbol>
+    <symbol id="sticker-heart" viewBox="0 0 100 100">
+      <path d="M50,90 C20,65 5,45 15,25 C22,12 40,12 50,28 C60,12 78,12 85,25 C95,45 80,65 50,90 Z" fill="#FF6B8B" stroke="#B73355" stroke-width="3" stroke-linejoin="round"/>
+      <ellipse cx="35" cy="35" rx="10" ry="6" fill="white" opacity="0.5"/>
+    </symbol>
+    <symbol id="sticker-fish" viewBox="0 0 100 100">
+      <path d="M85,50 L100,30 L100,70 Z" fill="#2B7BB8"/>
+      <ellipse cx="45" cy="50" rx="40" ry="25" fill="#38BDF8" stroke="#0369A1" stroke-width="3"/>
+      <circle cx="25" cy="44" r="8" fill="white"/>
+      <circle cx="23" cy="44" r="4" fill="#1F2937"/>
+      <path d="M55,55 Q63,65 73,58" stroke="#0369A1" stroke-width="2" fill="none"/>
+    </symbol>
+    <symbol id="sticker-coral" viewBox="0 0 100 100">
+      <path d="M50,95 C45,75 60,60 50,40 M50,95 C55,75 35,60 50,40 M50,95 C50,75 50,55 50,30" stroke="#FF6B8B" stroke-width="14" fill="none" stroke-linecap="round"/>
+      <circle cx="50" cy="30" r="10" fill="#FFB347"/>
+      <circle cx="35" cy="55" r="6" fill="#FFB347"/>
+      <circle cx="65" cy="55" r="6" fill="#FFB347"/>
+    </symbol>
+    <symbol id="sticker-bubble" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="42" fill="rgba(125,211,252,0.55)" stroke="#0EA5E9" stroke-width="3"/>
+      <ellipse cx="38" cy="38" rx="14" ry="8" fill="white" opacity="0.75"/>
+      <circle cx="32" cy="35" r="5" fill="white" opacity="0.9"/>
+    </symbol>
+    <symbol id="sticker-shell" viewBox="0 0 100 100">
+      <path d="M50,90 Q5,80 8,40 Q15,5 50,5 Q85,5 92,40 Q95,80 50,90 Z" fill="#FFD8B5" stroke="#C77F1F" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M50,5 L50,90 M30,8 Q35,50 50,90 M70,8 Q65,50 50,90 M15,25 Q35,55 50,90 M85,25 Q65,55 50,90" stroke="#E89030" stroke-width="2" fill="none"/>
+    </symbol>
+    <symbol id="sticker-flower" viewBox="0 0 100 100">
+      <g transform="translate(50 50)">
+        <ellipse cx="0" cy="-25" rx="14" ry="22" fill="#FF6B8B"/>
+        <ellipse cx="0" cy="-25" rx="14" ry="22" fill="#FF6B8B" transform="rotate(60)"/>
+        <ellipse cx="0" cy="-25" rx="14" ry="22" fill="#FF6B8B" transform="rotate(120)"/>
+        <ellipse cx="0" cy="-25" rx="14" ry="22" fill="#FF6B8B" transform="rotate(180)"/>
+        <ellipse cx="0" cy="-25" rx="14" ry="22" fill="#FF6B8B" transform="rotate(240)"/>
+        <ellipse cx="0" cy="-25" rx="14" ry="22" fill="#FF6B8B" transform="rotate(300)"/>
+        <circle cx="0" cy="0" r="13" fill="#FFD66B" stroke="#C77F1F" stroke-width="2"/>
+      </g>
+    </symbol>
+    <symbol id="sticker-boat" viewBox="0 0 100 100">
+      <path d="M50,15 L50,55 L20,55 Z" fill="white" stroke="#0E5A7C" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M55,20 L55,55 L80,55 Z" fill="#FFD66B" stroke="#C77F1F" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M10,58 L90,58 L78,82 L22,82 Z" fill="#FF6B8B" stroke="#B73355" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M5,88 Q20,82 35,88 T65,88 T95,88" stroke="#38BDF8" stroke-width="3" fill="none"/>
+    </symbol>
+
+    <!-- AMBIENT swimming fish silhouette -->
+    <symbol id="sym-ambient-fish" viewBox="0 0 100 60">
+      <path d="M85,30 L100,15 L100,45 Z" fill="currentColor"/>
+      <ellipse cx="45" cy="30" rx="40" ry="18" fill="currentColor"/>
+      <circle cx="20" cy="26" r="3" fill="white"/>
+    </symbol>
+  </defs>
+</svg>
+
+<script>
+(function() {
+  'use strict';
+
+  // ================== STATE ==================
+  const state = {
+    audioEnabled: true,
+    vignetteFeel: null,
+    pulseValue: 50,      // 0=top/happy, 100=bottom/sad
+    pulseDirection: null, // 'up' | 'mid' | 'down'
+    postValue: null,
+    pulseQuestion: null,
+    sticker: null,
+    currentScreen: 'welcome'
+  };
+
+  // ================== UTIL ==================
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+  function svgUse(symbolId, extraAttrs) {
+    const attrs = extraAttrs || {};
+    const attrStr = Object.keys(attrs).map(k => `${k}="${attrs[k]}"`).join(' ');
+    return `<svg class="nuni-svg" viewBox="0 0 200 200" ${attrStr}><use href="#${symbolId}"/></svg>`;
+  }
+
+  // Real NUNI = purple octopus PNG. State controls which expression.
+  const NUNI_ASSETS = {
+    idle:      '../../avnei-yesod/underwater-app/assets/noni-idle.png',
+    happy:     '../../avnei-yesod/underwater-app/assets/noni-happy.png',
+    thinking:  '../../avnei-yesod/underwater-app/assets/noni-thinking.png',
+    surprised: '../../avnei-yesod/underwater-app/assets/noni-surprised.png',
+    kiss:      '../../avnei-yesod/underwater-app/assets/noni-kiss.png',
+    sad:       '../../avnei-yesod/underwater-app/assets/island-03/storm-game/noni-sad-storm.png',
+    hero:      '../../avnei-yesod/underwater-app/assets/noni-hero-transparent.png'
+  };
+  function nuniImg(stateName) {
+    const src = NUNI_ASSETS[stateName] || NUNI_ASSETS.idle;
+    return `<img class="nuni-img" src="${src}" alt="נוני" draggable="false">`;
+  }
+  function setNuniState(containerId, stateName) {
+    const c = document.getElementById(containerId);
+    if (!c) return;
+    const img = c.querySelector('.nuni-img');
+    const src = NUNI_ASSETS[stateName] || NUNI_ASSETS.idle;
+    if (img) { img.src = src; }
+    else { c.innerHTML = nuniImg(stateName); }
+  }
+
+  // ================== AUDIO (Web Speech) ==================
+  let voicesLoaded = false;
+  function loadVoices() {
+    return new Promise((resolve) => {
+      if (!('speechSynthesis' in window)) { resolve([]); return; }
+      let voices = speechSynthesis.getVoices();
+      if (voices.length) { voicesLoaded = true; resolve(voices); return; }
+      speechSynthesis.addEventListener('voiceschanged', () => {
+        voices = speechSynthesis.getVoices();
+        voicesLoaded = true;
+        resolve(voices);
+      }, { once: true });
+      // fallback timeout
+      setTimeout(() => resolve(speechSynthesis.getVoices()), 1500);
+    });
+  }
+  loadVoices();
+
+  function speak(text) {
+    if (!state.audioEnabled) return;
+    if (!('speechSynthesis' in window)) return;
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'he-IL';
+      u.rate = 0.85;
+      u.pitch = 1.1;
+      const voices = speechSynthesis.getVoices();
+      const heb = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('he'));
+      if (heb) u.voice = heb;
+      speechSynthesis.speak(u);
+    } catch (e) { /* silent */ }
+  }
+
+  function vibrate(ms) {
+    if (navigator.vibrate) {
+      try { navigator.vibrate(ms); } catch (e) {}
+    }
+  }
+
+  // ================== NUNI MOUNT ==================
+  function mountNuni() {
+    $('#welcome-nuni').innerHTML = nuniImg('happy');
+    $('#nuni-draggable').innerHTML = nuniImg('idle');
+    $('#calm-nuni-anim').innerHTML = nuniImg('thinking');
+    $('#compare-before').innerHTML = nuniImg('thinking');
+    $('#compare-after').innerHTML = nuniImg('happy');
+    $('#dani-container').innerHTML = `<svg class="dani-fish" viewBox="0 0 200 200"><use href="#sym-dani"/></svg>`;
+  }
+
+  // ================== AMBIENT BG: bubbles & fish ==================
+  function spawnBubble() {
+    const layer = $('#bubbles-layer');
+    if (!layer) return;
+    const size = 8 + Math.random() * 24;
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    b.style.width = size + 'px';
+    b.style.height = size + 'px';
+    b.style.left = Math.random() * 100 + '%';
+    const dur = 6 + Math.random() * 8;
+    b.style.animationDuration = dur + 's';
+    layer.appendChild(b);
+    setTimeout(() => b.remove(), dur * 1000 + 200);
+  }
+  function startBubbles() {
+    for (let i = 0; i < 6; i++) {
+      setTimeout(spawnBubble, i * 400 + Math.random() * 800);
+    }
+    setInterval(spawnBubble, 1100);
+  }
+
+  function spawnAmbientFish() {
+    const layer = $('#fish-layer');
+    if (!layer) return;
+    const colors = ['#5BAFE0', '#7CC4D4', '#A7D9F5', '#2E8BAE'];
+    const f = document.createElement('div');
+    f.className = 'ambient-fish';
+    const size = 30 + Math.random() * 50;
+    const w = size, h = size * 0.6;
+    f.style.width = w + 'px';
+    f.style.height = h + 'px';
+    f.style.top = (10 + Math.random() * 60) + '%';
+    f.style.color = colors[Math.floor(Math.random() * colors.length)];
+    const dur = 18 + Math.random() * 15;
+    f.style.animationDuration = dur + 's';
+    if (Math.random() > 0.5) f.style.transform = 'scaleX(-1)';
+    f.innerHTML = `<svg viewBox="0 0 100 60" width="${w}" height="${h}"><use href="#sym-ambient-fish"/></svg>`;
+    layer.appendChild(f);
+    setTimeout(() => f.remove(), dur * 1000 + 200);
+  }
+  function startFish() {
+    for (let i = 0; i < 3; i++) setTimeout(spawnAmbientFish, i * 2000);
+    setInterval(spawnAmbientFish, 5000);
+  }
+
+  // ================== NAV ==================
+  function goTo(screenId) {
+    $$('.screen').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById('screen-' + screenId);
+    if (target) target.classList.add('active');
+    state.currentScreen = screenId;
+
+    // Exit ramp button visible from screen 2 onward (not on welcome / exit / finish)
+    const ramp = $('#exit-btn');
+    const showRamp = ['vignette', 'drag', 'calm'].includes(screenId);
+    ramp.style.display = showRamp ? 'flex' : 'none';
+
+    // stop any running speech when leaving a screen
+    try { speechSynthesis.cancel(); } catch (e) {}
+  }
+
+  // ================== SCREEN 1: WELCOME ==================
+  function setupWelcome() {
+    $('#welcome-go').addEventListener('click', () => {
+      vibrate(20);
+      goTo('vignette');
+      setTimeout(() => speak('תכירי את דני הדג. היום בכיתה שלו קרה משהו.'), 350);
+    });
+    $('#welcome-speak').addEventListener('click', () => {
+      speak('שלום! אני נוני. תעזרי לי להבין איך היה השבוע?');
+    });
+    // auto-greet
+    setTimeout(() => {
+      if (state.currentScreen === 'welcome') {
+        speak('שלום! אני נוני. תעזרי לי להבין איך היה השבוע?');
+      }
+    }, 800);
+  }
+
+  // ================== SCREEN 2: VIGNETTE ==================
+  function setupVignette() {
+    $$('#vignette-faces .face-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        vibrate(20);
+        $$('#vignette-faces .face-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        state.vignetteFeel = btn.dataset.feel;
+        $('#vignette-after').style.display = 'block';
+        speak('תודה! זה עוזר לי להבין רגשות.');
+      });
+    });
+    $('#vignette-next').addEventListener('click', () => {
+      vibrate(20);
+      goTo('drag');
+      setupDragQuestion();
+      setTimeout(() => speak(state.pulseQuestion.audio), 350);
+    });
+  }
+
+  // ================== SCREEN 3: DRAG NUNI ==================
+  const QUESTIONS = [
+    { text: 'עִם אֵילוּ דָּגִים שָׂחִיתָ הַשָּׁבוּעַ?', audio: 'עם אילו דגים שחית השבוע?', emoji: '🌸', dim: 'belonging' },
+    { text: 'מָצָאתִי אֶת הַמָּקוֹם שֶׁלִּי בַּשּׁוֹנִית?', audio: 'מצאתי את המקום שלי בשונית?', emoji: '🟡', dim: 'adjustment' },
+    { text: 'כֵּיף לִי לְגַלּוֹת דְּבָרִים חֲדָשִׁים?', audio: 'כיף לי לגלות דברים חדשים?', emoji: '💚', dim: 'curiosity' },
+    { text: 'הִרְגַּשְׁתִּי בָּטוּחָה בַּשּׁוֹנִית הַשָּׁבוּעַ?', audio: 'הרגשתי בטוחה בשונית השבוע?', emoji: '🧡', dim: 'safety' },
+    { text: 'הִצְלַחְתִּי בְּמַשֶּׁהוּ שֶׁהָיָה קָשֶׁה?', audio: 'הצלחתי במשהו שהיה קשה?', emoji: '⭐', dim: 'capability' }
+  ];
+
+  function pickQuestion() {
+    const idx = Math.floor(Math.random() * QUESTIONS.length);
+    return QUESTIONS[idx];
+  }
+
+  function setupDragQuestion() {
+    const q = pickQuestion();
+    state.pulseQuestion = q;
+    $('#question-text').textContent = q.text;
+    $('#question-emoji').textContent = q.emoji;
+    // reset nuni position
+    const nuni = $('#nuni-draggable');
+    nuni.style.top = '50%';
+    state.pulseValue = 50;
+    state.pulseDirection = null;
+    $('#drag-done').classList.add('hidden');
+    $('#drag-hint').style.opacity = '';
+  }
+
+  function setupDrag() {
+    const nuni = $('#nuni-draggable');
+    const track = $('#drag-track');
+    const trackWrap = $('#drag-track-wrap');
+    const doneBtn = $('#drag-done');
+    const hint = $('#drag-hint');
+
+    let dragging = false;
+    let startY = 0;
+    let startTop = 50;
+    let trackRect = null;
+
+    function getPercentFromY(clientY) {
+      if (!trackRect) return 50;
+      const rel = clientY - trackRect.top;
+      const pct = (rel / trackRect.height) * 100;
+      return Math.max(5, Math.min(95, pct));
+    }
+
+    function setNuniPosition(pct, immediate) {
+      if (immediate) {
+        nuni.style.transition = 'none';
+      } else {
+        nuni.style.transition = '';
+      }
+      nuni.style.top = pct + '%';
+      state.pulseValue = pct;
+
+      // update bg of reef via mix? we'll modulate the question-card glow
+      // also update track-wrap background tint via filter
+      const greenAmount = Math.max(0, (50 - pct) / 50);
+      const redAmount = Math.max(0, (pct - 50) / 50);
+      const overlay = `rgba(${Math.round(239 * redAmount)}, ${Math.round(197 * greenAmount + 50 * redAmount)}, ${Math.round(50 * greenAmount)}, ${0.07 * Math.max(redAmount, greenAmount)})`;
+      trackWrap.style.background = `radial-gradient(circle at 50% 50%, ${overlay}, transparent 70%)`;
+    }
+
+    function onStart(clientY) {
+      dragging = true;
+      trackRect = track.getBoundingClientRect();
+      startY = clientY;
+      startTop = parseFloat(nuni.style.top) || 50;
+      nuni.classList.add('dragging');
+      vibrate(50);
+      hint.style.opacity = '0.3';
+    }
+    function onMove(clientY) {
+      if (!dragging) return;
+      const pct = getPercentFromY(clientY);
+      setNuniPosition(pct, true);
+    }
+    function onEnd() {
+      if (!dragging) return;
+      dragging = false;
+      nuni.classList.remove('dragging');
+
+      // Snap to 3 zones + swap NUNI expression
+      let snapped, faceState;
+      if (state.pulseValue < 33)      { snapped = 15; state.pulseDirection = 'up';   faceState = 'happy'; }
+      else if (state.pulseValue > 66) { snapped = 85; state.pulseDirection = 'down'; faceState = 'sad'; }
+      else                            { snapped = 50; state.pulseDirection = 'mid';  faceState = 'idle'; }
+      setNuniPosition(snapped, false);
+      setNuniState('nuni-draggable', faceState);
+      vibrate(30);
+
+      // show done button (any direction != null means they touched it)
+      doneBtn.classList.remove('hidden');
+    }
+
+    // mouse
+    nuni.addEventListener('mousedown', (e) => { e.preventDefault(); onStart(e.clientY); });
+    window.addEventListener('mousemove', (e) => { if (dragging) { e.preventDefault(); onMove(e.clientY); } });
+    window.addEventListener('mouseup', () => onEnd());
+    // touch
+    nuni.addEventListener('touchstart', (e) => { e.preventDefault(); onStart(e.touches[0].clientY); }, { passive: false });
+    window.addEventListener('touchmove', (e) => { if (dragging) { e.preventDefault(); onMove(e.touches[0].clientY); } }, { passive: false });
+    window.addEventListener('touchend', () => onEnd());
+    window.addEventListener('touchcancel', () => onEnd());
+
+    $('#question-speak').addEventListener('click', () => {
+      if (state.pulseQuestion) speak(state.pulseQuestion.audio);
+    });
+
+    doneBtn.addEventListener('click', () => {
+      vibrate(20);
+      // store before-marker position for compare screen
+      // Decide: red or yellow -> calm loop. Green -> finish.
+      if (state.pulseDirection === 'down' || (state.pulseDirection === 'mid' && state.pulseValue > 45)) {
+        goTo('calm');
+        setTimeout(() => speak('אוי, נוני מרגיש קצת לא טוב. רוצה לשחות איתו שלושים שניות?'), 350);
+      } else {
+        goToFinish();
+      }
+    });
+  }
+
+  // ================== SCREEN 4: CALM LOOP ==================
+  function setupCalm() {
+    $('#calm-skip').addEventListener('click', () => {
+      vibrate(20);
+      goToFinish();
+    });
+    $('#calm-start').addEventListener('click', () => {
+      vibrate(20);
+      $('#calm-step-intro').style.display = 'none';
+      $('#calm-step-breathing').style.display = 'flex';
+      runBreathing();
+    });
+    $$('#after-faces .face-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        vibrate(20);
+        $$('#after-faces .face-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        state.postValue = btn.dataset.feel;
+        // animate marker position
+        const marker = $('#before-marker');
+        if (btn.dataset.feel === 'up') marker.style.top = '20%';
+        else if (btn.dataset.feel === 'same') marker.style.top = '50%';
+        else marker.style.top = '80%';
+
+        setTimeout(() => goToFinish(), 1400);
+      });
+    });
+    $('#after-speak').addEventListener('click', () => {
+      speak('איך את מרגישה עכשיו?');
+    });
+  }
+
+  function runBreathing() {
+    let secs = 30;
+    const countEl = $('#calm-count');
+    const textEl = $('#calm-breath-text');
+    countEl.textContent = secs;
+    speak('נושמות פנימה לאט');
+    const cycleTexts = [
+      'נוֹשְׁמוֹת פְּנִימָה...',
+      'וְהַחוּצָה...',
+      'יוֹפִי, מַמְשִׁיכוֹת.',
+      'נוּנִי אוֹהֵב לִשְׂחוֹת אִתָּךְ.'
+    ];
+    let cycleIdx = 0;
+    const textTimer = setInterval(() => {
+      cycleIdx = (cycleIdx + 1) % cycleTexts.length;
+      textEl.textContent = cycleTexts[cycleIdx];
+    }, 2500);
+    const tick = setInterval(() => {
+      secs--;
+      countEl.textContent = secs;
+      if (secs <= 0) {
+        clearInterval(tick);
+        clearInterval(textTimer);
+        $('#calm-step-breathing').style.display = 'none';
+        $('#calm-step-after').style.display = 'flex';
+        speak('איך את מרגישה עכשיו?');
+      }
+    }, 1000);
+  }
+
+  // ================== SCREEN 5: FINISH ==================
+  const STICKERS = [
+    { id: 'sticker-star',   name: 'כּוֹכָב' },
+    { id: 'sticker-heart',  name: 'לֵב' },
+    { id: 'sticker-fish',   name: 'דָּג' },
+    { id: 'sticker-coral',  name: 'אַלְמוֹג' },
+    { id: 'sticker-bubble', name: 'בּוּעָה' },
+    { id: 'sticker-shell',  name: 'קוֹנְכִיָּה' },
+    { id: 'sticker-flower', name: 'פֶּרַח-יָם' },
+    { id: 'sticker-boat',   name: 'סְפִינָה' }
+  ];
+
+  function goToFinish() {
+    const pick = STICKERS[Math.floor(Math.random() * STICKERS.length)];
+    state.sticker = pick;
+    $('#sticker-frame').innerHTML = `<svg viewBox="0 0 100 100"><use href="#${pick.id}"/></svg>`;
+    $('#sticker-name').textContent = pick.name;
+    goTo('finish');
+    launchConfetti();
+    setTimeout(() => speak('תודה רבה! עזרת לי הרבה! המדבקה שלך: ' + pick.name.replace(/[֑-ׇ]/g, '')), 400);
+  }
+
+  function launchConfetti() {
+    const colors = ['#FFD66B', '#FF6B8B', '#7CC4D4', '#A855F7', '#FFB347', '#22C55E'];
+    for (let i = 0; i < 28; i++) {
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.left = Math.random() * 100 + '%';
+      c.style.background = colors[Math.floor(Math.random() * colors.length)];
+      c.style.animationDelay = (Math.random() * 0.6) + 's';
+      c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      const rot = Math.random() * 360;
+      c.style.transform = `rotate(${rot}deg)`;
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 3200);
+    }
+  }
+
+  // ================== EXIT RAMP ==================
+  function setupExitRamp() {
+    $('#exit-btn').addEventListener('click', () => {
+      vibrate(20);
+      goTo('exit');
+      setTimeout(() => speak('המורה תבוא עוד רגע. תודה שאמרת לי!'), 350);
+    });
+  }
+
+  // ================== AUDIO TOGGLE ==================
+  function setupAudioToggle() {
+    const btn = $('#audio-toggle');
+    btn.addEventListener('click', () => {
+      state.audioEnabled = !state.audioEnabled;
+      btn.textContent = state.audioEnabled ? '🔊' : '🔇';
+      btn.classList.toggle('off', !state.audioEnabled);
+      if (!state.audioEnabled) {
+        try { speechSynthesis.cancel(); } catch (e) {}
+      }
+    });
+  }
+
+  // ================== RESTART ==================
+  function setupRestart() {
+    $('#restart-btn').addEventListener('click', () => {
+      vibrate(20);
+      state.vignetteFeel = null;
+      state.pulseValue = 50;
+      state.pulseDirection = null;
+      state.postValue = null;
+      $$('.face-btn').forEach(b => b.classList.remove('selected'));
+      $('#vignette-after').style.display = 'none';
+      $('#calm-step-intro').style.display = 'flex';
+      $('#calm-step-breathing').style.display = 'none';
+      $('#calm-step-after').style.display = 'none';
+      $('#nuni-draggable').style.top = '50%';
+      $('#drag-done').classList.add('hidden');
+      goTo('welcome');
+    });
+  }
+
+  // ================== INIT ==================
+  document.addEventListener('DOMContentLoaded', init);
+  function init() {
+    mountNuni();
+    startBubbles();
+    startFish();
+    setupAudioToggle();
+    setupExitRamp();
+    setupWelcome();
+    setupVignette();
+    setupDrag();
+    setupCalm();
+    setupRestart();
+  }
+  if (document.readyState !== 'loading') init();
+})();
+</script>
+</body>
+</html>
