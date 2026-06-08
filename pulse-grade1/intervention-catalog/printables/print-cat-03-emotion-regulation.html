@@ -1,0 +1,2802 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>פולס מערכת 10 · ויסות רגשי · דפים להדפסה A4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* ─────────────────────────────────────────────
+     טוקנים — פלטה: סגול עמוק + ירוק נחל + ורדרד רך + צהוב חם
+     ───────────────────────────────────────────── */
+  :root {
+    --purple-deep: #8B6BC0;
+    --purple-dark: #5E4A8A;
+    --purple-soft: #C9B8E0;
+    --purple-bg:   #F4EFFA;
+    --green-stream: #6BB39A;
+    --green-soft:  #B8DCC9;
+    --green-bg:    #EEF7F2;
+    --pink-soft:   #F4C4D4;
+    --pink-bg:     #FBEEF2;
+    --yellow-warm: #F2C94C;
+    --yellow-soft: #FAE8A8;
+    --yellow-bg:   #FDF6E0;
+    --ink:         #2A2238;
+    --ink-soft:    #5A4F70;
+    --paper:       #FFFCF8;
+    --line:        #E2D9EC;
+    --shadow:      0 2px 8px rgba(94, 74, 138, 0.10);
+    --shadow-lg:   0 6px 24px rgba(94, 74, 138, 0.14);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    font-family: 'Heebo', sans-serif;
+    background: #E8E2F0;
+    color: var(--ink);
+    line-height: 1.5;
+    direction: rtl;
+  }
+
+  /* ─────────────────────────────────────────────
+     סרגל ניווט עליון (לא מודפס)
+     ───────────────────────────────────────────── */
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: linear-gradient(135deg, var(--purple-deep), var(--purple-dark));
+    color: white;
+    padding: 14px 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .toolbar h1 {
+    font-size: 18px;
+    font-weight: 700;
+    flex: 1;
+    min-width: 200px;
+  }
+  .toolbar h1 .sub {
+    font-weight: 400;
+    opacity: 0.85;
+    font-size: 14px;
+    margin-inline-start: 8px;
+  }
+  .toolbar nav {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .toolbar nav a {
+    background: rgba(255,255,255,0.12);
+    color: white;
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background 0.15s;
+  }
+  .toolbar nav a:hover {
+    background: rgba(255,255,255,0.25);
+  }
+  .toolbar .print-btn {
+    background: var(--yellow-warm);
+    color: var(--ink);
+    border: none;
+    font-family: 'Heebo', sans-serif;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .toolbar .print-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  }
+
+  /* ─────────────────────────────────────────────
+     דפי A4
+     ───────────────────────────────────────────── */
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    background: var(--paper);
+    margin: 24px auto;
+    padding: 14mm 14mm 18mm;
+    box-shadow: var(--shadow-lg);
+    page-break-after: always;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .page-landscape {
+    width: 297mm;
+    min-height: 210mm;
+  }
+
+  /* כותרת דף */
+  .page-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    border-bottom: 2px solid var(--purple-soft);
+    padding-bottom: 10px;
+    margin-bottom: 14px;
+  }
+  .page-num {
+    background: var(--purple-deep);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .page-tag {
+    font-size: 11px;
+    color: var(--purple-deep);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .page-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--ink);
+    margin-inline-start: auto;
+  }
+
+  /* פוטר */
+  .footer {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+  .footer .brand {
+    color: var(--purple-deep);
+    font-weight: 700;
+  }
+
+  /* ─────────────────────────────────────────────
+     עמוד 1 — כרזת הפינה: 6 דברים שאפשר לעשות
+     ───────────────────────────────────────────── */
+  .poster-corner {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(170deg, var(--purple-bg) 0%, var(--green-bg) 100%);
+    border-radius: 16px;
+    padding: 16px 18px 20px;
+    border: 3px solid var(--purple-deep);
+  }
+  .poster-corner h2 {
+    text-align: center;
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--purple-dark);
+    margin-bottom: 4px;
+  }
+  .poster-corner .lead {
+    text-align: center;
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin-bottom: 16px;
+  }
+  .corner-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    flex: 1;
+  }
+  .corner-card {
+    background: white;
+    border-radius: 14px;
+    padding: 12px;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 2px solid transparent;
+    transition: border 0.15s;
+  }
+  .corner-card .ico {
+    width: 64px;
+    height: 64px;
+    background: var(--purple-bg);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .corner-card .ico svg { width: 48px; height: 48px; }
+  .corner-card .txt {
+    flex: 1;
+  }
+  .corner-card .num {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--purple-deep);
+    letter-spacing: 1px;
+  }
+  .corner-card .label {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-top: 2px;
+  }
+  .corner-card .hint {
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+  .corner-card:nth-child(1) .ico { background: var(--green-bg); }
+  .corner-card:nth-child(2) .ico { background: var(--yellow-bg); }
+  .corner-card:nth-child(3) .ico { background: var(--pink-bg); }
+  .corner-card:nth-child(4) .ico { background: var(--purple-bg); }
+  .corner-card:nth-child(5) .ico { background: var(--green-bg); }
+  .corner-card:nth-child(6) .ico { background: var(--yellow-bg); }
+
+  /* ─────────────────────────────────────────────
+     עמוד 2 — checklist מצאי הפינה
+     ───────────────────────────────────────────── */
+  .inventory-intro {
+    background: var(--purple-bg);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    border-inline-start: 4px solid var(--purple-deep);
+  }
+  .inventory-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 16px;
+    margin-bottom: 16px;
+  }
+  .inv-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+  }
+  .inv-check {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--purple-deep);
+    border-radius: 5px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .inv-text {
+    flex: 1;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+  .inv-text .name {
+    font-weight: 600;
+    color: var(--ink);
+    display: block;
+  }
+  .inv-text .why {
+    font-size: 11px;
+    color: var(--ink-soft);
+    display: block;
+    margin-top: 1px;
+  }
+  .vendors {
+    background: var(--green-bg);
+    border-radius: 12px;
+    padding: 12px 16px;
+    border-inline-start: 4px solid var(--green-stream);
+  }
+  .vendors h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--green-stream);
+    margin-bottom: 6px;
+  }
+  .vendors ul {
+    list-style: none;
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.7;
+  }
+  .vendors ul li::before {
+    content: '◦ ';
+    color: var(--green-stream);
+    font-weight: 700;
+  }
+
+  /* ─────────────────────────────────────────────
+     עמוד 3 — מתי אני זקוק.ה לפינה
+     ───────────────────────────────────────────── */
+  .body-signals {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    gap: 18px;
+    background: linear-gradient(160deg, var(--pink-bg), var(--purple-bg));
+    border-radius: 16px;
+    padding: 18px;
+    border: 2px solid var(--pink-soft);
+  }
+  .body-signals .body-art {
+    background: white;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    box-shadow: var(--shadow);
+  }
+  .body-signals .body-art svg {
+    width: 100%;
+    height: auto;
+    max-height: 420px;
+  }
+  .signals-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+  }
+  .signals-list h2 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--purple-dark);
+    margin-bottom: 4px;
+    line-height: 1.2;
+  }
+  .signals-list .sub {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  .signal-card {
+    background: white;
+    border-radius: 12px;
+    padding: 10px 12px;
+    box-shadow: var(--shadow);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    border-inline-start: 4px solid;
+  }
+  .signal-card:nth-child(3) { border-color: #E36B6B; }
+  .signal-card:nth-child(4) { border-color: var(--purple-deep); }
+  .signal-card:nth-child(5) { border-color: var(--yellow-warm); }
+  .signal-card:nth-child(6) { border-color: var(--green-stream); }
+  .signal-card .dot {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .signal-card .dot svg { width: 28px; height: 28px; }
+  .signal-card .signal-text .lab {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .signal-card .signal-text .desc {
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+
+  /* ─────────────────────────────────────────────
+     עמוד 4 — כרטיסי "אני בפינה" (8 בעמוד)
+     ───────────────────────────────────────────── */
+  .corner-tickets {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8mm;
+    flex: 1;
+    align-content: start;
+  }
+  .ticket {
+    border: 2px dashed var(--purple-soft);
+    border-radius: 12px;
+    padding: 10px 12px;
+    background: linear-gradient(135deg, var(--purple-bg) 0%, white 80%);
+    height: 56mm;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .ticket-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .ticket-head .logo {
+    width: 30px;
+    height: 30px;
+    background: var(--purple-deep);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ticket-head .logo svg { width: 22px; height: 22px; }
+  .ticket-head .title {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--purple-dark);
+  }
+  .ticket-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--ink);
+  }
+  .ticket-row .lab { font-weight: 600; min-width: 60px; }
+  .ticket-row .blank {
+    flex: 1;
+    border-bottom: 1.5px solid var(--purple-soft);
+    height: 18px;
+  }
+  .ticket-feel {
+    margin-top: auto;
+    display: flex;
+    gap: 5px;
+    justify-content: space-between;
+    padding-top: 6px;
+    border-top: 1px dashed var(--line);
+  }
+  .feel-opt {
+    text-align: center;
+    flex: 1;
+  }
+  .feel-opt .circle {
+    width: 22px;
+    height: 22px;
+    border: 1.5px solid var(--purple-soft);
+    border-radius: 50%;
+    margin: 0 auto 2px;
+  }
+  .feel-opt .ll {
+    font-size: 9px;
+    color: var(--ink-soft);
+  }
+
+  /* ─────────────────────────────────────────────
+     עמוד 5 — מד הרגשות 1→5 אנכי
+     ───────────────────────────────────────────── */
+  .mood-meter {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 18px;
+  }
+  .mood-scale {
+    background: linear-gradient(180deg, #6BB39A 0%, #F2C94C 50%, #E36B6B 100%);
+    border-radius: 18px;
+    padding: 14px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+  }
+  .mood-level {
+    background: rgba(255, 252, 248, 0.94);
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    box-shadow: var(--shadow);
+  }
+  .mood-level .num {
+    font-size: 38px;
+    font-weight: 900;
+    width: 50px;
+    text-align: center;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .mood-level .face {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+  }
+  .mood-level .lab {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+  .mood-level .lab .sub {
+    display: block;
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-weight: 400;
+    margin-top: 2px;
+  }
+  .mood-info h2 {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--purple-dark);
+    margin-bottom: 6px;
+  }
+  .mood-info > p {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+  .mood-tip {
+    background: var(--yellow-bg);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    border-inline-start: 4px solid var(--yellow-warm);
+  }
+  .mood-tip .ttl {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .mood-tip ul {
+    list-style: none;
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.7;
+  }
+  .mood-tip ul li::before {
+    content: '› ';
+    color: var(--yellow-warm);
+    font-weight: 900;
+  }
+
+  /* ─────────────────────────────────────────────
+     עמוד 6 — גיליון מעקב פר ילד.ה
+     ───────────────────────────────────────────── */
+  .track-name {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 16px;
+    align-items: baseline;
+  }
+  .track-name .field {
+    flex: 1;
+    border-bottom: 2px solid var(--purple-soft);
+    padding-bottom: 4px;
+  }
+  .track-name .field .lab {
+    font-size: 11px;
+    color: var(--purple-deep);
+    font-weight: 600;
+  }
+  .track-name .field .val {
+    height: 22px;
+  }
+  .track-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 2px solid var(--purple-deep);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .track-table th, .track-table td {
+    padding: 10px 6px;
+    text-align: center;
+    border-bottom: 1px solid var(--line);
+    border-inline-end: 1px solid var(--line);
+    font-size: 12px;
+  }
+  .track-table th:last-child, .track-table td:last-child { border-inline-end: none; }
+  .track-table tr:last-child td { border-bottom: none; }
+  .track-table thead th {
+    background: var(--purple-deep);
+    color: white;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .track-table .day-cell {
+    background: var(--purple-bg);
+    font-weight: 700;
+    color: var(--purple-dark);
+    width: 80px;
+  }
+  .track-table .num-cell {
+    height: 38px;
+  }
+  .track-table .num-circle {
+    display: inline-flex;
+    gap: 4px;
+  }
+  .track-table .num-circle span {
+    width: 20px;
+    height: 20px;
+    border: 1.5px solid var(--purple-soft);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--ink-soft);
+  }
+  .track-notes {
+    background: var(--green-bg);
+    border-radius: 12px;
+    padding: 12px 14px;
+    border-inline-start: 4px solid var(--green-stream);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .track-notes h3 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--green-stream);
+    margin-bottom: 8px;
+  }
+  .track-notes .lines {
+    flex: 1;
+    background-image: linear-gradient(to bottom, transparent 0, transparent 23px, var(--line) 23px, var(--line) 24px);
+    background-size: 100% 24px;
+    min-height: 110px;
+  }
+
+  /* ─────────────────────────────────────────────
+     עמוד 7 — קלפי "מה עוזר?" 12 כרטיסי A7
+     ───────────────────────────────────────────── */
+  .help-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6mm;
+    flex: 1;
+    align-content: start;
+  }
+  .help-card {
+    border: 2px dashed var(--purple-soft);
+    border-radius: 12px;
+    padding: 8px 8px 10px;
+    background: white;
+    height: 58mm;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    box-shadow: var(--shadow);
+    position: relative;
+  }
+  .help-card .corner-tag {
+    position: absolute;
+    top: 4px;
+    inset-inline-start: 6px;
+    font-size: 9px;
+    color: var(--purple-deep);
+    font-weight: 700;
+  }
+  .help-card .help-svg {
+    width: 56px;
+    height: 56px;
+    margin: 4px 0 6px;
+  }
+  .help-card .help-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--purple-dark);
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+  .help-card .help-sub {
+    font-size: 10px;
+    color: var(--ink-soft);
+    line-height: 1.35;
+  }
+  .help-card.h-pink  { background: linear-gradient(160deg, var(--pink-bg), white); border-color: var(--pink-soft); }
+  .help-card.h-green { background: linear-gradient(160deg, var(--green-bg), white); border-color: var(--green-soft); }
+  .help-card.h-yellow{ background: linear-gradient(160deg, var(--yellow-bg), white); border-color: var(--yellow-warm); }
+  .help-card.h-purple{ background: linear-gradient(160deg, var(--purple-bg), white); border-color: var(--purple-soft); }
+
+  /* ─────────────────────────────────────────────
+     עמודים 8a/8b/8c — 30 כרטיסי רגש (10 לדף)
+     ───────────────────────────────────────────── */
+  .feel-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6mm;
+    flex: 1;
+    align-content: start;
+  }
+  .feel-card {
+    border-radius: 12px;
+    padding: 8px 10px;
+    background: white;
+    border: 2px solid var(--purple-soft);
+    box-shadow: var(--shadow);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    height: 24mm;
+  }
+  .feel-card .face-wrap {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    background: var(--purple-bg);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .feel-card .face-wrap svg { width: 46px; height: 46px; }
+  .feel-card .feel-text { flex: 1; }
+  .feel-card .feel-name {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--ink);
+    line-height: 1.1;
+  }
+  .feel-card .feel-ex {
+    font-size: 10px;
+    color: var(--ink-soft);
+    margin-top: 3px;
+    line-height: 1.35;
+  }
+  .feel-card.tint-green  { border-color: var(--green-soft); }
+  .feel-card.tint-green  .face-wrap { background: var(--green-bg); }
+  .feel-card.tint-pink   { border-color: var(--pink-soft); }
+  .feel-card.tint-pink   .face-wrap { background: var(--pink-bg); }
+  .feel-card.tint-yellow { border-color: var(--yellow-warm); }
+  .feel-card.tint-yellow .face-wrap { background: var(--yellow-bg); }
+  .feel-card.tint-purple { border-color: var(--purple-soft); }
+  .feel-card.tint-purple .face-wrap { background: var(--purple-bg); }
+
+  /* ─────────────────────────────────────────────
+     עמוד 9 — לוח שבועי "השבוע אנחנו לומדים..."
+     ───────────────────────────────────────────── */
+  .week-board {
+    flex: 1;
+    background: linear-gradient(170deg, var(--yellow-bg), var(--pink-bg));
+    border-radius: 18px;
+    padding: 22px;
+    border: 3px solid var(--yellow-warm);
+    display: flex;
+    flex-direction: column;
+  }
+  .week-board h2 {
+    text-align: center;
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--purple-dark);
+    margin-bottom: 6px;
+  }
+  .week-board .lead {
+    text-align: center;
+    font-size: 15px;
+    color: var(--ink-soft);
+    margin-bottom: 24px;
+  }
+  .week-slots {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    flex: 1;
+  }
+  .week-slot {
+    background: white;
+    border-radius: 14px;
+    border: 3px dashed var(--purple-deep);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    text-align: center;
+    position: relative;
+    box-shadow: var(--shadow);
+  }
+  .week-slot .slot-num {
+    position: absolute;
+    top: 10px;
+    inset-inline-start: 12px;
+    background: var(--purple-deep);
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .week-slot .placeholder {
+    font-size: 14px;
+    color: var(--purple-soft);
+    font-weight: 600;
+  }
+  .week-slot .placeholder svg {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 10px;
+    opacity: 0.4;
+  }
+  .week-foot {
+    margin-top: 18px;
+    background: rgba(255,255,255,0.7);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+
+  /* ─────────────────────────────────────────────
+     עמוד 10 — דף "אני מרגיש.ה"
+     ───────────────────────────────────────────── */
+  .feeling-template {
+    flex: 1;
+    background: var(--purple-bg);
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    border: 2px solid var(--purple-soft);
+  }
+  .ft-header {
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .ft-header h2 {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--purple-dark);
+  }
+  .ft-header .meta {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+  .ft-name-row {
+    display: flex;
+    gap: 16px;
+    background: white;
+    padding: 10px 14px;
+    border-radius: 10px;
+  }
+  .ft-name-row .field {
+    flex: 1;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .ft-name-row .field .lab {
+    font-size: 12px;
+    color: var(--purple-deep);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .ft-name-row .field .blank {
+    flex: 1;
+    border-bottom: 1.5px solid var(--purple-soft);
+    height: 20px;
+  }
+  .ft-sentence {
+    background: white;
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 18px;
+    line-height: 2.4;
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .ft-sentence .blank {
+    display: inline-block;
+    min-width: 140px;
+    border-bottom: 2px solid var(--purple-deep);
+    height: 28px;
+    vertical-align: bottom;
+  }
+  .ft-sentence .blank-lg {
+    min-width: 280px;
+  }
+  .ft-draw {
+    flex: 1;
+    background: white;
+    border: 2.5px dashed var(--purple-soft);
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+  }
+  .ft-draw .lab {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--purple-deep);
+    margin-bottom: 8px;
+  }
+  .ft-draw .canvas {
+    flex: 1;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-position: -1px -1px;
+    border-radius: 8px;
+    min-height: 100px;
+    opacity: 0.4;
+  }
+  .ft-faces-strip {
+    background: white;
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    justify-content: space-around;
+    gap: 8px;
+  }
+  .ft-faces-strip .fs-item {
+    text-align: center;
+    flex: 1;
+  }
+  .ft-faces-strip .fs-item svg {
+    width: 36px;
+    height: 36px;
+  }
+  .ft-faces-strip .fs-item .ll {
+    font-size: 10px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+  .ft-faces-strip .fs-item .circle {
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid var(--purple-soft);
+    border-radius: 50%;
+    margin: 4px auto 0;
+  }
+
+  /* ─────────────────────────────────────────────
+     הדפסה
+     ───────────────────────────────────────────── */
+  @page {
+    size: A4;
+    margin: 1cm;
+  }
+  @page landscape {
+    size: A4 landscape;
+    margin: 1cm;
+  }
+
+  @media print {
+    body { background: white; }
+    .toolbar { display: none; }
+    .page {
+      margin: 0;
+      box-shadow: none;
+      page-break-after: always;
+      width: 100%;
+      min-height: auto;
+      padding: 0;
+    }
+    .page-landscape { page: landscape; }
+  }
+
+  /* Responsive scaling for screen view */
+  @media (max-width: 900px) {
+    .page {
+      width: 100%;
+      min-height: auto;
+      padding: 16px;
+    }
+    .page-landscape { width: 100%; }
+    .corner-grid, .inventory-grid, .help-cards { grid-template-columns: 1fr; }
+    .feel-cards { grid-template-columns: 1fr; }
+    .week-slots { grid-template-columns: 1fr; }
+    .body-signals, .mood-meter { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─────────────────────────────────────────────
+     סרגל ניווט עליון
+     ───────────────────────────────────────────── -->
+<header class="toolbar">
+  <h1>פולס מערכת 10 · ויסות רגשי <span class="sub">10 דפים להדפסה · A4</span></h1>
+  <nav>
+    <a href="#p1">1·כרזה</a>
+    <a href="#p2">2·מצאי</a>
+    <a href="#p3">3·סימני גוף</a>
+    <a href="#p4">4·כרטיסים</a>
+    <a href="#p5">5·מד</a>
+    <a href="#p6">6·מעקב</a>
+    <a href="#p7">7·עוזר?</a>
+    <a href="#p8a">8·רגשות</a>
+    <a href="#p9">9·לוח</a>
+    <a href="#p10">10·אני מרגיש.ה</a>
+  </nav>
+  <button class="print-btn" onclick="window.print()">הדפסת הדפים ↧</button>
+</header>
+
+<!-- ═════════════════════════════════════════════
+     עמוד 1 — כרזת הפינה
+     ═════════════════════════════════════════════ -->
+<section class="page" id="p1">
+  <div class="page-header">
+    <span class="page-num">1</span>
+    <span class="page-tag">מתכון 1 · כרזה</span>
+    <span class="page-title">פִּנַּת הָרְגִיעָה שֶׁלָּנוּ</span>
+  </div>
+
+  <div class="poster-corner">
+    <h2>שֵׁשׁ דְּרָכִים לְהֵרָגַע</h2>
+    <p class="lead">בּוֹחֲרִים מָה מַתְאִים עַכְשָׁו · אֶפְשָׁר לְהַחְלִיף · אֶפְשָׁר לְשַׁלֵּב</p>
+
+    <div class="corner-grid">
+
+      <!-- 1: לנשום עם הגלים -->
+      <div class="corner-card">
+        <div class="ico">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2 28 Q 8 22 14 28 T 26 28 T 38 28 T 46 28" stroke="#6BB39A" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <path d="M2 34 Q 8 28 14 34 T 26 34 T 38 34 T 46 34" stroke="#6BB39A" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.7"/>
+            <path d="M2 40 Q 8 35 14 40 T 26 40 T 38 40 T 46 40" stroke="#6BB39A" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.45"/>
+            <circle cx="24" cy="14" r="6" fill="#B8DCC9" opacity="0.6"/>
+            <circle cx="24" cy="14" r="3" fill="#6BB39A"/>
+          </svg>
+        </div>
+        <div class="txt">
+          <div class="num">01</div>
+          <div class="label">לִנְשֹׁם עִם הַגַּלִּים</div>
+          <div class="hint">פְּנִימָה דֶּרֶךְ הָאַף, הַחוּצָה דֶּרֶךְ הַפֶּה</div>
+        </div>
+      </div>
+
+      <!-- 2: לקרוא -->
+      <div class="corner-card">
+        <div class="ico">
+          <svg viewBox="0 0 48 48" fill="none">
+            <path d="M6 12 L22 14 L22 38 L6 36 Z" fill="#F2C94C" stroke="#5E4A8A" stroke-width="2"/>
+            <path d="M42 12 L26 14 L26 38 L42 36 Z" fill="#FAE8A8" stroke="#5E4A8A" stroke-width="2"/>
+            <path d="M24 14 L24 38" stroke="#5E4A8A" stroke-width="2"/>
+            <line x1="10" y1="20" x2="18" y2="20.7" stroke="#5E4A8A" stroke-width="1"/>
+            <line x1="10" y1="24" x2="18" y2="24.7" stroke="#5E4A8A" stroke-width="1"/>
+            <line x1="10" y1="28" x2="16" y2="28.5" stroke="#5E4A8A" stroke-width="1"/>
+            <line x1="30" y1="20.7" x2="38" y2="20" stroke="#5E4A8A" stroke-width="1"/>
+            <line x1="30" y1="24.7" x2="38" y2="24" stroke="#5E4A8A" stroke-width="1"/>
+            <line x1="30" y1="28.5" x2="36" y2="28" stroke="#5E4A8A" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="txt">
+          <div class="num">02</div>
+          <div class="label">לִקְרֹא סֵפֶר</div>
+          <div class="hint">סֵפֶר תְּמוּנוֹת רָגוּעַ שֶׁמַּרְגִּיעַ אֶת הָרֹאשׁ</div>
+        </div>
+      </div>
+
+      <!-- 3: לצייר -->
+      <div class="corner-card">
+        <div class="ico">
+          <svg viewBox="0 0 48 48" fill="none">
+            <circle cx="24" cy="24" r="18" fill="#F4C4D4" opacity="0.5"/>
+            <path d="M10 36 L20 14 L26 30 L32 18 L38 36" stroke="#E36B6B" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="38" cy="14" r="4" fill="#F2C94C" stroke="#5E4A8A" stroke-width="1.5"/>
+            <rect x="35" y="11" width="2" height="4" fill="#5E4A8A" transform="rotate(45 36 13)"/>
+          </svg>
+        </div>
+        <div class="txt">
+          <div class="num">03</div>
+          <div class="label">לְצַיֵּר</div>
+          <div class="hint">מְצַיְּרִים אֶת מָה שֶׁמַּרְגִּישִׁים עַכְשָׁו</div>
+        </div>
+      </div>
+
+      <!-- 4: לחבק כרית -->
+      <div class="corner-card">
+        <div class="ico">
+          <svg viewBox="0 0 48 48" fill="none">
+            <rect x="8" y="14" width="32" height="22" rx="6" fill="#C9B8E0" stroke="#5E4A8A" stroke-width="2"/>
+            <rect x="11" y="17" width="26" height="16" rx="4" fill="#F4EFFA" stroke="#5E4A8A" stroke-width="1" opacity="0.5"/>
+            <path d="M16 24 Q 20 20 24 24 Q 28 28 32 24" stroke="#8B6BC0" stroke-width="2" fill="none"/>
+            <circle cx="20" cy="22" r="1.2" fill="#5E4A8A"/>
+            <circle cx="28" cy="22" r="1.2" fill="#5E4A8A"/>
+          </svg>
+        </div>
+        <div class="txt">
+          <div class="num">04</div>
+          <div class="label">לְחַבֵּק כָּרִית</div>
+          <div class="hint">חִבּוּק חָזָק מַרְגִּיעַ אֶת הַגּוּף</div>
+        </div>
+      </div>
+
+      <!-- 5: לשתות מים -->
+      <div class="corner-card">
+        <div class="ico">
+          <svg viewBox="0 0 48 48" fill="none">
+            <path d="M16 10 L32 10 L30 38 Q 30 42 24 42 Q 18 42 18 38 Z" fill="#B8DCC9" stroke="#5E4A8A" stroke-width="2"/>
+            <path d="M19 22 L29 22 L28.2 36 Q 28.2 38 24 38 Q 19.8 38 19.8 36 Z" fill="#6BB39A" opacity="0.6"/>
+            <circle cx="22" cy="28" r="1.5" fill="white" opacity="0.7"/>
+            <circle cx="26" cy="32" r="1" fill="white" opacity="0.7"/>
+            <path d="M22 6 Q 24 4 26 6" stroke="#5E4A8A" stroke-width="2" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="txt">
+          <div class="num">05</div>
+          <div class="label">לִשְׁתּוֹת מַיִם</div>
+          <div class="hint">לְגִימָה קְטַנָּה — מַרְגִּיעָה וּמְרַעֲנֶנֶת</div>
+        </div>
+      </div>
+
+      <!-- 6: פשוט להיות -->
+      <div class="corner-card">
+        <div class="ico">
+          <svg viewBox="0 0 48 48" fill="none">
+            <circle cx="24" cy="24" r="20" fill="#FAE8A8" opacity="0.5"/>
+            <circle cx="24" cy="24" r="14" fill="none" stroke="#F2C94C" stroke-width="2" stroke-dasharray="2 4"/>
+            <circle cx="24" cy="24" r="8" fill="#F2C94C" opacity="0.6"/>
+            <circle cx="24" cy="24" r="3" fill="#5E4A8A"/>
+            <circle cx="24" cy="24" r="1" fill="white"/>
+          </svg>
+        </div>
+        <div class="txt">
+          <div class="num">06</div>
+          <div class="label">פָּשׁוּט לִהְיוֹת</div>
+          <div class="hint">לְהַבִּיט סָבִיב, לְהַרְגִּישׁ אֶת הַנְּשִׁימָה</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>1 / 10</span>
+    <span class="brand">פּוּלְס מַעֲרֶכֶת 10 · קָטֵגוֹרְיָה 3 · וִיסּוּת רִגְשִׁי</span>
+  </div>
+</section>
+
+<!-- ═════════════════════════════════════════════
+     עמוד 2 — checklist מצאי פינת הרגיעה
+     ═════════════════════════════════════════════ -->
+<section class="page" id="p2">
+  <div class="page-header">
+    <span class="page-num">2</span>
+    <span class="page-tag">מתכון 1 · למורה</span>
+    <span class="page-title">רשימת מצאי לפינת הרגיעה</span>
+  </div>
+
+  <div class="inventory-intro">
+    סמנו ✓ ליד פריטים שכבר יש בכיתה. הפינה לא חייבת להיות "מושלמת" — מספיק 6–7 פריטים מהרשימה כדי להתחיל. עדכון תקופתי (אחת לחודש) שומר על עניין.
+  </div>
+
+  <div class="inventory-grid">
+
+    <div class="inv-item">
+      <div class="inv-check"></div>
+      <div class="inv-text">
+        <span class="name">1. בקבוק נצנצים (Calm Jar)</span>
+        <span class="why">ויזואלי, מרגיע לצפייה בעת התרגעות</span>
+      </div>
+    </div>
+
+    <div class="inv-item">
+      <div class="inv-check"></div>
+      <div class="inv-text">
+        <span class="name">2. כריות עיסוי / כדורי לחיצה</span>
+        <span class="why">משחרר מתח בידיים, מסייע לריכוז</span>
+      </div>
+    </div>
+
+    <div class="inv-item">
+      <div class="inv-check"></div>
+      <div class="inv-text">
+        <span class="name">3. שעון חולות (3 דקות)</span>
+        <span class="why">מסגרת זמן ברורה לשהייה בפינה</span>
+      </div>
+    </div>
+
+    <div class="inv-item">
+      <div class="inv-check"></div>
+      <div class="inv-text">
+        <span class="name">4. ספרי תמונות שקטים</span>
+        <span class="why">2–3 ספרים ללא טקסט / סיפורים רגועים</span>
+      </div>
+    </div>
+
+    <div class="inv-item">
+      <div class="inv-check"></div>
+      <div class="inv-text">
+        <span class="name">5. כרטיסי רגשות מצוירים</span>
+        <span class="why">לזיהוי "מה אני מרגיש.ה עכשיו"</span>
+      </div>
+    </div>
+
+    <div class="inv-item">
+      <div class="inv-check"></div>
+      <div class="inv-text">
+        <span class="name">6. אוזניות עם מוזיקה רגועה</span>
+        <span class="why">מבודד מרעש כיתה, פלייליסט מוכן</span>
+      </div>
+    </div>
+
+    <div class="inv-item">
+      <div class="inv-check"></div>
+      <div class="inv-text">
+        <span class="name">7. שטיח קטן או כרית גדולה</span>
+        <span class="why">מגדיר מרחב פיזי נעים ומזמין</span>
+      </div>
+    </div>
+
+    <div class="inv-item">
+      <div class="inv-check"></div>
+      <div class="inv-text">
+        <span class="name">8. בקבוק מים אישי / כוס</span>
+        <span class="why">שתייה כפעולה מרגיעה</span>
+      </div>
+    </div>
+
+    <div class="inv-item">
+      <div class="inv-check"></div>
+      <div class="inv-text">
+        <span class="name">9. דפי ציור + עפרונות צבעוניים</span>
+        <span class="why">ביטוי חופשי בעת מצוקה</span>
+      </div>
+    </div>
+
+    <div class="inv-item">
+      <div class="inv-check"></div>
+      <div class="inv-text">
+        <span class="name">10. כרטיסי "מה עוזר?" (מתכון 2)</span>
+        <span class="why">12 אסטרטגיות לוויסות עצמי</span>
+      </div>
+    </div>
+
+    <div class="inv-item">
+      <div class="inv-check"></div>
+      <div class="inv-text">
+        <span class="name">11. מד רגשות מודפס (1–5)</span>
+        <span class="why">תלוי על הקיר בפינה לדיווח עצמי</span>
+      </div>
+    </div>
+
+    <div class="inv-item">
+      <div class="inv-check"></div>
+      <div class="inv-text">
+        <span class="name">12. כרטיסי "אני בפינה" + עיפרון</span>
+        <span class="why">לתיעוד שעת כניסה / יציאה</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="vendors">
+    <h3>ספקים מומלצים · רכישה במחירים נגישים</h3>
+    <ul>
+      <li><strong>בקבוקי נצנצים DIY:</strong> בקבוק שתייה ריק + מים חמים + דבק נצנצים שקוף + נצנצים — עלות כ-8 ש"ח לבקבוק</li>
+      <li><strong>כריות עיסוי / כדורי לחיצה:</strong> AliExpress · KSP · רב-בריח · "צעצועי SEN" (סנסורי) — 5-15 ש"ח לכדור</li>
+      <li><strong>שעון חולות:</strong> KSP · אופיס דיפו · עזרי הוראה — כ-12 ש"ח לשעון</li>
+      <li><strong>ספרי תמונות שקטים:</strong> רב מכר · "Wordless Picture Books" — מומלץ: "גולם", "החלום של מירי" (לאה גולדברג)</li>
+      <li><strong>כרטיסי רגשות:</strong> אפשר להדפיס מהדפים בקטלוג הזה (מתכון 3 · כרטיסים 8a-8c)</li>
+      <li><strong>תקציב כולל מומלץ:</strong> 150–250 ש"ח לפינה מלאה בכיתה אחת</li>
+    </ul>
+  </div>
+
+  <div class="footer">
+    <span>2 / 10</span>
+    <span class="brand">פולס מערכת 10 · קטגוריה 3 · ויסות רגשי</span>
+  </div>
+</section>
+
+<!-- ═════════════════════════════════════════════
+     עמוד 3 — מתי אני זקוק.ה לפינה (סימני גוף)
+     ═════════════════════════════════════════════ -->
+<section class="page" id="p3">
+  <div class="page-header">
+    <span class="page-num">3</span>
+    <span class="page-tag">מתכון 1 · כרזה</span>
+    <span class="page-title">מָתַי אֲנִי זָקוּק.ה לַפִּנָּה?</span>
+  </div>
+
+  <div class="body-signals">
+
+    <div class="body-art">
+      <!-- ילד.ה עם 4 סימנים על הגוף -->
+      <svg viewBox="0 0 200 380" xmlns="http://www.w3.org/2000/svg">
+        <!-- ראש -->
+        <circle cx="100" cy="60" r="38" fill="#FAE8A8" stroke="#5E4A8A" stroke-width="2.5"/>
+        <!-- שיער -->
+        <path d="M62 55 Q 70 22 100 22 Q 130 22 138 55 Q 134 35 100 32 Q 66 35 62 55" fill="#8B6BC0" stroke="#5E4A8A" stroke-width="2"/>
+        <!-- עיניים -->
+        <circle cx="86" cy="60" r="3" fill="#2A2238"/>
+        <circle cx="114" cy="60" r="3" fill="#2A2238"/>
+        <!-- פה -->
+        <path d="M88 78 Q 100 84 112 78" stroke="#5E4A8A" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- צוואר -->
+        <rect x="92" y="96" width="16" height="14" fill="#FAE8A8" stroke="#5E4A8A" stroke-width="2"/>
+        <!-- חולצה / גוף -->
+        <path d="M62 130 Q 62 116 80 112 L 120 112 Q 138 116 138 130 L 138 230 L 62 230 Z" fill="#C9B8E0" stroke="#5E4A8A" stroke-width="2.5"/>
+        <!-- כתפיים מתוחות (highlight) -->
+        <path d="M58 122 L78 116" stroke="#E36B6B" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M122 116 L142 122" stroke="#E36B6B" stroke-width="3.5" stroke-linecap="round"/>
+        <!-- ידיים -->
+        <path d="M62 130 L 40 200 L 50 210 L 70 145" fill="#FAE8A8" stroke="#5E4A8A" stroke-width="2"/>
+        <path d="M138 130 L 160 200 L 150 210 L 130 145" fill="#FAE8A8" stroke="#5E4A8A" stroke-width="2"/>
+        <!-- רגליים -->
+        <path d="M76 230 L 70 340 L 86 340 L 96 230" fill="#6BB39A" stroke="#5E4A8A" stroke-width="2"/>
+        <path d="M124 230 L 130 340 L 114 340 L 104 230" fill="#6BB39A" stroke="#5E4A8A" stroke-width="2"/>
+        <!-- נעליים -->
+        <ellipse cx="78" cy="345" rx="14" ry="6" fill="#5E4A8A"/>
+        <ellipse cx="122" cy="345" rx="14" ry="6" fill="#5E4A8A"/>
+
+        <!-- 1: לב מהיר (חזה) -->
+        <circle cx="100" cy="155" r="13" fill="#E36B6B" opacity="0.35"/>
+        <path d="M100 152 C 96 148 90 150 90 154 C 90 159 100 165 100 165 C 100 165 110 159 110 154 C 110 150 104 148 100 152 Z" fill="#E36B6B" stroke="#5E4A8A" stroke-width="1.5"/>
+        <text x="118" y="158" font-family="Heebo" font-size="11" font-weight="700" fill="#5E4A8A">לֵב מָהִיר</text>
+
+        <!-- 2: ראש חם -->
+        <circle cx="60" cy="50" r="10" fill="#F2C94C" opacity="0.5"/>
+        <path d="M55 48 Q 58 42 60 48 Q 62 42 65 48 Q 67 45 65 53" stroke="#E36B6B" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <text x="6" y="46" font-family="Heebo" font-size="11" font-weight="700" fill="#5E4A8A">רֹאשׁ חַם</text>
+
+        <!-- 3: כתפיים מתוחות -->
+        <text x="148" y="116" font-family="Heebo" font-size="11" font-weight="700" fill="#5E4A8A">כְּתֵפַיִם</text>
+        <text x="148" y="128" font-family="Heebo" font-size="11" font-weight="700" fill="#5E4A8A">מְתוּחוֹת</text>
+
+        <!-- 4: בטן הופכת -->
+        <circle cx="100" cy="200" r="14" fill="#6BB39A" opacity="0.3"/>
+        <path d="M90 200 Q 95 195 100 200 T 110 200" stroke="#5E4A8A" stroke-width="2" fill="none"/>
+        <path d="M90 205 Q 95 210 100 205 T 110 205" stroke="#5E4A8A" stroke-width="2" fill="none"/>
+        <text x="6" y="200" font-family="Heebo" font-size="11" font-weight="700" fill="#5E4A8A">בֶּטֶן</text>
+        <text x="6" y="212" font-family="Heebo" font-size="11" font-weight="700" fill="#5E4A8A">הוֹפֶכֶת</text>
+      </svg>
+    </div>
+
+    <div class="signals-list">
+      <h2>אַרְבָּעָה סִימָנִים<br>שֶׁהַגּוּף שֶׁלִּי שׁוֹלֵחַ</h2>
+      <p class="sub">כְּשֶׁאֲנִי מַרְגִּישׁ.ה אֶחָד מֵהֶם — זֶה זְמַן טוֹב לִקְחַת הַפְסָקָה</p>
+
+      <div class="signal-card">
+        <div class="dot" style="background:#FBEEF2">
+          <svg viewBox="0 0 28 28" fill="none">
+            <path d="M14 8 C 11 5 7 7 7 11 C 7 16 14 22 14 22 C 14 22 21 16 21 11 C 21 7 17 5 14 8" fill="#E36B6B" stroke="#5E4A8A" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div class="signal-text">
+          <div class="lab">לֵב מָהִיר</div>
+          <div class="desc">דּוֹפֵק כְּמוֹ אַחֲרֵי רִיצָה</div>
+        </div>
+      </div>
+
+      <div class="signal-card">
+        <div class="dot" style="background:#F4EFFA">
+          <svg viewBox="0 0 28 28" fill="none">
+            <path d="M4 16 L8 12 L14 16 L20 12 L24 16" stroke="#8B6BC0" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <circle cx="14" cy="8" r="3" fill="#C9B8E0" stroke="#5E4A8A" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div class="signal-text">
+          <div class="lab">כְּתֵפַיִם מְתוּחוֹת</div>
+          <div class="desc">קְשׁוּחוֹת, מוּרָמוֹת לַמַּעְלָה</div>
+        </div>
+      </div>
+
+      <div class="signal-card">
+        <div class="dot" style="background:#FDF6E0">
+          <svg viewBox="0 0 28 28" fill="none">
+            <circle cx="14" cy="15" r="8" fill="#F2C94C" stroke="#5E4A8A" stroke-width="1.5"/>
+            <path d="M11 6 Q 12 3 13 6" stroke="#E36B6B" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+            <path d="M14 5 Q 15 2 16 5" stroke="#E36B6B" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+            <path d="M17 6 Q 18 3 19 6" stroke="#E36B6B" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="signal-text">
+          <div class="lab">רֹאשׁ חַם</div>
+          <div class="desc">פָּנִים אֲדֻמּוֹת, אָזְנַיִם בּוֹעֲרוֹת</div>
+        </div>
+      </div>
+
+      <div class="signal-card">
+        <div class="dot" style="background:#EEF7F2">
+          <svg viewBox="0 0 28 28" fill="none">
+            <ellipse cx="14" cy="15" rx="9" ry="7" fill="#B8DCC9" stroke="#5E4A8A" stroke-width="1.5"/>
+            <path d="M7 14 Q 10 11 13 14 T 19 14 T 22 14" stroke="#6BB39A" stroke-width="1.8" fill="none"/>
+            <path d="M7 18 Q 10 21 13 18 T 19 18 T 22 18" stroke="#6BB39A" stroke-width="1.8" fill="none"/>
+          </svg>
+        </div>
+        <div class="signal-text">
+          <div class="lab">בֶּטֶן הוֹפֶכֶת</div>
+          <div class="desc">תְּחוּשַׁת פַּרְפָּרִים אוֹ קְפִיצוֹת</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>3 / 10</span>
+    <span class="brand">פולס מערכת 10 · קטגוריה 3 · ויסות רגשי</span>
+  </div>
+</section>
+
+<!-- ═════════════════════════════════════════════
+     עמוד 4 — 8 כרטיסי "אני בפינה"
+     ═════════════════════════════════════════════ -->
+<section class="page" id="p4">
+  <div class="page-header">
+    <span class="page-num">4</span>
+    <span class="page-tag">מתכון 1 · כרטיסים</span>
+    <span class="page-title">כַּרְטִיסֵי "אֲנִי בַּפִּנָּה"</span>
+  </div>
+
+  <div class="corner-tickets">
+    <!-- כרטיס × 8 -->
+    <!-- 1 -->
+    <div class="ticket">
+      <div class="ticket-head">
+        <div class="logo">
+          <svg viewBox="0 0 22 22" fill="none">
+            <path d="M2 12 Q 5 9 8 12 T 14 12 T 20 12" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M2 16 Q 5 14 8 16 T 14 16 T 20 16" stroke="white" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.7"/>
+          </svg>
+        </div>
+        <div class="title">אֲנִי בַּפִּנָּה</div>
+      </div>
+      <div class="ticket-row"><span class="lab">הַשֵּׁם:</span><span class="blank"></span></div>
+      <div class="ticket-row"><span class="lab">נִכְנַסְתִּי:</span><span class="blank"></span></div>
+      <div class="ticket-row"><span class="lab">יָצָאתִי:</span><span class="blank"></span></div>
+      <div class="ticket-feel">
+        <div class="feel-opt"><div class="circle"></div><div class="ll">רגוע.ה</div></div>
+        <div class="feel-opt"><div class="circle"></div><div class="ll">בסדר</div></div>
+        <div class="feel-opt"><div class="circle"></div><div class="ll">לא רגוע.ה</div></div>
+      </div>
+    </div>
+    <!-- 2 -->
+    <div class="ticket">
+      <div class="ticket-head">
+        <div class="logo">
+          <svg viewBox="0 0 22 22" fill="none">
+            <path d="M2 12 Q 5 9 8 12 T 14 12 T 20 12" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M2 16 Q 5 14 8 16 T 14 16 T 20 16" stroke="white" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.7"/>
+          </svg>
+        </div>
+        <div class="title">אֲנִי בַּפִּנָּה</div>
+      </div>
+      <div class="ticket-row"><span class="lab">הַשֵּׁם:</span><span class="blank"></span></div>
+      <div class="ticket-row"><span class="lab">נִכְנַסְתִּי:</span><span class="blank"></span></div>
+      <div class="ticket-row"><span class="lab">יָצָאתִי:</span><span class="blank"></span></div>
+      <div class="ticket-feel">
+        <div class="feel-opt"><div class="circle"></div><div class="ll">רגוע.ה</div></div>
+        <div class="feel-opt"><div class="circle"></div><div class="ll">בסדר</div></div>
+        <div class="feel-opt"><div class="circle"></div><div class="ll">לא רגוע.ה</div></div>
+      </div>
+    </div>
+    <!-- 3 -->
+    <div class="ticket">
+      <div class="ticket-head">
+        <div class="logo">
+          <svg viewBox="0 0 22 22" fill="none">
+            <path d="M2 12 Q 5 9 8 12 T 14 12 T 20 12" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M2 16 Q 5 14 8 16 T 14 16 T 20 16" stroke="white" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.7"/>
+          </svg>
+        </div>
+        <div class="title">אֲנִי בַּפִּנָּה</div>
+      </div>
+      <div class="ticket-row"><span class="lab">הַשֵּׁם:</span><span class="blank"></span></div>
+      <div class="ticket-row"><span class="lab">נִכְנַסְתִּי:</span><span class="blank"></span></div>
+      <div class="ticket-row"><span class="lab">יָצָאתִי:</span><span class="blank"></span></div>
+      <div class="ticket-feel">
+        <div class="feel-opt"><div class="circle"></div><div class="ll">רגוע.ה</div></div>
+        <div class="feel-opt"><div class="circle"></div><div class="ll">בסדר</div></div>
+        <div class="feel-opt"><div class="circle"></div><div class="ll">לא רגוע.ה</div></div>
+      </div>
+    </div>
+    <!-- 4 -->
+    <div class="ticket">
+      <div class="ticket-head">
+        <div class="logo">
+          <svg viewBox="0 0 22 22" fill="none">
+            <path d="M2 12 Q 5 9 8 12 T 14 12 T 20 12" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M2 16 Q 5 14 8 16 T 14 16 T 20 16" stroke="white" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.7"/>
+          </svg>
+        </div>
+        <div class="title">אֲנִי בַּפִּנָּה</div>
+      </div>
+      <div class="ticket-row"><span class="lab">הַשֵּׁם:</span><span class="blank"></span></div>
+      <div class="ticket-row"><span class="lab">נִכְנַסְתִּי:</span><span class="blank"></span></div>
+      <div class="ticket-row"><span class="lab">יָצָאתִי:</span><span class="blank"></span></div>
+      <div class="ticket-feel">
+        <div class="feel-opt"><div class="circle"></div><div class="ll">רגוע.ה</div></div>
+        <div class="feel-opt"><div class="circle"></div><div class="ll">בסדר</div></div>
+        <div class="feel-opt"><div class="circle"></div><div class="ll">לא רגוע.ה</div></div>
+      </div>
+    </div>
+    <!-- 5 -->
+    <div class="ticket">
+      <div class="ticket-head">
+        <div class="logo">
+          <svg viewBox="0 0 22 22" fill="none">
+            <path d="M2 12 Q 5 9 8 12 T 14 12 T 20 12" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M2 16 Q 5 14 8 16 T 14 16 T 20 16" stroke="white" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.7"/>
+          </svg>
+        </div>
+        <div class="title">אֲנִי בַּפִּנָּה</div>
+      </div>
+      <div class="ticket-row"><span class="lab">הַשֵּׁם:</span><span class="blank"></span></div>
+      <div class="ticket-row"><span class="lab">נִכְנַסְתִּי:</span><span class="blank"></span></div>
+      <div class="ticket-row"><span class="lab">יָצָאתִי:</span><span class="blank"></span></div>
+      <div class="ticket-feel">
+        <div class="feel-opt"><div class="circle"></div><div class="ll">רגוע.ה</div></div>
+        <div class="feel-opt"><div class="circle"></div><div class="ll">בסדר</div></div>
+        <div class="feel-opt"><div class="circle"></div><div class="ll">לא רגוע.ה</div></div>
+      </div>
+    </div>
+    <!-- 6 -->
+    <div class="ticket">
+      <div class="ticket-head">
+        <div class="logo">
+          <svg viewBox="0 0 22 22" fill="none">
+            <path d="M2 12 Q 5 9 8 12 T 14 12 T 20 12" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M2 16 Q 5 14 8 16 T 14 16 T 20 16" stroke="white" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.7"/>
+          </svg>
+        </div>
+        <div class="title">אֲנִי בַּפִּנָּה</div>
+      </div>
+      <div class="ticket-row"><span class="lab">הַשֵּׁם:</span><span class="blank"></span></div>
+      <div class="ticket-row"><span class="lab">נִכְנַסְתִּי:</span><span class="blank"></span></div>
+      <div class="ticket-row"><span class="lab">יָצָאתִי:</span><span class="blank"></span></div>
+      <div class="ticket-feel">
+        <div class="feel-opt"><div class="circle"></div><div class="ll">רגוע.ה</div></div>
+        <div class="feel-opt"><div class="circle"></div><div class="ll">בסדר</div></div>
+        <div class="feel-opt"><div class="circle"></div><div class="ll">לא רגוע.ה</div></div>
+      </div>
+    </div>
+    <!-- 7 -->
+    <div class="ticket">
+      <div class="ticket-head">
+        <div class="logo">
+          <svg viewBox="0 0 22 22" fill="none">
+            <path d="M2 12 Q 5 9 8 12 T 14 12 T 20 12" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M2 16 Q 5 14 8 16 T 14 16 T 20 16" stroke="white" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.7"/>
+          </svg>
+        </div>
+        <div class="title">אֲנִי בַּפִּנָּה</div>
+      </div>
+      <div class="ticket-row"><span class="lab">הַשֵּׁם:</span><span class="blank"></span></div>
+      <div class="ticket-row"><span class="lab">נִכְנַסְתִּי:</span><span class="blank"></span></div>
+      <div class="ticket-row"><span class="lab">יָצָאתִי:</span><span class="blank"></span></div>
+      <div class="ticket-feel">
+        <div class="feel-opt"><div class="circle"></div><div class="ll">רגוע.ה</div></div>
+        <div class="feel-opt"><div class="circle"></div><div class="ll">בסדר</div></div>
+        <div class="feel-opt"><div class="circle"></div><div class="ll">לא רגוע.ה</div></div>
+      </div>
+    </div>
+    <!-- 8 -->
+    <div class="ticket">
+      <div class="ticket-head">
+        <div class="logo">
+          <svg viewBox="0 0 22 22" fill="none">
+            <path d="M2 12 Q 5 9 8 12 T 14 12 T 20 12" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M2 16 Q 5 14 8 16 T 14 16 T 20 16" stroke="white" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.7"/>
+          </svg>
+        </div>
+        <div class="title">אֲנִי בַּפִּנָּה</div>
+      </div>
+      <div class="ticket-row"><span class="lab">הַשֵּׁם:</span><span class="blank"></span></div>
+      <div class="ticket-row"><span class="lab">נִכְנַסְתִּי:</span><span class="blank"></span></div>
+      <div class="ticket-row"><span class="lab">יָצָאתִי:</span><span class="blank"></span></div>
+      <div class="ticket-feel">
+        <div class="feel-opt"><div class="circle"></div><div class="ll">רגוע.ה</div></div>
+        <div class="feel-opt"><div class="circle"></div><div class="ll">בסדר</div></div>
+        <div class="feel-opt"><div class="circle"></div><div class="ll">לא רגוע.ה</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>4 / 10</span>
+    <span class="brand">פולס מערכת 10 · קטגוריה 3 · ויסות רגשי</span>
+  </div>
+</section>
+
+<!-- ═════════════════════════════════════════════
+     עמוד 5 — מד רגשות 1→5 אנכי
+     ═════════════════════════════════════════════ -->
+<section class="page" id="p5">
+  <div class="page-header">
+    <span class="page-num">5</span>
+    <span class="page-tag">מתכון 2 · כרזה</span>
+    <span class="page-title">מַד הָרְגָשׁוֹת שֶׁלִּי · 1–5</span>
+  </div>
+
+  <div class="mood-meter">
+
+    <div class="mood-scale">
+      <!-- 1 — רגוע.ה מאוד -->
+      <div class="mood-level">
+        <div class="num">1</div>
+        <svg class="face" viewBox="0 0 56 56" fill="none">
+          <circle cx="28" cy="28" r="24" fill="#B8DCC9" stroke="#5E4A8A" stroke-width="2"/>
+          <ellipse cx="20" cy="26" rx="2" ry="3" fill="#2A2238"/>
+          <ellipse cx="36" cy="26" rx="2" ry="3" fill="#2A2238"/>
+          <path d="M18 36 Q 28 44 38 36" stroke="#2A2238" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M14 22 Q 18 19 22 22" stroke="#5E4A8A" stroke-width="1.8" fill="none"/>
+          <path d="M34 22 Q 38 19 42 22" stroke="#5E4A8A" stroke-width="1.8" fill="none"/>
+        </svg>
+        <div class="lab">רָגוּעַ.ה מְאוֹד <span class="sub">נושם.ת לאט, גוף רך</span></div>
+      </div>
+
+      <!-- 2 — בסדר גמור -->
+      <div class="mood-level">
+        <div class="num">2</div>
+        <svg class="face" viewBox="0 0 56 56" fill="none">
+          <circle cx="28" cy="28" r="24" fill="#D7E9CE" stroke="#5E4A8A" stroke-width="2"/>
+          <circle cx="20" cy="26" r="2.4" fill="#2A2238"/>
+          <circle cx="36" cy="26" r="2.4" fill="#2A2238"/>
+          <path d="M20 36 Q 28 41 36 36" stroke="#2A2238" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        </svg>
+        <div class="lab">בְּסֵדֶר גָּמוּר <span class="sub">מחויך.ת, מוכן.ה ללמוד</span></div>
+      </div>
+
+      <!-- 3 — קצת מוטרד.ת -->
+      <div class="mood-level">
+        <div class="num">3</div>
+        <svg class="face" viewBox="0 0 56 56" fill="none">
+          <circle cx="28" cy="28" r="24" fill="#FAE8A8" stroke="#5E4A8A" stroke-width="2"/>
+          <circle cx="20" cy="26" r="2.4" fill="#2A2238"/>
+          <circle cx="36" cy="26" r="2.4" fill="#2A2238"/>
+          <line x1="20" y1="38" x2="36" y2="38" stroke="#2A2238" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <div class="lab">קְצָת מֻטְרָד.ת <span class="sub">משהו על הלב, צריך הקשבה</span></div>
+      </div>
+
+      <!-- 4 — לחוץ.ה / כועס.ת -->
+      <div class="mood-level">
+        <div class="num">4</div>
+        <svg class="face" viewBox="0 0 56 56" fill="none">
+          <circle cx="28" cy="28" r="24" fill="#F8B589" stroke="#5E4A8A" stroke-width="2"/>
+          <path d="M14 22 L24 26" stroke="#2A2238" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M42 22 L32 26" stroke="#2A2238" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="20" cy="27" r="2.2" fill="#2A2238"/>
+          <circle cx="36" cy="27" r="2.2" fill="#2A2238"/>
+          <path d="M20 40 Q 28 34 36 40" stroke="#2A2238" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        </svg>
+        <div class="lab">לָחוּץ.ה / כּוֹעֵס.ת <span class="sub">צריך.ה הפסקה בפינת הרגיעה</span></div>
+      </div>
+
+      <!-- 5 — זועם.ת / נסער.ת -->
+      <div class="mood-level">
+        <div class="num">5</div>
+        <svg class="face" viewBox="0 0 56 56" fill="none">
+          <circle cx="28" cy="28" r="24" fill="#E89090" stroke="#5E4A8A" stroke-width="2"/>
+          <path d="M14 22 L24 26" stroke="#5E2020" stroke-width="3" stroke-linecap="round"/>
+          <path d="M42 22 L32 26" stroke="#5E2020" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="20" cy="28" r="2.5" fill="#2A2238"/>
+          <circle cx="36" cy="28" r="2.5" fill="#2A2238"/>
+          <path d="M18 42 Q 22 36 26 40 Q 30 36 34 40 Q 36 38 38 42" stroke="#2A2238" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <!-- קווי כעס -->
+          <path d="M8 14 L12 18" stroke="#5E2020" stroke-width="2" stroke-linecap="round"/>
+          <path d="M48 14 L44 18" stroke="#5E2020" stroke-width="2" stroke-linecap="round"/>
+          <path d="M28 4 L28 9" stroke="#5E2020" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <div class="lab">זוֹעֵם.ת / נִסְעָר.ת <span class="sub">קשה לעצור, צריך.ה עזרה ממבוגר</span></div>
+      </div>
+    </div>
+
+    <div class="mood-info">
+      <h2>אֵיךְ אֲנִי מַרְגִּישׁ.ה עַכְשָׁו?</h2>
+      <p>בּוֹחֲרִים אֶת הַמִּסְפָּר שֶׁמַּתְאִים לְמָה שֶׁמַּרְגִּישִׁים. אֵין תְּשׁוּבָה נְכוֹנָה — כָּל רֶגֶשׁ בְּסֵדֶר.</p>
+
+      <div class="mood-tip">
+        <div class="ttl">למורה — איך משתמשים?</div>
+        <ul>
+          <li>תליה בקיר הכיתה ובפינת הרגיעה</li>
+          <li>סקירה קצרה פעמיים ביום (בוקר + סוף יום)</li>
+          <li>ילד.ה ב-4 או 5 → הצעה לפינה / שיחה</li>
+          <li>שפה משותפת לכל הכיתה ("אני ב-2 היום")</li>
+        </ul>
+      </div>
+
+      <div class="mood-tip" style="background:var(--pink-bg); border-color:var(--pink-soft);">
+        <div class="ttl">למה זה עובד? — מבט רחב</div>
+        <ul>
+          <li><strong>חינוך:</strong> ילדים שמזהים רגש מווסתים מהר יותר</li>
+          <li><strong>ניהול:</strong> "Pulse check" בצוותים — אותו עיקרון</li>
+          <li><strong>יזמות:</strong> מד עצמי = מנהיגות עצמית</li>
+          <li><strong>שיווק:</strong> שפת רגשות = חיבור ללקוח</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <span>5 / 10</span>
+    <span class="brand">פולס מערכת 10 · קטגוריה 3 · ויסות רגשי</span>
+  </div>
+</section>
+
+<!-- ═════════════════════════════════════════════
+     עמוד 6 — גיליון מעקב פר ילד.ה
+     ═════════════════════════════════════════════ -->
+<section class="page" id="p6">
+  <div class="page-header">
+    <span class="page-num">6</span>
+    <span class="page-tag">מתכון 2 · גיליון מעקב</span>
+    <span class="page-title">הָרְגָשׁוֹת שֶׁלִּי הַשָּׁבוּעַ</span>
+  </div>
+
+  <div class="track-name">
+    <div class="field">
+      <div class="lab">שֵׁם הַיֶּלֶד.ה</div>
+      <div class="val"></div>
+    </div>
+    <div class="field">
+      <div class="lab">כִּתָּה</div>
+      <div class="val"></div>
+    </div>
+    <div class="field">
+      <div class="lab">שָׁבוּעַ שֶׁל</div>
+      <div class="val"></div>
+    </div>
+  </div>
+
+  <table class="track-table">
+    <thead>
+      <tr>
+        <th>יוֹם</th>
+        <th>בֹּקֶר · בִּכְנִיסָה</th>
+        <th>סוֹף יוֹם · בִּיצִיאָה</th>
+        <th>הֶעָרָה</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="day-cell">יוֹם א'</td>
+        <td class="num-cell"><div class="num-circle"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div></td>
+        <td class="num-cell"><div class="num-circle"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td class="day-cell">יוֹם ב'</td>
+        <td class="num-cell"><div class="num-circle"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div></td>
+        <td class="num-cell"><div class="num-circle"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td class="day-cell">יוֹם ג'</td>
+        <td class="num-cell"><div class="num-circle"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div></td>
+        <td class="num-cell"><div class="num-circle"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td class="day-cell">יוֹם ד'</td>
+        <td class="num-cell"><div class="num-circle"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div></td>
+        <td class="num-cell"><div class="num-circle"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td class="day-cell">יוֹם ה'</td>
+        <td class="num-cell"><div class="num-circle"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div></td>
+        <td class="num-cell"><div class="num-circle"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td class="day-cell">יוֹם ו'</td>
+        <td class="num-cell"><div class="num-circle"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div></td>
+        <td class="num-cell"><div class="num-circle"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="track-notes">
+    <h3>סיכום שבועי · מה שמתי לב?</h3>
+    <div class="lines"></div>
+  </div>
+
+  <div class="footer">
+    <span>6 / 10</span>
+    <span class="brand">פולס מערכת 10 · קטגוריה 3 · ויסות רגשי</span>
+  </div>
+</section>
+
+<!-- ═════════════════════════════════════════════
+     עמוד 7 — קלפי "מה עוזר?" 12 כרטיסים
+     ═════════════════════════════════════════════ -->
+<section class="page" id="p7">
+  <div class="page-header">
+    <span class="page-num">7</span>
+    <span class="page-tag">מתכון 2 · כרטיסים</span>
+    <span class="page-title">מָה עוֹזֵר לִי? · 12 דְּרָכִים</span>
+  </div>
+
+  <div class="help-cards">
+
+    <!-- 1: לנשום -->
+    <div class="help-card h-green">
+      <div class="corner-tag">01</div>
+      <svg class="help-svg" viewBox="0 0 56 56" fill="none">
+        <circle cx="28" cy="28" r="22" fill="#B8DCC9" opacity="0.5"/>
+        <path d="M8 30 Q 14 24 20 30 T 32 30 T 44 30 T 50 30" stroke="#6BB39A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <circle cx="28" cy="18" r="4" fill="#6BB39A"/>
+        <circle cx="28" cy="18" r="2" fill="white"/>
+      </svg>
+      <div class="help-title">לִנְשֹׁם עָמֹק</div>
+      <div class="help-sub">פְּנִימָה 4 · הַחֲזָקָה 2 · הַחוּצָה 6</div>
+    </div>
+
+    <!-- 2: ללכת לפינה -->
+    <div class="help-card h-purple">
+      <div class="corner-tag">02</div>
+      <svg class="help-svg" viewBox="0 0 56 56" fill="none">
+        <rect x="8" y="14" width="40" height="34" rx="4" fill="#C9B8E0" stroke="#5E4A8A" stroke-width="2"/>
+        <rect x="14" y="20" width="12" height="22" fill="#8B6BC0" opacity="0.6"/>
+        <rect x="30" y="20" width="12" height="22" fill="#F4EFFA" stroke="#5E4A8A" stroke-width="1"/>
+        <circle cx="36" cy="32" r="1.5" fill="#5E4A8A"/>
+        <path d="M8 14 L28 4 L48 14" stroke="#5E4A8A" stroke-width="2" fill="none"/>
+      </svg>
+      <div class="help-title">לָלֶכֶת לַפִּנָּה</div>
+      <div class="help-sub">3 דַּקּוֹת רְגִיעָה לְבַד</div>
+    </div>
+
+    <!-- 3: לבקש חיבוק -->
+    <div class="help-card h-pink">
+      <div class="corner-tag">03</div>
+      <svg class="help-svg" viewBox="0 0 56 56" fill="none">
+        <circle cx="20" cy="20" r="8" fill="#FAE8A8" stroke="#5E4A8A" stroke-width="1.5"/>
+        <circle cx="36" cy="20" r="8" fill="#F8B589" stroke="#5E4A8A" stroke-width="1.5"/>
+        <path d="M12 30 Q 14 40 28 40 Q 42 40 44 30" stroke="#5E4A8A" stroke-width="2" fill="#F4C4D4"/>
+        <path d="M20 24 L24 28 M36 24 L32 28" stroke="#5E4A8A" stroke-width="1.5"/>
+        <path d="M22 46 Q 28 50 34 46" stroke="#E36B6B" stroke-width="2" fill="none"/>
+      </svg>
+      <div class="help-title">לְבַקֵּשׁ חִבּוּק</div>
+      <div class="help-sub">מֵחָבֵר.ה אוֹ מֵהַמּוֹרָה</div>
+    </div>
+
+    <!-- 4: לכתוב -->
+    <div class="help-card h-yellow">
+      <div class="corner-tag">04</div>
+      <svg class="help-svg" viewBox="0 0 56 56" fill="none">
+        <rect x="10" y="8" width="32" height="40" rx="3" fill="white" stroke="#5E4A8A" stroke-width="2"/>
+        <line x1="16" y1="18" x2="36" y2="18" stroke="#F2C94C" stroke-width="1.5"/>
+        <line x1="16" y1="24" x2="36" y2="24" stroke="#F2C94C" stroke-width="1.5"/>
+        <line x1="16" y1="30" x2="32" y2="30" stroke="#F2C94C" stroke-width="1.5"/>
+        <line x1="16" y1="36" x2="36" y2="36" stroke="#F2C94C" stroke-width="1.5"/>
+        <path d="M40 6 L48 14 L34 28 L26 30 L28 22 Z" fill="#F2C94C" stroke="#5E4A8A" stroke-width="1.5"/>
+      </svg>
+      <div class="help-title">לִכְתֹּב</div>
+      <div class="help-sub">מָה שֶׁעוֹבֵר עָלַי כָּעֵת</div>
+    </div>
+
+    <!-- 5: לצייר -->
+    <div class="help-card h-pink">
+      <div class="corner-tag">05</div>
+      <svg class="help-svg" viewBox="0 0 56 56" fill="none">
+        <rect x="8" y="14" width="40" height="32" rx="3" fill="white" stroke="#5E4A8A" stroke-width="2"/>
+        <path d="M14 34 L22 22 L28 32 L36 18 L42 34" stroke="#E36B6B" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <circle cx="40" cy="14" r="3" fill="#F2C94C" stroke="#5E4A8A" stroke-width="1"/>
+        <path d="M28 14 L36 6" stroke="#5E4A8A" stroke-width="2.5"/>
+        <rect x="34" y="4" width="4" height="8" transform="rotate(45 36 8)" fill="#F4C4D4" stroke="#5E4A8A" stroke-width="1"/>
+      </svg>
+      <div class="help-title">לְצַיֵּר</div>
+      <div class="help-sub">לְצִיּוּר חוֹפְשִׁי, בְּלִי כְּלָלִים</div>
+    </div>
+
+    <!-- 6: לדבר עם מורה -->
+    <div class="help-card h-purple">
+      <div class="corner-tag">06</div>
+      <svg class="help-svg" viewBox="0 0 56 56" fill="none">
+        <circle cx="18" cy="20" r="8" fill="#FAE8A8" stroke="#5E4A8A" stroke-width="1.5"/>
+        <path d="M10 36 Q 10 28 18 28 Q 26 28 26 36 L 26 44 L 10 44 Z" fill="#C9B8E0" stroke="#5E4A8A" stroke-width="1.5"/>
+        <rect x="34" y="10" width="20" height="14" rx="3" fill="white" stroke="#5E4A8A" stroke-width="1.5"/>
+        <path d="M34 22 L36 26 L38 22" stroke="#5E4A8A" stroke-width="1.5" fill="white"/>
+        <circle cx="40" cy="17" r="1.2" fill="#5E4A8A"/>
+        <circle cx="44" cy="17" r="1.2" fill="#5E4A8A"/>
+        <circle cx="48" cy="17" r="1.2" fill="#5E4A8A"/>
+      </svg>
+      <div class="help-title">לְדַבֵּר עִם מוֹרָה</div>
+      <div class="help-sub">לְסַפֵּר מָה קָרָה וְאֵיךְ אֲנִי</div>
+    </div>
+
+    <!-- 7: לשתות מים -->
+    <div class="help-card h-green">
+      <div class="corner-tag">07</div>
+      <svg class="help-svg" viewBox="0 0 56 56" fill="none">
+        <path d="M18 14 L38 14 L36 46 Q 36 50 28 50 Q 20 50 20 46 Z" fill="#B8DCC9" stroke="#5E4A8A" stroke-width="2"/>
+        <path d="M22 26 L34 26 L33 44 Q 33 46 28 46 Q 23 46 23 44 Z" fill="#6BB39A" opacity="0.7"/>
+        <circle cx="26" cy="32" r="1.5" fill="white" opacity="0.8"/>
+        <circle cx="30" cy="38" r="1" fill="white" opacity="0.8"/>
+        <path d="M26 8 Q 28 5 30 8" stroke="#5E4A8A" stroke-width="2" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div class="help-title">לִשְׁתּוֹת מַיִם</div>
+      <div class="help-sub">לְגִימָה אִטִּית, עֲצִירָה</div>
+    </div>
+
+    <!-- 8: ללחוץ כדור -->
+    <div class="help-card h-yellow">
+      <div class="corner-tag">08</div>
+      <svg class="help-svg" viewBox="0 0 56 56" fill="none">
+        <circle cx="28" cy="32" r="14" fill="#F2C94C" stroke="#5E4A8A" stroke-width="2"/>
+        <circle cx="22" cy="28" r="2.5" fill="#5E4A8A" opacity="0.4"/>
+        <circle cx="32" cy="26" r="1.8" fill="#5E4A8A" opacity="0.4"/>
+        <circle cx="30" cy="36" r="2" fill="#5E4A8A" opacity="0.4"/>
+        <circle cx="22" cy="36" r="1.5" fill="#5E4A8A" opacity="0.4"/>
+        <path d="M12 20 Q 8 14 14 12" stroke="#5E4A8A" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M44 20 Q 48 14 42 12" stroke="#5E4A8A" stroke-width="2" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div class="help-title">לִלְחֹץ כַּדּוּר</div>
+      <div class="help-sub">כַּדּוּר לְחִיצָה / כָּרִית קְטַנָּה</div>
+    </div>
+
+    <!-- 9: לספור עד 10 -->
+    <div class="help-card h-purple">
+      <div class="corner-tag">09</div>
+      <svg class="help-svg" viewBox="0 0 56 56" fill="none">
+        <circle cx="28" cy="28" r="22" fill="#F4EFFA" stroke="#5E4A8A" stroke-width="2"/>
+        <text x="28" y="36" text-anchor="middle" font-family="Heebo" font-size="20" font-weight="800" fill="#5E4A8A">10</text>
+        <path d="M28 8 L 28 12" stroke="#8B6BC0" stroke-width="2" stroke-linecap="round"/>
+        <path d="M44 22 L 48 22" stroke="#8B6BC0" stroke-width="2" stroke-linecap="round"/>
+        <path d="M44 34 L 48 34" stroke="#8B6BC0" stroke-width="2" stroke-linecap="round"/>
+        <path d="M28 44 L 28 48" stroke="#8B6BC0" stroke-width="2" stroke-linecap="round"/>
+        <path d="M12 34 L 8 34" stroke="#8B6BC0" stroke-width="2" stroke-linecap="round"/>
+        <path d="M12 22 L 8 22" stroke="#8B6BC0" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <div class="help-title">לִסְפֹּר עַד 10</div>
+      <div class="help-sub">בַּקּוֹל אוֹ בָּרֹאשׁ, לְאַט</div>
+    </div>
+
+    <!-- 10: להקשיב למוזיקה -->
+    <div class="help-card h-pink">
+      <div class="corner-tag">10</div>
+      <svg class="help-svg" viewBox="0 0 56 56" fill="none">
+        <path d="M22 12 L22 36 Q 22 42 16 42 Q 10 42 10 36 Q 10 30 16 30 Q 19 30 22 32" fill="#E36B6B" stroke="#5E4A8A" stroke-width="2"/>
+        <path d="M22 12 L40 8 L40 32 Q 40 38 34 38 Q 28 38 28 32 Q 28 26 34 26 Q 37 26 40 28" fill="#E36B6B" stroke="#5E4A8A" stroke-width="2"/>
+        <circle cx="46" cy="14" r="2" fill="#F4C4D4"/>
+        <circle cx="50" cy="20" r="1.5" fill="#F4C4D4"/>
+      </svg>
+      <div class="help-title">לְהַקְשִׁיב לְמוּזִיקָה</div>
+      <div class="help-sub">פְּלֵייְלִיסְט רָגוּעַ בַּפִּנָּה</div>
+    </div>
+
+    <!-- 11: לצאת לאוויר -->
+    <div class="help-card h-green">
+      <div class="corner-tag">11</div>
+      <svg class="help-svg" viewBox="0 0 56 56" fill="none">
+        <circle cx="40" cy="14" r="6" fill="#F2C94C" stroke="#5E4A8A" stroke-width="1.5"/>
+        <path d="M40 4 L40 7 M40 21 L40 24 M30 14 L33 14 M47 14 L50 14 M32 6 L34 8 M46 8 L48 6" stroke="#F2C94C" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M8 44 Q 14 30 22 36 Q 30 26 38 34 Q 44 30 50 44 Z" fill="#6BB39A" stroke="#5E4A8A" stroke-width="2"/>
+        <path d="M22 36 L22 44 M30 30 L30 44 M38 34 L38 44" stroke="#5E4A8A" stroke-width="1" opacity="0.5"/>
+      </svg>
+      <div class="help-title">לָצֵאת לַאֲוִיר</div>
+      <div class="help-sub">2 דַּקּוֹת בְּחָצֵר, נְשִׁימָה</div>
+    </div>
+
+    <!-- 12: לבחור פעילות אהובה -->
+    <div class="help-card h-yellow">
+      <div class="corner-tag">12</div>
+      <svg class="help-svg" viewBox="0 0 56 56" fill="none">
+        <path d="M28 10 L33 22 L46 22 L36 30 L40 42 L28 35 L16 42 L20 30 L10 22 L23 22 Z" fill="#F2C94C" stroke="#5E4A8A" stroke-width="2"/>
+        <circle cx="28" cy="26" r="3" fill="#FAE8A8"/>
+      </svg>
+      <div class="help-title">לִבְחֹר פְּעִילוּת</div>
+      <div class="help-sub">אֲהוּבָה — מָה תָּמִיד עוֹזֵר לִי?</div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <span>7 / 10</span>
+    <span class="brand">פולס מערכת 10 · קטגוריה 3 · ויסות רגשי</span>
+  </div>
+</section>
+
+<!-- ═════════════════════════════════════════════
+     עמוד 8a — כרטיסי רגש 1-10
+     ═════════════════════════════════════════════ -->
+<section class="page" id="p8a">
+  <div class="page-header">
+    <span class="page-num">8a</span>
+    <span class="page-tag">מתכון 3 · כרטיסים 1–10</span>
+    <span class="page-title">שֵׁמוֹת לָרְגָשׁוֹת</span>
+  </div>
+
+  <div class="feel-cards">
+
+    <!-- שמח -->
+    <div class="feel-card tint-yellow">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#F2C94C" stroke="#5E4A8A" stroke-width="2"/>
+          <circle cx="16" cy="20" r="2" fill="#2A2238"/>
+          <circle cx="30" cy="20" r="2" fill="#2A2238"/>
+          <path d="M14 28 Q 23 36 32 28" stroke="#2A2238" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">שָׂמֵחַ.ה</div>
+        <div class="feel-ex">קִבַּלְתִּי מַתָּנָה וְהָרְגַּשְׁתִּי קַל בַּלֵּב.</div>
+      </div>
+    </div>
+
+    <!-- עצוב -->
+    <div class="feel-card tint-purple">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#C9B8E0" stroke="#5E4A8A" stroke-width="2"/>
+          <circle cx="16" cy="20" r="2" fill="#2A2238"/>
+          <circle cx="30" cy="20" r="2" fill="#2A2238"/>
+          <path d="M14 32 Q 23 26 32 32" stroke="#2A2238" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          <path d="M14 24 L18 24" stroke="#5E4A8A" stroke-width="1.5"/>
+          <ellipse cx="18" cy="26" rx="1.5" ry="3" fill="#6BB39A" opacity="0.7"/>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">עָצוּב.ה</div>
+        <div class="feel-ex">חָבֵר עָבַר דִּירָה וְהִתְגַּעְגַּעְתִּי.</div>
+      </div>
+    </div>
+
+    <!-- כועס -->
+    <div class="feel-card tint-pink">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#E89090" stroke="#5E4A8A" stroke-width="2"/>
+          <path d="M10 16 L20 20" stroke="#5E2020" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M36 16 L26 20" stroke="#5E2020" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="16" cy="22" r="2" fill="#2A2238"/>
+          <circle cx="30" cy="22" r="2" fill="#2A2238"/>
+          <path d="M14 32 Q 23 28 32 32" stroke="#2A2238" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">כּוֹעֵס.ת</div>
+        <div class="feel-ex">מִישֶׁהוּ שָׁבַר לִי אֶת הַצַּעֲצוּעַ בְּלִי כַּוָּנָה.</div>
+      </div>
+    </div>
+
+    <!-- מפחד -->
+    <div class="feel-card tint-purple">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#D4DEE5" stroke="#5E4A8A" stroke-width="2"/>
+          <circle cx="16" cy="20" r="3" fill="white" stroke="#2A2238" stroke-width="1"/>
+          <circle cx="30" cy="20" r="3" fill="white" stroke="#2A2238" stroke-width="1"/>
+          <circle cx="16" cy="20" r="1.5" fill="#2A2238"/>
+          <circle cx="30" cy="20" r="1.5" fill="#2A2238"/>
+          <ellipse cx="23" cy="32" rx="3" ry="4" fill="#2A2238"/>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">מְפַחֵד.ת</div>
+        <div class="feel-ex">שָׁמַעְתִּי רַעַם חָזָק בַּלַּיְלָה.</div>
+      </div>
+    </div>
+
+    <!-- נרגש -->
+    <div class="feel-card tint-yellow">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#FAE8A8" stroke="#5E4A8A" stroke-width="2"/>
+          <path d="M12 16 L18 20 L12 24" stroke="#2A2238" stroke-width="2" fill="#FAE8A8"/>
+          <path d="M34 16 L28 20 L34 24" stroke="#2A2238" stroke-width="2" fill="#FAE8A8"/>
+          <path d="M14 28 Q 23 38 32 28" stroke="#2A2238" stroke-width="2.2" fill="#E36B6B"/>
+          <path d="M5 8 L8 10 M41 8 L38 10 M2 22 L5 22 M44 22 L41 22" stroke="#F2C94C" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">נִרְגָּשׁ.ת</div>
+        <div class="feel-ex">מָחָר הַטִּיּוּל וְאֵינֶנִּי יָכוֹל.ה לִישֹׁן.</div>
+      </div>
+    </div>
+
+    <!-- מתבייש -->
+    <div class="feel-card tint-pink">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#F4C4D4" stroke="#5E4A8A" stroke-width="2"/>
+          <path d="M10 20 Q 14 22 18 20" stroke="#2A2238" stroke-width="1.8" fill="none"/>
+          <path d="M28 20 Q 32 22 36 20" stroke="#2A2238" stroke-width="1.8" fill="none"/>
+          <ellipse cx="14" cy="26" rx="3" ry="2" fill="#E36B6B" opacity="0.5"/>
+          <ellipse cx="32" cy="26" rx="3" ry="2" fill="#E36B6B" opacity="0.5"/>
+          <path d="M18 30 Q 23 28 28 30" stroke="#2A2238" stroke-width="1.8" fill="none"/>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">מִתְבַּיֵּשׁ.ת</div>
+        <div class="feel-ex">טָעִיתִי לִפְנֵי כָּל הַכִּתָּה וְהִתְאַדַּמְתִּי.</div>
+      </div>
+    </div>
+
+    <!-- גאה -->
+    <div class="feel-card tint-yellow">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#F2C94C" stroke="#5E4A8A" stroke-width="2"/>
+          <path d="M12 18 L18 20 M28 20 L34 18" stroke="#2A2238" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="15" cy="22" r="1.5" fill="#2A2238"/>
+          <circle cx="31" cy="22" r="1.5" fill="#2A2238"/>
+          <path d="M14 28 Q 23 34 32 28" stroke="#2A2238" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          <path d="M14 8 L18 12 L23 6 L28 12 L32 8" fill="#F2C94C" stroke="#5E4A8A" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">גֵּאֶה.ה</div>
+        <div class="feel-ex">סוֹף סוֹף הִצְלַחְתִּי לִקְשֹׁר שְׂרוֹכִים לְבַד.</div>
+      </div>
+    </div>
+
+    <!-- מקנא -->
+    <div class="feel-card tint-green">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#B8DCC9" stroke="#5E4A8A" stroke-width="2"/>
+          <path d="M10 18 L20 20" stroke="#2A2238" stroke-width="2" stroke-linecap="round"/>
+          <path d="M36 18 L26 20" stroke="#2A2238" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="16" cy="22" r="1.8" fill="#2A2238"/>
+          <circle cx="30" cy="22" r="1.8" fill="#2A2238"/>
+          <path d="M16 32 Q 23 32 30 32" stroke="#2A2238" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">מְקַנֵּא.ת</div>
+        <div class="feel-ex">לְחָבֵר.ה יֵשׁ צַעֲצוּעַ חָדָשׁ וְלִי אֵין.</div>
+      </div>
+    </div>
+
+    <!-- מתגעגע -->
+    <div class="feel-card tint-purple">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#C9B8E0" stroke="#5E4A8A" stroke-width="2"/>
+          <circle cx="16" cy="22" r="2" fill="#2A2238"/>
+          <circle cx="30" cy="22" r="2" fill="#2A2238"/>
+          <path d="M18 32 Q 23 30 28 32" stroke="#2A2238" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M22 8 C 20 6 16 7 16 11 C 16 14 22 18 22 18 C 22 18 28 14 28 11 C 28 7 24 6 22 8" fill="#E36B6B" stroke="#5E4A8A" stroke-width="1" opacity="0.5"/>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">מִתְגַּעְגֵּעַ.ת</div>
+        <div class="feel-ex">סָבָתָא לֹא בָּאָה הַשַּׁבָּת וְזֶה מַחְסִיר.</div>
+      </div>
+    </div>
+
+    <!-- סקרן -->
+    <div class="feel-card tint-green">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#B8DCC9" stroke="#5E4A8A" stroke-width="2"/>
+          <circle cx="16" cy="20" r="2.5" fill="#2A2238"/>
+          <circle cx="30" cy="20" r="2.5" fill="#2A2238"/>
+          <circle cx="17" cy="19" r="0.8" fill="white"/>
+          <circle cx="31" cy="19" r="0.8" fill="white"/>
+          <ellipse cx="23" cy="32" rx="3" ry="1.5" fill="#2A2238"/>
+          <text x="36" y="18" font-family="Heebo" font-size="14" font-weight="800" fill="#5E4A8A">?</text>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">סַקְרָן.ית</div>
+        <div class="feel-ex">רָאִיתִי חַיָּה מוּזָרָה בַּפַּרְק.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <span>8 / 10 · עמוד א</span>
+    <span class="brand">פולס מערכת 10 · קטגוריה 3 · ויסות רגשי</span>
+  </div>
+</section>
+
+<!-- ═════════════════════════════════════════════
+     עמוד 8b — כרטיסי רגש 11-20
+     ═════════════════════════════════════════════ -->
+<section class="page" id="p8b">
+  <div class="page-header">
+    <span class="page-num">8b</span>
+    <span class="page-tag">מתכון 3 · כרטיסים 11–20</span>
+    <span class="page-title">שֵׁמוֹת לָרְגָשׁוֹת</span>
+  </div>
+
+  <div class="feel-cards">
+
+    <!-- משועמם -->
+    <div class="feel-card tint-purple">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#D4DEE5" stroke="#5E4A8A" stroke-width="2"/>
+          <ellipse cx="16" cy="22" rx="3" ry="1" fill="#2A2238"/>
+          <ellipse cx="30" cy="22" rx="3" ry="1" fill="#2A2238"/>
+          <line x1="14" y1="32" x2="32" y2="32" stroke="#2A2238" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">מְשֻׁעֲמָם.מֶת</div>
+        <div class="feel-ex">אֲנִי מְחַכֶּה.ה וְהַזְּמַן לֹא זָז.</div>
+      </div>
+    </div>
+
+    <!-- מתוסכל -->
+    <div class="feel-card tint-pink">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#F4C4D4" stroke="#5E4A8A" stroke-width="2"/>
+          <path d="M10 18 L20 22" stroke="#2A2238" stroke-width="2" stroke-linecap="round"/>
+          <path d="M36 18 L26 22" stroke="#2A2238" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="16" cy="22" r="2" fill="#2A2238"/>
+          <circle cx="30" cy="22" r="2" fill="#2A2238"/>
+          <path d="M16 32 Q 19 34 22 32 Q 25 30 28 32 Q 31 34 32 32" stroke="#2A2238" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">מְתֻסְכָּל.ת</div>
+        <div class="feel-ex">נִסִּיתִי שׁוּב וְשׁוּב וְלֹא הִצְלַחְתִּי.</div>
+      </div>
+    </div>
+
+    <!-- בטוח -->
+    <div class="feel-card tint-green">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#6BB39A" stroke="#5E4A8A" stroke-width="2"/>
+          <circle cx="16" cy="20" r="2" fill="#2A2238"/>
+          <circle cx="30" cy="20" r="2" fill="#2A2238"/>
+          <path d="M14 28 Q 23 34 32 28" stroke="#2A2238" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          <path d="M23 5 L28 11 L23 9 L18 11 Z" fill="#F2C94C" stroke="#5E4A8A" stroke-width="1"/>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">בָּטוּחַ.ה</div>
+        <div class="feel-ex">אַבָּא לְיָדִי וַאֲנִי יוֹדֵעַ.ת שֶׁהַכֹּל יִהְיֶה טוֹב.</div>
+      </div>
+    </div>
+
+    <!-- עייף -->
+    <div class="feel-card tint-purple">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#C9B8E0" stroke="#5E4A8A" stroke-width="2"/>
+          <path d="M11 20 Q 16 18 21 20" stroke="#2A2238" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M25 20 Q 30 18 35 20" stroke="#2A2238" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <ellipse cx="23" cy="32" rx="4" ry="2" fill="#2A2238"/>
+          <text x="36" y="14" font-family="Heebo" font-size="9" font-weight="800" fill="#5E4A8A">ZZ</text>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">עָיֵף.ה</div>
+        <div class="feel-ex">הָיָה יוֹם אָרֹךְ וְאֵין לִי כּוֹחַ לְכְלוּם.</div>
+      </div>
+    </div>
+
+    <!-- נינוח -->
+    <div class="feel-card tint-green">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#B8DCC9" stroke="#5E4A8A" stroke-width="2"/>
+          <path d="M12 22 Q 16 19 20 22" stroke="#2A2238" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M26 22 Q 30 19 34 22" stroke="#2A2238" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M16 30 Q 23 34 30 30" stroke="#2A2238" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">נִינוֹחַ.ה</div>
+        <div class="feel-ex">שָׁכַבְתִּי עַל הַסַּפָּה עִם סֵפֶר טוֹב.</div>
+      </div>
+    </div>
+
+    <!-- מבולבל -->
+    <div class="feel-card tint-yellow">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#FAE8A8" stroke="#5E4A8A" stroke-width="2"/>
+          <line x1="12" y1="20" x2="20" y2="20" stroke="#2A2238" stroke-width="2"/>
+          <line x1="26" y1="20" x2="34" y2="20" stroke="#2A2238" stroke-width="2"/>
+          <path d="M14 32 Q 18 28 22 32 Q 26 28 30 32 Q 32 30 34 32" stroke="#2A2238" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M8 8 Q 12 4 12 10 Q 12 14 10 12" stroke="#5E4A8A" stroke-width="1.5" fill="none"/>
+          <text x="36" y="14" font-family="Heebo" font-size="12" font-weight="800" fill="#5E4A8A">?</text>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">מְבֻלְבָּל.ת</div>
+        <div class="feel-ex">לֹא הֵבַנְתִּי מָה צָרִיךְ לַעֲשׂוֹת.</div>
+      </div>
+    </div>
+
+    <!-- שלם -->
+    <div class="feel-card tint-green">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#6BB39A" opacity="0.7" stroke="#5E4A8A" stroke-width="2"/>
+          <circle cx="16" cy="20" r="2" fill="#2A2238"/>
+          <circle cx="30" cy="20" r="2" fill="#2A2238"/>
+          <path d="M14 28 Q 23 36 32 28" stroke="#2A2238" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          <path d="M23 8 L25 14 L31 14 L26 17 L28 23 L23 19 L18 23 L20 17 L15 14 L21 14 Z" fill="#F2C94C" stroke="#5E4A8A" stroke-width="1" opacity="0.7"/>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">שָׁלֵם.ה</div>
+        <div class="feel-ex">הִשְׁלַמְתִּי עִם חָבֵר.ה אַחֲרֵי רִיב.</div>
+      </div>
+    </div>
+
+    <!-- אבוד -->
+    <div class="feel-card tint-purple">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#D4DEE5" stroke="#5E4A8A" stroke-width="2"/>
+          <circle cx="16" cy="22" r="1.8" fill="#2A2238"/>
+          <circle cx="30" cy="22" r="1.8" fill="#2A2238"/>
+          <path d="M16 32 L18 30 L20 32 L22 30 L24 32 L26 30 L28 32 L30 30" stroke="#2A2238" stroke-width="1.8" fill="none"/>
+          <path d="M8 14 Q 14 8 18 14" stroke="#5E4A8A" stroke-width="1.5" fill="none" opacity="0.4"/>
+          <path d="M28 14 Q 34 8 38 14" stroke="#5E4A8A" stroke-width="1.5" fill="none" opacity="0.4"/>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">אָבוּד.ה</div>
+        <div class="feel-ex">לֹא יָדַעְתִּי לְאָן לָלֶכֶת בַּהַפְסָקָה.</div>
+      </div>
+    </div>
+
+    <!-- רגוע -->
+    <div class="feel-card tint-green">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#B8DCC9" stroke="#5E4A8A" stroke-width="2"/>
+          <ellipse cx="16" cy="22" rx="2" ry="2.5" fill="#2A2238"/>
+          <ellipse cx="30" cy="22" rx="2" ry="2.5" fill="#2A2238"/>
+          <path d="M16 30 Q 23 32 30 30" stroke="#2A2238" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M3 24 Q 8 22 13 24" stroke="#6BB39A" stroke-width="1.5" fill="none" opacity="0.6"/>
+          <path d="M33 24 Q 38 22 43 24" stroke="#6BB39A" stroke-width="1.5" fill="none" opacity="0.6"/>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">רָגוּעַ.ה</div>
+        <div class="feel-ex">הַגּוּף שֶׁלִּי רַךְ וְהַנְּשִׁימָה אִטִּית.</div>
+      </div>
+    </div>
+
+    <!-- מוצף -->
+    <div class="feel-card tint-pink">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#F4C4D4" stroke="#5E4A8A" stroke-width="2"/>
+          <circle cx="16" cy="22" r="3" fill="white" stroke="#2A2238" stroke-width="1"/>
+          <circle cx="30" cy="22" r="3" fill="white" stroke="#2A2238" stroke-width="1"/>
+          <circle cx="16" cy="22" r="1.5" fill="#2A2238"/>
+          <circle cx="30" cy="22" r="1.5" fill="#2A2238"/>
+          <path d="M16 32 Q 23 36 30 32" stroke="#2A2238" stroke-width="2" fill="none"/>
+          <path d="M5 8 Q 8 14 5 16 M41 8 Q 38 14 41 16" stroke="#6BB39A" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.7"/>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">מוּצָף.ה</div>
+        <div class="feel-ex">הַרְבֵּה דְּבָרִים קוֹרִים בְּבַת אַחַת.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <span>8 / 10 · עמוד ב</span>
+    <span class="brand">פולס מערכת 10 · קטגוריה 3 · ויסות רגשי</span>
+  </div>
+</section>
+
+<!-- ═════════════════════════════════════════════
+     עמוד 8c — כרטיסי רגש 21-30
+     ═════════════════════════════════════════════ -->
+<section class="page" id="p8c">
+  <div class="page-header">
+    <span class="page-num">8c</span>
+    <span class="page-tag">מתכון 3 · כרטיסים 21–30</span>
+    <span class="page-title">שֵׁמוֹת לָרְגָשׁוֹת</span>
+  </div>
+
+  <div class="feel-cards">
+
+    <!-- מוקסם -->
+    <div class="feel-card tint-yellow">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#F2C94C" stroke="#5E4A8A" stroke-width="2"/>
+          <path d="M11 18 L15 22 L13 24 L17 22 L19 18 L15 20 Z" fill="white" stroke="#5E4A8A" stroke-width="1"/>
+          <path d="M27 18 L31 22 L29 24 L33 22 L35 18 L31 20 Z" fill="white" stroke="#5E4A8A" stroke-width="1"/>
+          <circle cx="15" cy="21" r="1.2" fill="#2A2238"/>
+          <circle cx="31" cy="21" r="1.2" fill="#2A2238"/>
+          <ellipse cx="23" cy="32" rx="4" ry="3" fill="#2A2238"/>
+          <path d="M23 30 Q 25 32 23 34" stroke="#E36B6B" stroke-width="1" fill="none"/>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">מוּקְסָם.ת</div>
+        <div class="feel-ex">רָאִיתִי קֶשֶׁת בַּשָּׁמַיִם.</div>
+      </div>
+    </div>
+
+    <!-- מאוכזב -->
+    <div class="feel-card tint-purple">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#C9B8E0" stroke="#5E4A8A" stroke-width="2"/>
+          <circle cx="16" cy="22" r="2" fill="#2A2238"/>
+          <circle cx="30" cy="22" r="2" fill="#2A2238"/>
+          <path d="M14 34 Q 23 28 32 34" stroke="#2A2238" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          <path d="M11 17 Q 16 18 20 16" stroke="#5E4A8A" stroke-width="1.5" fill="none"/>
+          <path d="M26 16 Q 30 18 35 17" stroke="#5E4A8A" stroke-width="1.5" fill="none"/>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">מְאֻכְזָב.ת</div>
+        <div class="feel-ex">קִוִּיתִי לַטִּיּוּל וְהוּא לֹא יָצָא לַפֹּעַל.</div>
+      </div>
+    </div>
+
+    <!-- מתפעל -->
+    <div class="feel-card tint-yellow">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#FAE8A8" stroke="#5E4A8A" stroke-width="2"/>
+          <circle cx="16" cy="20" r="3" fill="white" stroke="#5E4A8A" stroke-width="1"/>
+          <circle cx="30" cy="20" r="3" fill="white" stroke="#5E4A8A" stroke-width="1"/>
+          <circle cx="16" cy="20" r="1.5" fill="#2A2238"/>
+          <circle cx="30" cy="20" r="1.5" fill="#2A2238"/>
+          <ellipse cx="23" cy="32" rx="5" ry="3" fill="#E36B6B"/>
+          <path d="M5 10 L10 12 M41 10 L36 12" stroke="#F2C94C" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">מִתְפַּעֵל.ת</div>
+        <div class="feel-ex">חָבֵר.ה צִיֵּר.ה מַשֶּׁהוּ מַדְהִים וְלֹא הֶאֱמַנְתִּי.</div>
+      </div>
+    </div>
+
+    <!-- נדהם -->
+    <div class="feel-card tint-pink">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#F4C4D4" stroke="#5E4A8A" stroke-width="2"/>
+          <circle cx="16" cy="20" r="4" fill="white" stroke="#5E4A8A" stroke-width="1.5"/>
+          <circle cx="30" cy="20" r="4" fill="white" stroke="#5E4A8A" stroke-width="1.5"/>
+          <circle cx="16" cy="20" r="2" fill="#2A2238"/>
+          <circle cx="30" cy="20" r="2" fill="#2A2238"/>
+          <ellipse cx="23" cy="32" rx="3" ry="4" fill="#2A2238"/>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">נִדְהָם.ת</div>
+        <div class="feel-ex">לֹא הֶאֱמַנְתִּי לְמָה שֶׁשָּׁמַעְתִּי.</div>
+      </div>
+    </div>
+
+    <!-- מותש -->
+    <div class="feel-card tint-purple">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#D4DEE5" stroke="#5E4A8A" stroke-width="2"/>
+          <path d="M10 20 L20 22" stroke="#2A2238" stroke-width="2"/>
+          <path d="M36 20 L26 22" stroke="#2A2238" stroke-width="2"/>
+          <line x1="14" y1="20" x2="18" y2="22" stroke="#2A2238" stroke-width="2"/>
+          <line x1="28" y1="22" x2="32" y2="20" stroke="#2A2238" stroke-width="2"/>
+          <path d="M16 32 Q 23 28 30 32" stroke="#2A2238" stroke-width="2" fill="none"/>
+          <text x="35" y="13" font-family="Heebo" font-size="8" font-weight="800" fill="#5E4A8A">Zz</text>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">מוּתָשׁ.ת</div>
+        <div class="feel-ex">כָּל הַשָּׁבוּעַ הָיָה אִינְטֶנְסִיבִי מְאוֹד.</div>
+      </div>
+    </div>
+
+    <!-- משוחרר -->
+    <div class="feel-card tint-green">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#B8DCC9" stroke="#5E4A8A" stroke-width="2"/>
+          <path d="M11 18 Q 16 14 20 18" stroke="#2A2238" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M26 18 Q 30 14 35 18" stroke="#2A2238" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M13 28 Q 23 38 33 28" stroke="#2A2238" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          <path d="M3 14 L8 12 M43 14 L38 12 M5 30 L9 28 M41 30 L37 28" stroke="#6BB39A" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">מְשֻׁחְרָר.ת</div>
+        <div class="feel-ex">סוֹף לְחֻפְשַׁת הַקַּיִץ וְאֲנִי חָפְשִׁי.ה.</div>
+      </div>
+    </div>
+
+    <!-- אסיר תודה -->
+    <div class="feel-card tint-yellow">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#F2C94C" stroke="#5E4A8A" stroke-width="2"/>
+          <circle cx="16" cy="20" r="2" fill="#2A2238"/>
+          <circle cx="30" cy="20" r="2" fill="#2A2238"/>
+          <path d="M14 28 Q 23 36 32 28" stroke="#2A2238" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          <path d="M23 6 C 21 4 17 5 17 9 C 17 13 23 17 23 17 C 23 17 29 13 29 9 C 29 5 25 4 23 6" fill="#E36B6B" stroke="#5E4A8A" stroke-width="1"/>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">אֲסִיר.ת תּוֹדָה</div>
+        <div class="feel-ex">חָבֵר עָזַר לִי וְזֶה מָמֵשׁ נָגַע לִי לַלֵּב.</div>
+      </div>
+    </div>
+
+    <!-- מובן -->
+    <div class="feel-card tint-green">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#B8DCC9" stroke="#5E4A8A" stroke-width="2"/>
+          <circle cx="16" cy="20" r="2" fill="#2A2238"/>
+          <circle cx="30" cy="20" r="2" fill="#2A2238"/>
+          <path d="M14 30 Q 23 34 32 30" stroke="#2A2238" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M10 14 L14 18 L20 12" stroke="#6BB39A" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M26 14 L30 18 L36 12" stroke="#6BB39A" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">מוּבָן.ת</div>
+        <div class="feel-ex">הַמּוֹרָה הֶבִינָה אוֹתִי בְּלִי שֶׁאָמַרְתִּי הַרְבֵּה.</div>
+      </div>
+    </div>
+
+    <!-- מופתע -->
+    <div class="feel-card tint-yellow">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#FAE8A8" stroke="#5E4A8A" stroke-width="2"/>
+          <circle cx="16" cy="20" r="3" fill="white" stroke="#5E4A8A" stroke-width="1"/>
+          <circle cx="30" cy="20" r="3" fill="white" stroke="#5E4A8A" stroke-width="1"/>
+          <circle cx="16" cy="20" r="1.5" fill="#2A2238"/>
+          <circle cx="30" cy="20" r="1.5" fill="#2A2238"/>
+          <ellipse cx="23" cy="32" rx="2.5" ry="3.5" fill="#2A2238"/>
+          <path d="M11 12 L13 10 M35 12 L33 10" stroke="#F2C94C" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">מֻפְתָּע.ה</div>
+        <div class="feel-ex">פָּתַחְתִּי דֶּלֶת וְהָיְתָה מְסִבָּה.</div>
+      </div>
+    </div>
+
+    <!-- אוהב -->
+    <div class="feel-card tint-pink">
+      <div class="face-wrap">
+        <svg viewBox="0 0 46 46" fill="none">
+          <circle cx="23" cy="23" r="20" fill="#F4C4D4" stroke="#5E4A8A" stroke-width="2"/>
+          <path d="M11 18 C 13 14 17 14 16 18 C 19 16 20 19 16 22 C 12 19 13 16 11 18" fill="#E36B6B" stroke="#5E4A8A" stroke-width="1"/>
+          <path d="M27 18 C 29 14 33 14 32 18 C 35 16 36 19 32 22 C 28 19 29 16 27 18" fill="#E36B6B" stroke="#5E4A8A" stroke-width="1"/>
+          <path d="M14 28 Q 23 36 32 28" stroke="#2A2238" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="feel-text">
+        <div class="feel-name">אוֹהֵב.ת</div>
+        <div class="feel-ex">חִבַּקְתִּי אֶת אַבָּא חִבּוּק חָזָק.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <span>8 / 10 · עמוד ג</span>
+    <span class="brand">פולס מערכת 10 · קטגוריה 3 · ויסות רגשי</span>
+  </div>
+</section>
+
+<!-- ═════════════════════════════════════════════
+     עמוד 9 — לוח שבועי (3 רגשות השבוע)
+     ═════════════════════════════════════════════ -->
+<section class="page" id="p9">
+  <div class="page-header">
+    <span class="page-num">9</span>
+    <span class="page-tag">מתכון 3 · לוח כיתה</span>
+    <span class="page-title">3 רְגָשׁוֹת הַשָּׁבוּעַ</span>
+  </div>
+
+  <div class="week-board">
+    <h2>הַשָּׁבוּעַ אֲנַחְנוּ לוֹמְדִים אֶת הָרְגָשׁוֹת...</h2>
+    <p class="lead">הַמּוֹרָה מַדְבִּיקָה כָּל שָׁבוּעַ 3 כַּרְטִיסִים מֵהָאוֹסֶף · אֶפְשָׁר לְהַחְלִיף בְּכָל יוֹם רִאשׁוֹן</p>
+
+    <div class="week-slots">
+      <div class="week-slot">
+        <div class="slot-num">1</div>
+        <div class="placeholder">
+          <svg viewBox="0 0 80 80" fill="none">
+            <circle cx="40" cy="40" r="34" fill="none" stroke="#C9B8E0" stroke-width="3" stroke-dasharray="4 6"/>
+            <circle cx="30" cy="36" r="3" fill="#C9B8E0"/>
+            <circle cx="50" cy="36" r="3" fill="#C9B8E0"/>
+            <path d="M28 48 Q 40 56 52 48" stroke="#C9B8E0" stroke-width="3" fill="none" stroke-linecap="round"/>
+          </svg>
+          <div>הַדְבִּיקִי כָּאן כַּרְטִיס</div>
+        </div>
+      </div>
+
+      <div class="week-slot">
+        <div class="slot-num">2</div>
+        <div class="placeholder">
+          <svg viewBox="0 0 80 80" fill="none">
+            <circle cx="40" cy="40" r="34" fill="none" stroke="#C9B8E0" stroke-width="3" stroke-dasharray="4 6"/>
+            <circle cx="30" cy="36" r="3" fill="#C9B8E0"/>
+            <circle cx="50" cy="36" r="3" fill="#C9B8E0"/>
+            <line x1="28" y1="52" x2="52" y2="52" stroke="#C9B8E0" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+          <div>הַדְבִּיקִי כָּאן כַּרְטִיס</div>
+        </div>
+      </div>
+
+      <div class="week-slot">
+        <div class="slot-num">3</div>
+        <div class="placeholder">
+          <svg viewBox="0 0 80 80" fill="none">
+            <circle cx="40" cy="40" r="34" fill="none" stroke="#C9B8E0" stroke-width="3" stroke-dasharray="4 6"/>
+            <circle cx="30" cy="36" r="3" fill="#C9B8E0"/>
+            <circle cx="50" cy="36" r="3" fill="#C9B8E0"/>
+            <path d="M28 54 Q 40 46 52 54" stroke="#C9B8E0" stroke-width="3" fill="none" stroke-linecap="round"/>
+          </svg>
+          <div>הַדְבִּיקִי כָּאן כַּרְטִיס</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="week-foot">
+      <strong>טיפ למורה:</strong> בחרי שילוב של רגש "קל" (שמח/רגוע) + רגש מאתגר (עצוב/כועס) + רגש מורכב (מתבייש/מוצף). שיחה יומית של 5 דקות מספיקה.
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>9 / 10</span>
+    <span class="brand">פולס מערכת 10 · קטגוריה 3 · ויסות רגשי</span>
+  </div>
+</section>
+
+<!-- ═════════════════════════════════════════════
+     עמוד 10 — דף "אני מרגיש.ה"
+     ═════════════════════════════════════════════ -->
+<section class="page" id="p10">
+  <div class="page-header">
+    <span class="page-num">10</span>
+    <span class="page-tag">מתכון 3 · תבנית אישית</span>
+    <span class="page-title">דַּף "אֲנִי מַרְגִּישׁ.ה"</span>
+  </div>
+
+  <div class="feeling-template">
+
+    <div class="ft-header">
+      <h2>הַיּוֹם אֲנִי מַרְגִּישׁ.ה...</h2>
+      <div class="meta">דַּף אִישִׁי · אֲנִי כּוֹתֵב.ת אוֹ מְצַיֵּר.ת</div>
+    </div>
+
+    <div class="ft-name-row">
+      <div class="field"><span class="lab">שֵׁם:</span><span class="blank"></span></div>
+      <div class="field"><span class="lab">תַּאֲרִיךְ:</span><span class="blank"></span></div>
+    </div>
+
+    <div class="ft-sentence">
+      הַיּוֹם אֲנִי מַרְגִּישׁ.ה <span class="blank"></span> .<br>
+      זֶה קָרָה כְּשֶׁ<span class="blank blank-lg"></span> .<br>
+      מָה שֶׁיַּעֲזֹר לִי עַכְשָׁו זֶה <span class="blank blank-lg"></span> .
+    </div>
+
+    <div class="ft-draw">
+      <div class="lab">אוֹ — אֲנִי מְצַיֵּר.ת כָּאן אֶת הָרֶגֶשׁ שֶׁלִּי</div>
+      <div class="canvas"></div>
+    </div>
+
+    <div class="ft-faces-strip">
+      <div class="fs-item">
+        <svg viewBox="0 0 36 36" fill="none">
+          <circle cx="18" cy="18" r="15" fill="#B8DCC9" stroke="#5E4A8A" stroke-width="1.5"/>
+          <circle cx="13" cy="16" r="1.5" fill="#2A2238"/>
+          <circle cx="23" cy="16" r="1.5" fill="#2A2238"/>
+          <path d="M11 22 Q 18 28 25 22" stroke="#2A2238" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        </svg>
+        <div class="ll">רָגוּעַ.ה</div>
+        <div class="circle"></div>
+      </div>
+      <div class="fs-item">
+        <svg viewBox="0 0 36 36" fill="none">
+          <circle cx="18" cy="18" r="15" fill="#F2C94C" stroke="#5E4A8A" stroke-width="1.5"/>
+          <circle cx="13" cy="16" r="1.5" fill="#2A2238"/>
+          <circle cx="23" cy="16" r="1.5" fill="#2A2238"/>
+          <path d="M11 22 Q 18 30 25 22" stroke="#2A2238" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        </svg>
+        <div class="ll">שָׂמֵחַ.ה</div>
+        <div class="circle"></div>
+      </div>
+      <div class="fs-item">
+        <svg viewBox="0 0 36 36" fill="none">
+          <circle cx="18" cy="18" r="15" fill="#C9B8E0" stroke="#5E4A8A" stroke-width="1.5"/>
+          <circle cx="13" cy="16" r="1.5" fill="#2A2238"/>
+          <circle cx="23" cy="16" r="1.5" fill="#2A2238"/>
+          <path d="M11 24 Q 18 20 25 24" stroke="#2A2238" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        </svg>
+        <div class="ll">עָצוּב.ה</div>
+        <div class="circle"></div>
+      </div>
+      <div class="fs-item">
+        <svg viewBox="0 0 36 36" fill="none">
+          <circle cx="18" cy="18" r="15" fill="#E89090" stroke="#5E4A8A" stroke-width="1.5"/>
+          <path d="M8 13 L15 15 M28 13 L21 15" stroke="#5E2020" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="13" cy="17" r="1.5" fill="#2A2238"/>
+          <circle cx="23" cy="17" r="1.5" fill="#2A2238"/>
+          <path d="M11 24 Q 18 22 25 24" stroke="#2A2238" stroke-width="1.8" fill="none"/>
+        </svg>
+        <div class="ll">כּוֹעֵס.ת</div>
+        <div class="circle"></div>
+      </div>
+      <div class="fs-item">
+        <svg viewBox="0 0 36 36" fill="none">
+          <circle cx="18" cy="18" r="15" fill="#D4DEE5" stroke="#5E4A8A" stroke-width="1.5"/>
+          <circle cx="13" cy="16" r="2.5" fill="white" stroke="#2A2238" stroke-width="1"/>
+          <circle cx="23" cy="16" r="2.5" fill="white" stroke="#2A2238" stroke-width="1"/>
+          <circle cx="13" cy="16" r="1.2" fill="#2A2238"/>
+          <circle cx="23" cy="16" r="1.2" fill="#2A2238"/>
+          <ellipse cx="18" cy="24" rx="2" ry="3" fill="#2A2238"/>
+        </svg>
+        <div class="ll">מְפַחֵד.ת</div>
+        <div class="circle"></div>
+      </div>
+      <div class="fs-item">
+        <svg viewBox="0 0 36 36" fill="none">
+          <circle cx="18" cy="18" r="15" fill="#FAE8A8" stroke="#5E4A8A" stroke-width="1.5"/>
+          <line x1="9" y1="16" x2="15" y2="16" stroke="#2A2238" stroke-width="2"/>
+          <line x1="21" y1="16" x2="27" y2="16" stroke="#2A2238" stroke-width="2"/>
+          <path d="M11 24 Q 14 22 17 24 Q 20 22 23 24 Q 24 23 25 24" stroke="#2A2238" stroke-width="1.8" fill="none"/>
+        </svg>
+        <div class="ll">מְבֻלְבָּל.ת</div>
+        <div class="circle"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <span>10 / 10</span>
+    <span class="brand">פולס מערכת 10 · קטגוריה 3 · ויסות רגשי</span>
+  </div>
+</section>
+
+<script>
+  // ניווט חלק לכותרות עוגן
+  document.querySelectorAll('.toolbar nav a').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+</script>
+
+</body>
+</html>

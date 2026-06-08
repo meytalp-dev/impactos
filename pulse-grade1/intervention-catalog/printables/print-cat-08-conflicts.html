@@ -1,0 +1,2626 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>פתרון קונפליקטים · קטגוריה 8 · פולס מערכת 10</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink: #E08FAF;
+    --pink-soft: #F5C9D9;
+    --pink-deep: #B86A8C;
+    --purple: #8B6BC0;
+    --purple-soft: #C9B8E0;
+    --purple-deep: #5E4685;
+    --sun: #F5C84B;
+    --sky: #7FC4E0;
+    --cream: #FFF8F0;
+    --paper: #FFFDF9;
+    --ink: #2C2640;
+    --ink-soft: #5C5470;
+    --border: #E8DCC8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    font-family: 'Heebo', sans-serif;
+    background: linear-gradient(135deg, #FFE9F0 0%, #EDE0F5 100%);
+    color: var(--ink);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .print-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    background: var(--purple);
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(139, 107, 192, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .print-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(139, 107, 192, 0.5); }
+
+  .toc {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 32px;
+    background: var(--paper);
+    border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(94, 70, 133, 0.15);
+  }
+  .toc h1 { font-size: 32px; color: var(--purple-deep); margin-bottom: 8px; font-weight: 800; }
+  .toc h2 { font-size: 18px; color: var(--pink-deep); font-weight: 500; margin-bottom: 24px; }
+  .toc-recipe { margin-bottom: 20px; padding: 16px; background: var(--cream); border-right: 4px solid var(--pink); border-radius: 8px; }
+  .toc-recipe h3 { color: var(--purple-deep); font-size: 18px; margin-bottom: 8px; }
+  .toc-recipe ol { padding-right: 24px; color: var(--ink-soft); font-size: 14px; }
+  .toc-recipe li { margin-bottom: 4px; }
+
+  @page { size: A4; margin: 1cm; }
+
+  .page {
+    width: 21cm;
+    min-height: 29.7cm;
+    background: var(--paper);
+    margin: 24px auto;
+    padding: 1.4cm;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    page-break-after: always;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .page.landscape { width: 29.7cm; min-height: 21cm; }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 2px dashed var(--pink-soft);
+    margin-bottom: 20px;
+  }
+  .page-header .crumb { font-size: 11px; color: var(--ink-soft); letter-spacing: 1px; text-transform: uppercase; }
+  .page-header .num { font-size: 11px; color: var(--purple); font-weight: 700; }
+
+  .page-footer {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 2px dashed var(--purple-soft);
+    text-align: center;
+    font-size: 10px;
+    color: var(--ink-soft);
+    letter-spacing: 0.5px;
+  }
+  .page-footer strong { color: var(--purple-deep); }
+
+  /* ========== 1. POSTER — PEACE CORNER 3 STEPS ========== */
+  .poster-title {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .poster-title h1 {
+    font-size: 56px;
+    font-weight: 900;
+    color: var(--purple-deep);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .poster-title .sub {
+    font-size: 18px;
+    color: var(--pink-deep);
+    font-weight: 500;
+  }
+  .poster-decoration {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 12px 0 20px;
+  }
+  .poster-decoration span {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--pink);
+  }
+  .poster-decoration span:nth-child(2) { background: var(--sun); }
+  .poster-decoration span:nth-child(3) { background: var(--purple); }
+  .poster-decoration span:nth-child(4) { background: var(--sky); }
+
+  .steps-3 {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    flex: 1;
+  }
+  .big-step {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 20px;
+    border-radius: 28px;
+    border: 3px solid;
+    background: white;
+    position: relative;
+    overflow: hidden;
+  }
+  .big-step.step-1 { border-color: var(--sun); background: linear-gradient(135deg, #FFF7DA 0%, #FFFCEF 100%); }
+  .big-step.step-2 { border-color: var(--pink); background: linear-gradient(135deg, #FFE6EE 0%, #FFF5F8 100%); }
+  .big-step.step-3 { border-color: var(--purple); background: linear-gradient(135deg, #EFE6FA 0%, #F8F4FF 100%); }
+
+  .big-step .num-circle {
+    flex-shrink: 0;
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 38px;
+    font-weight: 900;
+    color: white;
+  }
+  .big-step.step-1 .num-circle { background: var(--sun); color: #6B4F00; }
+  .big-step.step-2 .num-circle { background: var(--pink); }
+  .big-step.step-3 .num-circle { background: var(--purple); }
+
+  .big-step .step-svg {
+    flex-shrink: 0;
+    width: 130px;
+    height: 130px;
+  }
+  .big-step .step-content { flex: 1; }
+  .big-step .step-content h2 {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--purple-deep);
+    margin-bottom: 4px;
+  }
+  .big-step .step-content p {
+    font-size: 20px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* ========== 2. PROTOCOL CARD ========== */
+  .protocol-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    background: linear-gradient(160deg, #FFEEF4 0%, #F0E5FA 100%);
+    border-radius: 32px;
+    border: 4px solid var(--purple);
+    position: relative;
+  }
+  .protocol-card::before {
+    content: '';
+    position: absolute;
+    top: 16px; right: 16px; bottom: 16px; left: 16px;
+    border: 2px dashed var(--purple-soft);
+    border-radius: 24px;
+    pointer-events: none;
+  }
+  .protocol-title {
+    font-size: 64px;
+    font-weight: 900;
+    color: var(--purple-deep);
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .protocol-sub {
+    font-size: 22px;
+    color: var(--pink-deep);
+    margin-bottom: 30px;
+    text-align: center;
+  }
+  .rules-list {
+    list-style: none;
+    width: 100%;
+    max-width: 500px;
+    z-index: 1;
+  }
+  .rules-list li {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 24px;
+    background: white;
+    border-radius: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 14px rgba(139, 107, 192, 0.15);
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .rules-list .bullet {
+    flex-shrink: 0;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--pink);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 18px;
+  }
+  .rules-list li:nth-child(2) .bullet { background: var(--purple); }
+  .rules-list li:nth-child(3) .bullet { background: var(--sun); color: #6B4F00; }
+  .rules-list li:nth-child(4) .bullet { background: var(--sky); }
+  .handshake-bottom {
+    margin-top: 24px;
+    width: 120px;
+    height: 120px;
+  }
+
+  /* ========== 3. CORNER LOG — 8 cards ========== */
+  .page-title {
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .page-title h2 {
+    font-size: 30px;
+    color: var(--purple-deep);
+    font-weight: 800;
+  }
+  .page-title p {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+  .log-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .log-card {
+    background: white;
+    border: 2px solid var(--pink-soft);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+  }
+  .log-card .card-num {
+    position: absolute;
+    top: 8px; left: 8px;
+    width: 24px; height: 24px;
+    background: var(--pink);
+    color: white;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .log-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .log-row label {
+    font-weight: 600;
+    color: var(--purple-deep);
+    flex-shrink: 0;
+    min-width: 70px;
+  }
+  .log-line {
+    flex: 1;
+    height: 18px;
+    border-bottom: 1.5px dotted var(--purple-soft);
+  }
+  .log-checks {
+    display: flex;
+    gap: 12px;
+    margin-top: 2px;
+  }
+  .log-checks label {
+    font-size: 12px;
+    color: var(--ink-soft);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .log-check {
+    width: 16px; height: 16px;
+    border: 2px solid var(--purple);
+    border-radius: 4px;
+    display: inline-block;
+  }
+
+  /* ========== 4. QUESTION CARDS — 6 cards ========== */
+  .q-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .q-card {
+    border-radius: 22px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border: 3px solid;
+    position: relative;
+    overflow: hidden;
+  }
+  .q-card.c1 { background: linear-gradient(135deg, #FFE5EE, #FFF3F7); border-color: var(--pink); }
+  .q-card.c2 { background: linear-gradient(135deg, #FFF6D9, #FFFBEF); border-color: var(--sun); }
+  .q-card.c3 { background: linear-gradient(135deg, #E6F3FB, #F3FAFD); border-color: var(--sky); }
+  .q-card.c4 { background: linear-gradient(135deg, #EDE2F8, #F7F2FD); border-color: var(--purple); }
+  .q-card.c5 { background: linear-gradient(135deg, #FFE5EE, #FFF3F7); border-color: var(--pink); }
+  .q-card.c6 { background: linear-gradient(135deg, #FFF6D9, #FFFBEF); border-color: var(--sun); }
+  .q-card .q-icon {
+    width: 70px; height: 70px;
+    margin-bottom: 12px;
+  }
+  .q-card .q-text {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--purple-deep);
+    line-height: 1.3;
+  }
+  .q-card .q-num {
+    position: absolute;
+    top: 8px; right: 8px;
+    background: white;
+    color: var(--purple-deep);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 10px;
+  }
+
+  /* ========== 5. I-MESSAGE POSTER ========== */
+  .imessage-poster {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .imessage-figures {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 20px;
+  }
+  .imessage-figures svg { width: 160px; height: 160px; }
+  .imessage-template {
+    width: 100%;
+    background: white;
+    border-radius: 28px;
+    padding: 30px;
+    border: 4px solid var(--pink);
+    box-shadow: 0 8px 28px rgba(224, 143, 175, 0.25);
+    margin-bottom: 20px;
+  }
+  .imessage-template h2 {
+    text-align: center;
+    font-size: 38px;
+    color: var(--pink-deep);
+    margin-bottom: 6px;
+    font-weight: 900;
+  }
+  .imessage-template .imessage-sub {
+    text-align: center;
+    color: var(--ink-soft);
+    margin-bottom: 24px;
+    font-size: 14px;
+  }
+  .imessage-line {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    font-size: 28px;
+    flex-wrap: wrap;
+    justify-content: center;
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .imessage-line .pill {
+    display: inline-block;
+    background: var(--purple-soft);
+    color: var(--purple-deep);
+    padding: 6px 18px;
+    border-radius: 999px;
+    font-weight: 700;
+    min-width: 80px;
+    text-align: center;
+  }
+  .imessage-line .blank {
+    display: inline-block;
+    min-width: 130px;
+    border-bottom: 3px solid var(--pink);
+    padding: 4px 12px;
+  }
+  .imessage-example {
+    background: linear-gradient(135deg, #FFF7DA, #FFFCEF);
+    border: 2px dashed var(--sun);
+    border-radius: 18px;
+    padding: 16px 20px;
+    width: 100%;
+    text-align: center;
+  }
+  .imessage-example .label {
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .imessage-example .text {
+    font-size: 19px;
+    color: var(--purple-deep);
+    font-weight: 600;
+  }
+
+  /* ========== 6. PRACTICE CARDS — 4 per page ========== */
+  .practice-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 12px;
+  }
+  .practice-card {
+    background: white;
+    border: 2.5px solid var(--pink);
+    border-radius: 18px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+  }
+  .practice-card .p-num {
+    position: absolute;
+    top: 8px; left: 8px;
+    background: var(--purple);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 10px;
+  }
+  .practice-card .scenario {
+    background: linear-gradient(135deg, #FFE5EE, #FFF3F7);
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 13.5px;
+    color: var(--ink);
+    line-height: 1.4;
+    text-align: center;
+    font-weight: 500;
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .practice-card .scenario-icon {
+    width: 36px; height: 36px;
+    margin-left: 8px;
+    flex-shrink: 0;
+  }
+  .practice-card .write-block {
+    border-top: 2px dashed var(--purple-soft);
+    padding-top: 8px;
+  }
+  .practice-card .write-block .label {
+    font-size: 11px;
+    color: var(--purple-deep);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .practice-card .write-line {
+    border-bottom: 1.5px dotted var(--ink-soft);
+    height: 16px;
+    margin-bottom: 4px;
+  }
+
+  /* ========== 7. FEELINGS BOARD — 16 feelings ========== */
+  .feelings-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .feel-card {
+    border-radius: 16px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border: 2.5px solid;
+    background: white;
+  }
+  .feel-card .face {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 4px;
+  }
+  .feel-card .name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .feel-card.f-sad { border-color: #7FB3E0; background: #EFF7FC; }
+  .feel-card.f-angry { border-color: #E07F7F; background: #FCEFEF; }
+  .feel-card.f-shy { border-color: #E0A87F; background: #FCF4EE; }
+  .feel-card.f-disappoint { border-color: var(--purple); background: #F4EFFB; }
+  .feel-card.f-hurt { border-color: var(--pink); background: #FCEFF4; }
+  .feel-card.f-confused { border-color: #A89A6E; background: #FBF8EB; }
+  .feel-card.f-scared { border-color: #6E8FA8; background: #EFF3F8; }
+  .feel-card.f-missing { border-color: #B07FB5; background: #F8EFFA; }
+  .feel-card.f-jealous { border-color: #6EA85F; background: #F0F8EE; }
+  .feel-card.f-lonely { border-color: #5F84A8; background: #EFF3F8; }
+  .feel-card.f-worried { border-color: #C9A05F; background: #FCF6EB; }
+  .feel-card.f-frustrated { border-color: #B85F8B; background: #FBEEF4; }
+  .feel-card.f-tired { border-color: #909090; background: #F4F4F4; }
+  .feel-card.f-proud { border-color: var(--sun); background: #FFF9DE; }
+  .feel-card.f-calm { border-color: var(--sky); background: #EFF7FC; }
+  .feel-card.f-happy { border-color: #F0A040; background: #FFF3DE; }
+
+  /* ========== 8. HOMEWORK SHEET ========== */
+  .hw-intro {
+    background: linear-gradient(135deg, #FFE5EE, #FFF3F7);
+    border-radius: 20px;
+    padding: 18px 24px;
+    margin-bottom: 20px;
+    border-right: 6px solid var(--pink);
+  }
+  .hw-intro h3 {
+    font-size: 22px;
+    color: var(--purple-deep);
+    margin-bottom: 6px;
+  }
+  .hw-intro p {
+    font-size: 15px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+  .hw-slots {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .hw-slot {
+    background: white;
+    border: 2.5px solid var(--purple);
+    border-radius: 18px;
+    padding: 16px 20px;
+  }
+  .hw-slot .slot-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .hw-slot .slot-num {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: var(--purple);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 18px;
+  }
+  .hw-slot h4 {
+    font-size: 18px;
+    color: var(--purple-deep);
+  }
+  .hw-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .hw-row label {
+    flex-shrink: 0;
+    width: 130px;
+    font-size: 13px;
+    color: var(--purple-deep);
+    font-weight: 600;
+  }
+  .hw-row .hw-line {
+    flex: 1;
+    height: 20px;
+    border-bottom: 1.5px dotted var(--ink-soft);
+  }
+
+  /* ========== 9. TRAINING TRACK — 3 lessons ========== */
+  .track-intro {
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .track-intro h2 {
+    font-size: 26px;
+    color: var(--purple-deep);
+    margin-bottom: 4px;
+  }
+  .track-intro p { font-size: 13px; color: var(--ink-soft); }
+  .lessons-stack {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .lesson-card {
+    background: white;
+    border: 3px solid;
+    border-radius: 22px;
+    padding: 18px 22px;
+    position: relative;
+    display: flex;
+    gap: 16px;
+  }
+  .lesson-card.l1 { border-color: var(--sun); background: linear-gradient(135deg, #FFFAE4, #FFFEF6); }
+  .lesson-card.l2 { border-color: var(--pink); background: linear-gradient(135deg, #FFE9F0, #FFF6F9); }
+  .lesson-card.l3 { border-color: var(--purple); background: linear-gradient(135deg, #EEE5F8, #F8F2FD); }
+  .lesson-icon {
+    flex-shrink: 0;
+    width: 80px;
+    height: 80px;
+  }
+  .lesson-content { flex: 1; }
+  .lesson-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .lesson-num {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--purple);
+    color: white;
+    font-weight: 900;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .lesson-card.l1 .lesson-num { background: var(--sun); color: #6B4F00; }
+  .lesson-card.l2 .lesson-num { background: var(--pink); }
+  .lesson-head h3 {
+    font-size: 22px;
+    color: var(--purple-deep);
+  }
+  .lesson-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    font-size: 12.5px;
+  }
+  .lesson-section h5 {
+    color: var(--purple-deep);
+    font-size: 13px;
+    margin-bottom: 4px;
+    font-weight: 700;
+  }
+  .lesson-section ul {
+    padding-right: 18px;
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  .lesson-section li { margin-bottom: 3px; }
+
+  /* ========== 10. CERTIFICATE — 2 per page ========== */
+  .cert-page {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .cert {
+    flex: 1;
+    background: linear-gradient(135deg, #FFFEF6 0%, #FFF6F9 100%);
+    border: 6px double var(--pink);
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+  }
+  .cert::before, .cert::after {
+    content: '';
+    position: absolute;
+    width: 80px; height: 80px;
+    background: radial-gradient(circle, var(--sun) 0%, transparent 70%);
+    opacity: 0.4;
+  }
+  .cert::before { top: -20px; right: -20px; }
+  .cert::after { bottom: -20px; left: -20px; }
+  .cert .ribbon-svg {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 8px;
+  }
+  .cert-title {
+    font-size: 28px;
+    color: var(--purple-deep);
+    font-weight: 900;
+    margin-bottom: 4px;
+  }
+  .cert-sub {
+    font-size: 14px;
+    color: var(--pink-deep);
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+  .cert-name {
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+  .cert-name-line {
+    width: 80%;
+    border-bottom: 2px solid var(--purple);
+    height: 32px;
+    margin-bottom: 16px;
+  }
+  .cert-body {
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1.6;
+    max-width: 80%;
+    margin-bottom: 16px;
+  }
+  .cert-foot {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    margin-top: auto;
+  }
+  .cert-sign {
+    text-align: center;
+    flex: 1;
+  }
+  .cert-sign-line {
+    border-bottom: 1.5px solid var(--ink-soft);
+    height: 18px;
+    margin-bottom: 4px;
+  }
+  .cert-sign-label {
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+
+  /* ========== 11. BADGES — 8 per page ========== */
+  .badges-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 14px;
+  }
+  .badge-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border: 2px dashed var(--ink-soft);
+    border-radius: 12px;
+    position: relative;
+  }
+  .badge {
+    width: 140px;
+    height: 140px;
+    position: relative;
+  }
+  .badge-label {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  .badges-instr {
+    text-align: center;
+    background: var(--cream);
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+
+  /* ========== 12. MEDIATOR EVENT LOG ========== */
+  .event-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .event-card {
+    background: white;
+    border: 2px solid var(--purple);
+    border-radius: 14px;
+    padding: 12px 14px;
+  }
+  .event-card h5 {
+    background: var(--purple);
+    color: white;
+    margin: -12px -14px 10px;
+    padding: 8px 14px;
+    border-radius: 14px 14px 0 0;
+    font-size: 13px;
+    text-align: center;
+  }
+  .event-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .event-row label {
+    flex-shrink: 0;
+    width: 75px;
+    font-weight: 600;
+    color: var(--purple-deep);
+  }
+  .event-line {
+    flex: 1;
+    height: 18px;
+    border-bottom: 1.5px dotted var(--purple-soft);
+  }
+  .event-box {
+    border: 1.5px dotted var(--purple-soft);
+    border-radius: 8px;
+    height: 50px;
+    margin-top: 4px;
+    padding: 4px 8px;
+  }
+
+  /* ========== 13. MEDIATOR REMINDER CARD ========== */
+  .reminder-cards {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 18px;
+    padding: 10px;
+  }
+  .reminder-card {
+    background: linear-gradient(160deg, #FFF8F0 0%, #FFFEF6 100%);
+    border: 3px solid var(--purple);
+    border-radius: 22px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .reminder-card::before {
+    content: '';
+    position: absolute;
+    top: 8px; right: 8px; bottom: 8px; left: 8px;
+    border: 2px dashed var(--purple-soft);
+    border-radius: 16px;
+    pointer-events: none;
+  }
+  .reminder-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    z-index: 1;
+  }
+  .reminder-head svg { width: 40px; height: 40px; }
+  .reminder-head h3 {
+    color: var(--purple-deep);
+    font-size: 18px;
+    font-weight: 900;
+  }
+  .reminder-rules {
+    list-style: none;
+    z-index: 1;
+    flex: 1;
+  }
+  .reminder-rules li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px dotted var(--purple-soft);
+    font-size: 14px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .reminder-rules li:last-child { border-bottom: none; }
+  .reminder-rules .check {
+    flex-shrink: 0;
+    width: 22px; height: 22px;
+    background: var(--pink);
+    color: white;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .reminder-foot {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--purple-deep);
+    font-weight: 700;
+    z-index: 1;
+  }
+
+  @media print {
+    body { background: white; }
+    .print-btn, .toc { display: none; }
+    .page {
+      margin: 0;
+      box-shadow: none;
+      page-break-after: always;
+    }
+    .page:last-child { page-break-after: auto; }
+  }
+
+  @media screen and (max-width: 900px) {
+    .page { width: 100%; padding: 16px; }
+    .toc { margin: 16px; padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<button class="print-btn" onclick="window.print()">🖨️ הדפסה</button>
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc">
+  <h1>פתרון קונפליקטים</h1>
+  <h2>קטגוריה 8 · פולס מערכת 10 · כיתות א'–ב'</h2>
+  <div class="toc-recipe">
+    <h3>מתכון 1 — פינת שלום</h3>
+    <ol>
+      <li>כרזת הפינה (3 שלבים)</li>
+      <li>פרוטוקול הפינה</li>
+      <li>גיליון "בפינה היום" — 8 כרטיסי תיעוד</li>
+      <li>6 כרטיסי שאלות מנחות</li>
+    </ol>
+  </div>
+  <div class="toc-recipe">
+    <h3>מתכון 2 — אני-מסר</h3>
+    <ol start="5">
+      <li>כרזת "אני-מסר"</li>
+      <li>20 כרטיסי תרגול (5 עמודים, 4 בעמוד)</li>
+      <li>לוח 16 רגשות</li>
+      <li>דף תרגיל בית</li>
+    </ol>
+  </div>
+  <div class="toc-recipe">
+    <h3>מתכון 3 — מתווכ.ת עמית.ה</h3>
+    <ol start="9">
+      <li>מסלול הכשרה — 3 שיעורים</li>
+      <li>תעודת מתווכ.ת מוסמכ.ת (2 בעמוד)</li>
+      <li>8 בדגי מתווכ.ת</li>
+      <li>גיליון אירוע מתווכ.ת</li>
+      <li>כרטיס תזכורת — 4 כללי מתווכ.ת</li>
+    </ol>
+  </div>
+</div>
+
+<!-- ========================================================== -->
+<!-- PAGE 1: PEACE CORNER POSTER -->
+<!-- ========================================================== -->
+<section class="page">
+  <div class="page-header">
+    <span class="crumb">מתכון 1 · פינת שלום</span>
+    <span class="num">1 / 13</span>
+  </div>
+
+  <div class="poster-title">
+    <h1>פִּנַּת הַשָּׁלוֹם</h1>
+    <div class="sub">שָׁלוֹשׁ פְּסִיעוֹת לְפִתְרוֹן בְּטוֹב</div>
+    <div class="poster-decoration">
+      <span></span><span></span><span></span><span></span>
+    </div>
+  </div>
+
+  <div class="steps-3">
+    <!-- STEP 1: LISTEN -->
+    <div class="big-step step-1">
+      <div class="num-circle">1</div>
+      <svg class="step-svg" viewBox="0 0 130 130" xmlns="http://www.w3.org/2000/svg">
+        <!-- two children, one speaks one listens -->
+        <ellipse cx="65" cy="115" rx="60" ry="8" fill="#E8DCC8" opacity="0.4"/>
+        <!-- listening child (right) -->
+        <circle cx="35" cy="60" r="20" fill="#FFE2B8"/>
+        <path d="M22 78 Q35 95 48 78 L48 110 L22 110 Z" fill="#E08FAF"/>
+        <!-- ear highlight -->
+        <circle cx="48" cy="60" r="6" fill="#F5C84B" stroke="#B86A8C" stroke-width="2"/>
+        <path d="M52 58 Q56 60 56 64 Q56 68 52 66" fill="none" stroke="#B86A8C" stroke-width="2"/>
+        <!-- eyes closed listening -->
+        <path d="M28 58 Q31 60 34 58" fill="none" stroke="#2C2640" stroke-width="2" stroke-linecap="round"/>
+        <path d="M38 58 Q41 60 44 58" fill="none" stroke="#2C2640" stroke-width="2" stroke-linecap="round"/>
+        <path d="M30 68 Q35 70 40 68" fill="none" stroke="#2C2640" stroke-width="2" stroke-linecap="round"/>
+
+        <!-- speaking child (left) -->
+        <circle cx="95" cy="60" r="20" fill="#FFD4C2"/>
+        <path d="M82 78 Q95 95 108 78 L108 110 L82 110 Z" fill="#8B6BC0"/>
+        <!-- eyes -->
+        <circle cx="89" cy="58" r="2" fill="#2C2640"/>
+        <circle cx="101" cy="58" r="2" fill="#2C2640"/>
+        <!-- mouth open -->
+        <ellipse cx="95" cy="68" rx="4" ry="3" fill="#B86A8C"/>
+        <!-- speech bubble -->
+        <path d="M55 30 Q55 18 70 18 L85 18 Q100 18 100 30 Q100 42 85 42 L72 42 L65 50 L68 42 Q55 40 55 30" fill="white" stroke="#8B6BC0" stroke-width="2"/>
+        <line x1="63" y1="28" x2="92" y2="28" stroke="#8B6BC0" stroke-width="2" stroke-linecap="round"/>
+        <line x1="63" y1="34" x2="85" y2="34" stroke="#8B6BC0" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <div class="step-content">
+        <h2>מַקְשִׁיבִים</h2>
+        <p>אֶחָד מְדַבֵּר. אֶחָד מַקְשִׁיב. בְּלִי לְהַפְרִיעַ.</p>
+      </div>
+    </div>
+
+    <!-- STEP 2: FEEL -->
+    <div class="big-step step-2">
+      <div class="num-circle">2</div>
+      <svg class="step-svg" viewBox="0 0 130 130" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="65" cy="115" rx="60" ry="8" fill="#E8DCC8" opacity="0.4"/>
+        <!-- big heart in center -->
+        <path d="M65 95 Q25 65 25 40 Q25 22 42 22 Q55 22 65 35 Q75 22 88 22 Q105 22 105 40 Q105 65 65 95 Z"
+              fill="#E08FAF" stroke="#B86A8C" stroke-width="2"/>
+        <!-- sparkles -->
+        <g fill="#F5C84B">
+          <circle cx="20" cy="35" r="3"/>
+          <circle cx="110" cy="35" r="3"/>
+          <circle cx="15" cy="60" r="2"/>
+          <circle cx="115" cy="60" r="2"/>
+          <path d="M30 20 L32 25 L37 27 L32 29 L30 34 L28 29 L23 27 L28 25 Z" fill="#F5C84B"/>
+          <path d="M100 80 L102 84 L106 85 L102 86 L100 90 L98 86 L94 85 L98 84 Z" fill="#8B6BC0"/>
+        </g>
+        <!-- feeling word inside -->
+        <text x="65" y="55" text-anchor="middle" fill="white" font-family="Heebo" font-size="14" font-weight="900">מָה</text>
+        <text x="65" y="72" text-anchor="middle" fill="white" font-family="Heebo" font-size="14" font-weight="900">הִרְגַּשְׁתִּי?</text>
+      </svg>
+      <div class="step-content">
+        <h2>מַרְגִּישִׁים</h2>
+        <p>אוֹמְרִים מָה הִרְגַּשְׁנוּ. בְּלִי לְהַאֲשִׁים.</p>
+      </div>
+    </div>
+
+    <!-- STEP 3: SOLVE -->
+    <div class="big-step step-3">
+      <div class="num-circle">3</div>
+      <svg class="step-svg" viewBox="0 0 130 130" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="65" cy="115" rx="60" ry="8" fill="#E8DCC8" opacity="0.4"/>
+        <!-- handshake -->
+        <!-- left hand -->
+        <path d="M15 70 Q15 60 25 58 L45 58 Q55 60 55 70 L55 80 Q55 88 47 88 L23 88 Q15 88 15 80 Z"
+              fill="#FFE2B8" stroke="#8B6BC0" stroke-width="2"/>
+        <!-- right hand -->
+        <path d="M115 70 Q115 60 105 58 L85 58 Q75 60 75 70 L75 80 Q75 88 83 88 L107 88 Q115 88 115 80 Z"
+              fill="#FFD4C2" stroke="#8B6BC0" stroke-width="2"/>
+        <!-- meeting in middle -->
+        <rect x="55" y="58" width="20" height="30" rx="4" fill="#8B6BC0"/>
+        <!-- fingers -->
+        <line x1="22" y1="65" x2="48" y2="65" stroke="#B86A8C" stroke-width="1" opacity="0.4"/>
+        <line x1="22" y1="72" x2="48" y2="72" stroke="#B86A8C" stroke-width="1" opacity="0.4"/>
+        <line x1="22" y1="79" x2="48" y2="79" stroke="#B86A8C" stroke-width="1" opacity="0.4"/>
+        <line x1="82" y1="65" x2="108" y2="65" stroke="#B86A8C" stroke-width="1" opacity="0.4"/>
+        <line x1="82" y1="72" x2="108" y2="72" stroke="#B86A8C" stroke-width="1" opacity="0.4"/>
+        <line x1="82" y1="79" x2="108" y2="79" stroke="#B86A8C" stroke-width="1" opacity="0.4"/>
+        <!-- sparkles above -->
+        <g fill="#F5C84B">
+          <path d="M65 25 L67 30 L72 32 L67 34 L65 39 L63 34 L58 32 L63 30 Z"/>
+          <circle cx="40" cy="30" r="2"/>
+          <circle cx="90" cy="30" r="2"/>
+          <circle cx="30" cy="40" r="1.5"/>
+          <circle cx="100" cy="40" r="1.5"/>
+        </g>
+      </svg>
+      <div class="step-content">
+        <h2>פּוֹתְרִים</h2>
+        <p>מַחְלִיטִים מָה נַעֲשֶׂה. סוֹגְרִים בְּטוֹב.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    פוּלְס מַעֲרֶכֶת 10 · קָטֶגוֹרְיָה 8 · פִּתְרוֹן קוֹנְפְלִיקְטִים
+  </div>
+</section>
+
+<!-- ========================================================== -->
+<!-- PAGE 2: PROTOCOL CARD -->
+<!-- ========================================================== -->
+<section class="page">
+  <div class="page-header">
+    <span class="crumb">מתכון 1 · פינת שלום · כרטיס פרוטוקול</span>
+    <span class="num">2 / 13</span>
+  </div>
+
+  <div class="protocol-card">
+    <div class="protocol-title">כְּלָלֵי הַפִּנָּה</div>
+    <div class="protocol-sub">כְּדֵי שֶׁתִּהְיֶה לָנוּ שִׂיחָה טוֹבָה</div>
+
+    <ul class="rules-list">
+      <li><span class="bullet">1</span> מְדַבְּרִים בְּתוֹרוֹת</li>
+      <li><span class="bullet">2</span> לֹא מַפְרִיעִים זֶה לְזוֹ</li>
+      <li><span class="bullet">3</span> לֹא צוֹעֲקִים</li>
+      <li><span class="bullet">4</span> נְסַיֵּם בִּלְחִיצַת יָד</li>
+    </ul>
+
+    <svg class="handshake-bottom" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="60" cy="60" r="55" fill="white" stroke="#8B6BC0" stroke-width="3"/>
+      <path d="M20 60 Q20 50 30 48 L45 48 Q55 50 55 60 L55 70 Q55 76 49 76 L26 76 Q20 76 20 70 Z"
+            fill="#FFE2B8" stroke="#8B6BC0" stroke-width="2"/>
+      <path d="M100 60 Q100 50 90 48 L75 48 Q65 50 65 60 L65 70 Q65 76 71 76 L94 76 Q100 76 100 70 Z"
+            fill="#FFD4C2" stroke="#8B6BC0" stroke-width="2"/>
+      <rect x="55" y="48" width="10" height="28" rx="3" fill="#E08FAF"/>
+    </svg>
+  </div>
+
+  <div class="page-footer">
+    פוּלְס מַעֲרֶכֶת 10 · קָטֶגוֹרְיָה 8 · פִּתְרוֹן קוֹנְפְלִיקְטִים
+  </div>
+</section>
+
+<!-- ========================================================== -->
+<!-- PAGE 3: CORNER LOG SHEET — 8 cards -->
+<!-- ========================================================== -->
+<section class="page">
+  <div class="page-header">
+    <span class="crumb">מתכון 1 · גיליון "בפינה היום"</span>
+    <span class="num">3 / 13</span>
+  </div>
+
+  <div class="page-title">
+    <h2>בַּפִּנָּה הַיּוֹם</h2>
+    <p>תיעוד אנונימי לזיהוי דפוסים. שמות בראשי תיבות בלבד. למורה/יועצת.</p>
+  </div>
+
+  <div class="log-grid">
+    <!-- 8 identical cards -->
+    <div class="log-card"><span class="card-num">1</span>
+      <div class="log-row"><label>תאריך:</label><span class="log-line"></span></div>
+      <div class="log-row"><label>נושא קצר:</label><span class="log-line"></span></div>
+      <div class="log-checks">
+        <label><span class="log-check"></span> הסכמה הושגה</label>
+        <label><span class="log-check"></span> צריך מבוגר</label>
+      </div>
+    </div>
+    <div class="log-card"><span class="card-num">2</span>
+      <div class="log-row"><label>תאריך:</label><span class="log-line"></span></div>
+      <div class="log-row"><label>נושא קצר:</label><span class="log-line"></span></div>
+      <div class="log-checks">
+        <label><span class="log-check"></span> הסכמה הושגה</label>
+        <label><span class="log-check"></span> צריך מבוגר</label>
+      </div>
+    </div>
+    <div class="log-card"><span class="card-num">3</span>
+      <div class="log-row"><label>תאריך:</label><span class="log-line"></span></div>
+      <div class="log-row"><label>נושא קצר:</label><span class="log-line"></span></div>
+      <div class="log-checks">
+        <label><span class="log-check"></span> הסכמה הושגה</label>
+        <label><span class="log-check"></span> צריך מבוגר</label>
+      </div>
+    </div>
+    <div class="log-card"><span class="card-num">4</span>
+      <div class="log-row"><label>תאריך:</label><span class="log-line"></span></div>
+      <div class="log-row"><label>נושא קצר:</label><span class="log-line"></span></div>
+      <div class="log-checks">
+        <label><span class="log-check"></span> הסכמה הושגה</label>
+        <label><span class="log-check"></span> צריך מבוגר</label>
+      </div>
+    </div>
+    <div class="log-card"><span class="card-num">5</span>
+      <div class="log-row"><label>תאריך:</label><span class="log-line"></span></div>
+      <div class="log-row"><label>נושא קצר:</label><span class="log-line"></span></div>
+      <div class="log-checks">
+        <label><span class="log-check"></span> הסכמה הושגה</label>
+        <label><span class="log-check"></span> צריך מבוגר</label>
+      </div>
+    </div>
+    <div class="log-card"><span class="card-num">6</span>
+      <div class="log-row"><label>תאריך:</label><span class="log-line"></span></div>
+      <div class="log-row"><label>נושא קצר:</label><span class="log-line"></span></div>
+      <div class="log-checks">
+        <label><span class="log-check"></span> הסכמה הושגה</label>
+        <label><span class="log-check"></span> צריך מבוגר</label>
+      </div>
+    </div>
+    <div class="log-card"><span class="card-num">7</span>
+      <div class="log-row"><label>תאריך:</label><span class="log-line"></span></div>
+      <div class="log-row"><label>נושא קצר:</label><span class="log-line"></span></div>
+      <div class="log-checks">
+        <label><span class="log-check"></span> הסכמה הושגה</label>
+        <label><span class="log-check"></span> צריך מבוגר</label>
+      </div>
+    </div>
+    <div class="log-card"><span class="card-num">8</span>
+      <div class="log-row"><label>תאריך:</label><span class="log-line"></span></div>
+      <div class="log-row"><label>נושא קצר:</label><span class="log-line"></span></div>
+      <div class="log-checks">
+        <label><span class="log-check"></span> הסכמה הושגה</label>
+        <label><span class="log-check"></span> צריך מבוגר</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    פוּלְס מַעֲרֶכֶת 10 · קָטֶגוֹרְיָה 8 · פִּתְרוֹן קוֹנְפְלִיקְטִים
+  </div>
+</section>
+
+<!-- ========================================================== -->
+<!-- PAGE 4: 6 QUESTION CARDS -->
+<!-- ========================================================== -->
+<section class="page">
+  <div class="page-header">
+    <span class="crumb">מתכון 1 · 6 כרטיסי שאלות מנחות</span>
+    <span class="num">4 / 13</span>
+  </div>
+
+  <div class="page-title">
+    <h2>שְׁאֵלוֹת לְפִינַּת הַשָּׁלוֹם</h2>
+    <p>גוזרים, מצמידים בפינה. הילד/ה שואל/ת לפי הסדר.</p>
+  </div>
+
+  <div class="q-grid">
+    <div class="q-card c1">
+      <span class="q-num">1</span>
+      <svg class="q-icon" viewBox="0 0 70 70">
+        <circle cx="35" cy="35" r="30" fill="#FFFFFF" stroke="#E08FAF" stroke-width="3"/>
+        <text x="35" y="48" text-anchor="middle" fill="#B86A8C" font-size="32" font-weight="900">?</text>
+      </svg>
+      <div class="q-text">מָה הָיָה?</div>
+    </div>
+    <div class="q-card c2">
+      <span class="q-num">2</span>
+      <svg class="q-icon" viewBox="0 0 70 70">
+        <path d="M35 60 Q10 45 10 28 Q10 18 22 18 Q30 18 35 25 Q40 18 48 18 Q60 18 60 28 Q60 45 35 60 Z" fill="#F5C84B"/>
+      </svg>
+      <div class="q-text">אֵיךְ הִרְגַּשְׁתָּ?</div>
+    </div>
+    <div class="q-card c3">
+      <span class="q-num">3</span>
+      <svg class="q-icon" viewBox="0 0 70 70">
+        <circle cx="35" cy="35" r="30" fill="#FFF" stroke="#7FC4E0" stroke-width="3"/>
+        <path d="M20 35 Q35 20 50 35" fill="none" stroke="#7FC4E0" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="35" cy="42" r="3" fill="#7FC4E0"/>
+      </svg>
+      <div class="q-text">מָה רָצִיתָ.יתְּ שֶׁיִּקְרֶה בִּמְקוֹם?</div>
+    </div>
+    <div class="q-card c4">
+      <span class="q-num">4</span>
+      <svg class="q-icon" viewBox="0 0 70 70">
+        <circle cx="35" cy="35" r="30" fill="#FFF" stroke="#8B6BC0" stroke-width="3"/>
+        <path d="M22 35 L32 45 L50 25" fill="none" stroke="#8B6BC0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div class="q-text">מָה הָיָה עוֹזֵר?</div>
+    </div>
+    <div class="q-card c5">
+      <span class="q-num">5</span>
+      <svg class="q-icon" viewBox="0 0 70 70">
+        <path d="M15 40 Q15 32 23 30 L35 30 Q43 32 43 40 L43 46 Q43 50 39 50 L19 50 Q15 50 15 46 Z" fill="#E08FAF"/>
+        <path d="M55 40 Q55 32 47 30 L35 30 Q27 32 27 40 L27 46 Q27 50 31 50 L51 50 Q55 50 55 46 Z" fill="#8B6BC0"/>
+      </svg>
+      <div class="q-text">אֵיךְ אֶפְשָׁר לְסַיֵּם בְּטוֹב?</div>
+    </div>
+    <div class="q-card c6">
+      <span class="q-num">6</span>
+      <svg class="q-icon" viewBox="0 0 70 70">
+        <circle cx="35" cy="35" r="30" fill="#FFF" stroke="#F5C84B" stroke-width="3"/>
+        <circle cx="25" cy="30" r="3" fill="#F5C84B"/>
+        <circle cx="45" cy="30" r="3" fill="#F5C84B"/>
+        <path d="M22 42 Q35 52 48 42" fill="none" stroke="#F5C84B" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <div class="q-text">מַה נִּלְמַד לִפְעַם הַבָּאָה?</div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    פוּלְס מַעֲרֶכֶת 10 · קָטֶגוֹרְיָה 8 · פִּתְרוֹן קוֹנְפְלִיקְטִים
+  </div>
+</section>
+
+<!-- ========================================================== -->
+<!-- PAGE 5: I-MESSAGE POSTER -->
+<!-- ========================================================== -->
+<section class="page">
+  <div class="page-header">
+    <span class="crumb">מתכון 2 · כרזת אני-מסר</span>
+    <span class="num">5 / 13</span>
+  </div>
+
+  <div class="poster-title">
+    <h1>אֲנִי-מֶסֶר</h1>
+    <div class="sub">לְדַבֵּר עַל הָרֶגֶשׁ שֶׁלִּי בְּלִי לְהַאֲשִׁים</div>
+  </div>
+
+  <div class="imessage-poster">
+    <div class="imessage-figures">
+      <svg viewBox="0 0 160 160">
+        <!-- Child A speaking -->
+        <ellipse cx="80" cy="145" rx="55" ry="6" fill="#E8DCC8" opacity="0.5"/>
+        <circle cx="80" cy="60" r="28" fill="#FFE2B8"/>
+        <path d="M58 84 Q80 110 102 84 L102 140 L58 140 Z" fill="#E08FAF"/>
+        <circle cx="72" cy="56" r="3" fill="#2C2640"/>
+        <circle cx="88" cy="56" r="3" fill="#2C2640"/>
+        <path d="M72 72 Q80 78 88 72" fill="none" stroke="#B86A8C" stroke-width="2" stroke-linecap="round"/>
+        <!-- speech bubble pointing right -->
+        <path d="M105 25 L150 25 Q160 25 160 35 L160 55 Q160 65 150 65 L115 65 L108 75 L112 65 Q105 65 105 60 Z" fill="white" stroke="#E08FAF" stroke-width="2.5"/>
+        <text x="132" y="50" text-anchor="middle" fill="#B86A8C" font-size="18" font-weight="900">אֲנִי...</text>
+      </svg>
+      <svg viewBox="0 0 160 160">
+        <!-- Child B listening -->
+        <ellipse cx="80" cy="145" rx="55" ry="6" fill="#E8DCC8" opacity="0.5"/>
+        <circle cx="80" cy="60" r="28" fill="#FFD4C2"/>
+        <path d="M58 84 Q80 110 102 84 L102 140 L58 140 Z" fill="#8B6BC0"/>
+        <!-- eyes look right with attention -->
+        <circle cx="72" cy="56" r="3" fill="#2C2640"/>
+        <circle cx="88" cy="56" r="3" fill="#2C2640"/>
+        <path d="M72 72 Q80 74 88 72" fill="none" stroke="#5E4685" stroke-width="2" stroke-linecap="round"/>
+        <!-- ear with sound -->
+        <path d="M55 60 Q50 60 50 64 Q50 68 55 66" fill="none" stroke="#5E4685" stroke-width="2"/>
+        <!-- listening hearts -->
+        <path d="M115 90 Q108 84 108 78 Q108 74 112 74 Q115 74 117 77 Q119 74 122 74 Q126 74 126 78 Q126 84 119 90 Z" fill="#E08FAF" opacity="0.7"/>
+      </svg>
+    </div>
+
+    <div class="imessage-template">
+      <h2>תַּבְנִית אֲנִי-מֶסֶר</h2>
+      <div class="imessage-sub">3 חלקים. תמיד בסדר הזה.</div>
+
+      <div class="imessage-line">
+        <span class="pill">אֲנִי הִרְגַּשְׁתִּי</span>
+        <span class="blank">______</span>
+      </div>
+      <div class="imessage-line">
+        <span class="pill">כְּשֶׁ</span>
+        <span class="blank">______</span>
+      </div>
+      <div class="imessage-line">
+        <span class="pill">עָשִׂיתָ.ית</span>
+        <span class="blank">______</span>
+      </div>
+
+      <div class="imessage-example">
+        <div class="label">דוגמה</div>
+        <div class="text">אֲנִי הִרְגַּשְׁתִּי עָצוּב.ה כְּשֶׁלָּקַחְתָּ אֶת הָעִפָּרוֹן שֶׁלִּי בְּלִי לִשְׁאֹל</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    פוּלְס מַעֲרֶכֶת 10 · קָטֶגוֹרְיָה 8 · פִּתְרוֹן קוֹנְפְלִיקְטִים
+  </div>
+</section>
+
+<!-- ========================================================== -->
+<!-- PAGE 6: PRACTICE CARDS 1-4 -->
+<!-- ========================================================== -->
+<section class="page">
+  <div class="page-header">
+    <span class="crumb">מתכון 2 · כרטיסי תרגול אני-מסר · 1–4</span>
+    <span class="num">6 / 13</span>
+  </div>
+
+  <div class="page-title">
+    <h2>תַּרְגּוּל אֲנִי-מֶסֶר</h2>
+    <p>קוראים את הסיטואציה. כותבים/אומרים אני-מסר.</p>
+  </div>
+
+  <div class="practice-grid">
+    <div class="practice-card">
+      <span class="p-num">1</span>
+      <div class="scenario">
+        <svg class="scenario-icon" viewBox="0 0 36 36">
+          <rect x="14" y="5" width="8" height="22" rx="2" fill="#F5C84B"/>
+          <path d="M14 5 L18 1 L22 5 Z" fill="#2C2640"/>
+        </svg>
+        הַחֲבֵר.ה לָקַח.ה אֶת הָעִפָּרוֹן שֶׁלִּי בְּלִי לְבַקֵּשׁ
+      </div>
+      <div class="write-block">
+        <div class="label">אֲנִי הִרְגַּשְׁתִּי... כְּשֶׁ... עָשִׂיתָ.ית...</div>
+        <div class="write-line"></div>
+        <div class="write-line"></div>
+      </div>
+    </div>
+    <div class="practice-card">
+      <span class="p-num">2</span>
+      <div class="scenario">
+        <svg class="scenario-icon" viewBox="0 0 36 36">
+          <circle cx="18" cy="18" r="14" fill="#FFE2B8" stroke="#E08FAF" stroke-width="2"/>
+          <path d="M12 14 Q14 12 16 14" fill="none" stroke="#2C2640" stroke-width="1.5"/>
+          <path d="M20 14 Q22 12 24 14" fill="none" stroke="#2C2640" stroke-width="1.5"/>
+          <path d="M12 24 Q18 28 24 24" fill="none" stroke="#B86A8C" stroke-width="2"/>
+        </svg>
+        חֲבֵר.ה צָחַק.ה כְּשֶׁטָּעִיתִי בְּקוֹל בַּכִּתָּה
+      </div>
+      <div class="write-block">
+        <div class="label">אֲנִי הִרְגַּשְׁתִּי... כְּשֶׁ... עָשִׂיתָ.ית...</div>
+        <div class="write-line"></div>
+        <div class="write-line"></div>
+      </div>
+    </div>
+    <div class="practice-card">
+      <span class="p-num">3</span>
+      <div class="scenario">
+        <svg class="scenario-icon" viewBox="0 0 36 36">
+          <circle cx="12" cy="22" r="5" fill="#E08FAF"/>
+          <circle cx="22" cy="22" r="5" fill="#8B6BC0"/>
+          <path d="M10 12 L26 12" stroke="#2C2640" stroke-width="2" stroke-linecap="round"/>
+          <path d="M14 8 L14 12" stroke="#2C2640" stroke-width="2"/>
+          <path d="M22 8 L22 12" stroke="#2C2640" stroke-width="2"/>
+        </svg>
+        לֹא נָתְנוּ לִי לְהִצְטָרֵף לַמִּשְׂחָק בַּהַפְסָקָה
+      </div>
+      <div class="write-block">
+        <div class="label">אֲנִי הִרְגַּשְׁתִּי... כְּשֶׁ... עָשִׂיתָ.ית...</div>
+        <div class="write-line"></div>
+        <div class="write-line"></div>
+      </div>
+    </div>
+    <div class="practice-card">
+      <span class="p-num">4</span>
+      <div class="scenario">
+        <svg class="scenario-icon" viewBox="0 0 36 36">
+          <rect x="6" y="10" width="24" height="18" rx="2" fill="#7FC4E0"/>
+          <rect x="9" y="13" width="18" height="3" fill="white"/>
+          <rect x="9" y="18" width="14" height="3" fill="white"/>
+          <rect x="9" y="23" width="10" height="3" fill="white"/>
+        </svg>
+        חֲבֵר.ה דָּחַף.ה אוֹתִי בְּתוֹר לַשֵּׁרוּתִים
+      </div>
+      <div class="write-block">
+        <div class="label">אֲנִי הִרְגַּשְׁתִּי... כְּשֶׁ... עָשִׂיתָ.ית...</div>
+        <div class="write-line"></div>
+        <div class="write-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    פוּלְס מַעֲרֶכֶת 10 · קָטֶגוֹרְיָה 8 · פִּתְרוֹן קוֹנְפְלִיקְטִים
+  </div>
+</section>
+
+<!-- ========================================================== -->
+<!-- PAGE 7: PRACTICE CARDS 5-8 -->
+<!-- ========================================================== -->
+<section class="page">
+  <div class="page-header">
+    <span class="crumb">מתכון 2 · כרטיסי תרגול אני-מסר · 5–8</span>
+    <span class="num">7 / 13</span>
+  </div>
+
+  <div class="page-title">
+    <h2>תַּרְגּוּל אֲנִי-מֶסֶר</h2>
+    <p>קוראים את הסיטואציה. כותבים/אומרים אני-מסר.</p>
+  </div>
+
+  <div class="practice-grid">
+    <div class="practice-card">
+      <span class="p-num">5</span>
+      <div class="scenario">
+        <svg class="scenario-icon" viewBox="0 0 36 36">
+          <rect x="6" y="12" width="24" height="16" rx="2" fill="#E08FAF"/>
+          <circle cx="13" cy="20" r="3" fill="white"/>
+          <circle cx="23" cy="20" r="3" fill="white"/>
+        </svg>
+        חֲבֵר.ה הִשְׁמִיעַ.ה כִּנּוּי שֶׁפָּגַע בִּי
+      </div>
+      <div class="write-block">
+        <div class="label">אֲנִי הִרְגַּשְׁתִּי... כְּשֶׁ... עָשִׂיתָ.ית...</div>
+        <div class="write-line"></div>
+        <div class="write-line"></div>
+      </div>
+    </div>
+    <div class="practice-card">
+      <span class="p-num">6</span>
+      <div class="scenario">
+        <svg class="scenario-icon" viewBox="0 0 36 36">
+          <circle cx="18" cy="18" r="14" fill="#8B6BC0"/>
+          <path d="M12 14 L24 14 M12 18 L22 18 M12 22 L20 22" stroke="white" stroke-width="2"/>
+        </svg>
+        קְבוּצָה הֵבִינָה סוֹד עָלַי בְּלִי שֶׁשָּׁמַעְתִּי
+      </div>
+      <div class="write-block">
+        <div class="label">אֲנִי הִרְגַּשְׁתִּי... כְּשֶׁ... עָשִׂיתָ.ית...</div>
+        <div class="write-line"></div>
+        <div class="write-line"></div>
+      </div>
+    </div>
+    <div class="practice-card">
+      <span class="p-num">7</span>
+      <div class="scenario">
+        <svg class="scenario-icon" viewBox="0 0 36 36">
+          <rect x="4" y="10" width="28" height="20" rx="3" fill="#F5C84B"/>
+          <circle cx="11" cy="20" r="2" fill="#2C2640"/>
+          <circle cx="25" cy="20" r="2" fill="#2C2640"/>
+        </svg>
+        חֲבֵר.ה לֹא הִזְמִין.ה אוֹתִי לְיוֹם הֻלֶּדֶת
+      </div>
+      <div class="write-block">
+        <div class="label">אֲנִי הִרְגַּשְׁתִּי... כְּשֶׁ... עָשִׂיתָ.ית...</div>
+        <div class="write-line"></div>
+        <div class="write-line"></div>
+      </div>
+    </div>
+    <div class="practice-card">
+      <span class="p-num">8</span>
+      <div class="scenario">
+        <svg class="scenario-icon" viewBox="0 0 36 36">
+          <circle cx="18" cy="18" r="14" fill="#7FC4E0"/>
+          <path d="M14 12 L14 24" stroke="white" stroke-width="2"/>
+          <path d="M14 12 L22 18 L14 24" fill="white"/>
+        </svg>
+        מִישֶׁהוּ.מִי דָּחָה.ת אוֹתִי כְּשֶׁבִּקַּשְׁתִּי עֵזֶר
+      </div>
+      <div class="write-block">
+        <div class="label">אֲנִי הִרְגַּשְׁתִּי... כְּשֶׁ... עָשִׂיתָ.ית...</div>
+        <div class="write-line"></div>
+        <div class="write-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    פוּלְס מַעֲרֶכֶת 10 · קָטֶגוֹרְיָה 8 · פִּתְרוֹן קוֹנְפְלִיקְטִים
+  </div>
+</section>
+
+<!-- ========================================================== -->
+<!-- PAGE 8: PRACTICE CARDS 9-12 -->
+<!-- ========================================================== -->
+<section class="page">
+  <div class="page-header">
+    <span class="crumb">מתכון 2 · כרטיסי תרגול אני-מסר · 9–12</span>
+    <span class="num">8 / 13</span>
+  </div>
+
+  <div class="page-title">
+    <h2>תַּרְגּוּל אֲנִי-מֶסֶר</h2>
+    <p>קוראים את הסיטואציה. כותבים/אומרים אני-מסר.</p>
+  </div>
+
+  <div class="practice-grid">
+    <div class="practice-card">
+      <span class="p-num">9</span>
+      <div class="scenario">
+        <svg class="scenario-icon" viewBox="0 0 36 36">
+          <path d="M4 30 L18 8 L32 30 Z" fill="#E08FAF"/>
+          <circle cx="18" cy="22" r="3" fill="white"/>
+        </svg>
+        אָחִי.אֲחוֹתִי שָׁבַר.ה לִי צַעֲצוּעַ אָהוּב
+      </div>
+      <div class="write-block">
+        <div class="label">אֲנִי הִרְגַּשְׁתִּי... כְּשֶׁ... עָשִׂיתָ.ית...</div>
+        <div class="write-line"></div>
+        <div class="write-line"></div>
+      </div>
+    </div>
+    <div class="practice-card">
+      <span class="p-num">10</span>
+      <div class="scenario">
+        <svg class="scenario-icon" viewBox="0 0 36 36">
+          <rect x="8" y="14" width="20" height="14" rx="2" fill="#8B6BC0"/>
+          <rect x="10" y="10" width="4" height="6" fill="#8B6BC0"/>
+          <rect x="22" y="10" width="4" height="6" fill="#8B6BC0"/>
+        </svg>
+        חֲבֵר.ה דִּבֵּר.ה בְּתוֹר שֶׁלִּי בַּשִּׁעוּר
+      </div>
+      <div class="write-block">
+        <div class="label">אֲנִי הִרְגַּשְׁתִּי... כְּשֶׁ... עָשִׂיתָ.ית...</div>
+        <div class="write-line"></div>
+        <div class="write-line"></div>
+      </div>
+    </div>
+    <div class="practice-card">
+      <span class="p-num">11</span>
+      <div class="scenario">
+        <svg class="scenario-icon" viewBox="0 0 36 36">
+          <circle cx="18" cy="18" r="12" fill="#F5C84B"/>
+          <circle cx="14" cy="16" r="1.5" fill="#2C2640"/>
+          <circle cx="22" cy="16" r="1.5" fill="#2C2640"/>
+          <path d="M14 22 Q18 24 22 22" fill="none" stroke="#2C2640" stroke-width="1.5"/>
+        </svg>
+        חֲבֵר.ה הִבְטִיחָ.ה לְשַׂחֵק וְלֹא הִגִּיעַ.ה
+      </div>
+      <div class="write-block">
+        <div class="label">אֲנִי הִרְגַּשְׁתִּי... כְּשֶׁ... עָשִׂיתָ.ית...</div>
+        <div class="write-line"></div>
+        <div class="write-line"></div>
+      </div>
+    </div>
+    <div class="practice-card">
+      <span class="p-num">12</span>
+      <div class="scenario">
+        <svg class="scenario-icon" viewBox="0 0 36 36">
+          <rect x="6" y="6" width="24" height="24" rx="3" fill="#7FC4E0"/>
+          <path d="M10 16 L26 16 M10 20 L20 20" stroke="white" stroke-width="2"/>
+        </svg>
+        חֲבֵר.ה הֶעְתִּיק.ה מֵהַמַּחְבֶּרֶת שֶׁלִּי בְּלִי לִשְׁאֹל
+      </div>
+      <div class="write-block">
+        <div class="label">אֲנִי הִרְגַּשְׁתִּי... כְּשֶׁ... עָשִׂיתָ.ית...</div>
+        <div class="write-line"></div>
+        <div class="write-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    פוּלְס מַעֲרֶכֶת 10 · קָטֶגוֹרְיָה 8 · פִּתְרוֹן קוֹנְפְלִיקְטִים
+  </div>
+</section>
+
+<!-- ========================================================== -->
+<!-- PAGE 9: PRACTICE CARDS 13-16 -->
+<!-- ========================================================== -->
+<section class="page">
+  <div class="page-header">
+    <span class="crumb">מתכון 2 · כרטיסי תרגול אני-מסר · 13–16</span>
+    <span class="num">9 / 13</span>
+  </div>
+
+  <div class="page-title">
+    <h2>תַּרְגּוּל אֲנִי-מֶסֶר</h2>
+    <p>קוראים את הסיטואציה. כותבים/אומרים אני-מסר.</p>
+  </div>
+
+  <div class="practice-grid">
+    <div class="practice-card">
+      <span class="p-num">13</span>
+      <div class="scenario">
+        <svg class="scenario-icon" viewBox="0 0 36 36">
+          <ellipse cx="18" cy="20" rx="12" ry="8" fill="#E08FAF"/>
+          <circle cx="14" cy="18" r="1.5" fill="white"/>
+          <circle cx="22" cy="18" r="1.5" fill="white"/>
+        </svg>
+        חֲבֵר.ה צָעַק.ה עָלַי בְּזַעַם
+      </div>
+      <div class="write-block">
+        <div class="label">אֲנִי הִרְגַּשְׁתִּי... כְּשֶׁ... עָשִׂיתָ.ית...</div>
+        <div class="write-line"></div>
+        <div class="write-line"></div>
+      </div>
+    </div>
+    <div class="practice-card">
+      <span class="p-num">14</span>
+      <div class="scenario">
+        <svg class="scenario-icon" viewBox="0 0 36 36">
+          <path d="M18 4 L22 14 L32 14 L24 20 L28 30 L18 24 L8 30 L12 20 L4 14 L14 14 Z" fill="#F5C84B"/>
+        </svg>
+        הַמּוֹרָה שִׁבַּחָ.ה רַק חָבֵר.ה אַחֵר.ת וְלֹא אוֹתִי
+      </div>
+      <div class="write-block">
+        <div class="label">אֲנִי הִרְגַּשְׁתִּי... כְּשֶׁ... עָשִׂיתָ.ית...</div>
+        <div class="write-line"></div>
+        <div class="write-line"></div>
+      </div>
+    </div>
+    <div class="practice-card">
+      <span class="p-num">15</span>
+      <div class="scenario">
+        <svg class="scenario-icon" viewBox="0 0 36 36">
+          <circle cx="18" cy="18" r="14" fill="#8B6BC0"/>
+          <path d="M12 18 L24 18" stroke="white" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        קְבוּצָה לֹא נָתְנָה לִי לְהִשְׁתַּתֵּף בַּהַצָּגָה
+      </div>
+      <div class="write-block">
+        <div class="label">אֲנִי הִרְגַּשְׁתִּי... כְּשֶׁ... עָשִׂיתָ.ית...</div>
+        <div class="write-line"></div>
+        <div class="write-line"></div>
+      </div>
+    </div>
+    <div class="practice-card">
+      <span class="p-num">16</span>
+      <div class="scenario">
+        <svg class="scenario-icon" viewBox="0 0 36 36">
+          <path d="M18 6 Q26 6 26 14 L26 22 Q26 30 18 30 Q10 30 10 22 L10 14 Q10 6 18 6 Z" fill="#7FC4E0"/>
+        </svg>
+        חֲבֵר.ה גִּלָּה.תָה סוֹד שֶׁלִּי לְאֲחֵרִים
+      </div>
+      <div class="write-block">
+        <div class="label">אֲנִי הִרְגַּשְׁתִּי... כְּשֶׁ... עָשִׂיתָ.ית...</div>
+        <div class="write-line"></div>
+        <div class="write-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    פוּלְס מַעֲרֶכֶת 10 · קָטֶגוֹרְיָה 8 · פִּתְרוֹן קוֹנְפְלִיקְטִים
+  </div>
+</section>
+
+<!-- ========================================================== -->
+<!-- PAGE 10: PRACTICE CARDS 17-20 -->
+<!-- ========================================================== -->
+<section class="page">
+  <div class="page-header">
+    <span class="crumb">מתכון 2 · כרטיסי תרגול אני-מסר · 17–20</span>
+    <span class="num">10 / 13</span>
+  </div>
+
+  <div class="page-title">
+    <h2>תַּרְגּוּל אֲנִי-מֶסֶר</h2>
+    <p>קוראים את הסיטואציה. כותבים/אומרים אני-מסר.</p>
+  </div>
+
+  <div class="practice-grid">
+    <div class="practice-card">
+      <span class="p-num">17</span>
+      <div class="scenario">
+        <svg class="scenario-icon" viewBox="0 0 36 36">
+          <rect x="8" y="8" width="20" height="20" rx="2" fill="#E08FAF"/>
+          <path d="M12 18 L16 22 L24 14" fill="none" stroke="white" stroke-width="3" stroke-linejoin="round"/>
+        </svg>
+        חָבֵר.ה הִבְטִיחָ.ה לְהַחְזִיר לִי וְלֹא הֶחְזִיר.ה
+      </div>
+      <div class="write-block">
+        <div class="label">אֲנִי הִרְגַּשְׁתִּי... כְּשֶׁ... עָשִׂיתָ.ית...</div>
+        <div class="write-line"></div>
+        <div class="write-line"></div>
+      </div>
+    </div>
+    <div class="practice-card">
+      <span class="p-num">18</span>
+      <div class="scenario">
+        <svg class="scenario-icon" viewBox="0 0 36 36">
+          <ellipse cx="18" cy="22" rx="14" ry="6" fill="#F5C84B"/>
+          <circle cx="18" cy="12" r="5" fill="#F5C84B"/>
+        </svg>
+        מִישֶׁהוּ.מִי הִתְעַלֵּם.ה מִמֶּנִּי כָּל הַהַפְסָקָה
+      </div>
+      <div class="write-block">
+        <div class="label">אֲנִי הִרְגַּשְׁתִּי... כְּשֶׁ... עָשִׂיתָ.ית...</div>
+        <div class="write-line"></div>
+        <div class="write-line"></div>
+      </div>
+    </div>
+    <div class="practice-card">
+      <span class="p-num">19</span>
+      <div class="scenario">
+        <svg class="scenario-icon" viewBox="0 0 36 36">
+          <path d="M6 18 L18 6 L30 18 L18 30 Z" fill="#8B6BC0"/>
+          <circle cx="18" cy="18" r="4" fill="white"/>
+        </svg>
+        חֲבֵר.ה חִקָּה.תָה אוֹתִי וְכֻלָּם צָחֲקוּ
+      </div>
+      <div class="write-block">
+        <div class="label">אֲנִי הִרְגַּשְׁתִּי... כְּשֶׁ... עָשִׂיתָ.ית...</div>
+        <div class="write-line"></div>
+        <div class="write-line"></div>
+      </div>
+    </div>
+    <div class="practice-card">
+      <span class="p-num">20</span>
+      <div class="scenario">
+        <svg class="scenario-icon" viewBox="0 0 36 36">
+          <rect x="6" y="14" width="24" height="14" rx="2" fill="#7FC4E0"/>
+          <path d="M10 14 L18 6 L26 14 Z" fill="#7FC4E0"/>
+          <rect x="14" y="20" width="8" height="8" fill="white"/>
+        </svg>
+        חֲבֵר.ה לֹא הֶחְזִיר.ה לִי שָׁלוֹם כְּשֶׁבָּאתִי בַּבֹּקֶר
+      </div>
+      <div class="write-block">
+        <div class="label">אֲנִי הִרְגַּשְׁתִּי... כְּשֶׁ... עָשִׂיתָ.ית...</div>
+        <div class="write-line"></div>
+        <div class="write-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    פוּלְס מַעֲרֶכֶת 10 · קָטֶגוֹרְיָה 8 · פִּתְרוֹן קוֹנְפְלִיקְטִים
+  </div>
+</section>
+
+<!-- ========================================================== -->
+<!-- PAGE 11: FEELINGS BOARD — 16 FEELINGS -->
+<!-- ========================================================== -->
+<section class="page">
+  <div class="page-header">
+    <span class="crumb">מתכון 2 · לוח רגשות מסייע</span>
+    <span class="num">11 / 13</span>
+  </div>
+
+  <div class="page-title">
+    <h2>לוּחַ רְגָשׁוֹת</h2>
+    <p>כשקשה למצוא מילה — מצביעים. תולים ליד פינת השלום.</p>
+  </div>
+
+  <div class="feelings-grid">
+    <!-- 1 sad -->
+    <div class="feel-card f-sad">
+      <svg class="face" viewBox="0 0 56 56">
+        <circle cx="28" cy="28" r="22" fill="#7FB3E0"/>
+        <circle cx="20" cy="24" r="2" fill="#2C2640"/>
+        <circle cx="36" cy="24" r="2" fill="#2C2640"/>
+        <path d="M18 38 Q28 32 38 38" fill="none" stroke="#2C2640" stroke-width="2" stroke-linecap="round"/>
+        <path d="M20 30 Q22 32 24 30" fill="#7FB3E0" stroke="#5E84A8" stroke-width="1"/>
+      </svg>
+      <span class="name">עָצוּב.ה</span>
+    </div>
+    <!-- 2 angry -->
+    <div class="feel-card f-angry">
+      <svg class="face" viewBox="0 0 56 56">
+        <circle cx="28" cy="28" r="22" fill="#E07F7F"/>
+        <path d="M16 20 L24 24" stroke="#2C2640" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M40 20 L32 24" stroke="#2C2640" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="20" cy="26" r="2" fill="#2C2640"/>
+        <circle cx="36" cy="26" r="2" fill="#2C2640"/>
+        <path d="M18 40 Q28 36 38 40" fill="none" stroke="#2C2640" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span class="name">כּוֹעֵס.ת</span>
+    </div>
+    <!-- 3 shy -->
+    <div class="feel-card f-shy">
+      <svg class="face" viewBox="0 0 56 56">
+        <circle cx="28" cy="28" r="22" fill="#E0A87F"/>
+        <path d="M16 24 Q20 22 24 24" fill="none" stroke="#2C2640" stroke-width="2"/>
+        <path d="M32 24 Q36 22 40 24" fill="none" stroke="#2C2640" stroke-width="2"/>
+        <circle cx="16" cy="34" r="3" fill="#E08FAF" opacity="0.6"/>
+        <circle cx="40" cy="34" r="3" fill="#E08FAF" opacity="0.6"/>
+        <path d="M24 38 Q28 36 32 38" fill="none" stroke="#2C2640" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span class="name">מִתְבַּיֵּשׁ.ת</span>
+    </div>
+    <!-- 4 disappointed -->
+    <div class="feel-card f-disappoint">
+      <svg class="face" viewBox="0 0 56 56">
+        <circle cx="28" cy="28" r="22" fill="#C9B8E0"/>
+        <path d="M16 22 L24 26" stroke="#2C2640" stroke-width="2" stroke-linecap="round"/>
+        <path d="M40 22 L32 26" stroke="#2C2640" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="20" cy="28" r="2" fill="#2C2640"/>
+        <circle cx="36" cy="28" r="2" fill="#2C2640"/>
+        <line x1="20" y1="40" x2="36" y2="40" stroke="#2C2640" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span class="name">מְאֻכְזָב.ת</span>
+    </div>
+    <!-- 5 hurt -->
+    <div class="feel-card f-hurt">
+      <svg class="face" viewBox="0 0 56 56">
+        <circle cx="28" cy="28" r="22" fill="#F5C9D9"/>
+        <path d="M16 22 Q20 26 24 22" fill="none" stroke="#2C2640" stroke-width="2"/>
+        <path d="M32 22 Q36 26 40 22" fill="none" stroke="#2C2640" stroke-width="2"/>
+        <path d="M18 38 Q28 30 38 38" fill="none" stroke="#2C2640" stroke-width="2" stroke-linecap="round"/>
+        <path d="M28 42 Q26 46 28 50 Q30 46 28 42" fill="#7FB3E0"/>
+      </svg>
+      <span class="name">נֶעֱלָב.ת</span>
+    </div>
+    <!-- 6 confused -->
+    <div class="feel-card f-confused">
+      <svg class="face" viewBox="0 0 56 56">
+        <circle cx="28" cy="28" r="22" fill="#E0D2A8"/>
+        <circle cx="20" cy="24" r="2" fill="#2C2640"/>
+        <circle cx="36" cy="24" r="2" fill="#2C2640"/>
+        <path d="M20 36 Q24 34 28 36 Q32 38 36 36" fill="none" stroke="#2C2640" stroke-width="2"/>
+        <text x="42" y="20" fill="#8B6BC0" font-size="14" font-weight="900">?</text>
+      </svg>
+      <span class="name">מְבֻלְבָּל.ת</span>
+    </div>
+    <!-- 7 scared -->
+    <div class="feel-card f-scared">
+      <svg class="face" viewBox="0 0 56 56">
+        <circle cx="28" cy="28" r="22" fill="#A8C0D8"/>
+        <circle cx="20" cy="24" r="4" fill="white"/>
+        <circle cx="36" cy="24" r="4" fill="white"/>
+        <circle cx="20" cy="24" r="1.5" fill="#2C2640"/>
+        <circle cx="36" cy="24" r="1.5" fill="#2C2640"/>
+        <ellipse cx="28" cy="40" rx="3" ry="5" fill="#2C2640"/>
+      </svg>
+      <span class="name">פּוֹחֵד.ת</span>
+    </div>
+    <!-- 8 missing -->
+    <div class="feel-card f-missing">
+      <svg class="face" viewBox="0 0 56 56">
+        <circle cx="28" cy="28" r="22" fill="#D8B8DC"/>
+        <circle cx="20" cy="26" r="2" fill="#2C2640"/>
+        <circle cx="36" cy="26" r="2" fill="#2C2640"/>
+        <path d="M20 38 Q28 35 36 38" fill="none" stroke="#2C2640" stroke-width="2" stroke-linecap="round"/>
+        <path d="M40 18 Q44 14 42 10" fill="#E08FAF"/>
+        <circle cx="44" cy="12" r="3" fill="#E08FAF"/>
+      </svg>
+      <span class="name">מִתְגַּעְגֵּעַ.ת</span>
+    </div>
+    <!-- 9 jealous -->
+    <div class="feel-card f-jealous">
+      <svg class="face" viewBox="0 0 56 56">
+        <circle cx="28" cy="28" r="22" fill="#A8D89F"/>
+        <ellipse cx="20" cy="24" rx="3" ry="2" fill="#2C2640"/>
+        <ellipse cx="36" cy="24" rx="3" ry="2" fill="#2C2640"/>
+        <path d="M18 38 Q24 34 28 38 Q32 42 38 38" fill="none" stroke="#2C2640" stroke-width="2"/>
+      </svg>
+      <span class="name">מְקַנֵּא.ת</span>
+    </div>
+    <!-- 10 lonely -->
+    <div class="feel-card f-lonely">
+      <svg class="face" viewBox="0 0 56 56">
+        <circle cx="28" cy="28" r="22" fill="#A0B8D0"/>
+        <circle cx="20" cy="26" r="2" fill="#2C2640"/>
+        <circle cx="36" cy="26" r="2" fill="#2C2640"/>
+        <path d="M20 40 L36 40" stroke="#2C2640" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="14" cy="14" r="2" fill="white"/>
+        <circle cx="42" cy="14" r="2" fill="white"/>
+      </svg>
+      <span class="name">בּוֹדֵד.ה</span>
+    </div>
+    <!-- 11 worried -->
+    <div class="feel-card f-worried">
+      <svg class="face" viewBox="0 0 56 56">
+        <circle cx="28" cy="28" r="22" fill="#E0D08F"/>
+        <path d="M14 18 Q18 14 22 18" fill="none" stroke="#2C2640" stroke-width="2"/>
+        <path d="M34 18 Q38 14 42 18" fill="none" stroke="#2C2640" stroke-width="2"/>
+        <circle cx="20" cy="26" r="2" fill="#2C2640"/>
+        <circle cx="36" cy="26" r="2" fill="#2C2640"/>
+        <path d="M22 40 Q28 36 34 40" fill="none" stroke="#2C2640" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span class="name">מֻדְאָג.ת</span>
+    </div>
+    <!-- 12 frustrated -->
+    <div class="feel-card f-frustrated">
+      <svg class="face" viewBox="0 0 56 56">
+        <circle cx="28" cy="28" r="22" fill="#E0A0BE"/>
+        <path d="M16 22 L24 22" stroke="#2C2640" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M32 22 L40 22" stroke="#2C2640" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="20" cy="28" r="2" fill="#2C2640"/>
+        <circle cx="36" cy="28" r="2" fill="#2C2640"/>
+        <path d="M20 40 L36 40" stroke="#2C2640" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span class="name">מְתֻסְכָּל.ת</span>
+    </div>
+    <!-- 13 tired -->
+    <div class="feel-card f-tired">
+      <svg class="face" viewBox="0 0 56 56">
+        <circle cx="28" cy="28" r="22" fill="#C8C8C8"/>
+        <path d="M16 26 Q20 24 24 26" fill="none" stroke="#2C2640" stroke-width="2"/>
+        <path d="M32 26 Q36 24 40 26" fill="none" stroke="#2C2640" stroke-width="2"/>
+        <ellipse cx="28" cy="40" rx="6" ry="3" fill="#2C2640" opacity="0.3"/>
+        <text x="42" y="20" fill="#8B6BC0" font-size="10">zz</text>
+      </svg>
+      <span class="name">עָיֵף.ה</span>
+    </div>
+    <!-- 14 proud -->
+    <div class="feel-card f-proud">
+      <svg class="face" viewBox="0 0 56 56">
+        <circle cx="28" cy="28" r="22" fill="#F5C84B"/>
+        <path d="M16 22 Q20 18 24 22" fill="none" stroke="#2C2640" stroke-width="2"/>
+        <path d="M32 22 Q36 18 40 22" fill="none" stroke="#2C2640" stroke-width="2"/>
+        <circle cx="20" cy="26" r="2" fill="#2C2640"/>
+        <circle cx="36" cy="26" r="2" fill="#2C2640"/>
+        <path d="M18 36 Q28 44 38 36" fill="none" stroke="#2C2640" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M28 8 L30 12 L34 12 L31 15 L32 19 L28 17 L24 19 L25 15 L22 12 L26 12 Z" fill="#E08FAF"/>
+      </svg>
+      <span class="name">גֵּאֶה.ה</span>
+    </div>
+    <!-- 15 calm -->
+    <div class="feel-card f-calm">
+      <svg class="face" viewBox="0 0 56 56">
+        <circle cx="28" cy="28" r="22" fill="#A8DCF0"/>
+        <path d="M16 24 Q20 22 24 24" fill="none" stroke="#2C2640" stroke-width="2" stroke-linecap="round"/>
+        <path d="M32 24 Q36 22 40 24" fill="none" stroke="#2C2640" stroke-width="2" stroke-linecap="round"/>
+        <path d="M22 36 Q28 38 34 36" fill="none" stroke="#2C2640" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span class="name">רָגוּעַ.ה</span>
+    </div>
+    <!-- 16 happy -->
+    <div class="feel-card f-happy">
+      <svg class="face" viewBox="0 0 56 56">
+        <circle cx="28" cy="28" r="22" fill="#F0A040"/>
+        <circle cx="20" cy="24" r="2.5" fill="#2C2640"/>
+        <circle cx="36" cy="24" r="2.5" fill="#2C2640"/>
+        <path d="M16 34 Q28 46 40 34" fill="none" stroke="#2C2640" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <span class="name">שָׂמֵחַ.ה</span>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    פוּלְס מַעֲרֶכֶת 10 · קָטֶגוֹרְיָה 8 · פִּתְרוֹן קוֹנְפְלִיקְטִים
+  </div>
+</section>
+
+<!-- ========================================================== -->
+<!-- PAGE 12: HOMEWORK SHEET -->
+<!-- ========================================================== -->
+<section class="page">
+  <div class="page-header">
+    <span class="crumb">מתכון 2 · דף תרגיל בית</span>
+    <span class="num">12 / 13</span>
+  </div>
+
+  <div class="page-title">
+    <h2>אֲנִי-מֶסֶר בַּבַּיִת</h2>
+  </div>
+
+  <div class="hw-intro">
+    <h3>הַשָּׁבוּעַ אַתָּ.אַתְּ בָּלָשׁ.ית!</h3>
+    <p>חַפֵּשׂ.חַפְּשִׂי 3 פְּעָמִים שֶׁבָּהֶן הִשְׁתַּמַּשְׁתָּ.ת בְּ"אֲנִי-מֶסֶר" אוֹ שֶׁהָיָה כְּדַאי. סַפֵּר.י עַל זֶה לְמִישֶׁהוּ.מִי בַּבַּיִת אוֹ כְּתֹב.ִי כָּאן.</p>
+  </div>
+
+  <div class="hw-slots">
+    <div class="hw-slot">
+      <div class="slot-head">
+        <span class="slot-num">1</span>
+        <h4>פַּעַם רִאשׁוֹנָה</h4>
+      </div>
+      <div class="hw-row"><label>מָתַי קָרָה?</label><span class="hw-line"></span></div>
+      <div class="hw-row"><label>עִם מִי?</label><span class="hw-line"></span></div>
+      <div class="hw-row"><label>הָאֲנִי-מֶסֶר שֶׁלִּי:</label><span class="hw-line"></span></div>
+      <div class="hw-row"><label>&nbsp;</label><span class="hw-line"></span></div>
+    </div>
+    <div class="hw-slot">
+      <div class="slot-head">
+        <span class="slot-num">2</span>
+        <h4>פַּעַם שְׁנִיָּה</h4>
+      </div>
+      <div class="hw-row"><label>מָתַי קָרָה?</label><span class="hw-line"></span></div>
+      <div class="hw-row"><label>עִם מִי?</label><span class="hw-line"></span></div>
+      <div class="hw-row"><label>הָאֲנִי-מֶסֶר שֶׁלִּי:</label><span class="hw-line"></span></div>
+      <div class="hw-row"><label>&nbsp;</label><span class="hw-line"></span></div>
+    </div>
+    <div class="hw-slot">
+      <div class="slot-head">
+        <span class="slot-num">3</span>
+        <h4>פַּעַם שְׁלִישִׁית</h4>
+      </div>
+      <div class="hw-row"><label>מָתַי קָרָה?</label><span class="hw-line"></span></div>
+      <div class="hw-row"><label>עִם מִי?</label><span class="hw-line"></span></div>
+      <div class="hw-row"><label>הָאֲנִי-מֶסֶר שֶׁלִּי:</label><span class="hw-line"></span></div>
+      <div class="hw-row"><label>&nbsp;</label><span class="hw-line"></span></div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    פוּלְס מַעֲרֶכֶת 10 · קָטֶגוֹרְיָה 8 · פִּתְרוֹן קוֹנְפְלִיקְטִים
+  </div>
+</section>
+
+<!-- ========================================================== -->
+<!-- PAGE 13: TRAINING TRACK — 3 LESSONS -->
+<!-- ========================================================== -->
+<section class="page">
+  <div class="page-header">
+    <span class="crumb">מתכון 3 · מסלול הכשרת מתווכ.ת עמית.ה</span>
+    <span class="num">13 / 13</span>
+  </div>
+
+  <div class="track-intro">
+    <h2>מַסְלוּל הַכְשָׁרַת מְתַוֵּכ.ת עָמִית.ה</h2>
+    <p>3 שיעורים · 45 דקות לשיעור · מועברים ע"י יועצת בית הספר</p>
+  </div>
+
+  <div class="lessons-stack">
+    <div class="lesson-card l1">
+      <svg class="lesson-icon" viewBox="0 0 80 80">
+        <circle cx="40" cy="40" r="36" fill="white" stroke="#F5C84B" stroke-width="3"/>
+        <circle cx="50" cy="32" r="6" fill="#F5C84B" stroke="#6B4F00" stroke-width="2"/>
+        <path d="M56 30 Q60 32 60 38 Q60 44 56 42" fill="none" stroke="#6B4F00" stroke-width="2"/>
+        <circle cx="30" cy="40" r="14" fill="#FFE2B8"/>
+        <circle cx="26" cy="38" r="1.5" fill="#2C2640"/>
+        <circle cx="34" cy="38" r="1.5" fill="#2C2640"/>
+        <path d="M26 44 Q30 46 34 44" fill="none" stroke="#2C2640" stroke-width="1.5"/>
+      </svg>
+      <div class="lesson-content">
+        <div class="lesson-head">
+          <span class="lesson-num">1</span>
+          <h3>הַקְשָׁבָה פְּעִילָה</h3>
+        </div>
+        <div class="lesson-body">
+          <div class="lesson-section">
+            <h5>מטרות</h5>
+            <ul>
+              <li>להבין מה זו הקשבה אמיתית</li>
+              <li>לתרגל פנייה לחבר/ה במצוקה</li>
+              <li>להבחין בין "לשמוע" ל"להקשיב"</li>
+            </ul>
+          </div>
+          <div class="lesson-section">
+            <h5>תוכן</h5>
+            <ul>
+              <li>משחק "טלפון שבור" כפתיחה</li>
+              <li>3 כללי הקשבה: עין · גוף · שתיקה</li>
+              <li>תרגול בזוגות — דקה אחד מספר/ת, דקה השני/ה מסכם/ת</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-card l2">
+      <svg class="lesson-icon" viewBox="0 0 80 80">
+        <circle cx="40" cy="40" r="36" fill="white" stroke="#E08FAF" stroke-width="3"/>
+        <text x="40" y="52" text-anchor="middle" fill="#B86A8C" font-size="42" font-weight="900">?</text>
+      </svg>
+      <div class="lesson-content">
+        <div class="lesson-head">
+          <span class="lesson-num">2</span>
+          <h3>שְׁאֵלוֹת פְּתוּחוֹת</h3>
+        </div>
+        <div class="lesson-body">
+          <div class="lesson-section">
+            <h5>מטרות</h5>
+            <ul>
+              <li>להבחין בין שאלה סגורה לפתוחה</li>
+              <li>לתרגל לשאול בלי לקבוע</li>
+              <li>להימנע משאלות "למה" (מאשימות)</li>
+            </ul>
+          </div>
+          <div class="lesson-section">
+            <h5>תוכן</h5>
+            <ul>
+              <li>4 השאלות המנחות (מהפינה)</li>
+              <li>לא "למה עשית?" אלא "מה קרה?"</li>
+              <li>משחק תפקידים — שני זוגות, אחד מתבונן</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-card l3">
+      <svg class="lesson-icon" viewBox="0 0 80 80">
+        <circle cx="40" cy="40" r="36" fill="white" stroke="#8B6BC0" stroke-width="3"/>
+        <path d="M24 44 L36 56 L58 28" fill="none" stroke="#8B6BC0" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div class="lesson-content">
+        <div class="lesson-head">
+          <span class="lesson-num">3</span>
+          <h3>מְצִיאַת פִּתְרוֹנוֹת</h3>
+        </div>
+        <div class="lesson-body">
+          <div class="lesson-section">
+            <h5>מטרות</h5>
+            <ul>
+              <li>לעזור לחברים למצוא פתרון משלהם</li>
+              <li>לא להציע — להזמין להציע</li>
+              <li>לדעת מתי לקרוא למבוגר/ת</li>
+            </ul>
+          </div>
+          <div class="lesson-section">
+            <h5>תוכן</h5>
+            <ul>
+              <li>"מה היה עוזר?" — שאלת הזהב</li>
+              <li>3 פתרונות אפשריים — בוחרים אחד</li>
+              <li>סימני אזהרה: אלימות · בכי ממושך · סוד כבד</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    פוּלְס מַעֲרֶכֶת 10 · קָטֶגוֹרְיָה 8 · פִּתְרוֹן קוֹנְפְלִיקְטִים
+  </div>
+</section>
+
+<!-- ========================================================== -->
+<!-- PAGE 14: CERTIFICATE — 2 per page -->
+<!-- ========================================================== -->
+<section class="page cert-page">
+  <div class="page-header">
+    <span class="crumb">מתכון 3 · תעודת מתווכ.ת מוסמכ.ת · 2 בעמוד</span>
+    <span class="num">14 / 16</span>
+  </div>
+
+  <!-- Cert 1 -->
+  <div class="cert">
+    <svg class="ribbon-svg" viewBox="0 0 80 80">
+      <circle cx="40" cy="32" r="22" fill="#F5C84B" stroke="#B86A8C" stroke-width="2"/>
+      <path d="M40 18 L43 27 L52 27 L45 32 L48 41 L40 36 L32 41 L35 32 L28 27 L37 27 Z" fill="white"/>
+      <path d="M28 50 L20 70 L32 64 L40 78 L48 64 L60 70 L52 50 Z" fill="#E08FAF"/>
+    </svg>
+    <div class="cert-title">תְּעוּדַת מְתַוֵּכ.ת מֻסְמָכ.ת</div>
+    <div class="cert-sub">פולס מערכת 10 · בית ספר _______________</div>
+    <div class="cert-name">מוענקת ל:</div>
+    <div class="cert-name-line"></div>
+    <div class="cert-body">
+      לְאוֹת הוֹקָרָה עַל סִיּוּם בְּהַצְלָחָה שֶׁל מַסְלוּל הַכְשָׁרַת מְתַוְּכֵי עָמִיתִים — הַקְשָׁבָה · שְׁאֵלוֹת מַנְחוֹת · מְצִיאַת פִּתְרוֹנוֹת.
+    </div>
+    <div class="cert-foot">
+      <div class="cert-sign">
+        <div class="cert-sign-line"></div>
+        <div class="cert-sign-label">יועצת ביה"ס</div>
+      </div>
+      <div class="cert-sign">
+        <div class="cert-sign-line"></div>
+        <div class="cert-sign-label">תאריך</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cert 2 -->
+  <div class="cert">
+    <svg class="ribbon-svg" viewBox="0 0 80 80">
+      <circle cx="40" cy="32" r="22" fill="#F5C84B" stroke="#B86A8C" stroke-width="2"/>
+      <path d="M40 18 L43 27 L52 27 L45 32 L48 41 L40 36 L32 41 L35 32 L28 27 L37 27 Z" fill="white"/>
+      <path d="M28 50 L20 70 L32 64 L40 78 L48 64 L60 70 L52 50 Z" fill="#E08FAF"/>
+    </svg>
+    <div class="cert-title">תְּעוּדַת מְתַוֵּכ.ת מֻסְמָכ.ת</div>
+    <div class="cert-sub">פולס מערכת 10 · בית ספר _______________</div>
+    <div class="cert-name">מוענקת ל:</div>
+    <div class="cert-name-line"></div>
+    <div class="cert-body">
+      לְאוֹת הוֹקָרָה עַל סִיּוּם בְּהַצְלָחָה שֶׁל מַסְלוּל הַכְשָׁרַת מְתַוְּכֵי עָמִיתִים — הַקְשָׁבָה · שְׁאֵלוֹת מַנְחוֹת · מְצִיאַת פִּתְרוֹנוֹת.
+    </div>
+    <div class="cert-foot">
+      <div class="cert-sign">
+        <div class="cert-sign-line"></div>
+        <div class="cert-sign-label">יועצת ביה"ס</div>
+      </div>
+      <div class="cert-sign">
+        <div class="cert-sign-line"></div>
+        <div class="cert-sign-label">תאריך</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    פוּלְס מַעֲרֶכֶת 10 · קָטֶגוֹרְיָה 8 · פִּתְרוֹן קוֹנְפְלִיקְטִים
+  </div>
+</section>
+
+<!-- ========================================================== -->
+<!-- PAGE 15: 8 BADGES -->
+<!-- ========================================================== -->
+<section class="page">
+  <div class="page-header">
+    <span class="crumb">מתכון 3 · 8 בדגי מתווכ.ת עמית.ה</span>
+    <span class="num">15 / 16</span>
+  </div>
+
+  <div class="page-title">
+    <h2>בֶּדְג'י מְתַוֵּכ.ת</h2>
+  </div>
+
+  <div class="badges-instr">
+    גוזרים בקווים המקווקווים. מצמידים סיכת ביטחון או דבק על חולצה.
+  </div>
+
+  <div class="badges-grid">
+    <!-- 8 badges -->
+    <div class="badge-cell">
+      <svg class="badge" viewBox="0 0 140 140">
+        <circle cx="70" cy="70" r="62" fill="white" stroke="#E08FAF" stroke-width="4"/>
+        <circle cx="70" cy="70" r="54" fill="#FFEEF4" stroke="#8B6BC0" stroke-width="2" stroke-dasharray="3 3"/>
+        <!-- heart -->
+        <path d="M70 102 Q38 78 38 56 Q38 42 50 42 Q60 42 70 53 Q80 42 90 42 Q102 42 102 56 Q102 78 70 102 Z" fill="#E08FAF" stroke="#B86A8C" stroke-width="2"/>
+        <!-- handshake in heart -->
+        <path d="M52 70 Q52 64 58 63 L66 63 Q70 64 70 70 L70 74 Q70 78 66 78 L56 78 Q52 78 52 74 Z" fill="#FFE2B8" stroke="#8B6BC0" stroke-width="1.5"/>
+        <path d="M88 70 Q88 64 82 63 L74 63 Q70 64 70 70 L70 74 Q70 78 74 78 L84 78 Q88 78 88 74 Z" fill="#FFD4C2" stroke="#8B6BC0" stroke-width="1.5"/>
+        <rect x="68" y="63" width="4" height="15" rx="1" fill="#8B6BC0"/>
+        <!-- text arch -->
+        <path id="arc1-a" d="M 20 70 A 50 50 0 0 1 120 70" fill="none"/>
+        <text font-family="Heebo" font-size="13" font-weight="900" fill="#8B6BC0">
+          <textPath href="#arc1-a" startOffset="50%" text-anchor="middle">מְתַוֵּכ.ת עָמִית.ה</textPath>
+        </text>
+      </svg>
+      <span class="badge-label">✂ ✂ ✂</span>
+    </div>
+
+    <div class="badge-cell">
+      <svg class="badge" viewBox="0 0 140 140">
+        <circle cx="70" cy="70" r="62" fill="white" stroke="#E08FAF" stroke-width="4"/>
+        <circle cx="70" cy="70" r="54" fill="#FFEEF4" stroke="#8B6BC0" stroke-width="2" stroke-dasharray="3 3"/>
+        <path d="M70 102 Q38 78 38 56 Q38 42 50 42 Q60 42 70 53 Q80 42 90 42 Q102 42 102 56 Q102 78 70 102 Z" fill="#E08FAF" stroke="#B86A8C" stroke-width="2"/>
+        <path d="M52 70 Q52 64 58 63 L66 63 Q70 64 70 70 L70 74 Q70 78 66 78 L56 78 Q52 78 52 74 Z" fill="#FFE2B8" stroke="#8B6BC0" stroke-width="1.5"/>
+        <path d="M88 70 Q88 64 82 63 L74 63 Q70 64 70 70 L70 74 Q70 78 74 78 L84 78 Q88 78 88 74 Z" fill="#FFD4C2" stroke="#8B6BC0" stroke-width="1.5"/>
+        <rect x="68" y="63" width="4" height="15" rx="1" fill="#8B6BC0"/>
+        <path id="arc1-b" d="M 20 70 A 50 50 0 0 1 120 70" fill="none"/>
+        <text font-family="Heebo" font-size="13" font-weight="900" fill="#8B6BC0">
+          <textPath href="#arc1-b" startOffset="50%" text-anchor="middle">מְתַוֵּכ.ת עָמִית.ה</textPath>
+        </text>
+      </svg>
+      <span class="badge-label">✂ ✂ ✂</span>
+    </div>
+
+    <div class="badge-cell">
+      <svg class="badge" viewBox="0 0 140 140">
+        <circle cx="70" cy="70" r="62" fill="white" stroke="#E08FAF" stroke-width="4"/>
+        <circle cx="70" cy="70" r="54" fill="#FFEEF4" stroke="#8B6BC0" stroke-width="2" stroke-dasharray="3 3"/>
+        <path d="M70 102 Q38 78 38 56 Q38 42 50 42 Q60 42 70 53 Q80 42 90 42 Q102 42 102 56 Q102 78 70 102 Z" fill="#E08FAF" stroke="#B86A8C" stroke-width="2"/>
+        <path d="M52 70 Q52 64 58 63 L66 63 Q70 64 70 70 L70 74 Q70 78 66 78 L56 78 Q52 78 52 74 Z" fill="#FFE2B8" stroke="#8B6BC0" stroke-width="1.5"/>
+        <path d="M88 70 Q88 64 82 63 L74 63 Q70 64 70 70 L70 74 Q70 78 74 78 L84 78 Q88 78 88 74 Z" fill="#FFD4C2" stroke="#8B6BC0" stroke-width="1.5"/>
+        <rect x="68" y="63" width="4" height="15" rx="1" fill="#8B6BC0"/>
+        <path id="arc1-c" d="M 20 70 A 50 50 0 0 1 120 70" fill="none"/>
+        <text font-family="Heebo" font-size="13" font-weight="900" fill="#8B6BC0">
+          <textPath href="#arc1-c" startOffset="50%" text-anchor="middle">מְתַוֵּכ.ת עָמִית.ה</textPath>
+        </text>
+      </svg>
+      <span class="badge-label">✂ ✂ ✂</span>
+    </div>
+
+    <div class="badge-cell">
+      <svg class="badge" viewBox="0 0 140 140">
+        <circle cx="70" cy="70" r="62" fill="white" stroke="#E08FAF" stroke-width="4"/>
+        <circle cx="70" cy="70" r="54" fill="#FFEEF4" stroke="#8B6BC0" stroke-width="2" stroke-dasharray="3 3"/>
+        <path d="M70 102 Q38 78 38 56 Q38 42 50 42 Q60 42 70 53 Q80 42 90 42 Q102 42 102 56 Q102 78 70 102 Z" fill="#E08FAF" stroke="#B86A8C" stroke-width="2"/>
+        <path d="M52 70 Q52 64 58 63 L66 63 Q70 64 70 70 L70 74 Q70 78 66 78 L56 78 Q52 78 52 74 Z" fill="#FFE2B8" stroke="#8B6BC0" stroke-width="1.5"/>
+        <path d="M88 70 Q88 64 82 63 L74 63 Q70 64 70 70 L70 74 Q70 78 74 78 L84 78 Q88 78 88 74 Z" fill="#FFD4C2" stroke="#8B6BC0" stroke-width="1.5"/>
+        <rect x="68" y="63" width="4" height="15" rx="1" fill="#8B6BC0"/>
+        <path id="arc1-d" d="M 20 70 A 50 50 0 0 1 120 70" fill="none"/>
+        <text font-family="Heebo" font-size="13" font-weight="900" fill="#8B6BC0">
+          <textPath href="#arc1-d" startOffset="50%" text-anchor="middle">מְתַוֵּכ.ת עָמִית.ה</textPath>
+        </text>
+      </svg>
+      <span class="badge-label">✂ ✂ ✂</span>
+    </div>
+
+    <div class="badge-cell">
+      <svg class="badge" viewBox="0 0 140 140">
+        <circle cx="70" cy="70" r="62" fill="white" stroke="#E08FAF" stroke-width="4"/>
+        <circle cx="70" cy="70" r="54" fill="#FFEEF4" stroke="#8B6BC0" stroke-width="2" stroke-dasharray="3 3"/>
+        <path d="M70 102 Q38 78 38 56 Q38 42 50 42 Q60 42 70 53 Q80 42 90 42 Q102 42 102 56 Q102 78 70 102 Z" fill="#E08FAF" stroke="#B86A8C" stroke-width="2"/>
+        <path d="M52 70 Q52 64 58 63 L66 63 Q70 64 70 70 L70 74 Q70 78 66 78 L56 78 Q52 78 52 74 Z" fill="#FFE2B8" stroke="#8B6BC0" stroke-width="1.5"/>
+        <path d="M88 70 Q88 64 82 63 L74 63 Q70 64 70 70 L70 74 Q70 78 74 78 L84 78 Q88 78 88 74 Z" fill="#FFD4C2" stroke="#8B6BC0" stroke-width="1.5"/>
+        <rect x="68" y="63" width="4" height="15" rx="1" fill="#8B6BC0"/>
+        <path id="arc1-e" d="M 20 70 A 50 50 0 0 1 120 70" fill="none"/>
+        <text font-family="Heebo" font-size="13" font-weight="900" fill="#8B6BC0">
+          <textPath href="#arc1-e" startOffset="50%" text-anchor="middle">מְתַוֵּכ.ת עָמִית.ה</textPath>
+        </text>
+      </svg>
+      <span class="badge-label">✂ ✂ ✂</span>
+    </div>
+
+    <div class="badge-cell">
+      <svg class="badge" viewBox="0 0 140 140">
+        <circle cx="70" cy="70" r="62" fill="white" stroke="#E08FAF" stroke-width="4"/>
+        <circle cx="70" cy="70" r="54" fill="#FFEEF4" stroke="#8B6BC0" stroke-width="2" stroke-dasharray="3 3"/>
+        <path d="M70 102 Q38 78 38 56 Q38 42 50 42 Q60 42 70 53 Q80 42 90 42 Q102 42 102 56 Q102 78 70 102 Z" fill="#E08FAF" stroke="#B86A8C" stroke-width="2"/>
+        <path d="M52 70 Q52 64 58 63 L66 63 Q70 64 70 70 L70 74 Q70 78 66 78 L56 78 Q52 78 52 74 Z" fill="#FFE2B8" stroke="#8B6BC0" stroke-width="1.5"/>
+        <path d="M88 70 Q88 64 82 63 L74 63 Q70 64 70 70 L70 74 Q70 78 74 78 L84 78 Q88 78 88 74 Z" fill="#FFD4C2" stroke="#8B6BC0" stroke-width="1.5"/>
+        <rect x="68" y="63" width="4" height="15" rx="1" fill="#8B6BC0"/>
+        <path id="arc1-f" d="M 20 70 A 50 50 0 0 1 120 70" fill="none"/>
+        <text font-family="Heebo" font-size="13" font-weight="900" fill="#8B6BC0">
+          <textPath href="#arc1-f" startOffset="50%" text-anchor="middle">מְתַוֵּכ.ת עָמִית.ה</textPath>
+        </text>
+      </svg>
+      <span class="badge-label">✂ ✂ ✂</span>
+    </div>
+
+    <div class="badge-cell">
+      <svg class="badge" viewBox="0 0 140 140">
+        <circle cx="70" cy="70" r="62" fill="white" stroke="#E08FAF" stroke-width="4"/>
+        <circle cx="70" cy="70" r="54" fill="#FFEEF4" stroke="#8B6BC0" stroke-width="2" stroke-dasharray="3 3"/>
+        <path d="M70 102 Q38 78 38 56 Q38 42 50 42 Q60 42 70 53 Q80 42 90 42 Q102 42 102 56 Q102 78 70 102 Z" fill="#E08FAF" stroke="#B86A8C" stroke-width="2"/>
+        <path d="M52 70 Q52 64 58 63 L66 63 Q70 64 70 70 L70 74 Q70 78 66 78 L56 78 Q52 78 52 74 Z" fill="#FFE2B8" stroke="#8B6BC0" stroke-width="1.5"/>
+        <path d="M88 70 Q88 64 82 63 L74 63 Q70 64 70 70 L70 74 Q70 78 74 78 L84 78 Q88 78 88 74 Z" fill="#FFD4C2" stroke="#8B6BC0" stroke-width="1.5"/>
+        <rect x="68" y="63" width="4" height="15" rx="1" fill="#8B6BC0"/>
+        <path id="arc1-g" d="M 20 70 A 50 50 0 0 1 120 70" fill="none"/>
+        <text font-family="Heebo" font-size="13" font-weight="900" fill="#8B6BC0">
+          <textPath href="#arc1-g" startOffset="50%" text-anchor="middle">מְתַוֵּכ.ת עָמִית.ה</textPath>
+        </text>
+      </svg>
+      <span class="badge-label">✂ ✂ ✂</span>
+    </div>
+
+    <div class="badge-cell">
+      <svg class="badge" viewBox="0 0 140 140">
+        <circle cx="70" cy="70" r="62" fill="white" stroke="#E08FAF" stroke-width="4"/>
+        <circle cx="70" cy="70" r="54" fill="#FFEEF4" stroke="#8B6BC0" stroke-width="2" stroke-dasharray="3 3"/>
+        <path d="M70 102 Q38 78 38 56 Q38 42 50 42 Q60 42 70 53 Q80 42 90 42 Q102 42 102 56 Q102 78 70 102 Z" fill="#E08FAF" stroke="#B86A8C" stroke-width="2"/>
+        <path d="M52 70 Q52 64 58 63 L66 63 Q70 64 70 70 L70 74 Q70 78 66 78 L56 78 Q52 78 52 74 Z" fill="#FFE2B8" stroke="#8B6BC0" stroke-width="1.5"/>
+        <path d="M88 70 Q88 64 82 63 L74 63 Q70 64 70 70 L70 74 Q70 78 74 78 L84 78 Q88 78 88 74 Z" fill="#FFD4C2" stroke="#8B6BC0" stroke-width="1.5"/>
+        <rect x="68" y="63" width="4" height="15" rx="1" fill="#8B6BC0"/>
+        <path id="arc1-h" d="M 20 70 A 50 50 0 0 1 120 70" fill="none"/>
+        <text font-family="Heebo" font-size="13" font-weight="900" fill="#8B6BC0">
+          <textPath href="#arc1-h" startOffset="50%" text-anchor="middle">מְתַוֵּכ.ת עָמִית.ה</textPath>
+        </text>
+      </svg>
+      <span class="badge-label">✂ ✂ ✂</span>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    פוּלְס מַעֲרֶכֶת 10 · קָטֶגוֹרְיָה 8 · פִּתְרוֹן קוֹנְפְלִיקְטִים
+  </div>
+</section>
+
+<!-- ========================================================== -->
+<!-- PAGE 16: MEDIATOR EVENT LOG + REMINDER CARD -->
+<!-- ========================================================== -->
+<section class="page">
+  <div class="page-header">
+    <span class="crumb">מתכון 3 · גיליון אירוע + תזכורת מתווכ.ת</span>
+    <span class="num">16 / 16</span>
+  </div>
+
+  <div class="page-title">
+    <h2>גִּלָּיוֹן אֵרוּעַ מְתַוֵּכ.ת</h2>
+    <p>תעוד פעולת תיווך. ליועצת לסקור מדי חודש. שמות בראשי תיבות בלבד.</p>
+  </div>
+
+  <div class="event-grid" style="grid-template-rows: 1fr 1fr;">
+    <div class="event-card">
+      <h5>אירוע 1</h5>
+      <div class="event-row"><label>תאריך:</label><span class="event-line"></span></div>
+      <div class="event-row"><label>מי היה (ר"ת):</label><span class="event-line"></span></div>
+      <div class="event-row"><label>על מה:</label><span class="event-line"></span></div>
+      <div class="event-row"><label>איך עזרתי:</label></div>
+      <div class="event-box"></div>
+      <div class="event-row" style="margin-top:6px"><label>הסתיים בטוב?</label>
+        <label style="font-weight:400"><span class="log-check" style="width:14px;height:14px"></span> כן</label>
+        <label style="font-weight:400"><span class="log-check" style="width:14px;height:14px"></span> צריך עזרה</label>
+      </div>
+    </div>
+    <div class="event-card">
+      <h5>אירוע 2</h5>
+      <div class="event-row"><label>תאריך:</label><span class="event-line"></span></div>
+      <div class="event-row"><label>מי היה (ר"ת):</label><span class="event-line"></span></div>
+      <div class="event-row"><label>על מה:</label><span class="event-line"></span></div>
+      <div class="event-row"><label>איך עזרתי:</label></div>
+      <div class="event-box"></div>
+      <div class="event-row" style="margin-top:6px"><label>הסתיים בטוב?</label>
+        <label style="font-weight:400"><span class="log-check" style="width:14px;height:14px"></span> כן</label>
+        <label style="font-weight:400"><span class="log-check" style="width:14px;height:14px"></span> צריך עזרה</label>
+      </div>
+    </div>
+    <div class="event-card">
+      <h5>אירוע 3</h5>
+      <div class="event-row"><label>תאריך:</label><span class="event-line"></span></div>
+      <div class="event-row"><label>מי היה (ר"ת):</label><span class="event-line"></span></div>
+      <div class="event-row"><label>על מה:</label><span class="event-line"></span></div>
+      <div class="event-row"><label>איך עזרתי:</label></div>
+      <div class="event-box"></div>
+      <div class="event-row" style="margin-top:6px"><label>הסתיים בטוב?</label>
+        <label style="font-weight:400"><span class="log-check" style="width:14px;height:14px"></span> כן</label>
+        <label style="font-weight:400"><span class="log-check" style="width:14px;height:14px"></span> צריך עזרה</label>
+      </div>
+    </div>
+    <div class="event-card">
+      <h5>אירוע 4</h5>
+      <div class="event-row"><label>תאריך:</label><span class="event-line"></span></div>
+      <div class="event-row"><label>מי היה (ר"ת):</label><span class="event-line"></span></div>
+      <div class="event-row"><label>על מה:</label><span class="event-line"></span></div>
+      <div class="event-row"><label>איך עזרתי:</label></div>
+      <div class="event-box"></div>
+      <div class="event-row" style="margin-top:6px"><label>הסתיים בטוב?</label>
+        <label style="font-weight:400"><span class="log-check" style="width:14px;height:14px"></span> כן</label>
+        <label style="font-weight:400"><span class="log-check" style="width:14px;height:14px"></span> צריך עזרה</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    פוּלְס מַעֲרֶכֶת 10 · קָטֶגוֹרְיָה 8 · פִּתְרוֹן קוֹנְפְלִיקְטִים
+  </div>
+</section>
+
+<!-- ========================================================== -->
+<!-- PAGE 17: REMINDER CARDS — POCKET SIZED, 4 per page -->
+<!-- ========================================================== -->
+<section class="page">
+  <div class="page-header">
+    <span class="crumb">מתכון 3 · כרטיס תזכורת לכיס · 4 בעמוד</span>
+    <span class="num">17 / 17</span>
+  </div>
+
+  <div class="page-title">
+    <h2>כְּרָטִיס תִּזְכֹּרֶת לִמְתַוֵּכ.ת</h2>
+    <p>גוזרים. שמים בכיס. מציצים לפני פעולת תיווך.</p>
+  </div>
+
+  <div class="reminder-cards">
+    <!-- card 1 -->
+    <div class="reminder-card">
+      <div class="reminder-head">
+        <svg viewBox="0 0 40 40">
+          <circle cx="20" cy="20" r="18" fill="#E08FAF"/>
+          <path d="M14 16 Q14 12 18 12 L22 12 Q26 12 26 16 L26 22 Q26 26 22 26 L18 26 Q14 26 14 22 Z" fill="white"/>
+          <text x="20" y="23" text-anchor="middle" fill="#B86A8C" font-size="12" font-weight="900">4</text>
+        </svg>
+        <h3>4 כְּלָלֵי מְתַוֵּכ.ת</h3>
+      </div>
+      <ul class="reminder-rules">
+        <li><span class="check">1</span><span>לֹא לִשְׁפֹּט. כֻּלָּם הִרְגִּישׁוּ נָכוֹן.</span></li>
+        <li><span class="check">2</span><span>לֹא לִקְבֹּעַ מִי "צוֹדֵק.ת".</span></li>
+        <li><span class="check">3</span><span>לְהַזְמִין לְדַבֵּר — לֹא לְדַבֵּר בִּשְׁבִילָם.</span></li>
+        <li><span class="check">4</span><span>אִם קָשֶׁה — לִקְרֹא לַמּוֹרָה.</span></li>
+      </ul>
+      <div class="reminder-foot">— — — — — ✂ — — — — —</div>
+    </div>
+
+    <!-- card 2 -->
+    <div class="reminder-card">
+      <div class="reminder-head">
+        <svg viewBox="0 0 40 40">
+          <circle cx="20" cy="20" r="18" fill="#E08FAF"/>
+          <path d="M14 16 Q14 12 18 12 L22 12 Q26 12 26 16 L26 22 Q26 26 22 26 L18 26 Q14 26 14 22 Z" fill="white"/>
+          <text x="20" y="23" text-anchor="middle" fill="#B86A8C" font-size="12" font-weight="900">4</text>
+        </svg>
+        <h3>4 כְּלָלֵי מְתַוֵּכ.ת</h3>
+      </div>
+      <ul class="reminder-rules">
+        <li><span class="check">1</span><span>לֹא לִשְׁפֹּט. כֻּלָּם הִרְגִּישׁוּ נָכוֹן.</span></li>
+        <li><span class="check">2</span><span>לֹא לִקְבֹּעַ מִי "צוֹדֵק.ת".</span></li>
+        <li><span class="check">3</span><span>לְהַזְמִין לְדַבֵּר — לֹא לְדַבֵּר בִּשְׁבִילָם.</span></li>
+        <li><span class="check">4</span><span>אִם קָשֶׁה — לִקְרֹא לַמּוֹרָה.</span></li>
+      </ul>
+      <div class="reminder-foot">— — — — — ✂ — — — — —</div>
+    </div>
+
+    <!-- card 3 -->
+    <div class="reminder-card">
+      <div class="reminder-head">
+        <svg viewBox="0 0 40 40">
+          <circle cx="20" cy="20" r="18" fill="#E08FAF"/>
+          <path d="M14 16 Q14 12 18 12 L22 12 Q26 12 26 16 L26 22 Q26 26 22 26 L18 26 Q14 26 14 22 Z" fill="white"/>
+          <text x="20" y="23" text-anchor="middle" fill="#B86A8C" font-size="12" font-weight="900">4</text>
+        </svg>
+        <h3>4 כְּלָלֵי מְתַוֵּכ.ת</h3>
+      </div>
+      <ul class="reminder-rules">
+        <li><span class="check">1</span><span>לֹא לִשְׁפֹּט. כֻּלָּם הִרְגִּישׁוּ נָכוֹן.</span></li>
+        <li><span class="check">2</span><span>לֹא לִקְבֹּעַ מִי "צוֹדֵק.ת".</span></li>
+        <li><span class="check">3</span><span>לְהַזְמִין לְדַבֵּר — לֹא לְדַבֵּר בִּשְׁבִילָם.</span></li>
+        <li><span class="check">4</span><span>אִם קָשֶׁה — לִקְרֹא לַמּוֹרָה.</span></li>
+      </ul>
+      <div class="reminder-foot">— — — — — ✂ — — — — —</div>
+    </div>
+
+    <!-- card 4 -->
+    <div class="reminder-card">
+      <div class="reminder-head">
+        <svg viewBox="0 0 40 40">
+          <circle cx="20" cy="20" r="18" fill="#E08FAF"/>
+          <path d="M14 16 Q14 12 18 12 L22 12 Q26 12 26 16 L26 22 Q26 26 22 26 L18 26 Q14 26 14 22 Z" fill="white"/>
+          <text x="20" y="23" text-anchor="middle" fill="#B86A8C" font-size="12" font-weight="900">4</text>
+        </svg>
+        <h3>4 כְּלָלֵי מְתַוֵּכ.ת</h3>
+      </div>
+      <ul class="reminder-rules">
+        <li><span class="check">1</span><span>לֹא לִשְׁפֹּט. כֻּלָּם הִרְגִּישׁוּ נָכוֹן.</span></li>
+        <li><span class="check">2</span><span>לֹא לִקְבֹּעַ מִי "צוֹדֵק.ת".</span></li>
+        <li><span class="check">3</span><span>לְהַזְמִין לְדַבֵּר — לֹא לְדַבֵּר בִּשְׁבִילָם.</span></li>
+        <li><span class="check">4</span><span>אִם קָשֶׁה — לִקְרֹא לַמּוֹרָה.</span></li>
+      </ul>
+      <div class="reminder-foot">— — — — — ✂ — — — — —</div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    פוּלְס מַעֲרֶכֶת 10 · קָטֶגוֹרְיָה 8 · פִּתְרוֹן קוֹנְפְלִיקְטִים
+  </div>
+</section>
+
+</body>
+</html>

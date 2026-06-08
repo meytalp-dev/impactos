@@ -1,0 +1,2032 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>קואצ'ינג למורה — Printables · מערכת 10</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal: #2E7D8C;
+    --teal-deep: #1E5A66;
+    --teal-soft: #E8F2F4;
+    --teal-line: #B8D5DB;
+    --purple: #8B7AB8;
+    --purple-soft: #EDE9F5;
+    --gray-text: #3A4A52;
+    --gray-soft: #6B7A82;
+    --silver: #C8CDD0;
+    --silver-bg: #F4F6F7;
+    --ink: #1A2429;
+    --warm-cream: #FBF8F3;
+    --conf-amber: #C9923F;
+    --conf-amber-soft: #FBF1DC;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Heebo', system-ui, -apple-system, sans-serif;
+    background: #DDE3E6;
+    color: var(--gray-text);
+    line-height: 1.5;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* === Print toolbar === */
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--teal-deep);
+    color: white;
+    padding: 14px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  }
+  .toolbar h1 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+  .toolbar h1 strong { font-weight: 700; }
+  .print-btn {
+    background: white;
+    color: var(--teal-deep);
+    border: none;
+    padding: 10px 22px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  .print-btn:hover { transform: translateY(-1px); }
+  .toolbar nav {
+    font-size: 12px;
+    opacity: 0.85;
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .toolbar nav a { color: white; text-decoration: none; border-bottom: 1px dotted rgba(255,255,255,0.4); }
+
+  /* === A4 page === */
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 18px auto;
+    background: white;
+    padding: 14mm 13mm 12mm 13mm;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    page-break-after: always;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  /* === Page header === */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--teal);
+    margin-bottom: 14px;
+  }
+  .ph-left .recipe-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--purple);
+    background: var(--purple-soft);
+    padding: 3px 9px;
+    border-radius: 10px;
+    letter-spacing: 0.4px;
+    margin-bottom: 6px;
+  }
+  .ph-left h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--teal-deep);
+    line-height: 1.2;
+  }
+  .ph-left .subtitle {
+    margin-top: 3px;
+    font-size: 12px;
+    color: var(--gray-soft);
+    font-weight: 400;
+  }
+  .ph-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--teal);
+  }
+  .ph-right .seal {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--teal-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid var(--teal-line);
+  }
+  .ph-right .seal svg { width: 26px; height: 26px; }
+  .conf-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--conf-amber);
+    background: var(--conf-amber-soft);
+    padding: 4px 9px;
+    border-radius: 4px;
+    border: 1px solid #ECD7A6;
+    letter-spacing: 0.5px;
+  }
+  .conf-badge::before {
+    content: '';
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--conf-amber);
+  }
+
+  /* === Intro block === */
+  .intro {
+    background: var(--warm-cream);
+    border-right: 3px solid var(--teal);
+    padding: 11px 14px;
+    margin-bottom: 14px;
+    font-size: 12.5px;
+    color: var(--gray-text);
+    border-radius: 0 6px 6px 0;
+  }
+  .intro strong { color: var(--teal-deep); }
+
+  /* === Section blocks === */
+  .section {
+    margin-bottom: 14px;
+  }
+  .section h3 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--teal-deep);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section h3::before {
+    content: '';
+    width: 6px;
+    height: 18px;
+    background: var(--teal);
+    border-radius: 2px;
+    display: inline-block;
+  }
+  .section h3 .num {
+    background: var(--teal);
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  /* === Form fields === */
+  .field {
+    margin-bottom: 10px;
+  }
+  .field-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--teal-deep);
+    margin-bottom: 4px;
+    display: block;
+  }
+  .field-hint {
+    font-size: 10.5px;
+    color: var(--gray-soft);
+    font-weight: 400;
+    margin-right: 6px;
+  }
+  .write-line {
+    border-bottom: 1px dotted var(--silver);
+    height: 22px;
+    margin-bottom: 3px;
+  }
+  .write-box {
+    border: 1px solid var(--teal-line);
+    border-radius: 6px;
+    padding: 10px;
+    background: #FCFDFD;
+    min-height: 60px;
+  }
+  .write-box.lg { min-height: 100px; }
+  .write-box.xl { min-height: 140px; }
+  .write-box-lined {
+    background-image: repeating-linear-gradient(transparent, transparent 23px, #E8ECEE 23px, #E8ECEE 24px);
+    background-position: 0 12px;
+  }
+
+  /* === Two-column / grids === */
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .row-quad { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* === Numbered question === */
+  .qna {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+  .qna-num {
+    flex: 0 0 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--purple-soft);
+    color: var(--purple);
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid var(--purple);
+    margin-top: 2px;
+  }
+  .qna-body { flex: 1; }
+  .qna-q {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .qna-hint {
+    font-size: 10.5px;
+    color: var(--gray-soft);
+    margin-bottom: 6px;
+    font-style: italic;
+  }
+
+  /* === Signature row === */
+  .sig-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 0.8fr;
+    gap: 16px;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1.5px dashed var(--teal-line);
+  }
+  .sig-box {
+    text-align: center;
+  }
+  .sig-line {
+    border-bottom: 1.5px solid var(--ink);
+    height: 32px;
+    margin-bottom: 4px;
+  }
+  .sig-label {
+    font-size: 10px;
+    color: var(--gray-soft);
+    font-weight: 500;
+  }
+
+  /* === Footer === */
+  .page-footer {
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid var(--silver);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 9.5px;
+    color: var(--gray-soft);
+    letter-spacing: 0.2px;
+  }
+  .page-footer .left { display: flex; gap: 8px; align-items: center; }
+  .page-footer .dot {
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--silver);
+  }
+  .page-footer .conf-mini {
+    color: var(--conf-amber);
+    font-weight: 600;
+  }
+
+  /* === Checklist === */
+  .check-list { list-style: none; padding: 0; margin: 0; }
+  .check-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px dotted var(--silver);
+    font-size: 12px;
+  }
+  .check-list li:last-child { border-bottom: none; }
+  .check-list .box {
+    flex: 0 0 16px;
+    height: 16px;
+    border: 1.5px solid var(--teal);
+    border-radius: 3px;
+    margin-top: 1px;
+  }
+
+  /* === SBI bands === */
+  .sbi-band {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: stretch;
+  }
+  .sbi-letter {
+    background: var(--teal-soft);
+    border: 1.5px solid var(--teal-line);
+    border-radius: 6px;
+    padding: 8px;
+    text-align: center;
+  }
+  .sbi-letter .L {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--teal-deep);
+    line-height: 1;
+  }
+  .sbi-letter .W {
+    font-size: 9.5px;
+    color: var(--teal);
+    font-weight: 600;
+    margin-top: 4px;
+    line-height: 1.2;
+  }
+
+  /* === Goal formula === */
+  .formula {
+    background: linear-gradient(135deg, var(--teal-soft) 0%, var(--purple-soft) 100%);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 14px;
+    border: 1px solid var(--teal-line);
+  }
+  .formula-row {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .formula-row:last-child { margin-bottom: 0; }
+  .formula-tag {
+    background: white;
+    color: var(--teal-deep);
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    border: 1px solid var(--teal-line);
+  }
+  .formula-input {
+    background: white;
+    border: 1px dashed var(--silver);
+    border-radius: 4px;
+    height: 34px;
+  }
+
+  /* === Lang headers === */
+  .lang-band {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--silver-bg);
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    border-right: 3px solid var(--purple);
+  }
+  .lang-band .lng {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--teal-deep);
+  }
+  .lang-band .lng-en {
+    font-size: 11px;
+    color: var(--gray-soft);
+    direction: ltr;
+  }
+
+  /* === Three moments grid === */
+  .moments-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .moment-card {
+    border: 1.5px solid var(--teal-line);
+    border-radius: 8px;
+    padding: 10px 12px;
+    background: #FCFDFD;
+  }
+  .moment-card.loved { border-color: #7AB89E; background: #F0F8F4; }
+  .moment-card.disliked { border-color: #C99A9A; background: #FAF1F1; }
+  .moment-card.unsure { border-color: var(--purple); background: var(--purple-soft); }
+  .moment-card .mh {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .moment-card .mh svg { width: 18px; height: 18px; }
+  .moment-card h4 {
+    margin: 0;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .moment-card .mhint {
+    font-size: 10.5px;
+    color: var(--gray-soft);
+    font-style: italic;
+    margin-bottom: 6px;
+  }
+  .moment-card .small-q {
+    font-size: 11px;
+    color: var(--teal-deep);
+    font-weight: 600;
+    margin-top: 4px;
+  }
+
+  /* === Weekly notebook (page 11) === */
+  .week-block {
+    border: 1px solid var(--teal-line);
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    background: white;
+    page-break-inside: avoid;
+  }
+  .week-block .wh {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px dotted var(--silver);
+  }
+  .week-block .wh .num {
+    font-weight: 700;
+    color: var(--teal-deep);
+    font-size: 12px;
+  }
+  .week-block .wh .date-w {
+    font-size: 10px;
+    color: var(--gray-soft);
+  }
+  .week-block .lines-row {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 6px;
+    margin-bottom: 4px;
+    align-items: center;
+  }
+  .week-block .lr-label {
+    font-size: 9.5px;
+    font-weight: 600;
+    color: var(--gray-soft);
+  }
+  .week-block .lr-line {
+    border-bottom: 1px dotted var(--silver);
+    height: 14px;
+  }
+
+  /* === Big poster (page 13) === */
+  .poster-title {
+    text-align: center;
+    margin: 8px 0 20px 0;
+  }
+  .poster-title h1 {
+    margin: 0;
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--teal-deep);
+    letter-spacing: -0.5px;
+  }
+  .poster-title .sub {
+    margin-top: 4px;
+    font-size: 14px;
+    color: var(--purple);
+    font-weight: 500;
+  }
+  .poster-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(3, 1fr);
+    gap: 8px;
+    flex: 1;
+  }
+  .poster-cell {
+    border: 2px solid var(--teal-line);
+    border-radius: 10px;
+    padding: 10px;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    min-height: 100px;
+  }
+  .poster-cell .name-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px dashed var(--silver);
+    padding-bottom: 5px;
+    margin-bottom: 6px;
+  }
+  .poster-cell .name {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--teal-deep);
+  }
+  .poster-cell .icn { color: var(--purple); }
+  .poster-cell .goal-area {
+    flex: 1;
+    background-image: repeating-linear-gradient(transparent, transparent 16px, #EEF2F3 16px, #EEF2F3 17px);
+    border-radius: 4px;
+    padding: 4px;
+  }
+  .poster-cell .sig-area {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 9px;
+    color: var(--gray-soft);
+  }
+  .poster-cell .sig-area .sig-l {
+    border-bottom: 1px solid var(--gray-soft);
+    width: 60px;
+    height: 14px;
+  }
+
+  /* === Principles list (page 14) === */
+  .principles {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .principle {
+    display: grid;
+    grid-template-columns: 50px 1fr;
+    gap: 12px;
+    padding: 12px;
+    background: var(--warm-cream);
+    border-right: 4px solid var(--teal);
+    border-radius: 0 6px 6px 0;
+    align-items: flex-start;
+  }
+  .principle-num {
+    width: 38px;
+    height: 38px;
+    background: var(--teal);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 17px;
+  }
+  .principle h4 {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--teal-deep);
+  }
+  .principle p {
+    margin: 0;
+    font-size: 11.5px;
+    color: var(--gray-text);
+  }
+
+  /* === Cover for principles === */
+  .doc-cover {
+    text-align: center;
+    padding: 30px 20px 20px 20px;
+    margin-bottom: 18px;
+    background: linear-gradient(180deg, var(--teal-soft) 0%, white 100%);
+    border-radius: 12px;
+  }
+  .doc-cover svg { width: 70px; height: 70px; margin-bottom: 8px; color: var(--teal); }
+  .doc-cover h1 {
+    margin: 0;
+    font-size: 26px;
+    color: var(--teal-deep);
+    font-weight: 800;
+  }
+  .doc-cover .sub {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--purple);
+  }
+
+  /* === Print rules === */
+  @page {
+    size: A4;
+    margin: 1cm;
+  }
+  @media print {
+    body { background: white; }
+    .toolbar { display: none; }
+    .page {
+      margin: 0;
+      box-shadow: none;
+      width: 100%;
+      min-height: auto;
+      padding: 0;
+    }
+  }
+  @media (max-width: 800px) {
+    .page { width: 100%; padding: 12px; }
+    .row-2, .row-3, .row-quad { grid-template-columns: 1fr; }
+    .toolbar { flex-direction: column; gap: 10px; align-items: stretch; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div>
+    <h1><strong>קואצ'ינג למורה</strong> · 14 דפי Printables · A4</h1>
+    <nav>
+      <a href="#p1">1.חוזה</a>
+      <a href="#p2">2.פרוטוקול</a>
+      <a href="#p3">3.מקדים</a>
+      <a href="#p4">4.SBI</a>
+      <a href="#p5">5.מטרה</a>
+      <a href="#p6">6.הסכמה</a>
+      <a href="#p7">7.לפני</a>
+      <a href="#p8">8.בזמן</a>
+      <a href="#p9">9.3 רגעים</a>
+      <a href="#p10">10.מנחה</a>
+      <a href="#p11">11.מחברת</a>
+      <a href="#p12">12.1:1</a>
+      <a href="#p13">13.פוסטר</a>
+      <a href="#p14">14.עקרונות</a>
+    </nav>
+  </div>
+  <button class="print-btn" onclick="window.print()">הדפסה</button>
+</div>
+
+<!-- =================================================================
+     PAGE 1 — חוזה אמון לצפיית עמית.ה
+================================================================= -->
+<div class="page" id="p1">
+  <div class="page-header">
+    <div class="ph-left">
+      <div class="recipe-tag">מתכון 1 · צפיית עמית.ה</div>
+      <h2>חוזה אמון לצפייה הדדית</h2>
+      <div class="subtitle">תיעוד כתוב לפני תחילת הצפייה — שתי המורות חותמות</div>
+    </div>
+    <div class="ph-right">
+      <div class="seal" title="חתימת אמון">
+        <!-- handshake SVG -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 17l-2 2a1.5 1.5 0 11-2.12-2.12L8 16"/>
+          <path d="M14 17l3 3a1.5 1.5 0 002.12-2.12L15 14"/>
+          <path d="M16 12l-3-3a2 2 0 00-2.83 0L7 12.34a1 1 0 00.34 1.63l1.6.55"/>
+          <path d="M3 7l3-3 4 4"/>
+          <path d="M21 7l-3-3-4 4"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="intro">
+    <strong>למה החוזה?</strong> צפייה הדדית עובדת רק כשיש אמון מקצועי בין שתי המורות. החוזה הזה אינו מסמך רשמי — הוא תיעוד כתוב להסכמות בין שותפות. הוא נשאר אצל שתי המורות בלבד. <strong>אינו עובר למנהלת, לרכזת או לארכיון בית-הספר.</strong>
+  </div>
+
+  <div class="row-2" style="margin-bottom: 14px;">
+    <div class="field">
+      <label class="field-label">המורה הנצפית</label>
+      <div class="write-line"></div>
+    </div>
+    <div class="field">
+      <label class="field-label">המורה הצופה</label>
+      <div class="write-line"></div>
+    </div>
+    <div class="field">
+      <label class="field-label">תאריך הצפייה</label>
+      <div class="write-line"></div>
+    </div>
+    <div class="field">
+      <label class="field-label">שעה · כיתה</label>
+      <div class="write-line"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>5 סעיפי החוזה</h3>
+
+    <div class="qna">
+      <div class="qna-num">1</div>
+      <div class="qna-body">
+        <div class="qna-q">חיסיון מלא</div>
+        <div class="qna-hint">כל מה שיירשם, ייאמר, יוקרא או יישמע בצפייה הזו — לא יוצא מהחדר. לא לחדר המורות. לא למנהלת. לא לקבוצת הוואטסאפ.</div>
+        <div class="write-line"></div>
+      </div>
+    </div>
+
+    <div class="qna">
+      <div class="qna-num">2</div>
+      <div class="qna-body">
+        <div class="qna-q">לא ל-Evaluation</div>
+        <div class="qna-hint">הצפייה הזו <strong>אינה</strong> כלי הערכה. היא כלי למידה אופקית בלבד. אסור לעשות בה שימוש לשיחת סיום שנה, תיק אישי, פרס מורה מצטיינת או כל מנגנון רשמי.</div>
+        <div class="write-line"></div>
+      </div>
+    </div>
+
+    <div class="qna">
+      <div class="qna-num">3</div>
+      <div class="qna-body">
+        <div class="qna-q">רשות מלאה לצופה.ת לראות</div>
+        <div class="qna-hint">המורה הנצפית מתחייבת לפעול כרגיל. לא להציג שיעור מיוחד. לא להחביא ילד.ה מאתגר.ת. לא לבחור את הילדים הטובים. הכיתה כפי שהיא ביום רגיל.</div>
+        <div class="write-line"></div>
+      </div>
+    </div>
+
+    <div class="qna">
+      <div class="qna-num">4</div>
+      <div class="qna-body">
+        <div class="qna-q">מה ייכתב — ומה לא</div>
+        <div class="qna-hint">הצופה.ת תכתוב רק תיאור אובייקטיבי (מה ראיתי / שמעתי), ולא פרשנות או הערכה. שמות ילדים יוחלפו באות (תלמיד א', תלמידה ב'). הכתוב נשאר אצל המורה הנצפית בלבד.</div>
+        <div class="write-line"></div>
+      </div>
+    </div>
+
+    <div class="qna">
+      <div class="qna-num">5</div>
+      <div class="qna-body">
+        <div class="qna-q">אופציית פסילה</div>
+        <div class="qna-hint">המורה הנצפית רשאית בכל שלב — לפני, באמצע, או אחרי — לבטל את הצפייה ו/או את שיחת המשוב. החלטה זו לא דורשת הסבר. במקרה זה כל הרישומים נקרעים בנוכחות שתיהן.</div>
+        <div class="write-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sig-row">
+    <div class="sig-box">
+      <div class="sig-line"></div>
+      <div class="sig-label">חתימת המורה הנצפית</div>
+    </div>
+    <div class="sig-box">
+      <div class="sig-line"></div>
+      <div class="sig-label">חתימת המורה הצופה</div>
+    </div>
+    <div class="sig-box">
+      <div class="sig-line"></div>
+      <div class="sig-label">תאריך</div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <div class="left">
+      <span>פולס מערכת 10</span><span class="dot"></span>
+      <span>קטגוריה 10 · קואצ'ינג למורה</span><span class="dot"></span>
+      <span>1/14</span>
+    </div>
+    <div class="conf-mini">חסוי · נשאר אצל המורות בלבד</div>
+  </div>
+</div>
+
+<!-- =================================================================
+     PAGE 2 — פרוטוקול צפייה
+================================================================= -->
+<div class="page" id="p2">
+  <div class="page-header">
+    <div class="ph-left">
+      <div class="recipe-tag">מתכון 1 · צפיית עמית.ה</div>
+      <h2>פרוטוקול צפייה — 30 דקות</h2>
+      <div class="subtitle">4 שדות · תיאור בלבד · ללא פרשנות והערכה</div>
+    </div>
+    <div class="ph-right">
+      <div class="seal" title="מחברת צופה">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4h12a2 2 0 012 2v14H6a2 2 0 01-2-2V4z"/>
+          <path d="M8 8h8M8 12h8M8 16h5"/>
+          <path d="M4 4v16"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="row-3" style="margin-bottom: 12px; font-size: 11px;">
+    <div class="field">
+      <label class="field-label">תאריך · שעה</label>
+      <div class="write-line"></div>
+    </div>
+    <div class="field">
+      <label class="field-label">כיתה · מקצוע</label>
+      <div class="write-line"></div>
+    </div>
+    <div class="field">
+      <label class="field-label">משך הצפייה <span class="field-hint">(לפחות 30 דק')</span></label>
+      <div class="write-line"></div>
+    </div>
+  </div>
+
+  <div class="row-2" style="flex: 1; display: grid; align-items: stretch;">
+    <div class="field">
+      <label class="field-label" style="display: flex; align-items: center; gap: 6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2E7D8C" stroke-width="2"><circle cx="12" cy="8" r="3"/><path d="M5 21v-2a4 4 0 014-4h6a4 4 0 014 4v2"/></svg>
+        מה המורה עושה
+      </label>
+      <div class="write-box xl write-box-lined"></div>
+    </div>
+    <div class="field">
+      <label class="field-label" style="display: flex; align-items: center; gap: 6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8B7AB8" stroke-width="2"><circle cx="9" cy="9" r="2"/><circle cx="15" cy="9" r="2"/><path d="M3 19v-1a3 3 0 013-3h2"/><path d="M21 19v-1a3 3 0 00-3-3h-2"/><circle cx="6" cy="7" r="1.5"/><circle cx="18" cy="7" r="1.5"/></svg>
+        מה הילדים עושים
+      </label>
+      <div class="write-box xl write-box-lined"></div>
+    </div>
+    <div class="field">
+      <label class="field-label" style="display: flex; align-items: center; gap: 6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2E7D8C" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        מה אני שמה לב לזמן <span class="field-hint">— קצב, מעברים, רגעי שקט</span>
+      </label>
+      <div class="write-box xl write-box-lined"></div>
+    </div>
+    <div class="field">
+      <label class="field-label" style="display: flex; align-items: center; gap: 6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9923F" stroke-width="2"><path d="M12 2l2.4 7.2H22l-6 4.5 2.3 7.3-6.3-4.6L5.7 21l2.3-7.3L2 9.2h7.6z"/></svg>
+        מה הפתיע אותי <span class="field-hint">— משהו שלא ציפיתי</span>
+      </label>
+      <div class="write-box xl write-box-lined"></div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <div class="left">
+      <span>פולס מערכת 10</span><span class="dot"></span>
+      <span>קטגוריה 10 · קואצ'ינג למורה</span><span class="dot"></span>
+      <span>2/14</span>
+    </div>
+    <div class="conf-mini">חסוי · תיאור בלבד</div>
+  </div>
+</div>
+
+<!-- =================================================================
+     PAGE 3 — שיחה מקדימה
+================================================================= -->
+<div class="page" id="p3">
+  <div class="page-header">
+    <div class="ph-left">
+      <div class="recipe-tag">מתכון 1 · צפיית עמית.ה</div>
+      <h2>כרטיס שיחה מקדימה</h2>
+      <div class="subtitle">5 שאלות לצופה.ת לפני שנכנסת לכיתה · 10 דק'</div>
+    </div>
+    <div class="ph-right">
+      <div class="seal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 11.5a8.4 8.4 0 01-1 4.1 8.5 8.5 0 01-7.6 4.4 8.4 8.4 0 01-4-1L3 21l2-5a8.5 8.5 0 015.7-11.5 8.5 8.5 0 0110.3 7z"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="intro">
+    <strong>איך להשתמש:</strong> הצופה.ת שואלת את המורה הנצפית 5 דקות לפני שעוברות לכיתה. רושמת את התשובות. השאלות נועדו <strong>לכוון את המבט של הצופה.ת</strong> — לא לחקור את המורה. אין תשובה נכונה.
+  </div>
+
+  <div class="qna">
+    <div class="qna-num">1</div>
+    <div class="qna-body">
+      <div class="qna-q">מה היית רוצה שאשים לב אליו במיוחד?</div>
+      <div class="qna-hint">לדוגמה: "איך אני מנהלת מעברים", "האם אני נותנת לכולם זמן דיבור", "האם אני מרבה לדבר".</div>
+      <div class="write-box write-box-lined"></div>
+    </div>
+  </div>
+
+  <div class="qna">
+    <div class="qna-num">2</div>
+    <div class="qna-body">
+      <div class="qna-q">איזה רגע בשיעור הזה את חוששת ממנו?</div>
+      <div class="qna-hint">חששות לגיטימיים — הקראה לתלמיד.ה מאתגר.ת, מעבר לשולחנות, פתיחת השיעור.</div>
+      <div class="write-box write-box-lined"></div>
+    </div>
+  </div>
+
+  <div class="qna">
+    <div class="qna-num">3</div>
+    <div class="qna-body">
+      <div class="qna-q">איזה רגע בשיעור הזה את גאה בו?</div>
+      <div class="qna-hint">משהו שהמורה הנצפית מקווה שייצא טוב. אסור לוותר על השאלה הזו — היא מאזנת.</div>
+      <div class="write-box write-box-lined"></div>
+    </div>
+  </div>
+
+  <div class="qna">
+    <div class="qna-num">4</div>
+    <div class="qna-body">
+      <div class="qna-q">יש משהו על ילד.ה ספציפי.ת שכדאי לי לדעת?</div>
+      <div class="qna-hint">לא רכילות — רק קונטקסט שיעזור לצופה.ת להבין התנהגות. למשל: "התלמיד בחולצה האדומה חזר היום אחרי שבועיים בידוד".</div>
+      <div class="write-box write-box-lined"></div>
+    </div>
+  </div>
+
+  <div class="qna">
+    <div class="qna-num">5</div>
+    <div class="qna-body">
+      <div class="qna-q">איך תרגישי הכי בנוח שאהיה בכיתה?</div>
+      <div class="qna-hint">היכן אשב? האם אשתתף או רק אצפה? האם להציג אותי או להיכנס בשקט?</div>
+      <div class="write-box write-box-lined"></div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <div class="left">
+      <span>פולס מערכת 10</span><span class="dot"></span>
+      <span>קטגוריה 10 · קואצ'ינג למורה</span><span class="dot"></span>
+      <span>3/14</span>
+    </div>
+    <div class="conf-mini">חסוי · לפני הצפייה</div>
+  </div>
+</div>
+
+<!-- =================================================================
+     PAGE 4 — שיחת משוב SBI
+================================================================= -->
+<div class="page" id="p4">
+  <div class="page-header">
+    <div class="ph-left">
+      <div class="recipe-tag">מתכון 1 · צפיית עמית.ה</div>
+      <h2>שיחת משוב במודל SBI</h2>
+      <div class="subtitle">Situation · Behavior · Impact + 4 שאלות coaching · 20 דק'</div>
+    </div>
+    <div class="ph-right">
+      <div class="seal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="10" r="3"/><circle cx="17" cy="10" r="3"/>
+          <path d="M4 21v-1a4 4 0 014-4h2"/><path d="M22 21v-1a4 4 0 00-4-4h-2"/>
+          <path d="M9 7V4M17 7V4"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="intro">
+    <strong>מודל SBI</strong> מהמרכז ל-Creative Leadership: תיאור שיטתי שמפריד בין מה שקרה (Situation), מה המורה עשתה (Behavior), ומה היה לזה אפקט (Impact). מונע ביקורת אישית, מאפשר שיחה מקצועית. עוברים על שני אירועים — אחד חיובי, אחד לשיפור.
+  </div>
+
+  <h3 style="font-size: 13px; color: var(--teal-deep); margin: 6px 0 6px 0;">אירוע 1 — דבר שעבד טוב</h3>
+
+  <div class="sbi-band">
+    <div class="sbi-letter">
+      <div class="L">S</div>
+      <div class="W">Situation<br>מצב</div>
+    </div>
+    <div class="write-box write-box-lined">
+      <div style="font-size: 10.5px; color: var(--gray-soft); font-style: italic;">מתי ואיפה? מה הקונטקסט? "ב-08:42, אחרי כניסה לכיתה..."</div>
+    </div>
+  </div>
+
+  <div class="sbi-band">
+    <div class="sbi-letter">
+      <div class="L">B</div>
+      <div class="W">Behavior<br>התנהגות</div>
+    </div>
+    <div class="write-box write-box-lined">
+      <div style="font-size: 10.5px; color: var(--gray-soft); font-style: italic;">מה בדיוק עשית? מילים, פעולות. ללא הערכה.</div>
+    </div>
+  </div>
+
+  <div class="sbi-band">
+    <div class="sbi-letter">
+      <div class="L">I</div>
+      <div class="W">Impact<br>אפקט</div>
+    </div>
+    <div class="write-box write-box-lined">
+      <div style="font-size: 10.5px; color: var(--gray-soft); font-style: italic;">מה ראיתי שזה גרם בכיתה?</div>
+    </div>
+  </div>
+
+  <h3 style="font-size: 13px; color: var(--teal-deep); margin: 8px 0 6px 0;">אירוע 2 — דבר שאפשר לשפר</h3>
+
+  <div class="sbi-band">
+    <div class="sbi-letter"><div class="L">S</div><div class="W">Situation<br>מצב</div></div>
+    <div class="write-box"></div>
+  </div>
+  <div class="sbi-band">
+    <div class="sbi-letter"><div class="L">B</div><div class="W">Behavior<br>התנהגות</div></div>
+    <div class="write-box"></div>
+  </div>
+  <div class="sbi-band">
+    <div class="sbi-letter"><div class="L">I</div><div class="W">Impact<br>אפקט</div></div>
+    <div class="write-box"></div>
+  </div>
+
+  <h3 style="font-size: 13px; color: var(--purple); margin: 10px 0 6px 0;">4 שאלות Coaching לסיום</h3>
+
+  <div class="row-2">
+    <div class="qna" style="margin-bottom: 6px;">
+      <div class="qna-num" style="background: var(--purple-soft); color: var(--purple); border-color: var(--purple);">1</div>
+      <div class="qna-body"><div class="qna-q" style="font-size: 11.5px;">מה את לוקחת מהשיחה הזו?</div><div class="write-line"></div><div class="write-line"></div></div>
+    </div>
+    <div class="qna" style="margin-bottom: 6px;">
+      <div class="qna-num" style="background: var(--purple-soft); color: var(--purple); border-color: var(--purple);">2</div>
+      <div class="qna-body"><div class="qna-q" style="font-size: 11.5px;">מה תרצי לנסות בשבוע הקרוב?</div><div class="write-line"></div><div class="write-line"></div></div>
+    </div>
+    <div class="qna" style="margin-bottom: 6px;">
+      <div class="qna-num" style="background: var(--purple-soft); color: var(--purple); border-color: var(--purple);">3</div>
+      <div class="qna-body"><div class="qna-q" style="font-size: 11.5px;">מה אני יכולה ללמוד ממך?</div><div class="write-line"></div><div class="write-line"></div></div>
+    </div>
+    <div class="qna" style="margin-bottom: 6px;">
+      <div class="qna-num" style="background: var(--purple-soft); color: var(--purple); border-color: var(--purple);">4</div>
+      <div class="qna-body"><div class="qna-q" style="font-size: 11.5px;">איך נחזור על זה בעוד חודש?</div><div class="write-line"></div><div class="write-line"></div></div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <div class="left">
+      <span>פולס מערכת 10</span><span class="dot"></span>
+      <span>קטגוריה 10 · קואצ'ינג למורה</span><span class="dot"></span>
+      <span>4/14</span>
+    </div>
+    <div class="conf-mini">חסוי · SBI Framework</div>
+  </div>
+</div>
+
+<!-- =================================================================
+     PAGE 5 — מטרה אחת לסיום
+================================================================= -->
+<div class="page" id="p5">
+  <div class="page-header">
+    <div class="ph-left">
+      <div class="recipe-tag">מתכון 1 · צפיית עמית.ה</div>
+      <h2>מטרה אחת לסיום</h2>
+      <div class="subtitle">נוסחה ל-takeaway אחד מהצפייה — לא רשימה ארוכה, רק מטרה אחת</div>
+    </div>
+    <div class="ph-right">
+      <div class="seal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="intro">
+    <strong>למה רק אחת?</strong> מחקרים בקואצ'ינג מורות (Jim Knight) מראים ש-3+ מטרות = 0 שינוי בפועל. מטרה אחת ספציפית = שינוי מדיד. בוחרות יחד בסיום שיחת המשוב, רושמות, ומדביקות במקום שהמורה רואה כל בוקר.
+  </div>
+
+  <div class="row-2" style="margin-bottom: 14px;">
+    <div class="field">
+      <label class="field-label">המורה הנצפית</label>
+      <div class="write-line"></div>
+    </div>
+    <div class="field">
+      <label class="field-label">תאריך הצפייה</label>
+      <div class="write-line"></div>
+    </div>
+  </div>
+
+  <div class="formula">
+    <div class="formula-row">
+      <div class="formula-tag">מטרה ספציפית</div>
+      <div class="formula-input"></div>
+    </div>
+    <div style="text-align: center; font-size: 11px; color: var(--gray-soft); margin: 4px 0;">לא "להיות יותר רגועה" — אלא: "להמתין 3 שניות לפני שאני עונה לתלמיד.ה"</div>
+
+    <div class="formula-row">
+      <div class="formula-tag">איך אדע שהצלחתי</div>
+      <div class="formula-input"></div>
+    </div>
+    <div style="text-align: center; font-size: 11px; color: var(--gray-soft); margin: 4px 0;">מדידה קונקרטית — "בסוף השבוע יהיו 2 ילדים שהוסיפו רעיון שאחרת לא היו אומרים"</div>
+
+    <div class="formula-row">
+      <div class="formula-tag">עד מתי</div>
+      <div class="formula-input"></div>
+    </div>
+    <div style="text-align: center; font-size: 11px; color: var(--gray-soft); margin: 4px 0;">דדליין ברור — "עד יום חמישי הבא". לא "אי-פעם".</div>
+  </div>
+
+  <div class="section">
+    <h3>הצהרה אישית</h3>
+    <div class="write-box lg" style="background: var(--warm-cream); border: 1.5px dashed var(--teal);">
+      <div style="font-size: 12px; color: var(--gray-text); margin-bottom: 6px;"><strong>אני, _____________________, מתחייבת בפני עצמי לפעול לפי המטרה הזו עד התאריך שציינתי. בסיום אדבר עם _____________________ ואחליט אם להמשיך לאותה מטרה, להעמיק, או לעבור לחדשה.</strong></div>
+      <div class="write-line"></div>
+      <div class="write-line"></div>
+    </div>
+  </div>
+
+  <div class="sig-row">
+    <div class="sig-box">
+      <div class="sig-line"></div>
+      <div class="sig-label">חתימת המורה</div>
+    </div>
+    <div class="sig-box">
+      <div class="sig-line"></div>
+      <div class="sig-label">חתימת השותפה</div>
+    </div>
+    <div class="sig-box">
+      <div class="sig-line"></div>
+      <div class="sig-label">תאריך</div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <div class="left">
+      <span>פולס מערכת 10</span><span class="dot"></span>
+      <span>קטגוריה 10 · קואצ'ינג למורה</span><span class="dot"></span>
+      <span>5/14</span>
+    </div>
+    <div class="conf-mini">חסוי · מטרה אחת בלבד</div>
+  </div>
+</div>
+
+<!-- =================================================================
+     PAGE 6 — הסכמת הורים לצילום (3 שפות)
+================================================================= -->
+<div class="page" id="p6">
+  <div class="page-header">
+    <div class="ph-left">
+      <div class="recipe-tag">מתכון 2 · וידאו עצמי</div>
+      <h2>טופס הסכמת הורים לצילום</h2>
+      <div class="subtitle">עברית · ערבית · רוסית — לצפייה עצמית של המורה בלבד</div>
+    </div>
+    <div class="ph-right">
+      <div class="seal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="6" width="14" height="12" rx="2"/>
+          <path d="M21 9l-4 3 4 3z"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="intro">
+    <strong>חשוב לדעת:</strong> זהו הטופס שמוגש להורי הילדים בכיתה <strong>לפני</strong> שהמורה מצלמת שיעור לצפייה עצמית. הטופס מסביר בשלוש שפות שהצילום משמש לרפלקציה מקצועית של המורה בלבד, נצפה בתוך 14 יום, ונמחק לחלוטין.
+  </div>
+
+  <!-- HEBREW -->
+  <div class="lang-band">
+    <div class="lng">עברית</div>
+    <div class="lng-en">Hebrew</div>
+  </div>
+  <div style="font-size: 11.5px; margin-bottom: 12px; line-height: 1.55;">
+    שמי <span style="border-bottom:1px dotted #999; display:inline-block; min-width:120px;">&nbsp;</span> הורה ל-<span style="border-bottom:1px dotted #999; display:inline-block; min-width:90px;">&nbsp;</span> בכיתה <span style="border-bottom:1px dotted #999; display:inline-block; min-width:50px;">&nbsp;</span>. אני נותנ.ת הסכמה לכך שהמורה <span style="border-bottom:1px dotted #999; display:inline-block; min-width:120px;">&nbsp;</span> תצלם שיעור בכיתה בתאריך <span style="border-bottom:1px dotted #999; display:inline-block; min-width:80px;">&nbsp;</span>. <strong>הסרטון משמש לצפייה עצמית של המורה בלבד, יוחזק בטלפון או במחשב מוגן בסיסמה, ייצפה תוך 14 יום ויימחק לחלוטין.</strong> לא ייעשה בו שום שימוש אחר — לא להערכת המורה, לא להצגה לצוות, לא לוואטסאפ. אני יכול.ה לבטל את ההסכמה בכל זמן בכתב.
+  </div>
+  <div style="display: grid; grid-template-columns: 1fr 1fr 100px; gap: 10px; margin-bottom: 14px;">
+    <div><div class="sig-line"></div><div class="sig-label">שם ההורה</div></div>
+    <div><div class="sig-line"></div><div class="sig-label">חתימה</div></div>
+    <div><div class="sig-line"></div><div class="sig-label">תאריך</div></div>
+  </div>
+
+  <!-- ARABIC -->
+  <div class="lang-band">
+    <div class="lng">العربية</div>
+    <div class="lng-en">Arabic</div>
+  </div>
+  <div style="font-size: 11.5px; margin-bottom: 12px; line-height: 1.55; direction: rtl;">
+    اسمي <span style="border-bottom:1px dotted #999; display:inline-block; min-width:120px;">&nbsp;</span> والد/ة <span style="border-bottom:1px dotted #999; display:inline-block; min-width:90px;">&nbsp;</span> في الصف <span style="border-bottom:1px dotted #999; display:inline-block; min-width:50px;">&nbsp;</span>. أوافق على أن تقوم المعلمة <span style="border-bottom:1px dotted #999; display:inline-block; min-width:120px;">&nbsp;</span> بتصوير درس في الصف بتاريخ <span style="border-bottom:1px dotted #999; display:inline-block; min-width:80px;">&nbsp;</span>. <strong>يُستخدم الفيديو فقط لمراجعة المعلمة لذاتها مهنياً، يُحفظ في هاتف أو جهاز محمي بكلمة سر، يُشاهَد خلال 14 يوماً ثم يُحذف نهائياً.</strong> لن يُستخدم لأي غرض آخر — لا لتقييم المعلمة، لا لعرضه على الطاقم، لا للواتساب. يمكنني سحب الموافقة في أي وقت كتابياً.
+  </div>
+  <div style="display: grid; grid-template-columns: 1fr 1fr 100px; gap: 10px; margin-bottom: 14px;">
+    <div><div class="sig-line"></div><div class="sig-label">اسم الوالد/ة</div></div>
+    <div><div class="sig-line"></div><div class="sig-label">التوقيع</div></div>
+    <div><div class="sig-line"></div><div class="sig-label">التاريخ</div></div>
+  </div>
+
+  <!-- RUSSIAN -->
+  <div class="lang-band">
+    <div class="lng">Русский</div>
+    <div class="lng-en">Russian</div>
+  </div>
+  <div style="font-size: 11.5px; margin-bottom: 12px; line-height: 1.55; direction: ltr; text-align: right;">
+    Меня зовут <span style="border-bottom:1px dotted #999; display:inline-block; min-width:120px;">&nbsp;</span>, я родитель ребёнка <span style="border-bottom:1px dotted #999; display:inline-block; min-width:90px;">&nbsp;</span> в классе <span style="border-bottom:1px dotted #999; display:inline-block; min-width:50px;">&nbsp;</span>. Я даю согласие на то, чтобы учительница <span style="border-bottom:1px dotted #999; display:inline-block; min-width:120px;">&nbsp;</span> сняла видео урока <span style="border-bottom:1px dotted #999; display:inline-block; min-width:80px;">&nbsp;</span>. <strong>Видео используется только для профессиональной саморефлексии учителя, хранится в телефоне или защищённом паролем устройстве, просматривается в течение 14 дней и затем полностью удаляется.</strong> Никакое иное использование не допускается — не для оценки учителя, не для показа коллегам, не для WhatsApp. Я могу отозвать согласие в любой момент в письменной форме.
+  </div>
+  <div style="display: grid; grid-template-columns: 1fr 1fr 100px; gap: 10px;">
+    <div><div class="sig-line"></div><div class="sig-label">Имя родителя</div></div>
+    <div><div class="sig-line"></div><div class="sig-label">Подпись</div></div>
+    <div><div class="sig-line"></div><div class="sig-label">Дата</div></div>
+  </div>
+
+  <div class="page-footer">
+    <div class="left">
+      <span>פולס מערכת 10</span><span class="dot"></span>
+      <span>קטגוריה 10 · קואצ'ינג למורה</span><span class="dot"></span>
+      <span>6/14</span>
+    </div>
+    <div class="conf-mini">חסוי · יימחק תוך 14 יום</div>
+  </div>
+</div>
+
+<!-- =================================================================
+     PAGE 7 — רפלקציה לפני הצפייה
+================================================================= -->
+<div class="page" id="p7">
+  <div class="page-header">
+    <div class="ph-left">
+      <div class="recipe-tag">מתכון 2 · וידאו עצמי</div>
+      <h2>רפלקציה — לפני שצופים בוידאו</h2>
+      <div class="subtitle">4 שאלות הכנה רגשית · רושמת בשקט לבד · 10 דק'</div>
+    </div>
+    <div class="ph-right">
+      <div class="seal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v4"/><circle cx="12" cy="12" r="6"/>
+          <path d="M12 18v4M2 12h4M18 12h4"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="intro">
+    <strong>למה הכנה רגשית?</strong> הצפייה בעצמך מצולמת — חוויה לא נעימה לרוב המורות בפעם הראשונה. הקול נשמע אחר, הגוף נראה אחר, כל הרגלים שלא ידעת עליהם — צפים. ההכנה הזו <strong>לא לעקיפת הקושי</strong>, אלא לעיבוד מודע לפני שהוא תוקף.
+  </div>
+
+  <div style="background: var(--purple-soft); padding: 12px; border-radius: 8px; margin-bottom: 14px; font-size: 11px; color: var(--purple); border-right: 3px solid var(--purple);">
+    <strong>הצעה:</strong> שבי במקום שקט. לא לפני המסך. אולי עם תה. ענה.י כתוב.ה — לא בראש. הכתב מוציא דברים שמחשבה לא מוציאה.
+  </div>
+
+  <div class="qna">
+    <div class="qna-num">1</div>
+    <div class="qna-body">
+      <div class="qna-q">מה אני חוששת לראות?</div>
+      <div class="qna-hint">להיות ספציפית. "אני חוששת לראות שאני קוטעת ילדים" עדיף מ"אני חוששת בכלל".</div>
+      <div class="write-box write-box-lined"></div>
+    </div>
+  </div>
+
+  <div class="qna">
+    <div class="qna-num">2</div>
+    <div class="qna-body">
+      <div class="qna-q">מה אני מקווה לראות?</div>
+      <div class="qna-hint">לא "להיות מורה מושלמת" — אלא משהו קונקרטי. "שאני באמת מקשיבה כשילד.ה מדבר.ת".</div>
+      <div class="write-box write-box-lined"></div>
+    </div>
+  </div>
+
+  <div class="qna">
+    <div class="qna-num">3</div>
+    <div class="qna-body">
+      <div class="qna-q">מה המטרה שלי לצפייה הזו?</div>
+      <div class="qna-hint">מטרה אחת — לא רשימה. "אני רוצה להבין מה קורה ב-3 הדקות הראשונות של השיעור".</div>
+      <div class="write-box write-box-lined"></div>
+    </div>
+  </div>
+
+  <div class="qna">
+    <div class="qna-num">4</div>
+    <div class="qna-body">
+      <div class="qna-q">עם מי אצפה?</div>
+      <div class="qna-hint">לבד? עם מנחה.ת? עם חברה? כל אופציה לגיטימית. רק חשוב להחליט מראש — לא להציע אחר כך לאדם שייקרא לראות.</div>
+      <div class="write-box write-box-lined"></div>
+    </div>
+  </div>
+
+  <div style="background: var(--teal-soft); padding: 10px 14px; border-radius: 6px; margin-top: 14px; font-size: 11px; color: var(--teal-deep);">
+    <strong>תזכורת חמה:</strong> אם תוך כדי הצפייה את מרגישה מוצפת — עוצרת.ת. ההסכמה איתך, לא עם הסרטון. אפשר לחזור מחר. אפשר לחזור עם מישהי. אפשר גם להחליט לא לצפות בכלל ולמחוק. את הכוח, לא הסרטון.
+  </div>
+
+  <div class="page-footer">
+    <div class="left">
+      <span>פולס מערכת 10</span><span class="dot"></span>
+      <span>קטגוריה 10 · קואצ'ינג למורה</span><span class="dot"></span>
+      <span>7/14</span>
+    </div>
+    <div class="conf-mini">חסוי · רפלקציה אישית</div>
+  </div>
+</div>
+
+<!-- =================================================================
+     PAGE 8 — רפלקציה במהלך הצפייה
+================================================================= -->
+<div class="page" id="p8">
+  <div class="page-header">
+    <div class="ph-left">
+      <div class="recipe-tag">מתכון 2 · וידאו עצמי</div>
+      <h2>רפלקציה — תוך כדי הצפייה הראשונה</h2>
+      <div class="subtitle">4 שאלות לרשום בזמן שהסרטון רץ · ללא שיפוט · רק תיאור</div>
+    </div>
+    <div class="ph-right">
+      <div class="seal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9 9l6 3-6 3z" fill="currentColor"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="intro">
+    <strong>איך משתמשים:</strong> צפי.י בסרטון פעם אחת. עצרי כשעולה משהו. רשמי.י לפי הקטגוריות למטה. <strong>אל תכתבי "טוב" או "רע"</strong> — רק "ראיתי X" / "שמעתי Y". ההערכה תבוא אחר כך, בשלב 3.
+  </div>
+
+  <div class="qna">
+    <div class="qna-num">1</div>
+    <div class="qna-body">
+      <div class="qna-q">מה אני רואה שלא ידעתי?</div>
+      <div class="qna-hint">דבר שהיה מובלע — תנועת יד שאת עושה, מילה שאת חוזרת עליה, מקום בכיתה שאת לא מסתכלת אליו.</div>
+      <div class="write-box lg write-box-lined"></div>
+    </div>
+  </div>
+
+  <div class="qna">
+    <div class="qna-num">2</div>
+    <div class="qna-body">
+      <div class="qna-q">מה הפתיע אותי?</div>
+      <div class="qna-hint">חיובי או שלילי — לא משנה. כל הפתעה היא דאטה.</div>
+      <div class="write-box lg write-box-lined"></div>
+    </div>
+  </div>
+
+  <div class="qna">
+    <div class="qna-num">3</div>
+    <div class="qna-body">
+      <div class="qna-q">מה התרגז עלי?</div>
+      <div class="qna-hint">חשוב לרשום. הריגוז נמוג כשמתעדים אותו. אם לא תרשמי — הוא יישאר בפנים וישפיע על המשך הצפייה.</div>
+      <div class="write-box lg write-box-lined"></div>
+    </div>
+  </div>
+
+  <div class="qna">
+    <div class="qna-num">4</div>
+    <div class="qna-body">
+      <div class="qna-q">איזה רגע הייתי רוצה לחזור עליו?</div>
+      <div class="qna-hint">לא לתקן — לחזור על. רגע שהרגשתי בו "כן, ככה אני רוצה ללמד".</div>
+      <div class="write-box lg write-box-lined"></div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <div class="left">
+      <span>פולס מערכת 10</span><span class="dot"></span>
+      <span>קטגוריה 10 · קואצ'ינג למורה</span><span class="dot"></span>
+      <span>8/14</span>
+    </div>
+    <div class="conf-mini">חסוי · רפלקציה אישית</div>
+  </div>
+</div>
+
+<!-- =================================================================
+     PAGE 9 — 3 רגעים
+================================================================= -->
+<div class="page" id="p9">
+  <div class="page-header">
+    <div class="ph-left">
+      <div class="recipe-tag">מתכון 2 · וידאו עצמי</div>
+      <h2>3 רגעים מהוידאו</h2>
+      <div class="subtitle">בחירה ממוקדת · בסיס לשיחה עם המנחה.ת בשלב הבא</div>
+    </div>
+    <div class="ph-right">
+      <div class="seal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="16" rx="2"/>
+          <path d="M3 10h18M9 4v16M15 4v16"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="intro">
+    <strong>הצעד הקריטי:</strong> אחרי שצפית בסרטון פעמיים — בחרי שלושה רגעים בלבד. לא יותר. סמני קוד-זמן אם תרצי (לדוגמה 04:32). שלושת הרגעים האלה יהוו את הבסיס לשיחה עם מנחה.ת ב-printable הבא (עמ' 10).
+  </div>
+
+  <div class="moments-grid" style="flex: 1;">
+
+    <div class="moment-card loved">
+      <div class="mh">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#3B8F66" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 00-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 000-7.8z"/></svg>
+        <h4>רגע שאהבתי</h4>
+        <div style="margin-right: auto; font-size: 10px; color: var(--gray-soft);">קוד-זמן: <span style="border-bottom: 1px dotted; padding: 0 20px;">&nbsp;</span></div>
+      </div>
+      <div class="mhint">מה קרה? למה זה היה טוב? מה רוצה לזכור לעצמי כעיקרון?</div>
+      <div class="write-box write-box-lined" style="min-height: 50px;"></div>
+      <div class="small-q">שאלה מנחה: <em>איך אגרום לרגעים כאלה לקרות יותר?</em></div>
+    </div>
+
+    <div class="moment-card disliked">
+      <div class="mh">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#A85959" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><circle cx="9" cy="10" r="0.5" fill="currentColor"/><circle cx="15" cy="10" r="0.5" fill="currentColor"/></svg>
+        <h4>רגע שלא אהבתי</h4>
+        <div style="margin-right: auto; font-size: 10px; color: var(--gray-soft);">קוד-זמן: <span style="border-bottom: 1px dotted; padding: 0 20px;">&nbsp;</span></div>
+      </div>
+      <div class="mhint">מה קרה? איך זה השפיע על ילד.ה / על הכיתה? למה זה קרה — מה גרם לי?</div>
+      <div class="write-box write-box-lined" style="min-height: 50px;"></div>
+      <div class="small-q">שאלה מנחה: <em>מה הייתי עושה אחרת אילו יכולתי לחזור?</em></div>
+    </div>
+
+    <div class="moment-card unsure">
+      <div class="mh">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#8B7AB8" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 015.8 1c0 2-3 3-3 3"/><circle cx="12" cy="17" r="0.5" fill="currentColor"/></svg>
+        <h4>רגע שלא הבנתי</h4>
+        <div style="margin-right: auto; font-size: 10px; color: var(--gray-soft);">קוד-זמן: <span style="border-bottom: 1px dotted; padding: 0 20px;">&nbsp;</span></div>
+      </div>
+      <div class="mhint">מה קרה שאני לא יודעת לפרש? אולי ילד.ה הגיב.ה באופן שלא צפיתי. אולי אני עצמי הופתעתי.</div>
+      <div class="write-box write-box-lined" style="min-height: 50px;"></div>
+      <div class="small-q">שאלה מנחה: <em>מה אני צריכה ללמוד כדי להבין את הרגע הזה?</em></div>
+    </div>
+
+  </div>
+
+  <div class="page-footer">
+    <div class="left">
+      <span>פולס מערכת 10</span><span class="dot"></span>
+      <span>קטגוריה 10 · קואצ'ינג למורה</span><span class="dot"></span>
+      <span>9/14</span>
+    </div>
+    <div class="conf-mini">חסוי · 3 רגעים בלבד</div>
+  </div>
+</div>
+
+<!-- =================================================================
+     PAGE 10 — שיחת מנחה.ת
+================================================================= -->
+<div class="page" id="p10">
+  <div class="page-header">
+    <div class="ph-left">
+      <div class="recipe-tag">מתכון 2 · וידאו עצמי</div>
+      <h2>שיחת מנחה.ת אחרי הצפייה</h2>
+      <div class="subtitle">5 שאלות לפגישה של 30 דק' · המנחה שואלת, המורה עונה</div>
+    </div>
+    <div class="ph-right">
+      <div class="seal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="8" r="3"/>
+          <path d="M6 21v-3a4 4 0 014-4h4a4 4 0 014 4v3"/>
+          <path d="M16 4l2 2-2 2M8 4l-2 2 2 2"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="intro">
+    <strong>תפקיד המנחה.ת:</strong> לא לפתור. לא לייעץ. <em>לשאול</em>. השאלות למטה משאירות את הסמכות אצל המורה. המנחה.ת רושמת תשובות בקצרה, ובסוף הפגישה מעבירה את הרישום למורה (ולא שומרת עותק).
+  </div>
+
+  <div class="row-2" style="margin-bottom: 12px;">
+    <div class="field">
+      <label class="field-label">שם המורה</label>
+      <div class="write-line"></div>
+    </div>
+    <div class="field">
+      <label class="field-label">שם המנחה.ת</label>
+      <div class="write-line"></div>
+    </div>
+    <div class="field">
+      <label class="field-label">תאריך הפגישה</label>
+      <div class="write-line"></div>
+    </div>
+    <div class="field">
+      <label class="field-label">תאריך הצילום שצפינו בו</label>
+      <div class="write-line"></div>
+    </div>
+  </div>
+
+  <div class="qna">
+    <div class="qna-num">1</div>
+    <div class="qna-body">
+      <div class="qna-q">איך הייתה החוויה לראות את עצמך?</div>
+      <div class="qna-hint">פתיחה רגשית. לא לעבור הלאה עד שקיבלת תשובה אמיתית — לא "בסדר".</div>
+      <div class="write-box write-box-lined"></div>
+    </div>
+  </div>
+
+  <div class="qna">
+    <div class="qna-num">2</div>
+    <div class="qna-body">
+      <div class="qna-q">איזה משלושת הרגעים שבחרת הכי משמעותי לך?</div>
+      <div class="qna-hint">מתייחס לעמוד 9. המנחה.ת מקריאה את שלושת הרגעים בקול ושואלת.</div>
+      <div class="write-box write-box-lined"></div>
+    </div>
+  </div>
+
+  <div class="qna">
+    <div class="qna-num">3</div>
+    <div class="qna-body">
+      <div class="qna-q">מה את לוקחת מהרגע הזה — לא כפעולה, אלא כתובנה?</div>
+      <div class="qna-hint">לפני שמדברים על "מה לעשות" — להבין מה התובנה. תובנה ראשונה, פעולה אחר כך.</div>
+      <div class="write-box write-box-lined"></div>
+    </div>
+  </div>
+
+  <div class="qna">
+    <div class="qna-num">4</div>
+    <div class="qna-body">
+      <div class="qna-q">מה הצעד הקטן ביותר שתוכלי לנסות מחר?</div>
+      <div class="qna-hint">קטן = ניתן לביצוע באמת. לא "להיות יותר רגועה". כן "בכניסה לכיתה לקחת 2 נשימות לפני שאני אומרת מילה".</div>
+      <div class="write-box write-box-lined"></div>
+    </div>
+  </div>
+
+  <div class="qna">
+    <div class="qna-num">5</div>
+    <div class="qna-body">
+      <div class="qna-q">מתי נדבר שוב? מה הייתי רוצה ממני כמנחה.ת?</div>
+      <div class="qna-hint">חוזה לפגישה הבאה. למורה הזכות לבחור — לא למנחה.ת.</div>
+      <div class="write-box write-box-lined"></div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <div class="left">
+      <span>פולס מערכת 10</span><span class="dot"></span>
+      <span>קטגוריה 10 · קואצ'ינג למורה</span><span class="dot"></span>
+      <span>10/14</span>
+    </div>
+    <div class="conf-mini">חסוי · המנחה לא שומרת עותק</div>
+  </div>
+</div>
+
+<!-- =================================================================
+     PAGE 11 — מחברת מטרת השבוע (12 שבועות)
+================================================================= -->
+<div class="page" id="p11">
+  <div class="page-header">
+    <div class="ph-left">
+      <div class="recipe-tag">מתכון 3 · מטרת השבוע</div>
+      <h2>מחברת מטרת השבוע — טרימסטר שלם</h2>
+      <div class="subtitle">12 שבועות · 4 שורות לכל שבוע · ביום שלישי בבוקר</div>
+    </div>
+    <div class="ph-right">
+      <div class="seal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4h14a2 2 0 012 2v14"/>
+          <path d="M4 4v16h14"/>
+          <path d="M8 9h10M8 13h10M8 17h6"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="intro" style="margin-bottom: 10px; padding: 9px 12px; font-size: 11.5px;">
+    <strong>4 שורות בלבד:</strong> שבוע · ממד מתוך 5 בפולס · מטרה ספציפית · איך אדע. ביום חמישי מסמנים <span style="color: #3B8F66;">✓ הצלחתי</span> / <span style="color: #8B7AB8;">~ חלקית</span> / <span style="color: #A85959;">✗ לא יצא</span>. אין שיפוט — רק תיעוד.
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex: 1;">
+
+    <!-- Weeks 1-6 in left column -->
+    <div>
+      <div class="week-block">
+        <div class="wh"><div class="num">שבוע 1</div><div class="date-w">תאריך: ____________</div></div>
+        <div class="lines-row"><div class="lr-label">ממד:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">מטרה:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">איך אדע:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">חמישי:</div><div style="font-size: 10px;">☐ ✓  ☐ ~  ☐ ✗</div></div>
+      </div>
+      <div class="week-block">
+        <div class="wh"><div class="num">שבוע 2</div><div class="date-w">תאריך: ____________</div></div>
+        <div class="lines-row"><div class="lr-label">ממד:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">מטרה:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">איך אדע:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">חמישי:</div><div style="font-size: 10px;">☐ ✓  ☐ ~  ☐ ✗</div></div>
+      </div>
+      <div class="week-block">
+        <div class="wh"><div class="num">שבוע 3</div><div class="date-w">תאריך: ____________</div></div>
+        <div class="lines-row"><div class="lr-label">ממד:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">מטרה:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">איך אדע:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">חמישי:</div><div style="font-size: 10px;">☐ ✓  ☐ ~  ☐ ✗</div></div>
+      </div>
+      <div class="week-block">
+        <div class="wh"><div class="num">שבוע 4</div><div class="date-w">תאריך: ____________</div></div>
+        <div class="lines-row"><div class="lr-label">ממד:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">מטרה:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">איך אדע:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">חמישי:</div><div style="font-size: 10px;">☐ ✓  ☐ ~  ☐ ✗</div></div>
+      </div>
+      <div class="week-block">
+        <div class="wh"><div class="num">שבוע 5</div><div class="date-w">תאריך: ____________</div></div>
+        <div class="lines-row"><div class="lr-label">ממד:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">מטרה:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">איך אדע:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">חמישי:</div><div style="font-size: 10px;">☐ ✓  ☐ ~  ☐ ✗</div></div>
+      </div>
+      <div class="week-block">
+        <div class="wh"><div class="num">שבוע 6</div><div class="date-w">תאריך: ____________</div></div>
+        <div class="lines-row"><div class="lr-label">ממד:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">מטרה:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">איך אדע:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">חמישי:</div><div style="font-size: 10px;">☐ ✓  ☐ ~  ☐ ✗</div></div>
+      </div>
+    </div>
+
+    <!-- Weeks 7-12 in right column -->
+    <div>
+      <div class="week-block">
+        <div class="wh"><div class="num">שבוע 7</div><div class="date-w">תאריך: ____________</div></div>
+        <div class="lines-row"><div class="lr-label">ממד:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">מטרה:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">איך אדע:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">חמישי:</div><div style="font-size: 10px;">☐ ✓  ☐ ~  ☐ ✗</div></div>
+      </div>
+      <div class="week-block">
+        <div class="wh"><div class="num">שבוע 8</div><div class="date-w">תאריך: ____________</div></div>
+        <div class="lines-row"><div class="lr-label">ממד:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">מטרה:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">איך אדע:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">חמישי:</div><div style="font-size: 10px;">☐ ✓  ☐ ~  ☐ ✗</div></div>
+      </div>
+      <div class="week-block">
+        <div class="wh"><div class="num">שבוע 9</div><div class="date-w">תאריך: ____________</div></div>
+        <div class="lines-row"><div class="lr-label">ממד:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">מטרה:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">איך אדע:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">חמישי:</div><div style="font-size: 10px;">☐ ✓  ☐ ~  ☐ ✗</div></div>
+      </div>
+      <div class="week-block">
+        <div class="wh"><div class="num">שבוע 10</div><div class="date-w">תאריך: ____________</div></div>
+        <div class="lines-row"><div class="lr-label">ממד:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">מטרה:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">איך אדע:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">חמישי:</div><div style="font-size: 10px;">☐ ✓  ☐ ~  ☐ ✗</div></div>
+      </div>
+      <div class="week-block">
+        <div class="wh"><div class="num">שבוע 11</div><div class="date-w">תאריך: ____________</div></div>
+        <div class="lines-row"><div class="lr-label">ממד:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">מטרה:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">איך אדע:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">חמישי:</div><div style="font-size: 10px;">☐ ✓  ☐ ~  ☐ ✗</div></div>
+      </div>
+      <div class="week-block">
+        <div class="wh"><div class="num">שבוע 12</div><div class="date-w">תאריך: ____________</div></div>
+        <div class="lines-row"><div class="lr-label">ממד:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">מטרה:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">איך אדע:</div><div class="lr-line"></div></div>
+        <div class="lines-row"><div class="lr-label">חמישי:</div><div style="font-size: 10px;">☐ ✓  ☐ ~  ☐ ✗</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <div class="left">
+      <span>פולס מערכת 10</span><span class="dot"></span>
+      <span>קטגוריה 10 · קואצ'ינג למורה</span><span class="dot"></span>
+      <span>11/14</span>
+    </div>
+    <div class="conf-mini">חסוי · המחברת בשולחן המורה</div>
+  </div>
+</div>
+
+<!-- =================================================================
+     PAGE 12 — שיחת 1:1 ביום חמישי
+================================================================= -->
+<div class="page" id="p12">
+  <div class="page-header">
+    <div class="ph-left">
+      <div class="recipe-tag">מתכון 3 · מטרת השבוע</div>
+      <h2>כרטיס שיחת 1:1 — יום חמישי</h2>
+      <div class="subtitle">10 דק' עם מנהלת / רכזת / שותפת קואצ'ינג · 5 שאלות</div>
+    </div>
+    <div class="ph-right">
+      <div class="seal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="5" width="18" height="14" rx="2"/>
+          <path d="M7 9h10M7 13h6M7 17h4"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="intro">
+    <strong>הריטמוס:</strong> מטרה שלישי בבוקר → ביצוע ב-3-4 ימים → שיחת חמישי אחרי שעת הלימודים האחרונה. 10 דקות בלבד. <strong>בלי טפסים, בלי דירוג.</strong> רק 5 שאלות והקשבה. השותפת רושמת לעצמה הערה — לא לתיק אישי.
+  </div>
+
+  <div class="row-2" style="margin-bottom: 12px;">
+    <div class="field">
+      <label class="field-label">המורה</label>
+      <div class="write-line"></div>
+    </div>
+    <div class="field">
+      <label class="field-label">השותפת לשיחה</label>
+      <div class="write-line"></div>
+    </div>
+    <div class="field">
+      <label class="field-label">תאריך</label>
+      <div class="write-line"></div>
+    </div>
+    <div class="field">
+      <label class="field-label">מספר שבוע בטרימסטר</label>
+      <div class="write-line"></div>
+    </div>
+  </div>
+
+  <div class="qna">
+    <div class="qna-num">1</div>
+    <div class="qna-body">
+      <div class="qna-q">מה הייתה המטרה שלך השבוע?</div>
+      <div class="qna-hint">פתיחה בעובדה. לא לדלג. אם המורה לא זוכרת — להוציא ביחד את המחברת.</div>
+      <div class="write-box write-box-lined"></div>
+    </div>
+  </div>
+
+  <div class="qna">
+    <div class="qna-num">2</div>
+    <div class="qna-body">
+      <div class="qna-q">מה היה?</div>
+      <div class="qna-hint">לא "איך היה" — אלא "מה היה". תיאור עובדתי לפני רגש. "ראיתי X פעמים".</div>
+      <div class="write-box write-box-lined"></div>
+    </div>
+  </div>
+
+  <div class="qna">
+    <div class="qna-num">3</div>
+    <div class="qna-body">
+      <div class="qna-q">מה הופתעת לראות?</div>
+      <div class="qna-hint">השאלה הזו מכוונת לבילתי צפוי. שם החיים האמיתיים של ההתערבות — לא בתוצאות הצפויות.</div>
+      <div class="write-box write-box-lined"></div>
+    </div>
+  </div>
+
+  <div class="qna">
+    <div class="qna-num">4</div>
+    <div class="qna-body">
+      <div class="qna-q">מה את לוקחת?</div>
+      <div class="qna-hint">לא "מה עשית טוב" — אלא "מה למדת". תובנה אחת קטנה לפעמים שווה יותר מהצלחה גדולה.</div>
+      <div class="write-box write-box-lined"></div>
+    </div>
+  </div>
+
+  <div class="qna">
+    <div class="qna-num">5</div>
+    <div class="qna-body">
+      <div class="qna-q">מה תהיה המטרה לשבוע הבא?</div>
+      <div class="qna-hint">המורה מחליטה. השותפת לא מציעה. אם המטרה זהה — בסדר גמור. עומק > מגוון.</div>
+      <div class="write-box write-box-lined"></div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <div class="left">
+      <span>פולס מערכת 10</span><span class="dot"></span>
+      <span>קטגוריה 10 · קואצ'ינג למורה</span><span class="dot"></span>
+      <span>12/14</span>
+    </div>
+    <div class="conf-mini">חסוי · 10 דק' בלבד</div>
+  </div>
+</div>
+
+<!-- =================================================================
+     PAGE 13 — לוח מטרה השבוע לחדר מורות
+================================================================= -->
+<div class="page" id="p13">
+  <div class="page-header">
+    <div class="ph-left">
+      <div class="recipe-tag">מתכון 3 · מטרת השבוע</div>
+      <h2>לוח "מטרה השבוע" — חדר מורות</h2>
+      <div class="subtitle">A4 גדול · 6 משבצות לצוות פיילוט · לתליה במקום בולט</div>
+    </div>
+    <div class="ph-right">
+      <div class="seal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="14" rx="2"/>
+          <path d="M8 21h8M12 18v3"/>
+          <path d="M7 9h4M13 9h4M7 13h4M13 13h4"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="poster-title">
+    <h1>מטרה השבוע</h1>
+    <div class="sub">שבוע: ______________ · טרימסטר: _____ · בית הספר: _____________________</div>
+  </div>
+
+  <div class="poster-grid">
+
+    <div class="poster-cell">
+      <div class="name-row">
+        <div class="name">מורה: ___________________</div>
+        <div class="icn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>
+        </div>
+      </div>
+      <div class="goal-area"></div>
+      <div class="sig-area">
+        <div><div class="sig-l"></div>חתימה</div>
+        <div><div class="sig-l"></div>חמישי ✓ ~ ✗</div>
+      </div>
+    </div>
+
+    <div class="poster-cell">
+      <div class="name-row">
+        <div class="name">מורה: ___________________</div>
+        <div class="icn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>
+        </div>
+      </div>
+      <div class="goal-area"></div>
+      <div class="sig-area">
+        <div><div class="sig-l"></div>חתימה</div>
+        <div><div class="sig-l"></div>חמישי ✓ ~ ✗</div>
+      </div>
+    </div>
+
+    <div class="poster-cell">
+      <div class="name-row">
+        <div class="name">מורה: ___________________</div>
+        <div class="icn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>
+        </div>
+      </div>
+      <div class="goal-area"></div>
+      <div class="sig-area">
+        <div><div class="sig-l"></div>חתימה</div>
+        <div><div class="sig-l"></div>חמישי ✓ ~ ✗</div>
+      </div>
+    </div>
+
+    <div class="poster-cell">
+      <div class="name-row">
+        <div class="name">מורה: ___________________</div>
+        <div class="icn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>
+        </div>
+      </div>
+      <div class="goal-area"></div>
+      <div class="sig-area">
+        <div><div class="sig-l"></div>חתימה</div>
+        <div><div class="sig-l"></div>חמישי ✓ ~ ✗</div>
+      </div>
+    </div>
+
+    <div class="poster-cell">
+      <div class="name-row">
+        <div class="name">מורה: ___________________</div>
+        <div class="icn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>
+        </div>
+      </div>
+      <div class="goal-area"></div>
+      <div class="sig-area">
+        <div><div class="sig-l"></div>חתימה</div>
+        <div><div class="sig-l"></div>חמישי ✓ ~ ✗</div>
+      </div>
+    </div>
+
+    <div class="poster-cell">
+      <div class="name-row">
+        <div class="name">מורה: ___________________</div>
+        <div class="icn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>
+        </div>
+      </div>
+      <div class="goal-area"></div>
+      <div class="sig-area">
+        <div><div class="sig-l"></div>חתימה</div>
+        <div><div class="sig-l"></div>חמישי ✓ ~ ✗</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="margin-top: 10px; font-size: 10.5px; color: var(--gray-soft); text-align: center; padding: 8px; background: var(--silver-bg); border-radius: 6px;">
+    הלוח נכתב <strong>על ידי המורות בלבד</strong>. המנהלת לא מוסיפה, לא ממחקת ולא דורשת. אם מורה לא מילאה — לא נושא לשיחה. הלוח שירות, לא מבחן.
+  </div>
+
+  <div class="page-footer">
+    <div class="left">
+      <span>פולס מערכת 10</span><span class="dot"></span>
+      <span>קטגוריה 10 · קואצ'ינג למורה</span><span class="dot"></span>
+      <span>13/14</span>
+    </div>
+    <div class="conf-mini">חדר מורות · ע"י מורות</div>
+  </div>
+</div>
+
+<!-- =================================================================
+     PAGE 14 — מסמך כללי הקואצ'ינג
+================================================================= -->
+<div class="page" id="p14">
+  <div class="page-header">
+    <div class="ph-left">
+      <div class="recipe-tag">קטגוריה 10 · מסמך מעטפת</div>
+      <h2>כללי הקואצ'ינג בפיילוט</h2>
+      <div class="subtitle">לחתימת כל המורות בתחילת השנה · לא דורש חידוש מדי שנה</div>
+    </div>
+    <div class="ph-right">
+      <div class="seal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2l7 4v6c0 5-3 8-7 10-4-2-7-5-7-10V6l7-4z"/>
+          <path d="M9 12l2 2 4-4"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="doc-cover">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="8" r="3"/>
+      <path d="M5 21v-2a4 4 0 014-4h6a4 4 0 014 4v2"/>
+      <path d="M19 4l1.5 1.5L19 7M5 4L3.5 5.5 5 7"/>
+    </svg>
+    <h1>5 עקרונות הקואצ'ינג</h1>
+    <div class="sub">המעטפת המגנה על המורות בפיילוט מערכת 10</div>
+  </div>
+
+  <div class="principles">
+
+    <div class="principle">
+      <div class="principle-num">1</div>
+      <div>
+        <h4>חיסיון</h4>
+        <p>כל מה שנכתב, נאמר, צולם או נצפה במסגרת קואצ'ינג — נשאר בין המורה לשותפת.ה לקואצ'ינג. <strong>אסור</strong> ההעברה למנהלת, רכזת, פיקוח, תיק אישי או כל מנגנון של בית-הספר או המשרד. הפרת חיסיון = פסילה של השותפ.ה מהתפקיד.</p>
+      </div>
+    </div>
+
+    <div class="principle">
+      <div class="principle-num">2</div>
+      <div>
+        <h4>וולונטריות</h4>
+        <p>קואצ'ינג אינו חובה. מורה רשאית לבחור באיזה משלושת המתכונים להשתתף, לדחות מועדים, לפסול שותפ.ה, או לפרוש בכל עת. <strong>אי-השתתפות אסורה כשיקול בהערכת המורה.</strong></p>
+      </div>
+    </div>
+
+    <div class="principle">
+      <div class="principle-num">3</div>
+      <div>
+        <h4>תיאור — לא הערכה</h4>
+        <p>בכל אינטראקציה בקואצ'ינג — צפייה, וידאו, שיחת חמישי — מדברים בתיאורים: "ראיתי X", "שמעתי Y", "הופתעתי מ-Z". <strong>לא בהערכות:</strong> "זה היה טוב/רע/לא מקצועי". התיאור פותח שיחה, ההערכה סוגרת אותה.</p>
+      </div>
+    </div>
+
+    <div class="principle">
+      <div class="principle-num">4</div>
+      <div>
+        <h4>1:1 קבוע — לא 1-מול-מנהלת</h4>
+        <p>הקואצ'ינג בנוי על קשר אופקי בין שתי שותפות בעלות מעמד שווה — שתי מורות, מורה ומנחה.ת חיצוני.ת, או מורה ורכזת שכבה בתפקיד תמיכה (לא הערכה). <strong>אסור</strong> שהמנהלת תהיה השותפה הקבועה — הסמכות ההיררכית מבטלת את הבטיחות הפסיכולוגית.</p>
+      </div>
+    </div>
+
+    <div class="principle">
+      <div class="principle-num">5</div>
+      <div>
+        <h4>ירידה במצב חירום</h4>
+        <p>אם בקואצ'ינג עולה רמז לפגיעה בילד.ה, סכנת חיים, התעללות או הפרת חוק — <strong>החיסיון נופל</strong> והשותפ.ה מחויבת לדיווח לפי החוק. זהו החריג היחיד. בכל מצב אחר — חיסיון מלא.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="margin-top: 14px; padding: 12px 14px; background: var(--warm-cream); border: 1px dashed var(--teal); border-radius: 6px;">
+    <div style="font-size: 12px; color: var(--gray-text); margin-bottom: 10px;">
+      <strong>הצהרה:</strong> אני, _________________________, מורה בפיילוט פולס מערכת 10 לשנת הלימודים _________, קראתי את 5 עקרונות הקואצ'ינג למעלה והבנתי אותם. אני מבינה שהם תקפים גם כלפיי וגם כלפי השותפות שלי, ומסכימה לפעול לפיהם.
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 0.7fr; gap: 16px;">
+      <div class="sig-box">
+        <div class="sig-line"></div>
+        <div class="sig-label">חתימת המורה</div>
+      </div>
+      <div class="sig-box">
+        <div class="sig-line"></div>
+        <div class="sig-label">חתימת המנהלת (אישור עקרונות)</div>
+      </div>
+      <div class="sig-box">
+        <div class="sig-line"></div>
+        <div class="sig-label">תאריך</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <div class="left">
+      <span>פולס מערכת 10</span><span class="dot"></span>
+      <span>קטגוריה 10 · קואצ'ינג למורה</span><span class="dot"></span>
+      <span>14/14</span>
+    </div>
+    <div class="conf-mini">חסוי · מסמך מעטפת</div>
+  </div>
+</div>
+
+<script>
+  // Smooth scroll on nav clicks
+  document.querySelectorAll('.toolbar nav a').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+</script>
+
+</body>
+</html>

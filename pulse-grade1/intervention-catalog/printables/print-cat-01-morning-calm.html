@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>בוקר רגוע — דפי הדפסה · פולס מערכת 10</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  /* ---------- Tokens ---------- */
+  :root {
+    --c-adapt: #F2B844;      /* הסתגלות — צהוב חם */
+    --c-adapt-soft: #FDF1D6;
+    --c-adapt-deep: #B8801F;
+    --c-regul: #8B6BC0;      /* ויסות — סגול-לבנדר */
+    --c-regul-soft: #EEE6F8;
+    --c-regul-deep: #5E4691;
+    --c-sea: #6BB6D6;
+    --c-sea-soft: #D9EEF7;
+    --c-coral: #F49B8A;
+    --c-coral-soft: #FCE2DC;
+    --c-mint: #A8D5BA;
+    --c-mint-soft: #E5F2EA;
+    --c-paper: #FFFCF5;
+    --c-ink: #2A2438;
+    --c-ink-soft: #6B6478;
+    --c-line: #E8E2D5;
+    --r-sm: 8px;
+    --r-md: 14px;
+    --r-lg: 22px;
+  }
+
+  /* ---------- Reset & base ---------- */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    font-family: 'Heebo', system-ui, -apple-system, sans-serif;
+    color: var(--c-ink);
+    background: #EFE9DC;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+  body { padding: 24px 16px 80px; }
+
+  /* ---------- Top toolbar (no-print) ---------- */
+  .toolbar {
+    max-width: 880px;
+    margin: 0 auto 28px;
+    background: white;
+    border-radius: var(--r-lg);
+    padding: 20px 26px;
+    box-shadow: 0 4px 18px rgba(42,36,56,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .toolbar h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--c-ink);
+  }
+  .toolbar h1 span {
+    display: block;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--c-ink-soft);
+    margin-top: 2px;
+  }
+  .toolbar .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    background: var(--c-adapt);
+    color: var(--c-ink);
+    border: none;
+    border-radius: 100px;
+    padding: 11px 22px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(242,184,68,0.4); }
+  .btn.secondary { background: white; border: 2px solid var(--c-regul); color: var(--c-regul-deep); }
+
+  .toc {
+    max-width: 880px;
+    margin: 0 auto 32px;
+    background: white;
+    border-radius: var(--r-lg);
+    padding: 22px 28px;
+    box-shadow: 0 2px 10px rgba(42,36,56,0.06);
+  }
+  .toc h2 { font-size: 15px; color: var(--c-ink-soft); margin-bottom: 14px; font-weight: 500; }
+  .toc ol { list-style: none; counter-reset: tocnum; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; }
+  .toc li { counter-increment: tocnum; padding-right: 8px; }
+  .toc a {
+    color: var(--c-ink);
+    text-decoration: none;
+    font-size: 14px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 6px 0;
+  }
+  .toc a::before {
+    content: counter(tocnum);
+    background: var(--c-adapt-soft);
+    color: var(--c-adapt-deep);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .toc a:hover { color: var(--c-regul-deep); }
+
+  /* ---------- A4 page frame ---------- */
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    background: var(--c-paper);
+    margin: 0 auto 24px;
+    padding: 14mm 12mm 16mm;
+    box-shadow: 0 6px 30px rgba(42,36,56,0.12);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .page-tag {
+    position: absolute;
+    top: 8mm;
+    inset-inline-start: 12mm;
+    font-size: 10px;
+    color: var(--c-ink-soft);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .page-footer {
+    position: absolute;
+    bottom: 7mm;
+    inset-inline: 12mm;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 9.5px;
+    color: var(--c-ink-soft);
+    border-top: 1px solid var(--c-line);
+    padding-top: 4mm;
+  }
+  .page-footer .brand { font-weight: 500; }
+  .page-footer .brand b { color: var(--c-adapt-deep); font-weight: 700; }
+
+  .page h2.page-title {
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--c-ink);
+    margin-top: 6mm;
+    margin-bottom: 1mm;
+    line-height: 1.15;
+  }
+  .page .page-sub {
+    font-size: 13px;
+    color: var(--c-ink-soft);
+    margin-bottom: 6mm;
+  }
+  .recipe-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--c-regul-soft);
+    color: var(--c-regul-deep);
+    padding: 5px 12px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 3mm;
+  }
+  .recipe-chip.adapt { background: var(--c-adapt-soft); color: var(--c-adapt-deep); }
+  .recipe-chip.sea { background: var(--c-sea-soft); color: #2D6E8E; }
+
+  /* ============================================
+     PAGE 1 — POSTER: 5 STEPS RITUAL
+     ============================================ */
+  .ritual-poster { flex: 1; display: flex; flex-direction: column; gap: 4mm; }
+  .ritual-poster .header-art {
+    height: 28mm;
+    background: linear-gradient(135deg, var(--c-adapt-soft) 0%, var(--c-sea-soft) 100%);
+    border-radius: var(--r-lg);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    padding: 0 8mm;
+  }
+  .ritual-poster .header-art svg.wave-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.4;
+  }
+  .ritual-poster .header-art .header-text { position: relative; z-index: 2; }
+  .ritual-poster .header-art h3 {
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--c-ink);
+  }
+  .ritual-poster .header-art .sub {
+    font-size: 12px;
+    color: var(--c-ink-soft);
+    margin-top: 2px;
+  }
+  .ritual-poster .header-art .sun {
+    position: absolute;
+    left: 10mm;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22mm;
+    height: 22mm;
+  }
+
+  .ritual-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 5mm;
+    flex: 1;
+  }
+  .ritual-step {
+    display: flex;
+    align-items: center;
+    gap: 6mm;
+    background: white;
+    border: 2px solid var(--c-line);
+    border-radius: var(--r-lg);
+    padding: 6mm 8mm 6mm 6mm;
+    position: relative;
+  }
+  .ritual-step:nth-child(odd) { border-color: var(--c-adapt); background: linear-gradient(90deg, #fff 60%, var(--c-adapt-soft) 100%); }
+  .ritual-step:nth-child(even) { border-color: var(--c-regul); background: linear-gradient(90deg, #fff 60%, var(--c-regul-soft) 100%); }
+  .ritual-step .num {
+    width: 18mm;
+    height: 18mm;
+    border-radius: 50%;
+    background: var(--c-ink);
+    color: var(--c-paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+  .ritual-step:nth-child(1) .num { background: var(--c-adapt); color: var(--c-ink); }
+  .ritual-step:nth-child(2) .num { background: var(--c-regul); color: white; }
+  .ritual-step:nth-child(3) .num { background: var(--c-coral); color: white; }
+  .ritual-step:nth-child(4) .num { background: var(--c-sea); color: white; }
+  .ritual-step:nth-child(5) .num { background: var(--c-mint); color: var(--c-ink); }
+
+  .ritual-step .icon {
+    width: 22mm;
+    height: 22mm;
+    flex-shrink: 0;
+  }
+  .ritual-step .body { flex: 1; }
+  .ritual-step .name {
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--c-ink);
+    margin-bottom: 2mm;
+    line-height: 1.1;
+  }
+  .ritual-step .desc {
+    font-size: 13px;
+    color: var(--c-ink-soft);
+    line-height: 1.5;
+  }
+  .ritual-step .time {
+    position: absolute;
+    top: 4mm;
+    left: 6mm;
+    font-size: 10px;
+    color: var(--c-ink-soft);
+    font-weight: 700;
+  }
+
+  /* ============================================
+     PAGE 2 — MOOD WORD CARDS
+     ============================================ */
+  .word-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+    gap: 3mm;
+    margin-top: 4mm;
+  }
+  .word-card {
+    background: white;
+    border: 2px dashed var(--c-line);
+    border-radius: var(--r-md);
+    padding: 4mm 2mm;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+  }
+  .word-card .mini-icon {
+    width: 9mm;
+    height: 9mm;
+    margin-bottom: 2mm;
+  }
+  .word-card .word {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--c-ink);
+    line-height: 1.2;
+  }
+  .word-card.tone-1 { background: #FFF5E0; border-color: var(--c-adapt); }
+  .word-card.tone-2 { background: var(--c-regul-soft); border-color: var(--c-regul); }
+  .word-card.tone-3 { background: var(--c-sea-soft); border-color: var(--c-sea); }
+  .word-card.tone-4 { background: var(--c-coral-soft); border-color: var(--c-coral); }
+  .word-card.tone-5 { background: var(--c-mint-soft); border-color: var(--c-mint); }
+  .word-card.tone-6 { background: #F4ECDB; border-color: #C9B584; }
+
+  .cut-hint {
+    text-align: center;
+    font-size: 10px;
+    color: var(--c-ink-soft);
+    margin-top: 3mm;
+    font-style: italic;
+  }
+
+  /* ============================================
+     PAGE 3 — TEACHER POCKET SCRIPT
+     ============================================ */
+  .script-wrap { flex: 1; display: flex; flex-direction: column; gap: 5mm; }
+  .script-intro {
+    background: var(--c-regul-soft);
+    border-radius: var(--r-lg);
+    padding: 6mm 8mm;
+    font-size: 12px;
+    color: var(--c-regul-deep);
+    line-height: 1.6;
+  }
+  .script-intro b { color: var(--c-ink); }
+
+  .pocket-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5mm;
+    flex: 1;
+  }
+  .pocket-card {
+    background: white;
+    border: 2px solid var(--c-line);
+    border-radius: var(--r-md);
+    padding: 5mm 6mm;
+    position: relative;
+  }
+  .pocket-card.adapt { border-color: var(--c-adapt); }
+  .pocket-card.regul { border-color: var(--c-regul); }
+  .pocket-card.sea   { border-color: var(--c-sea); }
+  .pocket-card .label {
+    font-size: 10px;
+    color: var(--c-ink-soft);
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 2mm;
+  }
+  .pocket-card h4 {
+    font-size: 16px;
+    font-weight: 900;
+    color: var(--c-ink);
+    margin-bottom: 3mm;
+    display: flex;
+    align-items: center;
+    gap: 3mm;
+  }
+  .pocket-card h4 .dot {
+    width: 7mm; height: 7mm; border-radius: 50%;
+    background: var(--c-adapt);
+    color: var(--c-ink);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px;
+  }
+  .pocket-card.regul h4 .dot { background: var(--c-regul); color: white; }
+  .pocket-card.sea h4 .dot { background: var(--c-sea); color: white; }
+  .pocket-card p {
+    font-size: 12px;
+    color: var(--c-ink);
+    line-height: 1.55;
+    margin-bottom: 2mm;
+  }
+  .pocket-card .quote {
+    background: var(--c-paper);
+    border-right: 3px solid var(--c-adapt);
+    padding: 3mm 4mm;
+    font-size: 12.5px;
+    color: var(--c-ink);
+    font-weight: 500;
+    margin: 3mm 0;
+    border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  }
+  .pocket-card.regul .quote { border-color: var(--c-regul); }
+  .pocket-card.sea .quote { border-color: var(--c-sea); }
+  .pocket-card ul { padding-right: 5mm; }
+  .pocket-card li { font-size: 11.5px; color: var(--c-ink-soft); line-height: 1.55; margin-bottom: 1mm; }
+
+  .scissors-line {
+    border-top: 2px dashed var(--c-line);
+    text-align: center;
+    color: var(--c-ink-soft);
+    font-size: 10px;
+    padding-top: 2mm;
+    margin-top: 1mm;
+  }
+
+  /* ============================================
+     PAGE 4 — 8 FACE CARDS (2×4)
+     ============================================ */
+  .faces-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(4, 1fr);
+    gap: 5mm;
+    margin-top: 4mm;
+  }
+  .face-card {
+    background: white;
+    border: 3px solid var(--c-line);
+    border-radius: var(--r-lg);
+    padding: 5mm;
+    display: flex;
+    align-items: center;
+    gap: 5mm;
+    position: relative;
+  }
+  .face-card .face-svg {
+    width: 32mm;
+    height: 32mm;
+    flex-shrink: 0;
+  }
+  .face-card .face-meta { flex: 1; }
+  .face-card .face-name {
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--c-ink);
+    line-height: 1.1;
+  }
+  .face-card .face-sub {
+    font-size: 11px;
+    color: var(--c-ink-soft);
+    margin-top: 1mm;
+  }
+  .face-card.f-happy   { background: #FFF8E1; border-color: #F5C342; }
+  .face-card.f-calm    { background: #E8F1F8; border-color: #6BB6D6; }
+  .face-card.f-excited { background: #FCE2DC; border-color: #F49B8A; }
+  .face-card.f-tired   { background: #EEE6F8; border-color: #8B6BC0; }
+  .face-card.f-sad     { background: #E5F2EA; border-color: #5A9B7A; }
+  .face-card.f-angry   { background: #FBDCD0; border-color: #D86B47; }
+  .face-card.f-confused{ background: #F4ECDB; border-color: #C9A35C; }
+  .face-card.f-afraid  { background: #E5E1F2; border-color: #7C6BB0; }
+
+  /* ============================================
+     PAGE 5 — TEACHER TRACKING SHEET
+     ============================================ */
+  .track-table {
+    flex: 1;
+    margin-top: 4mm;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 11px;
+    width: 100%;
+  }
+  .track-table thead th {
+    background: var(--c-regul-soft);
+    color: var(--c-regul-deep);
+    font-weight: 700;
+    padding: 4mm 2mm;
+    border: 1px solid var(--c-line);
+    text-align: center;
+    font-size: 12px;
+  }
+  .track-table thead th:first-child {
+    background: var(--c-adapt-soft);
+    color: var(--c-adapt-deep);
+    text-align: right;
+    padding-inline-start: 4mm;
+    width: 38mm;
+  }
+  .track-table tbody td {
+    padding: 3mm 2mm;
+    border: 1px solid var(--c-line);
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--c-ink);
+    height: 7.5mm;
+  }
+  .track-table tbody td:first-child {
+    text-align: right;
+    padding-inline-start: 4mm;
+    font-weight: 500;
+    background: #FFFDF7;
+  }
+  .track-table tbody tr:nth-child(even) td:not(:first-child) { background: #FAF7EF; }
+
+  .legend {
+    margin-top: 4mm;
+    display: flex;
+    gap: 5mm;
+    flex-wrap: wrap;
+    background: var(--c-paper);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-md);
+    padding: 4mm 6mm;
+    font-size: 11px;
+  }
+  .legend b { color: var(--c-ink); font-weight: 700; margin-inline-end: 2mm; }
+  .legend span { display: inline-flex; align-items: center; gap: 2mm; color: var(--c-ink-soft); }
+  .legend .swatch {
+    width: 5mm; height: 5mm; border-radius: 50%;
+    border: 1.5px solid currentColor;
+  }
+
+  /* ============================================
+     PAGE 6 — BREATHING POSTER
+     ============================================ */
+  .breath-wrap { flex: 1; display: flex; flex-direction: column; gap: 5mm; }
+  .breath-header {
+    text-align: center;
+    background: linear-gradient(180deg, var(--c-sea-soft) 0%, transparent 100%);
+    border-radius: var(--r-lg);
+    padding: 6mm;
+  }
+  .breath-header h3 {
+    font-size: 30px;
+    font-weight: 900;
+    color: var(--c-ink);
+    line-height: 1.1;
+  }
+  .breath-header .lead {
+    font-size: 13px;
+    color: var(--c-ink-soft);
+    margin-top: 2mm;
+  }
+  .breath-steps {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5mm;
+  }
+  .breath-step {
+    background: white;
+    border: 3px solid var(--c-sea);
+    border-radius: var(--r-lg);
+    padding: 5mm;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+  }
+  .breath-step:nth-child(1) { border-color: var(--c-sea); background: var(--c-sea-soft); }
+  .breath-step:nth-child(2) { border-color: var(--c-regul); background: var(--c-regul-soft); }
+  .breath-step:nth-child(3) { border-color: var(--c-adapt); background: var(--c-adapt-soft); }
+  .breath-step:nth-child(4) { border-color: var(--c-mint); background: var(--c-mint-soft); }
+  .breath-step .step-svg {
+    width: 38mm;
+    height: 32mm;
+    margin-bottom: 3mm;
+  }
+  .breath-step .step-num {
+    position: absolute;
+    top: 3mm;
+    inset-inline-end: 4mm;
+    background: white;
+    color: var(--c-ink);
+    width: 9mm; height: 9mm;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900;
+    font-size: 16px;
+    border: 2px solid currentColor;
+  }
+  .breath-step .step-name {
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--c-ink);
+    line-height: 1.1;
+  }
+  .breath-step .count {
+    font-size: 36px;
+    font-weight: 900;
+    color: var(--c-ink);
+    margin-top: 2mm;
+    letter-spacing: 4px;
+  }
+  .breath-step .label {
+    font-size: 11px;
+    color: var(--c-ink-soft);
+    margin-top: 1mm;
+  }
+
+  /* ============================================
+     PAGE 7 — POCKET BREATH CARDS (8-up)
+     ============================================ */
+  .pocket-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(4, 1fr);
+    gap: 4mm;
+    margin-top: 4mm;
+  }
+  .breath-pocket {
+    background: linear-gradient(135deg, var(--c-sea-soft) 0%, white 100%);
+    border: 2px dashed var(--c-sea);
+    border-radius: var(--r-md);
+    padding: 4mm 5mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+  .breath-pocket::before {
+    content: '';
+    position: absolute;
+    top: -8mm; left: -8mm;
+    width: 28mm; height: 28mm;
+    border-radius: 50%;
+    background: var(--c-adapt-soft);
+    opacity: 0.5;
+    z-index: 0;
+  }
+  .breath-pocket > * { position: relative; z-index: 1; }
+  .breath-pocket .top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .breath-pocket .top h5 {
+    font-size: 15px;
+    font-weight: 900;
+    color: var(--c-ink);
+  }
+  .breath-pocket .top svg { width: 12mm; height: 12mm; }
+  .breath-pocket .mini-steps {
+    display: flex;
+    justify-content: space-between;
+    gap: 1mm;
+    margin: 2mm 0;
+  }
+  .breath-pocket .mini-step {
+    flex: 1;
+    background: white;
+    border-radius: var(--r-sm);
+    padding: 1.5mm 1mm;
+    text-align: center;
+    border: 1px solid var(--c-sea);
+  }
+  .breath-pocket .mini-step .num {
+    font-size: 9px;
+    color: var(--c-sea);
+    font-weight: 700;
+  }
+  .breath-pocket .mini-step .name {
+    font-size: 10px;
+    color: var(--c-ink);
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .breath-pocket .mini-step .cnt {
+    font-size: 14px;
+    color: var(--c-ink);
+    font-weight: 900;
+  }
+  .breath-pocket .footer-mini {
+    font-size: 9px;
+    color: var(--c-ink-soft);
+    text-align: center;
+    border-top: 1px dotted var(--c-sea);
+    padding-top: 1.5mm;
+    font-weight: 500;
+  }
+
+  /* ---------- Print ---------- */
+  @page { size: A4; margin: 1cm; }
+  @media print {
+    body { background: white; padding: 0; }
+    .toolbar, .toc { display: none !important; }
+    .page {
+      box-shadow: none;
+      margin: 0;
+      padding: 8mm 10mm 12mm;
+      width: 100%;
+      min-height: auto;
+      page-break-after: always;
+    }
+    .page:last-child { page-break-after: auto; }
+  }
+
+  /* ---------- Responsive preview ---------- */
+  @media (max-width: 880px) {
+    body { padding: 12px 8px 60px; }
+    .toolbar { flex-direction: column; align-items: stretch; text-align: center; }
+    .toc ol { grid-template-columns: 1fr; }
+    .page {
+      width: 100%;
+      min-height: auto;
+      padding: 18px;
+    }
+    .page h2.page-title { font-size: 22px; }
+    .word-grid { grid-template-columns: repeat(3, 1fr); grid-template-rows: auto; }
+    .pocket-grid, .pocket-cards, .faces-grid, .breath-steps { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- =========== TOOLBAR =========== -->
+<div class="toolbar no-print">
+  <h1>בוקר רגוע — דפי הדפסה
+    <span>פולס מערכת 10 · אבני יסוד · קטגוריה 1: הסתגלות + ויסות</span>
+  </h1>
+  <div class="actions">
+    <button class="btn" onclick="window.print()">הדפיסי את הדפים שאת רוצה לעבוד עליהם</button>
+    <a class="btn secondary" href="#toc">לתוכן העניינים</a>
+  </div>
+</div>
+
+<!-- =========== TOC =========== -->
+<nav class="toc no-print" id="toc">
+  <h2>שבעה דפים — שלוש התערבויות</h2>
+  <ol>
+    <li><a href="#page-1">כרזת קיר — 5 שלבי טקס הפתיחה</a></li>
+    <li><a href="#page-2">כרטיסי מילה למצב רוח (30)</a></li>
+    <li><a href="#page-3">כרטיס המורה — סקריפט לכיס</a></li>
+    <li><a href="#page-4">8 כרטיסי פנים מצוירים</a></li>
+    <li><a href="#page-5">גיליון מעקב שבועי למורה</a></li>
+    <li><a href="#page-6">כרזת נשימת הים — 4 שלבים</a></li>
+    <li><a href="#page-7">כרטיסי כיס לנשימה (8 בעמוד)</a></li>
+  </ol>
+</nav>
+
+<!-- =====================================================
+     PAGE 1 — RITUAL POSTER (5 STEPS)
+===================================================== -->
+<section class="page" id="page-1">
+  <div class="page-tag">מתכון 1 · עמוד 1 / 3</div>
+  <div class="recipe-chip adapt">מתכון 1 · טקס פתיחה במעגל</div>
+  <h2 class="page-title">חמישה שלבים לבוקר רגוע</h2>
+  <p class="page-sub">כרזת קיר לכיתה — לתלות מעל אזור המעגל</p>
+
+  <div class="ritual-poster">
+    <div class="header-art">
+      <svg class="wave-bg" viewBox="0 0 400 100" preserveAspectRatio="none">
+        <path d="M0,70 Q50,40 100,60 T200,60 T300,60 T400,60 L400,100 L0,100 Z" fill="#6BB6D6" opacity="0.5"/>
+        <path d="M0,80 Q50,55 100,75 T200,75 T300,75 T400,75 L400,100 L0,100 Z" fill="#6BB6D6" opacity="0.8"/>
+      </svg>
+      <svg class="sun" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="22" fill="#F2B844"/>
+        <g stroke="#F2B844" stroke-width="4" stroke-linecap="round">
+          <line x1="50" y1="10" x2="50" y2="20"/>
+          <line x1="50" y1="80" x2="50" y2="90"/>
+          <line x1="10" y1="50" x2="20" y2="50"/>
+          <line x1="80" y1="50" x2="90" y2="50"/>
+          <line x1="22" y1="22" x2="29" y2="29"/>
+          <line x1="71" y1="71" x2="78" y2="78"/>
+          <line x1="22" y1="78" x2="29" y2="71"/>
+          <line x1="71" y1="29" x2="78" y2="22"/>
+        </g>
+      </svg>
+      <div class="header-text">
+        <h3>בּוֹקֶר רָגוּעַ בַּמַּעְגָּל</h3>
+        <div class="sub">חמישה שלבים שמכינים אותנו ליום</div>
+      </div>
+    </div>
+
+    <div class="ritual-steps">
+
+      <div class="ritual-step">
+        <div class="time">~ 2 דקות</div>
+        <div class="num">1</div>
+        <svg class="icon" viewBox="0 0 100 100">
+          <circle cx="30" cy="55" r="14" fill="#F2B844" stroke="#2A2438" stroke-width="2.5"/>
+          <circle cx="50" cy="50" r="16" fill="#8B6BC0" stroke="#2A2438" stroke-width="2.5"/>
+          <circle cx="72" cy="55" r="14" fill="#F49B8A" stroke="#2A2438" stroke-width="2.5"/>
+          <circle cx="30" cy="50" r="3" fill="#2A2438"/>
+          <circle cx="50" cy="44" r="3" fill="#2A2438"/>
+          <circle cx="72" cy="50" r="3" fill="#2A2438"/>
+          <path d="M25 60 Q30 64 35 60" stroke="#2A2438" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M45 56 Q50 60 55 56" stroke="#2A2438" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M67 60 Q72 64 77 60" stroke="#2A2438" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </svg>
+        <div class="body">
+          <div class="name">הִתְכַּנְּסוּת</div>
+          <div class="desc">יושבים במעגל, רגליים משוכלות, ידיים על הברכיים. מסתכלים זה על זה.</div>
+        </div>
+      </div>
+
+      <div class="ritual-step">
+        <div class="time">~ 1 דקה</div>
+        <div class="num">2</div>
+        <svg class="icon" viewBox="0 0 100 100">
+          <path d="M50 20 Q30 30 30 50 Q30 75 50 85 Q70 75 70 50 Q70 30 50 20 Z" fill="#FDF1D6" stroke="#F2B844" stroke-width="2.5"/>
+          <circle cx="50" cy="50" r="14" fill="#F2B844"/>
+          <path d="M50 38 L52 46 L60 46 L54 51 L56 59 L50 54 L44 59 L46 51 L40 46 L48 46 Z" fill="white"/>
+        </svg>
+        <div class="body">
+          <div class="name">בִּרְכַּת בֹּקֶר</div>
+          <div class="desc">המורה אומרת "בוקר טוב לכולם" — הילדים עונים. אפשר עם מנגינה.</div>
+        </div>
+      </div>
+
+      <div class="ritual-step">
+        <div class="time">~ 4 דקות</div>
+        <div class="num">3</div>
+        <svg class="icon" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="35" fill="none" stroke="#F49B8A" stroke-width="2.5" stroke-dasharray="3 3"/>
+          <circle cx="50" cy="20" r="8" fill="#F2B844"/>
+          <circle cx="80" cy="50" r="8" fill="#8B6BC0"/>
+          <circle cx="50" cy="80" r="8" fill="#A8D5BA"/>
+          <circle cx="20" cy="50" r="8" fill="#F49B8A"/>
+          <text x="50" y="55" text-anchor="middle" font-size="22" font-weight="900" fill="#2A2438">סבב</text>
+        </svg>
+        <div class="body">
+          <div class="name">סֶבֶב מִלָּה</div>
+          <div class="desc">כל ילד.ה בוחר.ת כרטיס מילה ואומר.ת "אני מרגיש.ה ___" — הסבב מסתובב.</div>
+        </div>
+      </div>
+
+      <div class="ritual-step">
+        <div class="time">~ 2 דקות</div>
+        <div class="num">4</div>
+        <svg class="icon" viewBox="0 0 100 100">
+          <path d="M10 60 Q25 40 40 60 T70 60 T100 60" stroke="#6BB6D6" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path d="M10 70 Q25 55 40 70 T70 70 T100 70" stroke="#6BB6D6" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.6"/>
+          <circle cx="50" cy="35" r="12" fill="#FDF1D6" stroke="#F2B844" stroke-width="2"/>
+          <path d="M44 35 Q50 30 56 35" stroke="#2A2438" stroke-width="1.5" fill="none"/>
+          <circle cx="46" cy="33" r="1.5" fill="#2A2438"/>
+          <circle cx="54" cy="33" r="1.5" fill="#2A2438"/>
+        </svg>
+        <div class="body">
+          <div class="name">נְשִׁימָה</div>
+          <div class="desc">שלוש נשימות עמוקות יחד — שואפים דרך האף, נושפים דרך הפה.</div>
+        </div>
+      </div>
+
+      <div class="ritual-step">
+        <div class="time">~ 1 דקה</div>
+        <div class="num">5</div>
+        <svg class="icon" viewBox="0 0 100 100">
+          <rect x="20" y="30" width="60" height="50" rx="6" fill="#A8D5BA" stroke="#2A2438" stroke-width="2.5"/>
+          <rect x="40" y="50" width="20" height="30" fill="#5A9B7A" stroke="#2A2438" stroke-width="2"/>
+          <circle cx="55" cy="65" r="2" fill="#F2B844"/>
+          <path d="M20 30 L50 10 L80 30" fill="#F49B8A" stroke="#2A2438" stroke-width="2.5" stroke-linejoin="round"/>
+          <circle cx="50" cy="22" r="4" fill="#F2B844"/>
+        </svg>
+        <div class="body">
+          <div class="name">פְּתִיחַת הַיּוֹם</div>
+          <div class="desc">"מה היום מחכה לנו?" — סקירה קצרה של מה שעומד לקרות בכיתה היום.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">פולס מערכת 10 · <b>אבני יסוד</b></span>
+    <span>בוקר רגוע · עמוד 1</span>
+  </div>
+</section>
+
+<!-- =====================================================
+     PAGE 2 — MOOD WORD CARDS (30)
+===================================================== -->
+<section class="page" id="page-2">
+  <div class="page-tag">מתכון 1 · עמוד 2 / 3</div>
+  <div class="recipe-chip adapt">מתכון 1 · טקס פתיחה במעגל</div>
+  <h2 class="page-title">כרטיסי מילה — מָה אֲנִי מַרְגִּישׁ.ה?</h2>
+  <p class="page-sub">לגזור ולשים בסל באמצע המעגל. כל ילד.ה בוחר.ת כרטיס לסבב הבוקר.</p>
+
+  <div class="word-grid">
+    <div class="word-card tone-1"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#F2B844"/><circle cx="14" cy="17" r="2" fill="#2A2438"/><circle cx="26" cy="17" r="2" fill="#2A2438"/><path d="M13 24 Q20 30 27 24" stroke="#2A2438" stroke-width="2" fill="none" stroke-linecap="round"/></svg><div class="word">שָׂמֵחַ.ה</div></div>
+
+    <div class="word-card tone-3"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#6BB6D6"/><circle cx="14" cy="18" r="1.5" fill="#2A2438"/><circle cx="26" cy="18" r="1.5" fill="#2A2438"/><line x1="14" y1="25" x2="26" y2="25" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/></svg><div class="word">רָגוּעַ.ה</div></div>
+
+    <div class="word-card tone-4"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#F49B8A"/><path d="M11 16 L17 18" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/><path d="M23 18 L29 16" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/><circle cx="20" cy="26" r="3" fill="#2A2438"/></svg><div class="word">נִרְגָּשׁ.ת</div></div>
+
+    <div class="word-card tone-2"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#8B6BC0"/><path d="M11 17 L17 20" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/><path d="M23 20 L29 17" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/><line x1="14" y1="27" x2="26" y2="27" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/></svg><div class="word">עָיֵף.ה</div></div>
+
+    <div class="word-card tone-4"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#D86B47"/><path d="M11 14 L18 18" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/><path d="M22 18 L29 14" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/><path d="M13 28 Q20 23 27 28" stroke="#2A2438" stroke-width="2" fill="none" stroke-linecap="round"/></svg><div class="word">כּוֹעֵס.ת</div></div>
+
+    <div class="word-card tone-2"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#A88FCF"/><line x1="13" y1="16" x2="17" y2="20" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/><line x1="17" y1="16" x2="13" y2="20" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/><line x1="23" y1="16" x2="27" y2="20" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/><line x1="27" y1="16" x2="23" y2="20" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/><path d="M13 27 Q20 24 27 27" stroke="#2A2438" stroke-width="2" fill="none" stroke-linecap="round"/></svg><div class="word">מְתֻסְכָּל.ת</div></div>
+
+    <div class="word-card tone-1"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#F5C342"/><circle cx="14" cy="17" r="1.5" fill="#2A2438"/><circle cx="26" cy="17" r="1.5" fill="#2A2438"/><path d="M13 23 Q20 28 27 23" stroke="#2A2438" stroke-width="2" fill="none" stroke-linecap="round"/><polygon points="20,5 22,9 26,9 23,12 24,16 20,14 16,16 17,12 14,9 18,9" fill="#F49B8A"/></svg><div class="word">גֵּאֶה</div></div>
+
+    <div class="word-card tone-4"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#FCBFB1"/><circle cx="14" cy="18" r="1.5" fill="#2A2438"/><circle cx="26" cy="18" r="1.5" fill="#2A2438"/><path d="M14 26 Q20 24 26 26" stroke="#2A2438" stroke-width="1.5" fill="none" stroke-linecap="round"/><ellipse cx="13" cy="23" rx="3" ry="2" fill="#F49B8A" opacity="0.6"/><ellipse cx="27" cy="23" rx="3" ry="2" fill="#F49B8A" opacity="0.6"/></svg><div class="word">מִתְבַּיֵּשׁ.ת</div></div>
+
+    <div class="word-card tone-3"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#9CC8DE"/><path d="M11 17 Q14 20 17 17" stroke="#2A2438" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M23 17 Q26 20 29 17" stroke="#2A2438" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M14 27 Q20 25 26 27" stroke="#2A2438" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="20" cy="32" r="2" fill="#6BB6D6"/></svg><div class="word">מִתְגַּעְגֵּעַ.ת</div></div>
+
+    <div class="word-card tone-5"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#A8D5BA"/><circle cx="14" cy="17" r="3" fill="#2A2438"/><circle cx="14" cy="17" r="1" fill="white"/><circle cx="26" cy="17" r="3" fill="#2A2438"/><circle cx="26" cy="17" r="1" fill="white"/><circle cx="20" cy="25" r="3" fill="none" stroke="#2A2438" stroke-width="2"/></svg><div class="word">סַקְרָן.ית</div></div>
+
+    <div class="word-card tone-6"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#D4BC8A"/><path d="M11 17 L17 20" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/><path d="M29 17 L23 20" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/><path d="M14 26 Q17 28 20 26 Q23 24 26 26" stroke="#2A2438" stroke-width="2" fill="none" stroke-linecap="round"/></svg><div class="word">מְבֻלְבָּל.ת</div></div>
+
+    <div class="word-card tone-2"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#A89BC9"/><line x1="13" y1="16" x2="17" y2="20" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/><line x1="17" y1="16" x2="13" y2="20" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/><circle cx="26" cy="18" r="1.5" fill="#2A2438"/><path d="M14 27 Q20 24 26 27" stroke="#2A2438" stroke-width="2" fill="none" stroke-linecap="round"/></svg><div class="word">מֻדְאָג.ת</div></div>
+
+    <div class="word-card tone-1"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#FFD56B"/><circle cx="14" cy="17" r="1.5" fill="#2A2438"/><circle cx="26" cy="17" r="1.5" fill="#2A2438"/><path d="M13 22 Q20 32 27 22" stroke="#2A2438" stroke-width="2" fill="none" stroke-linecap="round"/></svg><div class="word">מַצְחִיק.ה</div></div>
+
+    <div class="word-card tone-5"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#B3DCC2"/><circle cx="14" cy="17" r="1.5" fill="#2A2438"/><circle cx="26" cy="17" r="1.5" fill="#2A2438"/><path d="M13 24 Q20 28 27 24" stroke="#2A2438" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M30 12 Q34 14 32 18" stroke="#A8D5BA" stroke-width="1.5" fill="none"/></svg><div class="word">אוֹהֵב.ת</div></div>
+
+    <div class="word-card tone-3"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#84C5DE"/><path d="M11 18 L17 16" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/><path d="M23 16 L29 18" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/><path d="M15 25 Q20 23 25 25" stroke="#2A2438" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg><div class="word">חוֹשֵׁב.ת</div></div>
+
+    <div class="word-card tone-2"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#9B85C4"/><line x1="11" y1="14" x2="17" y2="18" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/><line x1="23" y1="18" x2="29" y2="14" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/><path d="M14 28 Q20 24 26 28" stroke="#2A2438" stroke-width="2" fill="none" stroke-linecap="round"/><ellipse cx="14" cy="24" rx="2" ry="3" fill="#6BB6D6"/></svg><div class="word">עָצוּב.ה</div></div>
+
+    <div class="word-card tone-6"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#DCC79A"/><circle cx="14" cy="17" r="1.5" fill="#2A2438"/><circle cx="26" cy="17" r="1.5" fill="#2A2438"/><circle cx="20" cy="25" r="2.5" fill="#2A2438"/></svg><div class="word">שָׁקֵט.ה</div></div>
+
+    <div class="word-card tone-5"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#BFE2CD"/><circle cx="14" cy="18" r="1.5" fill="#2A2438"/><circle cx="26" cy="18" r="1.5" fill="#2A2438"/><path d="M13 24 Q20 28 27 24" stroke="#2A2438" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M10 12 L14 14 M30 12 L26 14" stroke="#A8D5BA" stroke-width="1.5"/></svg><div class="word">מוּדֶה.מוֹדָה</div></div>
+
+    <div class="word-card tone-1"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#F7CB6B"/><line x1="13" y1="14" x2="17" y2="18" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/><line x1="17" y1="14" x2="13" y2="18" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/><line x1="23" y1="14" x2="27" y2="18" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/><line x1="27" y1="14" x2="23" y2="18" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/><path d="M13 24 Q20 30 27 24" stroke="#2A2438" stroke-width="2" fill="none" stroke-linecap="round"/></svg><div class="word">מְלֵא.ה אֶנֶרְגְּיָה</div></div>
+
+    <div class="word-card tone-3"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#AAD0E2"/><path d="M11 18 Q14 14 17 18" stroke="#2A2438" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M23 18 Q26 14 29 18" stroke="#2A2438" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="20" cy="26" r="1.5" fill="#2A2438"/></svg><div class="word">מַפְתִּיעַ.ה</div></div>
+
+    <div class="word-card tone-4"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#F0B0A0"/><circle cx="14" cy="17" r="1.5" fill="#2A2438"/><circle cx="26" cy="17" r="1.5" fill="#2A2438"/><circle cx="20" cy="26" r="2" fill="none" stroke="#2A2438" stroke-width="1.5"/></svg><div class="word">מָבוֹךְ.ה</div></div>
+
+    <div class="word-card tone-2"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#B5A4D2"/><circle cx="14" cy="18" r="2" fill="white" stroke="#2A2438" stroke-width="1.5"/><circle cx="26" cy="18" r="2" fill="white" stroke="#2A2438" stroke-width="1.5"/><circle cx="14" cy="18" r="0.8" fill="#2A2438"/><circle cx="26" cy="18" r="0.8" fill="#2A2438"/><circle cx="20" cy="27" r="2.5" fill="white" stroke="#2A2438" stroke-width="1.5"/></svg><div class="word">פּוֹחֵד.ת</div></div>
+
+    <div class="word-card tone-5"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#C2E0CF"/><circle cx="14" cy="17" r="1.5" fill="#2A2438"/><circle cx="26" cy="17" r="1.5" fill="#2A2438"/><path d="M13 23 Q20 28 27 23" stroke="#2A2438" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M8 20 L4 22 M32 20 L36 22" stroke="#A8D5BA" stroke-width="1.5"/></svg><div class="word">חוֹלֵם.ת</div></div>
+
+    <div class="word-card tone-1"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#F2B844"/><path d="M11 18 Q14 14 17 18" stroke="#2A2438" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M23 18 Q26 14 29 18" stroke="#2A2438" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M13 24 Q20 30 27 24" stroke="#2A2438" stroke-width="2" fill="none" stroke-linecap="round"/></svg><div class="word">אוֹפְּטִימִי.ת</div></div>
+
+    <div class="word-card tone-6"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#CFB987"/><circle cx="14" cy="18" r="1.5" fill="#2A2438"/><circle cx="26" cy="18" r="1.5" fill="#2A2438"/><line x1="13" y1="25" x2="27" y2="25" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/><line x1="13" y1="13" x2="17" y2="11" stroke="#2A2438" stroke-width="1.5" stroke-linecap="round"/><line x1="27" y1="13" x2="23" y2="11" stroke="#2A2438" stroke-width="1.5" stroke-linecap="round"/></svg><div class="word">מְשַׁעֲמֵם.ת</div></div>
+
+    <div class="word-card tone-3"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#7BBEDB"/><circle cx="14" cy="17" r="1.5" fill="#2A2438"/><circle cx="26" cy="17" r="1.5" fill="#2A2438"/><path d="M14 25 L26 25" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/><path d="M5 25 Q3 28 5 30 M35 25 Q37 28 35 30" stroke="#6BB6D6" stroke-width="1.5" fill="none"/></svg><div class="word">חָזָק.ה</div></div>
+
+    <div class="word-card tone-4"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#F8AFA0"/><line x1="11" y1="14" x2="17" y2="18" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/><line x1="23" y1="18" x2="29" y2="14" stroke="#2A2438" stroke-width="2" stroke-linecap="round"/><path d="M13 28 Q20 23 27 28" stroke="#2A2438" stroke-width="2" fill="none" stroke-linecap="round"/></svg><div class="word">קַנַּאי.ת</div></div>
+
+    <div class="word-card tone-5"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#B6DAC4"/><circle cx="14" cy="18" r="1.5" fill="#2A2438"/><circle cx="26" cy="18" r="1.5" fill="#2A2438"/><path d="M14 25 Q20 27 26 25" stroke="#2A2438" stroke-width="2" fill="none" stroke-linecap="round"/></svg><div class="word">בְּסֵדֶר</div></div>
+
+    <div class="word-card tone-1"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#FAD480"/><circle cx="14" cy="17" r="1.5" fill="#2A2438"/><circle cx="26" cy="17" r="1.5" fill="#2A2438"/><path d="M13 23 Q20 31 27 23" stroke="#2A2438" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M30 8 L33 5 M33 8 L30 5" stroke="#F49B8A" stroke-width="1.5"/></svg><div class="word">מְצֻיָּן.ת</div></div>
+
+    <div class="word-card tone-2"><svg class="mini-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#9D89C4"/><circle cx="14" cy="18" r="1.5" fill="#2A2438"/><circle cx="26" cy="18" r="1.5" fill="#2A2438"/><path d="M15 26 Q20 24 25 26" stroke="#2A2438" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M10 12 Q12 14 10 16 M30 12 Q28 14 30 16" stroke="#8B6BC0" stroke-width="1.5" fill="none"/></svg><div class="word">קְצָת לֹא יוֹדֵעַ.ת</div></div>
+  </div>
+
+  <div class="cut-hint">- - - גזרי לפי הקווים המקווקווים, שמרי בקופסה קטנה ליד אזור המעגל - - -</div>
+
+  <div class="page-footer">
+    <span class="brand">פולס מערכת 10 · <b>אבני יסוד</b></span>
+    <span>בוקר רגוע · עמוד 2</span>
+  </div>
+</section>
+
+<!-- =====================================================
+     PAGE 3 — TEACHER POCKET SCRIPT
+===================================================== -->
+<section class="page" id="page-3">
+  <div class="page-tag">מתכון 1 · עמוד 3 / 3</div>
+  <div class="recipe-chip adapt">מתכון 1 · טקס פתיחה במעגל</div>
+  <h2 class="page-title">סקריפט המורה — לכיס</h2>
+  <p class="page-sub">לגזור, לקפל ולשים בכיס. כל קלף מכוון אותך בשלב מסוים של הטקס.</p>
+
+  <div class="script-wrap">
+    <div class="script-intro">
+      <b>למה זה עובד:</b> בילדים בגיל הזה, הוויסות הרגשי עוד לא הבשיל. הטקס נותן להם מסגרת חוזרת ומוכרת — והמוח הצעיר אוהב סדר. תוך 3 שבועות הם יידעו בעצמם מה הצעד הבא. כשאת.ה מנהל.ת צוות, מקימ.ה סטארטאפ או מובילה קמפיין — אותו עקרון בדיוק: <b>שגרת פתיחה קצרה ועקבית מנמיכה את חרדת הבוקר ומכוונת אנרגיה.</b>
+    </div>
+
+    <div class="pocket-cards">
+
+      <div class="pocket-card adapt">
+        <div class="label">כרטיס 1 · התכנסות</div>
+        <h4><span class="dot">1</span> פתיחת המעגל</h4>
+        <div class="quote">"שלום לכולם, בואו נתיישב במעגל. רגליים משוכלות, ידיים על הברכיים."</div>
+        <ul>
+          <li>חכי בסבלנות — לא לקרוא לילדים בשמם</li>
+          <li>אם מישהו לא מצליח, פני אליו בשקט</li>
+          <li>סמן הצלחה: ~30 שניות של שקט</li>
+        </ul>
+      </div>
+
+      <div class="pocket-card regul">
+        <div class="label">כרטיס 2 · ברכת בוקר</div>
+        <h4><span class="dot">2</span> ברכה משותפת</h4>
+        <div class="quote">"בּוֹקֶר טוֹב לְכֻלָּם!" (מחכים לתשובה) "בּוֹקֶר טוֹב, מוֹרָה!"</div>
+        <ul>
+          <li>אפשר במנגינה — תופסת את האוזן</li>
+          <li>אותו טקסט בדיוק כל יום</li>
+          <li>אם הקבוצה חלשה — אמרי פעמיים</li>
+        </ul>
+      </div>
+
+      <div class="pocket-card adapt">
+        <div class="label">כרטיס 3 · סבב מילה</div>
+        <h4><span class="dot">3</span> איך אני מרגיש.ה?</h4>
+        <div class="quote">"כל אחד.ת בוחר.ת כרטיס. תאמרו: אֲנִי מַרְגִּישׁ.ה ___ כִּי ___ "</div>
+        <ul>
+          <li>אסור לעקוף — מי שלא רוצה אומר "פס"</li>
+          <li>אל תתקני רגש — קבלי כל תשובה</li>
+          <li>סמן הצלחה: 70% מהילדים משתפים</li>
+        </ul>
+      </div>
+
+      <div class="pocket-card sea">
+        <div class="label">כרטיס 4 · נשימה</div>
+        <h4><span class="dot">4</span> שלוש נשימות</h4>
+        <div class="quote">"שואפים מהאף... 1, 2, 3, 4... מחזיקים... ונושפים מהפה... שששש..."</div>
+        <ul>
+          <li>קולי איטי, רגוע, נמוך</li>
+          <li>נשמי איתם — הם מחקים</li>
+          <li>שלוש פעמים — לא יותר, לא פחות</li>
+        </ul>
+      </div>
+
+      <div class="pocket-card regul">
+        <div class="label">כרטיס 5 · פתיחת היום</div>
+        <h4><span class="dot">5</span> מה מחכה לנו</h4>
+        <div class="quote">"הנה מה שנעשה היום: עברית, חשבון, הפסקה..."</div>
+        <ul>
+          <li>קצר — 30 שניות מקסימום</li>
+          <li>הדגישי דבר אחד מיוחד</li>
+          <li>סיימי ב: "מוכנים? בואו נתחיל!"</li>
+        </ul>
+      </div>
+
+      <div class="pocket-card sea">
+        <div class="label">כרטיס 6 · כשמשתבש</div>
+        <h4><span class="dot">!</span> תיקוני קורס</h4>
+        <ul>
+          <li><b>ילד.ה לא רוצה לשבת:</b> "בסדר, שב.י איפה שנוח. נחכה לך."</li>
+          <li><b>קבוצה רועשת:</b> אל תרימי קול — לחשי. הם יירגעו.</li>
+          <li><b>מישהו בוכה:</b> המשיכי טקס, גשי אליו בנשימה בשקט.</li>
+          <li><b>זה לא עובד:</b> תני 3 שבועות. רק אז להחליט.</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="scissors-line">✂  גזרי לכרטיסים נפרדים — שמרי בכיס</div>
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">פולס מערכת 10 · <b>אבני יסוד</b></span>
+    <span>בוקר רגוע · עמוד 3</span>
+  </div>
+</section>
+
+<!-- =====================================================
+     PAGE 4 — 8 FACE CARDS
+===================================================== -->
+<section class="page" id="page-4">
+  <div class="page-tag">מתכון 2 · עמוד 1 / 2</div>
+  <div class="recipe-chip">מתכון 2 · כרטיסי בוקר מצוירים</div>
+  <h2 class="page-title">אֵיךְ אֲנִי מַרְגִּישׁ.ה הַבֹּקֶר?</h2>
+  <p class="page-sub">לתלות על לוח הכיתה. כל ילד.ה תולה ביפת על הפנים שמייצגות אותו.ה היום.</p>
+
+  <div class="faces-grid">
+
+    <div class="face-card f-happy">
+      <svg class="face-svg" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="42" fill="#FFE082" stroke="#2A2438" stroke-width="3"/>
+        <circle cx="36" cy="42" r="4" fill="#2A2438"/>
+        <circle cx="64" cy="42" r="4" fill="#2A2438"/>
+        <path d="M30 58 Q50 78 70 58" stroke="#2A2438" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <circle cx="28" cy="58" r="3" fill="#F49B8A" opacity="0.6"/>
+        <circle cx="72" cy="58" r="3" fill="#F49B8A" opacity="0.6"/>
+      </svg>
+      <div class="face-meta">
+        <div class="face-name">שָׂמֵחַ.ה</div>
+        <div class="face-sub">לב גדול, חיוך רחב</div>
+      </div>
+    </div>
+
+    <div class="face-card f-calm">
+      <svg class="face-svg" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="42" fill="#B5D9E8" stroke="#2A2438" stroke-width="3"/>
+        <path d="M30 42 Q36 38 42 42" stroke="#2A2438" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M58 42 Q64 38 70 42" stroke="#2A2438" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <line x1="38" y1="62" x2="62" y2="62" stroke="#2A2438" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <div class="face-meta">
+        <div class="face-name">רָגוּעַ.ה</div>
+        <div class="face-sub">נשימה איטית, שקט</div>
+      </div>
+    </div>
+
+    <div class="face-card f-excited">
+      <svg class="face-svg" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="42" fill="#FCB8A6" stroke="#2A2438" stroke-width="3"/>
+        <path d="M30 36 L40 44" stroke="#2A2438" stroke-width="3" stroke-linecap="round"/>
+        <path d="M70 36 L60 44" stroke="#2A2438" stroke-width="3" stroke-linecap="round"/>
+        <ellipse cx="50" cy="62" rx="10" ry="8" fill="#2A2438"/>
+        <ellipse cx="50" cy="60" rx="5" ry="3" fill="#F49B8A"/>
+        <circle cx="20" cy="22" r="3" fill="#F2B844"/>
+        <circle cx="80" cy="22" r="3" fill="#F2B844"/>
+        <circle cx="14" cy="48" r="2" fill="#F2B844"/>
+      </svg>
+      <div class="face-meta">
+        <div class="face-name">נִרְגָּשׁ.ת</div>
+        <div class="face-sub">משהו טוב הולך לקרות!</div>
+      </div>
+    </div>
+
+    <div class="face-card f-tired">
+      <svg class="face-svg" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="42" fill="#CBBADB" stroke="#2A2438" stroke-width="3"/>
+        <path d="M30 42 L40 42" stroke="#2A2438" stroke-width="3" stroke-linecap="round"/>
+        <path d="M60 42 L70 42" stroke="#2A2438" stroke-width="3" stroke-linecap="round"/>
+        <path d="M38 64 Q50 60 62 64" stroke="#2A2438" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <text x="70" y="30" font-size="14" font-weight="900" fill="#8B6BC0">Z</text>
+        <text x="78" y="22" font-size="11" font-weight="900" fill="#8B6BC0">z</text>
+      </svg>
+      <div class="face-meta">
+        <div class="face-name">עָיֵף.ה</div>
+        <div class="face-sub">לא ישנתי מספיק</div>
+      </div>
+    </div>
+
+    <div class="face-card f-sad">
+      <svg class="face-svg" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="42" fill="#C5DDCB" stroke="#2A2438" stroke-width="3"/>
+        <path d="M30 38 Q36 44 42 38" stroke="#2A2438" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M58 38 Q64 44 70 38" stroke="#2A2438" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M32 70 Q50 58 68 70" stroke="#2A2438" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <ellipse cx="36" cy="52" rx="2.5" ry="4" fill="#6BB6D6"/>
+      </svg>
+      <div class="face-meta">
+        <div class="face-name">עָצוּב.ה</div>
+        <div class="face-sub">משהו לא טוב בלב</div>
+      </div>
+    </div>
+
+    <div class="face-card f-angry">
+      <svg class="face-svg" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="42" fill="#F1A488" stroke="#2A2438" stroke-width="3"/>
+        <path d="M28 34 L42 42" stroke="#2A2438" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M72 34 L58 42" stroke="#2A2438" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="36" cy="46" r="3" fill="#2A2438"/>
+        <circle cx="64" cy="46" r="3" fill="#2A2438"/>
+        <path d="M32 70 Q50 60 68 70" stroke="#2A2438" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M14 30 Q12 26 16 24" stroke="#D86B47" stroke-width="2" fill="none"/>
+        <path d="M86 30 Q88 26 84 24" stroke="#D86B47" stroke-width="2" fill="none"/>
+      </svg>
+      <div class="face-meta">
+        <div class="face-name">כּוֹעֵס.ת</div>
+        <div class="face-sub">משהו לא הוגן קרה</div>
+      </div>
+    </div>
+
+    <div class="face-card f-confused">
+      <svg class="face-svg" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="42" fill="#E5CFA0" stroke="#2A2438" stroke-width="3"/>
+        <path d="M28 38 L42 42" stroke="#2A2438" stroke-width="3" stroke-linecap="round"/>
+        <path d="M58 42 L72 38" stroke="#2A2438" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="36" cy="46" r="3" fill="#2A2438"/>
+        <circle cx="64" cy="46" r="3" fill="#2A2438"/>
+        <path d="M34 64 Q40 68 46 64 Q52 60 58 64 Q64 68 70 64" stroke="#2A2438" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <text x="76" y="32" font-size="18" font-weight="900" fill="#C9A35C">?</text>
+      </svg>
+      <div class="face-meta">
+        <div class="face-name">מְבֻלְבָּל.ת</div>
+        <div class="face-sub">לא הבנתי מה קורה</div>
+      </div>
+    </div>
+
+    <div class="face-card f-afraid">
+      <svg class="face-svg" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="42" fill="#CFC6E2" stroke="#2A2438" stroke-width="3"/>
+        <circle cx="36" cy="44" r="6" fill="white" stroke="#2A2438" stroke-width="2.5"/>
+        <circle cx="64" cy="44" r="6" fill="white" stroke="#2A2438" stroke-width="2.5"/>
+        <circle cx="36" cy="44" r="2.5" fill="#2A2438"/>
+        <circle cx="64" cy="44" r="2.5" fill="#2A2438"/>
+        <ellipse cx="50" cy="66" rx="6" ry="8" fill="white" stroke="#2A2438" stroke-width="2.5"/>
+      </svg>
+      <div class="face-meta">
+        <div class="face-name">פּוֹחֵד.ת</div>
+        <div class="face-sub">משהו מפחיד אותי</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">פולס מערכת 10 · <b>אבני יסוד</b></span>
+    <span>בוקר רגוע · עמוד 4</span>
+  </div>
+</section>
+
+<!-- =====================================================
+     PAGE 5 — TEACHER TRACKING SHEET
+===================================================== -->
+<section class="page" id="page-5">
+  <div class="page-tag">מתכון 2 · עמוד 2 / 2</div>
+  <div class="recipe-chip">מתכון 2 · כרטיסי בוקר מצוירים</div>
+  <h2 class="page-title">גיליון מעקב שבועי — תמונת הכיתה</h2>
+  <p class="page-sub">סמני בקיצור בכל בוקר איזה פנים בחר.ה כל ילד.ה. מסתכלים על הדפוס בסוף השבוע.</p>
+
+  <table class="track-table">
+    <thead>
+      <tr>
+        <th>שֵׁם הילד.ה</th>
+        <th>יום א'</th>
+        <th>יום ב'</th>
+        <th>יום ג'</th>
+        <th>יום ד'</th>
+        <th>יום ה'</th>
+        <th>הערה</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>2.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>3.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>4.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>5.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>6.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>7.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>8.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>9.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>10.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>11.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>12.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>13.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>14.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>15.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>16.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>17.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>18.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>19.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>20.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>21.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>22.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>23.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>24.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>25.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    </tbody>
+  </table>
+
+  <div class="legend">
+    <b>קודי קיצור:</b>
+    <span><span class="swatch" style="background:#FFE082;color:#F5C342;"></span>שׂ = שמח.ה</span>
+    <span><span class="swatch" style="background:#B5D9E8;color:#6BB6D6;"></span>ר = רגוע.ה</span>
+    <span><span class="swatch" style="background:#FCB8A6;color:#F49B8A;"></span>נ = נרגש.ת</span>
+    <span><span class="swatch" style="background:#CBBADB;color:#8B6BC0;"></span>ע = עייף.ה</span>
+    <span><span class="swatch" style="background:#C5DDCB;color:#5A9B7A;"></span>צ = עצוב.ה</span>
+    <span><span class="swatch" style="background:#F1A488;color:#D86B47;"></span>כ = כועס.ת</span>
+    <span><span class="swatch" style="background:#E5CFA0;color:#C9A35C;"></span>ב = מבולבל.ת</span>
+    <span><span class="swatch" style="background:#CFC6E2;color:#7C6BB0;"></span>פ = פוחד.ת</span>
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">פולס מערכת 10 · <b>אבני יסוד</b></span>
+    <span>בוקר רגוע · עמוד 5</span>
+  </div>
+</section>
+
+<!-- =====================================================
+     PAGE 6 — BREATHING POSTER
+===================================================== -->
+<section class="page" id="page-6">
+  <div class="page-tag">מתכון 3 · עמוד 1 / 2</div>
+  <div class="recipe-chip sea">מתכון 3 · נשימת הים</div>
+  <h2 class="page-title">נְשִׁימַת הַיָּם</h2>
+  <p class="page-sub">כרזת קיר לכיתה. ארבעה גלים, ספירת 4 בכל שלב.</p>
+
+  <div class="breath-wrap">
+    <div class="breath-header">
+      <h3>הַיָּם נוֹשֵׁם — וְגַם אֲנַחְנוּ</h3>
+      <div class="lead">שֶׁשּׁוֹאֲפִים — הַגַּל עוֹלֶה · שֶׁאוֹחֲזִים — הַגַּל נֶעֱצָר · שֶׁנּוֹשְׁפִים — הַגַּל יוֹרֵד · שֶׁנָּחִים — הַיָּם שָׁקֵט</div>
+    </div>
+
+    <div class="breath-steps">
+
+      <div class="breath-step">
+        <div class="step-num">1</div>
+        <svg class="step-svg" viewBox="0 0 120 100">
+          <defs><linearGradient id="g1" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#6BB6D6"/><stop offset="1" stop-color="#D9EEF7"/></linearGradient></defs>
+          <path d="M0 80 Q30 40 60 30 Q90 20 120 25 L120 100 L0 100 Z" fill="url(#g1)" stroke="#2D6E8E" stroke-width="2.5"/>
+          <path d="M40 35 L45 25 L42 28 L48 22" stroke="#2D6E8E" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M50 28 L55 18" stroke="#2D6E8E" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <text x="60" y="78" text-anchor="middle" font-size="14" font-weight="900" fill="#2D6E8E">↑</text>
+        </svg>
+        <div class="step-name">שׁוֹאֲפִים</div>
+        <div class="count">1 · 2 · 3 · 4</div>
+        <div class="label">דרך האף, הבטן מתמלאת</div>
+      </div>
+
+      <div class="breath-step">
+        <div class="step-num">2</div>
+        <svg class="step-svg" viewBox="0 0 120 100">
+          <path d="M0 35 Q30 30 60 28 Q90 30 120 35 L120 100 L0 100 Z" fill="#EEE6F8" stroke="#5E4691" stroke-width="2.5"/>
+          <circle cx="30" cy="22" r="3" fill="#8B6BC0"/>
+          <circle cx="60" cy="18" r="3" fill="#8B6BC0"/>
+          <circle cx="90" cy="22" r="3" fill="#8B6BC0"/>
+          <text x="60" y="62" text-anchor="middle" font-size="14" font-weight="900" fill="#5E4691">▬</text>
+        </svg>
+        <div class="step-name">אוֹחֲזִים</div>
+        <div class="count">1 · 2 · 3 · 4</div>
+        <div class="label">הגל עומד, רגע של שקט</div>
+      </div>
+
+      <div class="breath-step">
+        <div class="step-num">3</div>
+        <svg class="step-svg" viewBox="0 0 120 100">
+          <defs><linearGradient id="g3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F2B844"/><stop offset="1" stop-color="#FDF1D6"/></linearGradient></defs>
+          <path d="M0 40 Q30 60 60 70 Q90 80 120 75 L120 100 L0 100 Z" fill="url(#g3)" stroke="#B8801F" stroke-width="2.5"/>
+          <path d="M65 50 L75 60 L72 56 L80 62" stroke="#B8801F" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M50 45 L40 55" stroke="#B8801F" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <text x="60" y="92" text-anchor="middle" font-size="14" font-weight="900" fill="#B8801F">↓</text>
+        </svg>
+        <div class="step-name">נוֹשְׁפִים</div>
+        <div class="count">1 · 2 · 3 · 4</div>
+        <div class="label">דרך הפה, אוויר חם יוצא</div>
+      </div>
+
+      <div class="breath-step">
+        <div class="step-num">4</div>
+        <svg class="step-svg" viewBox="0 0 120 100">
+          <path d="M0 55 L120 55 L120 100 L0 100 Z" fill="#E5F2EA" stroke="#5A9B7A" stroke-width="2.5"/>
+          <path d="M0 55 Q30 53 60 55 Q90 57 120 55" stroke="#5A9B7A" stroke-width="2" fill="none"/>
+          <circle cx="80" cy="25" r="9" fill="#FDF1D6" stroke="#5A9B7A" stroke-width="2"/>
+          <path d="M85 22 Q90 25 85 28" fill="none" stroke="#5A9B7A" stroke-width="2"/>
+          <text x="60" y="86" text-anchor="middle" font-size="14" font-weight="900" fill="#5A9B7A">~</text>
+        </svg>
+        <div class="step-name">נָחִים</div>
+        <div class="count">1 · 2 · 3 · 4</div>
+        <div class="label">הים שקט, גם אנחנו</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span class="brand">פולס מערכת 10 · <b>אבני יסוד</b></span>
+    <span>בוקר רגוע · עמוד 6</span>
+  </div>
+</section>
+
+<!-- =====================================================
+     PAGE 7 — POCKET BREATH CARDS (8-UP)
+===================================================== -->
+<section class="page" id="page-7">
+  <div class="page-tag">מתכון 3 · עמוד 2 / 2</div>
+  <div class="recipe-chip sea">מתכון 3 · נשימת הים</div>
+  <h2 class="page-title">כַּרְטִיסֵי כִּיס — נְשִׁימָה</h2>
+  <p class="page-sub">8 כרטיסים בגודל כרטיס אשראי. לגזור, לחלק לכל ילד.ה לכיס/קלמר.</p>
+
+  <div class="pocket-grid">
+
+    <div class="breath-pocket">
+      <div class="top">
+        <h5>נְשִׁימַת הַיָּם</h5>
+        <svg viewBox="0 0 40 40"><path d="M2 25 Q10 15 20 22 Q30 28 38 18" stroke="#6BB6D6" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M2 32 Q10 26 20 30 Q30 34 38 28" stroke="#6BB6D6" stroke-width="2" fill="none" opacity="0.6"/></svg>
+      </div>
+      <div class="mini-steps">
+        <div class="mini-step"><div class="num">1</div><div class="name">שׁוֹאֵף</div><div class="cnt">4</div></div>
+        <div class="mini-step"><div class="num">2</div><div class="name">אוֹחֵז</div><div class="cnt">4</div></div>
+        <div class="mini-step"><div class="num">3</div><div class="name">נוֹשֵׁף</div><div class="cnt">4</div></div>
+        <div class="mini-step"><div class="num">4</div><div class="name">נָח</div><div class="cnt">4</div></div>
+      </div>
+      <div class="footer-mini">חוזרים 3 פעמים · והים בלב</div>
+    </div>
+
+    <div class="breath-pocket">
+      <div class="top">
+        <h5>נְשִׁימַת הַיָּם</h5>
+        <svg viewBox="0 0 40 40"><path d="M2 25 Q10 15 20 22 Q30 28 38 18" stroke="#6BB6D6" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M2 32 Q10 26 20 30 Q30 34 38 28" stroke="#6BB6D6" stroke-width="2" fill="none" opacity="0.6"/></svg>
+      </div>
+      <div class="mini-steps">
+        <div class="mini-step"><div class="num">1</div><div class="name">שׁוֹאֵף</div><div class="cnt">4</div></div>
+        <div class="mini-step"><div class="num">2</div><div class="name">אוֹחֵז</div><div class="cnt">4</div></div>
+        <div class="mini-step"><div class="num">3</div><div class="name">נוֹשֵׁף</div><div class="cnt">4</div></div>
+        <div class="mini-step"><div class="num">4</div><div class="name">נָח</div><div class="cnt">4</div></div>
+      </div>
+      <div class="footer-mini">חוזרים 3 פעמים · והים בלב</div>
+    </div>
+
+    <div class="breath-pocket">
+      <div class="top">
+        <h5>נְשִׁימַת הַיָּם</h5>
+        <svg viewBox="0 0 40 40"><path d="M2 25 Q10 15 20 22 Q30 28 38 18" stroke="#6BB6D6" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M2 32 Q10 26 20 30 Q30 34 38 28" stroke="#6BB6D6" stroke-width="2" fill="none" opacity="0.6"/></svg>
+      </div>
+      <div class="mini-steps">
+        <div class="mini-step"><div class="num">1</div><div class="name">שׁוֹאֵף</div><div class="cnt">4</div></div>
+        <div class="mini-step"><div class="num">2</div><div class="name">אוֹחֵז</div><div class="cnt">4</div></div>
+        <div class="mini-step"><div class="num">3</div><div class="name">נוֹשֵׁף</div><div class="cnt">4</div></div>
+        <div class="mini-step"><div class="num">4</div><div class="name">נָח</div><div class="cnt">4</div></div>
+      </div>
+      <div class="footer-mini">חוזרים 3 פעמים · והים בלב</div>
+    </div>
+
+    <div class="breath-pocket">
+      <div class="top">
+        <h5>נְשִׁימַת הַיָּם</h5>
+        <svg viewBox="0 0 40 40"><path d="M2 25 Q10 15 20 22 Q30 28 38 18" stroke="#6BB6D6" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M2 32 Q10 26 20 30 Q30 34 38 28" stroke="#6BB6D6" stroke-width="2" fill="none" opacity="0.6"/></svg>
+      </div>
+      <div class="mini-steps">
+        <div class="mini-step"><div class="num">1</div><div class="name">שׁוֹאֵף</div><div class="cnt">4</div></div>
+        <div class="mini-step"><div class="num">2</div><div class="name">אוֹחֵז</div><div class="cnt">4</div></div>
+        <div class="mini-step"><div class="num">3</div><div class="name">נוֹשֵׁף</div><div class="cnt">4</div></div>
+        <div class="mini-step"><div class="num">4</div><div class="name">נָח</div><div class="cnt">4</div></div>
+      </div>
+      <div class="footer-mini">חוזרים 3 פעמים · והים בלב</div>
+    </div>
+
+    <div class="breath-pocket">
+      <div class="top">
+        <h5>נְשִׁימַת הַיָּם</h5>
+        <svg viewBox="0 0 40 40"><path d="M2 25 Q10 15 20 22 Q30 28 38 18" stroke="#6BB6D6" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M2 32 Q10 26 20 30 Q30 34 38 28" stroke="#6BB6D6" stroke-width="2" fill="none" opacity="0.6"/></svg>
+      </div>
+      <div class="mini-steps">
+        <div class="mini-step"><div class="num">1</div><div class="name">שׁוֹאֵף</div><div class="cnt">4</div></div>
+        <div class="mini-step"><div class="num">2</div><div class="name">אוֹחֵז</div><div class="cnt">4</div></div>
+        <div class="mini-step"><div class="num">3</div><div class="name">נוֹשֵׁף</div><div class="cnt">4</div></div>
+        <div class="mini-step"><div class="num">4</div><div class="name">נָח</div><div class="cnt">4</div></div>
+      </div>
+      <div class="footer-mini">חוזרים 3 פעמים · והים בלב</div>
+    </div>
+
+    <div class="breath-pocket">
+      <div class="top">
+        <h5>נְשִׁימַת הַיָּם</h5>
+        <svg viewBox="0 0 40 40"><path d="M2 25 Q10 15 20 22 Q30 28 38 18" stroke="#6BB6D6" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M2 32 Q10 26 20 30 Q30 34 38 28" stroke="#6BB6D6" stroke-width="2" fill="none" opacity="0.6"/></svg>
+      </div>
+      <div class="mini-steps">
+        <div class="mini-step"><div class="num">1</div><div class="name">שׁוֹאֵף</div><div class="cnt">4</div></div>
+        <div class="mini-step"><div class="num">2</div><div class="name">אוֹחֵז</div><div class="cnt">4</div></div>
+        <div class="mini-step"><div class="num">3</div><div class="name">נוֹשֵׁף</div><div class="cnt">4</div></div>
+        <div class="mini-step"><div class="num">4</div><div class="name">נָח</div><div class="cnt">4</div></div>
+      </div>
+      <div class="footer-mini">חוזרים 3 פעמים · והים בלב</div>
+    </div>
+
+    <div class="breath-pocket">
+      <div class="top">
+        <h5>נְשִׁימַת הַיָּם</h5>
+        <svg viewBox="0 0 40 40"><path d="M2 25 Q10 15 20 22 Q30 28 38 18" stroke="#6BB6D6" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M2 32 Q10 26 20 30 Q30 34 38 28" stroke="#6BB6D6" stroke-width="2" fill="none" opacity="0.6"/></svg>
+      </div>
+      <div class="mini-steps">
+        <div class="mini-step"><div class="num">1</div><div class="name">שׁוֹאֵף</div><div class="cnt">4</div></div>
+        <div class="mini-step"><div class="num">2</div><div class="name">אוֹחֵז</div><div class="cnt">4</div></div>
+        <div class="mini-step"><div class="num">3</div><div class="name">נוֹשֵׁף</div><div class="cnt">4</div></div>
+        <div class="mini-step"><div class="num">4</div><div class="name">נָח</div><div class="cnt">4</div></div>
+      </div>
+      <div class="footer-mini">חוזרים 3 פעמים · והים בלב</div>
+    </div>
+
+    <div class="breath-pocket">
+      <div class="top">
+        <h5>נְשִׁימַת הַיָּם</h5>
+        <svg viewBox="0 0 40 40"><path d="M2 25 Q10 15 20 22 Q30 28 38 18" stroke="#6BB6D6" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M2 32 Q10 26 20 30 Q30 34 38 28" stroke="#6BB6D6" stroke-width="2" fill="none" opacity="0.6"/></svg>
+      </div>
+      <div class="mini-steps">
+        <div class="mini-step"><div class="num">1</div><div class="name">שׁוֹאֵף</div><div class="cnt">4</div></div>
+        <div class="mini-step"><div class="num">2</div><div class="name">אוֹחֵז</div><div class="cnt">4</div></div>
+        <div class="mini-step"><div class="num">3</div><div class="name">נוֹשֵׁף</div><div class="cnt">4</div></div>
+        <div class="mini-step"><div class="num">4</div><div class="name">נָח</div><div class="cnt">4</div></div>
+      </div>
+      <div class="footer-mini">חוזרים 3 פעמים · והים בלב</div>
+    </div>
+
+  </div>
+
+  <div class="cut-hint">- - - גזרי לאורך הקווים המקווקווים, חלקי לתלמידים - - -</div>
+
+  <div class="page-footer">
+    <span class="brand">פולס מערכת 10 · <b>אבני יסוד</b></span>
+    <span>בוקר רגוע · עמוד 7</span>
+  </div>
+</section>
+
+</body>
+</html>
