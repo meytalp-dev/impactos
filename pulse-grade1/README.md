@@ -19,7 +19,8 @@
 ### Specs (מסמכי איפיון)
 | קובץ | מה |
 |---|---|
-| [`system-10-pulse-spec.md`](system-10-pulse-spec.md) | **ה-spec הקנוני (v4, 8.6.2026)** — 4 פרסונות, 20 סעיפים, ~600 שורות. **המסמך היחיד שצריך לקרוא.** |
+| [`system-10-pulse-spec.md`](system-10-pulse-spec.md) | **ה-spec הקנוני (v4, 8.6.2026)** — 4 פרסונות, 20 סעיפים. כעת כולל 20 ניסוחי שאלות תלמיד.ה (4 מאושרים + 16 טיוטה) עם הערות עריכה. **המסמך היחיד שצריך לקרוא.** |
+| [`parent-consent-template.md`](parent-consent-template.md) | **טופס הסכמת הורים (טיוטה)** — 14 סעיפים + טופס חתימה + נספחי אבטחה. דורש review משפטי לפני שימוש. |
 | [`extension-spec-formal.md`](extension-spec-formal.md) | היסטורי — ממוזג ל-v4 |
 | [`extension-research-scaffold.md`](extension-research-scaffold.md) | היסטורי — בסיס המחקר, ההצדקות נכנסו ל-v4 סעיף 13 |
 | [`HANDOFF-pulse-v3.md`](HANDOFF-pulse-v3.md) | מסמך מעבר היסטורי של v3 |
