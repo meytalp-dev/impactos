@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>פולס חודשי · להורים</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&family=Rubik:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #2E7D8C;
+  --primary-dark: #1E5A66;
+  --primary-soft: #E5F1F3;
+  --dim-adjust: #F2B844;
+  --dim-friend: #E08FAF;
+  --dim-emotion: #8B6BC0;
+  --dim-joy: #5BC0A8;
+  --surface: #F5F0E8;
+  --surface-card: #FDFCFA;
+  --white: #FFFFFF;
+  --text: #2C2622;
+  --text-light: #6E6258;
+  --border: #EDE6D8;
+  --border-strong: #D4CABA;
+  --warning: #C85A3B;
+  --shadow-sm: 0 2px 8px rgba(44,38,34,.05);
+  --shadow-md: 0 6px 20px rgba(44,38,34,.08);
+  --radius-md: 12px;
+  --radius-lg: 18px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  font-family: 'Heebo', sans-serif;
+  background: var(--surface);
+  color: var(--text);
+  line-height: 1.5;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container {
+  max-width: 580px;
+  margin: 0 auto;
+  padding: 24px 18px 60px;
+}
+
+/* Hero */
+.hero { text-align: center; padding: 16px 0 28px; }
+.hero-emoji { font-size: 2.6rem; margin-bottom: 10px; }
+.hero h1 {
+  font-family: 'Rubik';
+  font-weight: 700;
+  font-size: 1.45rem;
+  color: var(--primary-dark);
+  margin-bottom: 8px;
+}
+.hero-sub { color: var(--text-light); font-size: 0.95rem; }
+.child-pill {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 6px 16px;
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* Progress bar */
+.progress-wrap {
+  margin: 18px 0 6px;
+  background: var(--border);
+  border-radius: 999px;
+  height: 6px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--dim-friend), var(--dim-emotion));
+  width: 0%;
+  transition: width 0.4s cubic-bezier(.2,.8,.2,1);
+}
+.progress-label {
+  font-size: 0.78rem;
+  color: var(--text-light);
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+/* Item card */
+.item-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 22px 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  position: relative;
+}
+.item-card.answered { border-color: var(--dim-joy); }
+.item-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px; height: 30px;
+  background: var(--primary);
+  color: white;
+  border-radius: 50%;
+  font-weight: 700;
+  margin-bottom: 14px;
+  font-size: 0.88rem;
+  font-family: 'Rubik';
+}
+.item-card.answered .item-number {
+  background: var(--dim-joy);
+}
+.item-question {
+  font-size: 1.06rem;
+  font-weight: 500;
+  margin-bottom: 18px;
+  line-height: 1.45;
+  color: var(--text);
+}
+.item-question .child {
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+/* Radio options */
+.options { display: grid; gap: 10px; }
+.option {
+  display: block;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.16s;
+  font-size: 0.98rem;
+  position: relative;
+  user-select: none;
+}
+.option:active { transform: scale(0.98); }
+.option:hover { background: var(--primary-soft); }
+.option input { position: absolute; opacity: 0; pointer-events: none; }
+.option.selected {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  font-weight: 600;
+  color: var(--primary-dark);
+}
+
+/* Slider for item 3 */
+.slider-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 6px;
+}
+.slider-face {
+  flex: 1;
+  text-align: center;
+  padding: 14px 4px 10px;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.16s;
+  user-select: none;
+}
+.slider-face:active { transform: scale(0.95); }
+.slider-face:hover { background: var(--primary-soft); }
+.slider-face.selected {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+.slider-emoji { font-size: 1.85rem; display: block; line-height: 1; }
+.slider-num {
+  font-size: 0.72rem;
+  color: var(--text-light);
+  margin-top: 6px;
+  display: block;
+}
+.slider-face.selected .slider-num { color: var(--primary-dark); font-weight: 600; }
+
+/* Yes/No */
+.yesno { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.yesno .option { text-align: center; font-weight: 600; padding: 16px 12px; }
+
+/* Conditional textarea */
+.cond-text { margin-top: 14px; display: none; }
+.cond-text.show { display: block; animation: slideDown 0.25s ease; }
+@keyframes slideDown {
+  from { opacity: 0; max-height: 0; }
+  to { opacity: 1; max-height: 200px; }
+}
+.cond-text label {
+  display: block;
+  font-size: 0.88rem;
+  color: var(--text-light);
+  margin-bottom: 6px;
+}
+textarea {
+  width: 100%;
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 0.98rem;
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  resize: vertical;
+  min-height: 80px;
+  color: var(--text);
+}
+textarea:focus { outline: 2px solid var(--primary); border-color: var(--primary); }
+
+/* Privacy banner */
+.privacy-banner {
+  font-size: 0.78rem;
+  color: var(--text-light);
+  background: rgba(46,125,140,.06);
+  border-right: 3px solid var(--primary);
+  padding: 8px 12px;
+  margin-top: 12px;
+  border-radius: 6px;
+  line-height: 1.45;
+}
+
+/* Submit */
+.submit-row { margin-top: 24px; text-align: center; }
+.btn-submit {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 16px 42px;
+  font-size: 1.06rem;
+  font-weight: 700;
+  font-family: 'Rubik';
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.18s;
+  box-shadow: var(--shadow-md);
+  width: 100%;
+  max-width: 320px;
+}
+.btn-submit:hover { background: var(--primary-dark); transform: translateY(-1px); }
+.btn-submit:disabled {
+  background: var(--border-strong);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+.submit-hint {
+  font-size: 0.82rem;
+  color: var(--text-light);
+  margin-top: 10px;
+}
+
+/* Thank you screen */
+.thanks { display: none; text-align: center; padding: 60px 20px; }
+.thanks.show { display: block; animation: fadeIn 0.4s; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.thanks-emoji { font-size: 4.5rem; margin-bottom: 22px; }
+.thanks h2 {
+  font-family: 'Rubik';
+  color: var(--primary-dark);
+  font-size: 1.55rem;
+  margin-bottom: 12px;
+}
+.thanks p { color: var(--text-light); margin-bottom: 8px; }
+.thanks-next {
+  margin-top: 28px;
+  padding: 16px 20px;
+  background: var(--primary-soft);
+  border-radius: var(--radius-md);
+  display: inline-block;
+  font-size: 0.9rem;
+  color: var(--primary-dark);
+}
+
+/* Micro-pulse mode */
+.micro-container {
+  display: none;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 40px 18px;
+  text-align: center;
+}
+body.mode-micro .container { display: none; }
+body.mode-micro .micro-container { display: block; }
+.micro-q {
+  font-size: 1.15rem;
+  font-weight: 500;
+  margin: 20px 0 28px;
+  line-height: 1.5;
+}
+.micro-scale {
+  display: grid;
+  grid-template-columns: repeat(11, 1fr);
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.micro-num {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border-radius: 8px;
+  font-weight: 700;
+  font-family: 'Rubik';
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.15s;
+  font-size: 0.92rem;
+}
+.micro-num:hover { background: var(--primary-soft); }
+.micro-num.selected {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary-dark);
+  transform: scale(1.08);
+}
+.micro-anchors {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: var(--text-light);
+}
+
+/* Footer */
+.footer {
+  margin-top: 36px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-light);
+  line-height: 1.6;
+}
+.footer-brand { font-weight: 600; color: var(--text); }
+</style>
+</head>
+<body>
+
+<!-- ===== Monthly mode (default) ===== -->
+<div class="container" id="form-container">
+
+  <div class="hero">
+    <div class="hero-emoji">🌊</div>
+    <h1>פולס חודשי</h1>
+    <div class="hero-sub">3 דקות · 5 שאלות · בלי התחברות</div>
+    <div class="child-pill" id="child-pill">הילד.ה</div>
+  </div>
+
+  <div class="progress-wrap"><div class="progress-fill" id="progress-fill"></div></div>
+  <div class="progress-label" id="progress-label">0 מתוך 4 שאלות חובה</div>
+
+  <!-- Item 1: NSCH Flourishing -->
+  <div class="item-card" data-item="1">
+    <div class="item-number">1</div>
+    <div class="item-question">בשבועיים האחרונים, <span class="child child-name">הילד.ה</span> הראה.תה סקרנות ועניין בלמידה?</div>
+    <div class="options">
+      <label class="option" data-value="1"><input type="radio" name="q1">לא כלל</label>
+      <label class="option" data-value="2"><input type="radio" name="q1">מעט</label>
+      <label class="option" data-value="3"><input type="radio" name="q1">קצת</label>
+      <label class="option" data-value="4"><input type="radio" name="q1">הרבה</label>
+    </div>
+  </div>
+
+  <!-- Item 2: SDQ Emotional Regulation -->
+  <div class="item-card" data-item="2">
+    <div class="item-number">2</div>
+    <div class="item-question"><span class="child child-name">הילד.ה</span> הצליח.ה להירגע אחרי תסכול?</div>
+    <div class="options">
+      <label class="option" data-value="1"><input type="radio" name="q2">כמעט אף פעם</label>
+      <label class="option" data-value="2"><input type="radio" name="q2">לפעמים</label>
+      <label class="option" data-value="3"><input type="radio" name="q2">רוב הזמן</label>
+      <label class="option" data-value="4"><input type="radio" name="q2">כמעט תמיד</label>
+    </div>
+  </div>
+
+  <!-- Item 3: Panorama School Fit (1-5 face slider) -->
+  <div class="item-card" data-item="3">
+    <div class="item-number">3</div>
+    <div class="item-question">באיזו מידה <span class="child child-name">הילד.ה</span> שמח.ה ללכת לבית הספר השבוע?</div>
+    <div class="slider-row">
+      <div class="slider-face" data-value="1"><span class="slider-emoji">😞</span><span class="slider-num">בכלל לא</span></div>
+      <div class="slider-face" data-value="2"><span class="slider-emoji">😕</span><span class="slider-num">קצת</span></div>
+      <div class="slider-face" data-value="3"><span class="slider-emoji">😐</span><span class="slider-num">בינוני</span></div>
+      <div class="slider-face" data-value="4"><span class="slider-emoji">🙂</span><span class="slider-num">די הרבה</span></div>
+      <div class="slider-face" data-value="5"><span class="slider-emoji">😊</span><span class="slider-num">המון</span></div>
+    </div>
+  </div>
+
+  <!-- Item 4: SDQ-emotional flag -->
+  <div class="item-card" data-item="4">
+    <div class="item-number">4</div>
+    <div class="item-question">שמת.ה לב לתלונות חוזרות אצל <span class="child child-name">הילד.ה</span>? (כאבי בטן או ראש בבוקר, חלומות רעים, פחד מבית הספר)</div>
+    <div class="yesno">
+      <label class="option" data-value="no"><input type="radio" name="q4">לא, הכל בסדר</label>
+      <label class="option" data-value="yes"><input type="radio" name="q4">כן, שמתי לב</label>
+    </div>
+    <div class="cond-text" id="cond-q4">
+      <label>אם תרצה.י לפרט (אופציונלי):</label>
+      <textarea id="q4-text" placeholder="לדוגמה: כאבי בטן ביום ראשון בבוקר, פחד לרדת מהאוטו..." maxlength="500"></textarea>
+    </div>
+    <div class="privacy-banner">פירוט שאת.ה כותב.ת יישלח רק ליועצת בית הספר, אם יש דאגה. לא נחשף ישירות למחנכת.</div>
+  </div>
+
+  <!-- Item 5: Possip rose (open text optional) -->
+  <div class="item-card" data-item="5">
+    <div class="item-number">5</div>
+    <div class="item-question">מה משהו אחד שאת.ה רוצה שהמורה תדע השבוע? <span style="color:var(--text-light); font-weight:400; font-size:0.92rem;">(אופציונלי)</span></div>
+    <textarea id="q5-text" placeholder="אפשר לכתוב משפט אחד או לדלג..." maxlength="500"></textarea>
+    <div class="privacy-banner">תוכן רגיש (כעס, אובדנות, פגיעה) יזוהה אוטומטית ויישלח דחוף ליועצת. תוכן רגיל יסוכם למחנכת בלי ציטוט מילולי.</div>
+  </div>
+
+  <div class="submit-row">
+    <button class="btn-submit" id="submit-btn" disabled>שלח.י</button>
+    <div class="submit-hint">השאלון יישמר אוטומטית — אפשר לחזור אליו</div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">מערכת 10 · פולס א'-ב'</div>
+    אימפקט.OS · מיטל פלג<br>
+    התשובות נשמרות בצורה מאובטחת ולא חשופות לבית הספר ברמת ילד.ה.
+  </div>
+</div>
+
+<!-- ===== Micro-pulse mode (?mode=micro) ===== -->
+<div class="micro-container" id="micro-container">
+  <div class="hero-emoji">💜</div>
+  <h1 style="font-family:'Rubik'; font-weight:700; font-size:1.4rem; color:var(--primary-dark); margin-bottom:8px;">פולס מהיר</h1>
+  <div class="hero-sub" style="color:var(--text-light); font-size:0.92rem;">שאלה אחת. 30 שניות.</div>
+  <div class="child-pill" id="micro-child-pill" style="display:inline-block; margin-top:14px; padding:6px 16px; background:var(--primary-soft); color:var(--primary-dark); border-radius:999px; font-weight:600; font-size:0.9rem;">הילד.ה</div>
+
+  <div class="micro-q">באיזו מידה את.ה מרגיש.ה ש<span class="child-name child" style="font-weight:700; color:var(--primary-dark);">הילד.ה</span> פורח.ת השבוע?</div>
+
+  <div class="micro-scale" id="micro-scale">
+    <div class="micro-num" data-value="0">0</div>
+    <div class="micro-num" data-value="1">1</div>
+    <div class="micro-num" data-value="2">2</div>
+    <div class="micro-num" data-value="3">3</div>
+    <div class="micro-num" data-value="4">4</div>
+    <div class="micro-num" data-value="5">5</div>
+    <div class="micro-num" data-value="6">6</div>
+    <div class="micro-num" data-value="7">7</div>
+    <div class="micro-num" data-value="8">8</div>
+    <div class="micro-num" data-value="9">9</div>
+    <div class="micro-num" data-value="10">10</div>
+  </div>
+  <div class="micro-anchors"><span>בכלל לא</span><span>במלוא העוצמה</span></div>
+
+  <div class="submit-row" style="margin-top:32px;">
+    <button class="btn-submit" id="micro-submit" disabled>שלח.י</button>
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">מערכת 10 · micro-pulse</div>
+    הפולס המלא יישלח בעוד שבועיים.
+  </div>
+</div>
+
+<!-- ===== Thank You ===== -->
+<div class="container thanks" id="thanks-screen">
+  <div class="thanks-emoji">💜</div>
+  <h2>תודה!</h2>
+  <p>התשובות שלך התקבלו.</p>
+  <p>שיהיה לכם שבוע נעים.</p>
+  <div class="thanks-next" id="thanks-next">הפולס הבא יישלח אליך בעוד שבועיים</div>
+</div>
+
+<script>
+// ============ MODE + URL PARAMS ============
+const params = new URLSearchParams(location.search);
+const childName = params.get('child') || 'הילד.ה';
+const parentLabel = params.get('parent') || '';
+const mode = params.get('mode') === 'micro' ? 'micro' : 'monthly';
+
+if (mode === 'micro') document.body.classList.add('mode-micro');
+
+// Pre-fill child name everywhere
+document.querySelectorAll('.child-name').forEach(el => el.textContent = childName);
+document.getElementById('child-pill').textContent = parentLabel ? `הורה של ${childName}` : childName;
+document.getElementById('micro-child-pill').textContent = parentLabel ? `הורה של ${childName}` : childName;
+
+// ============ MONTHLY FORM ============
+const answers = {};
+const required = ['q1', 'q2', 'q3', 'q4'];
+
+function updateProgress() {
+  const completed = required.filter(k => answers[k] != null).length;
+  const pct = (completed / required.length) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent =
+    completed === required.length
+      ? '✓ כל שאלות החובה מולאו'
+      : `${completed} מתוך ${required.length} שאלות חובה`;
+}
+
+function markAnswered(itemNum) {
+  document.querySelector(`[data-item="${itemNum}"]`).classList.add('answered');
+}
+
+// Radio handling
+document.querySelectorAll('.options .option, .yesno .option').forEach(label => {
+  label.addEventListener('click', e => {
+    e.preventDefault();
+    const card = label.closest('.item-card');
+    const itemNum = card.dataset.item;
+    card.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+    label.classList.add('selected');
+    answers['q' + itemNum] = label.dataset.value;
+
+    if (itemNum === '4') {
+      const cond = document.getElementById('cond-q4');
+      cond.classList.toggle('show', label.dataset.value === 'yes');
+    }
+
+    markAnswered(itemNum);
+    updateProgress();
+    checkComplete();
+    saveState();
+  });
+});
+
+// Slider faces (q3)
+document.querySelectorAll('[data-item="3"] .slider-face').forEach(face => {
+  face.addEventListener('click', () => {
+    const card = face.closest('.item-card');
+    card.querySelectorAll('.slider-face').forEach(f => f.classList.remove('selected'));
+    face.classList.add('selected');
+    answers.q3 = face.dataset.value;
+    markAnswered('3');
+    updateProgress();
+    checkComplete();
+    saveState();
+  });
+});
+
+// Text inputs
+const q4Text = document.getElementById('q4-text');
+const q5Text = document.getElementById('q5-text');
+q4Text.addEventListener('input', e => { answers.q4_text = e.target.value; saveState(); });
+q5Text.addEventListener('input', e => {
+  answers.q5_text = e.target.value;
+  if (e.target.value.trim()) markAnswered('5');
+  saveState();
+});
+
+function checkComplete() {
+  document.getElementById('submit-btn').disabled =
+    !required.every(k => answers[k] != null);
+}
+
+// localStorage resume
+const STORAGE_KEY = 'pulse-parent-' + (params.get('child') || 'default') + '-' + new Date().toISOString().slice(0, 7);
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(answers));
+}
+function loadState() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (!saved) return;
+  try {
+    const data = JSON.parse(saved);
+    Object.assign(answers, data);
+    ['1', '2', '3', '4'].forEach(itemNum => {
+      const key = 'q' + itemNum;
+      if (answers[key] == null) return;
+      const card = document.querySelector(`[data-item="${itemNum}"]`);
+      const selector = itemNum === '3' ? '.slider-face' : '.option';
+      const target = card.querySelector(`${selector}[data-value="${answers[key]}"]`);
+      if (target) target.classList.add('selected');
+      markAnswered(itemNum);
+    });
+    if (answers.q4 === 'yes') document.getElementById('cond-q4').classList.add('show');
+    if (answers.q4_text) q4Text.value = answers.q4_text;
+    if (answers.q5_text) { q5Text.value = answers.q5_text; markAnswered('5'); }
+    updateProgress();
+    checkComplete();
+  } catch (e) { /* ignore */ }
+}
+loadState();
+
+// Submit monthly
+document.getElementById('submit-btn').addEventListener('click', () => {
+  const payload = {
+    ts: new Date().toISOString(),
+    child: childName,
+    mode: 'monthly',
+    answers
+  };
+  console.log('Submitting (monthly):', payload);
+  // TODO: POST to backend (Google Sheets / Supabase)
+  localStorage.removeItem(STORAGE_KEY);
+  document.getElementById('form-container').style.display = 'none';
+  document.getElementById('thanks-screen').classList.add('show');
+  window.scrollTo(0, 0);
+});
+
+// ============ MICRO MODE ============
+let microValue = null;
+document.querySelectorAll('#micro-scale .micro-num').forEach(num => {
+  num.addEventListener('click', () => {
+    document.querySelectorAll('#micro-scale .micro-num').forEach(n => n.classList.remove('selected'));
+    num.classList.add('selected');
+    microValue = parseInt(num.dataset.value);
+    document.getElementById('micro-submit').disabled = false;
+  });
+});
+document.getElementById('micro-submit').addEventListener('click', () => {
+  const payload = {
+    ts: new Date().toISOString(),
+    child: childName,
+    mode: 'micro',
+    flourishing: microValue
+  };
+  console.log('Submitting (micro):', payload);
+  // TODO: POST to backend
+  document.getElementById('micro-container').style.display = 'none';
+  document.getElementById('thanks-next').textContent = 'הפולס החודשי המלא יישלח אליך בעוד כשבועיים';
+  document.getElementById('thanks-screen').classList.add('show');
+  window.scrollTo(0, 0);
+});
+</script>
+
+</body>
+</html>

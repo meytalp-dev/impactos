@@ -19,9 +19,9 @@
 ### Specs (מסמכי איפיון)
 | קובץ | מה |
 |---|---|
-| [`system-10-pulse-spec.md`](system-10-pulse-spec.md) | **ה-spec הקנוני (v3, 29.5.2026)** — פרסונת תלמיד.ה |
-| [`extension-spec-formal.md`](extension-spec-formal.md) | **הרחבת v4 (3.6.2026)** — מורה + הורה + מנהלת. **טרם ממוזג ל-v3 spec.** |
-| [`extension-research-scaffold.md`](extension-research-scaffold.md) | בסיס המחקר ל-v4 (5 sub-agents · 14 מקורות) |
+| [`system-10-pulse-spec.md`](system-10-pulse-spec.md) | **ה-spec הקנוני (v4, 8.6.2026)** — 4 פרסונות, 20 סעיפים, ~600 שורות. **המסמך היחיד שצריך לקרוא.** |
+| [`extension-spec-formal.md`](extension-spec-formal.md) | היסטורי — ממוזג ל-v4 |
+| [`extension-research-scaffold.md`](extension-research-scaffold.md) | היסטורי — בסיס המחקר, ההצדקות נכנסו ל-v4 סעיף 13 |
 | [`HANDOFF-pulse-v3.md`](HANDOFF-pulse-v3.md) | מסמך מעבר היסטורי של v3 |
 | [`pulse-build-plan.md`](pulse-build-plan.md) | תכנית בנייה 22 שעות |
 
@@ -39,12 +39,15 @@
 | [`pulse-teacher-form-mockup.html`](pulse-teacher-form-mockup.html) | mockup טופס דירוג מורה (8 פריטים × 25 ילדים) |
 | [`onboarding.html`](onboarding.html) | onboarding למחנכת |
 
-### מסכים — הורה / מנהלת (חסר)
-שני המסכים האלה **עוד לא נבנו**:
-- `pulse-parent-monthly.html` — 5 פריטים + micro-pulse, WhatsApp + IVR
-- `pulse-principal-dashboard.html` — 5 ווידג'טים + 15 התראות + Tier 80/15/5
+### מסכים — הורה (נבנו 8.6.2026)
+| קובץ | מה |
+|---|---|
+| [`pulse-parent-monthly.html`](pulse-parent-monthly.html) | שאלון הורים חודשי — 5 פריטים + open text. תומך גם ב-`?mode=micro` למצב micro-pulse (שאלה אחת, slider 0-10). pre-fill שם ילד.ה מ-URL `?child=דניאל`. localStorage לחזרה. |
 
-ה-spec שלהם חי ב-`extension-spec-formal.md` סעיפים 3.3-3.4.
+### מסכים — מנהלת (נבנו 8.6.2026)
+| קובץ | מה |
+|---|---|
+| [`pulse-principal-dashboard.html`](pulse-principal-dashboard.html) | דשבורד מנהלת — 5 ווידג'טים (Hero+donuts, heatmap, movers, equity, interventions) + Tier 80/15/5 + alerts feed. שימוש ב-seed data לצורך demo. |
 
 ### מצגות והצעה (להצגה ל-מנח״י / שותפים)
 | קובץ | מה |
