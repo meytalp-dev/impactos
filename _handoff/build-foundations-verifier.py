@@ -5,7 +5,7 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 TEMPLATE = os.path.join(HERE, 'foundations-verifier-template.html')
-DATA = os.path.join(HERE, 'foundations-data.json')
+DATA = os.path.join(HERE, 'foundations-data-classified.json')
 OUT = os.path.join(HERE, 'foundations-verifier.html')
 
 with open(TEMPLATE, encoding='utf-8') as f:

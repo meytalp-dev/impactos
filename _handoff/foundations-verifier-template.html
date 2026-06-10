@@ -250,6 +250,11 @@
   .badge.status-rejected { background: var(--red-soft); color: var(--red); border-color: #fca5a5; }
   .badge.status-review   { background: var(--amber-soft); color: var(--amber); border-color: #fcd34d; }
   .badge.dup { background: #fce7f3; color: #9d174d; border-color: #fbcfe8; }
+  .badge.kind-open_call        { background: #dcfce7; color: #15803d; border-color: #86efac; }
+  .badge.kind-open_call_likely { background: #fef9c3; color: #854d0e; border-color: #fde68a; }
+  .badge.kind-direct           { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+  .badge.kind-special          { background: #ede9fe; color: #6d28d9; border-color: #ddd6fe; }
+  .badge.kind-unknown          { background: #f1f5f9; color: #475569; border-color: #cbd5e1; }
 
   .desc {
     font-size: 14px;
@@ -507,6 +512,14 @@
     <button class="chip" data-filter="review">🔬 לבדוק <span class="count" id="c-review">0</span></button>
     <button class="chip" data-filter="rejected">❌ נפסל <span class="count" id="c-rejected">0</span></button>
   </div>
+  <div class="filters" id="kind-filters" style="margin-top:6px">
+    <button class="chip active" data-kind="all">כל הסוגים</button>
+    <button class="chip" data-kind="open_call">🟢 קול קורא <span class="count" id="k-open_call">0</span></button>
+    <button class="chip" data-kind="open_call_likely">🟡 כנראה קק"ל <span class="count" id="k-open_call_likely">0</span></button>
+    <button class="chip" data-kind="direct">🔴 פנייה ישירה <span class="count" id="k-direct">0</span></button>
+    <button class="chip" data-kind="special">🟣 הקדש <span class="count" id="k-special">0</span></button>
+    <button class="chip" data-kind="unknown">⚪ לא ברור <span class="count" id="k-unknown">0</span></button>
+  </div>
 </header>
 
 <main class="list" id="list"></main>
@@ -531,8 +544,17 @@
   const STORAGE_KEY = 'foundations-verification-v1';
   const state = loadState();
   let currentFilter = 'todo';
+  let currentKind = 'all';
   let currentQuery = '';
   let renderTimeout = null;
+
+  const KIND_LABEL = {
+    open_call:        '🟢 קול קורא',
+    open_call_likely: '🟡 כנראה קול קורא',
+    direct:           '🔴 פנייה ישירה',
+    special:          '🟣 הקדש',
+    unknown:          '⚪ לא ברור'
+  };
 
   // section ordering — preserve Excel order
   const SECTION_ORDER = [];
@@ -557,6 +579,7 @@
   }
 
   function matchesFilter(item) {
+    if (currentKind !== 'all' && item._kind !== currentKind) return false;
     const s = state[item._id]?.status;
     switch (currentFilter) {
       case 'all': return true;
@@ -570,16 +593,22 @@
 
   function updateCounts() {
     const counts = { all: RAW.length, todo: 0, approved: 0, rejected: 0, review: 0 };
+    const kinds = { open_call: 0, open_call_likely: 0, direct: 0, special: 0, unknown: 0 };
     RAW.forEach(r => {
       const s = state[r._id]?.status;
       if (!s) counts.todo++;
       else counts[s]++;
+      if (kinds[r._kind] !== undefined) kinds[r._kind]++;
     });
     document.getElementById('c-all').textContent = counts.all;
     document.getElementById('c-todo').textContent = counts.todo;
     document.getElementById('c-approved').textContent = counts.approved;
     document.getElementById('c-rejected').textContent = counts.rejected;
     document.getElementById('c-review').textContent = counts.review;
+    Object.entries(kinds).forEach(([k, v]) => {
+      const el = document.getElementById('k-' + k);
+      if (el) el.textContent = v;
+    });
 
     document.getElementById('stat-left').textContent = counts.todo;
     document.getElementById('stat-approved').textContent = counts.approved;
@@ -665,6 +694,7 @@
         <h2 class="card-name">${escape(item.name)}</h2>
       </div>
       <div class="badges">
+        ${item._kind ? `<span class="badge kind-${item._kind}" title="${escape(item._kind_reason || '')}">${escape(KIND_LABEL[item._kind] || item._kind)}</span>` : ''}
         <span class="badge sheet-${item._sheet}">${SHEET_LABEL[item._sheet] || item._sheet}</span>
         <span class="badge">${escape(item._section || '')}</span>
         ${item.relevance ? `<span class="badge">${escape(item.relevance)}</span>` : ''}
@@ -865,13 +895,23 @@
     saveState();
   });
 
-  // Filters
+  // Filters (status)
   document.getElementById('filters').addEventListener('click', (e) => {
     const chip = e.target.closest('.chip');
     if (!chip) return;
-    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('#filters .chip').forEach(c => c.classList.remove('active'));
     chip.classList.add('active');
     currentFilter = chip.dataset.filter;
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+  // Filters (kind)
+  document.getElementById('kind-filters').addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    document.querySelectorAll('#kind-filters .chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    currentKind = chip.dataset.kind;
     render();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
@@ -895,7 +935,7 @@
 
   function exportCSV(filter) {
     const headers = [
-      'סטטוס','הערה','גיליון','קטגוריה','שם','אתר','אימייל','טלפון','איש קשר',
+      'סטטוס','הערה','סוג קרן','סיבת סיווג','גיליון','קטגוריה','שם','אתר','אימייל','טלפון','איש קשר',
       'תחום','תיאור','תבחינים','דרך פנייה','רלוונטיות','חותמת זמן'
     ];
     const lines = [headers.join(',')];
@@ -906,7 +946,9 @@
       if (filter === 'approved' && s !== 'approved') continue;
       if (filter === 'verified' && !s) continue;
       const row = [
-        s, note, SHEET_LABEL[r._sheet] || r._sheet, r._section || '',
+        s, note,
+        KIND_LABEL[r._kind] || r._kind || '', r._kind_reason || '',
+        SHEET_LABEL[r._sheet] || r._sheet, r._section || '',
         r.name || '', r.website || '', r.email || '', r.phone || '',
         r.contact || r.contact_info || '',
         r.area || r.focus || '',
