@@ -50,6 +50,12 @@
 |---|---|
 | [`pulse-principal-dashboard.html`](pulse-principal-dashboard.html) | דשבורד מנהלת — 5 ווידג'טים (Hero+donuts, heatmap, movers, equity, interventions) + Tier 80/15/5 + alerts feed. שימוש ב-seed data לצורך demo. |
 
+### מוקאפים נוספים (נבנו 10.6.2026)
+| קובץ | מה |
+|---|---|
+| [`pulse-onboarding-mockup.html`](pulse-onboarding-mockup.html) | **מסכי כניסה ורישום** ל-4 הפרסונות בטאבים: מורה (אימייל+סיסמה + magic link) · תלמיד.ה (PIN מורה → שם+אמוג'י) · הורה (WhatsApp deep-link · ללא login) · מנהלת (אימייל+סיסמה + הזמנת מורות). |
+| [`pulse-admin-mockup.html`](pulse-admin-mockup.html) | **אדמין** — 3 טאבים: מאגר פולסים (47 פולסים מסוננים פר קהל יעד, drill-down) · תובנות (6 תובנות auto-generated) · תרחישים → התערבויות (8/14 תרחישים עם 1-3 המלצות כל אחד מתוך 50 המתכונים). |
+
 ### מצגות והצעה (להצגה ל-מנח״י / שותפים)
 | קובץ | מה |
 |---|---|

@@ -21,8 +21,11 @@
 | 8 | פתרון קונפליקטים | [cat-08-conflict-resolution.md](cat-08-conflict-resolution.md) | B · C | Tier 1 + 2 |
 | 9 | מעורבות הורים | [cat-09-parent-engagement.md](cat-09-parent-engagement.md) | A · B | Tier 1 + 2 |
 | 10 | קואצ'ינג למורה | [cat-10-teacher-coaching.md](cat-10-teacher-coaching.md) | cross | meta-Tier |
+| 11 | **20 התערבויות Co-Creation** (חדש 10.6.2026) | [cat-11-co-creation.md](cat-11-co-creation.md) | A · B · C · D | Tier 2 capacity-building |
 
 **ממדים:** 🟡 A הסתגלות · 🌸 B חברות · 💜 C שפה רגשית + ויסות · 💚 D שמחה ללמוד
+
+**סך הכל:** 50 מתכוני התערבות (30 רגילות + 20 co-creation).
 
 ---
 

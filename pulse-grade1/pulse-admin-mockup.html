@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>פולס · אדמין · מאגר פולסים, תובנות והתערבויות</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #2E7D8C;
+  --primary-dark: #1E5A66;
+  --primary-soft: #E5F1F3;
+  --dim-adjust: #F2B844;
+  --dim-friend: #E08FAF;
+  --dim-emotion: #8B6BC0;
+  --dim-joy: #5BC0A8;
+  --tier-green: #5BC0A8;
+  --tier-yellow: #F2B844;
+  --tier-red: #C85A3B;
+  --surface: #F5F0E8;
+  --surface-card: #FDFCFA;
+  --white: #FFFFFF;
+  --text: #2C2622;
+  --text-light: #6E6258;
+  --text-muted: #847d72;
+  --border: #EDE6D8;
+  --border-strong: #D4CABA;
+  --shadow-sm: 0 2px 8px rgba(44,38,34,.05);
+  --shadow-md: 0 6px 20px rgba(44,38,34,.08);
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  font-family: 'Heebo', sans-serif;
+  background: var(--surface);
+  color: var(--text);
+  line-height: 1.5;
+  font-size: 14.5px;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
+
+/* TOP BAR */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+  color: white;
+  padding: 14px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-num {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.18);
+  backdrop-filter: blur(10px);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-family: 'Rubik';
+}
+.brand-title { font-family: 'Rubik'; font-weight: 700; }
+.brand-sub { font-size: 0.74rem; opacity: 0.85; margin-top: 2px; }
+.admin-pill {
+  background: rgba(255,255,255,.18);
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.78rem;
+  font-family: 'Rubik';
+  letter-spacing: 0.04em;
+}
+
+/* CONTAINER */
+.container { max-width: 1280px; margin: 0 auto; padding: 24px 24px 80px; }
+
+/* TABS */
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--border);
+}
+.tab {
+  padding: 12px 20px;
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+  font-family: 'Rubik';
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  color: var(--text-light);
+  transition: all 0.2s;
+  display: flex; align-items: center; gap: 8px;
+}
+.tab:hover { color: var(--primary-dark); background: var(--primary-soft); }
+.tab.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary-dark);
+  transform: translateY(2px);
+}
+.tab-emoji { font-size: 1rem; }
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeIn 0.3s; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* SECTION HEAD */
+.section-h {
+  font-family: 'Rubik';
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 24px 0 12px;
+}
+.section-h:first-child { margin-top: 0; }
+
+/* FILTERS BAR */
+.filters {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 18px;
+  align-items: center;
+}
+.filter-pill {
+  padding: 8px 14px;
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.86rem;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex; align-items: center; gap: 6px;
+  transition: all 0.15s;
+}
+.filter-pill:hover { background: var(--primary-soft); }
+.filter-pill.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary-dark);
+}
+.filter-pill .count {
+  background: rgba(0,0,0,.12);
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+.filter-pill.active .count { background: rgba(255,255,255,.25); }
+
+/* SEARCH */
+.search-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 8px 14px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.88rem;
+  background: var(--white);
+}
+
+/* PULSE TABLE */
+.pulse-table {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.pulse-row {
+  display: grid;
+  grid-template-columns: 110px 130px 160px 1fr 200px 100px;
+  gap: 14px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+  font-size: 0.88rem;
+  transition: background 0.15s;
+}
+.pulse-row.header {
+  background: var(--surface);
+  font-weight: 700;
+  font-family: 'Rubik';
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-strong);
+}
+.pulse-row:not(.header):hover { background: var(--primary-soft); cursor: pointer; }
+.pulse-row:last-child { border-bottom: none; }
+.audience-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: 'Rubik';
+}
+.audience-tag.student { background: rgba(139,107,192,.15); color: #5d4a91; }
+.audience-tag.teacher { background: rgba(91,192,168,.18); color: #2E6E5F; }
+.audience-tag.parent { background: rgba(224,143,175,.2); color: #a4537d; }
+.audience-tag.principal { background: rgba(242,184,68,.22); color: #8a6817; }
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+.status-pill.green { background: rgba(91,192,168,.18); color: #2E6E5F; }
+.status-pill.yellow { background: rgba(242,184,68,.22); color: #8a6817; }
+.status-pill.red { background: rgba(200,90,59,.18); color: #8a3b25; }
+.dim-score { font-family: 'Rubik'; font-weight: 600; }
+.action-btn {
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  border: 1px solid var(--primary);
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.action-btn:hover { background: var(--primary); color: white; }
+
+/* INSIGHT CARDS */
+.insight-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+@media (max-width: 900px) { .insight-grid { grid-template-columns: 1fr; } }
+.insight-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  border-right: 5px solid var(--primary);
+}
+.insight-card.high { border-right-color: var(--tier-red); }
+.insight-card.med { border-right-color: var(--tier-yellow); }
+.insight-card.low { border-right-color: var(--tier-green); }
+.insight-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.insight-icon { font-size: 1.2rem; }
+.insight-type {
+  font-family: 'Rubik';
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.insight-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+  font-family: 'Rubik';
+}
+.insight-body { color: var(--text-light); line-height: 1.55; font-size: 0.92rem; }
+.insight-meta {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* SCENARIO MATRIX */
+.matrix-wrap {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+}
+.scenario {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 18px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--border);
+}
+.scenario:last-child { border-bottom: none; }
+.scenario-left { }
+.scenario-trigger {
+  font-weight: 700;
+  font-family: 'Rubik';
+  font-size: 0.95rem;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.scenario-tags {
+  display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px;
+}
+.scenario-tag {
+  font-size: 0.72rem;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-light);
+  font-weight: 600;
+}
+.scenario-tag.urgent { background: rgba(200,90,59,.16); color: #8a3b25; }
+.scenario-tag.support { background: rgba(242,184,68,.2); color: #8a6817; }
+.scenario-tag.dim-1 { background: rgba(242,184,68,.18); color: #8a6817; }
+.scenario-tag.dim-2 { background: rgba(224,143,175,.2); color: #a4537d; }
+.scenario-tag.dim-3 { background: rgba(139,107,192,.18); color: #5d4a91; }
+.scenario-tag.dim-4 { background: rgba(91,192,168,.2); color: #2E6E5F; }
+.scenario-desc { font-size: 0.85rem; color: var(--text-light); line-height: 1.5; }
+.scenario-actions { display: flex; flex-direction: column; gap: 8px; }
+.scenario-action {
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-right: 3px solid var(--primary);
+}
+.scenario-action.co-creation { border-right-color: var(--dim-emotion); }
+.scenario-action-name {
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+.scenario-action-meta { font-size: 0.78rem; color: var(--text-light); margin-top: 2px; }
+.action-type-pill {
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-family: 'Rubik';
+  white-space: nowrap;
+}
+.action-type-pill.regular { background: var(--primary-soft); color: var(--primary-dark); }
+.action-type-pill.co-create { background: rgba(139,107,192,.16); color: #5d4a91; }
+
+/* SUMMARY STATS */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+@media (max-width: 800px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+.stat-card {
+  background: var(--white);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+}
+.stat-card .stat-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-family: 'Rubik';
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+.stat-card .stat-value {
+  font-family: 'Rubik';
+  font-weight: 800;
+  font-size: 1.7rem;
+  color: var(--primary-dark);
+}
+.stat-card .stat-trend {
+  font-size: 0.78rem;
+  color: var(--text-light);
+  margin-top: 4px;
+}
+
+/* DRILL-DOWN PANEL */
+.drill-panel {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-top: 20px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+  display: none;
+}
+.drill-panel.show { display: block; animation: slideDown 0.3s; }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+.drill-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.close-drill {
+  background: var(--surface);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.drill-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+@media (max-width: 800px) { .drill-grid { grid-template-columns: 1fr; } }
+.drill-block h4 {
+  font-size: 0.86rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.raw-data {
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-family: 'Heebo';
+  font-size: 0.86rem;
+  line-height: 1.6;
+}
+.raw-data .data-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--border); }
+.raw-data .data-row:last-child { border-bottom: none; }
+.raw-data .data-key { color: var(--text-light); }
+.raw-data .data-val { font-weight: 600; font-family: 'Rubik'; }
+
+.footer-meta {
+  text-align: center;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  margin-top: 40px;
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-num">10</div>
+    <div>
+      <div class="brand-title">פולס · אדמין</div>
+      <div class="brand-sub">מאגר פולסים, תובנות, ומאגר תרחישים → התערבויות</div>
+    </div>
+  </div>
+  <div class="admin-pill">⚙️ ADMIN</div>
+</div>
+
+<div class="container">
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">פולסים השבוע</div>
+      <div class="stat-value">47</div>
+      <div class="stat-trend">↑ +12 ממחזור קודם</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">פעולות בוצעו</div>
+      <div class="stat-value">19</div>
+      <div class="stat-trend">68% מ-28 התראות</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">תרחישים פעילים</div>
+      <div class="stat-value">8</div>
+      <div class="stat-trend">מתוך 14 אפשריים</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">השלמה ממוצעת</div>
+      <div class="stat-value">87%</div>
+      <div class="stat-trend">יעד: 85%</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="pulses"><span class="tab-emoji">📋</span> מאגר פולסים</button>
+    <button class="tab" data-tab="insights"><span class="tab-emoji">💡</span> תובנות</button>
+    <button class="tab" data-tab="scenarios"><span class="tab-emoji">🎯</span> תרחישים → התערבויות</button>
+  </div>
+
+  <!-- ============ PULSES STORAGE ============ -->
+  <div class="tab-content active" id="tab-pulses">
+
+    <div class="filters">
+      <button class="filter-pill active">הכל <span class="count">47</span></button>
+      <button class="filter-pill">🐙 תלמיד.ה <span class="count">28</span></button>
+      <button class="filter-pill">👩‍🏫 מורה <span class="count">12</span></button>
+      <button class="filter-pill">📱 הורה <span class="count">5</span></button>
+      <button class="filter-pill">🏫 מנהלת <span class="count">2</span></button>
+      <input class="search-input" placeholder="🔍 חיפוש לפי כיתה, שם תלמיד.ה, תאריך...">
+    </div>
+
+    <div class="pulse-table">
+      <div class="pulse-row header">
+        <div>תאריך</div>
+        <div>קהל יעד</div>
+        <div>כיתה / מזהה</div>
+        <div>נתונים עיקריים</div>
+        <div>תובנות</div>
+        <div>פעולה</div>
+      </div>
+
+      <div class="pulse-row" onclick="toggleDrill('drill-1')">
+        <div>10.6 09:15</div>
+        <div><span class="audience-tag student">🐙 תלמיד.ה</span></div>
+        <div><strong>דניאל · א'1</strong></div>
+        <div>
+          <span class="dim-score" style="color: var(--tier-green);">🟡 5</span> ·
+          <span class="dim-score" style="color: var(--tier-yellow);">🌸 3</span> ·
+          <span class="dim-score" style="color: var(--tier-green);">💜 5</span> ·
+          <span class="dim-score" style="color: var(--tier-green);">💚 5</span>
+        </div>
+        <div><span class="status-pill green">🟢 good</span></div>
+        <div><button class="action-btn">פתח →</button></div>
+      </div>
+
+      <div class="pulse-row">
+        <div>10.6 09:18</div>
+        <div><span class="audience-tag student">🐙 תלמיד.ה</span></div>
+        <div><strong>מאיה · א'2</strong></div>
+        <div>
+          <span class="dim-score" style="color: var(--tier-green);">🟡 5</span> ·
+          <span class="dim-score" style="color: var(--tier-red);">🌸 1</span> ·
+          <span class="dim-score" style="color: var(--tier-yellow);">💜 3</span> ·
+          <span class="dim-score" style="color: var(--tier-green);">💚 5</span>
+        </div>
+        <div><span class="status-pill red">🔴 urgent · חברות</span></div>
+        <div><button class="action-btn">פתח →</button></div>
+      </div>
+
+      <div class="pulse-row">
+        <div>10.6 08:00</div>
+        <div><span class="audience-tag teacher">👩‍🏫 מורה</span></div>
+        <div><strong>רינת · א'1</strong> (טופס דירוג)</div>
+        <div>25 ילדים סומנו · 8 פריטים · 0 חסרים</div>
+        <div><span class="status-pill yellow">🟡 שמחה ללמוד -0.4</span></div>
+        <div><button class="action-btn">פתח →</button></div>
+      </div>
+
+      <div class="pulse-row">
+        <div>9.6 14:20</div>
+        <div><span class="audience-tag parent">📱 הורה</span></div>
+        <div><strong>אמא של תום · א'3</strong></div>
+        <div>5 פריטים · 1 דגל (תלונות גופניות)</div>
+        <div><span class="status-pill yellow">🟡 דורש בדיקת יועצת</span></div>
+        <div><button class="action-btn">פתח →</button></div>
+      </div>
+
+      <div class="pulse-row">
+        <div>9.6 11:05</div>
+        <div><span class="audience-tag parent">📱 הורה</span></div>
+        <div><strong>אבא של ליאם · א'4</strong></div>
+        <div>5 פריטים · 0 דגלים · open-text "נהדר השבוע"</div>
+        <div><span class="status-pill green">🟢 חיובי</span></div>
+        <div><button class="action-btn">פתח →</button></div>
+      </div>
+
+      <div class="pulse-row">
+        <div>9.6 07:30</div>
+        <div><span class="audience-tag principal">🏫 מנהלת</span></div>
+        <div><strong>בית הספר</strong> (דשבורד צפייה)</div>
+        <div>צפייה · 5 ווידג'טים · ייצא PDF לטליה</div>
+        <div><span class="status-pill yellow">🟡 4 התראות פעילות</span></div>
+        <div><button class="action-btn">פתח →</button></div>
+      </div>
+
+      <div class="pulse-row">
+        <div>9.6 08:15</div>
+        <div><span class="audience-tag student">🐙 תלמיד.ה</span></div>
+        <div><strong>איתי · א'2</strong></div>
+        <div>
+          <span class="dim-score" style="color: var(--tier-yellow);">🟡 3</span> ·
+          <span class="dim-score" style="color: var(--tier-green);">🌸 5</span> ·
+          <span class="dim-score" style="color: var(--tier-green);">💜 5</span> ·
+          <span class="dim-score" style="color: var(--tier-red);">💚 1</span>
+        </div>
+        <div><span class="status-pill yellow">🟡 support · שמחה ללמוד</span></div>
+        <div><button class="action-btn">פתח →</button></div>
+      </div>
+
+      <div class="pulse-row">
+        <div>8.6 08:00</div>
+        <div><span class="audience-tag teacher">👩‍🏫 מורה</span></div>
+        <div><strong>רונית · א'2</strong> (טופס דירוג)</div>
+        <div>25 ילדים סומנו · 2 ילדים אדומים בחברות</div>
+        <div><span class="status-pill red">🔴 דפוס כיתתי חברות</span></div>
+        <div><button class="action-btn">פתח →</button></div>
+      </div>
+    </div>
+
+    <!-- DRILL-DOWN PANEL -->
+    <div class="drill-panel" id="drill-1">
+      <div class="drill-head">
+        <div>
+          <h3 style="color: var(--primary-dark);">📋 פולס תלמיד.ה · דניאל · א'1 · 10.6.2026 09:15</h3>
+          <div style="font-size: 0.85rem; color: var(--text-light); margin-top: 4px;">משך מילוי: 58 שנ' · 4 תחנות · 0 דילוגים</div>
+        </div>
+        <button class="close-drill" onclick="toggleDrill('drill-1')">סגור ✕</button>
+      </div>
+      <div class="drill-grid">
+        <div class="drill-block">
+          <h4>נתוני הפולס (raw)</h4>
+          <div class="raw-data">
+            <div class="data-row"><span class="data-key">הסתגלות</span><span class="data-val">😊 כֵּן הַרְבֵּה (5)</span></div>
+            <div class="data-row"><span class="data-key">חברות</span><span class="data-val">😐 קְצָת (3)</span></div>
+            <div class="data-row"><span class="data-key">שפה רגשית</span><span class="data-val">😊 כֵּן הַרְבֵּה (5)</span></div>
+            <div class="data-row"><span class="data-key">שמחה ללמוד</span><span class="data-val">😊 כֵּן הַרְבֵּה (5)</span></div>
+            <div class="data-row"><span class="data-key">ממוצע</span><span class="data-val">4.5</span></div>
+            <div class="data-row"><span class="data-key">סטטוס</span><span class="data-val" style="color: var(--tier-green);">🟢 good</span></div>
+          </div>
+        </div>
+        <div class="drill-block">
+          <h4>תובנות (auto-generated)</h4>
+          <div class="raw-data">
+            <p style="margin-bottom: 8px;">💡 דניאל יציב במרבית המימדים. חברות סומנה "קצת" — הפעם הראשונה.</p>
+            <p style="margin-bottom: 8px;">📊 מגמה: 3 פולסים אחרונים — כולם 🟢 good. ירידה קלה במימד חברות.</p>
+            <p style="margin-bottom: 8px;">⚠️ אין צורך באסקלציה, אבל שווה תצפית בהפסקה השבוע.</p>
+          </div>
+          <h4 style="margin-top: 14px;">המלצה לפעולה</h4>
+          <div class="raw-data">
+            <p>🛠 <strong>תצפית פעילה בהפסקה</strong> — בלי שיחה ישירה, רק לבדוק האם דניאל מצטרף למשחק. אם אותה תוצאה בפולס הבא → CO-06 (מורה+ילד "איך נוני מצטרף?").</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============ INSIGHTS ============ -->
+  <div class="tab-content" id="tab-insights">
+
+    <div class="section-h">תובנות פעילות השבוע (auto-generated)</div>
+
+    <div class="insight-grid">
+
+      <div class="insight-card high">
+        <div class="insight-head">
+          <span class="insight-icon">🔴</span>
+          <span class="insight-type">תובנה כיתתית</span>
+        </div>
+        <div class="insight-title">א'2 — שמחה ללמוד ירדה ב-12% השבוע</div>
+        <div class="insight-body">7 מתוך 25 ילדים דיווחו "אין כיף בלמידה" השבוע (לעומת 3 בפולס קודם). הדפוס מתחיל ביום שלישי — אחרי שיעור מתמטיקה.</div>
+        <div class="insight-meta">
+          <span>🎯 מקור: 28 פולסי תלמיד.ה</span>
+          <span>📅 1 שבוע</span>
+          <span>🛠 פעולה מוצעת: CO-19 (מפת שעמום)</span>
+        </div>
+      </div>
+
+      <div class="insight-card high">
+        <div class="insight-head">
+          <span class="insight-icon">🔴</span>
+          <span class="insight-type">תובנה אישית</span>
+        </div>
+        <div class="insight-title">מאיה ד. (א'2) — חברות 3 פולסים נמוך</div>
+        <div class="insight-body">חברות 1.7 / 5 (פולסים 8, 9, 10). דירוג מורה תואם — "כמעט אף פעם" בפריט הצטרפות. דיווח הורה: "אין שמות מהכיתה בשיחות בית". 3 מקורות מסכימים = אסקלציה ליועצת.</div>
+        <div class="insight-meta">
+          <span>🎯 מקור: triangulation (3)</span>
+          <span>📅 6 שבועות</span>
+          <span>🛠 כלל #14 הופעל</span>
+        </div>
+      </div>
+
+      <div class="insight-card med">
+        <div class="insight-head">
+          <span class="insight-icon">🟡</span>
+          <span class="insight-type">תובנה מערכתית</span>
+        </div>
+        <div class="insight-title">פער שילוב vs חינוך רגיל = 1.2 SD</div>
+        <div class="insight-body">12 ילדי שילוב (n≥5) מקבלים ציון נמוך משמעותית מ-68 ילדי החינוך הרגיל. בעיקר במימד הסתגלות (-1.4) ובחברות (-1.0). כלל equity #10 פעיל.</div>
+        <div class="insight-meta">
+          <span>🎯 מקור: דשבורד מנהלת</span>
+          <span>📅 מחזור אחד</span>
+          <span>🛠 פעולה: דיון רכזת שכבה</span>
+        </div>
+      </div>
+
+      <div class="insight-card med">
+        <div class="insight-head">
+          <span class="insight-icon">🟡</span>
+          <span class="insight-type">תובנה מהורה</span>
+        </div>
+        <div class="insight-title">תום ש. (א'3) — תלונות גופניות בבוקר</div>
+        <div class="insight-body">אמא של תום סימנה "כן, שמתי לב" בשאלה 4 + פירטה: "כאבי בטן ביום ראשון בבוקר, פעמיים השבוע". מצטרף לדגל הסתגלות בפולס תלמיד.ה. שווה שיחה רכה עם יועצת.</div>
+        <div class="insight-meta">
+          <span>🎯 מקור: פולס הורה</span>
+          <span>📅 השבוע</span>
+          <span>🛠 הועבר ליועצת, לא למחנכת</span>
+        </div>
+      </div>
+
+      <div class="insight-card low">
+        <div class="insight-head">
+          <span class="insight-icon">🟢</span>
+          <span class="insight-type">תובנה חיובית</span>
+        </div>
+        <div class="insight-title">נועה כ. (א'1) — חברות עלתה מ-3.2 ל-4.1</div>
+        <div class="insight-body">אחרי שמחנכת רינת הפעילה "חבר.ה ליום" (CO-06) לפני 4 שבועות — נועה משתלבת. הוכחה ש-co-creation עובד. שווה לתעד כמקרה הצלחה.</div>
+        <div class="insight-meta">
+          <span>🎯 מקור: פולס תלמיד.ה</span>
+          <span>📅 4 שבועות</span>
+          <span>🛠 ההתערבות עבדה!</span>
+        </div>
+      </div>
+
+      <div class="insight-card low">
+        <div class="insight-head">
+          <span class="insight-icon">🟢</span>
+          <span class="insight-type">תובנה מערכתית חיובית</span>
+        </div>
+        <div class="insight-title">68% מהפעולות שהומלצו בוצעו השבוע</div>
+        <div class="insight-body">19 מתוך 28 התראות הומרו לפעולה מתועדת על-ידי המחנכות. יעד: 60%. הציון 68% משקף שמחנכות הפנימו את ה-loop "איתות → פעולה".</div>
+        <div class="insight-meta">
+          <span>🎯 מקור: actions_log</span>
+          <span>📅 השבוע</span>
+          <span>🛠 KPI: עוקפים יעד</span>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ============ SCENARIOS → INTERVENTIONS MATRIX ============ -->
+  <div class="tab-content" id="tab-scenarios">
+
+    <div class="section-h">מאגר כל התרחישים האפשריים + ההתערבויות שלהם</div>
+
+    <p style="color: var(--text-light); margin-bottom: 20px; line-height: 1.6;">
+      <strong>14 תרחישים</strong> שהמערכת מזהה אוטומטית. לכל תרחיש — 1-3 התערבויות מומלצות מתוך 50 המתכונים (30 רגילות מ-cat-01..10 + 20 co-creation מ-cat-11). המערכת מציעה לפי הקשר — לא רק לפי מימד.
+    </p>
+
+    <div class="filters">
+      <button class="filter-pill active">הכל <span class="count">14</span></button>
+      <button class="filter-pill">🟡 הסתגלות <span class="count">4</span></button>
+      <button class="filter-pill">🌸 חברות <span class="count">4</span></button>
+      <button class="filter-pill">💜 רגש/ויסות <span class="count">3</span></button>
+      <button class="filter-pill">💚 שמחה ללמוד <span class="count">3</span></button>
+    </div>
+
+    <div class="matrix-wrap">
+
+      <div class="scenario">
+        <div class="scenario-left">
+          <div class="scenario-trigger">🟡 ילד.ה אדום בהסתגלות 1 פולס</div>
+          <div class="scenario-tags">
+            <span class="scenario-tag dim-1">הסתגלות</span>
+            <span class="scenario-tag support">support</span>
+            <span class="scenario-tag">פר-ילד</span>
+          </div>
+          <div class="scenario-desc">פעם ראשונה שמדד הסתגלות נמוך — אולי בוקר חריג. לא ממהרים לאסקלציה, אבל מציעים פעולה קלה.</div>
+        </div>
+        <div class="scenario-actions">
+          <div class="scenario-action">
+            <div>
+              <div class="scenario-action-name">טקס פתיחה במעגל (cat-01-01)</div>
+              <div class="scenario-action-meta">5 דק' · כיתה שלמה · יום מחר</div>
+            </div>
+            <span class="action-type-pill regular">רגילה</span>
+          </div>
+          <div class="scenario-action">
+            <div>
+              <div class="scenario-action-name">לוח יום ויזואלי (cat-04-02)</div>
+              <div class="scenario-action-meta">10 דק' תחזוקה · מפחית אי-וודאות</div>
+            </div>
+            <span class="action-type-pill regular">רגילה</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="scenario">
+        <div class="scenario-left">
+          <div class="scenario-trigger">🔴 ילד.ה אדום בהסתגלות 2 פולסים רצופים</div>
+          <div class="scenario-tags">
+            <span class="scenario-tag dim-1">הסתגלות</span>
+            <span class="scenario-tag urgent">urgent</span>
+            <span class="scenario-tag">פר-ילד</span>
+          </div>
+          <div class="scenario-desc">דפוס, לא רעש. עכשיו צריך לעשות משהו מעמיק יותר. אם יש הורה זמין — co-creation.</div>
+        </div>
+        <div class="scenario-actions">
+          <div class="scenario-action co-creation">
+            <div>
+              <div class="scenario-action-name">CO-01 "מה יעזור לנוני בבוקר?" (מורה+ילד)</div>
+              <div class="scenario-action-meta">5 דק' שיחה · בונה אוטונומיה</div>
+            </div>
+            <span class="action-type-pill co-create">co-create</span>
+          </div>
+          <div class="scenario-action co-creation">
+            <div>
+              <div class="scenario-action-name">CO-02 "גשר בוקר" (מורה+הורה)</div>
+              <div class="scenario-action-meta">10 דק' תיאום · משפט קבוע משותף</div>
+            </div>
+            <span class="action-type-pill co-create">co-create</span>
+          </div>
+          <div class="scenario-action">
+            <div>
+              <div class="scenario-action-name">פגישת היכרות 1:1 (cat-09-01)</div>
+              <div class="scenario-action-meta">15 דק' · מורה+הורה+ילד</div>
+            </div>
+            <span class="action-type-pill regular">רגילה</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="scenario">
+        <div class="scenario-left">
+          <div class="scenario-trigger">🟡 ירידה כיתתית בחברות (>25% צהוב/אדום)</div>
+          <div class="scenario-tags">
+            <span class="scenario-tag dim-2">חברות</span>
+            <span class="scenario-tag support">support</span>
+            <span class="scenario-tag">קבוצתי-כיתתי</span>
+          </div>
+          <div class="scenario-desc">לא ילד בודד — כיתה שלמה. צריך פעולה ברמת קבוצה: ערבוב הרכבים, יצירת חוקים, שיח כיתתי.</div>
+        </div>
+        <div class="scenario-actions">
+          <div class="scenario-action">
+            <div>
+              <div class="scenario-action-name">חבר.ה ליום (cat-02-01)</div>
+              <div class="scenario-action-meta">קבוע · יומי · 4 שבועות</div>
+            </div>
+            <span class="action-type-pill regular">רגילה</span>
+          </div>
+          <div class="scenario-action co-creation">
+            <div>
+              <div class="scenario-action-name">CO-10 "חוקי הזמנה" (מורה+כיתה)</div>
+              <div class="scenario-action-meta">25 דק' · פעם אחת · פוסטר משותף</div>
+            </div>
+            <span class="action-type-pill co-create">co-create</span>
+          </div>
+          <div class="scenario-action co-creation">
+            <div>
+              <div class="scenario-action-name">CO-09 "מפת משחקים" (צוות+יועצת)</div>
+              <div class="scenario-action-meta">30 דק' · ברמת בית-ספר</div>
+            </div>
+            <span class="action-type-pill co-create">co-create</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="scenario">
+        <div class="scenario-left">
+          <div class="scenario-trigger">🔴 ילד.ה אדום בחברות 3 פולסים = אסקלציה ליועצת</div>
+          <div class="scenario-tags">
+            <span class="scenario-tag dim-2">חברות</span>
+            <span class="scenario-tag urgent">urgent</span>
+            <span class="scenario-tag">אסקלציה</span>
+          </div>
+          <div class="scenario-desc">כלל #14 הופעל. דרושה תוכנית התערבות פרטנית. שיתוף יועצת חובה. דרישה לעדכון הורים בזהירות.</div>
+        </div>
+        <div class="scenario-actions">
+          <div class="scenario-action">
+            <div>
+              <div class="scenario-action-name">כיסא חם בכיף (cat-02-03)</div>
+              <div class="scenario-action-meta">⚠️ קרא אזהרות · רק עם תיאום יועצת</div>
+            </div>
+            <span class="action-type-pill regular">רגילה</span>
+          </div>
+          <div class="scenario-action">
+            <div>
+              <div class="scenario-action-name">buddy ותיק-חדש (cat-05-03)</div>
+              <div class="scenario-action-meta">שיוך קבוע · 4 שבועות</div>
+            </div>
+            <span class="action-type-pill regular">רגילה</span>
+          </div>
+          <div class="scenario-action co-creation">
+            <div>
+              <div class="scenario-action-name">CO-08 "חבר אחד השבוע" (מורה+הורה)</div>
+              <div class="scenario-action-meta">הודעה כללית להורה · 2 שיחות שבועיות</div>
+            </div>
+            <span class="action-type-pill co-create">co-create</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="scenario">
+        <div class="scenario-left">
+          <div class="scenario-trigger">🟡 ירידה במימד שפה רגשית/ויסות</div>
+          <div class="scenario-tags">
+            <span class="scenario-tag dim-3">רגש/ויסות</span>
+            <span class="scenario-tag support">support</span>
+            <span class="scenario-tag">כיתתי או פר-ילד</span>
+          </div>
+          <div class="scenario-desc">ילדים מתקשים להירגע אחרי טריגר. תשתית פיזית + שפה אחידה הם הפתרון.</div>
+        </div>
+        <div class="scenario-actions">
+          <div class="scenario-action">
+            <div>
+              <div class="scenario-action-name">פינת הרגיעה (cat-03-01)</div>
+              <div class="scenario-action-meta">חד-פעמי · 30 דק' התקנה</div>
+            </div>
+            <span class="action-type-pill regular">רגילה</span>
+          </div>
+          <div class="scenario-action">
+            <div>
+              <div class="scenario-action-name">שמות לרגשות (cat-03-03)</div>
+              <div class="scenario-action-meta">שבועי · 3 רגשות חדשים</div>
+            </div>
+            <span class="action-type-pill regular">רגילה</span>
+          </div>
+          <div class="scenario-action co-creation">
+            <div>
+              <div class="scenario-action-name">CO-13 "שפת הרגעה אחידה" (צוות+יועצת)</div>
+              <div class="scenario-action-meta">20 דק' · בונה עקביות בכל הכיתה</div>
+            </div>
+            <span class="action-type-pill co-create">co-create</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="scenario">
+        <div class="scenario-left">
+          <div class="scenario-trigger">🔴 ילד.ה אדום בויסות 2+ פולסים</div>
+          <div class="scenario-tags">
+            <span class="scenario-tag dim-3">רגש/ויסות</span>
+            <span class="scenario-tag urgent">urgent</span>
+            <span class="scenario-tag">פר-ילד</span>
+          </div>
+          <div class="scenario-desc">ילד.ה לא מוצא.ת דרך להירגע. שילוב של פתרון פיזי + co-creation עם הורה.</div>
+        </div>
+        <div class="scenario-actions">
+          <div class="scenario-action co-creation">
+            <div>
+              <div class="scenario-action-name">CO-11 "מה מרגיע את נוני?" (מורה+ילד)</div>
+              <div class="scenario-action-meta">10 דק' · ערכת הרגעה אישית</div>
+            </div>
+            <span class="action-type-pill co-create">co-create</span>
+          </div>
+          <div class="scenario-action co-creation">
+            <div>
+              <div class="scenario-action-name">CO-12 "אותו משפט בבית ובכיתה" (מורה+הורה)</div>
+              <div class="scenario-action-meta">10 דק' שיחה · עקביות סביבתית</div>
+            </div>
+            <span class="action-type-pill co-create">co-create</span>
+          </div>
+          <div class="scenario-action">
+            <div>
+              <div class="scenario-action-name">סולם כעס פשוט (cat-03-02)</div>
+              <div class="scenario-action-meta">5 דק' לימוד · יומי</div>
+            </div>
+            <span class="action-type-pill regular">רגילה</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="scenario">
+        <div class="scenario-left">
+          <div class="scenario-trigger">🟡 ירידה כיתתית בשמחה ללמוד</div>
+          <div class="scenario-tags">
+            <span class="scenario-tag dim-4">שמחה ללמוד</span>
+            <span class="scenario-tag support">support</span>
+            <span class="scenario-tag">כיתתי</span>
+          </div>
+          <div class="scenario-desc">סקרנות יורדת בכיתה כולה. סימן שצריך לרענן את שגרת השיעור או להוסיף בחירה.</div>
+        </div>
+        <div class="scenario-actions">
+          <div class="scenario-action">
+            <div>
+              <div class="scenario-action-name">שאלת השבוע (cat-06-01)</div>
+              <div class="scenario-action-meta">5 דק' · שבועי · קיר הכיתה</div>
+            </div>
+            <span class="action-type-pill regular">רגילה</span>
+          </div>
+          <div class="scenario-action co-creation">
+            <div>
+              <div class="scenario-action-name">CO-17 "שולחן גילוי" (מורה+קבוצה)</div>
+              <div class="scenario-action-meta">15 דק' · ילדים בוחרים תוכן</div>
+            </div>
+            <span class="action-type-pill co-create">co-create</span>
+          </div>
+          <div class="scenario-action co-creation">
+            <div>
+              <div class="scenario-action-name">CO-19 "מפת שעמום" (צוות+יועצת)</div>
+              <div class="scenario-action-meta">30 דק' · ניתוח דפוסי זמן</div>
+            </div>
+            <span class="action-type-pill co-create">co-create</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="scenario">
+        <div class="scenario-left">
+          <div class="scenario-trigger">🔴 דגל הורה — תלונות גופניות (כאבי בטן/ראש)</div>
+          <div class="scenario-tags">
+            <span class="scenario-tag dim-1">הסתגלות</span>
+            <span class="scenario-tag urgent">urgent</span>
+            <span class="scenario-tag">אסקלציה ליועצת</span>
+          </div>
+          <div class="scenario-desc">ההורה דיווח על תלונות גופניות חוזרות. זה סיגנל קליני קל שמצריך בדיקת יועצת לפני התערבות חינוכית.</div>
+        </div>
+        <div class="scenario-actions">
+          <div class="scenario-action">
+            <div>
+              <div class="scenario-action-name">שיחה רכה של היועצת עם הילד.ה</div>
+              <div class="scenario-action-meta">תוך 48 שעות · לא דרך המורה</div>
+            </div>
+            <span class="action-type-pill regular">פרוטוקול</span>
+          </div>
+          <div class="scenario-action co-creation">
+            <div>
+              <div class="scenario-action-name">CO-02 "גשר בוקר" (מורה+הורה)</div>
+              <div class="scenario-action-meta">רק אחרי שהיועצת אישרה</div>
+            </div>
+            <span class="action-type-pill co-create">co-create</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align: center; padding: 20px; color: var(--text-light); font-size: 0.88rem; background: var(--surface); border-radius: 10px; margin-top: 14px;">
+        + עוד <strong>6 תרחישים</strong> (פערי equity, מורה לא ריצתה פולס, % Tier 1 < 75%, וכו') · ראה <a href="intervention-catalog/INDEX.md" style="color: var(--primary-dark); font-weight: 700;">INDEX.md</a> לרשימה מלאה.
+      </div>
+
+    </div>
+  </div>
+
+  <div class="footer-meta">
+    מערכת 10 · פולס א'-ב' · v4 · מוקאפ אדמין<br>
+    אימפקט.OS · מיטל פלג · 10.6.2026<br>
+    כל הנתונים במוקאפ הם seed data להדגמה — לא נתונים אמיתיים של ילדים.
+  </div>
+
+</div>
+
+<script>
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+
+document.querySelectorAll('.filter-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    pill.parentElement.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+  });
+});
+
+function toggleDrill(id) {
+  const panel = document.getElementById(id);
+  panel.classList.toggle('show');
+  if (panel.classList.contains('show')) {
+    setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+  }
+}
+</script>
+
+</body>
+</html>
