@@ -373,11 +373,7 @@
 
   .note-wrap {
     margin-top: 8px;
-    display: none;
   }
-  .card.s-approved .note-wrap,
-  .card.s-rejected .note-wrap,
-  .card.s-review .note-wrap { display: block; }
   .note-wrap textarea {
     width: 100%;
     min-height: 44px;
@@ -437,6 +433,42 @@
     font-size: 14px;
   }
 
+  /* ---- undo toast ---- */
+  .toast {
+    position: fixed;
+    top: calc(env(safe-area-inset-top) + 8px);
+    left: 50%;
+    transform: translate(-50%, -120%);
+    z-index: 100;
+    background: var(--ink);
+    color: #fff;
+    border-radius: 999px;
+    padding: 0 10px 0 18px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 8px 24px rgba(0,0,0,.25);
+    transition: transform .22s cubic-bezier(.2,.7,.2,1);
+    max-width: 92vw;
+  }
+  .toast.show { transform: translate(-50%, 0); }
+  .toast .undo-btn {
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 0;
+    background: rgba(255,255,255,.15);
+    color: #fff;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .toast .undo-btn:active { background: rgba(255,255,255,.28); }
+
   /* tablet+ */
   @media (min-width: 720px) {
     .header h1 { font-size: 20px; }
@@ -478,6 +510,11 @@
 </header>
 
 <main class="list" id="list"></main>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span id="toast-text">אומת</span>
+  <button class="undo-btn" id="toast-undo">ביטול</button>
+</div>
 
 <nav class="bottom-bar">
   <button id="export-csv">📊 CSV</button>
@@ -13172,10 +13209,46 @@
     updateCounts();
   }
 
+  // ---- Undo toast ----
+  const toastEl = document.getElementById('toast');
+  const toastText = document.getElementById('toast-text');
+  const toastUndo = document.getElementById('toast-undo');
+  let toastTimer = null;
+  let undoSnapshot = null; // { id, prev: {status, note, ts} }
+
+  const STATUS_LABEL = {
+    approved: '✅ אומתה',
+    rejected: '❌ נפסלה',
+    review:   '🔬 סומנה לבדיקה'
+  };
+
+  function showToast(label) {
+    toastText.textContent = label;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideToast, 4000);
+  }
+  function hideToast() {
+    toastEl.classList.remove('show');
+    undoSnapshot = null;
+  }
+  toastUndo.addEventListener('click', () => {
+    if (!undoSnapshot) return hideToast();
+    const { id, prev } = undoSnapshot;
+    if (prev === null) delete state[id];
+    else state[id] = { ...prev };
+    saveState();
+    undoSnapshot = null;
+    hideToast();
+    render();
+  });
+
   function setStatus(id, status) {
+    const prev = state[id] ? JSON.parse(JSON.stringify(state[id])) : null;
     if (!state[id]) state[id] = {};
-    if (state[id].status === status) {
-      // toggle off — second tap removes the status
+    const wasStatus = state[id].status;
+    const isToggleOff = wasStatus === status;
+    if (isToggleOff) {
       delete state[id].status;
       if (!state[id].note) delete state[id];
     } else {
@@ -13183,15 +13256,51 @@
       state[id].ts = Date.now();
     }
     saveState();
-    // re-render only this card
+
     const card = document.querySelector(`.card[data-id="${id}"]`);
-    if (card) {
-      const item = RAW.find(r => r._id === id);
+    if (!card) { updateCounts(); return; }
+    const item = RAW.find(r => r._id === id);
+
+    // Set up undo for non-toggle-off actions
+    if (!isToggleOff) {
+      undoSnapshot = { id, prev };
+      showToast(STATUS_LABEL[status] || 'נשמר');
+    }
+
+    // If card no longer matches the active filter — slide it out and remove
+    if (!matchesFilter(item)) {
+      card.style.transition = 'transform .25s ease, opacity .25s ease, margin .25s ease, max-height .3s ease, padding .25s ease';
+      card.style.maxHeight = card.offsetHeight + 'px';
+      requestAnimationFrame(() => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateX(-12px)';
+        card.style.maxHeight = '0';
+        card.style.marginTop = '0';
+        card.style.marginBottom = '0';
+        card.style.paddingTop = '0';
+        card.style.paddingBottom = '0';
+        card.style.borderWidth = '0';
+      });
+      setTimeout(() => {
+        const prevHdr = card.previousElementSibling;
+        card.remove();
+        if (prevHdr && prevHdr.classList.contains('section-hdr')) {
+          const next = prevHdr.nextElementSibling;
+          if (!next || next.classList.contains('section-hdr')) prevHdr.remove();
+        }
+        updateCounts();
+        const list = document.getElementById('list');
+        if (!list.querySelector('.card')) {
+          list.innerHTML = `<div class="empty">🎉 סיימת את הסבב! החליפי סינון או חפשי משהו אחר.</div>`;
+        }
+      }, 280);
+    } else {
+      // Still matches filter (e.g. user is on "all") → in-place swap
       const tmp = document.createElement('div');
       tmp.innerHTML = cardHtml(item);
       card.replaceWith(tmp.firstElementChild);
+      updateCounts();
     }
-    updateCounts();
   }
 
   // Event delegation
