@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>פולס · המערכת החיה · פיילוט פעיל</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #2E7D8C;
+  --primary-dark: #1E5A66;
+  --primary-soft: #E5F1F3;
+  --dim-adjust: #F2B844;
+  --dim-friend: #E08FAF;
+  --dim-emotion: #8B6BC0;
+  --dim-joy: #5BC0A8;
+  --tier-green: #5BC0A8;
+  --tier-yellow: #F2B844;
+  --tier-red: #C85A3B;
+  --surface: #F5F0E8;
+  --surface-card: #FDFCFA;
+  --white: #FFFFFF;
+  --text: #2C2622;
+  --text-light: #6E6258;
+  --text-muted: #847d72;
+  --border: #EDE6D8;
+  --border-strong: #D4CABA;
+  --whatsapp: #25D366;
+  --shadow-sm: 0 2px 8px rgba(44,38,34,.05);
+  --shadow-md: 0 6px 20px rgba(44,38,34,.08);
+  --shadow-lg: 0 12px 32px rgba(44,38,34,.12);
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  font-family: 'Heebo', sans-serif;
+  background: var(--surface);
+  color: var(--text);
+  line-height: 1.55;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+}
+h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
+
+/* ===== TOP BAR ===== */
+.topbar {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 50%, var(--dim-emotion) 100%);
+  color: white;
+  padding: 20px 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.topbar-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.tb-school { display: flex; align-items: center; gap: 14px; }
+.tb-school-icon {
+  width: 44px; height: 44px;
+  background: rgba(255,255,255,.18);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+.tb-school-info h1 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin-bottom: 2px;
+}
+.tb-school-info .sub {
+  font-size: 0.78rem;
+  opacity: 0.85;
+}
+.tb-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(91,192,168,.25);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-family: 'Rubik';
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+.live-dot {
+  width: 8px; height: 8px;
+  background: var(--tier-green);
+  border-radius: 50%;
+  animation: pulse 1.6s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.3); }
+}
+
+/* ===== CONTAINER ===== */
+.container { max-width: 1280px; margin: 0 auto; padding: 28px 24px 80px; }
+
+/* ===== HERO INTRO ===== */
+.hero-intro {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  padding: 26px 30px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  border-right: 5px solid var(--primary);
+  margin-bottom: 24px;
+}
+.hero-intro h2 {
+  font-size: 1.45rem;
+  color: var(--primary-dark);
+  margin-bottom: 8px;
+}
+.hero-intro p {
+  color: var(--text-light);
+  line-height: 1.65;
+  max-width: 820px;
+}
+.guide-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  padding: 8px 14px;
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  text-decoration: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  transition: all 0.18s;
+}
+.guide-link:hover { background: var(--primary); color: white; }
+
+/* ===== STATS ROW ===== */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+@media (max-width: 800px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+.stat-card {
+  background: var(--white);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 5px;
+  background: var(--primary);
+}
+.stat-card.s2::before { background: var(--dim-friend); }
+.stat-card.s3::before { background: var(--dim-emotion); }
+.stat-card.s4::before { background: var(--dim-joy); }
+.stat-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-family: 'Rubik';
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+.stat-value {
+  font-family: 'Rubik';
+  font-weight: 800;
+  font-size: 1.9rem;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.stat-trend {
+  font-size: 0.8rem;
+  color: var(--text-light);
+}
+.stat-trend.up { color: var(--tier-green); font-weight: 600; }
+.stat-trend.down { color: var(--tier-red); font-weight: 600; }
+
+/* ===== SECTION ===== */
+.section-eyebrow {
+  display: inline-block;
+  font-family: 'Rubik';
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--primary);
+  background: var(--primary-soft);
+  padding: 4px 12px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+}
+.section-h {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--primary-dark);
+  margin-bottom: 10px;
+}
+.section-lead {
+  font-size: 1rem;
+  color: var(--text-light);
+  max-width: 760px;
+  line-height: 1.65;
+  margin-bottom: 22px;
+}
+.section { margin-bottom: 36px; }
+.section-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 36px;
+}
+@media (max-width: 900px) { .section-grid { grid-template-columns: 1fr; } }
+
+/* ===== ACTIVITY FEED ===== */
+.activity {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 22px 26px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+}
+.activity-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.activity-h h3 {
+  font-size: 1.05rem;
+  color: var(--primary-dark);
+}
+.activity-meta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.act-item {
+  display: grid;
+  grid-template-columns: 56px 1fr auto;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border-radius: 12px;
+  align-items: center;
+  font-size: 0.88rem;
+}
+.act-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+.act-icon.s { background: rgba(139,107,192,.18); }
+.act-icon.t { background: rgba(91,192,168,.18); }
+.act-icon.p { background: rgba(224,143,175,.2); }
+.act-icon.m { background: rgba(242,184,68,.2); }
+.act-title { font-weight: 600; }
+.act-sub {
+  font-size: 0.76rem;
+  color: var(--text-light);
+  margin-top: 2px;
+}
+.act-time {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  font-family: 'Rubik';
+  font-weight: 600;
+  white-space: nowrap;
+}
+.act-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 700;
+  margin-inline-start: 6px;
+}
+.act-badge.green { background: rgba(91,192,168,.22); color: #2E6E5F; }
+.act-badge.yellow { background: rgba(242,184,68,.22); color: #8a6817; }
+.act-badge.red { background: rgba(200,90,59,.22); color: #8a3b25; }
+
+/* ===== ALERTS WIDGET ===== */
+.alerts {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 22px 26px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+}
+.alerts h3 {
+  font-size: 1.05rem;
+  color: var(--primary-dark);
+  margin-bottom: 16px;
+}
+.alert-list { display: flex; flex-direction: column; gap: 10px; }
+.alert-item {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 14px 16px;
+  border-right: 4px solid var(--tier-yellow);
+  display: grid;
+  grid-template-columns: 1fr;
+}
+.alert-item.high { border-right-color: var(--tier-red); }
+.alert-item.low { border-right-color: var(--tier-green); }
+.alert-row1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.alert-title {
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+.alert-time {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.alert-desc {
+  font-size: 0.84rem;
+  color: var(--text-light);
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+.alert-action {
+  display: inline-block;
+  background: var(--white);
+  border: 1.5px solid var(--border-strong);
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--primary-dark);
+  cursor: pointer;
+  font-family: inherit;
+}
+.alert-action:hover { background: var(--primary-soft); border-color: var(--primary); }
+
+/* ===== CLASSES ROW ===== */
+.classes-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 36px;
+}
+@media (max-width: 900px) { .classes-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 500px) { .classes-grid { grid-template-columns: 1fr; } }
+.class-card {
+  background: var(--white);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+}
+.class-card-h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.class-num {
+  font-family: 'Rubik';
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: var(--primary-dark);
+}
+.class-teacher {
+  font-size: 0.82rem;
+  color: var(--text-light);
+  flex: 1;
+}
+.class-status-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+.class-status-dot.g { background: var(--tier-green); }
+.class-status-dot.y { background: var(--tier-yellow); }
+.class-status-dot.r { background: var(--tier-red); }
+.class-mini-dims {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+.class-dim-pill {
+  text-align: center;
+  font-family: 'Rubik';
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 5px 2px;
+  border-radius: 6px;
+}
+.class-dim-pill.g { background: rgba(91,192,168,.18); color: #2E6E5F; }
+.class-dim-pill.y { background: rgba(242,184,68,.2); color: #8a6817; }
+.class-dim-pill.r { background: rgba(200,90,59,.2); color: #8a3b25; }
+.class-meta {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+/* ===== LAUNCH SECTION ===== */
+.launch-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+@media (max-width: 800px) { .launch-grid { grid-template-columns: 1fr; } }
+.launch-card {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  padding: 24px 26px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+.launch-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+.lc-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.lc-icon {
+  width: 56px; height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+}
+.lc-icon.t { background: linear-gradient(135deg, #FCE6B4, #EDA8C0); }
+.lc-icon.s { background: linear-gradient(135deg, #D8CBED, #B49ED8); }
+.lc-icon.p { background: linear-gradient(135deg, #CFEFE3, #9CDDC6); color: white; }
+.lc-icon.m { background: linear-gradient(135deg, var(--primary-soft), var(--dim-emotion)); color: white; }
+.lc-title-block h3 {
+  font-size: 1.2rem;
+  color: var(--primary-dark);
+  margin-bottom: 4px;
+}
+.lc-tag {
+  display: inline-block;
+  background: var(--surface);
+  color: var(--text);
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  font-family: 'Rubik';
+}
+.lc-user {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  font-size: 0.86rem;
+}
+.lc-user .lc-user-label {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  font-family: 'Rubik';
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+.lc-user .lc-user-name {
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+.lc-user .lc-user-detail {
+  font-size: 0.78rem;
+  color: var(--text-light);
+  margin-top: 3px;
+}
+.lc-preview {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 14px;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  border-right: 3px solid var(--dim-emotion);
+}
+.lc-preview strong {
+  display: block;
+  color: var(--primary-dark);
+  margin-bottom: 4px;
+  font-family: 'Rubik';
+  font-size: 0.78rem;
+}
+.lc-cta {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  border: none;
+  padding: 13px 18px;
+  font-family: 'Rubik';
+  font-weight: 700;
+  font-size: 0.95rem;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  transition: all 0.18s;
+  margin-top: auto;
+}
+.lc-cta:hover { background: var(--primary-dark); transform: scale(1.02); }
+.lc-cta.alt { background: linear-gradient(135deg, var(--dim-emotion), #6E50A8); }
+.lc-cta.wa { background: linear-gradient(135deg, var(--whatsapp), #128C7E); }
+
+/* ===== WALKTHROUGH ===== */
+.walkthrough {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  padding: 28px 32px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+}
+.walkthrough h3 {
+  font-size: 1.25rem;
+  color: var(--primary-dark);
+  margin-bottom: 22px;
+}
+.wt-step {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 18px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+  align-items: start;
+}
+.wt-step:last-child { border-bottom: none; }
+.wt-num {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--dim-adjust), var(--dim-friend));
+  color: white;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Rubik';
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+.wt-body h4 {
+  font-size: 1rem;
+  color: var(--primary-dark);
+  margin-bottom: 5px;
+}
+.wt-body p {
+  color: var(--text-light);
+  margin-bottom: 8px;
+  font-size: 0.92rem;
+}
+.wt-action {
+  display: inline-block;
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 0.85rem;
+  text-decoration: none;
+  color: var(--primary-dark);
+  font-weight: 600;
+  border: 1px solid var(--border-strong);
+}
+.wt-action:hover { background: var(--primary-soft); border-color: var(--primary); }
+
+/* ===== FOOTER ===== */
+.footer-meta {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 50px;
+  line-height: 1.7;
+  padding: 24px;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+}
+.footer-meta strong { color: var(--primary-dark); }
+
+.note-banner {
+  background: rgba(46,125,140,.06);
+  border-right: 4px solid var(--primary);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.86rem;
+  color: var(--text);
+  margin: 16px 0;
+}
+.note-banner strong { color: var(--primary-dark); }
+
+</style>
+</head>
+<body>
+
+<!-- ===== TOP BAR ===== -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="tb-school">
+      <div class="tb-school-icon">🏫</div>
+      <div class="tb-school-info">
+        <h1>בית ספר יסודי "אבן ישראל" · ירושלים</h1>
+        <div class="sub">פיילוט מערכת 10 · 4 כיתות א' · ספטמבר 2026 — יוני 2027</div>
+      </div>
+    </div>
+    <div class="tb-status">
+      <div class="live-dot"></div>
+      <span>פיילוט פעיל</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CONTAINER ===== -->
+<div class="container">
+
+  <!-- HERO INTRO -->
+  <div class="hero-intro">
+    <div class="section-eyebrow">המערכת החיה</div>
+    <h2>🚀 פיילוט פעיל · שבוע 5 · 47 פולסים נמסרו</h2>
+    <p>זו תצוגה אמיתית של המערכת באמצע הפיילוט. נתוני הדמו למטה משקפים מה את תראי אחרי 5 שבועות של פעילות — 4 מחנכות, 20 ילדים, 47 פולסים, 3 התראות פעילות. בחרי תפקיד למטה לחיווי איך נראית הכניסה שלו, או עברי על ה-walkthrough הצעד-אחר-צעד.</p>
+    <a class="guide-link" href="pulse-system-handoff.html">📘 המדריך המלא כאן →</a>
+  </div>
+
+  <!-- STATS ROW -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">פולסים השבוע</div>
+      <div class="stat-value">47</div>
+      <div class="stat-trend up">↑ +12 ממחזור קודם</div>
+    </div>
+    <div class="stat-card s2">
+      <div class="stat-label">השלמה ממוצעת</div>
+      <div class="stat-value">87%</div>
+      <div class="stat-trend">יעד: 85% — עוקפים</div>
+    </div>
+    <div class="stat-card s3">
+      <div class="stat-label">פעולות בוצעו</div>
+      <div class="stat-value">19</div>
+      <div class="stat-trend">68% מ-28 התראות</div>
+    </div>
+    <div class="stat-card s4">
+      <div class="stat-label">התראות פעילות</div>
+      <div class="stat-value">3</div>
+      <div class="stat-trend down">1 דחופה · 2 לתמיכה</div>
+    </div>
+  </div>
+
+  <!-- ===== 4 CLASSES ===== -->
+  <div class="section">
+    <div class="section-eyebrow">תמונה כיתתית</div>
+    <h2 class="section-h">4 כיתות א'</h2>
+    <p class="section-lead">לחיצה על כיתה תפתח את דשבורד המחנכת המתאימה. הפסים מציגים את ציון 4 המימדים (הסתגלות · חברות · רגש · שמחה ללמוד).</p>
+
+    <div class="classes-grid">
+      <a href="pulse-dashboard.html" target="_blank" style="text-decoration:none; color:inherit;">
+      <div class="class-card">
+        <div class="class-card-h">
+          <div class="class-num">א'1</div>
+          <div class="class-teacher">רינת לוי</div>
+          <div class="class-status-dot g"></div>
+        </div>
+        <div class="class-mini-dims">
+          <div class="class-dim-pill g">4.2</div>
+          <div class="class-dim-pill g">4.0</div>
+          <div class="class-dim-pill y">3.4</div>
+          <div class="class-dim-pill g">4.1</div>
+        </div>
+        <div class="class-meta">25 ילדים · 23 השלימו פולס · פעולה אחת בוצעה</div>
+      </div>
+      </a>
+
+      <a href="pulse-dashboard.html" target="_blank" style="text-decoration:none; color:inherit;">
+      <div class="class-card">
+        <div class="class-card-h">
+          <div class="class-num">א'2</div>
+          <div class="class-teacher">לירון גולן</div>
+          <div class="class-status-dot r"></div>
+        </div>
+        <div class="class-mini-dims">
+          <div class="class-dim-pill y">3.5</div>
+          <div class="class-dim-pill y">3.6</div>
+          <div class="class-dim-pill r">2.8</div>
+          <div class="class-dim-pill r">2.6</div>
+        </div>
+        <div class="class-meta">25 ילדים · 24 השלימו · ⚠️ 2 התראות פעילות</div>
+      </div>
+      </a>
+
+      <a href="pulse-dashboard.html" target="_blank" style="text-decoration:none; color:inherit;">
+      <div class="class-card">
+        <div class="class-card-h">
+          <div class="class-num">א'3</div>
+          <div class="class-teacher">אופיר שטיינברג</div>
+          <div class="class-status-dot g"></div>
+        </div>
+        <div class="class-mini-dims">
+          <div class="class-dim-pill g">4.1</div>
+          <div class="class-dim-pill g">4.3</div>
+          <div class="class-dim-pill g">4.0</div>
+          <div class="class-dim-pill y">3.5</div>
+        </div>
+        <div class="class-meta">25 ילדים · 25 השלימו · ההתערבות "buddy" עובדת ✓</div>
+      </div>
+      </a>
+
+      <a href="pulse-dashboard.html" target="_blank" style="text-decoration:none; color:inherit;">
+      <div class="class-card">
+        <div class="class-card-h">
+          <div class="class-num">א'4</div>
+          <div class="class-teacher">עמית אביטבול</div>
+          <div class="class-status-dot y"></div>
+        </div>
+        <div class="class-mini-dims">
+          <div class="class-dim-pill y">3.7</div>
+          <div class="class-dim-pill g">4.2</div>
+          <div class="class-dim-pill y">3.3</div>
+          <div class="class-dim-pill y">3.4</div>
+        </div>
+        <div class="class-meta">25 ילדים · 22 השלימו · הסתגלות בירידה קלה</div>
+      </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- ===== TWO COLUMNS: ACTIVITY + ALERTS ===== -->
+  <div class="section-grid">
+
+    <!-- ACTIVITY FEED -->
+    <div class="activity">
+      <div class="activity-h">
+        <h3>📋 פעילות אחרונה</h3>
+        <span class="activity-meta">8 אירועים אחרונים · עדכון 09:24</span>
+      </div>
+      <div class="activity-list">
+
+        <div class="act-item">
+          <div class="act-icon s">🐙</div>
+          <div>
+            <div class="act-title">דניאל (א'1) ביצע פולס תלמיד.ה <span class="act-badge green">🟢 טוב</span></div>
+            <div class="act-sub">4 מתוך 4 שאלות הושלמו · 87 שניות</div>
+          </div>
+          <div class="act-time">היום 09:15</div>
+        </div>
+
+        <div class="act-item">
+          <div class="act-icon s">🐙</div>
+          <div>
+            <div class="act-title">מאיה (א'2) ביצעה פולס תלמיד.ה <span class="act-badge red">🔴 דחוף · חברות</span></div>
+            <div class="act-sub">פולס 3 רצוף עם חברות נמוכה — הופעלה התראה ליועצת</div>
+          </div>
+          <div class="act-time">היום 09:18</div>
+        </div>
+
+        <div class="act-item">
+          <div class="act-icon t">👩‍🏫</div>
+          <div>
+            <div class="act-title">רינת (א'1) השלימה טופס דירוג <span class="act-badge green">25/25</span></div>
+            <div class="act-sub">8 פריטים · 0 חסרים · 18 דקות סה"כ</div>
+          </div>
+          <div class="act-time">היום 08:00</div>
+        </div>
+
+        <div class="act-item">
+          <div class="act-icon p">📱</div>
+          <div>
+            <div class="act-title">אמא של תום (א'3) השלימה פולס חודשי <span class="act-badge yellow">🟡 דגל</span></div>
+            <div class="act-sub">תלונות גופניות בבוקר — הופנה ליועצת בית-הספר</div>
+          </div>
+          <div class="act-time">אתמול 14:20</div>
+        </div>
+
+        <div class="act-item">
+          <div class="act-icon p">📱</div>
+          <div>
+            <div class="act-title">אבא של ליאם (א'4) השלים פולס חודשי <span class="act-badge green">🟢 חיובי</span></div>
+            <div class="act-sub">"השבוע ליאם סיפר על חבר חדש" · אופציונלי</div>
+          </div>
+          <div class="act-time">אתמול 11:05</div>
+        </div>
+
+        <div class="act-item">
+          <div class="act-icon m">🏫</div>
+          <div>
+            <div class="act-title">המנהלת ייצאה PDF לטליה (מנח״י)</div>
+            <div class="act-sub">סיכום מאי 2027 · אגרגציה אנונימית</div>
+          </div>
+          <div class="act-time">אתמול 07:30</div>
+        </div>
+
+        <div class="act-item">
+          <div class="act-icon t">👩‍🏫</div>
+          <div>
+            <div class="act-title">עמית (א'4) סימנה "✓ עשיתי" על המלצה</div>
+            <div class="act-sub">"לוח יום ויזואלי" — הותקן מאתמול</div>
+          </div>
+          <div class="act-time">לפני יומיים</div>
+        </div>
+
+        <div class="act-item">
+          <div class="act-icon s">🐙</div>
+          <div>
+            <div class="act-title">נועה (א'1) עלתה במימד חברות 🟢 ↑</div>
+            <div class="act-sub">3.2 → 4.1 · אחרי 4 שבועות של "חבר.ה ליום"</div>
+          </div>
+          <div class="act-time">לפני יומיים</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ALERTS -->
+    <div class="alerts">
+      <h3>🚨 התראות פעילות</h3>
+      <div class="alert-list">
+
+        <div class="alert-item high">
+          <div class="alert-row1">
+            <div class="alert-title">מאיה ד. (א'2) — חברות 3 פולסים נמוך</div>
+            <div class="alert-time">היום</div>
+          </div>
+          <div class="alert-desc">חברות 1.7/5 בשלושת הפולסים האחרונים. דירוג מורה תואם. דיווח הורה: "אין שמות מהכיתה בשיחות בית". 3 מקורות מסכימים — הופעלה פנייה ליועצת.</div>
+          <button class="alert-action">פתחי בדשבורד יועצת →</button>
+        </div>
+
+        <div class="alert-item">
+          <div class="alert-row1">
+            <div class="alert-title">א'2 — שמחה ללמוד ירדה ב-12% השבוע</div>
+            <div class="alert-time">לפני 2 ימים</div>
+          </div>
+          <div class="alert-desc">7 מתוך 25 ילדים דיווחו "אין כיף בלמידה" — מתחיל ביום שלישי, אחרי שיעור מתמטיקה. מומלץ דיון מורה + רכזת שכבה.</div>
+          <button class="alert-action">פעולה מוצעת: "מפת שעמום" →</button>
+        </div>
+
+        <div class="alert-item">
+          <div class="alert-row1">
+            <div class="alert-title">תום ש. (א'3) — תלונות גופניות בבוקר</div>
+            <div class="alert-time">אתמול</div>
+          </div>
+          <div class="alert-desc">אמא של תום סימנה "כן" בשאלה 4 + פירטה: "כאבי בטן ביום ראשון בבוקר, פעמיים השבוע". מצטרף לדגל הסתגלות בפולס תלמיד.ה.</div>
+          <button class="alert-action">פתחי תיק ילד.ה →</button>
+        </div>
+
+      </div>
+
+      <div class="note-banner" style="margin-top:18px;">
+        <strong>תזכורת חוק היסוד:</strong> כל ההתראות הן <strong>איתות</strong>, לא אבחנה. כל החלטה דורשת תצפית או יועצת.
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== LAUNCH SECTION ===== -->
+  <div class="section">
+    <div class="section-eyebrow">4 כניסות · 1 לחיצה</div>
+    <h2 class="section-h">בחרי תפקיד לכניסה</h2>
+    <p class="section-lead">כל כפתור פותח את המסך האמיתי של אותו תפקיד — כאילו את אותו אדם ברגע שהוא נכנס למערכת.</p>
+
+    <div class="launch-grid">
+
+      <!-- TEACHER -->
+      <div class="launch-card">
+        <div class="lc-head">
+          <div class="lc-icon t">👩‍🏫</div>
+          <div class="lc-title-block">
+            <h3>כניסת המחנכת</h3>
+            <span class="lc-tag">דשבורד יומי</span>
+          </div>
+        </div>
+        <div class="lc-user">
+          <div class="lc-user-label">משתמשת מחוברת</div>
+          <div class="lc-user-name">רינת לוי</div>
+          <div class="lc-user-detail">מחנכת כיתה א'1 · 25 ילדים · 12 שבועות בפיילוט</div>
+        </div>
+        <div class="lc-preview">
+          <strong>מה תראי ברגע הראשון?</strong>
+          תמונת מצב הכיתה השבוע · 4 פסי מימדים עם חיצי מגמה · גרף 4 שבועות · פעולה מומלצת אחת ליום · נועה עלתה — כדאי לציין במעגל הבוקר.
+        </div>
+        <a class="lc-cta" href="pulse-dashboard.html" target="_blank">פתחי דשבורד מחנכת ←</a>
+      </div>
+
+      <!-- STUDENT -->
+      <div class="launch-card">
+        <div class="lc-head">
+          <div class="lc-icon s">🐙</div>
+          <div class="lc-title-block">
+            <h3>כניסת התלמיד.ה</h3>
+            <span class="lc-tag">משחק 60-90 שנ'</span>
+          </div>
+        </div>
+        <div class="lc-user">
+          <div class="lc-user-label">תלמיד מחובר</div>
+          <div class="lc-user-name">דניאל כהן</div>
+          <div class="lc-user-detail">כיתה א'1 · אמוג'י אישי 😊 · 5 פולסים השלים</div>
+        </div>
+        <div class="lc-preview">
+          <strong>איך זה מתחיל?</strong>
+          המורה רינת מקישה קוד פתיחה · מעבירה למכשיר לדניאל · הוא לוחץ על השם שלו ברשימה · נוני קופץ ושואל. ללא הקלדה, אודיו אנושי.
+        </div>
+        <a class="lc-cta alt" href="pulse-questionnaire.html" target="_blank">פתחי פולס תלמיד.ה ←</a>
+      </div>
+
+      <!-- PARENT -->
+      <div class="launch-card">
+        <div class="lc-head">
+          <div class="lc-icon p">📱</div>
+          <div class="lc-title-block">
+            <h3>כניסת ההורה</h3>
+            <span class="lc-tag">ווטסאפ · 3 דק'</span>
+          </div>
+        </div>
+        <div class="lc-user">
+          <div class="lc-user-label">הורה מחוברת</div>
+          <div class="lc-user-name">אמא של דניאל כהן</div>
+          <div class="lc-user-detail">פולס חודשי · יוני 2027 · נשלח 8.6 ב-7:15</div>
+        </div>
+        <div class="lc-preview">
+          <strong>ראייה מהירה:</strong>
+          הקישור פותח את הטופס עם "דניאל" כבר ממולא ב-URL. בלי התחברות, בלי סיסמה — 5 שאלות + טקסט חופשי.
+        </div>
+        <a class="lc-cta wa" href="pulse-parent-monthly.html?child=דניאל" target="_blank">פתחי פולס הורה ←</a>
+      </div>
+
+      <!-- PRINCIPAL -->
+      <div class="launch-card">
+        <div class="lc-head">
+          <div class="lc-icon m">🏫</div>
+          <div class="lc-title-block">
+            <h3>כניסת המנהלת</h3>
+            <span class="lc-tag">5 ווידג'טים</span>
+          </div>
+        </div>
+        <div class="lc-user">
+          <div class="lc-user-label">מנהלת מחוברת</div>
+          <div class="lc-user-name">ד״ר חנה מזרחי</div>
+          <div class="lc-user-detail">מנהלת בית-הספר · 4 כיתות א' תחת אחריותה</div>
+        </div>
+        <div class="lc-preview">
+          <strong>בלי תשובות פר ילד.ה:</strong>
+          תמונה כוללת ב-1-2 דקות · מצב כל 4 הכיתות · מי זז · 3 התראות פעילות · פערים בין חינוך רגיל לשילוב · ייצוא PDF חודשי לטליה.
+        </div>
+        <a class="lc-cta alt" href="pulse-principal-dashboard.html" target="_blank">פתחי דשבורד מנהלת ←</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== TALIA / ADMIN ===== -->
+  <div class="section">
+    <div class="section-eyebrow">לטליה · מנח״י</div>
+    <h2 class="section-h">לבקרה ולחקירה — מסך הניהול</h2>
+    <p class="section-lead">מסך מיוחד לטליה / רכזת חומש. מאגר כל הפולסים שנמסרו · תובנות אוטומטיות · מטריצת התרחישים → התערבויות. לבדיקת איכות, מעקב מערכתי, ייצוא דוחות.</p>
+
+    <div class="launch-card" style="max-width: 720px; margin: 0 auto;">
+      <div class="lc-head">
+        <div class="lc-icon m" style="background:linear-gradient(135deg, var(--primary-dark), var(--dim-emotion));">⚙️</div>
+        <div class="lc-title-block">
+          <h3>מסך הניהול</h3>
+          <span class="lc-tag">לטליה / מנהלת מערכת</span>
+        </div>
+      </div>
+      <div class="lc-user">
+        <div class="lc-user-label">משתמשת מחוברת</div>
+        <div class="lc-user-name">טליה כהן · רכזת חומש מנח״י</div>
+        <div class="lc-user-detail">גישה לכל 4 בתי-הספר בפיילוט · נתונים אנונימיים בלבד</div>
+      </div>
+      <div class="lc-preview">
+        <strong>3 טאבים זמינים:</strong>
+        <strong style="margin-top:10px;">מאגר פולסים</strong> — 47 פולסים השבוע, סינון פר קהל יעד · <strong style="margin-top:6px;">תובנות</strong> — 6 תובנות אוטומטיות פעילות · <strong style="margin-top:6px;">תרחישים → התערבויות</strong> — 14 תרחישים עם 50 מתכוני התערבות.
+      </div>
+      <a class="lc-cta" href="pulse-admin-mockup.html" target="_blank">פתחי מסך הניהול ←</a>
+    </div>
+  </div>
+
+  <!-- ===== WALKTHROUGH ===== -->
+  <div class="section">
+    <div class="section-eyebrow">צעד אחר צעד</div>
+    <h2 class="section-h">איך להתחיל פיילוט מחר בבוקר</h2>
+    <p class="section-lead">המנהלת והצוות פותחים את המערכת. הנה הסדר מהשלב הראשון. כל צעד מקשר למסך הרלוונטי כדי שתוכלי לעבור בעצמך.</p>
+
+    <div class="walkthrough">
+
+      <div class="wt-step">
+        <div class="wt-num">1</div>
+        <div class="wt-body">
+          <h4>המנהלת נכנסת ראשונה</h4>
+          <p>מקבלת אימייל הזמנה ממיטל / אימפקט.OS · קובעת סיסמה · ממלאת פרטי בית-הספר.</p>
+          <a class="wt-action" href="pulse-onboarding-mockup.html#tab-principal" target="_blank">פתחי תהליך הזמנה →</a>
+        </div>
+      </div>
+
+      <div class="wt-step">
+        <div class="wt-num">2</div>
+        <div class="wt-body">
+          <h4>מזמינה את 4 המחנכות</h4>
+          <p>4 אימיילים · כל מחנכת קובעת סיסמה · ממלאת פרטי הכיתה (קוד פתיחה כמו DOLPHIN-7) · מעלה רשימת ילדים + אמוג'י.</p>
+          <a class="wt-action" href="pulse-onboarding-mockup.html#tab-teacher" target="_blank">פתחי הזמנת מחנכת →</a>
+        </div>
+      </div>
+
+      <div class="wt-step">
+        <div class="wt-num">3</div>
+        <div class="wt-body">
+          <h4>הסכמת הורים</h4>
+          <p>טופס הסכמה ייעודי נשלח להורים דרך מערכת בית-הספר. הורים שאינם חתומים — ילדיהם לא משתתפים, ללא פגיעה.</p>
+          <a class="wt-action" href="parent-consent-template.md" target="_blank">פתחי טופס הסכמה →</a>
+        </div>
+      </div>
+
+      <div class="wt-step">
+        <div class="wt-num">4</div>
+        <div class="wt-body">
+          <h4>פולס ראשון של תלמיד.ה — יום שני בבוקר</h4>
+          <p>המחנכת פותחת את הפולס במכשיר (טאבלט / נייד). מקישה קוד פתיחה. הילדים, בתורם, ניגשים. תוך 15-20 דקות הכיתה סיימה.</p>
+          <a class="wt-action" href="pulse-questionnaire.html" target="_blank">פתחי פולס תלמיד.ה →</a>
+        </div>
+      </div>
+
+      <div class="wt-step">
+        <div class="wt-num">5</div>
+        <div class="wt-body">
+          <h4>המחנכת ממלאת טופס דירוג</h4>
+          <p>באותו שבוע, 8 פריטים על 25 ילדים. ~21 דקות במנגנון "פריט-פר-כיתה" שמונע הטיה.</p>
+          <a class="wt-action" href="pulse-teacher-form-mockup.html" target="_blank">פתחי טופס דירוג →</a>
+        </div>
+      </div>
+
+      <div class="wt-step">
+        <div class="wt-num">6</div>
+        <div class="wt-body">
+          <h4>הדשבורד נטען עם הנתונים</h4>
+          <p>בבוקר שאחרי — המחנכת פותחת את הדשבורד. רואה תמונת מצב + פעולה אחת מומלצת ליום. לוחצת "✓ עשיתי" כשמבצעת.</p>
+          <a class="wt-action" href="pulse-dashboard.html" target="_blank">פתחי דשבורד →</a>
+        </div>
+      </div>
+
+      <div class="wt-step">
+        <div class="wt-num">7</div>
+        <div class="wt-body">
+          <h4>המנהלת רואה תמונה רחבה</h4>
+          <p>אחרי הפולס הראשון של כל 4 הכיתות — דשבורד מלא עם 5 ווידג'טים. מצב כללי בית-ספרי, מפת הכיתות, מי זז.</p>
+          <a class="wt-action" href="pulse-principal-dashboard.html" target="_blank">פתחי דשבורד מנהלת →</a>
+        </div>
+      </div>
+
+      <div class="wt-step">
+        <div class="wt-num">8</div>
+        <div class="wt-body">
+          <h4>הורים מצטרפים בחודש הראשון של גל 2</h4>
+          <p>אחרי 4-6 שבועות של פיילוט נטו תלמידים+מחנכת, מפעילים ערוץ ההורים. המחנכת שולחת לקבוצת ההורים לינק ווטסאפ עם שם הילד.ה האישי.</p>
+          <a class="wt-action" href="pulse-parent-monthly.html?child=דניאל" target="_blank">פתחי פולס הורה →</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== FOOTER ===== -->
+  <div class="footer-meta">
+    <strong>מערכת 10 · פולס א'-ב' · המערכת החיה</strong><br>
+    אימפקט.OS · מיטל פלג · v4 · 12.6.2026<br>
+    כל נתוני הדמו בעמוד הזה הם דוגמה להמחשה — לא נתונים אמיתיים של ילדים אמיתיים. שמות המחנכות הם של צוות הפיילוט (לירון גולן, אופיר שטיינברג, עמית אביטבול), שמות התלמידים והמנהלת הם בדויים.
+  </div>
+
+</div>
+
+</body>
+</html>
