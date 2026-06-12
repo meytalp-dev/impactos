@@ -770,7 +770,11 @@
   function cardHtml(item) {
     const st = state[item._id]?.status || '';
     const note = state[item._id]?.note || '';
-    const url = ensureUrl(item.website);
+    // Prefer the workflow-discovered website if original data was empty
+    const url = ensureUrl(item.website || item._found_website || '');
+    const applyUrl = item._active_call_url || item._found_apply_url || '';
+    const email = item.email || item._found_email || '';
+    const phone = item.phone || item._found_phone || '';
     const desc = item.description || item.purpose || '';
     const longDesc = desc.length > 180;
     const isDup = item._is_duplicate;
@@ -795,18 +799,18 @@
       ${desc ? `<p class="desc ${longDesc ? 'collapsed' : ''}">${escape(desc)}</p>${longDesc ? `<button class="expand-btn" data-action="expand">הצג עוד ▾</button>` : ''}` : ''}
 
       <div class="links">
-        ${item._active_call_url ? `<a class="link callto" href="${escape(ensureUrl(item._active_call_url))}" target="_blank" rel="noopener noreferrer">🟢 דף הגשה</a>` : ''}
+        ${applyUrl ? `<a class="link callto" href="${escape(ensureUrl(applyUrl))}" target="_blank" rel="noopener noreferrer">🟢 דף הגשה</a>` : ''}
         ${url ? `<a class="link primary" href="${escape(url)}" target="_blank" rel="noopener noreferrer">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-          פתח אתר
+          פתח אתר${item._found_website && !item.website ? ' (נמצא ע״י קלוד)' : ''}
         </a>` : ''}
-        ${item._evidence_url && item._evidence_url !== item._active_call_url && item._evidence_url !== item.website ? `<a class="link" href="${escape(ensureUrl(item._evidence_url))}" target="_blank" rel="noopener noreferrer">🔗 ראיה</a>` : ''}
+        ${item._evidence_url && item._evidence_url !== applyUrl && item._evidence_url !== item.website ? `<a class="link" href="${escape(ensureUrl(item._evidence_url))}" target="_blank" rel="noopener noreferrer">🔗 ראיה</a>` : ''}
         <a class="link search" href="${googleSearchUrl(item.name)}" target="_blank" rel="noopener noreferrer">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           חיפוש בגוגל
         </a>
-        ${item.phone ? `<a class="link" href="tel:${escape(item.phone.replace(/\s/g,''))}">📞 ${escape(item.phone)}</a>` : ''}
-        ${item.email ? `<a class="link" href="mailto:${escape(item.email)}">✉️ ${escape(item.email)}</a>` : ''}
+        ${phone ? `<a class="link" href="tel:${escape(phone.replace(/\s/g,''))}">📞 ${escape(phone)}</a>` : ''}
+        ${email ? `<a class="link" href="mailto:${escape(email)}">✉️ ${escape(email)}</a>` : ''}
       </div>
 
       <div class="details">
