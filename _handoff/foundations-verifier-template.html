@@ -322,6 +322,64 @@
   }
   .why.from-web { border-right-color: #8b5cf6; }
 
+  .auto-note {
+    margin: 6px 0 10px;
+    padding: 8px 10px;
+    background: #fff7ed;
+    border-right: 3px solid #f97316;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #7c2d12;
+    line-height: 1.5;
+    word-break: break-word;
+  }
+  .auto-note .label {
+    font-weight: 700;
+    color: #9a3412;
+    margin-left: 4px;
+  }
+
+  .banner {
+    background: linear-gradient(135deg, #f0fdfa, #ecfeff);
+    border: 1px solid #99f6e4;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .banner-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #115e59;
+  }
+  .banner-body {
+    font-size: 13px;
+    color: var(--ink-2);
+    line-height: 1.5;
+  }
+  .banner-body b { color: var(--ink); }
+  .banner-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .banner-actions button {
+    height: 40px;
+    padding: 0 14px;
+    border-radius: 10px;
+    border: 1px solid #14b8a6;
+    background: #fff;
+    color: #115e59;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .banner-actions button.primary { background: var(--teal); color: #fff; }
+  .banner-actions button:active { transform: scale(0.97); }
+
   .details {
     border-top: 1px dashed var(--line);
     margin-top: 10px;
@@ -537,6 +595,17 @@
   </div>
 </header>
 
+<div class="list" style="padding-bottom:0">
+  <div id="auto-banner" class="banner" style="display:none">
+    <div class="banner-title">🤖 יש לי המלצות אוטומטיות</div>
+    <div class="banner-body" id="auto-banner-body"></div>
+    <div class="banner-actions">
+      <button class="primary" id="auto-apply-all">החל הכל</button>
+      <button id="auto-apply-rejects">החל רק דחיות אוטומטיות</button>
+      <button id="auto-dismiss">לא, אעבור ידנית</button>
+    </div>
+  </div>
+</div>
 <main class="list" id="list"></main>
 
 <div class="toast" id="toast" role="status" aria-live="polite">
@@ -545,11 +614,13 @@
 </div>
 
 <nav class="bottom-bar">
+  <button id="import-json" title="ייבוא JSON של החלטות קודמות">📥 ייבוא</button>
   <button id="export-csv">📊 CSV</button>
-  <button id="export-approved" class="primary">⭐ אומתו בלבד</button>
+  <button id="export-approved" class="primary">⭐ אומתו</button>
   <button id="export-claude" title="ייצוא JSON לקלוד קוד">🤖 לקלוד</button>
   <button id="reset" title="אפס">↺</button>
 </nav>
+<input type="file" id="import-file" accept=".json,.csv" style="display:none">
 
 <script id="data" type="application/json">__DATA__</script>
 
@@ -720,6 +791,7 @@
         ${st === 'review'   ? `<span class="badge status-review">🔬 לבדוק</span>` : ''}
       </div>
       ${item._kind_reason ? `<div class="why ${item._kind_source === 'web_research' ? 'from-web' : ''}">${escape(item._kind_reason)}</div>` : ''}
+      ${item._auto_note && !st ? `<div class="auto-note"><span class="label">🤖 בדיקה אוטומטית:</span>${escape(item._auto_note)}${item._auto_status ? ` <b>· המלצה: ${item._auto_status === 'rejected' ? 'דחיה' : 'בדיקה ידנית'}</b>` : ''}</div>` : ''}
       ${desc ? `<p class="desc ${longDesc ? 'collapsed' : ''}">${escape(desc)}</p>${longDesc ? `<button class="expand-btn" data-action="expand">הצג עוד ▾</button>` : ''}` : ''}
 
       <div class="links">
@@ -1029,6 +1101,130 @@
     setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 100);
   }
 
+  // ---- Auto-suggestions banner ----
+  function updateAutoBanner() {
+    const banner = document.getElementById('auto-banner');
+    if (sessionStorage.getItem('autoBannerDismissed') === '1') {
+      banner.style.display = 'none';
+      return;
+    }
+    let reviewCount = 0, rejectCount = 0;
+    for (const r of RAW) {
+      if (state[r._id]?.status) continue; // already decided
+      if (r._auto_status === 'review') reviewCount++;
+      else if (r._auto_status === 'rejected') rejectCount++;
+    }
+    if (reviewCount + rejectCount === 0) {
+      banner.style.display = 'none';
+      return;
+    }
+    document.getElementById('auto-banner-body').innerHTML =
+      `סרקתי את הקרנות שעדיין לא בדקת. מצאתי <b>${rejectCount}</b> שאין להן דרך ליצור קשר בכלל (המלצה: דחיה), ו<b>${reviewCount}</b> עם בעיות נתונים שכדאי לבדוק (אתר לא נטען, איש קשר עם כתובת במקום שם, פורמט אימייל חשוד וכד׳). הפעולות הללו ניתנות לביטול אחד־אחד.`;
+    banner.style.display = 'flex';
+  }
+
+  function applyAuto(statusesToApply) {
+    let n = 0;
+    for (const r of RAW) {
+      if (state[r._id]?.status) continue;
+      if (!statusesToApply.includes(r._auto_status)) continue;
+      state[r._id] = state[r._id] || {};
+      state[r._id].status = r._auto_status;
+      state[r._id].note = r._auto_note || '';
+      state[r._id].ts = Date.now();
+      state[r._id].auto = true;
+      n++;
+    }
+    saveState();
+    document.getElementById('auto-banner').style.display = 'none';
+    sessionStorage.setItem('autoBannerDismissed', '1');
+    render();
+    return n;
+  }
+
+  document.getElementById('auto-apply-all').addEventListener('click', () => {
+    const n = applyAuto(['review', 'rejected']);
+    alert(`הוחלו ${n} המלצות. אפשר לראות בפילטרים "🔬 לבדוק" ו"❌ נפסל".`);
+  });
+  document.getElementById('auto-apply-rejects').addEventListener('click', () => {
+    const n = applyAuto(['rejected']);
+    alert(`הוחלו ${n} דחיות. אפשר לראות בפילטר "❌ נפסל".`);
+  });
+  document.getElementById('auto-dismiss').addEventListener('click', () => {
+    document.getElementById('auto-banner').style.display = 'none';
+    sessionStorage.setItem('autoBannerDismissed', '1');
+  });
+
+  // ---- Import ----
+  document.getElementById('import-json').addEventListener('click', () => {
+    document.getElementById('import-file').click();
+  });
+  document.getElementById('import-file').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const text = await file.text();
+    let imported = 0;
+    try {
+      if (file.name.endsWith('.csv')) {
+        // CSV with columns: סטטוס, הערה, ..., שם, ...
+        const lines = text.split(/\r?\n/);
+        const headers = lines[0].replace(/^﻿/, '').split(',');
+        const sIdx = headers.indexOf('סטטוס');
+        const nIdx = headers.indexOf('הערה');
+        const nameIdx = headers.indexOf('שם');
+        const byName = {};
+        for (const r of RAW) byName[r.name] = r._id;
+        for (let i = 1; i < lines.length; i++) {
+          if (!lines[i].trim()) continue;
+          // simple CSV parse with quotes
+          const cells = [];
+          let cur = '', inQ = false;
+          for (let j = 0; j < lines[i].length; j++) {
+            const c = lines[i][j];
+            if (c === '"' && lines[i][j+1] === '"') { cur += '"'; j++; }
+            else if (c === '"') inQ = !inQ;
+            else if (c === ',' && !inQ) { cells.push(cur); cur = ''; }
+            else cur += c;
+          }
+          cells.push(cur);
+          const s = cells[sIdx]?.trim();
+          const note = cells[nIdx]?.trim();
+          const name = cells[nameIdx]?.trim();
+          if (!name || !s) continue;
+          const id = byName[name];
+          if (!id) continue;
+          state[id] = { status: s, note, ts: Date.now() };
+          imported++;
+        }
+      } else {
+        // JSON — either the export-claude format {decisions: [...]} or a state map {id: {...}}
+        const parsed = JSON.parse(text);
+        if (parsed.decisions && Array.isArray(parsed.decisions)) {
+          for (const d of parsed.decisions) {
+            if (d.id) {
+              state[d.id] = { status: d.status, note: d.note || '', ts: Date.now() };
+              imported++;
+            }
+          }
+        } else if (typeof parsed === 'object') {
+          for (const [id, v] of Object.entries(parsed)) {
+            if (v && (v.status || v.note)) {
+              state[id] = { status: v.status, note: v.note || '', ts: Date.now() };
+              imported++;
+            }
+          }
+        }
+      }
+      saveState();
+      render();
+      updateAutoBanner();
+      alert(`יובאו ${imported} החלטות.`);
+    } catch (err) {
+      alert('שגיאה בייבוא: ' + err.message);
+    }
+    e.target.value = '';
+  });
+
   document.getElementById('export-csv').addEventListener('click', () => exportCSV('all'));
   document.getElementById('export-approved').addEventListener('click', () => exportCSV('approved'));
   document.getElementById('export-claude').addEventListener('click', exportClaude);
@@ -1041,6 +1237,7 @@
   });
 
   render();
+  updateAutoBanner();
 })();
 </script>
 </body>
