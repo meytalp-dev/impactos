@@ -5,377 +5,529 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>פולס · דשבורד מחנכת · כיתה א׳</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&family=Rubik:wght@400;500;600;700;800&family=Assistant:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="pulse-core.css">
 <style>
+/* ═══════ הרחבות מסך — על בסיס pulse-core.css בלבד ═══════ */
 :root {
-  --dim-adjust: #F2B844;
-  --dim-friend: #E08FAF;
-  --dim-emotion: #8B6BC0;
-  --dim-joy: #5BC0A8;
-  --primary: #2E7D8C; --primary-dark: #1E5A66;
-  --tertiary: #8B3A4A;
-  --leaf: #4A9B7F;
-  --surface: #F5F0E8;
-  --surface-card: #F7F5F2;
-  --white: #FDFCFA;
-  --text: #2C2622;
-  --text-light: #6E6258;
-  --border: #EDE6D8;
-  --shadow-sm: 0 2px 8px rgba(44,38,34,.05);
-  --shadow-md: 0 6px 20px rgba(44,38,34,.08);
+  /* גוני "עומק" לטקסט פר ממד — נגזרים מהפסטלים של הליבה */
+  --dim-adjust-deep:  #97781F;
+  --dim-friend-deep:  #B05A77;
+  --dim-emotion-deep: #6E61B5;
+  --dim-joy-deep:     #2E8F86;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-  font-family: 'Heebo', sans-serif;
-  background: var(--surface);
-  color: var(--text);
-  line-height: 1.6;
-  min-height: 100vh;
-}
-h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
+html { direction: rtl; }
+body { font-family: "Rubik","Assistant","Heebo",Arial,sans-serif; }
 
 /* ═══════ TOP BAR ═══════ */
 .topbar {
   position: sticky; top: 0; z-index: 50;
-  background: rgba(245,240,232,.94);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(46,125,140,.08);
+  /* fallback מלא לדפדפנים בלי backdrop-filter */
+  background: #F7FBFA;
+  border-bottom: 1px solid rgba(82,189,181,.14);
   padding: 14px 24px;
   display: flex; align-items: center; justify-content: space-between;
   flex-wrap: wrap; gap: 12px;
 }
-.brand {
-  display: flex; align-items: center; gap: 10px;
+@supports ((backdrop-filter: blur(14px)) or (-webkit-backdrop-filter: blur(14px))) {
+  .topbar {
+    background: rgba(247,251,250,.78);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+  }
 }
-.brand-num {
-  width: 32px; height: 32px;
-  border-radius: 9px;
-  background: linear-gradient(135deg, var(--dim-adjust), var(--dim-friend));
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-mark {
+  width: 34px; height: 34px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, var(--aqua), var(--aqua-deep));
   color: #fff;
   display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-family: 'Rubik';
+  font-weight: 700; font-size: 1.05rem;
 }
-.brand-title {
-  font-family: 'Rubik'; font-weight: 800; font-size: 1rem;
-  color: var(--primary-dark);
-}
+.brand-title { font-weight: 700; font-size: 1rem; color: var(--ink); }
+.brand-sub { font-size: .72rem; color: var(--muted); margin-top: -2px; }
 .topbar-meta {
-  display: flex; align-items: center; gap: 12px;
-  font-size: 0.85rem; color: var(--text-light);
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  font-size: .85rem; color: var(--muted);
 }
 .class-select {
-  padding: 6px 14px;
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  background: var(--white);
-  font-family: 'Heebo';
-  font-size: 0.85rem;
-  color: var(--text);
+  padding: 8px 16px;
+  border: 1.5px solid var(--surface-soft);
+  border-radius: 12px;
+  background: var(--surface);
+  font-family: inherit;
+  font-size: .88rem;
+  color: var(--ink);
   cursor: pointer;
+  box-shadow: var(--shadow-card);
 }
 
 /* ═══════ CONTAINER ═══════ */
 .container {
-  max-width: 720px;
+  max-width: 860px;
   margin: 0 auto;
-  padding: 24px 20px 60px;
+  padding: 28px 20px 80px;
 }
 
-/* ═══════ HERO CARD ═══════ */
-.hero-card {
-  background: var(--white);
-  border-radius: 18px;
-  padding: 22px 24px;
-  box-shadow: var(--shadow-md);
+/* ═══════ HERO — כרטיס לבן עם שמש, מטא־שורה, ושני כפתורים רכים ═══════ */
+.hero {
   margin-bottom: 18px;
-  border-right: 6px solid var(--hero-color, var(--dim-adjust));
   position: relative;
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  padding: 26px 30px;
 }
-.hero-status {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 0.75rem; font-weight: 700;
-  padding: 4px 12px; border-radius: 999px;
-  background: rgba(0,0,0,.04);
-  color: var(--text);
-  margin-bottom: 10px;
+.hero-top {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap; margin-bottom: 4px;
 }
-.hero-status-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--hero-color, var(--dim-adjust));
+.hero-id { display: flex; align-items: center; gap: 14px; }
+.hero-sun {
+  flex: none;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: var(--sand);
+  color: #B98A2E;
+  display: flex; align-items: center; justify-content: center;
 }
+.hero h1 { font-size: 1.4rem; font-weight: 700; margin: 0; }
+.hero-date { font-size: .82rem; color: var(--muted); margin-top: 3px; }
+.hero-side { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.hero-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.btn-hero {
+  min-height: 44px;
+  padding: 8px 18px;
+  font-size: .86rem;
+  background: var(--surface-soft);
+  color: var(--ink);
+  text-decoration: none;
+}
+.btn-hero:hover { background: var(--mint); filter: none; }
 .hero-line {
-  font-size: 1.08rem;
-  line-height: 1.7;
-  font-weight: 500;
-  color: var(--text);
-  margin-bottom: 14px;
+  font-size: 1rem;
+  line-height: 1.8;
+  color: var(--ink);
+  margin: 14px 0 0;
+  max-width: 60ch;
 }
-.hero-line strong { color: var(--text); font-weight: 800; }
-.hero-action {
-  background: var(--leaf);
-  color: var(--white);
-  border: none;
-  padding: 10px 22px;
+.hero-line strong { font-weight: 700; }
+.hero-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+@media (max-width: 640px) {
+  .hero-side { align-items: flex-start; }
+  .hero-actions { justify-content: flex-start; }
+}
+
+/* ═══════ שורת 4 סטטיסטיקות — כרטיסים לבנים קומפקטיים עם צ'יפ אייקון פסטלי ═══════ */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 30px;
+}
+.stats-3 { grid-template-columns: repeat(3, 1fr); }
+.stat {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-card);
+}
+.stat-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.stat-num { font-weight: 700; font-size: 1.45rem; line-height: 1.2; color: var(--ink); }
+.stat-icon {
+  flex: none;
+  width: 34px; height: 34px;
+  border-radius: 11px;
+  display: flex; align-items: center; justify-content: center;
+}
+.si-peach    { background: var(--peach);    color: #A35B43; }
+.si-sky      { background: var(--sky);      color: #3D7C99; }
+.si-sand     { background: var(--sand);     color: #A07B33; }
+.si-mint     { background: var(--mint);     color: #3E8A63; }
+.si-lavender { background: var(--lavender); color: #6E61B5; }
+.stat-label { font-size: .76rem; color: var(--muted); margin-top: 6px; }
+@media (max-width: 640px) { .stats, .stats-3 { grid-template-columns: repeat(2, 1fr); } }
+
+/* ═══════ כותרות מקטע — עם צ'יפ אייקון קטן ═══════ */
+.section { margin-top: 34px; }
+.section-head { display: flex; align-items: center; gap: 10px; margin-bottom: 2px; }
+.section-icon {
+  flex: none;
+  width: 30px; height: 30px;
   border-radius: 10px;
-  font-family: 'Heebo';
-  font-weight: 700;
-  font-size: 0.92rem;
-  cursor: pointer;
-  display: inline-flex; align-items: center; gap: 6px;
-  transition: transform .15s, opacity .25s;
+  display: flex; align-items: center; justify-content: center;
 }
-.hero-action:hover { transform: translateY(-1px); }
-.hero-action.done {
-  background: rgba(74,155,127,.18);
-  color: var(--leaf);
+.section-title { font-size: 1.08rem; font-weight: 700; color: var(--ink); margin: 0 0 2px; }
+.section-head .section-title { margin: 0; }
+.section-micro { color: var(--muted); font-size: .86rem; margin: 0 0 14px; }
+
+/* ═══════ "מה כדאי לשים לב אליו היום" — שני כרטיסים רכים זה לצד זה ═══════ */
+.actions-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.action-card {
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+}
+.action-card.tint-mint { background: var(--mint); }
+.action-card.tint-sky  { background: var(--sky);  }
+.action-card-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; flex-wrap: wrap; margin-bottom: 8px;
+}
+.action-who { font-weight: 700; font-size: 1.02rem; }
+.action-dim { font-size: .78rem; font-weight: 600; }
+.action-why { color: var(--ink); font-size: .92rem; margin: 0 0 6px; line-height: 1.7; }
+.action-what {
+  background: rgba(255,255,255,.65);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  font-size: .9rem;
+  line-height: 1.7;
+  margin: 8px 0 14px;
+}
+.action-what strong { font-weight: 600; }
+.btn-done {
+  min-height: 44px;
+  padding: 8px 20px;
+  font-size: .9rem;
+  align-self: flex-start;
+  margin-top: auto;
+  background: var(--surface);
+  color: var(--ink);
+}
+.btn-done:hover { filter: brightness(.98); }
+.btn-done.done {
+  background: rgba(255,255,255,.85);
+  color: var(--ink);
+}
+.actions-empty {
+  background: var(--mint);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  font-size: .95rem;
+  line-height: 1.7;
 }
 
-/* ═══════ DIMENSIONS BARS ═══════ */
-.section-title {
-  font-size: 0.85rem; font-weight: 700;
-  color: var(--text-light);
-  margin: 22px 0 10px;
-  letter-spacing: 0.04em;
-  padding-right: 4px;
-}
-
+/* ═══════ אקלים כיתה — 4 פסי ממד ═══════ */
 .dim-list {
-  background: var(--white);
-  border-radius: 18px;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-card);
 }
 .dim-row {
   display: grid;
-  grid-template-columns: 110px 1fr 60px 60px;
+  grid-template-columns: 120px 1fr 48px 90px;
   align-items: center;
-  gap: 10px;
-  padding: 14px 18px;
-  border-bottom: 1px solid rgba(0,0,0,.04);
+  gap: 12px;
+  padding: 17px 24px;
+  border-bottom: 1px solid var(--surface-soft);
 }
 .dim-row:last-child { border-bottom: none; }
-.dim-name {
-  font-weight: 700;
-  font-size: 0.92rem;
-  font-family: 'Heebo';
-}
+.dim-name { font-weight: 600; font-size: .94rem; display: flex; align-items: center; gap: 8px; }
+.dim-dot { flex: none; width: 10px; height: 10px; border-radius: 50%; }
 .dim-bar {
-  height: 10px;
-  background: rgba(0,0,0,.05);
-  border-radius: 5px;
+  height: 8px;
+  border-radius: 999px;
   position: relative;
   overflow: hidden;
 }
 .dim-bar-fill {
   position: absolute; top: 0; right: 0;
   height: 100%;
-  border-radius: 5px;
+  border-radius: 999px;
   transition: width .8s ease-out;
 }
-.dim-score {
-  font-family: 'Rubik';
-  font-weight: 800;
-  font-size: 1.1rem;
-  text-align: center;
-}
-.dim-trend {
-  text-align: center;
-  font-size: 1rem;
-  font-weight: 700;
-}
-.trend-up { color: var(--leaf); }
-.trend-down { color: var(--tertiary); }
-.trend-flat { color: var(--text-light); }
+.dim-score { font-weight: 700; font-size: 1.05rem; text-align: center; }
+.dim-trend { font-size: .8rem; font-weight: 600; text-align: center; white-space: nowrap; }
+.trend-up   { color: var(--ok); }
+.trend-down { color: #C2705C; }
+.trend-flat { color: var(--muted); }
 
-/* ═══════ MINI TREND ═══════ */
 .trend-card {
-  background: var(--white);
-  border-radius: 18px;
-  padding: 18px 22px;
-  box-shadow: var(--shadow-sm);
-  margin-top: 16px;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px 34px;
+  box-shadow: var(--shadow-card);
+  margin-top: 14px;
 }
-.trend-title {
-  font-size: 0.85rem;
-  color: var(--text-light);
-  font-weight: 600;
-  margin-bottom: 12px;
-}
-.trend-chart {
-  display: flex; align-items: flex-end; gap: 10px;
-  height: 70px;
-}
+.trend-title { font-size: .86rem; color: var(--muted); font-weight: 500; margin-bottom: 14px; }
+.trend-chart { display: flex; align-items: flex-end; gap: 12px; height: 70px; }
 .trend-bar {
   flex: 1; min-width: 30px;
-  background: linear-gradient(180deg, var(--dim-adjust), var(--dim-friend));
+  background: linear-gradient(180deg, var(--aqua), var(--aqua-deep));
   border-radius: 6px 6px 0 0;
   position: relative;
-  opacity: 0.65;
+  opacity: .55;
   transition: opacity .2s;
 }
 .trend-bar:last-child { opacity: 1; }
 .trend-bar::after {
   content: attr(data-week);
-  position: absolute; bottom: -22px; left: 0; right: 0;
+  position: absolute; bottom: -24px; left: 0; right: 0;
   text-align: center;
-  font-size: 0.7rem;
-  color: var(--text-light);
+  font-size: .7rem;
+  color: var(--muted);
 }
 
-/* ═══════ ALERT ═══════ */
+/* ═══════ איתות מתמשך ═══════ */
 .alert {
-  background: rgba(232,168,73,.12);
-  border-right: 4px solid #C88A2E;
-  padding: 14px 18px;
-  border-radius: 12px;
-  margin-top: 18px;
-  font-size: 0.92rem;
-  line-height: 1.6;
-  color: var(--text);
+  background: var(--sand);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  margin-top: 16px;
+  font-size: .93rem;
+  line-height: 1.7;
 }
-.alert strong { color: #8E5A1E; }
+
+/* ═══════ קבוצות ממד — כרטיסי ילדים ═══════ */
+.dim-group {
+  border-radius: var(--radius-lg);
+  padding: 18px 22px;
+  margin-bottom: 14px;
+}
+.dim-group-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.dim-group-name { font-weight: 700; font-size: 1rem; }
+.dim-group-desc { font-size: .8rem; color: var(--muted); }
+.dim-group-empty { font-size: .86rem; color: var(--muted); margin-top: 8px; }
+.kid-cards { display: grid; gap: 10px; margin-top: 12px; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
+.kid-card {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  box-shadow: var(--shadow-card);
+}
+.kid-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.kid-name { font-weight: 600; font-size: .95rem; }
+.kid-note { font-size: .82rem; color: var(--muted); margin: 6px 0 0; line-height: 1.6; }
+
+/* ═══════ מגירת התערבויות + מפה מלאה ═══════ */
+details.drawer {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  margin-top: 16px;
+  overflow: hidden;
+}
+details.drawer summary {
+  cursor: pointer;
+  padding: 18px 24px;
+  font-weight: 600;
+  font-size: .98rem;
+  list-style: none;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+details.drawer summary::-webkit-details-marker { display: none; }
+details.drawer summary::after { content: "+"; font-size: 1.3rem; color: var(--muted); font-weight: 400; }
+details.drawer[open] summary::after { content: "–"; }
+.drawer-body { padding: 0 24px 22px; }
+.drawer-sub { font-size: .84rem; color: var(--muted); margin: -6px 0 14px; }
+.recipe { border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 10px; font-size: .9rem; line-height: 1.7; }
+.recipe strong { font-weight: 600; }
+.drawer-note {
+  background: var(--sky);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  font-size: .86rem;
+  line-height: 1.7;
+  margin-top: 12px;
+}
+.drawer-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 12px;
+  font-size: .9rem; font-weight: 500;
+  color: var(--aqua-deep);
+}
+
+/* ═══════ המפה המלאה (טבלה — בתוך מגירה, לא במבט ראשון) ═══════ */
+.map-header { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 10px; }
+.map-sort {
+  padding: 7px 13px;
+  border: 1.5px solid var(--surface-soft);
+  border-radius: 10px;
+  background: var(--surface);
+  font-family: inherit;
+  font-size: .84rem;
+  cursor: pointer;
+  color: var(--ink);
+}
+.map-legend {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  font-size: .78rem; color: var(--muted);
+  padding: 10px 0 12px;
+  border-top: 1px solid var(--surface-soft);
+  border-bottom: 1px solid var(--surface-soft);
+}
+.map-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.score-pill {
+  display: inline-block;
+  min-width: 38px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: .74rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--ink);
+}
+.pill-yes   { background: var(--mint); }
+.pill-some  { background: var(--sand); }
+.pill-no    { background: var(--peach); }
+.pill-none  { background: var(--surface-soft); color: var(--muted); }
+.map-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+.map-table th { text-align: right; padding: 12px 6px 8px; font-size: .74rem; font-weight: 600; color: var(--muted); }
+.map-table th.col-dim { text-align: center; }
+.map-table td { padding: 10px 6px; font-size: .88rem; border-top: 1px solid var(--surface-soft); }
+.map-name { font-weight: 600; }
+.map-cell { text-align: center; }
+.map-caveat {
+  margin-top: 14px;
+  padding: 12px 16px;
+  background: var(--sky);
+  border-radius: var(--radius-md);
+  font-size: .84rem;
+  line-height: 1.7;
+}
+
+/* ═══════ מבט שכבה (רכזת/מנהלת · ?role=principal) ═══════ */
+.layer-classes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 14px; }
+.class-card {
+  background: var(--surface);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 18px;
+  box-shadow: var(--shadow-card);
+  border-top: 5px solid var(--class-color, var(--aqua));
+  cursor: pointer;
+  text-align: right;
+  font-family: inherit;
+  color: var(--ink);
+  transition: transform .15s, box-shadow .15s;
+  display: block;
+  width: 100%;
+}
+.class-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-soft); }
+.class-card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 10px; }
+.class-card-name { font-weight: 700; font-size: 1.05rem; }
+.class-card-teacher { font-size: .76rem; color: var(--muted); margin-top: 2px; }
+.class-card-mini-bars { display: flex; flex-direction: column; gap: 7px; margin: 12px 0; }
+.class-mini-row { display: grid; grid-template-columns: 50px 1fr 28px; gap: 8px; align-items: center; font-size: .78rem; }
+.class-mini-name { font-weight: 600; }
+.class-mini-bar { height: 7px; border-radius: 4px; position: relative; overflow: hidden; }
+.class-mini-bar-fill { position: absolute; top: 0; right: 0; height: 100%; border-radius: 4px; transition: width .6s ease-out; }
+.class-mini-score { text-align: center; font-weight: 700; }
+.class-card-response { font-size: .78rem; color: var(--muted); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--surface-soft); }
+.class-card-cta { display: block; text-align: center; padding: 8px; margin-top: 8px; background: var(--surface-soft); border-radius: 10px; font-size: .8rem; font-weight: 600; color: var(--aqua-deep); }
+@media (max-width: 720px) { .layer-classes { grid-template-columns: 1fr; } }
+
+.layer-attention-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.layer-attention-row {
+  display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center;
+  padding: 12px 16px;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  font-size: .9rem;
+  border-right: 4px solid var(--attention);
+  box-shadow: var(--shadow-card);
+}
+.layer-attention-name { font-weight: 600; }
+.layer-attention-class { color: var(--muted); font-size: .78rem; margin-right: 6px; }
+.layer-attention-signals { color: var(--muted); font-weight: 500; font-size: .82rem; white-space: nowrap; }
+.layer-attention-empty {
+  padding: 18px;
+  background: var(--mint);
+  border-radius: var(--radius-md);
+  font-size: .92rem;
+  text-align: center;
+  font-weight: 500;
+  margin-top: 12px;
+}
 
 /* ═══════ EMPTY STATE ═══════ */
 .empty {
-  background: var(--white);
-  border-radius: 18px;
-  padding: 40px 24px;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 44px 24px;
   text-align: center;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-card);
 }
-.empty h3 {
-  font-size: 1.1rem; font-weight: 700; margin-bottom: 8px;
-}
-.empty p {
-  color: var(--text-light); font-size: 0.95rem;
-  margin-bottom: 20px;
-}
-.empty a {
-  display: inline-block;
-  background: var(--primary);
-  color: var(--white);
-  text-decoration: none;
-  padding: 10px 24px;
-  border-radius: 999px;
-  font-weight: 700;
-  transition: transform .15s;
-}
-.empty a:hover { transform: translateY(-1px); }
+.empty h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+.empty p { color: var(--muted); font-size: .95rem; margin-bottom: 20px; }
 
-/* ═══════ STATS BAR ═══════ */
-.stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 18px;
-}
-.stat {
-  background: var(--white);
-  border-radius: 14px;
-  padding: 12px;
-  text-align: center;
-  box-shadow: var(--shadow-sm);
-}
-.stat-num {
-  font-family: 'Rubik';
-  font-weight: 900;
-  font-size: 1.5rem;
-  color: var(--primary-dark);
-  line-height: 1;
-}
-.stat-label {
-  font-size: 0.72rem;
-  color: var(--text-light);
-  margin-top: 4px;
+/* ═══════ FOOTER ═══════ */
+.page-foot {
+  margin-top: 44px;
+  padding-top: 18px;
+  border-top: 1px solid var(--surface-soft);
+  font-size: .78rem;
+  color: var(--muted);
+  line-height: 1.8;
 }
 
-/* ═══════ LAYER VIEW (PRINCIPAL) ═══════ */
-.layer-classes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 18px; }
-.class-card { background: var(--white); border-radius: 16px; padding: 16px 18px; box-shadow: var(--shadow-sm); border-top: 4px solid var(--class-color, var(--primary)); cursor: pointer; transition: transform .15s, box-shadow .15s; }
-.class-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-.class-card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 10px; }
-.class-card-name { font-family: 'Rubik'; font-weight: 800; font-size: 1.1rem; }
-.class-card-teacher { font-size: 0.75rem; color: var(--text-light); margin-top: 2px; }
-.class-card-status { font-size: 0.7rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }
-.class-card-mini-bars { display: flex; flex-direction: column; gap: 6px; margin: 12px 0; }
-.class-mini-row { display: grid; grid-template-columns: 50px 1fr 28px; gap: 8px; align-items: center; font-size: 0.78rem; }
-.class-mini-name { font-weight: 700; }
-.class-mini-bar { height: 7px; background: rgba(0,0,0,.05); border-radius: 4px; position: relative; overflow: hidden; }
-.class-mini-bar-fill { position: absolute; top: 0; right: 0; height: 100%; border-radius: 4px; transition: width .6s ease-out; }
-.class-mini-score { text-align: center; font-family: 'Rubik'; font-weight: 800; }
-.class-card-response { font-size: 0.78rem; color: var(--text-light); margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,.04); }
-.class-card-cta { display: block; text-align: center; padding: 8px; margin-top: 8px; background: rgba(46,125,140,.06); border-radius: 8px; font-size: 0.78rem; font-weight: 700; color: var(--primary-dark); }
-@media (max-width: 720px) { .layer-classes { grid-template-columns: 1fr; } }
-
-.layer-section-title { font-size: 0.85rem; font-weight: 700; color: var(--text-light); margin: 22px 0 10px; letter-spacing: 0.04em; padding-right: 4px; }
-.layer-attention-list { display: flex; flex-direction: column; gap: 6px; }
-.layer-attention-row { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center; padding: 10px 14px; background: var(--white); border-radius: 10px; font-size: 0.88rem; border-right: 3px solid #C04860; box-shadow: var(--shadow-sm); }
-.layer-attention-name { font-weight: 600; }
-.layer-attention-class { color: var(--text-light); font-size: 0.78rem; margin-right: 6px; }
-.layer-attention-reds { color: #8B3A4A; font-weight: 700; font-size: 0.82rem; }
-.layer-attention-empty { padding: 16px; background: rgba(74,155,127,.08); border: 1px solid rgba(74,155,127,.18); border-radius: 12px; color: #2f7a66; font-size: 0.9rem; text-align: center; font-weight: 600; }
-
-/* ═══════ STUDENT MAP ═══════ */
-.map-card { background: var(--white); border-radius: 18px; padding: 22px 22px 18px; box-shadow: var(--shadow-sm); margin-top: 18px; }
-.map-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; gap: 16px; flex-wrap: wrap; }
-.map-header h3 { font-size: 1rem; font-weight: 800; margin-bottom: 2px; }
-.map-sub { font-size: 0.78rem; color: var(--text-light); }
-.map-sort { padding: 6px 12px; border: 1.5px solid var(--border); border-radius: 8px; background: var(--white); font-family: 'Heebo'; font-size: 0.82rem; cursor: pointer; color: var(--text); }
-.map-legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 0.78rem; color: var(--text-light); padding: 10px 0 12px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-.map-legend span { display: inline-flex; align-items: center; gap: 6px; }
-.dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; }
-.dot-green { background: #4A9B7F; }
-.dot-yellow { background: #F2B844; }
-.dot-red { background: #C04860; }
-.dot-gray { background: rgba(0,0,0,.12); }
-.map-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
-.map-table th { text-align: right; padding: 12px 8px 8px; font-size: 0.72rem; font-weight: 700; color: var(--text-light); letter-spacing: 0.02em; }
-.map-table th.col-dim { text-align: center; }
-.map-table td { padding: 11px 8px; font-size: 0.88rem; border-top: 1px solid rgba(0,0,0,.04); }
-.map-table tbody tr:hover td { background: rgba(46,125,140,.03); }
-.map-name { font-weight: 600; color: var(--text); }
-.map-cell { text-align: center; }
-.map-status { font-size: 0.74rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; display: inline-block; white-space: nowrap; }
-.status-stable { background: rgba(74,155,127,.15); color: #2f7a66; }
-.status-watch { background: rgba(242,184,68,.18); color: #8E5A1E; }
-.status-attention { background: rgba(192,72,96,.15); color: #8B3A4A; }
-.status-missing { background: rgba(0,0,0,.05); color: var(--text-light); }
-.map-caveat { margin-top: 14px; padding: 10px 14px; background: rgba(46,125,140,.05); border-radius: 10px; font-size: 0.82rem; color: var(--text); line-height: 1.6; }
-.map-caveat strong { color: var(--primary-dark); }
-@media (max-width: 520px) {
-  .map-table th, .map-table td { padding: 10px 4px; font-size: 0.78rem; }
-  .map-table th.col-dim { font-size: 0.65rem; }
-  .map-status { font-size: 0.68rem; padding: 2px 7px; }
-}
-
-/* ═══════ DEMO BANNER ═══════ */
+/* ═══════ סרגל דמו ═══════ */
 .demo-banner {
-  position: fixed; bottom: 8px; right: 8px;
-  background: rgba(0,0,0,.6);
-  color: white;
-  font-size: 0.7rem;
-  padding: 5px 12px;
-  border-radius: 6px;
-  font-family: monospace;
+  position: fixed; bottom: 10px; right: 10px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: .74rem;
+  padding: 7px 14px;
+  border-radius: 999px;
+  box-shadow: var(--shadow-soft);
   z-index: 100;
   display: flex; align-items: center; gap: 8px;
 }
 .demo-banner button {
-  background: rgba(255,255,255,.2);
+  background: var(--surface-soft);
   border: none;
-  color: white;
-  font-size: 0.7rem;
-  padding: 2px 8px;
-  border-radius: 4px;
+  color: var(--ink);
+  font-size: .74rem;
+  font-family: inherit;
+  padding: 4px 12px;
+  border-radius: 999px;
   cursor: pointer;
-  font-family: monospace;
 }
-.demo-banner button:hover { background: rgba(255,255,255,.3); }
+.demo-banner button:hover { background: var(--mint); }
 
-@media (max-width: 520px) {
-  .dim-row { grid-template-columns: 90px 1fr 50px; }
+/* ═══════ קישור לקטלוג ההתערבויות בתוך מתכון ═══════ */
+.recipe-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  margin-top: 8px;
+  font-size: .84rem; font-weight: 600;
+  color: var(--aqua-deep);
+  text-decoration: none;
+}
+.recipe-link:hover { text-decoration: underline; }
+.drawer-link-row { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; margin-top: 14px; }
+
+/* ═══════ TOAST — משוב מיקרו לפעולות בלי יעד ═══════ */
+.toast {
+  position: fixed;
+  bottom: 56px; right: 10px;
+  background: var(--ink, #243238);
+  color: #fff;
+  font-size: .85rem;
+  font-family: inherit;
+  padding: 11px 18px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-soft);
+  z-index: 200;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .22s ease, transform .22s ease;
+  pointer-events: none;
+  max-width: 320px;
+  line-height: 1.5;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+@media (max-width: 560px) {
+  .dim-row { grid-template-columns: 88px 1fr 44px; }
   .dim-trend { display: none; }
+  .stats { gap: 10px; }
+  .map-table th, .map-table td { padding: 9px 3px; font-size: .78rem; }
+  .score-pill { min-width: 30px; padding: 2px 5px; font-size: .68rem; }
 }
 </style>
 </head>
@@ -384,17 +536,22 @@ h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
 <!-- Top bar -->
 <header class="topbar">
   <div class="brand">
-    <div class="brand-num">10</div>
-    <div class="brand-title">פולס · דשבורד מחנכת</div>
+    <div class="brand-mark" aria-hidden="true">פ</div>
+    <div>
+      <div class="brand-title">פולס · דשבורד מחנכת</div>
+      <div class="brand-sub">מבט רך על איך הילדים מרגישים</div>
+    </div>
   </div>
   <div class="topbar-meta">
+    <span class="demo-badge">נתוני הדגמה בלבד · מיועד להצגת חוויית שימוש</span>
+    <label class="visually-hidden" for="class-select">בחירת כיתה</label>
     <select class="class-select" id="class-select">
-      <option value="layer">🏫 מבט שכבה א׳</option>
+      <option value="layer">מבט שכבה א׳</option>
       <option value="א1">כיתה א1</option>
       <option value="א2">כיתה א2</option>
       <option value="א3">כיתה א3</option>
     </select>
-    <span id="biweek-label">פולס #4 · 28.5.26</span>
+    <span id="biweek-label">דמו פנימי · יוני 2026</span>
   </div>
 </header>
 
@@ -404,40 +561,108 @@ h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
 
 <!-- Demo banner -->
 <div class="demo-banner">
-  DEMO · localStorage
-  <button onclick="seedData()">טען דוגמה</button>
-  <button onclick="clearData()">נקה</button>
+  דמו · הנתונים נשמרים בדפדפן בלבד
+  <button type="button" onclick="seedData()">טען דוגמה</button>
+  <button type="button" onclick="clearData()">נקה</button>
 </div>
 
 <script>
+// ═══════ SAFETY: escape לכל טקסט דינמי לפני innerHTML (הכנה ל-backend עתידי) ═══════
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// ═══════ TOAST — משוב מיקרו לפעולות בלי יעד ניווט ═══════
+let _toastTimer = null;
+function showToast(msg) {
+  let el = document.getElementById('pulse-toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'pulse-toast';
+    el.className = 'toast';
+    el.setAttribute('role', 'status');
+    el.setAttribute('aria-live', 'polite');
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  // reflow כדי שהאנימציה תרוץ שוב גם בלחיצה רצופה
+  void el.offsetWidth;
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+// ═══════ 4 הממדים — סגור. אין ממדים חדשים. ═══════
+// soft = פסטל מ-pulse-core · deep = גוון טקסט · desc = הסבר במילים פשוטות
 const DIMENSIONS = [
-  { id: 'adjust', name: 'מקום', color: '#F2B844' },
-  { id: 'friend', name: 'חברים', color: '#E08FAF' },
-  { id: 'emotion', name: 'רגש', color: '#8B6BC0' },
-  { id: 'joy', name: 'לגלות', color: '#5BC0A8' }
+  {
+    id: 'adjust', name: 'מקום', dimClass: 'dim-adjust',
+    soft: '#F3D37A', deep: '#97781F',
+    catalog: 'intervention-catalog/cat-04-transitions-adjustment.md',
+    desc: 'הסתגלות ותחושת מקום בכיתה',
+    childWhy: 'נראה שעדיין מחפש.ת את המקום שלו.ה בכיתה',
+    childAction: 'קבלת פנים אישית בבוקר, מקום ישיבה קבוע, ותפקיד קטן שנותן תחושת שייכות.',
+    classAction: 'מעגל בוקר קצר של "מה עוזר לי להרגיש בבית בכיתה" + חיזוק שגרות מוכרות.'
+  },
+  {
+    id: 'friend', name: 'חברים', dimClass: 'dim-friend',
+    soft: '#F6C9D4', deep: '#B05A77',
+    catalog: 'intervention-catalog/cat-02-belonging-and-connection.md',
+    desc: 'חברויות ותחושת שייכות חברתית',
+    childWhy: 'נראה שכדאי לבדוק איך הולך לו.ה עם חברים',
+    childAction: 'שיבוץ למשימה זוגית עם חבר.ה שהוא.היא בוחר.ת, ומבט עדין בהפסקה.',
+    classAction: 'משחק היכרות מערבב זוגות + פינת "מחפשים שותף.ה למשחק" בהפסקה.'
+  },
+  {
+    id: 'emotion', name: 'רגש', dimClass: 'dim-emotion',
+    soft: '#DDD8F6', deep: '#6E61B5',
+    catalog: 'intervention-catalog/cat-03-emotion-regulation.md',
+    desc: 'שפה רגשית — לזהות ולספר מה מרגישים',
+    childWhy: 'נראה שקשה לו.ה כרגע לספר מה עובר עליו.ה',
+    childAction: 'שיחה קצרה של דקה-שתיים אחד-על-אחד: "איך היה הבוקר?" ולשקף את הרגש במילים.',
+    classAction: 'דקת "מילת רגש של הבוקר" — כל ילד.ה בוחר.ת מילה אחת שמתארת איך הגיע.ה.'
+  },
+  {
+    id: 'joy', name: 'לגלות', dimClass: 'dim-joy',
+    soft: '#8EDBD3', deep: '#2E8F86',
+    catalog: 'intervention-catalog/cat-06-curiosity-interest.md',
+    desc: 'שמחה ללמוד וסקרנות',
+    childWhy: 'נראה שהלמידה פחות משמחת אותו.ה כרגע',
+    childAction: 'תפקיד קטן בתחום שהוא.היא אוהב.ת, ולשים לב מה כן מסקרן אותו.ה.',
+    classAction: 'לפתוח את הבוקר במשהו מסקרן: שאלת "מה הייתם רוצים לגלות השבוע?"'
+  }
 ];
 
-// ═══════ DATA LAYER (localStorage for demo) ═══════
+// ═══════ ROLE: מחנכת רואה כיתה אחת · מבט שכבה נפתח רק עם ?role=principal ═══════
+// עיקרון סגור: בלי השוואה בין כיתות בדשבורד המחנכת.
+const ROLE = new URLSearchParams(location.search).get('role') === 'principal' ? 'principal' : 'teacher';
+
+// ═══════ DATA LAYER (localStorage לדמו) ═══════
 function getSubmissions() {
   return JSON.parse(localStorage.getItem('pulse-demo-responses') || '[]');
 }
 
 function clearData() {
-  if (confirm('למחוק את כל הנתונים?')) {
+  if (confirm('למחוק את כל נתוני הדמו?')) {
     localStorage.removeItem('pulse-demo-responses');
     render();
   }
 }
 
-// 3 כיתות בשכבת א'. כל כיתה עם מחנכת + צבע. עוזר ל-layer view.
+// 3 כיתות בשכבת א' (דמו). כל כיתה עם מחנכת בדויה + צבע.
 const CLASS_META = {
-  'א1': { name: 'כיתה א1', teacher: 'רחל אלמוג',   color: '#F2B844' },
-  'א2': { name: 'כיתה א2', teacher: 'שירית גנדלמן', color: '#5BC0A8' },
-  'א3': { name: 'כיתה א3', teacher: 'מיכל אופק',    color: '#8B6BC0' }
+  'א1': { name: 'כיתה א1', teacher: 'רחל אלמוג',    color: '#F3D37A' },
+  'א2': { name: 'כיתה א2', teacher: 'שירית גנדלמן', color: '#8EDBD3' },
+  'א3': { name: 'כיתה א3', teacher: 'מיכל אופק',    color: '#DDD8F6' }
 };
 
-// 54 ילדים בשכבה. baseP פר מימד יציב (baseP=0.85 → רוב פעמים 3, baseP=0.30 → רוב פעמים 1).
-// א1 מעורבת · א2 חזקה · א3 מאתגרת (יותר ילדים בתשומת לב — כדי שיהיה signal למנהלת).
+// 54 ילדים בדויים בשכבה. baseP פר ממד יציב (baseP=0.85 → רוב פעמים 3, baseP=0.30 → רוב פעמים 1).
+// א1 מעורבת · א2 חזקה · א3 מאתגרת (יותר איתותים — כדי שלדמו יהיה מה להראות).
 const KIDS = [
   // ─── א1 · 18 ילדים · מעורבת ───
   { id: 'a1-01', class: 'א1', name: 'אדם לוי',      base: { adjust: 0.85, friend: 0.80, emotion: 0.65, joy: 0.85 } },
@@ -550,26 +775,25 @@ function seedData() {
   render();
 }
 
-// ═══════ AGGREGATIONS ═══════
+// ═══════ סיכום קבוצתי בלי שמות — פר כיתה ═══════
 function aggregateClass(classId) {
   const all = getSubmissions().filter(s => s.class === classId);
   if (!all.length) return null;
 
-  // Get latest biweek
   const latestBiweek = Math.max(...all.map(s => +s.biweek));
   const latestSubs = all.filter(s => +s.biweek === latestBiweek);
   const prevSubs = all.filter(s => +s.biweek === latestBiweek - 1);
 
   const dimAverages = {};
-  const dimReds = {};
+  const dimLows = {}; // כמה ילדים סימנו "לא" בממד
   DIMENSIONS.forEach(d => {
     const scores = latestSubs.flatMap(s => s.responses.filter(r => r.dim === d.id).map(r => r.score));
-    if (!scores.length) { dimAverages[d.id] = null; dimReds[d.id] = 0; return; }
+    if (!scores.length) { dimAverages[d.id] = null; dimLows[d.id] = 0; return; }
     dimAverages[d.id] = scores.reduce((a,b) => a+b, 0) / scores.length;
-    dimReds[d.id] = scores.filter(s => s === 1).length;
+    dimLows[d.id] = scores.filter(s => s === 1).length;
   });
 
-  // Compute trends
+  // מגמות מול הפולס הקודם
   const dimTrends = {};
   DIMENSIONS.forEach(d => {
     if (!prevSubs.length) { dimTrends[d.id] = 'flat'; return; }
@@ -582,7 +806,7 @@ function aggregateClass(classId) {
     else dimTrends[d.id] = 'flat';
   });
 
-  // Trend chart — last 4 biweeks for "joy" (or worst dim)
+  // גרף מגמה — 4 פולסים אחרונים של "לגלות" (שמחה ללמוד)
   const trendDimId = 'joy';
   const trendWeeks = [];
   for (let w = Math.max(1, latestBiweek - 3); w <= latestBiweek; w++) {
@@ -594,7 +818,7 @@ function aggregateClass(classId) {
     });
   }
 
-  // Pattern alert: any dim 3+ weeks in a row red?
+  // איתות מתמשך: ממד נמוך 3 פולסים ברציפות → פנייה ליועצת
   let alertText = null;
   DIMENSIONS.forEach(d => {
     let lowCount = 0;
@@ -606,7 +830,7 @@ function aggregateClass(classId) {
       if (avg < 2.0) lowCount++;
     }
     if (lowCount >= 3) {
-      alertText = `פולס 3 ברציפות עם <strong>${d.name}</strong> נמוך — שווה לדבר עם היועצת`;
+      alertText = `שלושה פולסים ברציפות עם <strong>"${d.name}"</strong> נמוך יותר מהרגיל — נראה שכדאי לשתף את היועצת ולחשוב יחד.`;
     }
   });
 
@@ -615,45 +839,70 @@ function aggregateClass(classId) {
     biweek: latestBiweek,
     responseCount: latestSubs.length,
     dimAverages,
-    dimReds,
+    dimLows,
     dimTrends,
     trendWeeks,
     alertText
   };
 }
 
-// ═══════ HERO TEXT GENERATION ═══════
+// ═══════ משפט סיכום רגוע ל-hero ═══════
 function generateHero(data) {
   const lowestDim = Object.keys(data.dimAverages).reduce((a, b) =>
     data.dimAverages[a] < data.dimAverages[b] ? a : b
   );
   const lowDim = DIMENSIONS.find(d => d.id === lowestDim);
   const lowAvg = data.dimAverages[lowestDim];
-  const lowReds = data.dimReds[lowestDim];
+  const lowCount = data.dimLows[lowestDim];
 
-  let status, statusColor, line, action;
+  let chipClass, chipText, line;
 
-  if (lowAvg >= 3.5) {
-    status = 'יציב';
-    statusColor = '#5BC0A8';
-    line = `הכיתה במצב טוב השבוע — <strong>${data.responseCount}</strong> ילדים ענו, אין מימד שדורש התראה.`;
-    action = 'המשיכי כרגיל';
-  } else if (lowAvg >= 2.5) {
-    status = 'דורש תשומת לב';
-    statusColor = lowDim.color;
-    line = `הכיתה כמעט בסדר. <strong>"${lowDim.name.trim()}"</strong> ירד — ${lowReds} ילדים דיווחו נמוך.`;
-    action = `כדאי: פעילות מותאמת ל${lowDim.name.trim()}`;
+  if (lowAvg >= 2.5) {
+    chipClass = 'chip-ok';
+    chipText = 'שגרה טובה';
+    line = `הכיתה במקום טוב: <strong>${data.responseCount}</strong> ילדים שיתפו בפולס האחרון, ואין ממד שמבקש תשומת לב מיוחדת.`;
+  } else if (lowAvg >= 2.0) {
+    chipClass = 'chip-notice';
+    chipText = 'איתות עדין';
+    line = `בסך הכול הכיתה בסדר. ב<strong>"${lowDim.name}"</strong> יש ירידה קלה — ${lowCount} ילדים סימנו "לא". כדאי לשים לב, בנחת.`;
   } else {
-    status = 'התראה';
-    statusColor = '#C04860';
-    line = `<strong>"${lowDim.name.trim()}"</strong> במצב נמוך — ${lowReds} מתוך ${data.responseCount} ילדים בקושי. שווה להתערב היום.`;
-    action = `כדאי: שיחה כיתתית + מעגל בוקר`;
+    chipClass = 'chip-attention';
+    chipText = 'כדאי לשים לב היום';
+    line = `<strong>"${lowDim.name}"</strong> נמוך מהרגיל — ${lowCount} מתוך ${data.responseCount} ילדים סימנו "לא". נראה שכדאי לבדוק, יש הצעות לפעולה רכה למטה.`;
   }
 
-  return { status, statusColor, line, action };
+  return { chipClass, chipText, line, lowDim };
 }
 
-// ═══════ STUDENT MAP ═══════
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'בוקר טוב';
+  if (h < 18) return 'צהריים טובים';
+  return 'ערב טוב';
+}
+
+// ═══════ אייקונים קטנים — SVG inline (במקום אימוג'ים), תמיד aria-hidden ═══════
+const ICONS = {
+  sun:   '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  kids:  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5.5 20c.8-3.2 3.4-5 6.5-5s5.7 1.8 6.5 5"/></svg>',
+  heart: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.6-9-9c-1.2-2.7.6-6 3.8-6 1.9 0 3.4 1 4.2 2.5C11.8 6 13.3 5 15.2 5c3.2 0 5 3.3 3.8 6-2 4.4-7 9-7 9z"/></svg>',
+  bell:  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 16v-5a6 6 0 1 0-12 0v5l-1.5 2.5h15L18 16z"/><path d="M10.5 20.5a1.8 1.8 0 0 0 3 0"/></svg>',
+  check: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4 9-10"/></svg>',
+  eye:   '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  bars:  '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 19V9M12 19V5M19 19v-7"/></svg>',
+  tools: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg>'
+};
+
+// פתיחת מגירת "המפה המלאה" מתוך כפתור ה-hero
+function openMapDrawer() {
+  const d = document.getElementById('map-drawer');
+  if (d) {
+    d.open = true;
+    d.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+// ═══════ מפת תלמידים ═══════
 let mapSortBy = 'concern';
 
 function changeMapSort(value) {
@@ -664,27 +913,47 @@ function changeMapSort(value) {
 function getStudentMap(classId, biweek) {
   const all = getSubmissions().filter(s => s.class === classId);
   const latest = all.filter(s => +s.biweek === biweek);
+  const prev = all.filter(s => +s.biweek === biweek - 1);
   const nameById = {};
   all.forEach(s => { if (s.sidName) nameById[s.sid] = s.sidName; });
   const allSids = [...new Set(all.map(s => s.sid))];
 
   return allSids.map(sid => {
     const sub = latest.find(s => s.sid === sid);
+    const psub = prev.find(s => s.sid === sid);
     const dims = {};
+    const prevDims = {};
     DIMENSIONS.forEach(d => {
       const r = sub?.responses.find(rr => rr.dim === d.id);
       dims[d.id] = r ? r.score : null;
+      const pr = psub?.responses.find(rr => rr.dim === d.id);
+      prevDims[d.id] = pr ? pr.score : null;
     });
-    const reds = Object.values(dims).filter(s => s === 1).length;
-    const yellows = Object.values(dims).filter(s => s === 2).length;
+    const lows = Object.values(dims).filter(s => s === 1).length;
+    const mids = Object.values(dims).filter(s => s === 2).length;
+    // ממדים שבהם נראה שיפור: "לא" בפולס הקודם → "קצת"/"כן" עכשיו
+    const improved = DIMENSIONS.filter(d => prevDims[d.id] === 1 && dims[d.id] >= 2).map(d => d.id);
     let status;
     if (!sub) status = 'missing';
-    else if (reds >= 2) status = 'attention';
-    else if (reds >= 1 || yellows >= 3) status = 'watch';
+    else if (lows >= 2) status = 'attention';
+    else if (lows >= 1 || mids >= 3) status = 'watch';
     else status = 'stable';
-    return { sid, name: nameById[sid] || sid, dims, status, reds, yellows };
+    return { sid, name: nameById[sid] || sid, dims, prevDims, improved, status, lows, mids };
   });
 }
+
+const STATUS_LABEL = {
+  stable: 'יציב',
+  watch: 'לבדיקה',
+  attention: 'סימון לתשומת לב',
+  missing: 'טרם ענה.תה'
+};
+const STATUS_CHIP = {
+  stable: 'chip-ok',
+  watch: 'chip-notice',
+  attention: 'chip-attention',
+  missing: 'chip-info'
+};
 
 function renderStudentMapRows(classId, biweek) {
   const rows = getStudentMap(classId, biweek);
@@ -693,43 +962,216 @@ function renderStudentMapRows(classId, biweek) {
     rows.sort((a, b) => a.name.localeCompare(b.name, 'he'));
   } else {
     const order = { attention: 0, watch: 1, stable: 2, missing: 3 };
-    rows.sort((a, b) => (order[a.status] - order[b.status]) || (b.reds - a.reds));
+    rows.sort((a, b) => (order[a.status] - order[b.status]) || (b.lows - a.lows));
   }
-
-  const STATUS_LABEL = {
-    stable: 'יציב',
-    watch: 'שווה לבדוק',
-    attention: 'תשומת לב',
-    missing: 'טרם ענה'
-  };
 
   return rows.map(r => {
     const cells = DIMENSIONS.map(d => {
       const s = r.dims[d.id];
-      const cls = s === 3 ? 'dot-green' : s === 2 ? 'dot-yellow' : s === 1 ? 'dot-red' : 'dot-gray';
-      const title = s ? `${s}/3` : 'אין תשובה';
-      return `<td class="map-cell"><span class="dot ${cls}" title="${title}"></span></td>`;
+      // טקסט + צבע יחד — לא צבע בלבד
+      const pill = s === 3 ? '<span class="score-pill pill-yes">כן</span>'
+                 : s === 2 ? '<span class="score-pill pill-some">קצת</span>'
+                 : s === 1 ? '<span class="score-pill pill-no">לא</span>'
+                 : '<span class="score-pill pill-none">—</span>';
+      return `<td class="map-cell">${pill}</td>`;
     }).join('');
     return `
       <tr>
-        <td class="map-name">${r.name}</td>
+        <td class="map-name">${escapeHtml(r.name)}</td>
         ${cells}
-        <td class="map-cell"><span class="map-status status-${r.status}">${STATUS_LABEL[r.status]}</span></td>
+        <td class="map-cell"><span class="chip ${STATUS_CHIP[r.status]}">${STATUS_LABEL[r.status]}</span></td>
       </tr>
     `;
   }).join('');
 }
 
-// ═══════ LAYER (PRINCIPAL) VIEW ═══════
+// ═══════ "מה כדאי לעשות היום?" — עד 3 כרטיסי פעולה ═══════
+function buildTodayActions(classId, data) {
+  const actions = [];
+
+  // פעולה כיתתית — אם הממד הנמוך ביותר ירד מתחת לסף
+  const lowestDim = Object.keys(data.dimAverages).reduce((a, b) =>
+    data.dimAverages[a] < data.dimAverages[b] ? a : b
+  );
+  const lowDim = DIMENSIONS.find(d => d.id === lowestDim);
+  if (data.dimAverages[lowestDim] < 2.35) {
+    actions.push({
+      key: `pulse-demo-action-done-${classId}-${data.biweek}-class`,
+      dim: lowDim,
+      who: 'כל הכיתה',
+      why: `הממוצע הכיתתי ב"${lowDim.name}" נמוך מהרגיל — ${data.dimLows[lowestDim]} ילדים סימנו "לא".`,
+      what: lowDim.classAction
+    });
+  }
+
+  // עד 2-3 ילדים עם הכי הרבה איתותים
+  const rows = getStudentMap(classId, data.biweek)
+    .filter(r => r.status === 'attention')
+    .sort((a, b) => b.lows - a.lows);
+
+  for (const r of rows) {
+    if (actions.length >= 3) break;
+    const firstLow = DIMENSIONS.find(d => r.dims[d.id] === 1);
+    if (!firstLow) continue;
+    actions.push({
+      key: `pulse-demo-action-done-${classId}-${data.biweek}-${r.sid}`,
+      dim: firstLow,
+      who: r.name,
+      why: `סימן.ה "לא" ב"${firstLow.name}"${r.lows > 1 ? ' ועוד ממד אחד' : ''} בפולס האחרון. ${firstLow.childWhy}.`,
+      what: firstLow.childAction
+    });
+  }
+
+  return actions.slice(0, 3);
+}
+
+function renderActionsSection(classId, data) {
+  const actions = buildTodayActions(classId, data);
+
+  const head = `
+    <div class="section-head">
+      <span class="section-icon si-mint" aria-hidden="true">${ICONS.eye}</span>
+      <h2 class="section-title">מה כדאי לשים לב אליו היום?</h2>
+    </div>
+  `;
+
+  if (!actions.length) {
+    return `
+      <section class="section">
+        ${head}
+        <p class="section-micro">הצעות רכות, לא הוראות — את מכירה את הילדים הכי טוב.</p>
+        <div class="actions-empty">אין הצעה מיוחדת היום — הכיתה נראית במקום טוב. אפשר פשוט להמשיך בשגרה הנעימה.</div>
+      </section>
+    `;
+  }
+
+  const cards = actions.map((a, i) => {
+    const isDone = localStorage.getItem(a.key) === '1';
+    const tint = i % 2 === 0 ? 'tint-mint' : 'tint-sky';
+    return `
+      <article class="action-card ${tint}">
+        <div class="action-card-head">
+          <span class="action-who">${escapeHtml(a.who)}</span>
+          <span class="action-dim" style="color:${a.dim.deep}">${escapeHtml(a.dim.name)} · ${escapeHtml(a.dim.desc)}</span>
+        </div>
+        <p class="action-why">${escapeHtml(a.why)}</p>
+        <div class="action-what"><strong>הצעה לפעולה רכה:</strong> ${escapeHtml(a.what)}</div>
+        <button type="button" class="btn btn-done ${isDone ? 'done' : ''}" onclick="markActionDone('${a.key}')" aria-pressed="${isDone ? 'true' : 'false'}" title="${isDone ? 'לחיצה תבטל את הסימון' : 'סימון שעשיתי את הפעולה'}">
+          ${isDone ? '✓ עשיתי · לביטול' : 'סמני: ✓ עשיתי'}
+        </button>
+      </article>
+    `;
+  }).join('');
+
+  return `
+    <section class="section">
+      ${head}
+      <p class="section-micro">עד שלוש הצעות קטנות, לפי הפולס האחרון. הצעות — לא הוראות.</p>
+      <div class="actions-grid">${cards}</div>
+    </section>
+  `;
+}
+
+// ═══════ כרטיסי ילדים לפי ממד ═══════
+function renderDimensionGroups(classId, biweek) {
+  const rows = getStudentMap(classId, biweek);
+
+  const groups = DIMENSIONS.map(d => {
+    const lowKids = rows.filter(r => r.dims[d.id] === 1);
+    const improvedKids = rows.filter(r => r.improved.includes(d.id));
+
+    const kidCards = [
+      ...lowKids.map(r => `
+        <div class="kid-card">
+          <div class="kid-card-top">
+            <span class="kid-name">${escapeHtml(r.name)}</span>
+            <span class="chip ${r.lows >= 2 ? 'chip-attention' : 'chip-notice'}">${r.lows >= 2 ? 'לבדיקה' : 'איתות עדין'}</span>
+          </div>
+          <p class="kid-note">סימן.ה "לא" ב"${escapeHtml(d.name)}" בפולס האחרון — כדאי לשים לב, בנחת.</p>
+        </div>
+      `),
+      ...improvedKids.map(r => `
+        <div class="kid-card">
+          <div class="kid-card-top">
+            <span class="kid-name">${escapeHtml(r.name)}</span>
+            <span class="chip chip-ok">שיפור נראה</span>
+          </div>
+          <p class="kid-note">עלה.תה מ"לא" בפולס הקודם — מגמה משמחת ב"${escapeHtml(d.name)}".</p>
+        </div>
+      `)
+    ].join('');
+
+    return `
+      <div class="dim-group ${d.dimClass}">
+        <div class="dim-group-head">
+          <span class="dim-group-name" style="color:${d.deep}">${escapeHtml(d.name)}</span>
+          <span class="dim-group-desc">${escapeHtml(d.desc)}</span>
+        </div>
+        ${kidCards
+          ? `<div class="kid-cards">${kidCards}</div>`
+          : `<p class="dim-group-empty">אין איתותים בממד הזה בפולס האחרון — נראה טוב.</p>`}
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <section class="section">
+      <div class="section-head">
+        <span class="section-icon si-peach" aria-hidden="true">${ICONS.kids}</span>
+        <h2 class="section-title">ילדים שכדאי לראות היום · לפי ממד</h2>
+      </div>
+      <p class="section-micro">איתותים, לא אבחנות. ילד.ה שלא מופיע.ה כאן — נראה במקום טוב כרגע.</p>
+      ${groups}
+    </section>
+  `;
+}
+
+// ═══════ מגירת התערבויות מהירות ═══════
+function renderInterventionDrawer(classId) {
+  const recipes = DIMENSIONS.map(d => `
+    <div class="recipe ${d.dimClass}">
+      <strong style="color:${d.deep}">${escapeHtml(d.name)}</strong> · ${escapeHtml(d.desc)}<br>
+      לילד.ה: ${escapeHtml(d.childAction)}<br>
+      לכל הכיתה: ${escapeHtml(d.classAction)}<br>
+      <a class="recipe-link" href="${escapeHtml(d.catalog)}" target="_blank" rel="noopener">
+        ← הצעות התערבות נוספות ל"${escapeHtml(d.name)}" (קטלוג מלא)
+      </a>
+    </div>
+  `).join('');
+
+  return `
+    <details class="drawer">
+      <summary>רעיונות לפעולה מהירה · לפי ממד</summary>
+      <div class="drawer-body">
+        <p class="drawer-sub">פעולות קטנות של דקות בודדות, מתוך שגרת הכיתה. בלי ציוד מיוחד.</p>
+        ${recipes}
+        <div class="drawer-note">
+          תזכורת: הפולס הוא איתות, לא אבחנה. ילד.ה עם "סימון לתשומת לב" שלושה פולסים ברצף —
+          מוסיפים תצפית מורה ופונים ליועצת לפני כל החלטה.
+        </div>
+        <div class="drawer-link-row">
+          <a class="drawer-link" href="intervention-catalog/INDEX.md" target="_blank" rel="noopener">
+            ← קטלוג ההתערבויות המלא (כל הממדים)
+          </a>
+          <a class="drawer-link" href="pulse-questionnaire.html?class=${encodeURIComponent(classId)}" target="_blank" rel="noopener">
+            ← שליחת פולס מהיר לילדים (פתיחת השאלון)
+          </a>
+        </div>
+      </div>
+    </details>
+  `;
+}
+
+// ═══════ מבט שכבה (?role=principal בלבד — לא בדשבורד המחנכת) ═══════
 function switchToClass(classId) {
   document.getElementById('class-select').value = classId;
   render();
 }
 
 function classStatus(lowAvg) {
-  if (lowAvg >= 2.7) return { label: 'יציב',         bg: 'rgba(74,155,127,.15)',  color: '#2f7a66' };
-  if (lowAvg >= 2.3) return { label: 'שווה לבדוק',   bg: 'rgba(242,184,68,.18)',  color: '#8E5A1E' };
-  return                    { label: 'תשומת לב',     bg: 'rgba(192,72,96,.15)',   color: '#8B3A4A' };
+  if (lowAvg >= 2.7) return { label: 'יציב',            chip: 'chip-ok' };
+  if (lowAvg >= 2.3) return { label: 'כדאי לשים לב',   chip: 'chip-notice' };
+  return                    { label: 'מומלץ מבט היום', chip: 'chip-attention' };
 }
 
 function renderLayerView(container) {
@@ -745,7 +1187,7 @@ function renderLayerView(container) {
     container.innerHTML = `
       <div class="empty">
         <h3>עדיין אין מספיק נתונים לשכבה</h3>
-        <p>חלק מהכיתות לא ענו. לחצי "טען דוגמה" לראות את המבט המלא.</p>
+        <p>חלק מהכיתות לא ענו. אפשר ללחוץ "טען דוגמה" למטה כדי לראות את המבט המלא.</p>
       </div>
     `;
     return;
@@ -763,34 +1205,33 @@ function renderLayerView(container) {
       const widthPct = (avg / 3) * 100;
       return `
         <div class="class-mini-row">
-          <div class="class-mini-name" style="color:${dim.color}">${dim.name}</div>
-          <div class="class-mini-bar"><div class="class-mini-bar-fill" style="background:${dim.color}; width:${widthPct}%;"></div></div>
-          <div class="class-mini-score" style="color:${dim.color}">${avg.toFixed(1)}</div>
+          <div class="class-mini-name" style="color:${dim.deep}">${escapeHtml(dim.name)}</div>
+          <div class="class-mini-bar" style="background:color-mix(in srgb, ${dim.soft} 30%, white)"><div class="class-mini-bar-fill" style="background:${dim.deep}; width:${widthPct}%;"></div></div>
+          <div class="class-mini-score" style="color:${dim.deep}">${avg.toFixed(1)}</div>
         </div>
       `;
     }).join('');
 
     const lowestDim = Object.keys(d.dimAverages).reduce((a, b) => d.dimAverages[a] < d.dimAverages[b] ? a : b);
-    const lowAvg = d.dimAverages[lowestDim];
-    const st = classStatus(lowAvg);
+    const st = classStatus(d.dimAverages[lowestDim]);
 
     return `
-      <div class="class-card" style="--class-color:${c.meta.color}" onclick="switchToClass('${c.id}')">
+      <button type="button" class="class-card" style="--class-color:${c.meta.color}" onclick="switchToClass('${c.id}')">
         <div class="class-card-head">
           <div>
-            <div class="class-card-name">${c.meta.name}</div>
-            <div class="class-card-teacher">מחנכת: ${c.meta.teacher}</div>
+            <div class="class-card-name">${escapeHtml(c.meta.name)}</div>
+            <div class="class-card-teacher">מחנכת: ${escapeHtml(c.meta.teacher)}</div>
           </div>
-          <div class="class-card-status" style="background:${st.bg}; color:${st.color};">${st.label}</div>
+          <span class="chip ${st.chip}">${st.label}</span>
         </div>
         <div class="class-card-mini-bars">${dimBars}</div>
-        <div class="class-card-response">${d.responseCount} מתוך ${c.total} ענו · פולס #${d.biweek}</div>
-        <div class="class-card-cta">פתחי כיתה ←</div>
-      </div>
+        <div class="class-card-response">${d.responseCount} מתוך ${c.total} ענו · פולס ${d.biweek}</div>
+        <span class="class-card-cta">פתיחת תצוגת כיתה ←</span>
+      </button>
     `;
   }).join('');
 
-  // ילדים בתשומת לב חוצי-שכבה
+  // ילדים עם סימון לתשומת לב — חוצי-שכבה (מבט רכזת/מנהלת בלבד)
   const attention = [];
   classes.forEach(c => {
     const studentMap = getStudentMap(c.id, c.data.biweek);
@@ -800,46 +1241,128 @@ function renderLayerView(container) {
       }
     });
   });
-  attention.sort((a, b) => b.reds - a.reds);
+  attention.sort((a, b) => b.lows - a.lows);
 
   const attentionHTML = attention.length === 0 ? `
-    <div class="layer-attention-empty">✓ אין תלמידים ב"תשומת לב" בשכבה השבוע</div>
+    <div class="layer-attention-empty">✓ אין ילדים עם "סימון לתשומת לב" בשכבה בפולס האחרון</div>
   ` : `
     <div class="layer-attention-list">
       ${attention.map(s => `
         <div class="layer-attention-row">
           <div>
-            <span class="layer-attention-name">${s.name}</span>
-            <span class="layer-attention-class">· ${s.className}</span>
+            <span class="layer-attention-name">${escapeHtml(s.name)}</span>
+            <span class="layer-attention-class">· ${escapeHtml(s.className)}</span>
           </div>
-          <div class="layer-attention-reds">${s.reds} אדומים</div>
-          <span class="map-status status-attention">תשומת לב</span>
+          <div class="layer-attention-signals">${s.lows} איתותים</div>
+          <span class="chip chip-attention">סימון לתשומת לב</span>
         </div>
       `).join('')}
     </div>
   `;
 
   container.innerHTML = `
-    <div class="stats">
+    <section class="hero">
+      <div class="hero-top">
+        <div class="hero-id">
+          <div class="hero-sun">${ICONS.sun}</div>
+          <div>
+            <h1>${greeting()}, מבט על שכבה א׳</h1>
+            <div class="hero-date">דמו פנימי · יוני 2026 · תצוגת רכזת שכבה</div>
+          </div>
+        </div>
+        <span class="demo-badge">נתוני הדגמה בלבד · מיועד להצגת חוויית שימוש</span>
+      </div>
+      <p class="hero-line">סיכום קבוצתי בלי שמות פר כיתה, ורשימת ילדים שכדאי לראות — מתוך הפולס האחרון.</p>
+    </section>
+
+    <div class="stats stats-3">
       <div class="stat">
-        <div class="stat-num" style="color:${DIMENSIONS[0].color}">${classes.length}</div>
+        <div class="stat-top">
+          <div class="stat-num">${classes.length}</div>
+          <span class="stat-icon si-lavender" aria-hidden="true">${ICONS.tools}</span>
+        </div>
         <div class="stat-label">כיתות בשכבה</div>
       </div>
       <div class="stat">
-        <div class="stat-num" style="color:${DIMENSIONS[1].color}">${totalResponded}/${totalKids}</div>
-        <div class="stat-label">ענו השבוע</div>
+        <div class="stat-top">
+          <div class="stat-num">${totalResponded}/${totalKids}</div>
+          <span class="stat-icon si-peach" aria-hidden="true">${ICONS.kids}</span>
+        </div>
+        <div class="stat-label">שיתפו בפולס האחרון</div>
       </div>
       <div class="stat">
-        <div class="stat-num" style="color:${DIMENSIONS[3].color}">${gradeAvg.toFixed(1)}</div>
-        <div class="stat-label">ממוצע שכבה</div>
+        <div class="stat-top">
+          <div class="stat-num">${gradeAvg.toFixed(1)}</div>
+          <span class="stat-icon si-sky" aria-hidden="true">${ICONS.heart}</span>
+        </div>
+        <div class="stat-label">תחושה כללית בשכבה (מתוך 3)</div>
       </div>
     </div>
 
-    <div class="layer-section-title">סטטוס כיתות · לחיצה על כרטיס פותחת תצוגת כיתה</div>
-    <div class="layer-classes">${classCards}</div>
+    <section class="section">
+      <h2 class="section-title">הכיתות בשכבה</h2>
+      <p class="section-micro">לחיצה על כרטיס פותחת את תצוגת הכיתה.</p>
+      <div class="layer-classes">${classCards}</div>
+    </section>
 
-    <div class="layer-section-title">תלמידים בתשומת לב בשכבה · ${attention.length}</div>
-    ${attentionHTML}
+    <section class="section">
+      <h2 class="section-title">ילדים שכדאי לראות בשכבה · ${attention.length}</h2>
+      <p class="section-micro">איתותים מהפולס — לא אבחנה. הצעד הבא: שיחה עם המחנכת, ואם נמשך — פנייה ליועצת.</p>
+      ${attentionHTML}
+    </section>
+
+    ${renderFooter()}
+  `;
+}
+
+// ═══════ NAV STRIP — קישור לכלי הפולס האחרים שהמחנכת צריכה ═══════
+// לא כולל דשבורד מנהלת — מחנכת לא רואה נתוני בית-ספר.
+function renderNavStrip(classId) {
+  const q = '?class=' + encodeURIComponent(classId);
+  return `
+    <section class="section" style="margin-top:24px">
+      <div class="section-head">
+        <span class="section-icon si-lavender" aria-hidden="true">${ICONS.tools}</span>
+        <h2 class="section-title">כלים נוספים</h2>
+      </div>
+      <p class="section-micro">המעבר בין כלי הפולס — שאלון הילדים, טופס הדירוג שלך, ופולס ההורים.</p>
+      <nav class="nav-strip" aria-label="כלי פולס נוספים">
+        <a class="nav-card" href="pulse-questionnaire.html${q}">
+          <span class="nav-card-ic student" aria-hidden="true">🐙</span>
+          <span>
+            <span class="nav-card-title">פולס תלמידים</span>
+            <span class="nav-card-sub">השאלון שהילדים ממלאים בעצמם</span>
+          </span>
+          <span class="nav-card-arrow" aria-hidden="true">←</span>
+        </a>
+        <a class="nav-card" href="pulse-teacher-form-mockup.html${q}">
+          <span class="nav-card-ic form" aria-hidden="true">📋</span>
+          <span>
+            <span class="nav-card-title">טופס דירוג</span>
+            <span class="nav-card-sub">תצפית המחנכת — דירוג דו-שבועי</span>
+          </span>
+          <span class="nav-card-arrow" aria-hidden="true">←</span>
+        </a>
+        <a class="nav-card" href="pulse-parent-monthly.html${q}">
+          <span class="nav-card-ic parent" aria-hidden="true">👨‍👩‍👧</span>
+          <span>
+            <span class="nav-card-title">פולס הורים</span>
+            <span class="nav-card-sub">המבט החודשי של ההורים</span>
+          </span>
+          <span class="nav-card-arrow" aria-hidden="true">←</span>
+        </a>
+      </nav>
+    </section>
+  `;
+}
+
+function renderFooter() {
+  return `
+    <footer class="page-foot">
+      פולס א׳-ב׳ · אימפקט.OS · דמו פנימי, יוני 2026 — כל השמות והנתונים בדויים.<br>
+      הפיילוט הראשון: 4 כיתות בכיתה א׳, בכ־4 בתי ספר או מסגרות פיילוט, בכפוף לאישור סופי. תחילת פיילוט: 1.9.2026.<br>
+      המערכת מציעה איתותים רכים בלבד — לא אבחנות, לא ציונים, ובלי בינה מלאכותית.
+    </footer>
   `;
 }
 
@@ -857,124 +1380,203 @@ function render() {
   if (!data) {
     container.innerHTML = `
       <div class="empty">
-        <h3>אין עוד תשובות לכיתה ${classId}</h3>
-        <p>הילדים עוד לא מילאו פולס. שלחי להם את הקישור.</p>
-        <a href="pulse-questionnaire.html?class=${classId}&biweek=1" target="_blank">פתחי את השאלון</a>
-        <p style="margin-top:20px;font-size:0.85rem;">או — לחצי "טען דוגמה" למטה לראות איך זה נראה עם נתונים.</p>
+        <h3>עדיין אין תשובות לכיתה ${escapeHtml(classId)}</h3>
+        <p>הילדים עוד לא מילאו פולס. אפשר לשלוח להם את הקישור.</p>
+        <a class="btn" href="pulse-questionnaire.html?class=${encodeURIComponent(classId)}&biweek=1" target="_blank" rel="noopener">פתיחת השאלון</a>
+        <p style="margin-top:20px;font-size:0.85rem;">או — ללחוץ "טען דוגמה" למטה כדי לראות איך זה נראה עם נתונים.</p>
       </div>
+      ${renderNavStrip(classId)}
+      ${renderFooter()}
     `;
     return;
   }
 
   const hero = generateHero(data);
-  const heroDoneKey = `pulse-demo-action-done-${classId}-${data.biweek}`;
-  const isDone = localStorage.getItem(heroDoneKey) === '1';
+  const teacherName = CLASS_META[classId] ? CLASS_META[classId].teacher : '';
 
   const dimBars = DIMENSIONS.map(d => {
     const avg = data.dimAverages[d.id] || 0;
     const widthPct = (avg / 3) * 100;
     const trend = data.dimTrends[d.id];
-    const trendIcon = trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→';
+    const trendText = trend === 'up' ? '↑ עלייה' : trend === 'down' ? '↓ ירידה' : '→ יציב';
     const trendClass = trend === 'up' ? 'trend-up' : trend === 'down' ? 'trend-down' : 'trend-flat';
     return `
       <div class="dim-row">
-        <div class="dim-name" style="color:${d.color}">${d.name}</div>
-        <div class="dim-bar">
-          <div class="dim-bar-fill" style="background:${d.color}; width:${widthPct}%;"></div>
+        <div class="dim-name" style="color:${d.deep}"><span class="dim-dot" style="background:${d.soft}" aria-hidden="true"></span>${escapeHtml(d.name)}</div>
+        <div class="dim-bar" style="background:color-mix(in srgb, ${d.soft} 18%, white)">
+          <div class="dim-bar-fill" style="background:${d.soft}; width:${widthPct}%;"></div>
         </div>
-        <div class="dim-score" style="color:${d.color}">${avg.toFixed(1)}</div>
-        <div class="dim-trend ${trendClass}">${trendIcon}</div>
+        <div class="dim-score" style="color:${d.deep}">${avg.toFixed(1)}</div>
+        <div class="dim-trend ${trendClass}">${trendText}</div>
       </div>
     `;
   }).join('');
 
   const trendBars = data.trendWeeks.map(w => {
     const h = w.avg ? (w.avg / 3) * 100 : 0;
-    return `<div class="trend-bar" style="height:${h}%;" data-week="פולס ${w.week}"></div>`;
+    return `<div class="trend-bar" style="height:${h}%;" data-week="פולס ${w.week}" role="img" aria-label="פולס ${w.week}: ${w.avg ? w.avg.toFixed(1) : 'אין נתון'} מתוך 3"></div>`;
   }).join('');
 
   const overallAvg = Object.values(data.dimAverages).reduce((a,b) => a+b, 0) / 4;
+  // איתותים פעילים — ילדים עם לפחות איתות אחד בפולס האחרון (אותה לוגיקה של המפה)
+  const signalsCount = getStudentMap(classId, data.biweek)
+    .filter(r => r.status === 'attention' || r.status === 'watch').length;
 
   container.innerHTML = `
+    <section class="hero">
+      <div class="hero-top">
+        <div class="hero-id">
+          <div class="hero-sun">${ICONS.sun}</div>
+          <div>
+            <h1>${greeting()}${teacherName ? ', ' + escapeHtml(teacherName) : ''}</h1>
+            <div class="hero-date">דמו פנימי · יוני 2026 · כיתה ${escapeHtml(classId)} · פולס ${data.biweek}</div>
+          </div>
+        </div>
+        <div class="hero-side">
+          <span class="demo-badge">נתוני הדגמה בלבד · מיועד להצגת חוויית שימוש</span>
+          <div class="hero-actions">
+            <a class="btn btn-hero" href="pulse-questionnaire.html?class=${encodeURIComponent(classId)}" target="_blank" rel="noopener">שליחת פולס לילדים</a>
+            <button type="button" class="btn btn-hero" onclick="openMapDrawer()">המפה המלאה</button>
+          </div>
+        </div>
+      </div>
+      <p class="hero-line">${hero.line}</p>
+      <div class="hero-chips">
+        <span class="chip ${hero.chipClass}">${hero.chipText}</span>
+        <span class="chip chip-info">${data.responseCount} ילדים שיתפו</span>
+      </div>
+    </section>
+
     <div class="stats">
       <div class="stat">
-        <div class="stat-num" style="color:${DIMENSIONS[0].color}">${data.responseCount}</div>
-        <div class="stat-label">ילדים ענו</div>
-      </div>
-      <div class="stat">
-        <div class="stat-num" style="color:${DIMENSIONS[2].color}">${data.biweek}</div>
-        <div class="stat-label">מספר פולס</div>
-      </div>
-      <div class="stat">
-        <div class="stat-num" style="color:${DIMENSIONS[3].color}">${overallAvg ? overallAvg.toFixed(1) : '—'}</div>
-        <div class="stat-label">ממוצע כיתתי</div>
-      </div>
-    </div>
-
-    <div class="hero-card" style="--hero-color:${hero.statusColor}">
-      <div class="hero-status">
-        <div class="hero-status-dot"></div>
-        ${hero.status}
-      </div>
-      <div class="hero-line">${hero.line}</div>
-      <button class="hero-action ${isDone ? 'done' : ''}" onclick="markActionDone('${heroDoneKey}')">
-        ${isDone ? '✓ עשיתי' : '→ ' + hero.action}
-      </button>
-    </div>
-
-    <div class="section-title">פירוט פר מימד</div>
-    <div class="dim-list">${dimBars}</div>
-
-    <div class="trend-card">
-      <div class="trend-title">מגמת "שמחה ללמוד" — ${data.trendWeeks.length} פולסים אחרונים</div>
-      <div class="trend-chart">${trendBars}</div>
-    </div>
-
-    ${data.alertText ? `<div class="alert">⚠️ ${data.alertText}</div>` : ''}
-
-    <div class="map-card">
-      <div class="map-header">
-        <div>
-          <h3>מיפוי תלמידים · פולס #${data.biweek}</h3>
-          <div class="map-sub">מי שווה מבט השבוע · ${data.responseCount} ענו</div>
+        <div class="stat-top">
+          <div class="stat-num">${data.responseCount}</div>
+          <span class="stat-icon si-peach" aria-hidden="true">${ICONS.kids}</span>
         </div>
-        <select class="map-sort" onchange="changeMapSort(this.value)">
-          <option value="concern" ${mapSortBy === 'concern' ? 'selected' : ''}>מיון: רמת דאגה</option>
-          <option value="name" ${mapSortBy === 'name' ? 'selected' : ''}>מיון: שם</option>
-        </select>
+        <div class="stat-label">ילדים שיתפו בפולס האחרון</div>
       </div>
-      <div class="map-legend">
-        <span><i class="dot dot-green"></i>כן, הרבה</span>
-        <span><i class="dot dot-yellow"></i>קצת</span>
-        <span><i class="dot dot-red"></i>לא</span>
-        <span><i class="dot dot-gray"></i>טרם ענה</span>
+      <div class="stat">
+        <div class="stat-top">
+          <div class="stat-num">${overallAvg ? overallAvg.toFixed(1) : '—'}</div>
+          <span class="stat-icon si-sky" aria-hidden="true">${ICONS.heart}</span>
+        </div>
+        <div class="stat-label">תחושה כללית (מתוך 3)</div>
       </div>
-      <table class="map-table">
-        <thead>
-          <tr>
-            <th>תלמיד.ה</th>
-            ${DIMENSIONS.map(d => `<th class="col-dim" style="color:${d.color}">${d.name}</th>`).join('')}
-            <th class="col-dim">סטטוס</th>
-          </tr>
-        </thead>
-        <tbody>${renderStudentMapRows(classId, data.biweek)}</tbody>
-      </table>
-      <div class="map-caveat">
-        💡 הפולס הוא <strong>איתות</strong>, לא אבחנה. תלמיד.ה ב"תשומת לב" 3 פולסים → להוסיף תצפית מורה + לדבר עם היועצת לפני כל החלטה.
+      <div class="stat">
+        <div class="stat-top">
+          <div class="stat-num">${signalsCount}</div>
+          <span class="stat-icon si-sand" aria-hidden="true">${ICONS.bell}</span>
+        </div>
+        <div class="stat-label">איתותים פעילים — כדאי לשים לב</div>
+      </div>
+      <div class="stat">
+        <div class="stat-top">
+          <div class="stat-num">${data.biweek}</div>
+          <span class="stat-icon si-mint" aria-hidden="true">${ICONS.check}</span>
+        </div>
+        <div class="stat-label">פולסים הושלמו השנה</div>
       </div>
     </div>
+
+    ${renderNavStrip(classId)}
+
+    ${renderActionsSection(classId, data)}
+
+    <section class="section">
+      <div class="section-head">
+        <span class="section-icon si-lavender" aria-hidden="true">${ICONS.bars}</span>
+        <h2 class="section-title">אקלים הכיתה · 4 ממדים</h2>
+      </div>
+      <p class="section-micro">סיכום קבוצתי בלי שמות, מתוך מה שהילדים עצמם סימנו.</p>
+      <div class="dim-list">${dimBars}</div>
+
+      <div class="trend-card">
+        <div class="trend-title">מגמת "לגלות" (שמחה ללמוד) — ${data.trendWeeks.length} פולסים אחרונים</div>
+        <div class="trend-chart">${trendBars}</div>
+      </div>
+
+      ${data.alertText ? `<div class="alert">${data.alertText}</div>` : ''}
+    </section>
+
+    ${renderDimensionGroups(classId, data.biweek)}
+
+    <section class="section">
+      <div class="section-head">
+        <span class="section-icon si-sand" aria-hidden="true">${ICONS.tools}</span>
+        <h2 class="section-title">להעמיק במבט הזה</h2>
+      </div>
+      <p class="section-micro">למי שרוצה להעמיק — הכול נשאר רך וקטן.</p>
+
+      ${renderInterventionDrawer(classId)}
+
+      <details class="drawer" id="map-drawer">
+        <summary>המפה המלאה של הכיתה · פולס ${data.biweek}</summary>
+        <div class="drawer-body">
+          <div class="map-header">
+            <p class="drawer-sub" style="margin:0">מה כל ילד.ה סימן.ה בפולס האחרון · ${data.responseCount} שיתפו</p>
+            <div>
+              <label class="visually-hidden" for="map-sort">מיון המפה</label>
+              <select class="map-sort" id="map-sort" onchange="changeMapSort(this.value)">
+                <option value="concern" ${mapSortBy === 'concern' ? 'selected' : ''}>מיון: מי לתשומת לב קודם</option>
+                <option value="name" ${mapSortBy === 'name' ? 'selected' : ''}>מיון: לפי שם</option>
+              </select>
+            </div>
+          </div>
+          <div class="map-legend">
+            <span><span class="score-pill pill-yes">כן</span> כן, הרבה</span>
+            <span><span class="score-pill pill-some">קצת</span> קצת</span>
+            <span><span class="score-pill pill-no">לא</span> לא</span>
+            <span><span class="score-pill pill-none">—</span> טרם ענה.תה</span>
+          </div>
+          <table class="map-table">
+            <thead>
+              <tr>
+                <th scope="col">תלמיד.ה</th>
+                ${DIMENSIONS.map(d => `<th scope="col" class="col-dim" style="color:${d.deep}">${escapeHtml(d.name)}</th>`).join('')}
+                <th scope="col" class="col-dim">מצב</th>
+              </tr>
+            </thead>
+            <tbody>${renderStudentMapRows(classId, data.biweek)}</tbody>
+          </table>
+          <div class="map-caveat">
+            הפולס הוא <strong>איתות</strong>, לא אבחנה. ילד.ה עם "סימון לתשומת לב" שלושה פולסים ברצף —
+            מוסיפים תצפית מורה ופונים ליועצת לפני כל החלטה.
+          </div>
+        </div>
+      </details>
+    </section>
+
+    ${renderFooter()}
   `;
 }
 
+// טוגל דו-כיווני + שמירה ב-localStorage + משוב toast
 function markActionDone(key) {
-  localStorage.setItem(key, '1');
+  const isDone = localStorage.getItem(key) === '1';
+  if (isDone) {
+    localStorage.removeItem(key);
+    showToast('סימון "עשיתי" בוטל — אפשר לחזור לזה מתי שנוח.');
+  } else {
+    localStorage.setItem(key, '1');
+    showToast('יופי — סומן כ"עשיתי". נשמר בדפדפן.');
+  }
   render();
 }
 
-document.getElementById('class-select').addEventListener('change', render);
-
-// Initial render
-render();
+// ═══════ INIT ═══════
+(function init() {
+  const select = document.getElementById('class-select');
+  if (ROLE !== 'principal') {
+    // עיקרון סגור: דשבורד מחנכת בלי השוואה בין כיתות — מבט שכבה רק ב-?role=principal
+    const layerOpt = select.querySelector('option[value="layer"]');
+    if (layerOpt) layerOpt.remove();
+    select.value = 'א1';
+  } else {
+    select.value = 'layer';
+  }
+  select.addEventListener('change', render);
+  render();
+})();
 </script>
 
 </body>

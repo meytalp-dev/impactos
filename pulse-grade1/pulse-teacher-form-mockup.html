@@ -7,11 +7,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="pulse-core.css">
 <style>
 :root {
-  --primary: #2E7D8C;
-  --primary-dark: #1E5A66;
-  --primary-soft: #E5F1F3;
+  --primary: var(--aqua-deep, #52BDB5);
+  --primary-dark: #2F8A82;
+  --primary-soft: #E7F6F4;
   --surface: #F5F0E8;
   --surface-card: #FDFCFA;
   --surface-elevated: #FFFFFF;
@@ -29,7 +30,8 @@
   --dim-joy: #5BC0A8;
   --dim-joy-soft: #E1F4EE;
   --success: #2E8B57;
-  --warning: #C85A3B;
+  --warning: var(--attention, #E8A08F);
+  --warning-ink: #9A4733;
   --shadow-sm: 0 1px 2px rgba(30, 61, 71, 0.06);
   --shadow-md: 0 4px 12px rgba(30, 61, 71, 0.08);
   --shadow-lg: 0 12px 32px rgba(30, 61, 71, 0.12);
@@ -543,6 +545,7 @@ button:disabled {
   padding: 4px;
   border-radius: 12px;
   border: 1px solid var(--border);
+  min-inline-size: auto; /* fieldset reset */
 }
 
 .freq-btn {
@@ -894,7 +897,7 @@ button:disabled {
 }
 
 .insight-icon.green { background: var(--dim-joy); }
-.insight-icon.red { background: var(--warning); }
+.insight-icon.red { background: var(--warning); color: #6B3A2C; }
 .insight-icon.yellow { background: var(--dim-adjust); }
 
 .dim-coverage {
@@ -972,6 +975,104 @@ button:disabled {
   margin: 0 2px;
 }
 
+/* ========== BACK LINK ========== */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Rubik', sans-serif;
+  color: var(--on-surface-muted);
+  text-decoration: none;
+  border: 1px solid var(--border-strong);
+  transition: var(--transition);
+}
+.back-link:hover {
+  background: var(--surface);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+.back-link:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ========== SENT STATE ========== */
+.sent-view { display: none; }
+.sent-view.active { display: block; }
+.sent-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 48px 36px;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+  max-width: 620px;
+  margin: 24px auto;
+}
+.sent-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--success);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  margin: 0 auto 20px;
+  box-shadow: var(--shadow-md);
+}
+.sent-title {
+  font-family: 'Rubik', sans-serif;
+  font-size: 26px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.sent-sub {
+  font-size: 15px;
+  color: var(--on-surface-muted);
+  line-height: 1.6;
+  max-width: 460px;
+  margin: 0 auto 28px;
+}
+.sent-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.sent-actions .nav-btn { text-decoration: none; }
+
+/* ========== TOAST ========== */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--on-surface);
+  color: white;
+  padding: 12px 22px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease, transform 220ms ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 /* ========== RESPONSIVE ========== */
 @media (max-width: 880px) {
   .app-header { padding: 14px 16px; }
@@ -1022,15 +1123,20 @@ button:disabled {
 <header class="app-header">
   <div class="header-row">
     <div class="brand">
+      <a class="back-link" href="pulse-dashboard.html" aria-label="חזרה לדשבורד המורה">
+        <span aria-hidden="true">→</span>
+        <span>דשבורד</span>
+      </a>
       <div class="logo">פ</div>
       <div class="brand-text">
         <div class="brand-name">פולס · כיתה א'1</div>
-        <div class="brand-meta">מחנכת: מיטל פלג · בית הערבה</div>
+        <div class="brand-meta">מחנכת: מיטל פלג · נתוני הדגמה</div>
       </div>
     </div>
+    <span class="demo-badge">נתוני הדגמה בלבד · מיועד להצגת חוויית שימוש</span>
     <div class="pulse-info">
       <div class="pulse-number">פולס #4</div>
-      <div class="pulse-date">28 במאי 2026</div>
+      <div class="pulse-date">דמו פנימי · יוני 2026</div>
     </div>
   </div>
 </header>
@@ -1108,7 +1214,7 @@ button:disabled {
       <div class="completion-ring">
         <svg width="90" height="90" viewBox="0 0 90 90">
           <circle cx="45" cy="45" r="38" fill="none" stroke="#E8E0D2" stroke-width="6"/>
-          <circle id="completionRingFill" cx="45" cy="45" r="38" fill="none" stroke="#2E7D8C" stroke-width="6" stroke-linecap="round" stroke-dasharray="238.76" stroke-dashoffset="60"/>
+          <circle id="completionRingFill" cx="45" cy="45" r="38" fill="none" stroke="#52BDB5" stroke-width="6" stroke-linecap="round" stroke-dasharray="238.76" stroke-dashoffset="60"/>
         </svg>
         <div class="completion-ring-text" id="completionRingText">75%</div>
       </div>
@@ -1126,7 +1232,7 @@ button:disabled {
         </div>
         <div class="stat-block">
           <div class="stat-number" id="statNotes">4</div>
-          <div class="stat-label">הערות קליניות שצירפת</div>
+          <div class="stat-label">הערות אישיות שצירפת</div>
         </div>
       </div>
     </div>
@@ -1135,7 +1241,7 @@ button:disabled {
       <div class="summary-card">
         <div class="summary-card-title">
           <span>📊</span>
-          <span>תובנות מהירות</span>
+          <span>תובנות מהירות · נוצר אוטומטית (חישוב סטטיסטי)</span>
         </div>
         <div class="insight-row">
           <span class="insight-icon green">✓</span>
@@ -1193,7 +1299,34 @@ button:disabled {
     </div>
   </section>
 
+  <!-- SENT / CONFIRMATION VIEW -->
+  <section class="sent-view" id="sentView" role="status" aria-live="polite">
+    <div class="sent-card">
+      <div class="sent-icon" aria-hidden="true">✓</div>
+      <h1 class="sent-title">הדירוג נשמר ✓</h1>
+      <p class="sent-sub" id="sentSummaryText">
+        הפולס נשלח לדשבורד הכיתתי כסיכום קבוצתי (בלי שמות).
+        ההערות האישיות נשארות אצלך בלבד.
+      </p>
+      <div class="sent-actions">
+        <a class="nav-btn primary" href="pulse-dashboard.html">
+          <span>לדשבורד הכיתתי</span>
+          <span>←</span>
+        </a>
+        <button type="button" class="nav-btn ghost" id="reopenFormBtn">
+          <span>→</span>
+          <span>חזרה לטופס</span>
+        </button>
+      </div>
+      <p style="font-size:12px;color:var(--on-surface-soft);margin-top:20px;">
+        דמו פנימי · יוני 2026 — אין שליחה אמיתית במצב הדגמה.
+      </p>
+    </div>
+  </section>
+
 </main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <div class="kbd-hint">
   <span><kbd>↑↓</kbd> ניווט בין ילדים</span>
@@ -1350,12 +1483,13 @@ function renderStudentList() {
     const noteKey = `${item.id}-${idx}`;
     const hasNote = !!state.notes[noteKey];
 
-    let freqHTML = '<div class="freq-group" role="radiogroup" aria-label="תדירות">';
+    let freqHTML = `<fieldset class="freq-group" role="radiogroup" aria-label="תדירות התנהגות — ${name}"><legend class="visually-hidden">${name}</legend>`;
     FREQ_OPTIONS.forEach(opt => {
-      const selected = responses[idx] === opt.value ? 'selected' : '';
-      freqHTML += `<button class="freq-btn ${selected}" data-value="${opt.value}" data-idx="${idx}">${opt.label}<span class="kbd">${opt.value}</span></button>`;
+      const isSelected = responses[idx] === opt.value;
+      const selected = isSelected ? 'selected' : '';
+      freqHTML += `<button type="button" role="radio" aria-checked="${isSelected ? 'true' : 'false'}" class="freq-btn ${selected}" data-value="${opt.value}" data-idx="${idx}">${opt.label}<span class="kbd" aria-hidden="true">${opt.value}</span></button>`;
     });
-    freqHTML += '</div>';
+    freqHTML += '</fieldset>';
 
     row.innerHTML = `
       <div class="student-info">
@@ -1366,9 +1500,9 @@ function renderStudentList() {
         </div>
       </div>
       ${freqHTML}
-      <button class="note-btn ${hasNote ? 'has-note' : ''}" data-idx="${idx}" title="הוסיפי הערה">📝</button>
+      <button type="button" class="note-btn ${hasNote ? 'has-note' : ''}" data-idx="${idx}" title="הוסיפי הערה" aria-label="הוסיפי הערה עבור ${name}">📝</button>
       <div class="note-panel" data-idx="${idx}">
-        <textarea class="note-textarea" data-idx="${idx}" placeholder="הערה קצרה (אופציונלי) — דברים שראית, אבל לא נכנסים לדירוג">${state.notes[noteKey] || ''}</textarea>
+        <textarea class="note-textarea" data-idx="${idx}" aria-label="הערה קצרה עבור ${name}" placeholder="הערה קצרה (אופציונלי) — דברים שראית, אבל לא נכנסים לדירוג">${state.notes[noteKey] || ''}</textarea>
         <div class="note-meta">
           <span>זה נשאר אצלך — לא נשלח להורים.</span>
           <span><kbd>Esc</kbd> לסגירה</span>
@@ -1507,7 +1641,44 @@ function backToEdit() {
   state.view = 'item';
   document.getElementById('itemView').classList.remove('hidden');
   document.getElementById('summaryView').classList.remove('active');
+  document.getElementById('sentView').classList.remove('active');
   renderAll();
+}
+
+// ============ TOAST ============
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// ============ SUBMIT ============
+function submitForm() {
+  const total = totalRated();
+  if (total === 0) {
+    showToast('עוד לא דירגת אף ילד.ה — סמני לפחות פריט אחד לפני שליחה.');
+    backToEdit();
+    return;
+  }
+  state.view = 'sent';
+  document.getElementById('itemView').classList.add('hidden');
+  document.getElementById('summaryView').classList.remove('active');
+  document.getElementById('sentView').classList.add('active');
+
+  const notes = Object.keys(state.notes).length;
+  const possible = ITEMS.length * STUDENTS.length;
+  document.getElementById('sentSummaryText').innerHTML =
+    `נשמרו <strong>${total}</strong> דירוגים מתוך ${possible} ` +
+    `(${ITEMS.length} פריטים × ${STUDENTS.length} ילדים)` +
+    (notes ? ` · <strong>${notes}</strong> הערות אישיות` : '') + '.<br>' +
+    'הפולס נשלח לדשבורד הכיתתי כסיכום קבוצתי (בלי שמות). ' +
+    'ההערות האישיות נשארות אצלך בלבד.';
+
+  showToast('✓ הדירוג נשמר ונשלח');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ============ BULK ACTION ============
@@ -1533,6 +1704,11 @@ document.addEventListener('keydown', e => {
   const item = ITEMS[state.currentItem];
 
   if (state.view === 'summary') {
+    if (e.key === 'Escape' || e.key === 'ArrowRight') backToEdit();
+    return;
+  }
+
+  if (state.view === 'sent') {
     if (e.key === 'Escape' || e.key === 'ArrowRight') backToEdit();
     return;
   }
@@ -1577,9 +1753,8 @@ function init() {
   document.getElementById('prevBtn').addEventListener('click', goPrev);
   document.getElementById('bulkBtn').addEventListener('click', bulkFillRemaining);
   document.getElementById('backToEditBtn').addEventListener('click', backToEdit);
-  document.getElementById('submitBtn').addEventListener('click', () => {
-    alert('הפולס נשלח! (mockup — אין שליחה אמיתית)\n\nבמערכת האמיתית: הדירוגים נכנסים ל-Supabase, מאוגרגרים לדשבורד כיתתי, ויחסר אינדיקציה למורה אם ילד.ה מסומן.ת באדום ב-2 פולסים ברצף.');
-  });
+  document.getElementById('submitBtn').addEventListener('click', submitForm);
+  document.getElementById('reopenFormBtn').addEventListener('click', backToEdit);
 }
 
 init();

@@ -7,18 +7,22 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="pulse-core.css">
 <style>
 :root {
-  --primary: #2E7D8C;
-  --primary-dark: #1E5A66;
-  --primary-soft: #E5F1F3;
+  --primary: var(--aqua-deep, #52BDB5);
+  --primary-dark: #2F8A82;
+  --primary-soft: #E7F6F4;
   --dim-adjust: #F2B844;
   --dim-friend: #E08FAF;
   --dim-emotion: #8B6BC0;
   --dim-joy: #5BC0A8;
-  --tier-green: #5BC0A8;
-  --tier-yellow: #F2B844;
-  --tier-red: #C85A3B;
+  --tier-green: var(--ok, #7CBF9E);
+  --tier-yellow: var(--notice, #F3D37A);
+  --tier-red: var(--attention, #E8A08F);
+  --tier-green-ink: #2E6E5F;
+  --tier-yellow-ink: #8a6817;
+  --tier-red-ink: #9A4733;
   --surface: #F5F0E8;
   --surface-card: #FDFCFA;
   --white: #FFFFFF;
@@ -221,7 +225,7 @@ h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
 }
 .status-pill.green { background: rgba(91,192,168,.18); color: #2E6E5F; }
 .status-pill.yellow { background: rgba(242,184,68,.22); color: #8a6817; }
-.status-pill.red { background: rgba(200,90,59,.18); color: #8a3b25; }
+.status-pill.red { background: rgba(232,160,143,.30); color: #8a3b25; }
 .dim-score { font-family: 'Rubik'; font-weight: 600; }
 .action-btn {
   background: var(--primary-soft);
@@ -321,7 +325,7 @@ h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
   color: var(--text-light);
   font-weight: 600;
 }
-.scenario-tag.urgent { background: rgba(200,90,59,.16); color: #8a3b25; }
+.scenario-tag.urgent { background: rgba(232,160,143,.28); color: #8a3b25; }
 .scenario-tag.support { background: rgba(242,184,68,.2); color: #8a6817; }
 .scenario-tag.dim-1 { background: rgba(242,184,68,.18); color: #8a6817; }
 .scenario-tag.dim-2 { background: rgba(224,143,175,.2); color: #a4537d; }
@@ -452,6 +456,86 @@ h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
   margin-top: 40px;
   line-height: 1.6;
 }
+
+/* TOOLBAR (export) */
+.tab-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 14px;
+}
+.toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--white);
+  border: 1.5px solid var(--border-strong);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.toolbar-btn:hover { background: var(--primary-soft); color: var(--primary-dark); border-color: var(--primary); }
+.toolbar-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* SCENARIO ACTION AS LINK */
+a.scenario-action {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+a.scenario-action:hover {
+  background: var(--primary-soft);
+  transform: translateX(-2px);
+}
+a.scenario-action.co-creation:hover { background: rgba(139,107,192,.1); }
+a.scenario-action:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.scenario-action-link-hint {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* EMPTY STATE (search/filter) */
+.empty-row {
+  padding: 28px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  display: none;
+}
+.empty-row.show { display: block; }
+.pulse-row.hidden, .scenario.hidden { display: none; }
+
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--text);
+  color: white;
+  padding: 12px 22px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-md);
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media print {
+  .topbar, .tabs, .filters, .tab-toolbar, .action-btn, .toast { display: none !important; }
+  .tab-content { display: block !important; }
+  .drill-panel { display: block !important; }
+}
 </style>
 </head>
 <body>
@@ -464,7 +548,10 @@ h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
       <div class="brand-sub">מאגר פולסים · תובנות · מאגר תרחישים והתערבויות</div>
     </div>
   </div>
-  <div class="admin-pill">⚙️ ניהול</div>
+  <div style="display: flex; align-items: center; gap: 10px;">
+    <span class="demo-badge">נתוני הדגמה בלבד · מיועד להצגת חוויית שימוש</span>
+    <div class="admin-pill">⚙️ ניהול</div>
+  </div>
 </div>
 
 <div class="container">
@@ -501,13 +588,17 @@ h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
   <!-- ============ PULSES STORAGE ============ -->
   <div class="tab-content active" id="tab-pulses">
 
+    <div class="tab-toolbar">
+      <button type="button" class="toolbar-btn" data-print><span aria-hidden="true">🖨</span> ייצוא / הדפסה (PDF)</button>
+    </div>
+
     <div class="filters">
-      <button class="filter-pill active">הכל <span class="count">47</span></button>
-      <button class="filter-pill">🐙 תלמיד.ה <span class="count">28</span></button>
-      <button class="filter-pill">👩‍🏫 מורה <span class="count">12</span></button>
-      <button class="filter-pill">📱 הורה <span class="count">5</span></button>
-      <button class="filter-pill">🏫 מנהלת <span class="count">2</span></button>
-      <input class="search-input" placeholder="🔍 חיפוש לפי כיתה, שם תלמיד.ה, תאריך...">
+      <button type="button" class="filter-pill active" data-filter="all">הכל <span class="count">47</span></button>
+      <button type="button" class="filter-pill" data-filter="student">🐙 תלמיד.ה <span class="count">28</span></button>
+      <button type="button" class="filter-pill" data-filter="teacher">👩‍🏫 מורה <span class="count">12</span></button>
+      <button type="button" class="filter-pill" data-filter="parent">📱 הורה <span class="count">5</span></button>
+      <button type="button" class="filter-pill" data-filter="principal">🏫 מנהלת <span class="count">2</span></button>
+      <input class="search-input" id="pulseSearch" type="search" aria-label="חיפוש לפי כיתה, שם תלמיד.ה, תאריך" placeholder="🔍 חיפוש לפי כיתה, שם תלמיד.ה, תאריך...">
     </div>
 
     <div class="pulse-table">
@@ -520,36 +611,36 @@ h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
         <div>פעולה</div>
       </div>
 
-      <div class="pulse-row" onclick="toggleDrill('drill-1')">
-        <div>10.6 09:15</div>
+      <div class="pulse-row" role="button" tabindex="0" data-drill="drill-1" data-audience="student" aria-expanded="false" aria-controls="drill-1">
+        <div>דמו · 09:15</div>
         <div><span class="audience-tag student">🐙 תלמיד.ה</span></div>
         <div><strong>דניאל · א'1</strong></div>
         <div>
-          <span class="dim-score" style="color: var(--tier-green);">🟡 5</span> ·
-          <span class="dim-score" style="color: var(--tier-yellow);">🌸 3</span> ·
-          <span class="dim-score" style="color: var(--tier-green);">💜 5</span> ·
-          <span class="dim-score" style="color: var(--tier-green);">💚 5</span>
+          <span class="dim-score" style="color: var(--tier-green-ink);">🟡 5</span> ·
+          <span class="dim-score" style="color: var(--tier-yellow-ink);">🌸 3</span> ·
+          <span class="dim-score" style="color: var(--tier-green-ink);">💜 5</span> ·
+          <span class="dim-score" style="color: var(--tier-green-ink);">💚 5</span>
         </div>
         <div><span class="status-pill green">🟢 טוב</span></div>
         <div><button class="action-btn">פתח →</button></div>
       </div>
 
-      <div class="pulse-row">
-        <div>10.6 09:18</div>
+      <div class="pulse-row" role="button" tabindex="0" data-audience="student">
+        <div>דמו · 09:18</div>
         <div><span class="audience-tag student">🐙 תלמיד.ה</span></div>
         <div><strong>מאיה · א'2</strong></div>
         <div>
-          <span class="dim-score" style="color: var(--tier-green);">🟡 5</span> ·
-          <span class="dim-score" style="color: var(--tier-red);">🌸 1</span> ·
-          <span class="dim-score" style="color: var(--tier-yellow);">💜 3</span> ·
-          <span class="dim-score" style="color: var(--tier-green);">💚 5</span>
+          <span class="dim-score" style="color: var(--tier-green-ink);">🟡 5</span> ·
+          <span class="dim-score" style="color: var(--tier-red-ink);">🌸 1</span> ·
+          <span class="dim-score" style="color: var(--tier-yellow-ink);">💜 3</span> ·
+          <span class="dim-score" style="color: var(--tier-green-ink);">💚 5</span>
         </div>
         <div><span class="status-pill red">🔴 דחוף · חברות</span></div>
         <div><button class="action-btn">פתח →</button></div>
       </div>
 
-      <div class="pulse-row">
-        <div>10.6 08:00</div>
+      <div class="pulse-row" role="button" tabindex="0" data-audience="teacher">
+        <div>דמו · 08:00</div>
         <div><span class="audience-tag teacher">👩‍🏫 מורה</span></div>
         <div><strong>רינת · א'1</strong> (טופס דירוג)</div>
         <div>25 ילדים סומנו · 8 פריטים · 0 חסרים</div>
@@ -557,65 +648,67 @@ h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
         <div><button class="action-btn">פתח →</button></div>
       </div>
 
-      <div class="pulse-row">
-        <div>9.6 14:20</div>
+      <div class="pulse-row" role="button" tabindex="0" data-audience="parent">
+        <div>דמו · 14:20</div>
         <div><span class="audience-tag parent">📱 הורה</span></div>
         <div><strong>אמא של תום · א'3</strong></div>
-        <div>5 פריטים · 1 דגל (תלונות גופניות)</div>
+        <div>5 פריטים · איתות אחד (תלונות גופניות)</div>
         <div><span class="status-pill yellow">🟡 דורש בדיקת יועצת</span></div>
         <div><button class="action-btn">פתח →</button></div>
       </div>
 
-      <div class="pulse-row">
-        <div>9.6 11:05</div>
+      <div class="pulse-row" role="button" tabindex="0" data-audience="parent">
+        <div>דמו · 11:05</div>
         <div><span class="audience-tag parent">📱 הורה</span></div>
         <div><strong>אבא של ליאם · א'4</strong></div>
-        <div>5 פריטים · 0 דגלים · open-text "נהדר השבוע"</div>
+        <div>5 פריטים · 0 איתותים · טקסט חופשי "נהדר השבוע"</div>
         <div><span class="status-pill green">🟢 חיובי</span></div>
         <div><button class="action-btn">פתח →</button></div>
       </div>
 
-      <div class="pulse-row">
-        <div>9.6 07:30</div>
+      <div class="pulse-row" role="button" tabindex="0" data-audience="principal">
+        <div>דמו · 07:30</div>
         <div><span class="audience-tag principal">🏫 מנהלת</span></div>
         <div><strong>בית הספר</strong> (דשבורד צפייה)</div>
-        <div>צפייה · 5 ווידג'טים · ייצא PDF לטליה</div>
+        <div>צפייה · 5 ווידג'טים · ייצוא PDF אנונימי</div>
         <div><span class="status-pill yellow">🟡 4 התראות פעילות</span></div>
         <div><button class="action-btn">פתח →</button></div>
       </div>
 
-      <div class="pulse-row">
-        <div>9.6 08:15</div>
+      <div class="pulse-row" role="button" tabindex="0" data-audience="student">
+        <div>דמו · 08:15</div>
         <div><span class="audience-tag student">🐙 תלמיד.ה</span></div>
         <div><strong>איתי · א'2</strong></div>
         <div>
-          <span class="dim-score" style="color: var(--tier-yellow);">🟡 3</span> ·
-          <span class="dim-score" style="color: var(--tier-green);">🌸 5</span> ·
-          <span class="dim-score" style="color: var(--tier-green);">💜 5</span> ·
-          <span class="dim-score" style="color: var(--tier-red);">💚 1</span>
+          <span class="dim-score" style="color: var(--tier-yellow-ink);">🟡 3</span> ·
+          <span class="dim-score" style="color: var(--tier-green-ink);">🌸 5</span> ·
+          <span class="dim-score" style="color: var(--tier-green-ink);">💜 5</span> ·
+          <span class="dim-score" style="color: var(--tier-red-ink);">💚 1</span>
         </div>
         <div><span class="status-pill yellow">🟡 תמיכה · שמחה ללמוד</span></div>
         <div><button class="action-btn">פתח →</button></div>
       </div>
 
-      <div class="pulse-row">
-        <div>8.6 08:00</div>
+      <div class="pulse-row" role="button" tabindex="0" data-audience="teacher">
+        <div>דמו · 08:00</div>
         <div><span class="audience-tag teacher">👩‍🏫 מורה</span></div>
         <div><strong>רונית · א'2</strong> (טופס דירוג)</div>
         <div>25 ילדים סומנו · 2 ילדים אדומים בחברות</div>
         <div><span class="status-pill red">🔴 דפוס כיתתי חברות</span></div>
         <div><button class="action-btn">פתח →</button></div>
       </div>
+
+      <div class="empty-row" id="pulseEmpty">אין פולסים שתואמים לסינון או לחיפוש.</div>
     </div>
 
     <!-- DRILL-DOWN PANEL -->
     <div class="drill-panel" id="drill-1">
       <div class="drill-head">
         <div>
-          <h3 style="color: var(--primary-dark);">📋 פולס תלמיד.ה · דניאל · א'1 · 10.6.2026 09:15</h3>
+          <h3 style="color: var(--primary-dark);">📋 פולס תלמיד.ה · דניאל · א'1 · נתוני דוגמה</h3>
           <div style="font-size: 0.85rem; color: var(--text-light); margin-top: 4px;">משך מילוי: 58 שנ' · 4 תחנות · 0 דילוגים</div>
         </div>
-        <button class="close-drill" onclick="toggleDrill('drill-1')">סגור ✕</button>
+        <button type="button" class="close-drill" data-drill-close="drill-1">סגור ✕</button>
       </div>
       <div class="drill-grid">
         <div class="drill-block">
@@ -626,11 +719,11 @@ h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
             <div class="data-row"><span class="data-key">שפה רגשית</span><span class="data-val">😊 כֵּן הַרְבֵּה (5)</span></div>
             <div class="data-row"><span class="data-key">שמחה ללמוד</span><span class="data-val">😊 כֵּן הַרְבֵּה (5)</span></div>
             <div class="data-row"><span class="data-key">ממוצע</span><span class="data-val">4.5</span></div>
-            <div class="data-row"><span class="data-key">סטטוס</span><span class="data-val" style="color: var(--tier-green);">🟢 טוב</span></div>
+            <div class="data-row"><span class="data-key">סטטוס</span><span class="data-val" style="color: var(--tier-green-ink);">🟢 טוב</span></div>
           </div>
         </div>
         <div class="drill-block">
-          <h4>תובנות אוטומטיות</h4>
+          <h4>תובנות · נוצר אוטומטית (חישוב סטטיסטי)</h4>
           <div class="raw-data">
             <p style="margin-bottom: 8px;">💡 דניאל יציב במרבית המימדים. חברות סומנה "קצת" — הפעם הראשונה.</p>
             <p style="margin-bottom: 8px;">📊 מגמה: 3 פולסים אחרונים — כולם 🟢 טוב. ירידה קלה במימד חברות.</p>
@@ -649,7 +742,7 @@ h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
   <!-- ============ INSIGHTS ============ -->
   <div class="tab-content" id="tab-insights">
 
-    <div class="section-h">תובנות פעילות השבוע (אוטומטיות)</div>
+    <div class="section-h">תובנות פעילות השבוע · נוצר אוטומטית (חישוב סטטיסטי)</div>
 
     <div class="insight-grid">
 
@@ -701,7 +794,7 @@ h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
           <span class="insight-type">תובנה מהורה</span>
         </div>
         <div class="insight-title">תום ש. (א'3) — תלונות גופניות בבוקר</div>
-        <div class="insight-body">אמא של תום סימנה "כן, שמתי לב" בשאלה 4 + פירטה: "כאבי בטן ביום ראשון בבוקר, פעמיים השבוע". מצטרף לדגל הסתגלות בפולס תלמיד.ה. שווה שיחה רכה עם יועצת.</div>
+        <div class="insight-body">אמא של תום סימנה "כן, שמתי לב" בשאלה 4 + פירטה: "כאבי בטן ביום ראשון בבוקר, פעמיים השבוע". מצטרף לאיתות הסתגלות בפולס תלמיד.ה. שווה שיחה רכה עם יועצת.</div>
         <div class="insight-meta">
           <span>🎯 מקור: פולס הורה</span>
           <span>📅 השבוע</span>
@@ -746,16 +839,20 @@ h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
 
     <div class="section-h">מאגר כל התרחישים האפשריים + ההתערבויות שלהם</div>
 
-    <p style="color: var(--text-light); margin-bottom: 20px; line-height: 1.6;">
-      <strong>14 תרחישים</strong> שהמערכת מזהה אוטומטית. לכל תרחיש — 1-3 התערבויות מומלצות מתוך 50 המתכונים (30 רגילות מ-cat-01..10 + 20 co-creation מ-cat-11). המערכת מציעה לפי הקשר — לא רק לפי מימד.
+    <p style="color: var(--text-light); margin-bottom: 14px; line-height: 1.6;">
+      <strong>14 תרחישים</strong> שהמערכת מזהה אוטומטית (חישוב סטטיסטי, ללא AI). לכל תרחיש — 1-3 התערבויות מומלצות מתוך 50 המתכונים (30 פעולות רגילות + 20 פעולות בנייה משותפת). המערכת מציעה לפי הקשר — לא רק לפי מימד.
     </p>
+    <div class="tab-toolbar" style="justify-content: space-between; align-items: center;">
+      <a class="toolbar-btn" href="intervention-catalog/INDEX.md" target="_blank" rel="noopener"><span aria-hidden="true">📚</span> מאגר המתכונים המלא (INDEX)</a>
+      <button type="button" class="toolbar-btn" data-print><span aria-hidden="true">🖨</span> ייצוא / הדפסה (PDF)</button>
+    </div>
 
     <div class="filters">
-      <button class="filter-pill active">הכל <span class="count">14</span></button>
-      <button class="filter-pill">🟡 הסתגלות <span class="count">4</span></button>
-      <button class="filter-pill">🌸 חברות <span class="count">4</span></button>
-      <button class="filter-pill">💜 רגש/ויסות <span class="count">3</span></button>
-      <button class="filter-pill">💚 שמחה ללמוד <span class="count">3</span></button>
+      <button type="button" class="filter-pill active" data-scenario-filter="all">הכל <span class="count">14</span></button>
+      <button type="button" class="filter-pill" data-scenario-filter="dim-1">🟡 הסתגלות <span class="count">4</span></button>
+      <button type="button" class="filter-pill" data-scenario-filter="dim-2">🌸 חברות <span class="count">4</span></button>
+      <button type="button" class="filter-pill" data-scenario-filter="dim-3">💜 רגש/ויסות <span class="count">3</span></button>
+      <button type="button" class="filter-pill" data-scenario-filter="dim-4">💚 שמחה ללמוד <span class="count">3</span></button>
     </div>
 
     <div class="matrix-wrap">
@@ -768,23 +865,25 @@ h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
             <span class="scenario-tag support">תמיכה</span>
             <span class="scenario-tag">פר-ילד</span>
           </div>
-          <div class="scenario-desc">פעם ראשונה שמדד הסתגלות נמוך — אולי בוקר חריג. לא ממהרים לאסקלציה, אבל מציעים פעולה קלה.</div>
+          <div class="scenario-desc">פעם ראשונה שמדד הסתגלות נמוך — אולי בוקר חריג. לא ממהרים לפנייה ליועצת, אבל מציעים פעולה קלה.</div>
         </div>
         <div class="scenario-actions">
-          <div class="scenario-action">
+          <a class="scenario-action" href="intervention-catalog/cat-01-morning-calm.md" target="_blank" rel="noopener">
             <div>
               <div class="scenario-action-name">טקס פתיחה במעגל</div>
               <div class="scenario-action-meta">5 דק' · כיתה שלמה · יום מחר</div>
+              <div class="scenario-action-link-hint">↗ פתיחת המתכון המלא (cat-01)</div>
             </div>
             <span class="action-type-pill regular">רגילה</span>
-          </div>
-          <div class="scenario-action">
+          </a>
+          <a class="scenario-action" href="intervention-catalog/cat-04-transitions-adjustment.md" target="_blank" rel="noopener">
             <div>
               <div class="scenario-action-name">לוח יום ויזואלי</div>
               <div class="scenario-action-meta">10 דק' תחזוקה · מפחית אי-וודאות</div>
+              <div class="scenario-action-link-hint">↗ פתיחת המתכון המלא (cat-04)</div>
             </div>
             <span class="action-type-pill regular">רגילה</span>
-          </div>
+          </a>
         </div>
       </div>
 
@@ -799,27 +898,30 @@ h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
           <div class="scenario-desc">דפוס, לא רעש. עכשיו צריך לעשות משהו מעמיק יותר. אם יש הורה זמין — בנייה משותפת.</div>
         </div>
         <div class="scenario-actions">
-          <div class="scenario-action co-creation">
+          <a class="scenario-action co-creation" href="intervention-catalog/cat-11-co-creation.md" target="_blank" rel="noopener">
             <div>
               <div class="scenario-action-name">"מה יעזור לנוני בבוקר?" (מורה + ילד)</div>
               <div class="scenario-action-meta">5 דק' שיחה · בונה אוטונומיה</div>
+              <div class="scenario-action-link-hint">↗ פתיחת המתכון המלא (cat-11)</div>
             </div>
             <span class="action-type-pill co-create">משותפת</span>
-          </div>
-          <div class="scenario-action co-creation">
+          </a>
+          <a class="scenario-action co-creation" href="intervention-catalog/cat-09-parent-engagement.md" target="_blank" rel="noopener">
             <div>
               <div class="scenario-action-name">"גשר בוקר" (מורה + הורה)</div>
               <div class="scenario-action-meta">10 דק' תיאום · משפט קבוע משותף</div>
+              <div class="scenario-action-link-hint">↗ פתיחת המתכון המלא (cat-09)</div>
             </div>
             <span class="action-type-pill co-create">משותפת</span>
-          </div>
-          <div class="scenario-action">
+          </a>
+          <a class="scenario-action" href="intervention-catalog/cat-01-morning-calm.md" target="_blank" rel="noopener">
             <div>
               <div class="scenario-action-name">פגישת היכרות 1:1</div>
               <div class="scenario-action-meta">15 דק' · מורה + הורה + ילד</div>
+              <div class="scenario-action-link-hint">↗ פתיחת המתכון המלא (cat-01)</div>
             </div>
             <span class="action-type-pill regular">רגילה</span>
-          </div>
+          </a>
         </div>
       </div>
 
@@ -834,27 +936,30 @@ h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
           <div class="scenario-desc">לא ילד בודד — כיתה שלמה. צריך פעולה ברמת קבוצה: ערבוב הרכבים, יצירת חוקים, שיח כיתתי.</div>
         </div>
         <div class="scenario-actions">
-          <div class="scenario-action">
+          <a class="scenario-action" href="intervention-catalog/cat-02-belonging-and-connection.md" target="_blank" rel="noopener">
             <div>
               <div class="scenario-action-name">חבר.ה ליום</div>
               <div class="scenario-action-meta">קבוע · יומי · 4 שבועות</div>
+              <div class="scenario-action-link-hint">↗ פתיחת המתכון המלא (cat-02)</div>
             </div>
             <span class="action-type-pill regular">רגילה</span>
-          </div>
-          <div class="scenario-action co-creation">
+          </a>
+          <a class="scenario-action co-creation" href="intervention-catalog/cat-11-co-creation.md" target="_blank" rel="noopener">
             <div>
               <div class="scenario-action-name">"חוקי הזמנה" (מורה + כיתה)</div>
               <div class="scenario-action-meta">25 דק' · פעם אחת · פוסטר משותף</div>
+              <div class="scenario-action-link-hint">↗ פתיחת המתכון המלא (cat-11)</div>
             </div>
             <span class="action-type-pill co-create">משותפת</span>
-          </div>
-          <div class="scenario-action co-creation">
+          </a>
+          <a class="scenario-action co-creation" href="intervention-catalog/cat-02-belonging-and-connection.md" target="_blank" rel="noopener">
             <div>
               <div class="scenario-action-name">"מפת משחקים" (צוות + יועצת)</div>
               <div class="scenario-action-meta">30 דק' · ברמת בית-ספר</div>
+              <div class="scenario-action-link-hint">↗ פתיחת המתכון המלא (cat-02)</div>
             </div>
             <span class="action-type-pill co-create">משותפת</span>
-          </div>
+          </a>
         </div>
       </div>
 
@@ -869,27 +974,30 @@ h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
           <div class="scenario-desc">כלל #14 הופעל. דרושה תוכנית התערבות פרטנית. שיתוף יועצת חובה. דרישה לעדכון הורים בזהירות.</div>
         </div>
         <div class="scenario-actions">
-          <div class="scenario-action">
+          <a class="scenario-action" href="intervention-catalog/cat-08-conflict-resolution.md" target="_blank" rel="noopener">
             <div>
               <div class="scenario-action-name">כיסא חם בכיף</div>
               <div class="scenario-action-meta">⚠️ קרא אזהרות · רק עם תיאום יועצת</div>
+              <div class="scenario-action-link-hint">↗ פתיחת המתכון המלא (cat-08)</div>
             </div>
             <span class="action-type-pill regular">רגילה</span>
-          </div>
-          <div class="scenario-action">
+          </a>
+          <a class="scenario-action" href="intervention-catalog/cat-02-belonging-and-connection.md" target="_blank" rel="noopener">
             <div>
               <div class="scenario-action-name">חבר ותיק לילד.ה חדש.ה</div>
               <div class="scenario-action-meta">שיוך קבוע · 4 שבועות</div>
+              <div class="scenario-action-link-hint">↗ פתיחת המתכון המלא (cat-02)</div>
             </div>
             <span class="action-type-pill regular">רגילה</span>
-          </div>
-          <div class="scenario-action co-creation">
+          </a>
+          <a class="scenario-action co-creation" href="intervention-catalog/cat-11-co-creation.md" target="_blank" rel="noopener">
             <div>
               <div class="scenario-action-name">"חבר אחד השבוע" (מורה + הורה)</div>
               <div class="scenario-action-meta">הודעה כללית להורה · 2 שיחות שבועיות</div>
+              <div class="scenario-action-link-hint">↗ פתיחת המתכון המלא (cat-11)</div>
             </div>
             <span class="action-type-pill co-create">משותפת</span>
-          </div>
+          </a>
         </div>
       </div>
 
@@ -904,27 +1012,30 @@ h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
           <div class="scenario-desc">ילדים מתקשים להירגע אחרי טריגר. תשתית פיזית + שפה אחידה הם הפתרון.</div>
         </div>
         <div class="scenario-actions">
-          <div class="scenario-action">
+          <a class="scenario-action" href="intervention-catalog/cat-03-emotion-regulation.md" target="_blank" rel="noopener">
             <div>
               <div class="scenario-action-name">פינת הרגיעה</div>
               <div class="scenario-action-meta">חד-פעמי · 30 דק' התקנה</div>
+              <div class="scenario-action-link-hint">↗ פתיחת המתכון המלא (cat-03)</div>
             </div>
             <span class="action-type-pill regular">רגילה</span>
-          </div>
-          <div class="scenario-action">
+          </a>
+          <a class="scenario-action" href="intervention-catalog/cat-03-emotion-regulation.md" target="_blank" rel="noopener">
             <div>
               <div class="scenario-action-name">שמות לרגשות</div>
               <div class="scenario-action-meta">שבועי · 3 רגשות חדשים</div>
+              <div class="scenario-action-link-hint">↗ פתיחת המתכון המלא (cat-03)</div>
             </div>
             <span class="action-type-pill regular">רגילה</span>
-          </div>
-          <div class="scenario-action co-creation">
+          </a>
+          <a class="scenario-action co-creation" href="intervention-catalog/cat-11-co-creation.md" target="_blank" rel="noopener">
             <div>
               <div class="scenario-action-name">"שפת הרגעה אחידה" (צוות + יועצת)</div>
               <div class="scenario-action-meta">20 דק' · בונה עקביות בכל הכיתה</div>
+              <div class="scenario-action-link-hint">↗ פתיחת המתכון המלא (cat-11)</div>
             </div>
             <span class="action-type-pill co-create">משותפת</span>
-          </div>
+          </a>
         </div>
       </div>
 
@@ -939,27 +1050,30 @@ h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
           <div class="scenario-desc">ילד.ה לא מוצא.ת דרך להירגע. שילוב של פתרון פיזי + בנייה משותפת עם הורה.</div>
         </div>
         <div class="scenario-actions">
-          <div class="scenario-action co-creation">
+          <a class="scenario-action co-creation" href="intervention-catalog/cat-11-co-creation.md" target="_blank" rel="noopener">
             <div>
               <div class="scenario-action-name">"מה מרגיע את נוני?" (מורה + ילד)</div>
               <div class="scenario-action-meta">10 דק' · ערכת הרגעה אישית</div>
+              <div class="scenario-action-link-hint">↗ פתיחת המתכון המלא (cat-11)</div>
             </div>
             <span class="action-type-pill co-create">משותפת</span>
-          </div>
-          <div class="scenario-action co-creation">
+          </a>
+          <a class="scenario-action co-creation" href="intervention-catalog/cat-11-co-creation.md" target="_blank" rel="noopener">
             <div>
               <div class="scenario-action-name">"אותו משפט בבית ובכיתה" (מורה + הורה)</div>
               <div class="scenario-action-meta">10 דק' שיחה · עקביות סביבתית</div>
+              <div class="scenario-action-link-hint">↗ פתיחת המתכון המלא (cat-11)</div>
             </div>
             <span class="action-type-pill co-create">משותפת</span>
-          </div>
-          <div class="scenario-action">
+          </a>
+          <a class="scenario-action" href="intervention-catalog/cat-03-emotion-regulation.md" target="_blank" rel="noopener">
             <div>
               <div class="scenario-action-name">סולם כעס פשוט</div>
               <div class="scenario-action-meta">5 דק' לימוד · יומי</div>
+              <div class="scenario-action-link-hint">↗ פתיחת המתכון המלא (cat-03)</div>
             </div>
             <span class="action-type-pill regular">רגילה</span>
-          </div>
+          </a>
         </div>
       </div>
 
@@ -974,33 +1088,36 @@ h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
           <div class="scenario-desc">סקרנות יורדת בכיתה כולה. סימן שצריך לרענן את שגרת השיעור או להוסיף בחירה.</div>
         </div>
         <div class="scenario-actions">
-          <div class="scenario-action">
+          <a class="scenario-action" href="intervention-catalog/cat-06-curiosity-interest.md" target="_blank" rel="noopener">
             <div>
               <div class="scenario-action-name">שאלת השבוע</div>
               <div class="scenario-action-meta">5 דק' · שבועי · קיר הכיתה</div>
+              <div class="scenario-action-link-hint">↗ פתיחת המתכון המלא (cat-06)</div>
             </div>
             <span class="action-type-pill regular">רגילה</span>
-          </div>
-          <div class="scenario-action co-creation">
+          </a>
+          <a class="scenario-action co-creation" href="intervention-catalog/cat-11-co-creation.md" target="_blank" rel="noopener">
             <div>
               <div class="scenario-action-name">"שולחן גילוי" (מורה + קבוצה)</div>
               <div class="scenario-action-meta">15 דק' · ילדים בוחרים תוכן</div>
+              <div class="scenario-action-link-hint">↗ פתיחת המתכון המלא (cat-11)</div>
             </div>
             <span class="action-type-pill co-create">משותפת</span>
-          </div>
-          <div class="scenario-action co-creation">
+          </a>
+          <a class="scenario-action co-creation" href="intervention-catalog/cat-06-curiosity-interest.md" target="_blank" rel="noopener">
             <div>
               <div class="scenario-action-name">"מפת שעמום" (צוות + יועצת)</div>
               <div class="scenario-action-meta">30 דק' · ניתוח דפוסי זמן</div>
+              <div class="scenario-action-link-hint">↗ פתיחת המתכון המלא (cat-06)</div>
             </div>
             <span class="action-type-pill co-create">משותפת</span>
-          </div>
+          </a>
         </div>
       </div>
 
       <div class="scenario">
         <div class="scenario-left">
-          <div class="scenario-trigger">🔴 דגל הורה — תלונות גופניות (כאבי בטן/ראש)</div>
+          <div class="scenario-trigger">🔴 איתות מהורה — תלונות גופניות (כאבי בטן/ראש)</div>
           <div class="scenario-tags">
             <span class="scenario-tag dim-1">הסתגלות</span>
             <span class="scenario-tag urgent">דחוף</span>
@@ -1009,20 +1126,22 @@ h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
           <div class="scenario-desc">ההורה דיווח על תלונות גופניות חוזרות. זה איתות עדין שמצריך בדיקת יועצת לפני התערבות חינוכית.</div>
         </div>
         <div class="scenario-actions">
-          <div class="scenario-action">
+          <a class="scenario-action" href="intervention-catalog/cat-09-parent-engagement.md" target="_blank" rel="noopener">
             <div>
               <div class="scenario-action-name">שיחה רכה של היועצת עם הילד.ה</div>
               <div class="scenario-action-meta">תוך 48 שעות · לא דרך המורה</div>
+              <div class="scenario-action-link-hint">↗ פתיחת המתכון המלא (cat-09)</div>
             </div>
             <span class="action-type-pill regular">פרוטוקול</span>
-          </div>
-          <div class="scenario-action co-creation">
+          </a>
+          <a class="scenario-action co-creation" href="intervention-catalog/cat-11-co-creation.md" target="_blank" rel="noopener">
             <div>
               <div class="scenario-action-name">"גשר בוקר" (מורה + הורה)</div>
               <div class="scenario-action-meta">רק אחרי שהיועצת אישרה</div>
+              <div class="scenario-action-link-hint">↗ פתיחת המתכון המלא (cat-11)</div>
             </div>
             <span class="action-type-pill co-create">משותפת</span>
-          </div>
+          </a>
         </div>
       </div>
 
@@ -1035,13 +1154,26 @@ h1, h2, h3, h4 { font-family: 'Rubik', sans-serif; }
 
   <div class="footer-meta">
     מערכת 10 · פולס א'-ב' · v4 · דמו ניהול<br>
-    אימפקט.OS · מיטל פלג · 10.6.2026<br>
+    אימפקט.OS · מיטל פלג · דמו פנימי · יוני 2026<br>
     כל הנתונים בדמו הם נתוני דוגמה — לא נתונים אמיתיים של ילדים.
   </div>
 
 </div>
 
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
 <script>
+// ============ TOAST ============
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// ============ TABS ============
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -1052,20 +1184,105 @@ document.querySelectorAll('.tab').forEach(tab => {
   });
 });
 
-document.querySelectorAll('.filter-pill').forEach(pill => {
+// ============ PULSE FILTER + SEARCH ============
+const pulseRows = () => Array.from(document.querySelectorAll('#tab-pulses .pulse-row:not(.header)'));
+let activePulseFilter = 'all';
+
+function applyPulseFilter() {
+  const term = (document.getElementById('pulseSearch').value || '').trim().toLowerCase();
+  let visible = 0;
+  pulseRows().forEach(row => {
+    const matchAudience = activePulseFilter === 'all' || row.dataset.audience === activePulseFilter;
+    const matchSearch = !term || row.textContent.toLowerCase().includes(term);
+    const show = matchAudience && matchSearch;
+    row.classList.toggle('hidden', !show);
+    if (show) visible++;
+  });
+  document.getElementById('pulseEmpty').classList.toggle('show', visible === 0);
+}
+
+document.querySelectorAll('#tab-pulses .filter-pill[data-filter]').forEach(pill => {
   pill.addEventListener('click', () => {
     pill.parentElement.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
     pill.classList.add('active');
+    activePulseFilter = pill.dataset.filter;
+    applyPulseFilter();
+  });
+});
+document.getElementById('pulseSearch').addEventListener('input', applyPulseFilter);
+
+// ============ SCENARIO FILTER ============
+document.querySelectorAll('#tab-scenarios .filter-pill[data-scenario-filter]').forEach(pill => {
+  pill.addEventListener('click', () => {
+    pill.parentElement.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    const f = pill.dataset.scenarioFilter;
+    document.querySelectorAll('#tab-scenarios .scenario').forEach(sc => {
+      const show = f === 'all' || sc.querySelector('.scenario-tag.' + f);
+      sc.classList.toggle('hidden', !show);
+    });
   });
 });
 
-function toggleDrill(id) {
+// ============ EXPORT / PRINT ============
+document.querySelectorAll('[data-print]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    showToast('פותח חלון הדפסה — אפשר לשמור כ-PDF (ללא שמות מזהים).');
+    setTimeout(() => window.print(), 350);
+  });
+});
+
+// ============ "פתח →" ACTION BUTTONS ============
+document.querySelectorAll('.action-btn').forEach(btn => {
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const row = btn.closest('.pulse-row');
+    const drillId = row && row.dataset.drill;
+    if (drillId) {
+      toggleDrill(drillId, row);
+    } else {
+      showToast('פירוט מלא לשורה זו ייפתח בפיילוט — בדמו פעיל הפירוט של "דניאל · א\'1".');
+    }
+  });
+});
+
+function toggleDrill(id, triggerRow) {
   const panel = document.getElementById(id);
   panel.classList.toggle('show');
-  if (panel.classList.contains('show')) {
+  const open = panel.classList.contains('show');
+  if (triggerRow) triggerRow.setAttribute('aria-expanded', open ? 'true' : 'false');
+  if (open) {
     setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
   }
 }
+
+// שורות פולס — נגישות מקלדת (Enter / רווח) + קליק
+document.querySelectorAll('#tab-pulses .pulse-row:not(.header)').forEach(row => {
+  const activate = () => {
+    if (row.dataset.drill) {
+      toggleDrill(row.dataset.drill, row);
+    } else {
+      showToast('פירוט מלא לשורה זו ייפתח בפיילוט — בדמו פעיל הפירוט של "דניאל · א\'1".');
+    }
+  };
+  row.addEventListener('click', activate);
+  row.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+      e.preventDefault();
+      activate();
+    }
+  });
+});
+
+// כפתור סגירת פאנל
+document.querySelectorAll('[data-drill-close]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const id = btn.dataset.drillClose;
+    const row = document.querySelector(`.pulse-row[data-drill="${id}"]`);
+    toggleDrill(id, row);
+    if (row) row.focus();
+  });
+});
 </script>
 
 </body>
