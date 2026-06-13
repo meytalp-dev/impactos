@@ -16,7 +16,8 @@ import urllib.error
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ENRICH = os.path.join(HERE, "retzef-enrich.json")
-BATCHES = glob.glob(os.path.join(HERE, "_wsearch", "batch-*.json"))
+BATCHES = (glob.glob(os.path.join(HERE, "_wsearch", "batch-*.json"))
+           + glob.glob(os.path.join(HERE, "_wsearch", "ind-batch-*.json")))
 
 UA = ("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) "
       "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1")
