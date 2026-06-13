@@ -17,6 +17,7 @@ ROOT = os.path.dirname(HERE)
 XLSX = os.path.join(os.path.expanduser("~"), "Downloads", "oti-services.xlsx")
 TEMPLATE = os.path.join(HERE, "retzef-services-verifier-template.html")
 CHECKS = os.path.join(HERE, "retzef-checks.json")
+ENRICH = os.path.join(HERE, "retzef-enrich.json")
 OUT = os.path.join(HERE, "retzef-services-verifier.html")
 
 # normalise recommendation strings -> internal kind
@@ -72,6 +73,28 @@ def main():
         with open(CHECKS, encoding="utf-8") as f:
             checks = json.load(f)
         print(f"merging {len(checks)} automated checks from retzef-checks.json")
+
+    # optional deterministic / web enrichment (phone_norm, found websites/fields)
+    enrich = {}
+    if os.path.exists(ENRICH):
+        with open(ENRICH, encoding="utf-8") as f:
+            enrich = json.load(f)
+        print(f"merging {len(enrich)} enrichments from retzef-enrich.json")
+
+    def attach_enrich(item):
+        e = enrich.get(item["_id"])
+        if not e:
+            return
+        if e.get("phone_norm"):
+            item["phone_norm"] = e["phone_norm"]
+            item["phone_tel"] = e.get("phone_tel", "")
+        for k in ("found_website", "found_website_src", "found_website_status",
+                  "found_phone", "found_ages", "found_region"):
+            if e.get(k):
+                item["_" + k] = e[k]
+        # a found/inherited website or phone means we now have a way to reach them
+        if e.get("found_website") or e.get("found_phone"):
+            item["_no_contact"] = False
 
     def attach_checks(item):
         rec = checks.get(item["_id"])
@@ -131,6 +154,7 @@ def main():
             "notes": g(i_notes),
         }
         attach_checks(item)
+        attach_enrich(item)
         items.append(item)
 
     # build category chips html

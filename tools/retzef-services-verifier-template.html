@@ -277,7 +277,9 @@
   .badge.site-dead     { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
   .badge.phone-bad     { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
   .badge.no-contact    { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
-  .badge.dup           { background: #fce7f3; color: #9d174d; border-color: #fbcfe8; }
+  .badge.rel           { background: #ede9fe; color: #5b21b6; border-color: #ddd6fe; }
+  .badge.found         { background: #cffafe; color: #155e75; border-color: #a5f3fc; }
+  .link.found          { background: #ecfeff; color: #155e75; border-color: #a5f3fc; }
 
   .auto-note {
     margin: 6px 0 10px;
@@ -740,8 +742,9 @@
   }
 
   function hasIssue(item) {
+    // genuine, actionable problems only (matches the auto-flagged set)
     return item._site_status === 'dead' || item._phone_status === 'invalid'
-        || item._phone_status === 'partial' || item._no_contact || !!item._duplicate;
+        || item._phone_status === 'partial';
   }
 
   function updateCounts() {
@@ -853,8 +856,13 @@
     const rel = st.relevance || '';
     const verified = !!st.verified;
     const note = st.note || '';
-    const url = ensureUrl(eff(item, 'website') || '');
-    const phone = eff(item, 'phone') || '';
+    const editedWeb = state[item._id]?.edits?.website;
+    const url = ensureUrl(editedWeb || item.website || item._found_website || '');
+    const foundOnly = !editedWeb && !item.website && !!item._found_website;
+    const editedPhone = state[item._id]?.edits?.phone;
+    const phone = editedPhone || item.phone_norm || item.phone || item._found_phone || '';
+    const foundPhoneOnly = !editedPhone && !item.phone_norm && !item.phone && !!item._found_phone;
+    const telTarget = editedPhone || item.phone_tel || phone;
     const desc = eff(item, 'specialty') || eff(item, 'subcat') || '';
     const quote = eff(item, 'quote') || '';
     const longDesc = quote.length > 180;
@@ -876,7 +884,9 @@
         ${item._phone_status === 'invalid' ? `<span class="badge phone-bad">📞 טלפון לא תקין</span>` : ''}
         ${item._phone_status === 'partial' ? `<span class="badge phone-bad">📞 טלפון חלקי</span>` : ''}
         ${item._no_contact ? `<span class="badge no-contact">🚫 אין פרטי קשר</span>` : ''}
-        ${item._duplicate ? `<span class="badge dup">👯 כפילות (${escape(item._duplicate.join('/'))})</span>` : ''}
+        ${foundOnly && item._found_website ? `<span class="badge found">🔗 אתר מוצע${item._found_website_src === 'family' ? ' (משפחת ארגון)' : item._found_website_src === 'facebook' ? ' (פייסבוק)' : ' (חיפוש)'}${item._found_website_status === 'dead' ? ' · לא נטען' : ''}</span>` : ''}
+        ${foundPhoneOnly ? `<span class="badge found">📞 טלפון מוצע (חיפוש)</span>` : ''}
+        ${item._duplicate ? `<span class="badge rel" title="חולק טלפון/אתר עם מענה אחר — כנראה סניף/יחידה של אותו ארגון">🔗 קשור (${escape(item._duplicate.join('/'))})</span>` : ''}
         ${rel === 'yes'   ? `<span class="badge status-yes">✅ רלוונטי</span>` : ''}
         ${rel === 'no'    ? `<span class="badge status-no">❌ לא רלוונטי</span>` : ''}
         ${rel === 'maybe' ? `<span class="badge status-maybe">🔬 לבדוק</span>` : ''}
@@ -886,15 +896,15 @@
       ${quote ? `<div class="quote ${longDesc ? 'collapsed' : ''}">${escape(quote)}</div>${longDesc ? `<button class="expand-btn" data-action="expand">הצג עוד ▾</button>` : ''}` : ''}
 
       <div class="links">
-        ${url ? `<a class="link primary" href="${escape(url)}" target="_blank" rel="noopener noreferrer">
+        ${url ? `<a class="link ${foundOnly ? 'found' : 'primary'}" href="${escape(url)}" target="_blank" rel="noopener noreferrer">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-          פתח אתר
+          ${foundOnly ? 'אתר (מוצע)' : 'פתח אתר'}
         </a>` : ''}
         <a class="link search" href="${googleSearchUrl(item.name)}" target="_blank" rel="noopener noreferrer">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           חיפוש בגוגל
         </a>
-        ${phone ? `<a class="link callto" href="tel:${escape(String(phone).replace(/[^\d+]/g,''))}">📞 ${escape(phone)}</a>` : ''}
+        ${phone ? `<a class="link ${foundPhoneOnly ? 'found' : 'callto'}" href="tel:${escape(String(telTarget).replace(/[^\d+]/g,''))}">📞 ${escape(phone)}${foundPhoneOnly ? ' (מוצע)' : ''}</a>` : ''}
       </div>
 
       <div class="details">
@@ -1163,7 +1173,7 @@
   function exportCSV(filter) {
     const headers = [
       'רלוונטיות','אומת','הערה','קטגוריה','תת-קטגוריה','שם','גילאים','אזור','טלפון','אתר',
-      'התמחות','המלצה','ביטחון','הקשר/ציטוט','הערות-מקור','בדיקת-אתר','בדיקת-טלפון','כפילות','נערך-ידנית','חותמת זמן'
+      'התמחות','המלצה','ביטחון','הקשר/ציטוט','הערות-מקור','אתר-מוצע','טלפון-מוצע','בדיקת-אתר','בדיקת-טלפון','קשור','נערך-ידנית','חותמת זמן'
     ];
     const REL_HE = { yes: 'רלוונטי', maybe: 'לבדוק', no: 'לא רלוונטי' };
     const SITE_HE = { live: 'אתר חי', redirect: 'הופנה', blocked: 'חוסם בוטים', dead: 'לא נטען', none: '' };
@@ -1183,6 +1193,7 @@
         E('ages'), E('region'), E('phone'), E('website'),
         E('specialty'), REC_LABEL[r._rec] || r.rec_raw || '', r.conf || '',
         E('quote'), E('notes'),
+        r._found_website || '', r._found_phone || '',
         SITE_HE[r._site_status] || '', PHONE_HE[r._phone_status] || '',
         r._duplicate ? r._duplicate.join('/') : '', editedFields, ts
       ];
