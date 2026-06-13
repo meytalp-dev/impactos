@@ -39,7 +39,6 @@
 |---|---|
 | [`pulse-dashboard.html`](pulse-dashboard.html) | דשבורד מחנכת — Hero + 4 פסים + role-based (?role=) |
 | [`pulse-teacher-form-mockup.html`](pulse-teacher-form-mockup.html) | mockup טופס דירוג מורה (8 פריטים × 25 ילדים) |
-| [`onboarding.html`](onboarding.html) | onboarding למחנכת |
 
 ### מסכים — הורה (נבנו 8.6.2026)
 | קובץ | מה |
@@ -61,11 +60,12 @@
 ### מצגות והצעה (מותאם להצגה עתידית לשותפים חינוכיים כגון מנח״י)
 | קובץ | מה |
 |---|---|
+| [`index.html`](index.html) | **דף הבית של הפולס** — לנדינג ממותג שמקשר ל-4 המסכים + המסמכים |
 | [`pulse-product-presentation-v2.html`](pulse-product-presentation-v2.html) | **מצגת מוצר v2** — 4 הפרסונות, השאלות שלך |
 | [`system-10-pulse.html`](system-10-pulse.html) | מצגת A4 קצרה לטליה/מנח״י |
-| [`proposal-impact-os.html`](proposal-impact-os.html) + 3 וריאציות | הצעת חומש מלאה |
 | [`partners-onepager.html`](partners-onepager.html) | דף-אחד לשותפים |
-| [`concept-map.html`](concept-map.html) · [`inclusion-program-concept-map.mermaid`](inclusion-program-concept-map.mermaid) | מפות קונספט |
+
+> 🗄️ **`_archive-inclusion-program/`** — קבצי "תוכנית החומש להכלה / Learni" (הלנדינג הישן, 5 הצעות מחיר, מסמכי מטה, מפות קונספט) אורכבו 13.6.2026. הפולס הוא היום מוצר עצמאי; אלה המסגור הישן של הצעת מנח״י. לא לעבוד עליהם כחלק מהפולס.
 
 ### Intervention Catalog (30 מתכוני התערבות + 20 בנייה משותפת + 115 דפי הדפסה)
 [`intervention-catalog/`](intervention-catalog/) — 10 קטגוריות + קטגוריה 11 (בנייה משותפת), INDEX עם מערכת המלצות פר טריגר, +115 דפי A4 ב-`printables/`.
