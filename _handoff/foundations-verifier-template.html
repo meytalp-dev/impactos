@@ -601,7 +601,8 @@
     <div class="banner-body" id="auto-banner-body"></div>
     <div class="banner-actions">
       <button class="primary" id="auto-apply-all">החל הכל</button>
-      <button id="auto-apply-rejects">החל רק דחיות אוטומטיות</button>
+      <button id="auto-apply-approvals">✅ אשר רק את הבטוחות</button>
+      <button id="auto-apply-rejects">❌ דחה רק את הסגורות</button>
       <button id="auto-dismiss">לא, אעבור ידנית</button>
     </div>
   </div>
@@ -1112,19 +1113,25 @@
       banner.style.display = 'none';
       return;
     }
-    let reviewCount = 0, rejectCount = 0;
+    let reviewCount = 0, rejectCount = 0, approveCount = 0;
     for (const r of RAW) {
       if (state[r._id]?.status) continue; // already decided
       if (r._auto_status === 'review') reviewCount++;
       else if (r._auto_status === 'rejected') rejectCount++;
+      else if (r._auto_status === 'approved') approveCount++;
     }
-    if (reviewCount + rejectCount === 0) {
+    if (reviewCount + rejectCount + approveCount === 0) {
       banner.style.display = 'none';
       return;
     }
     document.getElementById('auto-banner-body').innerHTML =
-      `סרקתי את הקרנות שעדיין לא בדקת. מצאתי <b>${rejectCount}</b> שאין להן דרך ליצור קשר בכלל (המלצה: דחיה), ו<b>${reviewCount}</b> עם בעיות נתונים שכדאי לבדוק (אתר לא נטען, איש קשר עם כתובת במקום שם, פורמט אימייל חשוד וכד׳). הפעולות הללו ניתנות לביטול אחד־אחד.`;
+      `המלצות אוטומטיות לקרנות שעוד לא החלטת עליהן:<br>` +
+      `<b>${approveCount}</b> לאישור (הקדשים מתועדים + קולות קוראים פעילים שאומתו במחקר), ` +
+      `<b>${reviewCount}</b> לבדיקה (בעיות נתונים — אתר לא נטען, איש קשר חסר, אימייל חשוד), ` +
+      `<b>${rejectCount}</b> לדחייה (קולות קוראים סגורים / קרנות לא פעילות). כל פעולה ניתנת לביטול אחד־אחד.`;
     banner.style.display = 'flex';
+    document.getElementById('auto-apply-approvals').style.display = approveCount > 0 ? '' : 'none';
+    document.getElementById('auto-apply-rejects').style.display = rejectCount > 0 ? '' : 'none';
   }
 
   function applyAuto(statusesToApply) {
@@ -1147,8 +1154,12 @@
   }
 
   document.getElementById('auto-apply-all').addEventListener('click', () => {
-    const n = applyAuto(['review', 'rejected']);
-    alert(`הוחלו ${n} המלצות. אפשר לראות בפילטרים "🔬 לבדוק" ו"❌ נפסל".`);
+    const n = applyAuto(['approved', 'review', 'rejected']);
+    alert(`הוחלו ${n} המלצות. אפשר לראות בפילטרים השונים.`);
+  });
+  document.getElementById('auto-apply-approvals').addEventListener('click', () => {
+    const n = applyAuto(['approved']);
+    alert(`אושרו ${n} קרנות. אפשר לראות בפילטר "✅ אומת".`);
   });
   document.getElementById('auto-apply-rejects').addEventListener('click', () => {
     const n = applyAuto(['rejected']);
