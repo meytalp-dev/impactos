@@ -547,6 +547,28 @@
   }
   .toast .undo-btn:active { background: rgba(255,255,255,.28); }
 
+  .sync-indicator {
+    position: fixed;
+    top: calc(env(safe-area-inset-top) + 6px);
+    right: 12px;
+    z-index: 90;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink-2);
+    background: rgba(255,255,255,.92);
+    backdrop-filter: blur(8px);
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .2s;
+  }
+  .sync-indicator.show { opacity: 1; }
+  .sync-indicator.syncing { color: var(--blue); }
+  .sync-indicator.synced { color: var(--green); }
+  .sync-indicator.error { color: var(--red); }
+
   /* tablet+ */
   @media (min-width: 720px) {
     .header h1 { font-size: 20px; }
@@ -613,6 +635,7 @@
   <span id="toast-text">אומת</span>
   <button class="undo-btn" id="toast-undo">ביטול</button>
 </div>
+<div class="sync-indicator" id="sync-indicator">ענן: סונכרן</div>
 
 <nav class="bottom-bar">
   <button id="import-json" title="ייבוא JSON של החלטות קודמות">📥 ייבוא</button>
@@ -22405,6 +22428,103 @@
 (function(){
   const RAW = JSON.parse(document.getElementById('data').textContent);
   const STORAGE_KEY = 'foundations-verification-v1';
+
+  // ---- Cloud sync (Supabase) ----
+  const SUPABASE_URL = 'https://ynxfszmpoppqrqocewcs.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_Nq1wqSAjsAZMmuOXq2afUA_f_g8CEIU';
+  const SHARE_KEY_STORAGE = 'foundations-share-key-v1';
+
+  function uuidv4() {
+    if (crypto.randomUUID) return crypto.randomUUID();
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = Math.random() * 16 | 0;
+      return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+  }
+
+  function getOrCreateShareKey() {
+    const params = new URLSearchParams(window.location.search);
+    let k = params.get('k');
+    if (!k) {
+      k = localStorage.getItem(SHARE_KEY_STORAGE);
+    }
+    if (!k) {
+      k = uuidv4();
+    }
+    localStorage.setItem(SHARE_KEY_STORAGE, k);
+    if (params.get('k') !== k) {
+      params.set('k', k);
+      history.replaceState(null, '', '?' + params.toString());
+    }
+    return k;
+  }
+  const SHARE_KEY = getOrCreateShareKey();
+
+  const syncIndicator = document.getElementById('sync-indicator');
+  function showSync(status, msg) {
+    syncIndicator.textContent = msg;
+    syncIndicator.className = 'sync-indicator show ' + status;
+    if (status === 'synced') {
+      setTimeout(() => syncIndicator.classList.remove('show'), 2000);
+    }
+  }
+
+  async function pullFromCloud() {
+    showSync('syncing', '☁️ טוען...');
+    try {
+      const r = await fetch(
+        `${SUPABASE_URL}/rest/v1/foundations_state?share_key=eq.${encodeURIComponent(SHARE_KEY)}&select=state,updated_at`,
+        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+      );
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const rows = await r.json();
+      if (rows.length && rows[0].state) {
+        return { state: rows[0].state, updated_at: rows[0].updated_at };
+      }
+      return null;
+    } catch (e) {
+      showSync('error', '⚠️ אין סנכרון');
+      console.warn('cloud pull failed', e);
+      return null;
+    }
+  }
+
+  let pushPending = false;
+  let pushTimer = null;
+  async function pushToCloud(immediate=false) {
+    clearTimeout(pushTimer);
+    if (!immediate) {
+      // debounce 1.5s
+      pushTimer = setTimeout(() => pushToCloud(true), 1500);
+      return;
+    }
+    if (pushPending) {
+      pushTimer = setTimeout(() => pushToCloud(true), 800);
+      return;
+    }
+    pushPending = true;
+    showSync('syncing', '☁️ מסנכרן...');
+    try {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/foundations_state`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates'
+        },
+        body: JSON.stringify({ share_key: SHARE_KEY, state })
+      });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      showSync('synced', '✓ סונכרן');
+    } catch (e) {
+      showSync('error', '⚠️ שגיאת סנכרון');
+      console.warn('cloud push failed', e);
+    } finally {
+      pushPending = false;
+    }
+  }
+
   const state = loadState();
   let currentFilter = 'todo';
   let currentKind = 'all';
@@ -22433,6 +22553,7 @@
   }
   function saveState() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    pushToCloud(); // debounced
   }
 
   function matchesQuery(item, q) {
@@ -23038,6 +23159,50 @@
 
   render();
   updateAutoBanner();
+
+  // ---- Initial cloud sync on page load ----
+  (async () => {
+    const cloud = await pullFromCloud();
+    if (!cloud) {
+      // No cloud row → push local up as the initial state
+      if (Object.keys(state).length > 0) {
+        await pushToCloud(true);
+      } else {
+        showSync('synced', '✓ סונכרן · אין החלטות עדיין');
+      }
+      return;
+    }
+    const cloudState = cloud.state;
+    const localCount = Object.keys(state).length;
+    const cloudCount = Object.keys(cloudState).length;
+    // Merge: per-item LWW (last-write-wins by ts). If no ts, cloud wins.
+    let merged = 0, fromCloud = 0, fromLocal = 0;
+    const newState = {};
+    const allIds = new Set([...Object.keys(state), ...Object.keys(cloudState)]);
+    for (const id of allIds) {
+      const a = state[id];
+      const b = cloudState[id];
+      if (a && b) {
+        const at = a.ts || 0, bt = b.ts || 0;
+        newState[id] = (bt > at) ? b : a;
+        if (bt > at) fromCloud++; else fromLocal++;
+        merged++;
+      } else if (a) {
+        newState[id] = a; fromLocal++;
+      } else {
+        newState[id] = b; fromCloud++;
+      }
+    }
+    // Apply
+    for (const k of Object.keys(state)) delete state[k];
+    Object.assign(state, newState);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    render();
+    updateAutoBanner();
+    showSync('synced', `✓ סונכרן · ${Object.keys(state).length} החלטות`);
+    // Push merged back so other devices get the merge result
+    pushToCloud();
+  })();
 })();
 </script>
 </body>
