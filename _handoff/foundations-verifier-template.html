@@ -1109,10 +1109,6 @@
   // ---- Auto-suggestions banner ----
   function updateAutoBanner() {
     const banner = document.getElementById('auto-banner');
-    if (sessionStorage.getItem('autoBannerDismissed') === '1') {
-      banner.style.display = 'none';
-      return;
-    }
     let reviewCount = 0, rejectCount = 0, approveCount = 0;
     for (const r of RAW) {
       if (state[r._id]?.status) continue; // already decided
@@ -1121,6 +1117,12 @@
       else if (r._auto_status === 'approved') approveCount++;
     }
     if (reviewCount + rejectCount + approveCount === 0) {
+      banner.style.display = 'none';
+      return;
+    }
+    // signature changes whenever counts change → re-show banner on update
+    const sig = `${approveCount}.${reviewCount}.${rejectCount}`;
+    if (localStorage.getItem('autoBannerDismissedSig') === sig) {
       banner.style.display = 'none';
       return;
     }
@@ -1148,8 +1150,8 @@
     }
     saveState();
     document.getElementById('auto-banner').style.display = 'none';
-    sessionStorage.setItem('autoBannerDismissed', '1');
     render();
+    updateAutoBanner();
     return n;
   }
 
@@ -1166,8 +1168,15 @@
     alert(`הוחלו ${n} דחיות. אפשר לראות בפילטר "❌ נפסל".`);
   });
   document.getElementById('auto-dismiss').addEventListener('click', () => {
+    let approveCount=0,reviewCount=0,rejectCount=0;
+    for (const r of RAW) {
+      if (state[r._id]?.status) continue;
+      if (r._auto_status === 'review') reviewCount++;
+      else if (r._auto_status === 'rejected') rejectCount++;
+      else if (r._auto_status === 'approved') approveCount++;
+    }
+    localStorage.setItem('autoBannerDismissedSig', `${approveCount}.${reviewCount}.${rejectCount}`);
     document.getElementById('auto-banner').style.display = 'none';
-    sessionStorage.setItem('autoBannerDismissed', '1');
   });
 
   // ---- Import ----
