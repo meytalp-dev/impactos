@@ -16,6 +16,7 @@ ROOT = os.path.dirname(HERE)
 # xlsx lives in the user's Downloads folder (same place the foundations file did)
 XLSX = os.path.join(os.path.expanduser("~"), "Downloads", "oti-services.xlsx")
 TEMPLATE = os.path.join(HERE, "retzef-services-verifier-template.html")
+CHECKS = os.path.join(HERE, "retzef-checks.json")
 OUT = os.path.join(HERE, "retzef-services-verifier.html")
 
 # normalise recommendation strings -> internal kind
@@ -65,6 +66,35 @@ def main():
     i_quote = idx("הקשר/ציטוט")
     i_notes = idx("הערות")
 
+    # optional automated checks (websites / phones / duplicates)
+    checks = {}
+    if os.path.exists(CHECKS):
+        with open(CHECKS, encoding="utf-8") as f:
+            checks = json.load(f)
+        print(f"merging {len(checks)} automated checks from retzef-checks.json")
+
+    def attach_checks(item):
+        rec = checks.get(item["_id"])
+        if not rec:
+            return
+        item["_site_status"] = rec.get("site_status", "none")
+        item["_phone_status"] = rec.get("phone_status", "none")
+        if rec.get("duplicate"):
+            item["_duplicate"] = rec["duplicate"]
+        site_ok = item["_site_status"] in ("live", "redirect", "blocked")
+        phone_ok = item["_phone_status"] in ("ok", "partial")
+        item["_no_contact"] = (not site_ok) and (not phone_ok)
+        # conservative auto-recommendation: only genuine, actionable problems
+        if item["_site_status"] == "dead":
+            item["_auto_status"] = "review"
+            note = "האתר רשום אבל לא נטען"
+            if rec.get("site_note"):
+                note += f" ({rec['site_note']})"
+            item["_auto_note"] = note
+        elif item["_phone_status"] == "invalid":
+            item["_auto_status"] = "review"
+            item["_auto_note"] = rec.get("phone_note", "טלפון בפורמט לא תקין")
+
     items = []
     # category order from first appearance
     cat_order = []
@@ -83,7 +113,7 @@ def main():
             cat_order.append(cat)
             cat_counts[cat] = 0
         cat_counts[cat] += 1
-        items.append({
+        item = {
             "_id": slug(name, n),
             "_section": cat,
             "_rec": rec,
@@ -99,7 +129,9 @@ def main():
             "mentions": g(i_ment),
             "quote": g(i_quote),
             "notes": g(i_notes),
-        })
+        }
+        attach_checks(item)
+        items.append(item)
 
     # build category chips html
     chips = []

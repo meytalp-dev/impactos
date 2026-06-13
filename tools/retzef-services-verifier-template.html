@@ -271,6 +271,69 @@
   .badge.rec-mixed    { background: #fff7ed; color: #9a3412; border-color: #fed7aa; }
   .badge.rec-negative { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
   .badge.conf { background: #fff; color: var(--ink-2); border-color: var(--line-2); }
+  .badge.site-live     { background: #dcfce7; color: #15803d; border-color: #86efac; }
+  .badge.site-redirect { background: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
+  .badge.site-blocked  { background: #f1f5f9; color: #475569; border-color: #cbd5e1; }
+  .badge.site-dead     { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+  .badge.phone-bad     { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+  .badge.no-contact    { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+  .badge.dup           { background: #fce7f3; color: #9d174d; border-color: #fbcfe8; }
+
+  .auto-note {
+    margin: 6px 0 10px;
+    padding: 8px 10px;
+    background: #fff7ed;
+    border-right: 3px solid #f97316;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #7c2d12;
+    line-height: 1.5;
+    word-break: break-word;
+  }
+  .auto-note .label { font-weight: 700; color: #9a3412; margin-left: 4px; }
+
+  .banner {
+    background: linear-gradient(135deg, #f0fdfa, #ecfeff);
+    border: 1px solid #99f6e4;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .banner-title { font-size: 15px; font-weight: 700; color: #115e59; }
+  .banner-body { font-size: 13px; color: var(--ink-2); line-height: 1.55; }
+  .banner-body b { color: var(--ink); }
+  .banner-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .banner-actions button {
+    height: 40px; padding: 0 14px; border-radius: 10px;
+    border: 1px solid #14b8a6; background: #fff; color: #115e59;
+    font: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .banner-actions button.primary { background: var(--teal); color: #fff; }
+  .banner-actions button:active { transform: scale(0.97); }
+
+  /* editable detail fields */
+  .detail-row.edit { grid-template-columns: 110px 1fr; align-items: start; }
+  .detail-edit {
+    width: 100%;
+    border: 1px solid var(--line-2);
+    border-radius: 8px;
+    background: #fff;
+    font: inherit;
+    font-size: 13px;
+    padding: 7px 10px;
+    color: var(--ink);
+    outline: none;
+    resize: vertical;
+  }
+  .detail-edit:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(15,118,110,.12); }
+  textarea.detail-edit { min-height: 40px; line-height: 1.5; }
+  .edited-tag {
+    font-size: 10px; font-weight: 700; color: var(--teal);
+    background: var(--teal-soft); border-radius: 999px; padding: 1px 6px; margin-right: 4px;
+  }
 
   .desc {
     font-size: 14px;
@@ -568,6 +631,7 @@
     <button class="chip" data-filter="maybe">🔬 לבדוק <span class="count" id="c-maybe">0</span></button>
     <button class="chip" data-filter="no">❌ לא רלוונטי <span class="count" id="c-no">0</span></button>
     <button class="chip" data-filter="verified">🔎 אומת <span class="count" id="c-verified">0</span></button>
+    <button class="chip" data-filter="issues">⚠️ בעיות נתונים <span class="count" id="c-issues">0</span></button>
   </div>
   <div class="filters" id="cat-filters" style="margin-top:6px">
     <button class="chip active" data-cat="all">כל הקטגוריות</button>
@@ -583,6 +647,16 @@
   </div>
 </header>
 
+<div class="list" style="padding-bottom:0">
+  <div id="auto-banner" class="banner" style="display:none">
+    <div class="banner-title">🤖 בדקתי את הנתונים אוטומטית</div>
+    <div class="banner-body" id="auto-banner-body"></div>
+    <div class="banner-actions">
+      <button class="primary" id="auto-apply-all">סמני הכל כ"לבדוק"</button>
+      <button id="auto-dismiss">לא, אעבור ידנית</button>
+    </div>
+  </div>
+</div>
 <main class="list" id="list"></main>
 
 <div class="toast" id="toast" role="status" aria-live="polite">
@@ -620,6 +694,12 @@
     negative: '🔴 שלילי'
   };
   const CONF_LABEL = { high: 'ביטחון גבוה', medium: 'ביטחון בינוני', low: 'ביטחון נמוך' };
+  const SITE_BADGE = {
+    live:     '🌐 אתר חי',
+    redirect: '🔁 אתר (הופנה)',
+    blocked:  '🔒 אתר חוסם בוטים',
+    dead:     '⚠️ אתר לא נטען'
+  };
 
   // section ordering — preserve sheet order
   const SECTION_ORDER = [];
@@ -654,12 +734,18 @@
       case 'no': return st.relevance === 'no';
       case 'maybe': return st.relevance === 'maybe';
       case 'verified': return !!st.verified;
+      case 'issues': return hasIssue(item);
       default: return true;
     }
   }
 
+  function hasIssue(item) {
+    return item._site_status === 'dead' || item._phone_status === 'invalid'
+        || item._phone_status === 'partial' || item._no_contact || !!item._duplicate;
+  }
+
   function updateCounts() {
-    const counts = { all: RAW.length, todo: 0, yes: 0, no: 0, maybe: 0, verified: 0 };
+    const counts = { all: RAW.length, todo: 0, yes: 0, no: 0, maybe: 0, verified: 0, issues: 0 };
     const recs = { positive: 0, neutral: 0, pending: 0, mixed: 0, negative: 0 };
     const cats = {};
     RAW.forEach(r => {
@@ -667,6 +753,7 @@
       if (!st.relevance) counts.todo++;
       else counts[st.relevance]++;
       if (st.verified) counts.verified++;
+      if (hasIssue(r)) counts.issues++;
       if (recs[r._rec] !== undefined) recs[r._rec]++;
       cats[r._section] = (cats[r._section] || 0) + 1;
     });
@@ -676,6 +763,7 @@
     document.getElementById('c-no').textContent = counts.no;
     document.getElementById('c-maybe').textContent = counts.maybe;
     document.getElementById('c-verified').textContent = counts.verified;
+    document.getElementById('c-issues').textContent = counts.issues;
     Object.entries(recs).forEach(([k, v]) => {
       const el = document.getElementById('r-' + k);
       if (el) el.textContent = v;
@@ -716,23 +804,43 @@
       .replace(/"/g,'&quot;');
   }
 
+  // effective value: edited value overrides original
+  function eff(item, key) {
+    const e = state[item._id]?.edits;
+    if (e && e[key] != null && String(e[key]).trim() !== '') return e[key];
+    return item[key];
+  }
+
+  // editable fields (text inputs / textareas) + read-only rows
+  const EDIT_FIELDS = [
+    ['website', '🌐 אתר', 'input'],
+    ['phone', '📞 טלפון', 'input'],
+    ['subcat', '🏷️ תת-קטגוריה', 'input'],
+    ['ages', '👥 גילאים', 'input'],
+    ['region', '📍 אזור', 'input'],
+    ['specialty', '🎯 התמחות', 'input'],
+    ['quote', '💬 הקשר / ציטוט', 'textarea'],
+    ['notes', '📝 הערות', 'textarea'],
+  ];
+
   function detailRows(item) {
-    const fields = [
-      ['subcat', '🏷️ תת-קטגוריה'],
-      ['ages', '👥 גילאים'],
-      ['region', '📍 אזור'],
-      ['specialty', '🎯 התמחות'],
-      ['rec_raw', '👍 המלצה'],
-      ['conf', '📊 רמת ביטחון'],
-      ['mentions', '🔁 תדירות אזכור'],
-      ['quote', '💬 הקשר / ציטוט'],
-      ['notes', '📝 הערות'],
-    ];
     let html = '';
-    for (const [k, label] of fields) {
-      let v = item[k];
-      if (k === 'rec_raw') v = REC_LABEL[item._rec] || v;
-      if (k === 'conf') v = CONF_LABEL[item.conf] || item.conf;
+    for (const [k, label, type] of EDIT_FIELDS) {
+      const v = eff(item, k) || '';
+      const edited = state[item._id]?.edits && state[item._id].edits[k] != null && String(state[item._id].edits[k]).trim() !== '';
+      const editTag = edited ? ' <span class="edited-tag">נערך</span>' : '';
+      const field = type === 'textarea'
+        ? `<textarea class="detail-edit" data-field="${k}" rows="2" placeholder="—">${escape(v)}</textarea>`
+        : `<input class="detail-edit" data-field="${k}" type="text" value="${escape(v)}" placeholder="—">`;
+      html += `<div class="detail-row edit"><div class="k">${escape(label)}${editTag}</div><div class="v">${field}</div></div>`;
+    }
+    // read-only context rows
+    const ro = [
+      ['mentions', '🔁 תדירות אזכור', item.mentions],
+      ['rec', '👍 המלצת מקור', REC_LABEL[item._rec] || item.rec_raw],
+      ['conf', '📊 רמת ביטחון', CONF_LABEL[item.conf] || item.conf],
+    ];
+    for (const [k, label, v] of ro) {
       if (v && String(v).trim()) {
         html += `<div class="detail-row"><div class="k">${escape(label)}</div><div class="v">${escape(v)}</div></div>`;
       }
@@ -745,10 +853,11 @@
     const rel = st.relevance || '';
     const verified = !!st.verified;
     const note = st.note || '';
-    const url = ensureUrl(item.website || '');
-    const phone = item.phone || '';
-    const desc = item.specialty || item.subcat || '';
-    const longDesc = (item.quote || '').length > 180;
+    const url = ensureUrl(eff(item, 'website') || '');
+    const phone = eff(item, 'phone') || '';
+    const desc = eff(item, 'specialty') || eff(item, 'subcat') || '';
+    const quote = eff(item, 'quote') || '';
+    const longDesc = quote.length > 180;
 
     return `
     <article class="card ${rel ? 's-' + rel : ''} ${verified ? 'is-verified' : ''}" data-id="${item._id}">
@@ -758,17 +867,23 @@
       </div>
       <div class="badges">
         <span class="badge cat">${escape(item._section || '')}</span>
-        ${item.subcat ? `<span class="badge">${escape(item.subcat)}</span>` : ''}
-        ${item.ages ? `<span class="badge age">${escape(item.ages)}</span>` : ''}
-        ${item.region ? `<span class="badge region">${escape(item.region)}</span>` : ''}
+        ${eff(item, 'subcat') ? `<span class="badge">${escape(eff(item, 'subcat'))}</span>` : ''}
+        ${eff(item, 'ages') ? `<span class="badge age">${escape(eff(item, 'ages'))}</span>` : ''}
+        ${eff(item, 'region') ? `<span class="badge region">${escape(eff(item, 'region'))}</span>` : ''}
         ${item._rec ? `<span class="badge rec-${item._rec}">${escape(REC_LABEL[item._rec] || item._rec)}</span>` : ''}
         ${item.conf ? `<span class="badge conf">${escape(CONF_LABEL[item.conf] || item.conf)}</span>` : ''}
+        ${SITE_BADGE[item._site_status] ? `<span class="badge site-${item._site_status}">${SITE_BADGE[item._site_status]}</span>` : ''}
+        ${item._phone_status === 'invalid' ? `<span class="badge phone-bad">📞 טלפון לא תקין</span>` : ''}
+        ${item._phone_status === 'partial' ? `<span class="badge phone-bad">📞 טלפון חלקי</span>` : ''}
+        ${item._no_contact ? `<span class="badge no-contact">🚫 אין פרטי קשר</span>` : ''}
+        ${item._duplicate ? `<span class="badge dup">👯 כפילות (${escape(item._duplicate.join('/'))})</span>` : ''}
         ${rel === 'yes'   ? `<span class="badge status-yes">✅ רלוונטי</span>` : ''}
         ${rel === 'no'    ? `<span class="badge status-no">❌ לא רלוונטי</span>` : ''}
         ${rel === 'maybe' ? `<span class="badge status-maybe">🔬 לבדוק</span>` : ''}
       </div>
+      ${item._auto_note && !rel ? `<div class="auto-note"><span class="label">🤖 בדיקה אוטומטית:</span>${escape(item._auto_note)}</div>` : ''}
       ${desc ? `<p class="desc">${escape(desc)}</p>` : ''}
-      ${item.quote ? `<div class="quote ${longDesc ? 'collapsed' : ''}">${escape(item.quote)}</div>${longDesc ? `<button class="expand-btn" data-action="expand">הצג עוד ▾</button>` : ''}` : ''}
+      ${quote ? `<div class="quote ${longDesc ? 'collapsed' : ''}">${escape(quote)}</div>${longDesc ? `<button class="expand-btn" data-action="expand">הצג עוד ▾</button>` : ''}` : ''}
 
       <div class="links">
         ${url ? `<a class="link primary" href="${escape(url)}" target="_blank" rel="noopener noreferrer">
@@ -872,7 +987,8 @@
 
   function cleanState(id) {
     const s = state[id];
-    if (s && !s.relevance && !s.verified && !s.note) delete state[id];
+    const hasEdits = s && s.edits && Object.keys(s.edits).length > 0;
+    if (s && !s.relevance && !s.verified && !s.note && !hasEdits) delete state[id];
   }
 
   function setRelevance(id, rel) {
@@ -964,15 +1080,36 @@
 
   document.getElementById('list').addEventListener('input', (e) => {
     const ta = e.target.closest('[data-action="note"]');
-    if (!ta) return;
-    const card = ta.closest('.card');
-    if (!card) return;
-    const id = card.dataset.id;
-    if (!state[id]) state[id] = {};
-    state[id].note = ta.value;
-    state[id].ts = Date.now();
-    if (!ta.value) cleanState(id);
-    saveState();
+    if (ta) {
+      const card = ta.closest('.card');
+      if (!card) return;
+      const id = card.dataset.id;
+      if (!state[id]) state[id] = {};
+      state[id].note = ta.value;
+      state[id].ts = Date.now();
+      if (!ta.value) cleanState(id);
+      saveState();
+      return;
+    }
+    // inline edits of detail fields
+    const ed = e.target.closest('.detail-edit[data-field]');
+    if (ed) {
+      const card = ed.closest('.card');
+      if (!card) return;
+      const id = card.dataset.id;
+      const field = ed.dataset.field;
+      const item = RAW.find(r => r._id === id);
+      if (!state[id]) state[id] = {};
+      if (!state[id].edits) state[id].edits = {};
+      const val = ed.value;
+      // store only when it differs from the original; clear when reset to original/empty
+      if (val !== '' && val !== (item[field] || '')) state[id].edits[field] = val;
+      else delete state[id].edits[field];
+      if (Object.keys(state[id].edits).length === 0) delete state[id].edits;
+      state[id].ts = Date.now();
+      cleanState(id);
+      saveState();
+    }
   });
 
   // Filters (status)
@@ -1026,22 +1163,28 @@
   function exportCSV(filter) {
     const headers = [
       'רלוונטיות','אומת','הערה','קטגוריה','תת-קטגוריה','שם','גילאים','אזור','טלפון','אתר',
-      'התמחות','המלצה','ביטחון','הקשר/ציטוט','הערות-מקור','חותמת זמן'
+      'התמחות','המלצה','ביטחון','הקשר/ציטוט','הערות-מקור','בדיקת-אתר','בדיקת-טלפון','כפילות','נערך-ידנית','חותמת זמן'
     ];
     const REL_HE = { yes: 'רלוונטי', maybe: 'לבדוק', no: 'לא רלוונטי' };
+    const SITE_HE = { live: 'אתר חי', redirect: 'הופנה', blocked: 'חוסם בוטים', dead: 'לא נטען', none: '' };
+    const PHONE_HE = { ok: 'תקין', invalid: 'לא תקין', partial: 'חלקי', none: '' };
     const lines = [headers.join(',')];
     for (const r of RAW) {
       const st = state[r._id] || {};
       const rel = st.relevance || '';
       if (filter === 'relevant' && rel !== 'yes') continue;
       if (filter === 'decided' && !rel && !st.verified) continue;
+      const E = (k) => { const e = st.edits; return (e && e[k] != null && String(e[k]).trim() !== '') ? e[k] : (r[k] || ''); };
       const ts = st.ts ? new Date(st.ts).toISOString() : '';
+      const editedFields = st.edits ? Object.keys(st.edits).join(' ') : '';
       const row = [
         REL_HE[rel] || '', st.verified ? 'כן' : '', st.note || '',
-        r._section || '', r.subcat || '', r.name || '',
-        r.ages || '', r.region || '', r.phone || '', r.website || '',
-        r.specialty || '', REC_LABEL[r._rec] || r.rec_raw || '', r.conf || '',
-        r.quote || '', r.notes || '', ts
+        r._section || '', E('subcat'), r.name || '',
+        E('ages'), E('region'), E('phone'), E('website'),
+        E('specialty'), REC_LABEL[r._rec] || r.rec_raw || '', r.conf || '',
+        E('quote'), E('notes'),
+        SITE_HE[r._site_status] || '', PHONE_HE[r._phone_status] || '',
+        r._duplicate ? r._duplicate.join('/') : '', editedFields, ts
       ];
       lines.push(row.map(csvEscape).join(','));
     }
@@ -1061,7 +1204,8 @@
     const decisions = [];
     for (const r of RAW) {
       const st = state[r._id];
-      if (!st || (!st.relevance && !st.verified && !st.note)) continue;
+      const hasEdits = st && st.edits && Object.keys(st.edits).length > 0;
+      if (!st || (!st.relevance && !st.verified && !st.note && !hasEdits)) continue;
       decisions.push({
         id: r._id,
         name: r.name,
@@ -1070,6 +1214,7 @@
         relevance: st.relevance || '',
         verified: !!st.verified,
         note: st.note || '',
+        edits: hasEdits ? st.edits : undefined,
         ts: st.ts ? new Date(st.ts).toISOString() : ''
       });
     }
@@ -1145,13 +1290,15 @@
           for (const d of arr) {
             if (d.id) {
               state[d.id] = { relevance: d.relevance || '', verified: !!d.verified, note: d.note || '', ts: Date.now() };
+              if (d.edits && Object.keys(d.edits).length) state[d.id].edits = d.edits;
               imported++;
             }
           }
         } else if (typeof parsed === 'object') {
           for (const [id, v] of Object.entries(parsed)) {
-            if (v && (v.relevance || v.verified || v.note)) {
+            if (v && (v.relevance || v.verified || v.note || v.edits)) {
               state[id] = { relevance: v.relevance || '', verified: !!v.verified, note: v.note || '', ts: Date.now() };
+              if (v.edits && Object.keys(v.edits).length) state[id].edits = v.edits;
               imported++;
             }
           }
@@ -1159,11 +1306,57 @@
       }
       saveState();
       render();
+      updateAutoBanner();
       alert(`יובאו ${imported} החלטות.`);
     } catch (err) {
       alert('שגיאה בייבוא: ' + err.message);
     }
     e.target.value = '';
+  });
+
+  // ---- Auto-suggestions banner ----
+  function updateAutoBanner() {
+    const banner = document.getElementById('auto-banner');
+    if (sessionStorage.getItem('retzefAutoBannerDismissed') === '1') { banner.style.display = 'none'; return; }
+    let dead = 0, badPhone = 0, noContact = 0, dup = 0, flagged = 0;
+    for (const r of RAW) {
+      if (state[r._id]?.relevance) continue; // already decided
+      if (r._site_status === 'dead') dead++;
+      if (r._phone_status === 'invalid' || r._phone_status === 'partial') badPhone++;
+      if (r._no_contact) noContact++;
+      if (r._duplicate) dup++;
+      if (r._auto_status === 'review') flagged++;
+    }
+    if (flagged + noContact + dup === 0) { banner.style.display = 'none'; return; }
+    document.getElementById('auto-banner-body').innerHTML =
+      `סרקתי את כל ${RAW.length} המענים. מצאתי <b>${dead}</b> עם אתר שלא נטען, <b>${badPhone}</b> עם טלפון בפורמט לא תקין, ` +
+      `<b>${noContact}</b> בלי שום פרטי קשר (אתר/טלפון), ו-<b>${dup}</b> עם חשד לכפילות. ` +
+      `אפשר לסמן את אלה שיש להן בעיה אמיתית (אתר שבור / טלפון לא תקין) כ"לבדוק" בלחיצה אחת — וכל אחת ניתנת לביטול. ` +
+      `אפשר גם לסנן בכל רגע עם הצ'יפ "⚠️ בעיות נתונים".`;
+    banner.style.display = 'flex';
+  }
+
+  document.getElementById('auto-apply-all').addEventListener('click', () => {
+    let n = 0;
+    for (const r of RAW) {
+      if (state[r._id]?.relevance) continue;
+      if (r._auto_status !== 'review') continue;
+      state[r._id] = state[r._id] || {};
+      state[r._id].relevance = 'maybe';
+      state[r._id].note = (state[r._id].note ? state[r._id].note + ' · ' : '') + (r._auto_note || 'בעיית נתונים');
+      state[r._id].ts = Date.now();
+      state[r._id].auto = true;
+      n++;
+    }
+    saveState();
+    document.getElementById('auto-banner').style.display = 'none';
+    sessionStorage.setItem('retzefAutoBannerDismissed', '1');
+    render();
+    alert(`${n} מענים סומנו כ"לבדוק". אפשר לראות אותם בצ'יפ "🔬 לבדוק".`);
+  });
+  document.getElementById('auto-dismiss').addEventListener('click', () => {
+    document.getElementById('auto-banner').style.display = 'none';
+    sessionStorage.setItem('retzefAutoBannerDismissed', '1');
   });
 
   document.getElementById('export-csv').addEventListener('click', () => exportCSV('all'));
@@ -1178,6 +1371,7 @@
   });
 
   render();
+  updateAutoBanner();
 })();
 </script>
 </body>
