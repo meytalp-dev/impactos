@@ -2,24 +2,20 @@
 """
 generate-pulse-audio.py — מייצר את כל אודיו נוני לפולס א'-ב'.
 
-קול: he-IL-HilaNeural (Microsoft Edge TTS, עברית נייטיב) + עיבוד "דמות מצוירת"
-(הרמת גובה-צליל בלי שינוי קצב, ffmpeg rubberband). זה פתרון הביניים שאושר
-(13.6.2026): הילה היא הקול הטבעי היחיד שעבד בעברית; העיבוד הופך אותה לדמות.
+קול: ElevenLabs — model eleven_v3 (תומך עברית רשמית), voice_id ZI6I4a3UGgs1DXxqWjBV.
+החלטה (21.6.2026): מעבר מ-edge-tts (Hila) לקול הזה של ElevenLabs לקול תלמידים בפולס.
+eleven_v3 הוא המודל שתומך עברית כראוי (multilingual_v2 לא — הגייה גרועה).
 
-🔴 שני תיקונים קריטיים מול הגרסה הישנה:
-  1. כל הטקסטים מנוקדים מלא — מתקן את הגיית "נוּנִי" אחרי תחיליות (כְּשֶׁ/לְ).
-  2. PITCH_SHIFT — הופך את קול האישה לקול דמות. שנו את הערך כדי לכוון.
+🔴 כל הטקסטים מנוקדים מלא — מתקן את הגיית "נוּנִי" אחרי תחיליות (כְּשֶׁ/לְ).
 
-דורש: pip install edge-tts  +  ffmpeg ב-PATH (עם rubberband).
+דורש: pip install elevenlabs python-dotenv  +  ELEVENLABS_API_KEY ב-.env של הריפו.
 שימוש:
   python generate-pulse-audio.py            # מייצר חסרים בלבד
   python generate-pulse-audio.py --force    # מייצר הכל מחדש
 """
 import argparse
-import asyncio
-import subprocess
+import os
 import sys
-import tempfile
 from pathlib import Path
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -27,16 +23,23 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
 
 try:
-    import edge_tts
+    from dotenv import load_dotenv
+    from elevenlabs.client import ElevenLabs
 except ImportError:
-    sys.exit("חסר edge-tts. הריצו: pip install edge-tts")
-
-VOICE = "he-IL-HilaNeural"
-RATE = "-10%"           # מעט איטי לכיתה א'
-PITCH = "+5Hz"          # מיקרו-כוונון של edge-tts
-PITCH_SHIFT = "1.16"    # ⬅️ עיבוד הדמות. 1.08=עדין · 1.16=מצויר · 1.24=מאוד מצויר
+    sys.exit("חסר elevenlabs/python-dotenv. הריצו: pip install elevenlabs python-dotenv")
 
 ROOT = Path(__file__).parent.parent
+REPO_ROOT = ROOT.parent
+load_dotenv(REPO_ROOT / ".env")
+
+API_KEY = os.getenv("ELEVENLABS_API_KEY", "").strip()
+if not API_KEY:
+    sys.exit(f"❌ ELEVENLABS_API_KEY לא נמצא ב-{REPO_ROOT / '.env'}")
+
+VOICE_ID = "ZI6I4a3UGgs1DXxqWjBV"      # קול נוני לתלמידים (ElevenLabs)
+MODEL_ID = "eleven_v3"                  # תומך עברית רשמית
+OUTPUT_FORMAT = "mp3_44100_128"
+
 OUT_DIR = ROOT / "assets" / "audio"
 DRAFTS_DIR = OUT_DIR / "drafts"
 
@@ -83,47 +86,48 @@ DRAFTS = {
 }
 
 
-async def synth(name: str, text: str, out_dir: Path, force: bool) -> str:
+def synth(client: ElevenLabs, name: str, text: str, out_dir: Path, force: bool) -> str:
     out = out_dir / f"{name}.mp3"
-    if out.exists() and not force:
+    if out.exists() and not force and out.stat().st_size > 500:
         return "skip"
-    # 1) edge-tts → קובץ זמני
-    with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
-        tmp_path = Path(tmp.name)
+    out_dir.mkdir(parents=True, exist_ok=True)
     try:
-        communicate = edge_tts.Communicate(text=text, voice=VOICE, rate=RATE, pitch=PITCH)
-        await communicate.save(str(tmp_path))
-        # 2) ffmpeg rubberband → עיבוד הדמות → קובץ סופי
-        r = subprocess.run(
-            ["ffmpeg", "-y", "-i", str(tmp_path),
-             "-filter:a", f"rubberband=pitch={PITCH_SHIFT}",
-             "-b:a", "128k", str(out)],
-            capture_output=True, text=True)
-        if not (out.exists() and out.stat().st_size > 500):
-            return f"FAIL ffmpeg: {r.stderr[-200:]}"
-        return f"OK ({out.stat().st_size // 1024}KB)"
-    finally:
-        tmp_path.unlink(missing_ok=True)
+        audio_iter = client.text_to_speech.convert(
+            voice_id=VOICE_ID,
+            text=text,
+            model_id=MODEL_ID,
+            output_format=OUTPUT_FORMAT,
+        )
+        with open(out, "wb") as f:
+            for chunk in audio_iter:
+                if chunk:
+                    f.write(chunk)
+        if out.exists() and out.stat().st_size > 500:
+            return f"OK ({out.stat().st_size // 1024}KB)"
+        return "FAIL (ריק)"
+    except Exception as e:
+        return f"FAIL: {e}"
 
 
-async def main() -> None:
+def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--force", action="store_true", help="מייצר הכל מחדש")
     args = ap.parse_args()
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     DRAFTS_DIR.mkdir(parents=True, exist_ok=True)
-    print(f"קול: {VOICE} · עיבוד דמות: pitch ×{PITCH_SHIFT} · ניקוד מלא")
+    client = ElevenLabs(api_key=API_KEY)
+    print(f"קול: ElevenLabs voice {VOICE_ID} · model {MODEL_ID} · ניקוד מלא")
     print(f"מצב: {'force' if args.force else 'skip-if-exists'}\n")
 
     print("─── 14 מאושרים ───")
     for name, text in CLIPS.items():
-        print(f"  {name:24s} → {await synth(name, text, OUT_DIR, args.force)}")
+        print(f"  {name:24s} → {synth(client, name, text, OUT_DIR, args.force)}")
     print("─── 16 טיוטות → drafts/ ───")
     for name, text in DRAFTS.items():
-        print(f"  {name:24s} → {await synth(name, text, DRAFTS_DIR, args.force)}")
+        print(f"  {name:24s} → {synth(client, name, text, DRAFTS_DIR, args.force)}")
     print(f"\n✅ {len(CLIPS)} מאושרים + {len(DRAFTS)} טיוטות.")
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
