@@ -23,7 +23,7 @@ import sys
 import unicodedata
 from pathlib import Path
 
-import edge_tts
+import _eleven_tts as edge_tts  # מעבר ל-ElevenLabs (was: import edge_tts)
 
 VOICE = "he-IL-AvriNeural"
 ROOT = Path(__file__).parent.parent

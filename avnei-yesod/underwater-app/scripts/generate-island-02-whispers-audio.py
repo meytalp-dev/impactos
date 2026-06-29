@@ -12,7 +12,7 @@ import asyncio
 import sys
 from pathlib import Path
 
-import edge_tts
+import _eleven_tts as edge_tts  # מעבר ל-ElevenLabs (was: import edge_tts)
 
 VOICE_AVRI = "he-IL-AvriNeural"
 

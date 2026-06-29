@@ -28,7 +28,7 @@ import asyncio
 import sys
 from pathlib import Path
 
-import edge_tts
+import _eleven_tts as edge_tts  # מעבר ל-ElevenLabs (was: import edge_tts)
 
 VOICE_AVRI = "he-IL-AvriNeural"   # סטנדרט אבני יסוד
 RATE = "-10%"                     # אותו rate כמו ב-shin demo + bubbles

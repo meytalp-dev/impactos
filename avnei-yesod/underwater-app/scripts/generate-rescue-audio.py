@@ -10,7 +10,7 @@ import asyncio
 import sys
 from pathlib import Path
 
-import edge_tts
+import _eleven_tts as edge_tts  # מעבר ל-ElevenLabs (was: import edge_tts)
 
 VOICE_AVRI = "he-IL-AvriNeural"   # גבר — קביעה גלובלית באבני יסוד
 
@@ -19,7 +19,7 @@ OUT_DIR = ROOT / "assets" / "audio"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 RESCUE_LINES = {
-    "intro-rescue-quest-qof":   "נוֹנִי שָׁמַע דָּגִיגִים בּוֹכִים. הֵם תְּקוּעִים בְּתוֹךְ אֲצוֹת בַּיָּם.",
+    "intro-rescue-quest-qof":   "נוּנִי שָׁמַע דָּגִיגִים בּוֹכִים. הֵם תְּקוּעִים בְּתוֹךְ אֲצוֹת בַּיָּם.",
     "intro-rescue-mission-qof": "רַק אֲצוֹת עִם הָאוֹת קוּף אֶפְשָׁר לִפְתֹּחַ. בּוֹאוּ נַצִּיל אֶת כֻּלָּם!",
     "finale-rescue-saved":      "הִצַּלְתֶּם אֶת כֹּל הַדָּגִים! יוֹפִי!",
 }

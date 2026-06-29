@@ -36,7 +36,7 @@ from pathlib import Path
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-import edge_tts
+import _eleven_tts as edge_tts  # מעבר ל-ElevenLabs (was: import edge_tts)
 
 VOICE_AVRI = "he-IL-AvriNeural"
 RATE       = "-10%"

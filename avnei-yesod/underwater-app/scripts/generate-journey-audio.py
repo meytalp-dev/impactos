@@ -15,7 +15,7 @@ import asyncio
 import sys
 from pathlib import Path
 
-import edge_tts
+import _eleven_tts as edge_tts  # מעבר ל-ElevenLabs (was: import edge_tts)
 
 VOICE_AVRI = "he-IL-AvriNeural"   # גבר — קביעה גלובלית באבני יסוד
 
@@ -25,10 +25,10 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 JOURNEY_LINES = {
     # ===== Intro (start screen) — full mission explanation =====
-    "intro-journey-quest-mem":    "נוֹנִי הָלַךְ לְאִבּוּד. הוּא רוֹאֶה אֶת הַבַּיִת רָחוֹק.",
+    "intro-journey-quest-mem":    "נוּנִי הָלַךְ לְאִבּוּד. הוּא רוֹאֶה אֶת הַבַּיִת רָחוֹק.",
     "intro-journey-mission-mem":  "בַּדֶּרֶךְ יֵשׁ אֲבָנִים. רַק עַל אֲבָנִים עִם הָאוֹת מֵם אֶפְשָׁר לִנְחֹת. בּוֹאוּ נַחְזֹר הַבַּיְתָה!",
 
-    "intro-journey-quest-resh":   "נוֹנִי הוֹלֵךְ בָּרַגְלַיִם בַּחֲזָרָה הַבַּיְתָה.",
+    "intro-journey-quest-resh":   "נוּנִי הוֹלֵךְ בָּרַגְלַיִם בַּחֲזָרָה הַבַּיְתָה.",
     "intro-journey-mission-resh": "בַּדֶּרֶךְ יֵשׁ אֲבָנִים. רַק עַל אֲבָנִים עִם הָאוֹת רֵישׁ אֶפְשָׁר לִנְחֹת. בּוֹאוּ נַחְזֹר הַבַּיְתָה!",
 
     # ===== Mission speaker (in-game) — full sentence, not just the letter sound =====

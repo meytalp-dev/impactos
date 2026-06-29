@@ -22,7 +22,7 @@ import asyncio
 import sys
 from pathlib import Path
 
-import edge_tts
+import _eleven_tts as edge_tts  # מעבר ל-ElevenLabs (was: import edge_tts)
 
 VOICE_AVRI = "he-IL-AvriNeural"   # קביעה גלובלית באבני יסוד (23.5.2026)
 RATE       = "-10%"               # אותו rate כמו בכל יתר ה-scripts
@@ -55,7 +55,7 @@ def build_lines(letter_name: str) -> dict:
         # intro מאוחד (פתיחה נרטיבית + הוראה מפורשת) — קובץ אחד פר אות.
         # סימני הפיסוק (! .) נותנים הפסקות טבעיות.
         "intro": (
-            f"נוֹנִי מָצָא בּוּעוֹת זוֹהֲרוֹת בַּיָּם, וּבְכֹל בּוּעָה יֵשׁ אוֹת! "
+            f"נוּנִי מָצָא בּוּעוֹת זוֹהֲרוֹת בַּיָּם, וּבְכֹל בּוּעָה יֵשׁ אוֹת! "
             f"בּוֹאוּ תַּקִּישׁוּ עַל כֹּל הַבּוּעוֹת עִם הָאוֹת {letter_name}, "
             f"וְכֹל אַחַת שֶׁתַּדְלִיקוּ תַּחֲזִיר עוֹד אוֹר לַיָּם."
         ),

@@ -25,7 +25,7 @@ from pathlib import Path
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-import edge_tts
+import _eleven_tts as edge_tts  # מעבר ל-ElevenLabs (was: import edge_tts)
 
 VOICE_AVRI = "he-IL-AvriNeural"
 RATE       = "-10%"
@@ -40,7 +40,7 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 LINES = {
     # ל — pick (בחירה, 5 סבבים)
     "intro-lamed":
-        "נוֹנִי רוֹאֶה בּוּעוֹת זוֹהֲרוֹת בַּיָּם, "
+        "נוּנִי רוֹאֶה בּוּעוֹת זוֹהֲרוֹת בַּיָּם, "
         "וּבְכֹל בּוּעָה יֵשׁ אוֹת! "
         "בְּכֹל סִבּוּב — בִּחֲרוּ אֶת הַבּוּעָה עִם הָאוֹת לָמֶד.",
     "find-lamed":
@@ -48,7 +48,7 @@ LINES = {
 
     # נ — memory-pair (הופך זוגות)
     "intro-nun":
-        "נוֹנִי הִחְבִּיא קְלָפִים בַּחוֹל! "
+        "נוּנִי הִחְבִּיא קְלָפִים בַּחוֹל! "
         "הָפְכוּ אוֹתָם וּמִצְאוּ זוּגוֹת. "
         "כֹּל זוּג: קֶלֶף עִם הָאוֹת נוּן וְקֶלֶף עִם תְּמוּנָה.",
     "find-nun":
@@ -56,7 +56,7 @@ LINES = {
 
     # א — sort-by-letter (גרירה לאקווריום)
     "intro-alef":
-        "נוֹנִי רוֹאֶה בּוּעוֹת זוֹהֲרוֹת בַּיָּם! "
+        "נוּנִי רוֹאֶה בּוּעוֹת זוֹהֲרוֹת בַּיָּם! "
         "יֵשׁ שְׁתֵּי רְשָׁתוֹת לְמַטָּה. "
         "גָּרְרוּ אֶת הַבּוּעוֹת עִם הָאוֹת אָלֶף לָרֶשֶׁת הַנְּכוֹנָה.",
     "find-alef":

@@ -13,7 +13,7 @@ from pathlib import Path
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-import edge_tts
+import _eleven_tts as edge_tts  # מעבר ל-ElevenLabs (was: import edge_tts)
 
 VOICE_AVRI = "he-IL-AvriNeural"
 RATE       = "-10%"
@@ -21,7 +21,7 @@ OUT_DIR = Path(__file__).parent.parent / "assets" / "audio"
 
 LINES = {
     "intro-hey":
-        "נוֹנִי רוֹאֶה כּוֹכָבִים זוֹהֲרִים בַּיָּם! "
+        "נוּנִי רוֹאֶה כּוֹכָבִים זוֹהֲרִים בַּיָּם! "
         "יֵשׁ שְׁתֵּי רְשָׁתוֹת לְמַטָּה. "
         "גָּרְרוּ אֶת הַכּוֹכָבִים עִם הָאוֹת הֵי לָרֶשֶׁת הַנְּכוֹנָה.",
     "find-hey":

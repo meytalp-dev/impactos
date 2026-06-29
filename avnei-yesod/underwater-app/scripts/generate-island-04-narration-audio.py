@@ -16,7 +16,7 @@ import asyncio
 import sys
 from pathlib import Path
 
-import edge_tts
+import _eleven_tts as edge_tts  # מעבר ל-ElevenLabs (was: import edge_tts)
 
 VOICE = "he-IL-AvriNeural"
 RATE = "-10%"
@@ -29,7 +29,7 @@ LINES = {
     # סיפור פתיחה
     'intro-isl04': (
         "הַשּׁוּנִית הַשְּׁקֵטָה. "
-        "בַּשּׁוּנִית שֶׁל נוֹנִי חַיִּים חֲמִשָּׁה דָּגִים, "
+        "בַּשּׁוּנִית שֶׁל נוּנִי חַיִּים חֲמִשָּׁה דָּגִים, "
         "וְכֹל אֶחָד שָׁר צְלִיל אַחֵר. "
         "אֲבָל הַיּוֹם הַיָּם שָׁקֵט — הַדָּגִים שָׁכְחוּ אֶת הַצְּלִיל שֶׁלָּהֶם. "
         "בּוֹאוּ נַעֲזֹר לְכֹל דָּג לְהִזָּכֵר!"

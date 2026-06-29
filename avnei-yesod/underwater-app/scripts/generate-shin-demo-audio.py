@@ -18,7 +18,7 @@ import asyncio
 import sys
 from pathlib import Path
 
-import edge_tts
+import _eleven_tts as edge_tts  # מעבר ל-ElevenLabs (was: import edge_tts)
 
 VOICE_AVRI = "he-IL-AvriNeural"   # קביעה גלובלית באבני יסוד (23.5.2026)
 RATE       = "-10%"               # אותו rate כמו בכל יתר ה-scripts
@@ -38,7 +38,7 @@ LETTER_KEY = "shin"
 #      במובייל. גם משפר latency בנייד. ה-! בין המשפטים נותן הפסקה טבעית.
 LINES = {
     f"intro-{LETTER_KEY}":
-        "נוֹנִי מָצָא בּוּעוֹת זוֹהֲרוֹת בַּיָּם, וּבְכֹל בּוּעָה יֵשׁ אוֹת! "
+        "נוּנִי מָצָא בּוּעוֹת זוֹהֲרוֹת בַּיָּם, וּבְכֹל בּוּעָה יֵשׁ אוֹת! "
         "בּוֹאוּ תַּקִּישׁוּ עַל כֹּל הַבּוּעוֹת עִם הָאוֹת שִׁין, "
         "וְכֹל אַחַת שֶׁתַּדְלִיקוּ תַּחֲזִיר עוֹד אוֹר לַיָּם.",
     f"find-{LETTER_KEY}":
