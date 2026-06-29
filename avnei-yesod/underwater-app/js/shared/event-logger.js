@@ -45,7 +45,11 @@ window.AvneiEventLogger = (function() {
 
   // session_id נוצר פעם אחת בטעינת הדף
   const SESSION_ID = 'sess-' + Date.now();
-  const ISLAND_ID_CURRENT = 3;
+
+  // אי הזיהוי (letter-shape / sound-match / find-letter). משמש רק לטווח דגלי המורה
+  // (detectAndRecordFlags) — הדפוסים שם הם ספציפיים לאי 3 (צורת אות מול צליל).
+  // אינו מקבע יותר את island_id_current של כל אירוע — ראה resolveIslandId.
+  const LETTER_ISLAND_ID = 3;
 
   // student_id דינמי — נקרא מ-localStorage שנכתב על-ידי student-picker.html.
   // אם אין — נופל ל-'local' (תאימות לאחור + מצב דמו).
@@ -82,7 +86,15 @@ window.AvneiEventLogger = (function() {
     'fish-schools':  2,
     'twin-seaweeds': 2,
     'whispers':      2,
+    // אי 3 — מנגנונים גנריים נוספים (sort/memory) המשמשים רק את stage-3-* (29.6.2026)
+    'sort-by-letter': 3,
+    'memory-pair':    3,
   };
+
+  // הערה (29.6.2026): מנגנוני אי 4/5/14 (cv-*, word-*, oral) מעבירים
+  // primary_island_id ו-secondary_island_ids מפורשות ב-result, ולכן אינם
+  // חייבים להופיע במפה הזו. resolveIslandId מכבד תחילה את הערך המפורש,
+  // וזו הסיבה שכל איים עתידיים יכולים פשוט להעביר island_id בלי לגעת בקובץ הזה.
 
   const SECONDARY_ISLANDS = {
     'letterShapeA': [],
@@ -121,29 +133,50 @@ window.AvneiEventLogger = (function() {
     19: 5, 20: 5, 21: 5, 22: 5,                        // סטרנד 5
   });
 
+  // resolveIslandId — מקור-האמת לזיהוי האי של אירוע, בסדר עדיפות:
+  //   1) result.primary_island_id / result.island_id  (מפורש מהמשחקון — future-proof)
+  //   2) PRIMARY_ISLAND[activity]                      (מפה ל-legacy: אי 1/2/3)
+  //   3) null                                          (לא ידוע — BKT יתעלם)
+  // עד 29.6.2026 השדה היה מקובע ל-3, כך שאירועי אי 4/5/14 (cv-*, word-*, oral)
+  // קיבלו island=null/strand=null ונשרו מ-BKT. עכשיו הם נשמרים נכון.
+  function resolveIslandId(result) {
+    if (typeof result.primary_island_id === 'number') return result.primary_island_id;
+    if (typeof result.island_id === 'number') return result.island_id;
+    const mapped = PRIMARY_ISLAND[result.activity_type];
+    return (typeof mapped === 'number') ? mapped : null;
+  }
+
   // result = {
   //   activity_type, activity_variant, item_id, target_letter,
   //   supportLevel, is_correct, attempts, response_time_ms,
-  //   hint_used, auto_hint_triggered, noni_guidance_used
+  //   hint_used, auto_hint_triggered, noni_guidance_used,
+  //   // אופציונלי (מומלץ למשחקונים מחוץ לאי 3 / איים עתידיים):
+  //   primary_island_id | island_id, secondary_island_ids, strand_id
   // }
   function logActivityResult(result) {
     const activity = result.activity_type;
+    const islandId = resolveIslandId(result);
     const evt = {
       student_id:           getStudentId(),
       session_id:           SESSION_ID,
-      island_id_current:    ISLAND_ID_CURRENT,
+      // island_id_current — האי בפועל של האירוע (לא מקובע 3 יותר).
+      island_id_current:    islandId,
       activity_type:        activity,
       activity_variant:     result.activity_variant || null,
       item_id:              result.item_id || null,
       target_letter:        result.target_letter || null,
       supportLevel:         result.supportLevel || 1,
-      primary_island_id:    PRIMARY_ISLAND[activity] || null,
-      secondary_island_ids: SECONDARY_ISLANDS[activity] || [],
+      primary_island_id:    islandId,
+      secondary_island_ids: Array.isArray(result.secondary_island_ids)
+                              ? result.secondary_island_ids
+                              : (SECONDARY_ISLANDS[activity] || []),
       // E.17 (28.5.2026) — 3 שדות לתיוג ראמ"ה/סטרנד:
-      //   strand_id — מיפוי אוטומטי מ-island_id_current (לא דורש שינוי במשחקונים)
+      //   strand_id — מיפוי אוטומטי מהאי שהתקבל (אפשר override מפורש דרך result.strand_id)
       //   rama_task_alignment / peima_target — מועברים מהפריט דרך result
       // אירועים ישנים בלי השדות → null (backwards-compat).
-      strand_id:            ISLAND_TO_STRAND[ISLAND_ID_CURRENT] || null,
+      strand_id:            (typeof result.strand_id === 'number')
+                              ? result.strand_id
+                              : (islandId != null ? (ISLAND_TO_STRAND[islandId] || null) : null),
       rama_task_alignment:  (typeof result.rama_task_alignment === 'number') ? result.rama_task_alignment : null,
       peima_target:         (typeof result.peima_target === 'number') ? result.peima_target : null,
       is_correct:           result.is_correct === true,
@@ -193,8 +226,9 @@ window.AvneiEventLogger = (function() {
   // נקרא בסוף סשן/סוף אות. סורק events אחרונים ומוסיף flags לפי דפוסים.
   function detectAndRecordFlags(targetLetter) {
     const events = getEvents();
+    // הדגלים האלה הם דפוסי אי-הזיהוי (צורת אות, מציאת אות בתוך מילה) → אי 3 בלבד.
     const recent = events.filter(e =>
-      e.target_letter === targetLetter && e.island_id_current === ISLAND_ID_CURRENT
+      e.target_letter === targetLetter && e.island_id_current === LETTER_ISLAND_ID
     );
 
     // דפוס 1: זמן תגובה חציוני > 5 שניות למרות דיוק גבוה

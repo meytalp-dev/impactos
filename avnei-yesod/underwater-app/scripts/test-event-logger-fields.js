@@ -72,7 +72,7 @@ const evt1 = Logger.logActivityResult({
 assert('strand_id קיים באירוע',           'strand_id' in evt1);
 assert('rama_task_alignment קיים באירוע', 'rama_task_alignment' in evt1);
 assert('peima_target קיים באירוע',        'peima_target' in evt1);
-assert('strand_id = 1 (ISLAND_ID_CURRENT=3 → strand 1)', evt1.strand_id === 1, 'התקבל: ' + evt1.strand_id);
+assert('strand_id = 1 (storm-quest → אי 3 → strand 1)', evt1.strand_id === 1, 'התקבל: ' + evt1.strand_id);
 assert('rama_task_alignment = 1 (עבר מ-result)',         evt1.rama_task_alignment === 1, 'התקבל: ' + evt1.rama_task_alignment);
 assert('peima_target = 1 (עבר מ-result)',                evt1.peima_target === 1, 'התקבל: ' + evt1.peima_target);
 
@@ -170,6 +170,66 @@ const evtBad = Logger.logActivityResult({
 });
 assert('rama_task_alignment עם ערך לא-מספרי → null', evtBad.rama_task_alignment === null);
 assert('peima_target=undefined → null',              evtBad.peima_target === null);
+
+// ============================================================
+// 6. island_id resolution — אי 4/5/14 (תיקון 29.6.2026)
+//    קודם השדה היה מקובע 3 ואירועי אי 4/5/14 נשרו מ-BKT (island=null).
+//    עכשיו primary_island_id מפורש מהמשחקון מכובד, ו-strand נגזר ממנו.
+// ============================================================
+divider('בדיקה 6 — island/strand נגזרים מהאי בפועל (לא מקובע 3)');
+
+localStorage._data = {};
+// משחקון אי 4 (cv-vs-cv) מעביר primary_island_id מפורש:
+const evtIsland4 = Logger.logActivityResult({
+  activity_type: 'cv-vs-cv',
+  target_letter: 'ל',
+  is_correct: true,
+  attempts: 0,
+  primary_island_id: 4,
+  secondary_island_ids: [3],
+});
+assert('primary_island_id מפורש (4) מכובד',          evtIsland4.primary_island_id === 4, 'התקבל: ' + evtIsland4.primary_island_id);
+assert('island_id_current = 4 (לא מקובע 3)',          evtIsland4.island_id_current === 4, 'התקבל: ' + evtIsland4.island_id_current);
+assert('strand_id = 1 נגזר מאי 4 (פונולוגיה)',        evtIsland4.strand_id === 1, 'התקבל: ' + evtIsland4.strand_id);
+assert('secondary_island_ids עוברים מ-result',        JSON.stringify(evtIsland4.secondary_island_ids) === '[3]');
+
+// משחקון אי 5 (word-merge) — strand 1 גם הוא (איים 1-8 = strand 1):
+const evtIsland5 = Logger.logActivityResult({
+  activity_type: 'word-merge', target_letter: null, is_correct: true, attempts: 0,
+  primary_island_id: 5, secondary_island_ids: [4],
+});
+assert('אי 5 → island_id_current = 5', evtIsland5.island_id_current === 5, 'התקבל: ' + evtIsland5.island_id_current);
+assert('אי 5 → strand_id = 1',         evtIsland5.strand_id === 1, 'התקבל: ' + evtIsland5.strand_id);
+
+// משחקון אי 14 (oral) → strand 3 (שפה דבורה):
+const evtIsland14 = Logger.logActivityResult({
+  activity_type: 'listen-and-answer', is_correct: true, attempts: 0,
+  primary_island_id: 14,
+});
+assert('אי 14 → island_id_current = 14', evtIsland14.island_id_current === 14, 'התקבל: ' + evtIsland14.island_id_current);
+assert('אי 14 → strand_id = 3 (שפה דבורה)', evtIsland14.strand_id === 3, 'התקבל: ' + evtIsland14.strand_id);
+
+// תמיכה ב-island_id (alias) + strand_id override מפורש:
+const evtAlias = Logger.logActivityResult({
+  activity_type: 'future-game', is_correct: true, attempts: 0,
+  island_id: 10, strand_id: 2,
+});
+assert('island_id (alias) נגזר ל-island_id_current', evtAlias.island_id_current === 10, 'התקבל: ' + evtAlias.island_id_current);
+assert('strand_id override מפורש מכובד (2)',          evtAlias.strand_id === 2, 'התקבל: ' + evtAlias.strand_id);
+
+// מנגנון גנרי באי 3 (sort-by-letter) — דרך המפה, לא מפורש:
+const evtSort = Logger.logActivityResult({
+  activity_type: 'sort-by-letter', target_letter: 'ל', is_correct: true, attempts: 0,
+});
+assert('sort-by-letter → אי 3 דרך המפה', evtSort.primary_island_id === 3, 'התקבל: ' + evtSort.primary_island_id);
+assert('sort-by-letter → strand_id = 1', evtSort.strand_id === 1, 'התקבל: ' + evtSort.strand_id);
+
+// activity לא ידוע בלי island מפורש → null (BKT יתעלם, אבל האירוע עדיין נשמר):
+const evtUnknown = Logger.logActivityResult({
+  activity_type: 'totally-unknown', is_correct: true, attempts: 0,
+});
+assert('activity לא ידוע → primary_island_id = null', evtUnknown.primary_island_id === null, 'התקבל: ' + evtUnknown.primary_island_id);
+assert('activity לא ידוע → strand_id = null',         evtUnknown.strand_id === null, 'התקבל: ' + evtUnknown.strand_id);
 
 // ============================================================
 // סיכום
