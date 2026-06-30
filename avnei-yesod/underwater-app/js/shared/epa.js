@@ -28,9 +28,12 @@ window.AvneiEPA = (function() {
   // ---- 3 הצירים וערכיהם החוקיים (partners-review-v3 §4ד) ----
   const AXES = ['failure', 'context', 'task'];
 
-  const FAILURE_VALUES = ['Shape', 'Sound', 'Name', 'Direction'];
+  // 29.6.2026 · התאמה לבנק השאלות (questions-grade1.json epa_axes) — minigame-fit G2/G3.
+  // נוספו: Comprehension/WrongPlural/GenderMismatch (הבנה/מורפולוגיה) · decode (פענוח — ערך ה-task הנפוץ בבנק).
+  // הערכים הישנים נשמרו במלואם (תוספתי, לא שובר). ⚠️ להוסיף מתכוני התערבות לערכים החדשים ב-B.8.
+  const FAILURE_VALUES = ['Shape', 'Sound', 'Name', 'Direction', 'Comprehension', 'WrongPlural', 'GenderMismatch'];
   const CONTEXT_VALUES = ['isolation', 'initial', 'medial', 'final', 'font'];
-  const TASK_VALUES    = ['recognition', 'find', 'name', 'write'];
+  const TASK_VALUES    = ['recognition', 'find', 'name', 'write', 'decode'];
 
   // ---- מיפוי activity_type → ערך ברירת-מחדל פר ציר ----
   // אומת מול ה-PRIMARY_ISLAND ב-event-logger.js (27.5.2026).

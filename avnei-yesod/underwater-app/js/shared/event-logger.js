@@ -165,6 +165,13 @@ window.AvneiEventLogger = (function() {
       activity_variant:     result.activity_variant || null,
       item_id:              result.item_id || null,
       target_letter:        result.target_letter || null,
+      // 29.6.2026 · minigame-fit G1 — העברת טעות ה-EPA הספציפית של המסיח שנלחץ.
+      // epa.js קורא את שלושת השדות (deriveFailure/deriveContext/deriveTask); קודם הם
+      // נשמטו מ-evt → EPA תמיד נפל ל-mapping הגס לפי activity_type. בלי זה אף משחקון
+      // אינו יכול לדווח EPA פר-מסיח. תוספתי: אירועים ישנים בלי השדות → null (ללא שינוי התנהגות).
+      failure_type:         result.failure_type || null,
+      task_type:            result.task_type || null,
+      letter_position:      result.letter_position || null,
       supportLevel:         result.supportLevel || 1,
       primary_island_id:    islandId,
       secondary_island_ids: Array.isArray(result.secondary_island_ids)
