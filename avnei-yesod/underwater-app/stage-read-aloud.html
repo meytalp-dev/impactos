@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#A8E8FF">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>נוני מקשיבה · אני קוראת</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<style>
+  body { background: linear-gradient(180deg, #BFF1FF 0%, #A8E8FF 40%, #73D9D1 100%); }
+  .scene-bg {
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center bottom; z-index: 0; pointer-events: none;
+  }
+  .stage {
+    position: relative; z-index: 1;
+    min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column;
+    align-items: center; justify-content: space-between;
+    padding: var(--space-l) var(--space-m) var(--space-xl);
+    gap: var(--space-m); box-sizing: border-box;
+  }
+
+  /* ----- top-bar (חזרה למפה) ----- */
+  .top-bar { position: absolute; top: var(--space-s); inset-inline-start: var(--space-s); z-index: 3; }
+  .back-btn {
+    width: var(--touch-min); height: var(--touch-min); border-radius: var(--radius-pill);
+    background: var(--warm-white); display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 14px rgba(30,61,71,.14); text-decoration: none; color: var(--text-main);
+    font-size: 28px; font-weight: 800;
+  }
+
+  /* ----- מתג מילים/משפטים ----- */
+  .mode-toggle { display: flex; gap: 6px; background: var(--warm-white); padding: 6px;
+    border-radius: var(--radius-pill); box-shadow: 0 4px 14px rgba(30,61,71,.1); margin-top: 4px; }
+  .mode-btn { background: transparent; color: var(--text-soft); font-weight: 700;
+    font-size: var(--font-ui-small); padding: 10px 24px; border-radius: var(--radius-pill); transition: all .2s; }
+  .mode-btn.active { background: var(--water-secondary); color: #fff; box-shadow: 0 4px 12px rgba(115,217,209,.4); }
+
+  /* ----- נוני + בועה ----- */
+  .noni-row { display: flex; align-items: flex-end; gap: var(--space-s); max-width: 560px; width: 100%; }
+  .noni { width: 120px; height: 120px; object-fit: contain; flex-shrink: 0;
+          filter: drop-shadow(var(--glow-noni)); transition: transform .25s ease; }
+  .noni.pop { transform: scale(1.08) translateY(-4px); }
+  .bubble {
+    background: var(--warm-white); border-radius: var(--radius-lg);
+    padding: 16px 22px; font-size: var(--font-instruction); font-weight: 500;
+    color: var(--text-main); box-shadow: 0 6px 20px rgba(30,61,71,.12);
+    position: relative; line-height: 1.35; flex: 1;
+  }
+  .bubble::after {
+    content: ''; position: absolute; bottom: 14px; right: -10px;
+    border: 10px solid transparent; border-right-color: var(--warm-white); border-left: 0;
+  }
+
+  /* ----- כרטיס המילה ----- */
+  .word-card {
+    background: var(--warm-white); border-radius: var(--radius-lg);
+    padding: var(--space-xl) var(--space-l); width: 100%; max-width: 560px;
+    text-align: center; box-shadow: 0 10px 36px rgba(30,61,71,.14);
+    border: 3px solid transparent; transition: border-color .3s, box-shadow .3s, background .3s;
+  }
+  .word { font-size: 96px; font-weight: 700; color: var(--text-main); letter-spacing: .02em; line-height: 1.25; }
+  .word.sentence { font-size: 46px; line-height: 1.5; }
+  .word-card.ok      { border-color: var(--success); box-shadow: var(--glow-success), 0 10px 36px rgba(30,61,71,.14); background: #F2FFF8; }
+  .word-card.review  { border-color: var(--hint);    box-shadow: var(--glow-pedagogic), 0 10px 36px rgba(30,61,71,.14); background: #FFFDF4; }
+  .word-card.retry   { border-color: var(--coral); background: #FFF6F2; }
+
+  /* ----- כפתור מיקרופון ----- */
+  .controls { display: flex; flex-direction: column; align-items: center; gap: var(--space-s); width: 100%; max-width: 560px; }
+  .mic {
+    width: 96px; height: 96px; min-width: var(--touch-min); border-radius: var(--radius-pill);
+    background: var(--coral); display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 24px rgba(255,169,141,.5); transition: transform .15s, background .2s; cursor: pointer;
+  }
+  .mic:active { transform: scale(.94); }
+  .mic.recording { background: #FF7A5C; animation: pulse 1s infinite; }
+  .mic svg { width: 44px; height: 44px; fill: #fff; }
+  @keyframes pulse { 0%,100%{ box-shadow:0 8px 24px rgba(255,122,92,.5);} 50%{ box-shadow:0 8px 40px rgba(255,122,92,.95);} }
+  .mic-label { font-size: var(--font-ui-small); color: var(--text-soft); font-weight: 500; min-height: 24px; text-align: center; }
+
+  .next-btn {
+    background: var(--water-secondary); color: #fff; font-weight: 700;
+    font-size: var(--font-ui-small); padding: 14px 28px; border-radius: var(--radius-pill);
+    box-shadow: 0 6px 18px rgba(115,217,209,.45); opacity: 0; pointer-events: none; transition: opacity .3s; cursor: pointer;
+  }
+  .next-btn.show { opacity: 1; pointer-events: auto; }
+
+  /* ----- שורת דיבאג (מורה · ?debug=1) ----- */
+  .debug {
+    position: fixed; bottom: 0; inset-inline: 0; background: rgba(30,61,71,.92); color: #DDF;
+    font-size: 14px; padding: 8px 14px; direction: ltr; text-align: left; display: none;
+    font-family: ui-monospace, monospace; white-space: pre-wrap; z-index: 5;
+  }
+  body.debug-on .debug { display: block; }
+  .spinner { width: 28px; height: 28px; border: 3px solid var(--water-depth);
+    border-top-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true" onerror="this.style.display='none'">
+
+<header class="top-bar">
+  <a href="map.html" class="back-btn" aria-label="חזרה למפה">→</a>
+</header>
+
+<div class="stage">
+  <div class="mode-toggle">
+    <button class="mode-btn active" data-mode="words">מילים</button>
+    <button class="mode-btn" data-mode="sentences">משפטים</button>
+  </div>
+
+  <div class="noni-row">
+    <img id="noni" class="noni" src="assets/noni-idle.png" alt="נוני">
+    <div class="bubble" id="bubble">אֲנִי נוֹנִי, וַאֲנִי אוֹהֶבֶת לִשְׁמֹעַ אוֹתָךְ קוֹרֵאת! 🐙</div>
+  </div>
+
+  <div class="word-card" id="card">
+    <div class="word" id="word">תַּפּוּחַ</div>
+  </div>
+
+  <div class="controls">
+    <div class="mic" id="mic" role="button" aria-label="הקלטה">
+      <svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg>
+    </div>
+    <div class="mic-label" id="micLabel">לִחֲצִי וְקִרְאִי</div>
+    <button class="next-btn" id="next">הַבָּא ←</button>
+  </div>
+</div>
+
+<div class="debug" id="debug"></div>
+
+<script>
+// ── שרת התמלול בענן (ElevenLabs Scribe) — CORS פתוח. ──
+const API = 'https://noni-reading-fluency.onrender.com';
+
+const LISTS = {
+  words: ["תַּפּוּחַ","לוּל","לֵב","לָקַח","בְּרֵכָה","מְכוֹנִית","צְלִיל","תְּשׁוּבָה","אִמָּא","מְצֻיָּן"],
+  sentences: [
+    "אַבָּא בָּא הַבַּיְתָה",
+    "הַיֶּלֶד אָכַל תַּפּוּחַ",
+    "אִמָּא קָנְתָה לֶחֶם",
+    "הַכֶּלֶב רָץ בַּגַּן",
+    "הַדָּג שָׂחָה בַּמַּיִם",
+  ],
+};
+let mode = "words", idx = 0, recorder = null, chunks = [], recording = false, warned = false;
+const list = () => LISTS[mode];
+
+const $ = id => document.getElementById(id);
+const noni = $('noni'), bubble = $('bubble'), card = $('card'), wordEl = $('word');
+const mic = $('mic'), micLabel = $('micLabel'), nextBtn = $('next'), debug = $('debug');
+
+// מצב מורָה (debug): נשמר לסשן + עובר גם כשנכנסים מהמפה (?debug=1 על המפה).
+const _qsDebug = new URLSearchParams(location.search).has('debug');
+if (_qsDebug) sessionStorage.setItem('avneiDebug', '1');
+if (_qsDebug || sessionStorage.getItem('avneiDebug') || /[?&]debug/.test(document.referrer)) {
+  document.body.classList.add('debug-on');
+}
+
+function setNoni(mood){ noni.src = `assets/noni-${mood}.png`; noni.classList.add('pop'); setTimeout(()=>noni.classList.remove('pop'),250); }
+function showWord(){
+  const txt = list()[idx];
+  wordEl.textContent = txt;
+  wordEl.classList.toggle('sentence', mode === 'sentences');
+  card.className = 'word-card';
+  bubble.textContent = mode === 'sentences' ? 'תִּקְרְאִי לִי אֶת הַמִּשְׁפָּט 🐙' : 'תִּקְרְאִי לִי אֶת הַמִּילָה 🐙';
+  setNoni('idle'); micLabel.textContent = 'לִחֲצִי וְקִרְאִי';
+  nextBtn.classList.remove('show');
+}
+
+async function startRec(){
+  let stream;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    micLabel.textContent = 'הַדַּפְדְּפָן לֹא תּוֹמֵךְ בְּמִיקְרוֹפוֹן';
+    debug.textContent = 'getUserMedia unavailable — need https. location=' + location.href;
+    return;
+  }
+  try { stream = await navigator.mediaDevices.getUserMedia({audio:true}); }
+  catch(e){
+    const why = {
+      NotAllowedError: 'הַהַרְשָׁאָה נִדְחֲתָה — אַשְּׁרִי מִיקְרוֹפוֹן בְּסֵמֶל 🔒 שֶׁלְּיַד הַכְּתֹבֶת',
+      NotFoundError:   'לֹא נִמְצָא מִיקְרוֹפוֹן מְחֻבָּר',
+      NotReadableError:'הַמִּיקְרוֹפוֹן תָּפוּס בְּתֹכְנָה אַחֶרֶת',
+      SecurityError:   'נִדְרָשׁ הֶקְשֵׁר מְאֻבְטָח (https)',
+    }[e.name] || ('שְׁגִיאָה: ' + e.name);
+    micLabel.textContent = why;
+    debug.textContent = `getUserMedia FAILED: ${e.name} — ${e.message}`;
+    return;
+  }
+  chunks = []; recorder = new MediaRecorder(stream);
+  recorder.ondataavailable = e => chunks.push(e.data);
+  recorder.onstop = () => { stream.getTracks().forEach(t=>t.stop()); sendAudio(); };
+  recorder.start(); recording = true;
+  mic.classList.add('recording'); micLabel.textContent = 'מַקְשִׁיבָה… (לִחֲצִי לְסִיּוּם)';
+  bubble.textContent = 'אֲנִי מַקְשִׁיבָה… 👂'; setNoni('thinking');
+}
+function stopRec(){ if(recorder && recording){ recording=false; mic.classList.remove('recording'); recorder.stop(); } }
+
+async function sendAudio(){
+  // text/plain = CORS-safelisted → בלי preflight (הבייטים עדיין webm; רק הכותרת).
+  const blob = new Blob(chunks, {type:'text/plain'});
+  micLabel.innerHTML = '<span class="spinner"></span>';
+  // cold-start ידידותי: אם איטי (השרת מתעורר) — הודעה רכה
+  const wake = setTimeout(() => { if (!warned){ bubble.textContent = 'רֶגַע, נוֹנִי מִתְעוֹרֶרֶת… 😴'; warned = true; } }, 4000);
+  try {
+    const res = await fetch(`${API}/check?target=${encodeURIComponent(list()[idx])}`, {method:'POST', body:blob});
+    render(await res.json());
+  } catch(e){
+    micLabel.textContent = 'שְׁגִיאָה — נַסִּי שׁוּב';
+    bubble.textContent = 'אוֹי, לֹא הִצְלַחְתִּי לִשְׁמֹעַ. נַסִּי שׁוּב 💙'; setNoni('thinking');
+    debug.textContent = 'fetch error: ' + e.message;
+  } finally { clearTimeout(wake); }
+}
+
+function render(v){
+  let dbg = `[${v.mode}·${v.stt||'?'}] שמע: «${v.heard}»\nאבחון: ${v.teacher_summary}\n${v.decision} · ${v.latency_ms}ms`;
+  if (v.mode === 'sentence' && v.words){
+    dbg += '\n' + v.words.map(w => `  ${w.decision==='ACCEPT'?'✓':'✗'} «${w.target}»→«${w.heard}» ${w.decision!=='ACCEPT'?'· '+w.summary:''}`).join('\n');
+  }
+  if (v.fluency && v.fluency.available) dbg += `\n⏱ שטף: ${v.fluency.teacher_fluency}`;
+  debug.textContent = dbg;
+  if (v.decision === 'ACCEPT'){
+    card.className = 'word-card ok'; setNoni('happy');
+    bubble.textContent = 'כָּל הַכָּבוֹד! קָרָאתְּ נָכוֹן 🎉'; micLabel.textContent = '';
+  } else if (v.decision === 'REVIEW'){
+    card.className = 'word-card review'; setNoni('thinking');
+    bubble.textContent = 'כִּמְעַט! בּוֹאִי נְנַסֶּה עוֹד פַּעַם 💛'; micLabel.textContent = 'לִחֲצִי וְקִרְאִי שׁוּב';
+  } else {
+    card.className = 'word-card retry'; setNoni('thinking');
+    bubble.textContent = 'בּוֹאִי נְנַסֶּה שׁוּב יַחַד 💙'; micLabel.textContent = 'לִחֲצִי וְקִרְאִי שׁוּב';
+  }
+  nextBtn.classList.add('show');
+}
+
+mic.addEventListener('click', () => recording ? stopRec() : startRec());
+nextBtn.addEventListener('click', () => { idx = (idx+1) % list().length; showWord(); });
+document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.mode-btn').forEach(x => x.classList.remove('active'));
+  b.classList.add('active'); mode = b.dataset.mode; idx = 0; showWord();
+}));
+showWord();
+</script>
+</body>
+</html>
