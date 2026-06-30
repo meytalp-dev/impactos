@@ -30,6 +30,8 @@ helpers: `getEPA(stu, island)` · `getEPAForUnit(stu, island, unitKey)` · `getD
 
 ## minigame-fit — מצב (30.6.2026)
 
-G1–G4 כולם סגורים. ליבת `js/templates/mechanic-mcq.js` (config-driven, EPA פר-מסיח) מכסה 5
-אינטראקציות. **נותר:** T6 מתכוני-התערבות ל-Comprehension/WrongPlural/GenderMismatch + הפקת
-MP3/תמונות (לבקש ממיטל — לא להמציא תוכן). דוח: `../../_handoff/2026-06-29-minigame-fit-report.md`.
+G1–G4 + T6 סגורים. ליבת `js/templates/mechanic-mcq.js` (config-driven, EPA פר-מסיח) מכסה 5
+אינטראקציות. T6: `interventions.js` קיבל דפוסי `morphology`+`comprehension` (detectors על ציר
+ה-failure, מתכוני RTI ב-`interventions/{morphology,comprehension}.json` — **review פדגוגי PENDING**).
+**נותר:** ביקורת פדגוגית למתכונים החדשים · שדרוג MOY task→pattern · הפקת MP3/תמונות (לבקש
+ממיטל — לא להמציא תוכן). דוח: `../../_handoff/2026-06-29-minigame-fit-report.md`.
