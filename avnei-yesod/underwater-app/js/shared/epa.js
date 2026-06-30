@@ -4,13 +4,19 @@
 // מקור: _handoff/2026-05-26-partners-review-v3.md §4ד + §6
 //        _handoff/2026-05-25-architecture-tasks.md משימה 3 (פאזה A, P0/M)
 //
-// תפקיד: ספירה תיאורית של טעויות פר ילדה × אי × אות, על 3 צירים אורתוגונליים.
+// תפקיד: ספירה תיאורית של טעויות פר ילדה × אי × יחידה, על 3 צירים אורתוגונליים.
 // לא מודל סטטיסטי (אין pKnown, אין Bayesian) — counts מצטברים בלבד.
 // בניגוד ל-BKT שמתעדכן על כל אירוע (נכון/לא נכון), EPA מתעדכן רק על טעויות.
 //
+// 30.6.2026 · G4 — מפתח-יחידה גנרי (minigame-fit). "יחידה" = unitKey:
+//   target_letter כשיש (פונולוגיה/CV — תאימות לאחור), אחרת characteristic_id
+//   (מורפולוגיה/הבנת-נקרא/זכר-נקבה/רבים — ~430 שאלות שאין להן אות-יעד אחת).
+//   אות היא פשוט סוג אחד של unitKey → נתוני EPA קיימים נשארים תקפים.
+//
 // מבנה state ב-localStorage (key: avnei-epa-v1):
-//   state[studentId][islandId][letter][axis][value] = count
-//   דוגמה: state['stu-abc']['3']['מ']['failure']['Sound'] = 5
+//   state[studentId][islandId][unitKey][axis][value] = count
+//   דוגמת אות:        state['stu-abc']['3']['מ']['failure']['Sound'] = 5
+//   דוגמת מאפיין:     state['stu-abc']['9']['sep-w3-morph-c1']['failure']['WrongPlural'] = 3
 //
 // 3 הצירים (§4ד):
 //   failure  — מה השתבש בידיעה          | Shape · Sound · Name · Direction
@@ -135,9 +141,14 @@ window.AvneiEPA = (function() {
 
     const studentId = evt.student_id || 'local';
     const islandId  = evt.primary_island_id;
-    const letter    = evt.target_letter;
+    // G4 (30.6.2026) · מפתח-יחידה גנרי. אות כשיש (תאימות לאחור), אחרת מאפיין-רכישה.
+    // characteristic_id גרנולרי מאוד (446) — מצוין לאגרגציה פר-אי (getDominantPattern
+    // מסכם ממילא על פני כל היחידות). אם matcher-התערבות עתידי ירצה גרנולריות גסה
+    // יותר — sub_topic_id (195) זמין בבנק; לא נפתר עכשיו, הדלת פתוחה.
+    const unitKey   = evt.target_letter || evt.characteristic_id || null;
 
-    if (!islandId || !letter) return null;
+    // בלי אי או בלי מפתח-יחידה — דלג. עדיף לדלג מאשר לשמור תחת מפתח-זבל.
+    if (!islandId || !unitKey) return null;
 
     const failure = deriveFailure(evt);
     const context = deriveContext(evt);
@@ -149,11 +160,11 @@ window.AvneiEPA = (function() {
     const state = loadState();
     if (!state[studentId]) state[studentId] = {};
     if (!state[studentId][islandId]) state[studentId][islandId] = {};
-    if (!state[studentId][islandId][letter]) {
-      state[studentId][islandId][letter] = emptyLetterRecord();
+    if (!state[studentId][islandId][unitKey]) {
+      state[studentId][islandId][unitKey] = emptyLetterRecord();
     }
 
-    const rec = state[studentId][islandId][letter];
+    const rec = state[studentId][islandId][unitKey];
     if (failure) rec.failure[failure] = (rec.failure[failure] || 0) + 1;
     if (context) rec.context[context] = (rec.context[context] || 0) + 1;
     if (task)    rec.task[task]       = (rec.task[task]       || 0) + 1;
@@ -174,18 +185,29 @@ window.AvneiEPA = (function() {
     return student;
   }
 
-  // משטח state פר-אות לסיכום פר-אי: {failure:{}, context:{}, task:{}}
-  function aggregateAcrossLetters(islandRec) {
+  // החזרת רשומת יחידה בודדת {failure, context, task} — UI עתידי ירצה "מה משתבש
+  // ב'רבים'" (characteristic_id), לא רק "באות מ". unitKey = אות או characteristic_id.
+  function getEPAForUnit(studentId, islandId, unitKey) {
+    const islandRec = getEPA(studentId, islandId);
+    return islandRec[unitKey] || null;
+  }
+
+  // משטח state פר-יחידה לסיכום פר-אי: {failure:{}, context:{}, task:{}}.
+  // אגנוסטי למפתח — עובר על Object.values(islandRec) בלי להניח שהמפתח הוא אות,
+  // ולכן עובד זהה על אותיות, characteristic_id, או מדגם מעורב באותו אי (G4).
+  function aggregateAcrossUnits(islandRec) {
     const agg = { failure: {}, context: {}, task: {} };
-    Object.values(islandRec || {}).forEach(letterRec => {
+    Object.values(islandRec || {}).forEach(unitRec => {
       AXES.forEach(axis => {
-        Object.entries(letterRec[axis] || {}).forEach(([val, count]) => {
+        Object.entries(unitRec[axis] || {}).forEach(([val, count]) => {
           agg[axis][val] = (agg[axis][val] || 0) + count;
         });
       });
     });
     return agg;
   }
+  // alias תאימות-לאחור — נצרכים חיצוניים ישנים עשויים לקרוא בשם הישן.
+  const aggregateAcrossLetters = aggregateAcrossUnits;
 
   function effectiveThresholdFor(axis, value, override) {
     if (typeof override === 'number') return override;
@@ -203,7 +225,7 @@ window.AvneiEPA = (function() {
     const islandRec = (state[studentId] || {})[islandId];
     if (!islandRec) return null;
 
-    const agg = aggregateAcrossLetters(islandRec);
+    const agg = aggregateAcrossUnits(islandRec);
 
     let best = null;
     AXES.forEach(axis => {
@@ -246,6 +268,7 @@ window.AvneiEPA = (function() {
   return {
     ingestEvent,
     getEPA,
+    getEPAForUnit,
     getDominantPattern,
     dump,
     reset,

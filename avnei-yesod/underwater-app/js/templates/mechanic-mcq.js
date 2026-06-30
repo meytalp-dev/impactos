@@ -12,8 +12,9 @@
 // 🔴 הלינצ'פין — בכל לחיצה שגויה מדווח את ה-EPA הספציפי של המסיח שנלחץ
 //   (failure_type / task_type / letter_position) דרך AvneiEventLogger →
 //   epa.js deriveFailure/deriveContext/deriveTask. לחיצה נכונה → is_correct:true בלי EPA.
-//   ⚠️ epa.js ingestEvent דורש target_letter כדי לרשום (G4 פתוח) — לשאלות-אות/CV
-//   להעביר opts.target_letter. למורפולוגיה/הבנה (בלי אות-יעד) הטעות לא תישמר עד G4.
+//   ✅ G4 סגור (30.6.2026) — epa.js ממפתח פר unitKey: target_letter כשיש, אחרת
+//   characteristic_id. לשאלות-אות/CV להעביר opts.target_letter; למורפולוגיה/הבנה
+//   להעביר opts.characteristic_id (הבנק נושא אותו פר שאלה). הטעות נשמרת בשני המקרים.
 //
 // חוזה config (נגזר משדות השאלה ב-questions-grade1.json):
 //   mount(root, {
@@ -93,6 +94,9 @@
       activity_variant:     opts.interaction || (opts.stem && opts.stem.mode) || null,
       item_id:              opts.item_id || opts.questId || null,
       target_letter:        opts.target_letter || null,
+      // G4 (30.6.2026) — מפתח-יחידה למורפולוגיה/הבנה (בלי אות-יעד). הבנק נושא
+      // characteristic_id פר שאלה; epa.js ממפתח תחתיו כש-target_letter ריק.
+      characteristic_id:    opts.characteristic_id || null,
       is_correct:           isCorrect,
       // חוזה ה-EPA — רק על טעות, מתוך ה-epa של המסיח שנלחץ:
       failure_type:         epa ? (epa.what || null)  : null,   // → evt.failure_type → deriveFailure
