@@ -63,6 +63,9 @@
   const DEFAULT_PRIORITY = Object.freeze([
     'letter_knowledge',
     'letter_cluster',
+    // T6 (30.6.2026) — דפוסים ספציפיים ופעולתיים, אחרי האותיות אך לפני הרחבים יותר.
+    'morphology',
+    'comprehension',
     'decoding',
     'fluency',
     'phonological'
@@ -73,7 +76,9 @@
     letter_knowledge:'ידיעת אותיות',
     decoding:        'פענוח בהקשר',
     fluency:         'שטף קריאה',
-    letter_cluster:  'חיזוק אותיות חלשות'
+    letter_cluster:  'חיזוק אותיות חלשות',
+    morphology:      'מורפולוגיה (רבים · זכר-נקבה)',
+    comprehension:   'הבנת הנקרא'
   });
 
   const CONF_RANK = Object.freeze({ low: 0, med: 1, high: 2 });

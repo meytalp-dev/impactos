@@ -93,10 +93,15 @@ header('1. API surface');
   const M = loadMatcher();
   assert(typeof M.matchForStudent === 'function', 'matchForStudent() נחשפת');
   assert(typeof M.matchForGroup === 'function', 'matchForGroup() נחשפת');
-  assert(Array.isArray(M.PRIORITY) && M.PRIORITY.length === 5, 'PRIORITY = array באורך 5');
+  // T6 (30.6.2026) — PRIORITY הורחב ל-7 (נוספו morphology + comprehension).
+  assert(Array.isArray(M.PRIORITY) && M.PRIORITY.length === 7, 'PRIORITY = array באורך 7');
   assert(M.PRIORITY[0] === 'letter_knowledge', 'PRIORITY[0] = letter_knowledge (אישרה מיטל)');
+  assert(M.PRIORITY.indexOf('morphology') > 0 && M.PRIORITY.indexOf('comprehension') > 0,
+    'PRIORITY כולל morphology + comprehension (T6)');
   assert(typeof M.PATTERN_NAMES_HE === 'object' && M.PATTERN_NAMES_HE.phonological === 'מודעות פונולוגית',
     'PATTERN_NAMES_HE כולל phonological בעברית');
+  assert(M.PATTERN_NAMES_HE.morphology && M.PATTERN_NAMES_HE.comprehension,
+    'PATTERN_NAMES_HE כולל morphology + comprehension (T6)');
 }
 
 // ----------------------------------------------------------------------------

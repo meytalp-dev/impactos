@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 // test-interventions.js — B.7 smoke tests
 //
-// בדיקות אוטומטיות ל-interventions.js: API surface, 5 trigger detectors,
+// בדיקות אוטומטיות ל-interventions.js: API surface, 7 trigger detectors,
 // group aggregation, script interpolation, recordIntervention persistence,
-// 5 ה-JSONים נטענים. סה"כ 30+ assertions.
+// 7 ה-JSONים נטענים. סה"כ 40+ assertions.
+// (T6 · 30.6.2026 — נוספו morphology + comprehension על דפוסי EPA מ-G2/G4.)
 //
 // usage:
 //   node avnei-yesod/underwater-app/scripts/test-interventions.js
@@ -110,9 +111,9 @@ section('BLOCK 1 — API surface (9 פונקציות + 4 constants)');
   assert('API.' + fn + ' קיים', typeof Interventions[fn] === 'function');
 });
 
-assert('PATTERN_IDS = 5', Array.isArray(Interventions.PATTERN_IDS) && Interventions.PATTERN_IDS.length === 5);
-assert('PATTERN_IDS מכיל את כל החמשה',
-  ['phonological', 'letter_knowledge', 'decoding', 'fluency', 'letter_cluster']
+assert('PATTERN_IDS = 7', Array.isArray(Interventions.PATTERN_IDS) && Interventions.PATTERN_IDS.length === 7);
+assert('PATTERN_IDS מכיל את כל השבעה',
+  ['phonological', 'letter_knowledge', 'decoding', 'fluency', 'letter_cluster', 'morphology', 'comprehension']
     .every(function (id) { return Interventions.PATTERN_IDS.indexOf(id) >= 0; }));
 assert('CONFUSED_PAIRS מערך >= 5', Array.isArray(Interventions.CONFUSED_PAIRS) && Interventions.CONFUSED_PAIRS.length >= 5);
 assert('STORAGE_KEY הוא string', typeof Interventions.STORAGE_KEY === 'string');
@@ -122,9 +123,9 @@ assert('INTERVENTION_DEFAULTS object', Interventions.INTERVENTION_DEFAULTS && ty
 // BLOCK 2 — loadScript טוען 5 JSONים מהדיסק
 // ============================================================================
 
-section('BLOCK 2 — loadScript טוען 5 JSONים מ-fs');
+section('BLOCK 2 — loadScript טוען 7 JSONים מ-fs');
 Interventions._clearCache();
-['phonological', 'letter_knowledge', 'decoding', 'fluency', 'letter_cluster'].forEach(function (id) {
+['phonological', 'letter_knowledge', 'decoding', 'fluency', 'letter_cluster', 'morphology', 'comprehension'].forEach(function (id) {
   const s = Interventions.loadScript(id);
   assert(id + ' נטען', !!s && s.pattern_id === id);
   if (s) {
@@ -325,6 +326,76 @@ setupBktMock({
 assert('weak=2 < 3 → לא trigger', Interventions._detectLetterCluster('stu-2') === null);
 
 // ============================================================================
+// BLOCK 7b — Morphology + Comprehension detectors (T6 · 30.6.2026)
+// ============================================================================
+
+section('BLOCK 7b — Morphology + Comprehension detectors (EPA פר characteristic_id)');
+clearMocks();
+assert('בלי EPA → morphology null', Interventions._detectMorphology('stu-1') === null);
+assert('בלי EPA → comprehension null', Interventions._detectComprehension('stu-1') === null);
+
+// מורפולוגיה: WrongPlural+GenderMismatch מצטברים תחת characteristic_id (בלי אות-יעד)
+setupEpaMock({
+  epaByStudent: {
+    'stu-1': {
+      '9': {
+        'sep-w3-morph-c1': { failure: { WrongPlural: 5, GenderMismatch: 3 } },
+        'sep-w4-morph-c2': { failure: { WrongPlural: 2, Comprehension: 1 } }
+      }
+    }
+  }
+});
+// matched = 5+3+2 = 10 ; total = 11 ; rate = 10/11 ≈ 91% → trigger
+const morphRes = Interventions._detectMorphology('stu-1');
+assert('Morphology trigger (matched=10, 91% rate)', morphRes && morphRes.patternId === 'morphology');
+assert('Morphology details.plural_failures=7', morphRes && morphRes.details.plural_failures === 7);
+assert('Morphology details.gender_failures=3', morphRes && morphRes.details.gender_failures === 3);
+assert('Morphology details.morph_failures=10', morphRes && morphRes.details.morph_failures === 10);
+assert('Morphology confidence=med (10)', morphRes && morphRes.confidence === 'med');
+
+// מתחת לסף (matched=5 < 6) → no trigger
+setupEpaMock({
+  epaByStudent: { 'stu-2': { '9': { 'c1': { failure: { WrongPlural: 5 } } } } }
+});
+assert('morph matched=5 < 6 → no trigger', Interventions._detectMorphology('stu-2') === null);
+
+// סף עבר אבל error rate נמוך (6 morph מתוך 100) → no trigger
+setupEpaMock({
+  epaByStudent: { 'stu-3': { '9': { 'c1': { failure: { WrongPlural: 6, Sound: 94 } } } } }
+});
+assert('morph rate 6/100=6% < 30% → no trigger', Interventions._detectMorphology('stu-3') === null);
+
+// הבנת הנקרא: Comprehension מצטבר
+setupEpaMock({
+  epaByStudent: {
+    'stu-1': {
+      '15': {
+        'rc-w5-c1': { failure: { Comprehension: 7 } },
+        'rc-w5-c2': { failure: { Comprehension: 4, WrongPlural: 1 } }
+      }
+    }
+  }
+});
+// matched=11 ; total=12 ; rate≈92% → trigger, confidence med (11)
+const compRes = Interventions._detectComprehension('stu-1');
+assert('Comprehension trigger (matched=11, 92% rate)', compRes && compRes.patternId === 'comprehension');
+assert('Comprehension details.comprehension_failures=11', compRes && compRes.details.comprehension_failures === 11);
+assert('Comprehension confidence=med (11)', compRes && compRes.confidence === 'med');
+
+// detectForStudent מחזיר את שני הדפוסים החדשים כשרלוונטי
+setupEpaMock({
+  epaByStudent: {
+    'stu-x': {
+      '9':  { 'c1': { failure: { WrongPlural: 8, GenderMismatch: 4 } } },
+      '15': { 'c2': { failure: { Comprehension: 9 } } }
+    }
+  }
+});
+const allTriggers = Interventions.detectForStudent('stu-x', {});
+assert('detectForStudent כולל morphology', allTriggers.some(function (t) { return t.patternId === 'morphology'; }));
+assert('detectForStudent כולל comprehension', allTriggers.some(function (t) { return t.patternId === 'comprehension'; }));
+
+// ============================================================================
 // BLOCK 8 — detectGroupTriggers (class-level)
 // ============================================================================
 
@@ -364,6 +435,27 @@ const groups2 = Interventions.detectGroupTriggers([
   { id: 'stu-a' }, { id: 'stu-b' }
 ]);
 assert('2 תלמידות → no LK group', groups2.length === 0);
+
+// T6 — 3 תלמידות עם כשלי מורפולוגיה → morphology group
+clearMocks();
+setupBktMock({ perLetter: {} });
+setupEpaMock({
+  epaByStudent: {
+    'stu-a': { '9': { 'c1': { failure: { WrongPlural: 7, GenderMismatch: 2 } } } },
+    'stu-b': { '9': { 'c1': { failure: { WrongPlural: 6, GenderMismatch: 1 } } } },
+    'stu-c': { '9': { 'c2': { failure: { GenderMismatch: 9 } } } },
+    'stu-d': { '3': { 'מ': { failure: { Sound: 12 } } } }  // לא מורפולוגיה
+  }
+});
+const morphGroups = Interventions.detectGroupTriggers([
+  { id: 'stu-a', name: 'מאיה' }, { id: 'stu-b', name: 'נועה' },
+  { id: 'stu-c', name: 'רותם' }, { id: 'stu-d', name: 'שירה' }
+]);
+const morphGroup = morphGroups.find(function (g) { return g.patternId === 'morphology'; });
+assert('detectGroupTriggers מזהה morphology group', !!morphGroup);
+assert('morphology group כולל 3 תלמידות', morphGroup && morphGroup.students.length === 3);
+assert('שירה (Sound בלבד) לא בקבוצת morphology',
+  morphGroup && !morphGroup.students.some(function (s) { return s.id === 'stu-d'; }));
 
 // ============================================================================
 // BLOCK 9 — interpolateScript

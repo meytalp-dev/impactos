@@ -39,7 +39,13 @@
     'letter_knowledge',
     'decoding',
     'fluency',
-    'letter_cluster'
+    'letter_cluster',
+    // 30.6.2026 · T6 (minigame-fit) — דפוסי EPA לא-פונולוגיים שנפתחו ב-G2/G4.
+    // morphology = WrongPlural + GenderMismatch (סטרנד 2, איים 9/10/11).
+    // comprehension = Comprehension (סטרנד 4, איים 15-18). שניהם ממופתחים פר
+    // characteristic_id ב-EPA (G4), אז הם נסרקים בדיוק כמו אות.
+    'morphology',
+    'comprehension'
   ]);
 
   const STORAGE_KEY = 'avnei-interventions-v1';
@@ -62,7 +68,14 @@
     fluencyMinSamples: 5,                  // לפחות 5 ניסיונות לחישוב median
     fluencyPercentile: 0.75,               // P75 בכיתה
     // Letter cluster
-    letterClusterMinWeak: 3                // §3.5 — 3+ אותיות weak
+    letterClusterMinWeak: 3,                // §3.5 — 3+ אותיות weak
+    // Morphology (T6, 30.6.2026) — WrongPlural + GenderMismatch מצטברים.
+    // ספים מקבילים ל-phonological: מספר-כשלים מינ' + שיעור-שגיאה מתוך כלל הכשלים.
+    morphologyMinFailures: 6,
+    morphologyMinErrorRate: 0.30,
+    // Comprehension (T6, 30.6.2026) — כשלי Comprehension מצטברים.
+    comprehensionMinFailures: 6,
+    comprehensionMinErrorRate: 0.30
   });
 
   // CONFUSED_PAIRS — זוגות אותיות מתבלבלות (פדגוגית-ידועות).
@@ -375,6 +388,85 @@
   }
 
   // ==========================================================================
+  // עזר: סכימת כשלי EPA על ציר failure, פר ערכים נבחרים, חוצה כל איים/יחידות.
+  // (T6) אגנוסטי למפתח-היחידה — עובר על islandRec → unitRec בדיוק כמו phonological,
+  // ולכן עובד גם על יחידות characteristic_id (מורפולוגיה/הבנה) שנפתחו ב-G4.
+  // מחזיר { matched, total, byValue } או null אם אין EPA.
+  // ==========================================================================
+  function _sumFailureValues(studentId, values) {
+    const EPA = _getEPA();
+    if (!EPA || !EPA.getEPA) return null;
+    const studentEpa = EPA.getEPA(studentId);
+    if (!studentEpa || Object.keys(studentEpa).length === 0) return null;
+
+    const wanted = {};
+    values.forEach(function (v) { wanted[v] = true; });
+
+    let matched = 0;
+    let total = 0;
+    const byValue = {};
+    Object.keys(studentEpa).forEach(function (islandId) {
+      const islandRec = studentEpa[islandId] || {};
+      Object.keys(islandRec).forEach(function (unitKey) {
+        const failureCounts = (islandRec[unitKey] || {}).failure || {};
+        Object.keys(failureCounts).forEach(function (val) {
+          const c = failureCounts[val] || 0;
+          total += c;
+          if (wanted[val]) {
+            matched += c;
+            byValue[val] = (byValue[val] || 0) + c;
+          }
+        });
+      });
+    });
+    return { matched: matched, total: total, byValue: byValue };
+  }
+
+  // Morphology — EPA failure ∈ {WrongPlural, GenderMismatch} מצטבר.
+  // ספים: matched >= 6 AND matched / total_failures >= 30%.
+  function _detectMorphology(studentId) {
+    const s = _sumFailureValues(studentId, ['WrongPlural', 'GenderMismatch']);
+    if (!s) return null;
+    if (s.matched < INTERVENTION_DEFAULTS.morphologyMinFailures) return null;
+    if (s.total === 0) return null;
+    const errorRate = s.matched / s.total;
+    if (errorRate < INTERVENTION_DEFAULTS.morphologyMinErrorRate) return null;
+
+    return {
+      patternId: 'morphology',
+      details: {
+        plural_failures: s.byValue.WrongPlural || 0,
+        gender_failures: s.byValue.GenderMismatch || 0,
+        morph_failures: s.matched,
+        total_failures: s.total,
+        error_rate: errorRate
+      },
+      confidence: s.matched >= 18 ? 'high' : (s.matched >= 10 ? 'med' : 'low')
+    };
+  }
+
+  // Comprehension — EPA failure='Comprehension' מצטבר.
+  // ספים: matched >= 6 AND matched / total_failures >= 30%.
+  function _detectComprehension(studentId) {
+    const s = _sumFailureValues(studentId, ['Comprehension']);
+    if (!s) return null;
+    if (s.matched < INTERVENTION_DEFAULTS.comprehensionMinFailures) return null;
+    if (s.total === 0) return null;
+    const errorRate = s.matched / s.total;
+    if (errorRate < INTERVENTION_DEFAULTS.comprehensionMinErrorRate) return null;
+
+    return {
+      patternId: 'comprehension',
+      details: {
+        comprehension_failures: s.matched,
+        total_failures: s.total,
+        error_rate: errorRate
+      },
+      confidence: s.matched >= 18 ? 'high' : (s.matched >= 10 ? 'med' : 'low')
+    };
+  }
+
+  // ==========================================================================
   // detectForStudent — מחזיר מערך של כל triggers שמתאימים לילדה
   // ==========================================================================
   function detectForStudent(studentId, ctx) {
@@ -397,6 +489,13 @@
 
     const lc = _detectLetterCluster(studentId);
     if (lc) out.push(lc);
+
+    // T6 (30.6.2026) — דפוסים לא-פונולוגיים (EPA פר characteristic_id, G4).
+    const morph = _detectMorphology(studentId);
+    if (morph) out.push(morph);
+
+    const comp = _detectComprehension(studentId);
+    if (comp) out.push(comp);
 
     return out;
   }
@@ -565,6 +664,44 @@
       }
     })();
 
+    // ===== Morphology — bucket יחיד (T6) =====
+    (function () {
+      const matched = perStudent.filter(function (s) {
+        return s.triggers.some(function (t) { return t.patternId === 'morphology'; });
+      });
+      if (matched.length >= minGroupSize) {
+        const studentEntries = matched.map(function (s) {
+          const t = s.triggers.find(function (tt) { return tt.patternId === 'morphology'; });
+          return { id: s.studentId, name: s.studentName, details: t.details, confidence: t.confidence };
+        });
+        groups.push({
+          patternId: 'morphology',
+          students: studentEntries,
+          groupCommonDetails: {},
+          confidence: _aggregateConfidence(studentEntries.map(function (e) { return e.confidence; }))
+        });
+      }
+    })();
+
+    // ===== Comprehension — bucket יחיד (T6) =====
+    (function () {
+      const matched = perStudent.filter(function (s) {
+        return s.triggers.some(function (t) { return t.patternId === 'comprehension'; });
+      });
+      if (matched.length >= minGroupSize) {
+        const studentEntries = matched.map(function (s) {
+          const t = s.triggers.find(function (tt) { return tt.patternId === 'comprehension'; });
+          return { id: s.studentId, name: s.studentName, details: t.details, confidence: t.confidence };
+        });
+        groups.push({
+          patternId: 'comprehension',
+          students: studentEntries,
+          groupCommonDetails: {},
+          confidence: _aggregateConfidence(studentEntries.map(function (e) { return e.confidence; }))
+        });
+      }
+    })();
+
     return groups;
   }
 
@@ -712,6 +849,9 @@
     _detectDecoding: _detectDecoding,
     _detectFluency: _detectFluency,
     _detectLetterCluster: _detectLetterCluster,
+    _detectMorphology: _detectMorphology,
+    _detectComprehension: _detectComprehension,
+    _sumFailureValues: _sumFailureValues,
     _computeClassP75ResponseTime: _computeClassP75ResponseTime,
     _median: _median,
     _percentile: _percentile
