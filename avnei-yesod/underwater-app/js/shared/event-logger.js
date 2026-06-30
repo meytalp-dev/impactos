@@ -165,6 +165,10 @@ window.AvneiEventLogger = (function() {
       activity_variant:     result.activity_variant || null,
       item_id:              result.item_id || null,
       target_letter:        result.target_letter || null,
+      // 30.6.2026 · minigame-fit G4 — מפתח-יחידה לא-מבוסס-אות ל-EPA.
+      // לשאלות מורפולוגיה/הבנה (בלי אות-יעד) epa.js ממפתח תחת characteristic_id.
+      // תוספתי: אירועים ישנים בלי השדה → null (אפס שינוי התנהגות).
+      characteristic_id:    result.characteristic_id || null,
       // 29.6.2026 · minigame-fit G1 — העברת טעות ה-EPA הספציפית של המסיח שנלחץ.
       // epa.js קורא את שלושת השדות (deriveFailure/deriveContext/deriveTask); קודם הם
       // נשמטו מ-evt → EPA תמיד נפל ל-mapping הגס לפי activity_type. בלי זה אף משחקון

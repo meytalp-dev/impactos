@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>QA · משחקוני בנק-השאלות (mcq · יוצא-דופן · התאמת-זוגות)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;800;900&family=Rubik:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css?v=qa">
+  <link rel="stylesheet" href="css/game-shell.css?v=qa">
+  <style>
+    html, body { margin: 0; height: 100%; font-family: 'Heebo', sans-serif; background: #BFE9F2; }
+    .scene-bg { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+    .noni-fixed { position: fixed; bottom: 14px; inset-inline-start: 14px; width: 110px; z-index: 6; pointer-events: auto; }
+    .qa-wrap { position: relative; z-index: 2; display: grid; grid-template-columns: 280px 1fr 320px; gap: 12px; height: 100vh; box-sizing: border-box; padding: 12px; }
+    .qa-panel { background: rgba(255,255,255,0.94); border-radius: 16px; padding: 14px; overflow: auto; box-shadow: 0 6px 20px rgba(38,80,92,0.18); }
+    .qa-panel h2 { font-size: 16px; margin: 4px 0 10px; color: #1F4651; }
+    .qa-panel h3 { font-size: 13px; margin: 14px 0 6px; color: #2B5A66; text-transform: none; }
+    .qa-btn { display: block; width: 100%; text-align: start; margin: 5px 0; padding: 10px 12px; border: 2px solid #73D9D1; background: #EAFBFF; border-radius: 10px; font-family: inherit; font-weight: 700; font-size: 14px; color: #1F4651; cursor: pointer; }
+    .qa-btn:hover { background: #D6F5FB; }
+    .qa-stage { position: relative; background: rgba(255,255,255,0.55); border-radius: 18px; overflow: hidden; display: flex; }
+    #mountRoot { flex: 1; min-height: 0; }
+    .qa-skins { display: flex; flex-wrap: wrap; gap: 6px; }
+    .qa-skin { padding: 6px 10px; border-radius: 8px; border: 2px solid #B79CE8; background: #F3EEFF; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .qa-skin.active { background: #B79CE8; color: #fff; }
+    pre { white-space: pre-wrap; word-break: break-word; font-size: 11px; background: #0E2A33; color: #BFE9F2; padding: 10px; border-radius: 10px; max-height: 42vh; overflow: auto; }
+    .qa-note { font-size: 11px; color: #6b7280; margin-top: 8px; line-height: 1.5; }
+    .qa-clear { background: #FFE6E0; border-color: #FFB3A3; color: #8A2B16; }
+  </style>
+</head>
+<body>
+  <img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true"
+       onerror="this.style.background='linear-gradient(180deg,#BFE9F2,#73D9D1)';this.removeAttribute('src');">
+  <img class="noni-fixed" id="noniImg" src="assets/noni-idle.png" alt="נוני"
+       onerror="this.style.display='none'">
+
+  <div class="qa-wrap">
+    <!-- ימין: בורר משחקונים -->
+    <div class="qa-panel">
+      <h2>בנק QA · משחקונים</h2>
+      <p class="qa-note">בודק ויזואלי לליבת <b>mcq</b> + <b>יוצא-דופן</b> + <b>התאמת-זוגות</b> + ADAPT.
+      כל לחיצה <b>שגויה</b> נרשמת ל-EPA פר-מסיח (פאנל שמאל מתעדכן חי).
+      אודיו ינסה לנגן MP3 (assets/audio) — אם אין קובץ, הקונסול יזהיר וזה תקין ל-QA.</p>
+
+      <h3>ליבת mcq (T1)</h3>
+      <button class="qa-btn" data-demo="audio_to_written">audio_to_written · אות (stem=אודיו)</button>
+      <button class="qa-btn" data-demo="fill_missing">fill_missing · השלמת-חסר</button>
+      <button class="qa-btn" data-demo="true_false_image">true_false_image · נכון/לא-נכון</button>
+      <button class="qa-btn" data-demo="written_to_audio">written_to_audio · אופציות-אודיו</button>
+
+      <h3>מנגנונים מבניים (T4)</h3>
+      <button class="qa-btn" data-demo="pick_odd_one">pick_odd_one · מי לא שייך</button>
+      <button class="qa-btn" data-demo="match_pair">match_pair · יחיד↔רבים</button>
+
+      <h3>ADAPT (T3)</h3>
+      <button class="qa-btn" data-demo="word_to_image">word_to_image · מילה→תמונה</button>
+      <button class="qa-btn" data-demo="image_to_word">image_to_word · תמונה→מילה</button>
+
+      <h3>תחפושת (T2 · 7 עולמות)</h3>
+      <div class="qa-skins" id="skinBar"></div>
+    </div>
+
+    <!-- מרכז: במה -->
+    <div class="qa-stage"><div id="mountRoot"></div></div>
+
+    <!-- שמאל: מצב EPA חי -->
+    <div class="qa-panel">
+      <h2>מצב EPA (localStorage)</h2>
+      <button class="qa-btn qa-clear" id="resetBtn">אִפּוּס EPA + אירועים</button>
+      <p class="qa-note">תלמיד.ה: <b id="sid">qa-student</b>. רושם רק טעויות, פר אי × אות × 3 צירים.</p>
+      <pre id="epaDump">—</pre>
+      <h3>אירוע אחרון</h3>
+      <pre id="lastEvt">—</pre>
+    </div>
+  </div>
+
+  <!-- shared engine -->
+  <script>localStorage.setItem('avnei-yesod-current-student','qa-student');</script>
+  <script src="js/state.js"></script>
+  <script src="js/shared/audio.js"></script>
+  <script src="js/shared/noni.js"></script>
+  <script src="js/shared/vowel-adapter.js"></script>
+  <script src="js/shared/epa.js"></script>
+  <script src="js/shared/bkt.js" onerror="window._bktMissing=true"></script>
+  <script src="js/shared/event-logger.js"></script>
+  <!-- templates -->
+  <script src="js/templates/mechanic-mcq.js"></script>
+  <script src="js/templates/mechanic-odd-one-out.js"></script>
+  <script src="js/templates/mechanic-match-pairs.js"></script>
+  <script src="js/templates/mechanic-match-word-to-image.js"></script>
+
+  <script>
+  (function () {
+    var root = document.getElementById('mountRoot');
+    var current = null;
+    var theme = 'shells';
+    var SKINS = ['shells','fish','bubbles','corals','stars','treasure','friends'];
+
+    // wrap logActivityResult to mirror the last event into the panel
+    if (window.AvneiEventLogger) {
+      var _orig = window.AvneiEventLogger.logActivityResult;
+      window.AvneiEventLogger.logActivityResult = function (r) {
+        var evt = _orig.call(window.AvneiEventLogger, r);
+        document.getElementById('lastEvt').textContent = JSON.stringify({
+          activity_type: evt.activity_type, variant: evt.activity_variant,
+          is_correct: evt.is_correct, failure_type: evt.failure_type,
+          letter_position: evt.letter_position, task_type: evt.task_type,
+          target_letter: evt.target_letter, island: evt.island_id_current,
+        }, null, 2);
+        refreshEpa();
+        return evt;
+      };
+    }
+
+    function refreshEpa() {
+      try { document.getElementById('epaDump').textContent =
+        JSON.stringify(window.AvneiEPA.getEPA('qa-student'), null, 2) || '—'; } catch (e) {}
+    }
+
+    function unmount() { if (current && current.unmount) try { current.unmount(); } catch (e) {} current = null; }
+
+    function done(label) { return function () { console.log('✓ onComplete', label); }; }
+
+    // ---- demo configs (תוכן דמו ל-QA בלבד; ניקוד מלא; ב/כ/פ בדגש) ----
+    var demos = {
+      audio_to_written: function () {
+        window.AvneiMechanics.mcq.mount(root, {
+          interaction: 'audio_to_written', theme: theme,
+          questId: 'qa-a2w-1', target_letter: 'מ', primary_island_id: 3,
+          stem: { mode: 'audio', audio_key: 'sound-mem', text_he: 'מ' },
+          options: [
+            { label_he: 'מ', mode: 'text', is_correct: true, epa: null },
+            { label_he: 'נ', mode: 'text', is_correct: false, epa: { what: 'Shape', where: 'isolation', task: 'recognition' } },
+            { label_he: 'ש', mode: 'text', is_correct: false, epa: { what: 'Sound', where: 'isolation', task: 'recognition' } },
+          ],
+          promptLine: 'אֵיזוֹ אוֹת שָׁמַעְתָּ?', onComplete: done('a2w'),
+        });
+      },
+      fill_missing: function () {
+        window.AvneiMechanics.mcq.mount(root, {
+          interaction: 'fill_missing', theme: theme,
+          questId: 'qa-fill-1', target_letter: 'ש', primary_island_id: 3,
+          stem: { mode: 'fill', fill: { before: 'שֶׁ', after: 'מֶשׁ' } },
+          options: [
+            { label_he: 'מֶ', mode: 'text', is_correct: true, epa: null },
+            { label_he: 'נֶ', mode: 'text', is_correct: false, epa: { what: 'Sound', where: 'medial', task: 'decode' } },
+            { label_he: 'בֶּ', mode: 'text', is_correct: false, epa: { what: 'Sound', where: 'medial', task: 'decode' } },
+          ],
+          promptLine: 'אֵיזוֹ הֲבָרָה חֲסֵרָה?', onComplete: done('fill'),
+        });
+      },
+      true_false_image: function () {
+        window.AvneiMechanics.mcq.mount(root, {
+          interaction: 'true_false_image', theme: theme,
+          questId: 'qa-tf-1', target_letter: 'א', primary_island_id: 4,
+          stem: { mode: 'image', image_src: '', image_alt: 'תְּמוּנָה', text_he: 'הַחָתוּל יוֹשֵׁב עַל הַכִּסֵּא' },
+          options: [
+            { label_he: 'נָכוֹן', mode: 'text', is_correct: true, epa: null },
+            { label_he: 'לֹא נָכוֹן', mode: 'text', is_correct: false, epa: { what: 'Comprehension', where: 'isolation', task: 'recognition' } },
+          ],
+          promptLine: 'הַאִם הַמִּשְׁפָּט מַתְאִים לַתְּמוּנָה?', onComplete: done('tf'),
+        });
+      },
+      written_to_audio: function () {
+        window.AvneiMechanics.mcq.mount(root, {
+          interaction: 'written_to_audio', theme: theme,
+          questId: 'qa-w2a-1', target_letter: 'ב', primary_island_id: 3,
+          stem: { mode: 'text', text_he: 'בָּ' },
+          options: [
+            { mode: 'audio', audio_key: 'cv-bet-patach', is_correct: true, epa: null },
+            { mode: 'audio', audio_key: 'cv-vav-patach', is_correct: false, epa: { what: 'Sound', where: 'isolation', task: 'decode' } },
+            { mode: 'audio', audio_key: 'cv-kaf-patach', is_correct: false, epa: { what: 'Sound', where: 'isolation', task: 'decode' } },
+          ],
+          promptLine: 'הַקֵּשׁ עַל הָאֲרִיחַ שֶׁנִּשְׁמָע נָכוֹן (פַּעַם לִשְׁמוֹעַ, שׁוּב לִבְחוֹר)', onComplete: done('w2a'),
+        });
+      },
+      pick_odd_one: function () {
+        window.AvneiMechanics['odd-one-out'].mount(root, {
+          interaction: 'pick_odd_one', theme: theme,
+          questId: 'qa-odd-1', target_letter: 'ד', primary_island_id: 3,
+          promptLine: 'מִי לֹא שַׁיָּךְ לַחֲבוּרָה?',
+          items: [
+            { label_he: 'דָּג', mode: 'text', is_correct: false, epa: { what: 'Sound', where: 'initial', task: 'find' } },
+            { label_he: 'דֶּלֶת', mode: 'text', is_correct: false, epa: { what: 'Sound', where: 'initial', task: 'find' } },
+            { label_he: 'שֶׁמֶשׁ', mode: 'text', is_correct: true, epa: null },
+          ],
+          onComplete: done('odd'),
+        });
+      },
+      match_pair: function () {
+        window.AvneiMechanics['match-pairs'].mount(root, {
+          interaction: 'match_pair', theme: theme,
+          questId: 'qa-mp-1', target_letter: 'ן', primary_island_id: 9,
+          promptLine: 'חַבְּרוּ יָחִיד לְרַבִּים',
+          distractor_epa: { what: 'WrongPlural', where: 'final', task: 'recognition' },
+          pairs: [
+            { pair_id: 'p1', left: { label_he: 'כֶּלֶב', mode: 'text' }, right: { label_he: 'כְּלָבִים', mode: 'text' } },
+            { pair_id: 'p2', left: { label_he: 'חָתוּל', mode: 'text' }, right: { label_he: 'חֲתוּלִים', mode: 'text' } },
+            { pair_id: 'p3', left: { label_he: 'סֵפֶר', mode: 'text' }, right: { label_he: 'סְפָרִים', mode: 'text' } },
+          ],
+          onComplete: done('mp'),
+        });
+      },
+      word_to_image: function () {
+        window.AvneiMechanics['match-word-to-image'].mount(root, {
+          direction: 'word_to_image', theme: theme,
+          questId: 'qa-w2i-1', target_letter: 'ד', primary_island_id: 5,
+          stem: { text_he: 'דָּג', audio_key: 'word-dag' },
+          options: [
+            { label_he: 'דָּג', mode: 'image', image_src: '', is_correct: true, epa: null },
+            { label_he: 'כֶּלֶב', mode: 'image', image_src: '', is_correct: false, epa: { what: 'Comprehension', where: 'isolation', task: 'recognition' } },
+            { label_he: 'בַּיִת', mode: 'image', image_src: '', is_correct: false, epa: { what: 'Comprehension', where: 'isolation', task: 'recognition' } },
+          ],
+          onComplete: done('w2i'),
+        });
+      },
+      image_to_word: function () {
+        window.AvneiMechanics['match-word-to-image'].mount(root, {
+          direction: 'image_to_word', theme: theme,
+          questId: 'qa-i2w-1', target_letter: 'ד', primary_island_id: 5,
+          stem: { image_src: '', image_alt: 'דָּג' },
+          options: [
+            { label_he: 'דָּג', mode: 'text', is_correct: true, epa: null },
+            { label_he: 'דֹּב', mode: 'text', is_correct: false, epa: { what: 'Sound', where: 'final', task: 'decode' } },
+            { label_he: 'גַּן', mode: 'text', is_correct: false, epa: { what: 'Sound', where: 'initial', task: 'decode' } },
+          ],
+          onComplete: done('i2w'),
+        });
+      },
+    };
+
+    document.querySelectorAll('.qa-btn[data-demo]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        unmount();
+        if (window.AvneiAudio && window.AvneiAudio.unlock) window.AvneiAudio.unlock();
+        demos[b.dataset.demo]();
+      });
+    });
+
+    // skin bar
+    var bar = document.getElementById('skinBar');
+    SKINS.forEach(function (s) {
+      var el = document.createElement('button');
+      el.className = 'qa-skin' + (s === theme ? ' active' : '');
+      el.textContent = s; el.dataset.skin = s;
+      el.addEventListener('click', function () {
+        theme = s;
+        bar.querySelectorAll('.qa-skin').forEach(function (x) { x.classList.toggle('active', x.dataset.skin === s); });
+      });
+      bar.appendChild(el);
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', function () {
+      try { window.AvneiEPA.reset('qa-student'); } catch (e) {}
+      document.getElementById('lastEvt').textContent = '—';
+      refreshEpa();
+    });
+
+    refreshEpa();
+    demos.audio_to_written();
+  })();
+  </script>
+</body>
+</html>

@@ -45,6 +45,18 @@
     }
   }
 
+  // ADAPT-8 (minigame-fit T3, 30.6.2026) — העדפת ElevenLabs MP3 על-פני Web Speech.
+  // מנגן את audioKey דרך AvneiAudio אם קיים; אחרת — נופל ל-Web Speech רק כשלא במצב
+  // קריאה (read). במצב read הילד.ה קורא.ת בעצמו.ה ואין הקראה אוטומטית.
+  // ⚠️ להסרה מלאה של Web Speech (DNA אודיו) — דרושה הפקת MP3 לפריטי אי 14 (§7.3).
+  function playText(audioKey, text) {
+    if (audioKey && typeof window !== 'undefined' && window.AvneiAudio) {
+      try { window.AvneiAudio.play(audioKey); return Promise.resolve(true); } catch (e) {}
+    }
+    if (_state && _state.readMode) return Promise.resolve(false);
+    return speakHebrew(text);
+  }
+
   function speakHebrew(text) {
     return new Promise(resolve => {
       if (!text || typeof speechSynthesis === 'undefined') { resolve(false); return; }
@@ -163,20 +175,22 @@
   // --------------------------------------------------------------------------
   async function presentCurrent() {
     if (!_state || !_state.currentItem) return;
+    // מצב קריאה (read_comprehension_pick) — אין הקראה אוטומטית; הילד.ה קורא.ת.
+    if (_state.readMode) return;
     const item = _state.currentItem;
-    await speakHebrew(item.passage_text || '');
+    await playText(item.passage_audio_key, item.passage_text || '');
     await new Promise(r => setTimeout(r, 350));
-    await speakHebrew(item.question_text || '');
+    await playText(item.question_audio_key, item.question_text || '');
   }
 
   function onPlayPassage() {
     if (!_state || !_state.currentItem) return;
-    speakHebrew(_state.currentItem.passage_text || '');
+    playText(_state.currentItem.passage_audio_key, _state.currentItem.passage_text || '');
   }
 
   function onPlayQuestion() {
     if (!_state || !_state.currentItem) return;
-    speakHebrew(_state.currentItem.question_text || '');
+    playText(_state.currentItem.question_audio_key, _state.currentItem.question_text || '');
   }
 
   // --------------------------------------------------------------------------
@@ -204,6 +218,33 @@
           session_id: _state.sessionId,
         });
       } catch (e) { console.warn('mechanic-listen-mcq: recordAttempt failed', e); }
+    }
+
+    // ADAPT-8 — דיווח EPA פר-מסיח (מקביל ל-recordAttempt). חוזה זהה ל-mcq:
+    // טעות → failure_type/letter_position/task_type מתוך chosen.epa. נכון → ללא EPA.
+    // ⚠️ EPA נרשם רק אם לפריט יש target_letter (G4 פתוח להבנה ללא אות-יעד).
+    if (window.AvneiEventLogger) {
+      const epa = (!isCorrect && chosen && chosen.epa) ? chosen.epa : null;
+      try {
+        window.AvneiEventLogger.logActivityResult({
+          activity_type: 'mcq',
+          activity_variant: 'read_comprehension_pick',
+          item_id: item.q_id || item.item_id || null,
+          target_letter: item.target_letter || null,
+          is_correct: isCorrect,
+          failure_type:    epa ? (epa.what || null)  : null,
+          letter_position: epa ? (epa.where || null) : null,
+          task_type:       epa ? (epa.task || null)  : null,
+          primary_island_id:    (typeof item.primary_island_id === 'number') ? item.primary_island_id
+                                  : (typeof _state.primaryIslandId === 'number' ? _state.primaryIslandId : undefined),
+          secondary_island_ids: Array.isArray(item.secondary_island_ids) ? item.secondary_island_ids : undefined,
+          rama_task_alignment:  (typeof item.rama_task_alignment === 'number') ? item.rama_task_alignment : undefined,
+          peima_target:         (typeof item.peima_target === 'number') ? item.peima_target : undefined,
+          supportLevel: 1,
+          attempts: 1,
+          response_time_ms: isCorrect ? elapsedMs : null,
+        });
+      } catch (e) {}
     }
 
     _state.results.push({
@@ -283,6 +324,9 @@
     _state = {
       studentId: opts.studentId || 'local',
       level: opts.level || 1,
+      // ADAPT-8 — מצב 'read' (הבנת הנקרא): מציג passage כטקסט מנוקד, בלי הקראה אוטומטית.
+      readMode: opts.mode === 'read' || opts.readMode === true,
+      primaryIslandId: (typeof opts.primary_island_id === 'number') ? opts.primary_island_id : null,
       batchSize: opts.batchSize || 5,
       onComplete: opts.onComplete || null,
       onProgress: opts.onProgress || null,
