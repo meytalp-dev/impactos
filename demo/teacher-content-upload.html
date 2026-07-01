@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#FFFFFF">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>הכנת תוכן · בית ספר אימפקט</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="demo.css">
+  <script src="demo-icons.js" defer></script>
+  <style>
+    /* ===== QUIET WHITE — תואם דשבורד המורה (teacher-avnei.html) ===== */
+    body{background:#FFFFFF;font-family:'Rubik',sans-serif;letter-spacing:-.01em;}
+    .scene-bg{display:none;} .veil{display:none;}
+    .rail{background:#FBFDFD;backdrop-filter:none;border-left:1px solid #EEF2F2;}
+    .rail .logo .gm{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(150deg,#19A394,#0F7E72);box-shadow:0 8px 18px -8px rgba(15,138,126,.6);}
+    .rail .logo .gm svg{width:22px;height:22px;}
+    .topbar .date{background:#F4F7F7;box-shadow:none;}
+    .sec-title{font-size:19px;} .sec-title .tag{background:#F2F5F5;color:#7C8E94;}
+    .card{background:#FFFFFF;backdrop-filter:none;border:1px solid #ECF0F0;box-shadow:0 1px 3px rgba(38,80,92,.05);}
+    .lift{transition:transform .16s,box-shadow .16s;} .lift:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(38,80,92,.10);}
+    .btn{box-shadow:0 1px 3px rgba(38,80,92,.06);} .btn-sm{box-shadow:none;}
+    .btn-primary{background:#5FBFA4;color:#fff;} .btn-chip{background:#F0F5F6;color:#48707C;}
+    .tic{display:inline-flex;align-items:center;vertical-align:-.16em;line-height:0;color:inherit;}
+    .tic svg{width:1.08em;height:1.08em;display:block;}
+
+    /* ---- hero ---- */
+    .hero{background:#FFFFFF;border:1px solid #ECF0F0;border-right:4px solid #BFE3D6;border-radius:var(--radius-lg);
+      padding:22px 26px;box-shadow:0 1px 3px rgba(38,80,92,.05);margin-bottom:24px;}
+    .hero .q{font-size:13.5px;font-weight:800;color:#3E8C78;background:#EFF6F3;display:inline-block;padding:5px 15px;border-radius:var(--pill);margin-bottom:12px;}
+    .hero h1{font-size:clamp(24px,3.4vw,32px);font-weight:900;color:var(--deep);}
+    .hero p{font-size:15px;color:var(--text-soft);margin-top:8px;max-width:62ch;line-height:1.55;} .hero p b{color:#1f7a6b;}
+
+    /* ---- upload zone ---- */
+    .uploads{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:28px;}
+    .up{background:#fff;border:1.5px dashed #D3DFDE;border-radius:var(--radius);padding:24px 18px;
+      display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;cursor:pointer;transition:all .15s;}
+    .up:hover{border-color:#5FBFA4;border-style:solid;box-shadow:0 6px 18px rgba(38,80,92,.09);transform:translateY(-2px);}
+    .up .ic{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;color:#fff;background:var(--c,#5FBFA4);}
+    .up .ic .tic svg{width:24px;height:24px;}
+    .up h3{font-size:15.5px;font-weight:800;color:var(--deep);}
+    .up small{font-size:12.5px;color:var(--text-soft);line-height:1.4;}
+    .up.u1{--c:#5FBFA4;} .up.u2{--c:#9b8fd6;} .up.u3{--c:#e8a55f;}
+
+    /* ---- processing ---- */
+    .proc{display:none;align-items:center;gap:14px;margin-bottom:28px;}
+    .proc.show{display:flex;}
+    .spin{width:24px;height:24px;border-radius:50%;border:3px solid #ECF0F0;border-top-color:#5FBFA4;animation:sp .8s linear infinite;flex:0 0 auto;}
+    @keyframes sp{to{transform:rotate(360deg);}}
+    .proc b{color:var(--deep);} .proc .sub{font-size:13px;color:var(--text-soft);margin-top:2px;}
+
+    /* ---- result ---- */
+    .result{display:none;} .result.show{display:block;}
+    .found{display:flex;align-items:center;gap:15px;flex-wrap:wrap;border-right:4px solid #BFE3D6;margin-bottom:8px;}
+    .found .l{width:54px;height:54px;border-radius:15px;display:grid;place-items:center;font-size:30px;font-weight:900;color:#fff;background:#5FBFA4;flex:0 0 auto;}
+    .found .k{font-size:12.5px;font-weight:800;color:#1f7a6b;}
+    .found h2{font-size:21px;font-weight:900;color:var(--deep);line-height:1.15;}
+    .found p{font-size:13.5px;color:var(--text-soft);margin-top:3px;}
+    .found .meta{margin-right:auto;display:flex;gap:8px;flex-wrap:wrap;}
+
+    .bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 0 4px;}
+    .bar .count{font-size:14.5px;font-weight:800;color:var(--deep);} .bar .count b{color:#1f7a6b;}
+    .bar .sp{margin-right:auto;}
+
+    /* ---- question card ---- */
+    .qlist{display:flex;flex-direction:column;gap:14px;margin-top:14px;}
+    .qcard{border-right:5px solid #D3DFDE;transition:border-color .2s,opacity .25s,transform .25s;}
+    .qcard.approved{border-right-color:var(--ok);}
+    .qcard.attn{border-right-color:var(--watch);}
+    .qcard.removing{opacity:0;transform:translateX(26px);}
+    .qhead{display:flex;align-items:center;gap:9px;margin-bottom:12px;flex-wrap:wrap;}
+    .qlevel{font-size:12px;font-weight:800;padding:3px 12px;border-radius:var(--pill);background:#F0F5F6;color:#48707C;}
+    .qhead .ap{display:none;font-size:12.5px;font-weight:800;color:#0d6b54;background:var(--okbg);padding:3px 12px;border-radius:var(--pill);align-items:center;gap:5px;}
+    .qcard.approved .qhead .ap{display:inline-flex;}
+    .qhead .at{display:none;font-size:12px;font-weight:800;color:#9c6212;background:var(--watchbg);padding:3px 12px;border-radius:var(--pill);align-items:center;gap:4px;}
+    .qcard.attn .qhead .at{display:inline-flex;}
+    .qhead .sp{margin-right:auto;}
+    .attn-note{background:#FFFBEF;border:1px solid #F3E2B8;color:#8f6212;border-radius:11px;padding:8px 13px;font-size:12.5px;margin-bottom:12px;}
+
+    .stem{display:flex;align-items:center;gap:11px;background:#F8FBFA;border:1px solid #EDF2F1;border-radius:12px;padding:11px 15px;margin-bottom:11px;}
+    .stem .spk{width:36px;height:36px;border-radius:10px;flex:0 0 auto;display:grid;place-items:center;color:#fff;background:#9b8fd6;}
+    .stem .spk .tic svg{width:19px;height:19px;}
+    .stem .txt{font-size:22px;font-weight:800;color:var(--deep);font-family:'Heebo',sans-serif;}
+    .stem.text .txt{font-size:30px;}
+    .ask{font-size:15px;font-weight:700;color:var(--text-main);margin-bottom:12px;line-height:1.5;font-family:'Heebo',sans-serif;}
+    .ask[contenteditable="true"]{outline:2px solid #5FBFA4;border-radius:8px;padding:4px 8px;background:#F8FBFA;}
+
+    .opts{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;}
+    .opt{display:flex;align-items:center;gap:11px;background:#F8FBFA;border:1px solid #EDF2F1;border-radius:11px;padding:9px 13px;}
+    .opt.correct{background:var(--okbg);border-color:#BEEBD3;}
+    .opt .mk{width:22px;height:22px;flex:0 0 auto;display:grid;place-items:center;color:#C3D2D0;}
+    .opt.correct .mk{color:#2E9E73;} .opt .mk .tic svg{width:18px;height:18px;}
+    .opt .lab{font-size:21px;font-weight:800;color:var(--deep);min-width:32px;font-family:'Heebo',sans-serif;}
+    .opt .lab.audio{font-size:14px;font-weight:700;color:#6a59b8;display:flex;align-items:center;gap:6px;}
+    .opt .lab.audio .tic svg{width:15px;height:15px;}
+    .opt .tag{font-size:13px;font-weight:800;color:#0d6b54;}
+    .opt .diag{font-size:12.5px;color:var(--text-soft);line-height:1.4;} .opt .diag b{color:#b5611f;font-weight:800;}
+
+    .qacts{display:flex;gap:8px;flex-wrap:wrap;}
+    .qacts .btn .tic{margin-inline-end:5px;}
+    .addrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;} .addrow .btn .tic{margin-inline-end:5px;}
+    .done{display:none;align-items:center;gap:12px;margin-top:18px;font-size:13.5px;line-height:1.5;}
+    .done.show{display:flex;} .done .tic{color:#0d9b6f;font-size:22px;} .done b{color:#0a5e44;}
+    .done .tic svg{width:22px;height:22px;}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <nav class="rail" aria-label="ניווט">
+      <a class="logo" href="index.html"><span class="gm"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round"><path d="M6 18v-5"/><path d="M12 18V7"/><path d="M18 18v-8"/></svg></span><b>בית ספר<br>אימפקט</b></a>
+      <a class="item" href="teacher-avnei.html"><span class="ic" data-ic="home"></span><span class="t">דף הבית</span></a>
+      <a class="item" href="teacher-profile.html"><span class="ic" data-ic="people"></span><span class="t">הכיתה שלי</span></a>
+      <a class="item" href="teacher-literacy-profile.html"><span class="ic" data-ic="learn"></span><span class="t">פרופיל אורייני</span></a>
+      <a class="item active" href="teacher-content-upload.html"><span class="ic" data-ic="upload"></span><span class="t">הכנת תוכן</span></a>
+      <a class="item" href="teacher-pulse.html"><span class="ic" data-ic="pulse"></span><span class="t">פולס</span></a>
+      <a class="item" href="teacher-reports.html"><span class="ic" data-ic="report"></span><span class="t">דוחות</span></a>
+      <a class="item" href="teacher-curriculum.html"><span class="ic" data-ic="calendar"></span><span class="t">תוכנית שנתית</span></a>
+      <a class="item" href="teacher-settings.html"><span class="ic" data-ic="settings"></span><span class="t">הגדרות</span></a>
+      <div class="me"><div class="av">מ</div><small>מיטל פלג<span>מורה · א׳1</span></small></div>
+    </nav>
+
+    <main class="main"><div class="main-inner">
+      <div class="topbar">
+        <div class="crumbs"><a href="teacher-avnei.html">בית ספר אימפקט</a> · אבני יסוד · הכנת תוכן</div>
+        <div class="date">יום ג׳ · 30.06</div>
+      </div>
+
+      <div class="hero">
+        <span class="q">הכנת תוכן</span>
+        <h1>הכנת תוכן מחומר שלכן</h1>
+        <p>העלו דף עבודה, מצגת, קישור או כל חומר לימודי — והמערכת תכין ממנו שאלות תרגול מותאמות לכיתה א׳. <b>אתן מאשרות כל שאלה לפני שהיא מגיעה לילדים.</b></p>
+      </div>
+
+      <!-- upload zone -->
+      <div class="uploads">
+        <div class="up u1" onclick="runDemo()">
+          <span class="ic"><span class="tic" data-ic="upload"></span></span>
+          <h3>העלאת קובץ</h3>
+          <small>דף עבודה · PDF · תמונה<br>גררו לכאן או לחצו לבחירה</small>
+        </div>
+        <div class="up u2" onclick="runDemo()">
+          <span class="ic"><span class="tic" data-ic="link"></span></span>
+          <h3>הדבקת קישור</h3>
+          <small>דף מהאינטרנט<br>או סרטון לימודי</small>
+        </div>
+        <div class="up u3" onclick="runDemo()">
+          <span class="ic"><span class="tic" data-ic="book"></span></span>
+          <h3>דף עבודה מהמאגר</h3>
+          <small>בחרו מתוך החומרים<br>הקיימים שלכן</small>
+        </div>
+      </div>
+
+      <!-- processing -->
+      <div class="proc card" id="proc">
+        <div class="spin"></div>
+        <div><b>קוראת את החומר…</b><div class="sub">מזהה את הנושא ומכינה שאלות מתאימות</div></div>
+      </div>
+
+      <!-- result -->
+      <div class="result" id="result">
+        <div class="card found">
+          <div class="l">ש</div>
+          <div>
+            <div class="k">מצאתי בחומר</div>
+            <h2>האות ש</h2>
+            <p>זיהיתי 8 מילים · הכנתי 6 שאלות תרגול ב‑3 רמות</p>
+          </div>
+          <div class="meta">
+            <span class="chip-l ok">דף עבודה ש.pdf</span>
+            <span class="chip-l watch">שאלה אחת לבדיקה</span>
+          </div>
+        </div>
+
+        <div class="bar">
+          <div class="count">אושרו <b id="apN">0</b> מתוך <span id="totN">6</span> שאלות</div>
+          <div class="sp"></div>
+          <button class="btn btn-primary btn-sm" onclick="approveAll()"><span class="tic" data-ic="checkcircle"></span>&nbsp;אשרו את כל השאלות</button>
+        </div>
+
+        <div class="qlist" id="qlist"></div>
+
+        <div class="addrow">
+          <button class="btn btn-soft btn-sm" onclick="toast('הוספת שאלה ידנית — בקרוב')"><span class="tic" data-ic="plus"></span>הוסיפו שאלה משלכן</button>
+          <button class="btn btn-chip btn-sm" onclick="resetDemo()"><span class="tic" data-ic="refresh"></span>העלאת חומר אחר</button>
+        </div>
+
+        <div class="note done" id="done" style="background:var(--okbg);color:#0d6b54">
+          <span class="tic" data-ic="checkcircle"></span>
+          <div><b>כל הכבוד! השאלות מוכנות.</b> <span id="doneCount"></span> שאלות נכנסו לתרגול הכיתתי של האות ש. אפשר לשלוח אותן למכשירי הילדים מדף הבית.</div>
+        </div>
+      </div>
+
+    </div></main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    /* =========================================================
+       MOCK — מבנה זהה ל-IngestionProposal של ה-Edge Function.
+       בייצור: מחליפים את האובייקט הזה ב-fetch לפונקציה ב-Supabase.
+       (_handoff/2026-06-30-content-ingestion-concept-spec.md §3)
+       פנייה לילד.ה = לשון רבים (החלטת מיטל 30.6.2026).
+       ========================================================= */
+    var PROPOSAL = {
+      source:{ type:'worksheet', title:'דף עבודה — האות ש', detected_topic:'הכרת האות ש — צורה + צליל', detected_letters:['ש'] },
+      questions:[
+        { level_he:'רמה קלה', stem_mode:'audio', stem_he:'זֹאת הָאוֹת שִׁין',
+          ask_he:'אֵיזוֹ אוֹת הִיא ש? גְּעוּ בָּהּ.',
+          options:[
+            { label:'ש', mode:'text', correct:true },
+            { label:'ס', mode:'text', diag:'בלבול בין <b>הצליל ש לצליל ס</b>' },
+            { label:'מ', mode:'text', diag:'עדיין לא מזהים את <b>צורת האות ש</b>' }
+          ], review:{} },
+
+        { level_he:'רמה קלה', stem_mode:'text', stem_he:'שֶׁמֶשׁ',
+          ask_he:'אֵיפֹה הָאוֹת ש בַּמִּלָּה? גְּעוּ בָּהּ.',
+          options:[
+            { label:'ש', mode:'text', correct:true },
+            { label:'מ', mode:'text', diag:'קושי <b>לאתר את ש בתוך מילה</b>' },
+            { label:'ס', mode:'text', diag:'בלבול בין <b>ש ל-ס</b> בתוך מילה' }
+          ], review:{} },
+
+        { level_he:'רמה בינונית', stem_mode:'audio', stem_he:'אֵיזוֹ מִלָּה מַתְחִילָה בְּ‑ש?',
+          ask_he:'הַקְשִׁיבוּ לַמִּלִּים. אֵיזוֹ מַתְחִילָה בַּצְּלִיל /ש/?',
+          options:[
+            { label:'שׁוּעָל', mode:'audio', correct:true },
+            { label:'סוּס', mode:'audio', diag:'בלבול בין <b>צליל פותח ש לצליל ס</b>' },
+            { label:'עֵץ', mode:'audio', diag:'עדיין לא מזהים <b>צליל פותח</b>' }
+          ], review:{} },
+
+        { level_he:'רמה בינונית', stem_mode:'text', stem_he:'__וּעָל',
+          ask_he:'אֵיזוֹ אוֹת חֲסֵרָה כְּדֵי לְקַבֵּל אֶת הַמִּלָּה "שׁוּעָל"?',
+          options:[
+            { label:'ש', mode:'text', correct:true },
+            { label:'ס', mode:'text', diag:'בלבול בין <b>ש ל-ס</b> בכתיבה' },
+            { label:'ע', mode:'text', diag:'בלבול בין <b>צורת ש לצורת ע</b>' }
+          ], review:{ needs_attention:true, note:'כדאי לבדוק שהניקוד של "שׁוּעָל" נכון' } },
+
+        { level_he:'רמה מאתגרת', stem_mode:'audio', stem_he:'שָׂרָה אוֹ שָׁרָה?',
+          ask_he:'הַקְשִׁיבוּ. בְּאֵיזוֹ מִלָּה שׁוֹמְעִים אֶת הַצְּלִיל /ש/?',
+          options:[
+            { label:'שָׁרָה', mode:'audio', correct:true },
+            { label:'שָׂרָה', mode:'audio', diag:'בלבול בין <b>שׁ (ימנית) ל-שׂ (שמאלית)</b>' },
+            { label:'סָרָה', mode:'audio', diag:'בלבול בין <b>ש ל-ס</b>' }
+          ], review:{} },
+
+        { level_he:'רמה מאתגרת', stem_mode:'text', stem_he:'מִברֶשֶׁת',
+          ask_he:'גְּעוּ בָּאוֹת ש שֶׁבְּאֶמְצַע הַמִּלָּה.',
+          options:[
+            { label:'ש', mode:'text', correct:true },
+            { label:'ס', mode:'text', diag:'בלבול בין <b>ש ל-ס</b> באמצע מילה' },
+            { label:'ר', mode:'text', diag:'קושי <b>לאתר ש כשהיא לא בהתחלה</b>' }
+          ], review:{} }
+      ]
+    };
+
+    /* =========================================================
+       PRODUCTION HOOK — חיבור ל-Edge Function (כבוי כברירת מחדל).
+       כשיש מפתח Anthropic + הפונקציה פרוסה: הגדירו USE_EDGE=true
+       + SUPABASE_URL/KEY, וזה יחליף את ה-PROPOSAL הקשיח בקריאה אמיתית.
+       ראה supabase/functions/ingest-material/README.md
+       ========================================================= */
+    var USE_EDGE = false;
+    var SUPABASE_URL = 'https://ynxfszmpoppqrqocewcs.supabase.co';
+    var SUPABASE_KEY = 'sb_publishable_Nq1wqSAjsAZMmuOXq2afUA_f_g8CEIU';
+    async function fetchProposal(sourceType, payload){
+      var res = await fetch(SUPABASE_URL + '/functions/v1/ingest-material', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+SUPABASE_KEY },
+        body: JSON.stringify({ sourceType: sourceType, payload: payload })
+      });
+      if(!res.ok) throw new Error('ingest failed: '+res.status);
+      return await res.json(); // IngestionProposal — אותו schema כמו ה-mock
+    }
+
+    /* ---------- icons: demo-icons map + inline extras ---------- */
+    var RING='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="7"/></svg>';
+    var TRASH='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h14"/><path d="M9 7V5h6v2"/><path d="M7 7l1 12h8l1-12"/><path d="M10 11v5"/><path d="M14 11v5"/></svg>';
+    function paintIcons(){
+      var I = window.DemoIcons || {};
+      document.querySelectorAll('[data-ic]').forEach(function(el){ var k=el.getAttribute('data-ic'); if(I[k]) el.innerHTML=I[k]; });
+    }
+    function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},2600);}
+
+    function optRow(o){
+      var mk = o.correct ? '<span class="mk"><span class="tic" data-ic="checkcircle"></span></span>'
+                         : '<span class="mk"><span class="tic">'+RING+'</span></span>';
+      var lab = o.mode==='audio'
+        ? '<span class="lab audio"><span class="tic" data-ic="sound"></span>'+o.label+'</span>'
+        : '<span class="lab">'+o.label+'</span>';
+      var note = o.correct ? '<span class="tag">תשובה נכונה</span>'
+                           : '<span class="diag">בחירה כאן מסמנת: '+o.diag+'</span>';
+      return '<div class="opt'+(o.correct?' correct':'')+'">'+mk+lab+note+'</div>';
+    }
+
+    function qCard(q,i){
+      var attn = q.review && q.review.needs_attention;
+      var stem = q.stem_mode==='audio'
+        ? '<div class="stem"><span class="spk"><span class="tic" data-ic="sound"></span></span><span class="txt">'+q.stem_he+'</span></div>'
+        : '<div class="stem text"><span class="txt">'+q.stem_he+'</span></div>';
+      var attnTag  = attn ? '<span class="at"><span class="tic" data-ic="alert"></span>כדאי לבדוק</span>' : '';
+      var attnNote = attn ? '<div class="attn-note">'+q.review.note+'</div>' : '';
+      return '<div class="card qcard'+(attn?' attn':'')+'" data-i="'+i+'">'
+        + '<div class="qhead"><span class="qlevel">שאלה '+(i+1)+' · '+q.level_he+'</span>'
+        +   '<span class="ap"><span class="tic" data-ic="checkcircle"></span>אושר</span>'+attnTag+'<span class="sp"></span></div>'
+        + attnNote + stem
+        + '<div class="ask" data-ask>'+q.ask_he+'</div>'
+        + '<div class="opts">'+q.options.map(optRow).join('')+'</div>'
+        + '<div class="qacts">'
+        +   '<button class="btn btn-primary btn-sm" onclick="approve('+i+')"><span class="tic" data-ic="checkcircle"></span>אשרו</button>'
+        +   '<button class="btn btn-soft btn-sm" onclick="edit('+i+',this)"><span class="tic" data-ic="edit"></span>ערכו</button>'
+        +   '<button class="btn btn-chip btn-sm" onclick="del('+i+')"><span class="tic">'+TRASH+'</span>מחקו</button>'
+        + '</div></div>';
+    }
+
+    function render(){
+      document.getElementById('qlist').innerHTML = PROPOSAL.questions.map(qCard).join('');
+      paintIcons(); updateCount();
+    }
+    function cardEls(){ return Array.prototype.slice.call(document.querySelectorAll('.qcard')); }
+    function updateCount(){
+      var live = cardEls().filter(function(c){return !c.classList.contains('removing');});
+      var ap = live.filter(function(c){return c.classList.contains('approved');}).length;
+      document.getElementById('apN').textContent = ap;
+      document.getElementById('totN').textContent = live.length;
+      var done = document.getElementById('done');
+      if(live.length>0 && ap===live.length){ done.classList.add('show'); document.getElementById('doneCount').textContent = ap; }
+      else done.classList.remove('show');
+    }
+    function approve(i){ var c=document.querySelector('.qcard[data-i="'+i+'"]'); if(!c)return; c.classList.add('approved'); c.classList.remove('attn'); toast('שאלה '+(i+1)+' אושרה'); updateCount(); }
+    function approveAll(){ cardEls().forEach(function(c){c.classList.add('approved');c.classList.remove('attn');}); toast('כל השאלות אושרו'); updateCount(); }
+    function edit(i,btn){
+      var c=document.querySelector('.qcard[data-i="'+i+'"]'); if(!c)return;
+      var ask=c.querySelector('[data-ask]'); var on=ask.getAttribute('contenteditable')==='true';
+      if(on){ ask.removeAttribute('contenteditable'); btn.innerHTML='<span class="tic" data-ic="edit"></span>ערכו'; toast('השינוי נשמר'); }
+      else  { ask.setAttribute('contenteditable','true'); ask.focus(); btn.innerHTML='<span class="tic" data-ic="checkcircle"></span>שמרו'; }
+      paintIcons();
+    }
+    function del(i){ var c=document.querySelector('.qcard[data-i="'+i+'"]'); if(!c)return; c.classList.add('removing'); toast('שאלה '+(i+1)+' נמחקה'); setTimeout(function(){c.remove();updateCount();},260); }
+
+    /* ---------- demo flow ---------- */
+    function runDemo(){
+      document.getElementById('proc').classList.add('show');
+      var u=document.querySelector('.uploads'); u.style.opacity='.45'; u.style.pointerEvents='none';
+      setTimeout(function(){
+        document.getElementById('proc').classList.remove('show');
+        document.getElementById('result').classList.add('show');
+        render();
+        document.getElementById('result').scrollIntoView({behavior:'smooth',block:'start'});
+      }, 1500);
+    }
+    function resetDemo(){
+      document.getElementById('result').classList.remove('show');
+      document.getElementById('done').classList.remove('show');
+      var u=document.querySelector('.uploads'); u.style.opacity=''; u.style.pointerEvents='';
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    document.addEventListener('click',function(e){var b=e.target.closest('[data-toast]');if(b)toast(b.dataset.toast);});
+    if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',paintIcons); else paintIcons();
+  </script>
+</body>
+</html>

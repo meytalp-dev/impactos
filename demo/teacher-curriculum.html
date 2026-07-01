@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#EAF8FE">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>תוכנית לימודים · מורה · בית ספר אימפקט</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="demo.css">
+  <script src="demo-icons.js" defer></script>
+  <style>
+    .rail .logo .gm{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(150deg,#19A394,#0F7E72);box-shadow:0 8px 18px -8px rgba(15,138,126,.6);}
+    .rail .logo .gm svg{width:22px;height:22px;}
+    .page-h{margin-bottom:22px;} .page-h h1{font-size:clamp(25px,3.4vw,32px);font-weight:900;color:var(--deep);}
+    .page-h p{font-size:15.5px;color:var(--text-soft);margin-top:8px;}
+    .now{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center;border-right:6px solid var(--sea-green);margin-bottom:26px;}
+    .now .big{width:78px;height:78px;border-radius:20px;display:grid;place-items:center;font-size:42px;font-weight:900;color:#fff;background:linear-gradient(150deg,#1f9488,#36c2b2);}
+    .now h2{font-size:21px;font-weight:900;color:var(--deep);} .now .lab{font-size:13px;font-weight:700;color:#1f7a6b;background:#E2F4F2;display:inline-block;padding:3px 12px;border-radius:999px;margin-bottom:6px;}
+    .now p{font-size:15px;color:var(--text-soft);margin-top:6px;}
+    .now .btns{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;}
+
+    /* ---------- calendar plan: one lesson/day, editable rows ---------- */
+    .calbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;}
+    .calnav{display:flex;align-items:center;gap:8px;}
+    .calnav button{width:40px;height:40px;border-radius:11px;border:1px solid #E6ECEC;background:#fff;cursor:pointer;color:#5A7BB0;display:grid;place-items:center;}
+    .calnav button:hover{background:#F4F8F9;color:#1f7a6b;} .calnav button[disabled]{opacity:.35;pointer-events:none;}
+    .calnav button .tic svg{width:20px;height:20px;}
+    .calnav .mname{font-size:21px;font-weight:900;color:var(--deep);min-width:120px;text-align:center;}
+    .calfocus{font-size:13.5px;color:var(--text-soft);background:#F4F8F9;border:1px solid #EDF2F2;border-radius:12px;padding:10px 15px;margin-bottom:16px;line-height:1.55;}
+    .calfocus b{color:#1f7a6b;}
+    .wklabel{font-size:11.5px;font-weight:800;color:#aeb9bd;margin:15px 3px 7px;letter-spacing:.03em;}
+    .wklabel:first-of-type{margin-top:0;}
+    .dayrow{display:flex;align-items:flex-start;gap:13px;padding:11px 14px;border:1px solid #ECF0F0;border-radius:13px;background:#fff;margin-bottom:7px;box-shadow:0 1px 2px rgba(38,80,92,.04);}
+    .dayrow.today{border-color:#9ED9C6;box-shadow:0 2px 12px rgba(31,148,136,.14);}
+    .daydate{flex:0 0 auto;width:58px;text-align:center;padding-top:2px;}
+    .daydate .dn{font-size:12.5px;font-weight:800;color:#5A93C0;}
+    .daydate .dd{font-size:18px;font-weight:900;color:var(--deep);line-height:1.15;}
+    .dayrow.today .daydate .dn{color:#1f8a78;}
+    .daydate .nowtag{display:inline-block;font-size:10px;font-weight:800;color:#fff;background:#27a08c;border-radius:999px;padding:1px 8px;margin-top:3px;}
+    .daymid{flex:1;min-width:0;}
+    .daymid .ttext{font-size:14.5px;color:var(--text-main);font-weight:600;line-height:1.45;}
+    .daymid .ed{font-family:inherit;font-size:14.5px;color:var(--text-main);border:1px solid #BFD8E0;border-radius:8px;padding:6px 10px;width:100%;max-width:430px;outline:none;margin-bottom:4px;}
+    .daymid .ed:focus{border-color:#5FBFA4;box-shadow:0 0 0 3px rgba(95,191,164,.15);}
+    .xtopic{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:#3E7A6C;background:#E9F5F0;border-radius:9px;padding:5px 11px;margin-top:7px;margin-inline-end:6px;}
+    .xtopic .rm{cursor:pointer;color:#8bb3a8;font-weight:900;font-size:12px;}
+    .xtopic .rm:hover{color:#d06b6b;}
+    .dayacts{display:flex;gap:6px;flex:0 0 auto;}
+    .dayacts button{width:34px;height:34px;border-radius:9px;border:1px solid #E6ECEC;background:#fff;cursor:pointer;color:#5A7BB0;display:grid;place-items:center;}
+    .dayacts button:hover{background:#F4F8F9;color:#1f7a6b;}
+    .dayacts button .tic svg{width:17px;height:17px;}
+
+    /* ---------- practice link per sub-topic: what exists / what's missing ---------- */
+    .prac{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;border-radius:9px;padding:5px 11px;margin-top:8px;cursor:pointer;border:1px solid transparent;text-decoration:none;transition:background .15s,border-color .15s;}
+    .prac .tic{display:inline-flex;} .prac .tic svg{width:15px;height:15px;}
+    .prac.ok{color:#1f7a6b;background:#E4F5EF;border-color:#BFE6D8;}
+    .prac.ok:hover{background:#D3EEE3;}
+    .prac.offline{color:#6b7a86;background:#F0F3F5;border-color:#E3E9ED;cursor:default;}
+    .prac.gap{color:#B0722A;background:#FCF3E6;border-color:#F0DDBF;border-style:dashed;cursor:help;}
+    .praccov{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--text-soft);background:#F4F8F9;border:1px solid #EDF2F2;border-radius:12px;padding:9px 15px;margin-bottom:14px;}
+    .praccov span{display:inline-flex;align-items:center;gap:6px;}
+    .praccov b{font-weight:800;} .praccov .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+    .praccov .cok{color:#1f7a6b;} .praccov .cok .dot{background:#27a08c;}
+    .praccov .cgap{color:#B0722A;} .praccov .cgap .dot{background:#E0A44A;}
+    .praccov .coff{color:#6b7a86;} .praccov .coff .dot{background:#B9C4CC;}
+  </style>
+</head>
+<body>
+  <img class="scene-bg" src="../avnei-yesod/underwater-app/assets/scene-stage-3-bg.png" alt="" aria-hidden="true" onerror="this.style.display='none'">
+  <div class="veil" aria-hidden="true"></div>
+  <div class="app">
+    <nav class="rail" aria-label="ניווט">
+      <a class="logo" href="index.html"><span class="gm"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round"><path d="M6 18v-5"/><path d="M12 18V7"/><path d="M18 18v-8"/></svg></span><b>בית ספר<br>אימפקט</b></a>
+      <a class="item" href="teacher-avnei.html"><span class="ic" data-ic="home"></span><span class="t">דף הבית</span></a>
+      <a class="item" href="teacher-profile.html"><span class="ic" data-ic="people"></span><span class="t">הכיתה שלי</span></a>
+      <a class="item" href="teacher-literacy-profile.html"><span class="ic" data-ic="learn"></span><span class="t">פרופיל אורייני</span></a>
+      <a class="item" href="teacher-pulse.html"><span class="ic" data-ic="pulse"></span><span class="t">פולס</span></a>
+      <a class="item" href="teacher-reports.html"><span class="ic" data-ic="report"></span><span class="t">דוחות</span></a>
+      <a class="item active" href="teacher-curriculum.html"><span class="ic" data-ic="calendar"></span><span class="t">תוכנית שנתית</span></a>
+      <a class="item" href="teacher-settings.html"><span class="ic" data-ic="settings"></span><span class="t">הגדרות</span></a>
+      <div class="me"><div class="av">מ</div><small>מיטל פלג<span>מורה · א׳1</span></small></div>
+    </nav>
+
+    <main class="main"><div class="main-inner">
+      <div class="topbar"><div class="crumbs"><a href="index.html" style="color:inherit;text-decoration:none">בית ספר אימפקט</a> · תוכנית שנתית</div><div class="date">תשפ״ז · כיתה א׳1</div></div>
+
+      <div class="page-h">
+        <h1>התוכנית השנתית</h1>
+        <p>לוח שנה לכל ימי הלימוד — שיעור אחד בכל יום. אפשר לשנות את נושא היום או להוסיף נושא, ישירות על שורת התאריך.</p>
+      </div>
+
+      <div class="card now">
+        <div class="big">ל</div>
+        <div>
+          <span class="lab">היום בכיתה</span>
+          <h2>האות ל · זיהוי וקריאת לַ / לָ / לִ</h2>
+          <p>מחר: קריאת מילים קצרות עם האות ל (לב, ליל).</p>
+          <div class="btns"><a class="btn btn-primary btn-sm" href="../avnei-yesod/underwater-app/stage-3-lamed.html" target="_blank" rel="noopener">פתיחת תרגול לכיתה · האות ל</a></div>
+        </div>
+      </div>
+
+      <div class="calbar">
+        <div class="calnav">
+          <button id="prevM" aria-label="חודש קודם"><span class="tic" data-ic="chevright"></span></button>
+          <span class="mname" id="mname"></span>
+          <button id="nextM" aria-label="חודש הבא"><span class="tic" data-ic="chevleft"></span></button>
+        </div>
+        <button class="btn btn-soft btn-sm" id="todayBtn"><span class="tic" data-ic="calendar"></span>היום</button>
+      </div>
+      <div class="calfocus" id="calfocus"></div>
+      <div class="praccov" id="praccov"></div>
+      <div id="caldays"></div>
+    </div></main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    /* ---------- שפה נקייה למורה · בלי מונחים טכניים · שיעור אחד ליום ---------- */
+    var WD=['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
+    var SCHOOL=[
+      {y:2026,m:8,name:'ספטמבר',tag:'פתיחת שנה',focus:'הכרת האותיות הראשונות, קשר אות–צליל, וראשית הכתיבה',
+        days:['האות ת — צורה וצליל','האות מ — צורה וצליל','האות ר — צורה וצליל (הבחנה ת/ר)','האזנה לסיפור + אוצר מילים','כתיבת ת/מ/ר + סיכום שבועי',
+              'האות ב','האות ק (הבחנה ב/כ)','תרגול חמש האותיות שנלמדו','הצליל הראשון והאחרון במילה','כתיבת ב/ק + מבדק קצר',
+              'האות א','האות י','הבחנה בין אותיות דומות','תיאור תמונה + משחקי הברות','כתיבת א/י + סיכום',
+              'האות ל','האות ש','האות ח','האות נ','סיכום 11 אותיות + כתיבה']},
+      {y:2026,m:9,name:'אוקטובר',focus:'השלמת כל האותיות והתנועה הראשונה (אַ), קריאת הברה',
+        days:['האות ד (הבחנה ד/ר)','האות פ','האות ה (הבחנה ה/ח)','האות ס','כתיבה + מבדק זיהוי',
+              'האות ג','האות ע','האות כ (הבחנה כ/ב)','האות צ','כתיבה + הבחנת אותיות',
+              'האות ט','האות ז','האות ו — כל 22 האותיות!','משחק זיהוי מהיר של כל הא״ב','כתיבה + מבדק 22 אותיות',
+              'התנועה אַ — "איזה צליל שומעים?"','קריאת הברה: מָ רָ תָ בָ קָ','אותיות סופיות בתוך מילים','שפה דבורה + אוצר מילים','כתיבת הברות + מבדק קצר']},
+      {y:2026,m:10,name:'נובמבר',tag:'אנחנו כאן',focus:'קריאת מילים שלמות ודיוק בצלילים',
+        days:['הבנת משפט כן/לא','קריאת הברה סגורה: קַר מַר רַק בַּת','הבחנת תנועות באות א','שאלות מי/מה על הנשמע','כתיבת מילים קצרות + סיכום',
+              'בניית מילה מהברות','תרגול קריאת מילים סגורות','קריאת פעלים בעבר (תָּלָה, קָרָה)','משמעות פעלים + אוצר','כתיבת פועל קצר + סיכום',
+              'מילים קטנות: שֶׁל, אֶת, לֹא, כֵּן','קריאת משפט קצר','הבחנה בין מילים דומות (בָּרָק/מָרָק)','"איזו מילה שמעת?"','כתיבת זוג מילים + סיכום',
+              'סיכום צלילים + חיבור תמונה-מילה','קריאת מילים שלמות','חזרה ותחזוקה','הקראה + הבנת הנשמע','מבדק חודשי + כתיבה']},
+      {y:2026,m:11,name:'דצמבר',focus:'השווא (תנועה שנעלמת), זכר/נקבה, והתנועה אִי',
+        days:['השווא — "איפה שומעים בְּ/שְׁ/תְּ?"','קריאת הברה עם שווא','התחילית לְ (לְנָדָב)','התאמת מילה לאיור','כתיבת מילה עם שווא + סיכום',
+              'זוגות זכר/נקבה (רָכַב/רָכְבָה)','קריאת שווא נח באמצע מילה','השווא שמסמן נקבה','זכר/נקבה בדיבור','כתיבת זוג זכר/נקבה + סיכום',
+              'הרכבת משפט מסדר מילים','קריאת משפט שלם','התחיליות וְ, בְּ, לְ','מילות מקום בדיבור','כתיבת משפט + סיכום',
+              'התנועה אִי — הצגת הצליל','קריאת הברה: מִי, שִׁי','בחירת משפט לאיור','מילים עם חיריק','כתיבת הברת חיריק + סיכום']},
+      {y:2027,m:0,name:'ינואר',tag:'מבדק אמצע שנה',focus:'יחיד/רבים, מילים ארוכות, כינויי גוף',
+        days:['יחיד/רבים (שִׁיר/שִׁירִים)','קריאת מילה ארוכה','ריבוי מיוחד (אִישׁ/אֲנָשִׁים)','"מה יוצא דופן?" + יש/אין','כתיבת זוג יחיד/רבים',
+              'הָיָה/הָיְתָה','קריאת משפט עם פועל עבר','אַתְּ/אַתָּה (עבר)','מי עשה מה? (הבנה)','כתיבת היה/הייתה',
+              'אֲנִי/אַתָּה/אַתְּ + פעלים','מהברה למילה','משחק התאמת חיריק','הרחבת אוצר','משפט קצר עצמאי',
+              'הבחנת צ/ץ','"מילים אמיתיות או בדויות?"','חזרה — חיריק','מבדק אמצע שנה — משימות דבורות','כתיבה + סיכום אמצע שנה']},
+      {y:2027,m:1,name:'פברואר',focus:'האותיות שׁ/שׂ והתנועה אוֹ, מיון מילים',
+        days:['שׁ ימנית מול שׂ שמאלית (שָׁר/שָׂר)','קריאת מילים עם שׁ/שׂ','בחירת משפט לתמונה','אבחנה שמיעתית שׁ/שׂ','כתיבת שׁ/שׂ + סיכום',
+              'התנועה אוֹ + מילות מקום עַל/לְיַד','קריאת הברה: מוֹ, בּוֹ','בניית מילים מהברות','מיקום ומרחב בדיבור','כתיבת הברת חולם',
+              'מיון מילים לקבוצות','קריאת מילים מהקבוצות','חיפוש פריטים + צבעים','שדות סמנטיים (אוצר)','כתיבת מילה עם חולם חסר',
+              'חריזה','השלמת מילה (חולם)','אסוציאציות וקטגוריות','הבנת הנשמע — סיפור קצר','מבדק חודשי + כתיבה']},
+      {y:2027,m:2,name:'מרץ',focus:'התנועה אֶה וקריאת הבנה ראשונה, מילות שאלה',
+        days:['קריאת תיאור + התאמה לדמות','קריאת תיאור ארוך','השלמת הברה חסרה','תיאור דמות (אוצר)','כתיבת תיאור קצר',
+              'התאמת מילה לתמונה (מהירות)','קריאה מהירה (תחילת שטף)','מילות שאלה: מָה/מִי/אֵיפֹה/לָמָה','שאלות ותשובות (דיאלוג)','כתיבת שאלה',
+              'בחירת משפט לאיור','התנועה אֶה (צירי-סגול)','פעלים בהווה (הוֹלֵךְ/הוֹלֶכֶת)','התאמת מין בדיבור','כתיבת הברת צירי-סגול',
+              'טקסט מידע + ארבע שאלות','קריאה חוזרת (שטף)','שאלות מי/מה/איפה','שאלות למה/מה יקרה','כתיבת תשובה במשפט']},
+      {y:2027,m:3,name:'אפריל',focus:'התנועה אוּ — מערכת התנועות שלמה, שטף',
+        days:['קריאת מילים ארוכות','קריאה חוזרת (שטף)','השלמת משפט בחריזה','זיהוי חרוזים (אוצר)','כתיבת מילה חורזת',
+              'התנועה אוּ — הצגת הצליל','קריאת הברה: מֻ, בּוּ','בחירת מילה עם אוּ','מילים עם אוּ (אוצר)','מערכת התנועות שלמה — כתיבת הברה',
+              'כינוי גוף (נושא-נשוא)','קריאת משפט עם כינוי גוף','שמות תואר + עַל','תיאור בעזרת תארים','כתיבת משפט עם תואר',
+              'יֵשׁ/אֵין — מה בתמונה','קריאת משפט יֵשׁ/אֵין','חזרה — כל התנועות','הבנת הנשמע — סיפור','מבדק חודשי + כתיבה']},
+      {y:2027,m:4,name:'מאי',tag:'מבדק סוף שנה',focus:'קריאת טקסטים שלמים והבנת הנקרא',
+        days:['קריאת סיפור "יום שוק בגינה"','קריאה חוזרת (שטף)','רצף אירועים בסיפור','שאלות הבנה על הסיפור','סיכום הסיפור במשפט',
+              'מילת הדימוי כְּמוֹ','קריאת טקסט מידע (לווייתנים)','מבנה טקסט מידע','איתור מידע בטקסט','כתיבת משפט דימוי',
+              'טקסט מידע על דבורים','קריאה חוזרת (שטף)','משחק יחיד/רבים','שני תרגילי הבנה','כתיבת משפט מידע',
+              'טקסט הוראות (קֹדֶם/אַחַר כָּךְ)','טקסט סיפורי + ציטוט','מבדק סוף שנה — קריאה','מבדק סוף שנה — הבנה וכתיבה','כתיבת רצף הוראות']},
+      {y:2027,m:5,name:'יוני',focus:'שטף, הבנת פסקה וסיכום שנה',
+        days:['קריאה חוזרת של טקסט מוכר','מדידת מילים לדקה','קריאה בזוגות','הבנת הנשמע + אוצר','כתיבה חופשית',
+              'קריאת פסקה עצמית','שאלות הבנה (מי/מה/איפה)','שאלות חשיבה (למה/מה יקרה)','השוואה בין שני טקסטים','כתיבת תשובה מנומקת',
+              'הכתבת מילים שכיחות','כתיבת "אני ___"','מבדק סיום שנה','פרופיל אורייני לכל ילד','חגיגת סיום + קריאה משותפת']}
+    ];
+    var cur=2;                 // ברירת מחדל: נובמבר
+    var TODAY={mi:2,di:7};     // "היום" בדמו = נובמבר, יום הלימוד ה-8
+    var EXTRAS={};             // נושאים שנוספו ידנית, לפי תאריך
+
+    /* ---------- שיוך תרגול אמיתי לכל תת-נושא · כדי לראות מה יש ומה חסר ---------- */
+    var APP='../avnei-yesod/underwater-app/';
+    // אילו אותיות כבר קיבלו אי-תרגול משלהן (stage-3-<אות>)
+    var LETTERS={
+      'א':'stage-3-alef.html','ג':'stage-3-gimel.html','ד':'stage-3-dalet.html','ה':'stage-3-hey.html',
+      'ו':'stage-3-vav.html','ז':'stage-3-zayin.html','ח':'stage-3-het.html','ט':'stage-3-tet.html',
+      'י':'stage-3-yud.html','כ':'stage-3-kaf.html','ל':'stage-3-lamed.html','נ':'stage-3-nun.html',
+      'ס':'stage-3-samekh.html','ע':'stage-3-ayin.html','פ':'stage-3-pey.html','צ':'stage-3-tzadi.html',
+      'ר':'stage-3-trail-resh.html'
+      // חסרות עדיין: ב · מ · ק · ש · ת  → יסומנו "חסר"
+    };
+    function normFinal(c){return {'ך':'כ','ם':'מ','ן':'נ','ף':'פ','ץ':'צ'}[c]||c;}
+    // מחזיר {state:'ok'|'offline'|'gap', href, tag}
+    function resolvePractice(topic){
+      var t=topic;
+      var lm=t.match(/האות\s+([א-ת])/);
+      if(lm){var L=normFinal(lm[1]);
+        return LETTERS[L] ? {state:'ok',href:APP+LETTERS[L],tag:'אות '+lm[1]} : {state:'gap',tag:'אות '+lm[1]};}
+      if(/מבדק/.test(t))                                    return {state:'ok',href:'../avnei-yesod/engine/screener.html',tag:'מבדק'};
+      if(/כתיב|הכתב/.test(t))                               return {state:'offline',tag:'כתיבה'};
+      if(/שטף|קריאה חוזרת|מילים לדקה|הקראה|בזוגות/.test(t)) return {state:'ok',href:APP+'stage-read-aloud.html',tag:'שטף קריאה'};
+      if(/סיפור|רצף אירועים/.test(t))                       return {state:'ok',href:APP+'stage-14-story-sequence.html',tag:'הבנת הנשמע'};
+      if(/הנשמע|האזנה|טקסט|הבנה|שאלות/.test(t))             return {state:'ok',href:APP+'stage-14-listen-and-answer.html',tag:'הבנת הנשמע'};
+      if(/הברה|הברות|תנוע/.test(t))                         return {state:'ok',href:APP+'stage-4-cv-build.html',tag:'הברה'};
+      if(/צליל הראשון|צליל האחרון/.test(t))                 return {state:'ok',href:APP+'stage-2-whispers.html',tag:'צליל במילה'};
+      if(/מהברות|מהברה|בניית מילה|הרכבת|מיזוג/.test(t))     return {state:'ok',href:APP+'stage-5-word-merge.html',tag:'הרכבת מילה'};
+      if(/מילה|מילים|משפט|פועל|פעלים|זכר|נקבה|רבים|יחיד|ריבוי|כינוי/.test(t)) return {state:'ok',href:APP+'stage-5-word-build.html',tag:'קריאת מילים'};
+      return {state:'gap',tag:''};   // מודעות פונולוגית כללית / חזרה — עדיין אין משחקון ייעודי
+    }
+    function pracHTML(pr){
+      if(pr.state==='ok')      return '<a class="prac ok" href="'+pr.href+'" target="_blank" rel="noopener"><span class="tic" data-ic="playcircle"></span>פתח תרגול · '+pr.tag+'</a>';
+      if(pr.state==='offline') return '<span class="prac offline"><span class="tic" data-ic="edit"></span>כתיבה במחברת</span>';
+      return '<span class="prac gap" title="עדיין אין תרגול דיגיטלי לנושא הזה — מסומן כחסר לבנייה">'+
+             '<span class="tic" data-ic="alert"></span>חסר תרגול'+(pr.tag?' · '+pr.tag:'')+'</span>';
+    }
+
+    function schoolDays(y,m){var out=[];var last=new Date(y,m+1,0).getDate();for(var d=1;d<=last;d++){var wd=new Date(y,m,d).getDay();if(wd>=0&&wd<=4)out.push({d:d,wd:wd});}return out;}
+    function fillTics(){if(!window.DemoIcons)return;document.querySelectorAll('.tic[data-ic]').forEach(function(el){if(!el.firstChild&&DemoIcons[el.dataset.ic])el.innerHTML=DemoIcons[el.dataset.ic];});}
+
+    function render(){
+      var M=SCHOOL[cur];
+      document.getElementById('mname').textContent=M.name;
+      document.getElementById('calfocus').innerHTML='<b>מוקד החודש:</b> '+M.focus+(M.tag?' · <b>'+M.tag+'</b>':'');
+      document.getElementById('prevM').disabled=(cur===0);
+      document.getElementById('nextM').disabled=(cur===SCHOOL.length-1);
+      var days=schoolDays(M.y,M.m),html='',wk=0,cov={ok:0,gap:0,off:0};
+      days.forEach(function(day,i){
+        if(day.wd===0){wk++;html+='<div class="wklabel">שבוע '+wk+'</div>';}
+        var topic=M.days[i]||'חזרה, תרגול והעמקה';
+        var isToday=(cur===TODAY.mi&&i===TODAY.di);
+        var key=cur+'-'+i;
+        var extras=(EXTRAS[key]||[]).map(function(x,xi){return '<span class="xtopic">'+x+'<span class="rm" data-rm="'+key+'|'+xi+'">✕</span></span>';}).join('');
+        var pr=resolvePractice(topic);
+        cov[pr.state==='ok'?'ok':pr.state==='offline'?'off':'gap']++;
+        html+='<div class="dayrow'+(isToday?' today':'')+'" data-key="'+key+'">'+
+          '<div class="daydate"><div class="dn">'+WD[day.wd]+'</div><div class="dd">'+day.d+'.'+(M.m+1)+'</div>'+(isToday?'<div class="nowtag">היום</div>':'')+'</div>'+
+          '<div class="daymid"><span class="ttext">'+topic+'</span>'+extras+'<div>'+pracHTML(pr)+'</div></div>'+
+          '<div class="dayacts"><button data-edit="'+key+'" title="שינוי נושא"><span class="tic" data-ic="edit"></span></button>'+
+          '<button data-add="'+key+'" title="הוספת נושא"><span class="tic" data-ic="plus"></span></button></div>'+
+          '</div>';
+      });
+      document.getElementById('caldays').innerHTML=html;
+      document.getElementById('praccov').innerHTML=
+        '<span class="cok"><span class="dot"></span>יש תרגול דיגיטלי: <b>'+cov.ok+'</b></span>'+
+        '<span class="cgap"><span class="dot"></span>חסר תרגול: <b>'+cov.gap+'</b></span>'+
+        '<span class="coff"><span class="dot"></span>כתיבה במחברת: <b>'+cov.off+'</b></span>';
+      fillTics();
+    }
+
+    function rowOf(key){return document.querySelector('.dayrow[data-key="'+key+'"]');}
+    function beginEdit(key){
+      var i=+key.split('-')[1],row=rowOf(key),mid=row.querySelector('.daymid'),t=row.querySelector('.ttext'),done=false;
+      var inp=document.createElement('input');inp.className='ed';inp.value=t.textContent;mid.insertBefore(inp,t);t.style.display='none';inp.focus();inp.select();
+      function commit(save){if(done)return;done=true;if(save){var v=inp.value.trim();if(v)SCHOOL[cur].days[i]=v;}render();}
+      inp.addEventListener('keydown',function(ev){if(ev.key==='Enter')commit(true);else if(ev.key==='Escape')commit(false);});
+      inp.addEventListener('blur',function(){commit(true);});
+    }
+    function beginAdd(key){
+      var row=rowOf(key),mid=row.querySelector('.daymid'),done=false;
+      var inp=document.createElement('input');inp.className='ed';inp.placeholder='נושא נוסף לאותו יום…';mid.appendChild(inp);inp.focus();
+      function commit(save){if(done)return;done=true;if(save){var v=inp.value.trim();if(v){(EXTRAS[key]=EXTRAS[key]||[]).push(v);}}render();}
+      inp.addEventListener('keydown',function(ev){if(ev.key==='Enter')commit(true);else if(ev.key==='Escape')commit(false);});
+      inp.addEventListener('blur',function(){commit(true);});
+    }
+
+    document.getElementById('caldays').addEventListener('click',function(e){
+      var ed=e.target.closest('[data-edit]');if(ed){beginEdit(ed.dataset.edit);return;}
+      var ad=e.target.closest('[data-add]');if(ad){beginAdd(ad.dataset.add);return;}
+      var rm=e.target.closest('[data-rm]');if(rm){var p=rm.dataset.rm.split('|');if(EXTRAS[p[0]]){EXTRAS[p[0]].splice(+p[1],1);}render();return;}
+    });
+    document.getElementById('prevM').addEventListener('click',function(){if(cur>0){cur--;render();}});
+    document.getElementById('nextM').addEventListener('click',function(){if(cur<SCHOOL.length-1){cur++;render();}});
+    document.getElementById('todayBtn').addEventListener('click',function(){cur=TODAY.mi;render();var t=document.querySelector('.dayrow.today');if(t)t.scrollIntoView({behavior:'smooth',block:'center'});});
+
+    render();
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fillTics);else fillTics();
+    window.addEventListener('load',fillTics);
+
+    function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},2600);}
+    document.addEventListener('click',function(e){var b=e.target.closest('button[data-toast]');if(b)toast(b.dataset.toast);});
+  </script>
+</body>
+</html>
