@@ -134,9 +134,36 @@
 
 <div class="debug" id="debug"></div>
 
+<!-- שכבת-הדאטה (סדר קנוני: state → bkt → event-logger). event-logger מבצע autoload
+     ל-cloud stack (runtime-mode/cloud-*), שהוא no-op במצב דמו. epa.js לא נטען בכוונה —
+     miscues של קריאה לא ממפים ל-EPA (brief §1), אז שמירה = BKT בלבד.
+     read-aloud-logger ממפה verdict → אירוע BKT (אי 15 · סטרנד 4). -->
+<script src="js/state.js" onerror="window._stateMissing=true"></script>
+<script src="js/shared/bkt.js" onerror="window._bktMissing=true"></script>
+<script src="js/shared/event-logger.js" onerror="window._evlogMissing=true"></script>
+<script src="js/read-aloud-logger.js" onerror="window._raSaveMissing=true"></script>
+
 <script>
 // ── שרת התמלול בענן (ElevenLabs Scribe) — CORS פתוח. ──
 const API = 'https://noni-reading-fluency.onrender.com';
+
+// ── T1 · זהות תלמיד/ה — בלי זהות אין למי לשמור. ──
+// מצב-דמו (guest/presentation/skip-picker) → מדלגים (זהות 'local' לגיטימית).
+// מצב-ענן בלי תלמיד/ה נבחר/ת אבל יש כיתה → שולחים לבחירה ואז חוזרים לכאן.
+// אין כיתה כלל (מורה בודקת) → הכלי רץ, השמירה מנוטרלת ב-canSave().
+(function guardIdentity(){
+  try {
+    const p = new URLSearchParams(location.search);
+    if (['presentation','guest','skip-picker'].some(k => p.has(k))) return;
+    const current = localStorage.getItem('avnei-yesod-current-student');
+    if (current && current !== 'local') return;                // יש זהות
+    const raw = localStorage.getItem('avnei-yesod-students');
+    const students = raw ? JSON.parse(raw) : [];
+    if (Array.isArray(students) && students.length > 0) {
+      location.replace('student-picker.html?return=' + encodeURIComponent('stage-read-aloud.html'));
+    }
+  } catch(e){}
+})();
 
 const LISTS = {
   words: ["תַּפּוּחַ","לוּל","לֵב","לָקַח","בְּרֵכָה","מְכוֹנִית","צְלִיל","תְּשׁוּבָה","אִמָּא","מְצֻיָּן"],
@@ -235,6 +262,9 @@ function render(v){
     bubble.textContent = 'בּוֹאִי נְנַסֶּה שׁוּב יַחַד 💙'; micLabel.textContent = 'לִחֲצִי וְקִרְאִי שׁוּב';
   }
   nextBtn.classList.add('show');
+
+  // T2 · שמירת אירוע-הקראה לפרופיל האורייני (BKT). no-op בלי זהות / בלי שכבת-דאטה.
+  if (window.AvneiReadAloudSave) window.AvneiReadAloudSave.saveVerdict(v);
 }
 
 mic.addEventListener('click', () => recording ? stopRec() : startRec());
