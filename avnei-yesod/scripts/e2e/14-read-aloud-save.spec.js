@@ -103,4 +103,38 @@ test.describe('Story 14 · שמירת הקראה לפרופיל (אי 15)', () =
     });
     expect(anyIsland15).toBe(false);
   });
+
+  test('T4 · שורת מורָה (?debug=1) מציגה סיכום מצטבר בשפת שורה-תחתונה', async ({ page }) => {
+    await prepareSession(page, {
+      students: [{ id: 'stu-dana', name: 'דנה' }],
+      currentStudent: 'stu-dana',
+    });
+    // שומרים 4 הקראות-מילים תקינות (אותו origin) — נשמר ל-event log.
+    await page.goto(URL);
+    await waitStackReady(page);
+    await page.evaluate(() => {
+      ['תַּפּוּחַ', 'לוּל', 'לֵב', 'אִמָּא'].forEach((w) =>
+        window.AvneiReadAloudSave.saveVerdict({ mode: 'word', decision: 'ACCEPT', target: w }));
+    });
+    // נטענים מחדש במצב מורָה — renderTeacherSummary רץ ב-load וקורא מה-event log.
+    await page.goto(URL + '?debug=1');
+    await waitStackReady(page);
+    const txt = await page.locator('#teacherSummary').textContent();
+    expect(txt).toContain('דנה');
+    expect(txt).toContain('קריאת מילים');
+    expect(txt).toContain('שולטת יפה'); // 4/4 → רמה גבוהה
+    expect(txt).toContain('(4/4)');
+  });
+
+  test('T4 · בלי הקראות → שורת מורָה מציגה "עדיין לא קראה כאן"', async ({ page }) => {
+    await prepareSession(page, {
+      students: [{ id: 'stu-tal', name: 'טל' }],
+      currentStudent: 'stu-tal',
+    });
+    await page.goto(URL + '?debug=1');
+    await waitStackReady(page);
+    const txt = await page.locator('#teacherSummary').textContent();
+    expect(txt).toContain('טל');
+    expect(txt).toContain('עדיין לא קראה כאן');
+  });
 });

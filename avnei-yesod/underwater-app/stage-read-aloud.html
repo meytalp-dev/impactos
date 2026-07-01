@@ -96,6 +96,25 @@
     font-family: ui-monospace, monospace; white-space: pre-wrap; z-index: 5;
   }
   body.debug-on .debug { display: block; }
+
+  /* ----- שורת מורָה · סיכום מצטבר (?debug=1) — שפת שורה-תחתונה, לא ז'רגון ----- */
+  .teacher-summary {
+    position: fixed; bottom: 0; inset-inline: 0; z-index: 6;
+    background: var(--warm-white); color: var(--text-main);
+    box-shadow: 0 -4px 18px rgba(30,61,71,.14);
+    padding: 10px 16px; display: none; direction: rtl;
+    font-size: 15px; line-height: 1.5; border-top: 3px solid var(--water-secondary);
+  }
+  body.debug-on .teacher-summary { display: block; }
+  body.debug-on .debug { bottom: auto; top: 0; }  /* דיבאג טכני עולה למעלה כשיש שורת מורה */
+  .teacher-summary .ts-name { font-weight: 800; }
+  .teacher-summary .ts-metric { font-weight: 600; }
+  .teacher-summary .ts-level-strong  { color: var(--success); font-weight: 800; }
+  .teacher-summary .ts-level-mid     { color: var(--hint);    font-weight: 800; }
+  .teacher-summary .ts-level-weak    { color: var(--coral);   font-weight: 800; }
+  .teacher-summary .ts-sep { opacity: .4; margin: 0 8px; }
+  .teacher-summary .ts-empty { color: var(--text-soft); }
+
   .spinner { width: 28px; height: 28px; border: 3px solid var(--water-depth);
     border-top-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; display: inline-block; }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -133,6 +152,7 @@
 </div>
 
 <div class="debug" id="debug"></div>
+<div class="teacher-summary" id="teacherSummary" aria-live="polite"></div>
 
 <!-- שכבת-הדאטה (סדר קנוני: state → bkt → event-logger). event-logger מבצע autoload
      ל-cloud stack (runtime-mode/cloud-*), שהוא no-op במצב דמו. epa.js לא נטען בכוונה —
@@ -265,6 +285,52 @@ function render(v){
 
   // T2 · שמירת אירוע-הקראה לפרופיל האורייני (BKT). no-op בלי זהות / בלי שכבת-דאטה.
   if (window.AvneiReadAloudSave) window.AvneiReadAloudSave.saveVerdict(v);
+  renderTeacherSummary();
+}
+
+// ── T4 · שורת מורָה (מצב ?debug=1) — סיכום מצטבר בשפת שורה-תחתונה ──
+// מחושב מהאירועים השמורים (read_aloud) של התלמיד/ה הנוכחי/ת. בלי BKT/pKnown/EPA.
+const teacherSummaryEl = $('teacherSummary');
+function studentName(sid){
+  if (!sid || sid === 'local') return 'אורחת';
+  try {
+    const list = JSON.parse(localStorage.getItem('avnei-yesod-students') || '[]');
+    const found = Array.isArray(list) && list.find(s => s.id === sid);
+    return (found && found.name) || 'התלמידה';
+  } catch(e){ return 'התלמידה'; }
+}
+function levelFor(total, acc){
+  if (total === 0) return null;
+  if (total >= 4 && acc >= 0.85) return { t:'שולטת יפה', c:'ts-level-strong' };
+  if (acc >= 0.6)               return { t:'מתקדמת, עוד תרגול', c:'ts-level-mid' };
+  return { t:'עדיין מתקשה — שווה ללוות', c:'ts-level-weak' };
+}
+function metricHtml(label, evts){
+  const total = evts.length;
+  const correct = evts.filter(e => e.is_correct).length;
+  const lvl = levelFor(total, total ? correct/total : 0);
+  if (!lvl) return '';
+  return `<span class="ts-metric">${label}:</span> <span class="${lvl.c}">${lvl.t}</span> ` +
+         `<span class="ts-metric">(${correct}/${total})</span>`;
+}
+function renderTeacherSummary(){
+  if (!teacherSummaryEl || typeof getEvents !== 'function') return;
+  let sid = null;
+  try { sid = localStorage.getItem('avnei-yesod-current-student'); } catch(e){}
+  const name = studentName(sid);
+  const mine = getEvents().filter(e =>
+    e.activity_type === 'read_aloud' && (e.student_id === sid || (!sid && e.student_id === 'local')));
+  if (mine.length === 0){
+    teacherSummaryEl.innerHTML =
+      `📖 <span class="ts-name">${name}</span> <span class="ts-sep">·</span>` +
+      `<span class="ts-empty">עדיין לא קראה כאן</span>`;
+    return;
+  }
+  const words = metricHtml('קריאת מילים', mine.filter(e => e.activity_variant === 'word'));
+  const sents = metricHtml('משפטים', mine.filter(e => e.activity_variant === 'sentence'));
+  const parts = [words, sents].filter(Boolean).join('<span class="ts-sep">·</span>');
+  teacherSummaryEl.innerHTML =
+    `📖 <span class="ts-name">${name}</span> <span class="ts-sep">·</span>${parts}`;
 }
 
 mic.addEventListener('click', () => recording ? stopRec() : startRec());
@@ -274,6 +340,7 @@ document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', 
   b.classList.add('active'); mode = b.dataset.mode; idx = 0; showWord();
 }));
 showWord();
+renderTeacherSummary();
 </script>
 </body>
 </html>
