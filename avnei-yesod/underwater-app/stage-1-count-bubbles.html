@@ -67,37 +67,37 @@
           <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
         </svg>
       </button>
-      <span id="instructionText">הקשיבו...</span>
+      <span id="instructionText">הַקְשִׁיבוּ...</span>
     </div>
   </div>
 
   <div class="tap-to-start" id="tapToStart">
-    <h2>כמה חלקים?</h2>
-    <button class="intro-speaker" id="introSpeaker" aria-label="הקש לשמיעה">
+    <h2>כַּמָּה חֲלָקִים?</h2>
+    <button class="intro-speaker" id="introSpeaker" aria-label="הקישו לשמיעה">
       <svg viewBox="0 0 24 24" fill="none">
         <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
         <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
       </svg>
-      <span>הקש/י לשמוע</span>
+      <span>הַקִּישׁוּ לִשְׁמֹעַ</span>
     </button>
-    <p>שמעו את המילה.</p>
-    <p><strong>בחרו את הכפתור עם המספר הנכון של בועות!</strong></p>
-    <button class="start-btn" id="startBtn">בוא/י נתחיל!</button>
+    <p>שִׁמְעוּ אֶת הַמִּלָּה.</p>
+    <p><strong>בַּחֲרוּ אֶת הַכַּפְתּוֹר עִם הַמִּסְפָּר הַנָּכוֹן שֶׁל בּוּעוֹת!</strong></p>
+    <button class="start-btn" id="startBtn">בּוֹאוּ נַתְחִיל!</button>
   </div>
 
   <div class="completion" id="completion">
-    <h2>ספרנו נכון!</h2>
-    <button class="intro-speaker" id="completionSpeaker" aria-label="השמע">
+    <h2>סָפַרְנוּ נָכוֹן!</h2>
+    <button class="intro-speaker" id="completionSpeaker" aria-label="השמיעו">
       <svg viewBox="0 0 24 24" fill="none">
         <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
         <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
       </svg>
-      <span>הקש/י לשמוע</span>
+      <span>הַקִּישׁוּ לִשְׁמֹעַ</span>
     </button>
-    <p id="completionMsg">כל הכבוד!</p>
+    <p id="completionMsg">כָּל הַכָּבוֹד!</p>
     <div>
-      <button class="btn-primary" id="nextWordBtn">מילה נוספת</button>
-      <a href="stage-1-island.html" class="btn-primary btn-secondary">חזרה לאי</a>
+      <button class="btn-primary" id="nextWordBtn">מִלָּה נוֹסֶפֶת</button>
+      <a href="stage-1-island.html" class="btn-primary btn-secondary">חֲזָרָה לָאִי</a>
     </div>
   </div>
 
@@ -106,6 +106,9 @@
 
   <audio id="audioPlayer" preload="auto"></audio>
 
+  <script src="js/state.js"></script>
+  <script src="js/shared/bkt.js" onerror="window.AvneiBKT = null"></script>
+  <script src="js/shared/event-logger.js" onerror="window.AvneiEventLogger = { logActivityResult: function(){} }"></script>
   <script src="js/shared/mastery.js"></script>
   <script>
   // ============================================================
@@ -113,6 +116,25 @@
   // הילדה שומעת מילה ובוחרת בין 3 כפתורים (1/2/3 נקודות-בועות)
   // ============================================================
   const GAME_ID = 'countBubbles';
+  const ISLAND_ID = 1;
+  const ACTIVITY_TYPE = 'syllable-counting';
+
+  // דיווח תוצאת סבב לאי 1 → BKT (מודעות פונולוגית · סטרנד 1).
+  // אי 1 = ספירת הברות שמיעתית, בלי אות-יעד/CV → EPA לא רלוונטי (מדולג).
+  // תוספתי ל-AvneiMastery המקומי (לא מחליף אותו).
+  function logIsland1Result(isCorrect) {
+    try {
+      if (window.AvneiEventLogger && AvneiEventLogger.logActivityResult) {
+        AvneiEventLogger.logActivityResult({
+          activity_type: ACTIVITY_TYPE,
+          primary_island_id: ISLAND_ID,
+          item_id: currentWord ? currentWord.id : null,
+          is_correct: isCorrect,
+          attempts: isCorrect ? 1 : (mistakeCount || 1),
+        });
+      }
+    } catch (e) { /* fail-safe */ }
+  }
 
   const AUDIO_BASE = 'assets/audio/island-01';
   const audio = document.getElementById('audioPlayer');
@@ -191,6 +213,7 @@
     if (n === currentWord.syllable_count) {
       // CORRECT
       acceptingClicks = false;
+      logIsland1Result(true);
       btn.classList.add('correct');
       // fade siblings
       document.querySelectorAll('.count-choice').forEach(b => {
@@ -206,6 +229,7 @@
       // WRONG — wobble + support
       mistakeCount++;
       wordMistakeTotal++;
+      logIsland1Result(false);
       btn.classList.add('wobble');
       setTimeout(() => btn.classList.remove('wobble'), 600);
 

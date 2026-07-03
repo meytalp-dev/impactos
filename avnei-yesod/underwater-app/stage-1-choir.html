@@ -67,37 +67,37 @@
           <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
         </svg>
       </button>
-      <span id="instructionText">הקשיבו...</span>
+      <span id="instructionText">הַקְשִׁיבוּ...</span>
     </div>
   </div>
 
   <div class="tap-to-start" id="tapToStart">
-    <h2>המקהלה שמתעוררת</h2>
-    <button class="intro-speaker" id="introSpeaker" aria-label="הקש לשמיעה">
+    <h2>הַמַּקְהֵלָה שֶׁמִּתְעוֹרֶרֶת</h2>
+    <button class="intro-speaker" id="introSpeaker" aria-label="הקישו לשמיעה">
       <svg viewBox="0 0 24 24" fill="none">
         <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
         <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
       </svg>
-      <span>הקש/י לשמוע</span>
+      <span>הַקִּישׁוּ לִשְׁמֹעַ</span>
     </button>
-    <p>המקהלה נרדמה ושוכבת בים.</p>
-    <p><strong>תעירו את הבועות בסדר — והן ישירו לכם את המילה!</strong></p>
-    <button class="start-btn" id="startBtn">בוא/י נתחיל!</button>
+    <p>הַמַּקְהֵלָה נִרְדְּמָה וְשׁוֹכֶבֶת בַּיָּם.</p>
+    <p><strong>הָעִירוּ אֶת הַבּוּעוֹת בְּסֵדֶר — וְהֵן יָשִׁירוּ לָכֶם אֶת הַמִּלָּה!</strong></p>
+    <button class="start-btn" id="startBtn">בּוֹאוּ נַתְחִיל!</button>
   </div>
 
   <div class="completion" id="completion">
-    <h2>המקהלה שרה!</h2>
-    <button class="intro-speaker" id="completionSpeaker" aria-label="השמע">
+    <h2>הַמַּקְהֵלָה שָׁרָה!</h2>
+    <button class="intro-speaker" id="completionSpeaker" aria-label="השמיעו">
       <svg viewBox="0 0 24 24" fill="none">
         <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
         <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
       </svg>
-      <span>הקש/י לשמוע</span>
+      <span>הַקִּישׁוּ לִשְׁמֹעַ</span>
     </button>
-    <p id="completionMsg">כל הבועות התעוררו והרכיבו את המילה!</p>
+    <p id="completionMsg">כָּל הַבּוּעוֹת הִתְעוֹרְרוּ וְהִרְכִּיבוּ אֶת הַמִּלָּה!</p>
     <div>
-      <button class="btn-primary" id="nextWordBtn">מילה נוספת</button>
-      <a href="stage-1-island.html" class="btn-primary btn-secondary">חזרה לאי</a>
+      <button class="btn-primary" id="nextWordBtn">מִלָּה נוֹסֶפֶת</button>
+      <a href="stage-1-island.html" class="btn-primary btn-secondary">חֲזָרָה לָאִי</a>
     </div>
   </div>
 
@@ -106,6 +106,9 @@
 
   <audio id="audioPlayer" preload="auto"></audio>
 
+  <script src="js/state.js"></script>
+  <script src="js/shared/bkt.js" onerror="window.AvneiBKT = null"></script>
+  <script src="js/shared/event-logger.js" onerror="window.AvneiEventLogger = { logActivityResult: function(){} }"></script>
   <script src="js/shared/mastery.js"></script>
   <script>
   // ============================================================
@@ -114,6 +117,25 @@
   // את הבועה לתמיד. כשכל הנכונות ערות → מקהלה שרה!
   // ============================================================
   const GAME_ID = 'choirGame';
+  const ISLAND_ID = 1;
+  const ACTIVITY_TYPE = 'syllable-choir';
+
+  // דיווח תוצאת סבב לאי 1 → BKT (מודעות פונולוגית · סטרנד 1).
+  // אי 1 = רצף הברות שמיעתי, בלי אות-יעד/CV → EPA לא רלוונטי (מדולג).
+  // תוספתי ל-AvneiMastery המקומי (לא מחליף אותו).
+  function logIsland1Result(isCorrect) {
+    try {
+      if (window.AvneiEventLogger && AvneiEventLogger.logActivityResult) {
+        AvneiEventLogger.logActivityResult({
+          activity_type: ACTIVITY_TYPE,
+          primary_island_id: ISLAND_ID,
+          item_id: currentWord ? currentWord.id : null,
+          is_correct: isCorrect,
+          attempts: isCorrect ? 1 : (mistakeCount || 1),
+        });
+      }
+    } catch (e) { /* fail-safe */ }
+  }
 
   const AUDIO_BASE = 'assets/audio/island-01';
   const audio = document.getElementById('audioPlayer');
@@ -237,6 +259,7 @@
 
     // CASE A: correct order OR identical syllable
     if (isCorrectSyl && (c.order === nextExpectedOrder || isIdenticalToExpected)) {
+      logIsland1Result(true);
       s.classList.add('awake', 'singing');
       setTimeout(() => s.classList.remove('singing'), 700);
       playAudio(c.audio);
@@ -269,6 +292,7 @@
     if (isCorrectSyl && c.order !== nextExpectedOrder && !isIdenticalToExpected) {
       mistakeCount++;
       wordMistakeTotal++;
+      logIsland1Result(false);
       s.classList.add('wobble');
       setTimeout(() => s.classList.remove('wobble'), 600);
       playAudio(c.audio, () => {
@@ -285,6 +309,7 @@
     // CASE C: distractor
     mistakeCount++;
     wordMistakeTotal++;
+    logIsland1Result(false);
     s.classList.add('wobble');
     setTimeout(() => s.classList.remove('wobble'), 600);
     playAudio(c.audio, () => {

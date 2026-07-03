@@ -76,39 +76,39 @@
           <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
         </svg>
       </button>
-      <span id="instructionText">איזו בועה אומרת את הצליל?</span>
+      <span id="instructionText">אֵיזוֹ בּוּעָה אוֹמֶרֶת אֶת הַצְּלִיל?</span>
     </div>
   </div>
 
   <!-- ============ tap-to-start ============ -->
   <div class="tap-to-start" id="tapToStart">
-    <h2>הבועה שרוצה לעלות</h2>
-    <button class="intro-speaker" id="introSpeaker" aria-label="הקש לשמיעה">
+    <h2>הַבּוּעָה שֶׁרוֹצָה לַעֲלוֹת</h2>
+    <button class="intro-speaker" id="introSpeaker" aria-label="הקישו לשמיעה">
       <svg viewBox="0 0 24 24" fill="none">
         <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
         <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
       </svg>
-      <span>הקש/י לשמוע</span>
+      <span>הַקִּישׁוּ לִשְׁמֹעַ</span>
     </button>
-    <p>בועת-אור קטנה נתקעה בקרקעית.</p>
-    <p><strong>בואו נעזור לה לעלות לפני המים.</strong></p>
-    <button class="start-btn" id="startBtn">בוא/י נתחיל!</button>
+    <p>בּוּעַת־אוֹר קְטַנָּה נִתְקְעָה בַּקַּרְקָעִית.</p>
+    <p><strong>בּוֹאוּ נַעֲזֹר לָהּ לַעֲלוֹת לִפְנֵי הַמַּיִם.</strong></p>
+    <button class="start-btn" id="startBtn">בּוֹאוּ נַתְחִיל!</button>
   </div>
 
   <!-- ============ completion ============ -->
   <div class="completion" id="completion">
-    <h2>הבועה עלתה!</h2>
-    <button class="intro-speaker" id="completionSpeaker" aria-label="השמע">
+    <h2>הַבּוּעָה עָלְתָה!</h2>
+    <button class="intro-speaker" id="completionSpeaker" aria-label="השמיעו">
       <svg viewBox="0 0 24 24" fill="none">
         <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
         <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
       </svg>
-      <span>הקש/י לשמוע</span>
+      <span>הַקִּישׁוּ לִשְׁמֹעַ</span>
     </button>
-    <p id="completionMsg">בועת-האור הגיעה לפני המים.</p>
+    <p id="completionMsg">בּוּעַת־הָאוֹר הִגִּיעָה לִפְנֵי הַמַּיִם.</p>
     <div>
-      <button class="btn-primary" id="nextWordBtn">מילה נוספת</button>
-      <a href="map.html" class="btn-primary btn-secondary">חזרה למפה</a>
+      <button class="btn-primary" id="nextWordBtn">מִלָּה נוֹסֶפֶת</button>
+      <a href="map.html" class="btn-primary btn-secondary">חֲזָרָה לַמַּפָּה</a>
     </div>
   </div>
 
@@ -121,12 +121,34 @@
   <!-- ============ Audio elements ============ -->
   <audio id="audioPlayer" preload="auto"></audio>
 
+  <script src="js/state.js"></script>
+  <script src="js/shared/bkt.js" onerror="window.AvneiBKT = null"></script>
+  <script src="js/shared/event-logger.js" onerror="window.AvneiEventLogger = { logActivityResult: function(){} }"></script>
   <script src="js/shared/mastery.js"></script>
   <script>
   // ============================================================
   // BubbleRise — controller
   // ============================================================
   const GAME_ID = 'bubbleRise';
+  const ISLAND_ID = 1;
+  const ACTIVITY_TYPE = 'syllable-sequence';
+
+  // דיווח תוצאת סבב לאי 1 → BKT (מודעות פונולוגית · סטרנד 1).
+  // אי 1 = מודעות הברתית שמיעתית, בלי אות-יעד/CV → EPA לא רלוונטי (מדולג).
+  // תוספתי ל-AvneiMastery המקומי (לא מחליף אותו).
+  function logIsland1Result(isCorrect) {
+    try {
+      if (window.AvneiEventLogger && AvneiEventLogger.logActivityResult) {
+        AvneiEventLogger.logActivityResult({
+          activity_type: ACTIVITY_TYPE,
+          primary_island_id: ISLAND_ID,
+          item_id: currentWord ? currentWord.id : null,
+          is_correct: isCorrect,
+          attempts: isCorrect ? 1 : (mistakeCount || 1),
+        });
+      }
+    } catch (e) { /* fail-safe */ }
+  }
 
   const AUDIO_BASE = 'assets/audio/island-01';
   const audio = document.getElementById('audioPlayer');
@@ -387,6 +409,7 @@
     if (choice.correct && choice.order === currentSyllableIndex) {
       btn.classList.add('correct');
       btn.style.pointerEvents = 'none';
+      logIsland1Result(true);
 
       playAudio(choice.audio, () => {
         // light up checkpoint
@@ -413,6 +436,7 @@
     if (choice.correct && choice.order !== currentSyllableIndex) {
       mistakeCount++;
       wordMistakeTotal++;
+      logIsland1Result(false);
       btn.classList.add('wobble');
       setTimeout(() => btn.classList.remove('wobble'), 600);
       // play what they tapped, then remind them about order
@@ -428,6 +452,7 @@
     // ===== CASE C: wrong syllable (distractor) =====
     mistakeCount++;
     wordMistakeTotal++;
+    logIsland1Result(false);
     btn.classList.add('wobble', 'heard');
     setTimeout(() => btn.classList.remove('wobble'), 600);
 
@@ -577,7 +602,7 @@
       await loadWords();
     }
     if (!WORDS.length) {
-      showInstruction('שגיאת טעינה — נסי לרענן');
+      showInstruction('שְׁגִיאַת טְעִינָה — רַעֲנְנוּ אֶת הַדַּף');
       return;
     }
     const w = window.AvneiMastery ? window.AvneiMastery.pickWord(GAME_ID, WORDS) : null;

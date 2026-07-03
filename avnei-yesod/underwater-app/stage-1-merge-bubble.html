@@ -63,37 +63,37 @@
           <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
         </svg>
       </button>
-      <span id="instructionText">הקשיבו...</span>
+      <span id="instructionText">הַקְשִׁיבוּ...</span>
     </div>
   </div>
 
   <div class="tap-to-start" id="tapToStart">
-    <h2>אוספים את החלקים</h2>
-    <button class="intro-speaker" id="introSpeaker" aria-label="הקש לשמיעה">
+    <h2>אוֹסְפִים אֶת הַחֲלָקִים</h2>
+    <button class="intro-speaker" id="introSpeaker" aria-label="הקישו לשמיעה">
       <svg viewBox="0 0 24 24" fill="none">
         <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
         <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
       </svg>
-      <span>הקש/י לשמוע</span>
+      <span>הַקִּישׁוּ לִשְׁמֹעַ</span>
     </button>
-    <p>בבועה הגדולה יש תמונה — אבל היא בערפל.</p>
-    <p><strong>תגררו את חלקי המילה לבועה — כל חלק יבהיר את התמונה עוד קצת!</strong></p>
-    <button class="start-btn" id="startBtn">בוא/י נתחיל!</button>
+    <p>בַּבּוּעָה הַגְּדוֹלָה יֵשׁ תְּמוּנָה — אֲבָל הִיא בַּעֲרָפֶל.</p>
+    <p><strong>גָּרְרוּ אֶת חֶלְקֵי הַמִּלָּה לַבּוּעָה — כָּל חֵלֶק יַבְהִיר אֶת הַתְּמוּנָה עוֹד קְצָת!</strong></p>
+    <button class="start-btn" id="startBtn">בּוֹאוּ נַתְחִיל!</button>
   </div>
 
   <div class="completion" id="completion">
-    <h2>אספנו את כל החלקים!</h2>
-    <button class="intro-speaker" id="completionSpeaker" aria-label="השמע">
+    <h2>אָסַפְנוּ אֶת כָּל הַחֲלָקִים!</h2>
+    <button class="intro-speaker" id="completionSpeaker" aria-label="השמיעו">
       <svg viewBox="0 0 24 24" fill="none">
         <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
         <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
       </svg>
-      <span>הקש/י לשמוע</span>
+      <span>הַקִּישׁוּ לִשְׁמֹעַ</span>
     </button>
-    <p id="completionMsg">המילה שלמה.</p>
+    <p id="completionMsg">הַמִּלָּה שְׁלֵמָה.</p>
     <div>
-      <button class="btn-primary" id="nextWordBtn">מילה נוספת</button>
-      <a href="stage-1-island.html" class="btn-primary btn-secondary">חזרה לאי</a>
+      <button class="btn-primary" id="nextWordBtn">מִלָּה נוֹסֶפֶת</button>
+      <a href="stage-1-island.html" class="btn-primary btn-secondary">חֲזָרָה לָאִי</a>
     </div>
   </div>
 
@@ -102,6 +102,9 @@
 
   <audio id="audioPlayer" preload="auto"></audio>
 
+  <script src="js/state.js"></script>
+  <script src="js/shared/bkt.js" onerror="window.AvneiBKT = null"></script>
+  <script src="js/shared/event-logger.js" onerror="window.AvneiEventLogger = { logActivityResult: function(){} }"></script>
   <script src="js/shared/mastery.js"></script>
   <script>
   // ============================================================
@@ -110,6 +113,24 @@
   // מתבהרת התמונה. כשכל ההברות נאספו = חגיגה.
   // ============================================================
   const GAME_ID = 'mergeBubble';
+  const ISLAND_ID = 1;
+  const ACTIVITY_TYPE = 'syllable-blending';
+
+  // דיווח תוצאת סבב לאי 1 → BKT (מודעות פונולוגית · סטרנד 1).
+  // אי 1 = הרכבת הברות שמיעתית, בלי אות-יעד/CV → EPA לא רלוונטי (מדולג).
+  // תוספתי ל-AvneiMastery המקומי (לא מחליף אותו).
+  function logIsland1Result(isCorrect) {
+    try {
+      if (window.AvneiEventLogger && AvneiEventLogger.logActivityResult) {
+        AvneiEventLogger.logActivityResult({
+          activity_type: ACTIVITY_TYPE,
+          primary_island_id: ISLAND_ID,
+          item_id: currentWord ? currentWord.id : null,
+          is_correct: isCorrect,
+        });
+      }
+    } catch (e) { /* fail-safe */ }
+  }
 
   const AUDIO_BASE = 'assets/audio/island-01';
   const audio = document.getElementById('audioPlayer');
@@ -324,6 +345,7 @@
 
     // ===== CASE A: correct syllable AND (correct order OR identical to expected) =====
     if (isCorrectSyllable && (fragOrder === nextExpectedOrder || isIdenticalToExpected)) {
+      logIsland1Result(true);
       el.classList.add('absorbed');
       trailParticles(fragRect);
 
@@ -355,6 +377,7 @@
     // (e.g. dropped "תוּל" when we still need "חָ")
     if (isCorrectSyllable && fragOrder !== nextExpectedOrder && !isIdenticalToExpected) {
       wordMistakeTotal++;
+      logIsland1Result(false);
       el.classList.add('wobble');
       returnToHome(el);
       // play order-support, then glow on the expected one
@@ -371,6 +394,7 @@
 
     // ===== CASE C: distractor (wrong syllable entirely) =====
     wordMistakeTotal++;
+    logIsland1Result(false);
     el.classList.add('wobble');
     returnToHome(el);
     setTimeout(() => playAudio('support-mistake-1'), 350);
