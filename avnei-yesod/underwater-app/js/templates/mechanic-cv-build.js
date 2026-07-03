@@ -35,16 +35,20 @@
     return a;
   }
 
-  // Pilot pack: 5 אותיות × תנועות **מגוונות** (לא רק /a/).
+  // Pilot pack: 5 אותיות × תנועות **מגוונות**.
   // החלטת מיטל 30.5.2026: ילדה צריכה לחוות variety של ניקוד, לא רק קמץ-פתח.
-  // כל target נבחר עם anchor word ב-vocab-bank (vowel-adapter.ANCHOR_WORDS).
-  // הסדר: /a/ → /ə/ → /i/ → /a/ → /e/ — מגוון פונולוגי + חזרה רכה ל-/a/.
+  // עדכון 29.6.2026 (feedback מיטל): רק אותיות עם **צליל ייחודי** —
+  //   נמנעים מ-ת (/t/ ↔ ט) ומ-ק (/k/ ↔ כּ), כי שם הילד.ה יכול.ה לבנות
+  //   צירוף שנשמע זהה (טִ במקום תִּ, כַּ במקום קַ) ולהיפסל בטעות.
+  //   מ (/m/) · ב (/b/) · ל (/l/) — אין להן "תאומה" שמבלבלת.
+  //   כל target עם anchor word ב-vowel-adapter.ANCHOR_WORDS (לא ממציאים).
+  // התנועות canonical (פתח מייצג /a/ = פתח+קמץ · צירי מייצג /e/ = צירי+סגול).
   const PILOT_TARGETS = [
     { letter: 'מ', vowelId: 'patach' },   // מַ (/ma/) · anchor: מַטֶּה
     { letter: 'ב', vowelId: 'shva'   },   // בְּ (/bə/) · anchor: בְּרֵכָה
-    { letter: 'ת', vowelId: 'hiriq'  },   // תִּ (/ti/) · anchor: תִּיק
-    { letter: 'ק', vowelId: 'patach' },   // קַ (/ka/) · anchor: קַר
-    { letter: 'מ', vowelId: 'segol'  },   // מֶ (/me/) · anchor: מֶלֶךְ
+    { letter: 'מ', vowelId: 'hiriq'  },   // מִ (/mi/) · anchor: מִכְנָסַיִם
+    { letter: 'ל', vowelId: 'tzere'  },   // לֵ (/le/) · anchor: לֵב (אות הדמו)
+    { letter: 'ב', vowelId: 'patach' },   // בַּ (/ba/) · anchor: בַּת
   ];
 
   function buildTargetList(sid, numTrials) {
@@ -82,7 +86,19 @@
     const targets = buildTargetList(sid, numTrials);
 
     const letters = VA.ALL_HEBREW_LETTERS_22.slice();
-    const vowels = VA.getVowels().map(function (v) { return v.id; });
+
+    // אריחי הניקוד לתצוגה. id = התנועה ה-canonical שמשמשת לבנייה/בדיקה.
+    // תנועות שנשמעות זהה מאוחדות לאריח אחד (החלטת מיטל 29.6.2026):
+    //   /a/ = פתח + קמץ  ·  /e/ = צירי + סגול.
+    // isCorrectBuild בלאו הכי מקבל sister-vowels (phoneme group), אז canonical מספיק.
+    function vsym(id) { const v = VA.getVowelById(id); return v ? v.symbol : ''; }
+    const VOWEL_TILES = [
+      { id: 'patach', label: 'פתח · קמץ',  forms: [vsym('patach'), vsym('kamatz')] },
+      { id: 'shva',   label: 'שווא',        forms: [vsym('shva')] },
+      { id: 'hiriq',  label: 'חיריק',       forms: [vsym('hiriq')] },
+      { id: 'holam',  label: 'חולם',        forms: [vsym('holam')] },
+      { id: 'tzere',  label: 'צירי · סגול', forms: [vsym('tzere'), vsym('segol')] },
+    ];
 
     // --- DOM ---
     root.innerHTML = '';
@@ -139,17 +155,19 @@
     vowelsCol.innerHTML = '<div class="cv-build-col__label">נִקּוּד</div>';
     const vowelsGrid = document.createElement('div');
     vowelsGrid.className = 'cv-build-grid cv-build-grid--vowels';
-    vowels.forEach(function (vid) {
-      const v = VA.getVowelById(vid);
-      if (!v) return;
+    VOWEL_TILES.forEach(function (tile) {
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'cv-build-tile cv-build-tile--vowel';
-      btn.dataset.vowel = vid;
-      btn.setAttribute('aria-label', 'ניקוד ' + v.displayHe);
-      // ◌ (U+25CC) placeholder ניטרלי במקום בּ
-      btn.innerHTML = '<span class="cv-build-tile__vowel-frame">◌' + v.symbol + '</span>' +
-                      '<span class="cv-build-tile__vowel-name">' + v.displayHe + '</span>';
+      btn.className = 'cv-build-tile cv-build-tile--vowel' + (tile.forms.length > 1 ? ' cv-build-tile--vowel-merged' : '');
+      btn.dataset.vowel = tile.id;
+      btn.setAttribute('aria-label', 'ניקוד ' + tile.label);
+      // X = base ניטרלי שמבליט את הניקוד (feedback מיטל 29.6.2026 — ◌ היה חיוור מדי).
+      // משתמשים ב-X לטיני (לא ✕ U+2715 — חסר בפונט Heebo ומופיע כריבוע).
+      const formsHtml = tile.forms.map(function (sym) {
+        return '<span class="cv-build-tile__vowel-form">X' + sym + '</span>';
+      }).join('<span class="cv-build-tile__vowel-sep">·</span>');
+      btn.innerHTML = '<span class="cv-build-tile__vowel-frame">' + formsHtml + '</span>' +
+                      '<span class="cv-build-tile__vowel-name">' + tile.label + '</span>';
       vowelsGrid.appendChild(btn);
     });
     vowelsCol.appendChild(vowelsGrid);
@@ -277,13 +295,13 @@
       if (!state.selectedLetter) {
         const v = VA.getVowelById(state.selectedVowel);
         result.innerHTML = '<span class="cv-build-result__placeholder">?</span>' + (v ? v.symbol : '');
-        anchor.textContent = 'בחרי אות';
+        anchor.textContent = 'בַּחֲרוּ אוֹת';
         display.classList.remove('built');
         return;
       }
       if (!state.selectedVowel) {
         result.innerHTML = state.selectedLetter + '<span class="cv-build-result__placeholder">?</span>';
-        anchor.textContent = 'בחרי ניקוד';
+        anchor.textContent = 'בַּחֲרוּ נִיקּוּד';
         display.classList.remove('built');
         return;
       }
@@ -363,12 +381,12 @@
 
         if (state.attempts >= 3 && state.scaffoldLevel < 2) {
           state.scaffoldLevel = 2;
-          anchor.innerHTML = '<strong>הִנֵּה הַצֵּרוּף — הַעְתִּיקִי</strong>';
+          anchor.innerHTML = '<strong>הִנֵּה הַצֵּרוּף — הַעְתִּיקוּ</strong>';
         } else if (state.attempts >= 2 && state.scaffoldLevel < 1) {
           state.scaffoldLevel = 1;
-          anchor.innerHTML = '<strong>הָאוֹת הִיא ' + t.letter + '</strong> — בִּחֲרוּ נִקּוּד';
+          anchor.innerHTML = '<strong>הָאוֹת הִיא ' + t.letter + '</strong> — בַּחֲרוּ נִיקּוּד';
         } else {
-          anchor.textContent = 'לא בדיוק — נסי שוב';
+          anchor.textContent = 'לֹא בְּדִיּוּק — נַסּוּ שׁוּב';
         }
 
         // re-render target visual לפי scaffold level חדש
