@@ -286,9 +286,15 @@
         setTimeout(function () { playKey(t.audioKey); }, 350);
       } else {
         // קריאה: מציג צירוף → בוחרת את הצליל הנכון (רמקול).
+        //
+        // two-tap (תיקון פדגוגי, מיטל 3.7.2026): הרמקולים נראים זהים, אז
+        // נגיעה ראשונה = האזנה חופשית בלבד (חקירה — לא נמדדת, לא נשלחת ל-BKT).
+        // נגיעה שנייה על אותו רמקול = בחירה ("זה הצליל!") — רק היא נספרת.
+        // בלי זה, טעות-ניחוש-מיקום נרשמת כאילו הילדה לא יודעת את הצירוף
+        // (false negative שמזהם את per_cv וגורר תרגול-יתר).
         targetEl.className = 'cv-summary-target glyph';
         targetEl.innerHTML = t.cv;
-        hintEl.textContent = 'אֵיזֶה צְלִיל? גַעוּ בָּרַמְקוֹל הַנָּכוֹן';
+        hintEl.textContent = 'גַעוּ בָּרַמְקוֹלִים לִשְׁמֹעַ — וְגַעוּ שׁוּב לִבְחֹר';
         optionItems.forEach(function (it) {
           const vid = canonicalVowelForGroup(VA, it.group);
           const audioKey = VA.cvAudioKey(it.letter, vid);
@@ -296,10 +302,20 @@
           btn.type = 'button';
           btn.className = 'cv-summary-tile cv-summary-tile--sound';
           btn.innerHTML = '<span class="cv-summary-audio-icon">🔊</span>';
-          btn.setAttribute('aria-label', 'צליל אפשרי');
+          btn.setAttribute('aria-label', 'צליל אפשרי — געו לשמוע, געו שוב לבחור');
           btn.addEventListener('click', function () {
-            playKey(audioKey);           // מנגן את המועמד
-            onChoose(it, btn);
+            if (state.locked) return;
+            playKey(audioKey);   // תמיד משמיע — גם בהאזנה וגם בבחירה
+            if (btn.classList.contains('previewed')) {
+              // נגיעה שנייה — בחירה מחייבת.
+              onChoose(it, btn);
+            } else {
+              // נגיעה ראשונה — האזנה. מסמן את הרמקול הזה כ"נשמע אחרון".
+              board.querySelectorAll('.cv-summary-tile').forEach(function (b) {
+                b.classList.remove('previewed');
+              });
+              btn.classList.add('previewed');
+            }
           });
           board.appendChild(btn);
         });
@@ -339,6 +355,11 @@
       if (!correct) {
         btn.classList.add('wrong');
         setTimeout(function () { btn.classList.remove('wrong'); }, 500);
+        // מצב read: מנקה את סימון ההאזנה — חייבת להקשיב שוב לפני בחירה חוזרת
+        // (מונע ספאם נגיעות-כפולות שמזהם את המדידה).
+        board.querySelectorAll('.cv-summary-tile.previewed').forEach(function (b) {
+          b.classList.remove('previewed');
+        });
         // עזר: השמע שוב את צליל המטרה (מצב listen) — פעם אחת, לא ספאם.
         if (tr.mode === 'listen') setTimeout(function () { playKey(targetCV(tr).audioKey); }, 400);
         return;
