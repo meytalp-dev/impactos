@@ -26,6 +26,22 @@
     pre { white-space: pre-wrap; word-break: break-word; font-size: 11px; background: #0E2A33; color: #BFE9F2; padding: 10px; border-radius: 10px; max-height: 42vh; overflow: auto; }
     .qa-note { font-size: 11px; color: #6b7280; margin-top: 8px; line-height: 1.5; }
     .qa-clear { background: #FFE6E0; border-color: #FFB3A3; color: #8A2B16; }
+
+    /* match-word-to-image — אריחים + הגבלת גודל תמונה (חסר ב-game-shell; מוגדר inline רק ב-stage-5) */
+    #mountRoot .mechanic-match-word-to-image { padding: 18px; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; }
+    .match-image-prompt { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 6px 0 14px; }
+    .match-image-label { font-size: 18px; font-weight: 600; color: #1F4651; }
+    .match-image-word { font-size: clamp(26px,5vw,38px); font-weight: 900; padding: 6px 18px; background: #fff; border: 2px solid #73D9D1; border-radius: 16px; color: #0EA391; cursor: pointer; }
+    .match-image-stem-img { max-width: 220px; max-height: 220px; object-fit: contain; border-radius: 16px; box-shadow: 0 6px 20px rgba(31,70,81,.18); }
+    .match-image-field { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 8px; }
+    .match-image-tile { min-height: 90px; display: flex; align-items: center; justify-content: center; padding: 10px; background: #fff; border: 2px solid #DCEBEE; border-radius: 16px; box-shadow: 0 4px 14px rgba(31,70,81,.1); cursor: pointer; transition: transform .15s, border-color .25s; }
+    .match-image-tile:active { transform: scale(.97); }
+    .match-image-tile.lit { border-color: #1BA672; box-shadow: 0 0 0 3px #1BA672; }
+    .match-image-tile.wrong-sway { animation: qaShake .5s; }
+    .match-image-tile.hint-glow { box-shadow: 0 0 0 4px #FFD98A; }
+    .match-image-img { max-width: 100%; max-height: 170px; object-fit: contain; border-radius: 12px; }
+    .match-image-word-opt, .match-image-gloss { font-size: clamp(20px,4vw,28px); font-weight: 800; color: #0EA391; }
+    @keyframes qaShake { 10%,90%{transform:translateX(-2px)} 30%,70%{transform:translateX(3px)} }
   </style>
 </head>
 <body>
@@ -83,6 +99,7 @@
   <script src="js/shared/epa.js"></script>
   <script src="js/shared/bkt.js" onerror="window._bktMissing=true"></script>
   <script src="js/shared/event-logger.js"></script>
+  <script src="js/shared/vocab-image-adapter.js"></script>
   <!-- templates -->
   <script src="js/templates/mechanic-mcq.js"></script>
   <script src="js/templates/mechanic-odd-one-out.js"></script>
@@ -120,6 +137,54 @@
     function unmount() { if (current && current.unmount) try { current.unmount(); } catch (e) {} current = null; }
 
     function done(label) { return function () { console.log('✓ onComplete', label); }; }
+
+    // ---- bank loader (מבנק-השאלות האמיתי + תמונות דרך האדפטר) ----
+    var _bank = null;
+    function loadBank() {
+      if (_bank) return Promise.resolve(_bank);
+      return Promise.all([
+        fetch('../curriculum/questions-grade1.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }),
+        window.AvneiVocabImages ? window.AvneiVocabImages.load() : Promise.resolve(),
+      ]).then(function (arr) {
+        var b = arr[0];
+        var list = Array.isArray(b) ? b : (b.questions || b.items || []);
+        _bank = {}; list.forEach(function (q) { if (q && q.q_id) _bank[q.q_id] = q; });
+        return _bank;
+      });
+    }
+
+    // טוען שאלה אמיתית, מזריק image_src מה-manifest, וממפה לחוזה match-word-to-image.
+    function mountFromBank(qId, direction, label) {
+      loadBank().then(function (bank) {
+        var q = bank[qId];
+        if (!q) { root.innerHTML = '<p style="padding:20px">שאלה ' + qId + ' לא נמצאה בבנק</p>'; return; }
+        if (window.AvneiVocabImages) window.AvneiVocabImages.applyToQuestion(q);
+        var word = (q.stem_he || '').replace(/^🔊\s*/, '');
+        var cfg = {
+          direction: direction, theme: theme,
+          questId: q.q_id,
+          characteristic_id: q.characteristic_id || null,
+          primary_island_id: 5, secondary_island_ids: [4],
+          options: q.options.map(function (o) {
+            return {
+              label_he: o.label_he, mode: (direction === 'image_to_word') ? 'text' : 'image',
+              image_src: o.image_src || '', image_alt: o.image_alt || o.label_he,
+              is_correct: !!o.is_correct, epa: o.epa || null,
+            };
+          }),
+          onComplete: done(label),
+        };
+        if (direction === 'image_to_word') {
+          // stem = תמונת התשובה הנכונה (כבר הוזרקה ל-q.stem אם קיים, אחרת נגזר)
+          var correct = q.options.find(function (o) { return o.is_correct; }) || {};
+          cfg.stem = { image_src: (q.stem && q.stem.image_src) || correct.image_src || '', image_alt: word };
+        } else {
+          cfg.stem = { text_he: word };
+        }
+        unmount();
+        current = window.AvneiMechanics['match-word-to-image'].mount(root, cfg);
+      });
+    }
 
     // ---- demo configs (תוכן דמו ל-QA בלבד; ניקוד מלא; ב/כ/פ בדגש) ----
     var demos = {
@@ -201,32 +266,10 @@
           onComplete: done('mp'),
         });
       },
-      word_to_image: function () {
-        window.AvneiMechanics['match-word-to-image'].mount(root, {
-          direction: 'word_to_image', theme: theme,
-          questId: 'qa-w2i-1', target_letter: 'ד', primary_island_id: 5,
-          stem: { text_he: 'דָּג', audio_key: 'word-dag' },
-          options: [
-            { label_he: 'דָּג', mode: 'image', image_src: '', is_correct: true, epa: null },
-            { label_he: 'כֶּלֶב', mode: 'image', image_src: '', is_correct: false, epa: { what: 'Comprehension', where: 'isolation', task: 'recognition' } },
-            { label_he: 'בַּיִת', mode: 'image', image_src: '', is_correct: false, epa: { what: 'Comprehension', where: 'isolation', task: 'recognition' } },
-          ],
-          onComplete: done('w2i'),
-        });
-      },
-      image_to_word: function () {
-        window.AvneiMechanics['match-word-to-image'].mount(root, {
-          direction: 'image_to_word', theme: theme,
-          questId: 'qa-i2w-1', target_letter: 'ד', primary_island_id: 5,
-          stem: { image_src: '', image_alt: 'דָּג' },
-          options: [
-            { label_he: 'דָּג', mode: 'text', is_correct: true, epa: null },
-            { label_he: 'דֹּב', mode: 'text', is_correct: false, epa: { what: 'Sound', where: 'final', task: 'decode' } },
-            { label_he: 'גַּן', mode: 'text', is_correct: false, epa: { what: 'Sound', where: 'initial', task: 'decode' } },
-          ],
-          onComplete: done('i2w'),
-        });
-      },
+      // שני אלה נטענים מבנק-השאלות האמיתי + תמונות דרך AvneiVocabImages.
+      // q_id שנבחרו כי כל 3 התמונות שלהם כבר קיימות בדיסק (הדגמה חיה של הצינור).
+      word_to_image: function () { mountFromBank('feb-w3-d3-c2-L2', 'word_to_image', 'w2i'); },
+      image_to_word: function () { mountFromBank('dec-w3-d2-c2-L2', 'image_to_word', 'i2w'); },
     };
 
     document.querySelectorAll('.qa-btn[data-demo]').forEach(function (b) {

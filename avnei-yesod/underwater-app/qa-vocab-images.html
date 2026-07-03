@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QA · תמונות אוצר-מילים — שיוך למשחקונים</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root { --ink:#1F4651; --teal:#0EA391; --ok:#1BA672; --miss:#E4572E; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:'Heebo',sans-serif; background:#F2F8F9; color:var(--ink); }
+    header { position:sticky; top:0; z-index:5; background:#fff; border-bottom:2px solid #DDEBEE;
+             padding:14px 20px; box-shadow:0 2px 10px rgba(31,70,81,.08); }
+    header h1 { margin:0 0 6px; font-size:20px; }
+    .bar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; font-size:14px; }
+    .pill { padding:5px 12px; border-radius:999px; font-weight:800; }
+    .pill.ok { background:#E4F7EF; color:var(--ok); }
+    .pill.miss { background:#FCE9E3; color:var(--miss); }
+    .pill.tot { background:#E9F1F4; color:var(--ink); }
+    .prog { flex:1; min-width:160px; height:12px; border-radius:999px; background:#E9F1F4; overflow:hidden; }
+    .prog > i { display:block; height:100%; background:var(--teal); width:0; transition:width .4s; }
+    button.copy { margin-inline-start:auto; padding:8px 14px; border:0; border-radius:10px;
+                  background:var(--teal); color:#fff; font-family:inherit; font-weight:800; cursor:pointer; }
+    main { padding:20px; max-width:1100px; margin:0 auto; }
+    .qgroup { background:#fff; border-radius:16px; padding:16px 18px; margin-bottom:16px;
+              box-shadow:0 4px 16px rgba(31,70,81,.07); }
+    .qhead { display:flex; flex-wrap:wrap; align-items:baseline; gap:10px; margin-bottom:4px; }
+    .qhead .qid { font-family:ui-monospace,monospace; font-size:12px; color:#6b8a92;
+                  background:#EEF5F6; padding:2px 8px; border-radius:6px; }
+    .qhead .stem { font-size:18px; font-weight:800; }
+    .qmeta { font-size:12px; color:#6b8a92; margin-bottom:12px; }
+    .opts { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+    .opt { border:2px solid #E4EEF0; border-radius:12px; padding:10px; text-align:center; position:relative; }
+    .opt.correct { border-color:var(--ok); background:#F5FCF9; }
+    .opt .thumb { width:100%; aspect-ratio:1/1; border-radius:8px; object-fit:cover; background:#F2F8F9; display:block; }
+    .opt .ph { width:100%; aspect-ratio:1/1; border-radius:8px; display:flex; align-items:center;
+               justify-content:center; background:repeating-linear-gradient(45deg,#FCE9E3,#FCE9E3 8px,#FBDDD3 8px,#FBDDD3 16px);
+               color:var(--miss); font-weight:800; font-size:13px; text-align:center; padding:8px; }
+    .opt .word { margin-top:8px; font-size:16px; font-weight:700; }
+    .opt .file { font-family:ui-monospace,monospace; font-size:11px; color:#93a7ad; word-break:break-all; margin-top:3px; }
+    .opt .tag { position:absolute; top:6px; inset-inline-end:6px; font-size:11px; font-weight:800;
+                padding:2px 7px; border-radius:6px; }
+    .opt .tag.ok { background:var(--ok); color:#fff; }
+    .opt .tag.miss { background:var(--miss); color:#fff; }
+    .batchbox { background:#0E2A33; color:#BFE9F2; border-radius:14px; padding:16px; margin-bottom:16px; }
+    .batchbox h2 { margin:0 0 8px; font-size:15px; color:#fff; }
+    .batchbox pre { white-space:pre-wrap; font-size:12px; line-height:1.7; margin:0; max-height:40vh; overflow:auto; }
+    .loading { padding:40px; text-align:center; color:#6b8a92; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🖼️ תמונות אוצר-מילים · שיוך למשחקונים</h1>
+    <div class="bar">
+      <span class="pill ok" id="pOk">✓ 0</span>
+      <span class="pill miss" id="pMiss">חסר 0</span>
+      <span class="pill tot" id="pTot">מתוך 0</span>
+      <span class="prog"><i id="progBar"></i></span>
+      <button class="copy" id="copyBtn">📋 העתק רשימת הבאץ' הבא</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="batchbox" id="batchBox" style="display:none">
+      <h2>הבאצ' הבא ל-GPT — התמונות החסרות (מקובצות לפי שאלה)</h2>
+      <pre id="batchList"></pre>
+    </div>
+    <div id="groups"><div class="loading">טוען בנק שאלות + manifest…</div></div>
+  </main>
+
+  <script src="js/shared/vocab-image-adapter.js"></script>
+  <script>
+  (function () {
+    var BASE = 'assets/vocab/';
+    var QBANK = '../curriculum/questions-grade1.json';
+    var groupsEl = document.getElementById('groups');
+
+    Promise.all([
+      fetch(BASE + '_manifest.json', { cache:'no-cache' }).then(function(r){ return r.json(); }),
+      fetch(QBANK, { cache:'no-cache' }).then(function(r){ return r.json(); }),
+    ]).then(function (arr) {
+      var manifest = arr[0];
+      var bank = arr[1];
+      var questions = Array.isArray(bank) ? bank : (bank.questions || bank.items || []);
+      render(manifest, questions);
+    }).catch(function (err) {
+      groupsEl.innerHTML = '<div class="loading">שגיאת טעינה: ' + (err && err.message) +
+        '<br>ודאי שפותחים דרך שרת מקומי (לא file://) ושהנתיב לבנק נכון.</div>';
+    });
+
+    function qById(questions) {
+      var m = {};
+      questions.forEach(function (q) { if (q && q.q_id) m[q.q_id] = q; });
+      return m;
+    }
+
+    function render(manifest, questions) {
+      var qmap = qById(questions);
+      // קבץ manifest לפי q_id, ממוין לפי opt
+      var byQid = {};
+      manifest.forEach(function (r) {
+        (byQid[r.q_id] || (byQid[r.q_id] = []))[r.opt] = r;
+      });
+      var qids = Object.keys(byQid);
+
+      groupsEl.innerHTML = '';
+      var total = 0, checked = 0, present = 0;
+      var missByQid = {};
+
+      qids.forEach(function (qId) {
+        var rows = byQid[qId].filter(Boolean);
+        var q = qmap[qId] || {};
+        var card = document.createElement('div');
+        card.className = 'qgroup';
+        var stem = (q.stem_he || '').replace(/^🔊\s*/, '');
+        card.innerHTML =
+          '<div class="qhead"><span class="qid">' + qId + '</span>' +
+          '<span class="stem">' + (stem ? '🔊 ' + stem : '—') + '</span></div>' +
+          '<div class="qmeta">' + (q.task_he || '') +
+          (q.month ? ' · ' + q.month : '') +
+          (q.characteristic_label ? ' · ' + q.characteristic_label : '') + '</div>';
+
+        var optsWrap = document.createElement('div');
+        optsWrap.className = 'opts';
+
+        rows.forEach(function (r) {
+          total++;
+          var opt = document.createElement('div');
+          opt.className = 'opt' + (r.correct ? ' correct' : '');
+          var url = BASE + r.file;
+          var img = new Image();
+          img.className = 'thumb';
+          img.alt = r.word;
+          opt.innerHTML =
+            '<div class="slot"></div>' +
+            '<div class="word">' + r.word + '</div>' +
+            '<div class="file">' + r.file + '</div>' +
+            '<span class="tag miss">חסר</span>';
+          var slot = opt.querySelector('.slot');
+          var tag = opt.querySelector('.tag');
+
+          img.onload = function () {
+            slot.appendChild(img);
+            tag.className = 'tag ok'; tag.textContent = '✓';
+            checked++; present++; update();
+          };
+          img.onerror = function () {
+            var ph = document.createElement('div');
+            ph.className = 'ph'; ph.textContent = 'אין קובץ';
+            slot.appendChild(ph);
+            (missByQid[qId] || (missByQid[qId] = [])).push(r);
+            checked++; update();
+          };
+          img.src = url;
+          optsWrap.appendChild(opt);
+        });
+
+        card.appendChild(optsWrap);
+        groupsEl.appendChild(card);
+      });
+
+      function update() {
+        document.getElementById('pOk').textContent = '✓ ' + present;
+        document.getElementById('pMiss').textContent = 'חסר ' + (checked - present);
+        document.getElementById('pTot').textContent = 'מתוך ' + total;
+        document.getElementById('progBar').style.width = total ? (present / total * 100) + '%' : '0';
+        if (checked === total) buildBatch(missByQid, qmap);
+      }
+    }
+
+    function buildBatch(missByQid, qmap) {
+      var qids = Object.keys(missByQid);
+      if (!qids.length) {
+        document.getElementById('batchBox').style.display = 'block';
+        document.getElementById('batchList').textContent = '🎉 כל התמונות קיימות — אין באץ' + "'" + ' חסר!';
+        return;
+      }
+      var lines = [];
+      qids.forEach(function (qId) {
+        var q = qmap[qId] || {};
+        lines.push('▸ ' + qId + '  (' + (q.characteristic_label || q.task_he || '') + ')');
+        missByQid[qId].forEach(function (r) {
+          lines.push('   • ' + r.word + '   →   ' + r.file + (r.correct ? '   [נכונה]' : ''));
+        });
+        lines.push('');
+      });
+      var txt = lines.join('\n');
+      document.getElementById('batchBox').style.display = 'block';
+      document.getElementById('batchList').textContent = txt;
+      document.getElementById('copyBtn').onclick = function () {
+        navigator.clipboard.writeText(txt).then(function () {
+          document.getElementById('copyBtn').textContent = '✓ הועתק';
+          setTimeout(function () { document.getElementById('copyBtn').textContent = "📋 העתק רשימת הבאץ' הבא"; }, 1500);
+        });
+      };
+    }
+  })();
+  </script>
+</body>
+</html>
