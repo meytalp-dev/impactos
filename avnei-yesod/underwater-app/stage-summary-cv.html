@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>תרגול סיכום · שרשרת הפנינים · השונית של נוני</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css?v=2026-07-03">
+
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; min-height: 100dvh;
+      font-family: 'Heebo', sans-serif;
+      background: linear-gradient(180deg, #BFF1FF 0%, #A8E8FF 40%, #73D9D1 100%);
+      color: var(--text-main);
+      direction: rtl;
+      overflow-x: hidden;
+    }
+    .scene-bg {
+      position: fixed; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center bottom;
+      z-index: 0; pointer-events: none;
+    }
+    .top-bar {
+      position: sticky; top: 0; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px;
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255,255,255,0.6);
+    }
+    .top-bar a, .top-bar .counter {
+      height: 44px; border-radius: var(--radius-pill);
+      background: rgba(255,255,255,0.85); color: var(--text-main);
+      display: inline-flex; align-items: center; justify-content: center;
+      text-decoration: none; box-shadow: 0 2px 10px rgba(38,80,92,0.15);
+      padding: 0 14px;
+    }
+    .top-bar a { width: 44px; padding: 0; border-radius: 50%; }
+    .top-bar .counter { font-size: 14px; font-weight: 700; }
+
+    main {
+      position: relative; z-index: 2;
+      max-width: 720px; margin: 0 auto;
+      padding: 18px 20px 90px;
+    }
+    .sum-intro { text-align: center; margin-bottom: 12px; }
+    .sum-intro h1 {
+      font-size: clamp(20px, 4.4vw, 26px); font-weight: 800;
+      color: var(--text-main); margin: 0 0 4px;
+    }
+    .sum-intro p {
+      font-size: clamp(13px, 2.8vw, 15px); color: var(--text-soft); margin: 0;
+    }
+
+    /* === שרשרת הפנינים === */
+    .cv-summary-chain {
+      display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+      gap: 8px; padding: 10px 8px; margin: 4px auto 16px;
+      max-width: 560px;
+    }
+    .cv-summary-pearl {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(255,255,255,0.5);
+      border: 2px solid rgba(255,255,255,0.7);
+      box-shadow: inset 0 -2px 4px rgba(38,80,92,0.12);
+      transition: all 0.35s ease;
+    }
+    .cv-summary-pearl.filled {
+      background: radial-gradient(circle at 35% 30%, #FFFFFF 0%, #CFEFF6 45%, #8FD6E6 100%);
+      border-color: #FFFFFF;
+      box-shadow: 0 0 10px rgba(143, 214, 230, 0.8), inset 0 -2px 4px rgba(38,80,92,0.15);
+    }
+    .cv-summary-pearl.just-added {
+      transform: scale(1.7);
+      box-shadow: 0 0 18px 4px rgba(255, 231, 168, 0.9), 0 0 10px rgba(143, 214, 230, 0.9);
+    }
+
+    /* === Prompt (target) === */
+    .cv-summary-prompt {
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      margin: 6px auto 18px;
+    }
+    .cv-summary-target {
+      min-width: 120px; min-height: 96px;
+      padding: 10px 22px; border-radius: var(--radius-lg);
+      background: var(--water-secondary); color: white; border: none;
+      cursor: pointer; font-family: inherit;
+      font-size: clamp(48px, 11vw, 72px); font-weight: 900; line-height: 1;
+      box-shadow: 0 8px 22px rgba(115, 217, 209, 0.55);
+      display: inline-flex; align-items: center; justify-content: center;
+      transition: all 0.25s ease;
+    }
+    .cv-summary-target:active { transform: scale(0.96); }
+    .cv-summary-target.audio-only { animation: speakerPulse 1.8s ease-in-out infinite; }
+    .cv-summary-target.glyph { background: white; color: var(--text-main); border: 2px solid var(--water-secondary); }
+    @keyframes speakerPulse {
+      0%, 100% { box-shadow: 0 8px 22px rgba(115, 217, 209, 0.55); }
+      50%      { box-shadow: 0 8px 22px rgba(115, 217, 209, 0.55), 0 0 0 8px rgba(255, 231, 168, 0.25); }
+    }
+    .cv-summary-audio-icon { font-size: clamp(38px, 8vw, 52px); }
+    .cv-summary-hint {
+      font-size: clamp(14px, 3vw, 17px); font-weight: 700; color: var(--text-soft);
+      background: rgba(255,255,255,0.75); padding: 6px 16px; border-radius: var(--radius-pill);
+    }
+
+    /* === Board (option tiles) === */
+    .cv-summary-board {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+      gap: 12px; max-width: 520px; margin: 0 auto;
+    }
+    .cv-summary-tile {
+      min-height: 96px; aspect-ratio: 1 / 1;
+      background: white; border: 2px solid rgba(38,80,92,0.18);
+      border-radius: 16px; font-family: inherit; color: var(--text-main);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(38,80,92,0.12);
+      transition: all 0.18s ease;
+    }
+    .cv-summary-tile--cv { font-size: clamp(40px, 9vw, 60px); font-weight: 900; }
+    .cv-summary-tile--sound .cv-summary-audio-icon { font-size: clamp(34px, 7vw, 44px); }
+    .cv-summary-tile:hover { transform: translateY(-2px); }
+    .cv-summary-tile:active { transform: scale(0.95); }
+    .cv-summary-tile.correct {
+      background: var(--mint); border-color: #6BCB9A;
+      box-shadow: 0 0 0 4px rgba(184, 242, 207, 0.7), 0 6px 18px rgba(115, 217, 209, 0.5);
+      transform: scale(1.06);
+    }
+    .cv-summary-tile.wrong {
+      border-color: #E88A8A;
+      box-shadow: 0 0 0 3px rgba(232, 138, 138, 0.4);
+      animation: shake 0.4s ease;
+    }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+
+    .noni-fixed {
+      position: fixed; bottom: 14px; right: 14px;
+      width: 80px; height: 80px; object-fit: contain; z-index: 5;
+      filter: drop-shadow(0 6px 14px rgba(38, 80, 92, 0.18));
+      animation: noni-float 4s ease-in-out infinite;
+    }
+    @keyframes noni-float {
+      0%, 100% { transform: translateY(0) rotate(-3deg); }
+      50%      { transform: translateY(-6px) rotate(3deg); }
+    }
+
+    /* Completion overlay (35% שקיפות — שונית נשארת גלויה) */
+    #doneOverlay {
+      display: none; position: fixed; inset: 0;
+      background: radial-gradient(circle at 50% 35%, rgba(184, 232, 224, 0.35), rgba(99, 216, 208, 0.55));
+      backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+      z-index: 100; flex-direction: column; align-items: center; justify-content: center;
+      gap: 16px; padding: 24px; text-align: center;
+    }
+    #doneOverlay .card {
+      background: rgba(255,255,255,0.9); border-radius: var(--radius-lg);
+      padding: 16px 22px; box-shadow: 0 8px 24px rgba(38,80,92,0.18); max-width: 480px;
+    }
+    #doneOverlay h1 { margin: 0; font-size: clamp(26px, 6vw, 38px); font-weight: 900; color: var(--text-main); }
+    #doneOverlay p { margin: 8px 0 0; font-size: clamp(15px, 3.4vw, 18px); color: var(--text-main); }
+    #doneOverlay .weak-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; }
+    #doneOverlay .weak-chip {
+      font-size: clamp(20px, 4.5vw, 28px); font-weight: 900;
+      background: var(--hint); color: var(--text-main);
+      padding: 6px 16px; border-radius: var(--radius-pill);
+    }
+    #doneOverlay a.btn {
+      height: 64px; padding: 0 48px; background: var(--water-secondary); color: white;
+      border-radius: var(--radius-pill); font-family: inherit;
+      font-size: clamp(20px, 4.5vw, 24px); font-weight: 800;
+      box-shadow: 0 12px 28px rgba(115,217,209,0.5);
+      display: inline-flex; align-items: center; justify-content: center; text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+  <img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true"
+       onerror="this.style.display='none'">
+
+  <header class="top-bar">
+    <a href="stage-4-island.html" aria-label="חזרה לאי">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+    <div class="counter">🦪 תַּרְגּוּל סִיכּוּם</div>
+    <div style="width:44px"></div>
+  </header>
+
+  <main>
+    <div class="sum-intro">
+      <h1>שַׁרְשֶׁרֶת הַפְּנִינִים</h1>
+      <p>כָּל צֵרוּף נָכוֹן — פְּנִינָה בַּשַּׁרְשֶׁרֶת. נַשְׁלִים אֶת כֻּלָּן!</p>
+    </div>
+    <div id="gameRoot"></div>
+  </main>
+
+  <!-- Completion overlay — נבנה דינמית ב-onComplete -->
+  <div id="doneOverlay">
+    <img id="doneNoni" src="assets/noni-kiss.png" alt="נוני שמח"
+         style="width:130px;height:130px;object-fit:contain;filter:drop-shadow(0 8px 18px rgba(38,80,92,0.25))"
+         onerror="this.src='assets/noni-happy.png'">
+    <div class="card">
+      <h1 id="doneTitle"></h1>
+      <p id="doneSubtitle"></p>
+      <div class="weak-chips" id="doneWeak"></div>
+    </div>
+    <a class="btn" href="stage-4-island.html">חזרה לאי</a>
+  </div>
+
+  <img class="noni-fixed" id="noniImg" src="assets/noni-idle.png" alt="נוני">
+
+  <!-- Scripts -->
+  <script src="js/shared/audio.js" onerror="window._audioMissing=true"></script>
+  <script src="js/shared/noni.js" onerror="window._noniMissing=true"></script>
+  <script src="js/shared/vowel-adapter.js"></script>
+  <script src="js/shared/event-logger.js" onerror="window._evlogMissing=true"></script>
+  <script src="js/shared/bkt.js" onerror="window._bktMissing=true"></script>
+  <script src="js/templates/mechanic-cv-summary.js"></script>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // iOS audio unlock on first gesture
+      document.addEventListener('click', function unlock() {
+        if (window.AvneiAudio && typeof window.AvneiAudio.unlock === 'function') {
+          try { window.AvneiAudio.unlock(); } catch (e) {}
+        }
+        document.removeEventListener('click', unlock);
+      }, { once: true });
+
+      // פרמטרים: החמישייה + הילדה מ-query (?letters=ת,מ,ר,ב,ק&student=...)
+      const params = new URLSearchParams(location.search);
+      const lettersParam = params.get('letters');
+      const letters = lettersParam
+        ? lettersParam.split(',').map(function (s) { return s.trim(); }).filter(Boolean)
+        : ['ת', 'מ', 'ר', 'ב', 'ק'];
+      const studentId = params.get('student') || 'local';
+
+      window.AvneiMechanics['cv-summary'].mount(document.getElementById('gameRoot'), {
+        letters: letters,
+        studentId: studentId,
+        onPearl: function () {
+          if (window.AvneiNoni) try { window.AvneiNoni.setState('cheer'); } catch (e) {}
+          setTimeout(function () {
+            if (window.AvneiNoni) try { window.AvneiNoni.setState('idle'); } catch (e) {}
+          }, 650);
+        },
+        onComplete: function (result) {
+          if (window.AvneiNoni) try { window.AvneiNoni.setState('cheer'); } catch (e) {}
+          const title = document.getElementById('doneTitle');
+          const sub = document.getElementById('doneSubtitle');
+          const weak = document.getElementById('doneWeak');
+          weak.innerHTML = '';
+          if (result && result.sits) {
+            title.textContent = 'הַחֲמִישִׁיָּה יוֹשֶׁבֶת! 🌟';
+            sub.textContent = 'הִשְׁלַמְתֶּם אֶת כָּל הַשַּׁרְשֶׁרֶת. כָּל הַכָּבוֹד!';
+            document.getElementById('doneNoni').src = 'assets/noni-kiss.png';
+          } else {
+            title.textContent = 'כִּמְעַט! 🦪';
+            sub.textContent = (result && result.weakCVs && result.weakCVs.length)
+              ? 'עוֹד מַבָּט קָטָן עַל:' : 'עוֹד קְצָת תַּרְגּוּל וְנִשְׁלִים אֶת הַשַּׁרְשֶׁרֶת.';
+            document.getElementById('doneNoni').src = 'assets/noni-thinking.png';
+            (result && result.weakCVs ? result.weakCVs : []).forEach(function (w) {
+              const chip = document.createElement('span');
+              chip.className = 'weak-chip';
+              // מציג את הצירוף המנוקד עצמו (לא את המפתח הטכני)
+              var parts = String(w.key).split('_');
+              var glyph = w.key;
+              if (parts.length === 2 && window.AvneiVowelAdapter) {
+                var vs = window.AvneiVowelAdapter.getVowelsInGroup(parts[1]);
+                if (vs && vs.length) glyph = window.AvneiVowelAdapter.buildCV(parts[0], vs[0].id);
+              }
+              chip.textContent = glyph;
+              weak.appendChild(chip);
+            });
+          }
+          document.getElementById('doneOverlay').style.display = 'flex';
+        },
+      });
+    })();
+  </script>
+</body>
+</html>

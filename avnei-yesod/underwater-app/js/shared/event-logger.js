@@ -164,7 +164,15 @@ window.AvneiEventLogger = (function() {
       activity_type:        activity,
       activity_variant:     result.activity_variant || null,
       item_id:              result.item_id || null,
+      // 3.7.2026 · read-aloud — verdict גולמי (ACCEPT|REVIEW|REJECT) לתיעוד/corpus.
+      // דיוק ההקראה אינו אמין ואינו מזין BKT (ראו read-aloud-logger.js); נשמר רק
+      // כראיה גולמית לניתוח עתידי. אירועים אחרים בלי השדה → null (ללא שינוי התנהגות).
+      read_aloud_decision:  result.read_aloud_decision || null,
       target_letter:        result.target_letter || null,
+      // 3.7.2026 · אי 4 per_cv — קבוצת-הצליל (a/e/i/o/shwa) לזיהוי צירוף ה-CV.
+      // ingestIsland4Event ב-bkt.js דורש אותה (key="<letter>_<group>"); בלעדיה
+      // ה-BKT פר-צירוף מדלג. תוספתי: אירועים בלי השדה → null (ללא שינוי התנהגות).
+      target_phoneme_group: result.target_phoneme_group || null,
       // 30.6.2026 · minigame-fit G4 — מפתח-יחידה לא-מבוסס-אות ל-EPA.
       // לשאלות מורפולוגיה/הבנה (בלי אות-יעד) epa.js ממפתח תחת characteristic_id.
       // תוספתי: אירועים ישנים בלי השדה → null (אפס שינוי התנהגות).
