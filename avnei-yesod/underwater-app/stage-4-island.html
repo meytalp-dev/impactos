@@ -237,11 +237,25 @@
         🛠 הַרְכִּיבוּ צֵרוּף בְּעַצְמְכֶם
       </a>
     </div>
+
+    <!-- תרגול סיכום · שרשרת הפנינים (3.7.2026) — auto-unlock לפי per_cv -->
+    <div class="activity-row" id="summaryRow" style="display:none;">
+      <span class="activity-row__hint" id="summaryHint"></span>
+      <a class="cta-secondary" id="summaryLink" href="stage-summary-cv.html"
+         style="display:none; border-color:#F6D25E; box-shadow:0 0 0 3px rgba(255,231,168,0.45), 0 6px 16px rgba(38,80,92,0.15);">
+        🦪 שַׁרְשֶׁרֶת הַפְּנִינִים — תַּרְגּוּל סִכּוּם
+      </a>
+      <span class="cta-secondary" id="summaryLocked"
+            style="display:none; opacity:0.55; cursor:default; pointer-events:none;">
+        🔒 שַׁרְשֶׁרֶת הַפְּנִינִים
+      </span>
+    </div>
   </main>
 
   <!-- Audio + state -->
   <script src="js/shared/audio.js" onerror="window._audioMissing=true"></script>
   <script src="js/state.js" onerror="window._stateMissing=true"></script>
+  <script src="js/shared/bkt.js" onerror="window._bktMissing=true"></script>
 
   <script>
     (function () {
@@ -251,6 +265,36 @@
       try {
         if (typeof getPearls === 'function') {
           document.getElementById('pearlCount').textContent = getPearls();
+        }
+      } catch (e) {}
+
+      // תרגול סיכום · auto-unlock (3.7.2026) — נפתח כשכל הצירופים שתורגלו
+      // (per_cv, אי 4) הגיעו לשליטה, ויש לפחות 3 צירופים. עד אז — נעול (🔒).
+      // אם אין BKT / אין דאטה בכלל — השורה לא מוצגת (אין מה לסכם).
+      try {
+        if (window.AvneiBKT) {
+          let sid = 'local';
+          try { sid = localStorage.getItem('avnei-yesod-current-student') || 'local'; } catch (e) {}
+          const cm = window.AvneiBKT.checkMastery(sid, 4);
+          const cells = Object.values((cm && cm.per_cv) || {}).filter(c => (c.attempts || 0) > 0);
+          if (cells.length > 0) {
+            const row = document.getElementById('summaryRow');
+            const hint = document.getElementById('summaryHint');
+            row.style.display = '';
+            const ready = cells.length >= 3 && cells.every(c => c.mastered);
+            if (ready) {
+              // נפתח! מעבירים את האותיות שתורגלו בפועל (עד 5) — הסט של הילדה.
+              const letters = [];
+              cells.forEach(c => { if (c.letter && !letters.includes(c.letter)) letters.push(c.letter); });
+              const link = document.getElementById('summaryLink');
+              link.href = 'stage-summary-cv.html?letters=' + encodeURIComponent(letters.slice(-5).join(','));
+              link.style.display = '';
+              hint.textContent = 'מוּכָנִים לְסִכּוּם! ✨';
+            } else {
+              document.getElementById('summaryLocked').style.display = '';
+              hint.textContent = 'עוֹד קְצָת תַּרְגּוּל — וְהַשַּׁרְשֶׁרֶת תִּפָּתַח';
+            }
+          }
         }
       } catch (e) {}
 

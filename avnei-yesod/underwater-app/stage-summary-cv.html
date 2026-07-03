@@ -266,7 +266,17 @@
       const letters = lettersParam
         ? lettersParam.split(',').map(function (s) { return s.trim(); }).filter(Boolean)
         : ['ת', 'מ', 'ר', 'ב', 'ק'];
-      const studentId = params.get('student') || 'local';
+      // student resolution — חייב להיות מיושר עם event-logger (שקורא תמיד
+      // מ-localStorage avnei-yesod-current-student). אחרת הסט נגזר לילדה אחת
+      // והאירועים נרשמים לאחרת. ?student= מפורש (deep-link מהמורה) → נכתב
+      // לאותו מפתח, בדיוק כמו student-picker.
+      const CURRENT_STUDENT_KEY = 'avnei-yesod-current-student';
+      let studentId = params.get('student');
+      if (studentId) {
+        try { localStorage.setItem(CURRENT_STUDENT_KEY, studentId); } catch (e) {}
+      } else {
+        try { studentId = localStorage.getItem(CURRENT_STUDENT_KEY) || 'local'; } catch (e) { studentId = 'local'; }
+      }
 
       window.AvneiMechanics['cv-summary'].mount(document.getElementById('gameRoot'), {
         letters: letters,
