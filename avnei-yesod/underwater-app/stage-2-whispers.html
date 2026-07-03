@@ -77,7 +77,7 @@
             <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
             <path d="M15.5 8.5a4 4 0 0 1 0 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
           </svg>
-          <span>הקש לשמוע שוב</span>
+          <span>הַקִּישׁוּ לִשְׁמֹעַ שׁוּב</span>
         </button>
       </div>
 
@@ -102,9 +102,9 @@
         <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
         <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
       </svg>
-      <span>הקש/י לשמוע את ההסבר</span>
+      <span>הַקְשִׁיבוּ לַהֶסְבֵּר</span>
     </button>
-    <button class="start-btn" id="startBtn">בוא/י נתחיל</button>
+    <button class="start-btn" id="startBtn">בּוֹאוּ נַתְחִיל</button>
   </div>
 
   <!-- Completion overlay -->
@@ -364,11 +364,11 @@
 
     if (state.mistakesInRound === 1) {
       // Mistake 1: gentle shake + revert
-      showNoniBubble('אופס, צלילי הסוף שונים. נסי שוב!');
+      showNoniBubble('אופס, צלילי הסוף שונים. נסו שוב!');
       setTimeout(() => revertSelection(), 1500);
     } else if (state.mistakesInRound === 2) {
       // Mistake 2: play the closing phoneme of each, then revert
-      showNoniBubble('הקשיבי לצליל בסוף של כל מילה');
+      showNoniBubble('הקשיבו לצליל בסוף של כל מילה');
       AvneiAudio.play('whispers-hint-listen-to-ends');
       const key1 = state.data.phoneme_end_audio[c1.phoneme_end];
       const key2 = state.data.phoneme_end_audio[c2.phoneme_end];
@@ -381,7 +381,7 @@
       setTimeout(() => revertSelection(), 4200);
     } else {
       // Mistake 3+: revert + glow the unmatched pair the player should consider
-      showNoniBubble('בואי נראה — אלו אותו צליל בסוף');
+      showNoniBubble('בואו נראה — אלו אותו צליל בסוף');
       AvneiAudio.play('whispers-feedback-try-again');
       highlightMatchingPair();
       setTimeout(() => {
@@ -570,7 +570,33 @@
       renderRound();
     } catch (e) {
       console.error('Failed to load Whispers data:', e);
+      showLoadError();
     }
+  }
+
+  // Visible, vocalized fallback when data can't load (e.g. opened via file://)
+  function showLoadError() {
+    const host = document.querySelector('.whispers-scene') || document.body;
+    host.innerHTML =
+      '<div dir="rtl" style="max-width:640px;margin:10vh auto;padding:32px 28px;' +
+      'background:rgba(255,255,255,0.92);border-radius:24px;text-align:center;' +
+      'font-family:Heebo,sans-serif;color:#1b3a4b;box-shadow:0 8px 32px rgba(0,0,0,0.15);">' +
+      '<div style="font-size:56px;line-height:1;margin-bottom:12px;">🐙</div>' +
+      '<p style="font-size:1.5rem;font-weight:700;line-height:1.5;margin:0;">' +
+      'אוֹפְּס! צָרִיךְ לִפְתּוֹחַ אֶת הַמִּשְׂחָק דֶּרֶךְ שֶׁרֵת (לֹא בִּלְחִיצָה כְּפוּלָה עַל הַקּוֹבֶץ).' +
+      '</p></div>';
+    speakLoadError('אוֹפְּס! צָרִיךְ לִפְתּוֹחַ אֶת הַמִּשְׂחָק דֶּרֶךְ שֶׁרֵת.');
+  }
+
+  function speakLoadError(text) {
+    try {
+      if (!('speechSynthesis' in window)) return;
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'he-IL';
+      u.rate = 0.9;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(u);
+    } catch (e) { /* fail-safe */ }
   }
 
   document.getElementById('startBtn').addEventListener('click', async () => {

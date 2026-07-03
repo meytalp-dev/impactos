@@ -90,18 +90,18 @@
       <div class="mss-progress" id="mssProgress" aria-live="polite"></div>
 
       <section class="mss-passage-card">
-        <h2 class="mss-instruction" id="mssInstruction">הקשיבי לסיפור, ואז סדרי את המשפטים לפי הסדר שקרה.</h2>
+        <h2 class="mss-instruction" id="mssInstruction">הַקְשִׁיבוּ לַסִּפּוּר, וְאָז סַדְּרוּ אֶת הַמִּשְׁפָּטִים לְפִי הַסֵּדֶר שֶׁקָּרָה.</h2>
         <button class="mss-audio-btn" id="mssPlayPassage" type="button">
           <span class="mss-icon" aria-hidden="true">▶</span>
-          <span class="mss-label">להאזין לסיפור</span>
+          <span class="mss-label">לְהַאֲזִין לַסִּפּוּר</span>
         </button>
       </section>
 
       <section class="mss-order-card">
-        <h3 class="mss-section-title">הסדר שלך:</h3>
-        <ol class="mss-answer-slots" id="mssAnswerSlots" aria-label="הסדר שבחרת"></ol>
+        <h3 class="mss-section-title">הַסֵּדֶר שֶׁלָּכֶם:</h3>
+        <ol class="mss-answer-slots" id="mssAnswerSlots" aria-label="הסדר שבחרתם"></ol>
 
-        <h3 class="mss-section-title">לחצי על המשפטים בסדר שקרו:</h3>
+        <h3 class="mss-section-title">לִחֲצוּ עַל הַמִּשְׁפָּטִים בַּסֵּדֶר שֶׁקָּרוּ:</h3>
         <div class="mss-choices" id="mssChoices"></div>
 
         <div class="mss-feedback" id="mssFeedback" aria-live="polite"></div>

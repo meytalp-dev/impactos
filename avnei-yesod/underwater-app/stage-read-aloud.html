@@ -118,6 +118,29 @@
   .spinner { width: 28px; height: 28px; border: 3px solid var(--water-depth);
     border-top-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; display: inline-block; }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── 🎙️ כלי איסוף corpus (מצב מורָה בלבד) ── */
+  #corpusPanel { max-width: 560px; margin: 8px auto 28px; padding: 12px 16px;
+    background: #fff; border: 1px solid var(--water-depth, #cfe6ee); border-radius: 16px;
+    font-size: 14px; color: var(--text, #234); box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+  #corpusPanel .cp-tag { margin-bottom: 12px; }
+  #corpusPanel .cp-row { display: flex; gap: 8px; margin-top: 10px; }
+  #corpusPanel .cp-btn { border: 0; border-radius: 10px; padding: 9px 14px; font: inherit;
+    font-weight: 700; cursor: pointer; background: var(--water-depth, #e3f0f5); color: #234; }
+  #corpusPanel .cp-btn:hover { filter: brightness(.96); }
+  #corpusPanel .cp-ok { background: #d8f3e3; }
+  #corpusPanel .cp-err { background: #ffe6d6; }
+  #corpusPanel .cp-clear { background: #fbe0e0; }
+  #corpusPanel .cp-err-detail { margin-top: 10px; display: grid; gap: 10px;
+    background: #fafcfd; padding: 10px 12px; border-radius: 12px; }
+  #corpusPanel .cp-err-detail label { display: block; font-weight: 600; }
+  #corpusPanel select, #corpusPanel input { font: inherit; padding: 7px 9px; border-radius: 8px;
+    border: 1px solid #cdd6dc; margin-inline-start: 6px; }
+  #corpusPanel input { width: 170px; }
+  #corpusPanel .cp-foot { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    border-top: 1px dashed #e0e6ea; padding-top: 12px; }
+  #corpusPanel #cpCount { font-weight: 800; margin-inline-end: auto; color: var(--water-depth-ink, #1d6b7a); }
+  #corpusPanel .cp-hint { font-size: 12px; color: var(--text-soft, #789); margin-top: 6px; }
 </style>
 </head>
 <body>
@@ -146,13 +169,46 @@
     <div class="mic" id="mic" role="button" aria-label="הקלטה">
       <svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg>
     </div>
-    <div class="mic-label" id="micLabel">לִחֲצִי וְקִרְאִי</div>
+    <div class="mic-label" id="micLabel">לִחֲצוּ וְקִרְאוּ</div>
     <button class="next-btn" id="next">הַבָּא ←</button>
   </div>
 </div>
 
 <div class="debug" id="debug"></div>
 <div class="teacher-summary" id="teacherSummary" aria-live="polite"></div>
+
+<!-- 🎙️ איסוף corpus לכיול המנוע הפונמי (מצב מורָה ?debug=1 בלבד). מקומי לגמרי:
+     localStorage + ייצוא JSON. לא נוגע ב-BKT / בענן / בהתנהגות הכלי. -->
+<div id="corpusPanel" hidden>
+  <div class="cp-tag" id="cpTag" hidden>
+    <div>🎙️ הקלטת «<b id="cpTarget"></b>» נלכדה. מה <b>באמת</b> קראת?</div>
+    <div class="cp-row">
+      <button class="cp-btn cp-ok" id="cpCorrect">קראתי נכון ✅</button>
+      <button class="cp-btn cp-err" id="cpErrorBtn">טעיתי בכוונה ✍️</button>
+    </div>
+    <div class="cp-err-detail" id="cpErrDetail" hidden>
+      <label>סוג הטעות:
+        <select id="cpErrClass">
+          <option value="vowel">תנועה / ניקוד</option>
+          <option value="consonant">עיצור / אות</option>
+          <option value="skip">דילוג על אות</option>
+          <option value="different_word">מילה אחרת לגמרי</option>
+          <option value="other">אחר</option>
+        </select>
+      </label>
+      <label>מה קראת בפועל (מנוקד):
+        <input id="cpRead" type="text" dir="rtl">
+      </label>
+      <button class="cp-btn cp-err" id="cpSaveErr">שמור לאוסף</button>
+    </div>
+  </div>
+  <div class="cp-foot">
+    <span id="cpCount">0 הקלטות באוסף</span>
+    <button class="cp-btn" id="cpExport">⬇ ייצא אוסף (JSON)</button>
+    <button class="cp-btn cp-clear" id="cpClear">נקה</button>
+  </div>
+  <div class="cp-hint">התיוג נשמר לצד ההקלטה ותשובת המערכת. ייצוא → קובץ JSON לכיול.</div>
+</div>
 
 <!-- שכבת-הדאטה (סדר קנוני: state → bkt → event-logger). event-logger מבצע autoload
      ל-cloud stack (runtime-mode/cloud-*), שהוא no-op במצב דמו. epa.js לא נטען בכוונה —
@@ -215,8 +271,8 @@ function showWord(){
   wordEl.textContent = txt;
   wordEl.classList.toggle('sentence', mode === 'sentences');
   card.className = 'word-card';
-  bubble.textContent = mode === 'sentences' ? 'תִּקְרְאִי לִי אֶת הַמִּשְׁפָּט 🐙' : 'תִּקְרְאִי לִי אֶת הַמִּילָה 🐙';
-  setNoni('idle'); micLabel.textContent = 'לִחֲצִי וְקִרְאִי';
+  bubble.textContent = mode === 'sentences' ? 'קִרְאוּ לִי אֶת הַמִּשְׁפָּט 🐙' : 'קִרְאוּ לִי אֶת הַמִּילָה 🐙';
+  setNoni('idle'); micLabel.textContent = 'לִחֲצוּ וְקִרְאוּ';
   nextBtn.classList.remove('show');
 }
 
@@ -230,7 +286,7 @@ async function startRec(){
   try { stream = await navigator.mediaDevices.getUserMedia({audio:true}); }
   catch(e){
     const why = {
-      NotAllowedError: 'הַהַרְשָׁאָה נִדְחֲתָה — אַשְּׁרִי מִיקְרוֹפוֹן בְּסֵמֶל 🔒 שֶׁלְּיַד הַכְּתֹבֶת',
+      NotAllowedError: 'הַהַרְשָׁאָה נִדְחֲתָה — אַשְּׁרוּ מִיקְרוֹפוֹן בְּסֵמֶל 🔒 שֶׁלְּיַד הַכְּתֹבֶת',
       NotFoundError:   'לֹא נִמְצָא מִיקְרוֹפוֹן מְחֻבָּר',
       NotReadableError:'הַמִּיקְרוֹפוֹן תָּפוּס בְּתֹכְנָה אַחֶרֶת',
       SecurityError:   'נִדְרָשׁ הֶקְשֵׁר מְאֻבְטָח (https)',
@@ -243,7 +299,7 @@ async function startRec(){
   recorder.ondataavailable = e => chunks.push(e.data);
   recorder.onstop = () => { stream.getTracks().forEach(t=>t.stop()); sendAudio(); };
   recorder.start(); recording = true;
-  mic.classList.add('recording'); micLabel.textContent = 'מַקְשִׁיבָה… (לִחֲצִי לְסִיּוּם)';
+  mic.classList.add('recording'); micLabel.textContent = 'מַקְשִׁיבָה… (לִחֲצוּ לְסִיּוּם)';
   bubble.textContent = 'אֲנִי מַקְשִׁיבָה… 👂'; setNoni('thinking');
 }
 function stopRec(){ if(recorder && recording){ recording=false; mic.classList.remove('recording'); recorder.stop(); } }
@@ -251,6 +307,8 @@ function stopRec(){ if(recorder && recording){ recording=false; mic.classList.re
 async function sendAudio(){
   // text/plain = CORS-safelisted → בלי preflight (הבייטים עדיין webm; רק הכותרת).
   const blob = new Blob(chunks, {type:'text/plain'});
+  // לוכדים עותק webm תקין (audio/webm) ללכידת-corpus במצב מורָה — ראה AvneiCorpus.
+  window._lastClip = { blob: new Blob(chunks, {type:'audio/webm'}), target: list()[idx], mode: mode === 'sentences' ? 'sentence' : 'word' };
   micLabel.innerHTML = '<span class="spinner"></span>';
   // cold-start ידידותי: אם איטי (השרת מתעורר) — הודעה רכה
   const wake = setTimeout(() => { if (!warned){ bubble.textContent = 'רֶגַע, נוֹנִי מִתְעוֹרֶרֶת… 😴'; warned = true; } }, 4000);
@@ -258,8 +316,8 @@ async function sendAudio(){
     const res = await fetch(`${API}/check?target=${encodeURIComponent(list()[idx])}`, {method:'POST', body:blob});
     render(await res.json());
   } catch(e){
-    micLabel.textContent = 'שְׁגִיאָה — נַסִּי שׁוּב';
-    bubble.textContent = 'אוֹי, לֹא הִצְלַחְתִּי לִשְׁמֹעַ. נַסִּי שׁוּב 💙'; setNoni('thinking');
+    micLabel.textContent = 'שְׁגִיאָה — נַסּוּ שׁוּב';
+    bubble.textContent = 'אוֹי, לֹא הִצְלַחְתִּי לִשְׁמֹעַ. נַסּוּ שׁוּב 💙'; setNoni('thinking');
     debug.textContent = 'fetch error: ' + e.message;
   } finally { clearTimeout(wake); }
 }
@@ -276,16 +334,19 @@ function render(v){
     bubble.textContent = 'כָּל הַכָּבוֹד! קָרָאתְּ נָכוֹן 🎉'; micLabel.textContent = '';
   } else if (v.decision === 'REVIEW'){
     card.className = 'word-card review'; setNoni('thinking');
-    bubble.textContent = 'כִּמְעַט! בּוֹאִי נְנַסֶּה עוֹד פַּעַם 💛'; micLabel.textContent = 'לִחֲצִי וְקִרְאִי שׁוּב';
+    bubble.textContent = 'כִּמְעַט! בּוֹאוּ נְנַסֶּה עוֹד פַּעַם 💛'; micLabel.textContent = 'לִחֲצוּ וְקִרְאוּ שׁוּב';
   } else {
     card.className = 'word-card retry'; setNoni('thinking');
-    bubble.textContent = 'בּוֹאִי נְנַסֶּה שׁוּב יַחַד 💙'; micLabel.textContent = 'לִחֲצִי וְקִרְאִי שׁוּב';
+    bubble.textContent = 'בּוֹאוּ נְנַסֶּה שׁוּב יַחַד 💙'; micLabel.textContent = 'לִחֲצוּ וְקִרְאוּ שׁוּב';
   }
   nextBtn.classList.add('show');
 
   // T2 · שמירת אירוע-הקראה לפרופיל האורייני (BKT). no-op בלי זהות / בלי שכבת-דאטה.
   if (window.AvneiReadAloudSave) window.AvneiReadAloudSave.saveVerdict(v);
   renderTeacherSummary();
+
+  // 🎙️ מצב מורָה — מציע ללכוד את ההקלטה לאוסף הכיול (עם תשובת המערכת v).
+  if (document.body.classList.contains('debug-on') && window.AvneiCorpus) window.AvneiCorpus.onVerdict(v);
 }
 
 // ── T4 · שורת מורָה (מצב ?debug=1) — סיכום מצטבר בשפת שורה-תחתונה ──
@@ -341,6 +402,72 @@ document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', 
 }));
 showWord();
 renderTeacherSummary();
+
+// ── 🎙️ AvneiCorpus — איסוף corpus מתויג לכיול המנוע הפונמי (מצב מורָה בלבד) ──
+// לוכד לכל הקלטה: אודיו webm (base64) + מה נקרא בפועל (מנוקד) + נכון/שגוי + סוג
+// טעות + תשובת המערכת (decision/heard). נשמר ל-localStorage, ניתן לייצוא JSON.
+// מקומי לגמרי — לא נוגע ב-BKT/ענן. היעד: set קול-אמיתי (לא TTS) שעליו מכיילים
+// את phon_calibrate. חשוף על window כי render קורא לו.
+window.AvneiCorpus = (function(){
+  const KEY = 'avnei-read-aloud-corpus';
+  const panel = $('corpusPanel'), tag = $('cpTag'), countEl = $('cpCount');
+  const errDetail = $('cpErrDetail'), readInput = $('cpRead'), errClass = $('cpErrClass');
+  let pending = null;  // { clip, verdict }
+
+  const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch(e){ return []; } };
+  const save = (arr) => { try { localStorage.setItem(KEY, JSON.stringify(arr)); } catch(e){ alert('האחסון המקומי מלא — ייצאי JSON ואז נקי'); } };
+  const updateCount = () => { const n = load().length; if (countEl) countEl.textContent = `${n} הקלטות באוסף`; };
+  const toB64 = (blob) => new Promise(res => { const r = new FileReader(); r.onloadend = () => res(String(r.result).split(',')[1]); r.readAsDataURL(blob); });
+
+  async function commit(label, read, error_class){
+    if (!pending) return;
+    const { clip, verdict } = pending;
+    const audio_b64 = await toB64(clip.blob);
+    const arr = load();
+    arr.push({
+      id: 'ra-' + Date.now(), ts: new Date().toISOString(),
+      target: clip.target, mode: clip.mode,
+      label,                              // 'correct' | 'error'
+      error_class: error_class || null,   // vowel|consonant|skip|different_word|other
+      read: (read || clip.target).trim(), // מה נקרא בפועל (מנוקד)
+      sys_decision: verdict.decision, sys_heard: verdict.heard || '', sys_mode: verdict.mode || clip.mode,
+      mime: 'audio/webm', audio_b64,
+    });
+    save(arr); updateCount();
+    pending = null; tag.hidden = true; errDetail.hidden = true;
+    bubble.textContent = 'נשמר לאוסף 🎯 אפשר להמשיך';
+  }
+
+  function onVerdict(verdict){
+    if (!panel || panel.hidden || !window._lastClip) return;
+    pending = { clip: window._lastClip, verdict };
+    $('cpTarget').textContent = pending.clip.target;
+    readInput.value = pending.clip.target;
+    errDetail.hidden = true; tag.hidden = false;
+  }
+
+  function exportJson(){
+    const arr = load();
+    if (!arr.length) { alert('האוסף ריק'); return; }
+    const payload = { created: new Date().toISOString(), count: arr.length, records: arr };
+    const blob = new Blob([JSON.stringify(payload, null, 1)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `read-aloud-corpus-${arr.length}.json`;
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+  }
+
+  if (panel && document.body.classList.contains('debug-on')){
+    panel.hidden = false;
+    $('cpCorrect').addEventListener('click', () => commit('correct', pending && pending.clip.target, null));
+    $('cpErrorBtn').addEventListener('click', () => { errDetail.hidden = false; readInput.focus(); readInput.select(); });
+    $('cpSaveErr').addEventListener('click', () => commit('error', readInput.value, errClass.value));
+    $('cpExport').addEventListener('click', exportJson);
+    $('cpClear').addEventListener('click', () => { if (confirm('למחוק את כל האוסף המקומי?')){ save([]); updateCount(); } });
+    updateCount();
+  }
+  return { onVerdict };
+})();
 </script>
 </body>
 </html>

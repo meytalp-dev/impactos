@@ -141,7 +141,7 @@
               </svg>
             </button>
           </div>
-          <div class="fish-tap-hint">הקש על הדגיג לשמוע · הקש על הלהקה לשלוח</div>
+          <div class="fish-tap-hint">הַקִּישׁוּ עַל הַדָּגִיג לִשְׁמֹעַ · הַקִּישׁוּ עַל הַלַּהֲקָה לִשְׁלֹחַ</div>
         </div>
       </div>
 
@@ -157,9 +157,9 @@
         <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
         <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
       </svg>
-      <span>הקש/י לשמוע את ההסבר</span>
+      <span>הַקְשִׁיבוּ לַהֶסְבֵּר</span>
     </button>
-    <button class="start-btn" id="startBtn">בוא/י נתחיל</button>
+    <button class="start-btn" id="startBtn">בּוֹאוּ נַתְחִיל</button>
   </div>
 
   <!-- Completion overlay -->
@@ -494,7 +494,33 @@
       loadRound();
     } catch (e) {
       console.error('Failed to load fish-schools data:', e);
+      showLoadError();
     }
+  }
+
+  // Visible, vocalized fallback when data can't load (e.g. opened via file://)
+  function showLoadError() {
+    const host = document.querySelector('.fish-scene') || document.body;
+    host.innerHTML =
+      '<div dir="rtl" style="max-width:640px;margin:10vh auto;padding:32px 28px;' +
+      'background:rgba(255,255,255,0.92);border-radius:24px;text-align:center;' +
+      'font-family:Heebo,sans-serif;color:#1b3a4b;box-shadow:0 8px 32px rgba(0,0,0,0.15);">' +
+      '<div style="font-size:56px;line-height:1;margin-bottom:12px;">🐙</div>' +
+      '<p style="font-size:1.5rem;font-weight:700;line-height:1.5;margin:0;">' +
+      'אוֹפְּס! צָרִיךְ לִפְתּוֹחַ אֶת הַמִּשְׂחָק דֶּרֶךְ שֶׁרֵת (לֹא בִּלְחִיצָה כְּפוּלָה עַל הַקּוֹבֶץ).' +
+      '</p></div>';
+    speakLoadError('אוֹפְּס! צָרִיךְ לִפְתּוֹחַ אֶת הַמִּשְׂחָק דֶּרֶךְ שֶׁרֵת.');
+  }
+
+  function speakLoadError(text) {
+    try {
+      if (!('speechSynthesis' in window)) return;
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'he-IL';
+      u.rate = 0.9;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(u);
+    } catch (e) { /* fail-safe */ }
   }
 
   document.getElementById('startBtn').addEventListener('click', async () => {
