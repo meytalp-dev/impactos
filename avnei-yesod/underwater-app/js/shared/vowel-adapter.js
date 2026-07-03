@@ -6,10 +6,14 @@
 //   להוסיף תמיכה ב-skill-unit type='vowel' ב-skill-units.js, ולשרת את אי 4
 //   (אות-ניקוד-צליל) — שלב בו ילדה לומדת לחבר אות + ניקוד = צליל-של-תחילת-מילה.
 //
-// הוראת תזמורת (מיטל · 29.5.2026):
-//   • Sub-BKT = פר אות בלבד (לא פר CV pair, לא פר vowel). 22 BKT states, נקודה.
-//   • לפיכך: getTopWeakCVs נגזר מ-getWeakestLetters של bkt.js + ה-vowels הפעילים.
-//   • אסור להוסיף שכבת BKT חדשה.
+// הוראת תזמורת (מיטל · 29.5.2026) — ⚠️ הוחלפה 3.7.2026:
+//   • [ישן] Sub-BKT = פר אות בלבד (לא פר CV pair). "אסור להוסיף שכבת BKT חדשה."
+//   • [חדש · 3.7.2026, אישור מיטל] נוסף Sub-BKT **פר צירוף CV** ב-bkt.js (island 4,
+//     per_cv · key="<letter>_<phoneme_group>" · prior נגזר-אות). רציונל מחקרי:
+//     צוואר-הבקבוק בקריאה = הסינתזה עיצור+תנועה, לא זיהוי האות (Share&Bar-On Triplex;
+//     מבדק ראמ"ה מודד צירופים=מטלה 5). ראה memory: today-unit-vs-bkt-granularity.
+//   • getTopWeakCVs עדיין נגזר מ-getWeakestLetters (פאזה 1). שדרוג לקריאת pKnown
+//     אמיתי פר-צירוף (bkt.getWeakestCVs) = פאזה 2 נפרדת, לא בוצע עדיין.
 //
 // 7 ה-vowels (פר רצף מטח · vocab-bank.complete_niqqud_sequence):
 //   קמץ · פתח · שווא · חיריק · חולם · צירי · סגול
@@ -175,6 +179,16 @@
     'ת:holam':   null,         // ASK
     'ת:tzere':   null,         // ASK
     'ת:segol':   null,         // ASK
+
+    // ל — אות הדמו (לא pilot letter). זרעים מגובים בקובצי אודיו word-* קיימים בלבד.
+    // השאר null עד שמיטל תספק מ-vocab-bank (לא להמציא — reference: "vocab — לבקש").
+    'ל:tzere':   'לֵב',        // heart — word-lev.mp3 קיים
+    'ל:holam':   'לוּל',       // coop — word-lamed-vav-lamed-lul.mp3 קיים
+    'ל:kamatz':  'לָקַח',      // took — word-lamed-qof-het-lakach.mp3 קיים
+    'ל:patach':  null,         // ASK
+    'ל:shva':    null,         // ASK
+    'ל:hiriq':   null,         // ASK (מועמד: לִיצָן — לאמת אודיו)
+    'ל:segol':   null,         // ASK
   });
 
   // --------------------------------------------------------------------------

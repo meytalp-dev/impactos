@@ -127,9 +127,10 @@ window.AvneiBKT = (function() {
   // ISLAND_3_LETTERS = 5 אותיות עם משחקון פעיל היום (מ/ק/ב/ר/ת).
   // משמש בלוגיקת mastery של אי 3 (A0.3 mastery-check ידרוש את כולן) — נשמר ב-5 עד D.15.
   const ISLAND_3_LETTERS = ['ת', 'מ', 'ר', 'ב', 'ק'];
-  // אי 3 פר-אות · אי 5 פר-אורך-מילה · אי 14 פר-oral-skill.
+  // אי 3 פר-אות · אי 4 פר-צירוף-CV · אי 5 פר-אורך-מילה · אי 14 פר-oral-skill.
   // סוכן 30 הוסיף את 5 ב-30.5.2026 — pattern של אי 14 (3 buckets · ingestIsland5Event).
-  const ISLANDS_WITH_SUB_BKT = [3, 5, 14];
+  // אי 4 נוסף 3.7.2026 (per_cv · יצירה עצלה · prior נגזר-אות) — ראה בלוק CV למעלה.
+  const ISLANDS_WITH_SUB_BKT = [3, 4, 5, 14];
 
   // A.4 — כל 22 האותיות לסטרנד 1 (per_letter). סדר אלפבתי קנוני (תואם D.14 _schema.md).
   // משמש לאתחול ה-per_letter ולחישוב distribution / weakest. עצמאי מ-ISLAND_3_LETTERS.
@@ -170,6 +171,42 @@ window.AvneiBKT = (function() {
     '3cv': 'מילים של 3 אותיות',
     '4cv': 'מילים של 4 אותיות',
   });
+
+  // ============================================================
+  // אי 4 (אות-ניקוד-צליל, סטרנד 1) — Sub-BKT פר צירוף CV. 3.7.2026.
+  // מחליף את הוראת 29.5.2026 ("פר-אות בלבד") — ראה vowel-adapter.js header.
+  // רציונל מחקרי: צוואר-הבקבוק בקריאה מנוקדת = הסינתזה עיצור+תנועה, לא זיהוי
+  // האות (Share & Bar-On 2018 Triplex; מבדק ראמ"ה כיתה א' מודד צירופים=מטלה 5).
+  // האות = prior/מנבא בלבד — ילדה יכולה לדעת ב + חיריק ולהיכשל ב-בִּי.
+  //
+  // מבנה: per_cv עם מפתחות **דינמיים** (יצירה עצלה), key = "<letter>_<phoneme_group>".
+  //   phoneme_group מאחד תנועות שנשמעות זהה: קמץ+פתח=a, צירי+סגול=e (מקור: vowel-adapter).
+  //   ⇒ "בַּ" ו-"בָּ" = אותו תא ("ב_a"). תואם phoneme-group-accept הקיים במשחקונים.
+  // שונה מאי 3/5/14: אין רשימת מפתחות קבועה מראש (הצירופים קומבינטוריים, 22×5) —
+  //   התא נוצר בפעם הראשונה שהצירוף נלמד, עם prior נגזר-אות.
+  const CV_WEAK_THRESHOLD = 0.70;
+  const CV_MIN_ATTEMPTS_FOR_BUCKET = 3;
+  // prior לצירוף חדש = משקל*pKnown(אות) + (1-משקל)*pL0. 0.5 נבחר בסימולציה (3.7.2026):
+  // תקרת prior 0.575 << סף שליטה 0.90 ⇒ אף צירוף לא "יורוק" בלי ראיה אמיתית (מונע ירוק כוזב),
+  // ועדיין מתגמל ידיעת-אות. ניתן לכיול אחרי הפיילוט בלי לגעת בשאר הלוגיקה.
+  const CV_PRIOR_LETTER_WEIGHT = 0.5;
+  // תיוג עברי לקבוצת הצליל (מסך מורה) — mirror של vowel-adapter.PHONEME_GROUP_HE,
+  // מוגדר מקומית כדי לא לכפות סדר-טעינה של vowel-adapter על bkt.js.
+  const PHONEME_GROUP_DISPLAY_HE = Object.freeze({
+    'a':    'פתח-קמץ',
+    'e':    'צירי-סגול',
+    'i':    'חיריק',
+    'o':    'חולם',
+    'shwa': 'שווא',
+  });
+  function cvUnitKey(letter, group) { return letter + '_' + group; }
+  function cvDisplayHe(key) {
+    const idx = key.indexOf('_');
+    if (idx < 0) return key;
+    const letter = key.slice(0, idx);
+    const group = key.slice(idx + 1);
+    return letter + ' + ' + (PHONEME_GROUP_DISPLAY_HE[group] || group);
+  }
 
   // ============================================================
   // ניהול state — שני stores (dual-write)
@@ -348,6 +385,39 @@ window.AvneiBKT = (function() {
     return changed;
   }
 
+  // אי 4 (אות-ניקוד-צליל, סטרנד 1) — 3.7.2026. per_cv מתחיל **ריק** (יצירה עצלה).
+  // aggregate_pKnown = ממוצע התאים שתורגלו (כמו אי 3/5/14).
+  function emptyIsland4Record() {
+    const params = PARAMS_PER_ISLAND[4] || DEFAULT_PARAMS;
+    return {
+      per_cv: {},
+      aggregate_pKnown: params.pL0,
+      total_attempts: 0,
+      sessionsAtMastery: 0,
+      lastSessionId: null,
+      masteryAchievedAt: null,
+    };
+  }
+
+  // ensureIsland4Shape — מיגרציה non-destructive. רשומת אי-4 ישנה (צורת "אי רגיל"
+  // עם .pKnown, מלפני 3.7.2026) מקבלת per_cv + aggregate_pKnown בלי לאבד נתונים:
+  // ה-pKnown הישן משוכפל ל-aggregate_pKnown (שמירת ההערכה שהצטברה). ה-pKnown הישן
+  // נשאר במקומו (non-destructive) — mastery-check סובל את שתי הצורות.
+  function ensureIsland4Shape(rec, pL0) {
+    if (!rec || typeof rec !== 'object') return false;
+    let changed = false;
+    if (!rec.per_cv || typeof rec.per_cv !== 'object') { rec.per_cv = {}; changed = true; }
+    if (typeof rec.aggregate_pKnown !== 'number') {
+      rec.aggregate_pKnown = (typeof rec.pKnown === 'number') ? rec.pKnown : pL0;
+      changed = true;
+    }
+    if (typeof rec.total_attempts !== 'number') {
+      rec.total_attempts = rec.attempts || 0;
+      changed = true;
+    }
+    return changed;
+  }
+
   function emptyStrandRecord(strandId) {
     const params = PARAMS_PER_STRAND[strandId] || DEFAULT_PARAMS;
     const rec = {
@@ -385,6 +455,7 @@ window.AvneiBKT = (function() {
 
   function _emptySubBktRecord(islandId) {
     if (islandId === 3) return emptyIsland3Record();
+    if (islandId === 4) return emptyIsland4Record();
     if (islandId === 5) return emptyIsland5Record();
     if (islandId === 14) return emptyIsland14Record();
     return emptyIslandRecord(islandId);
@@ -421,6 +492,16 @@ window.AvneiBKT = (function() {
     if (islandId === 5 && student[islandId].per_word_length) {
       const params = PARAMS_PER_ISLAND[5];
       if (ensureAllWordLengthsIn(student[islandId].per_word_length, params.pL0)) {
+        const state = loadState();
+        if (!state[studentId]) state[studentId] = {};
+        state[studentId][islandId] = student[islandId];
+        saveState(state);
+      }
+    }
+    // אי 4 (3.7.2026) — מיגרציה non-destructive: רשומה ישנה (צורת "אי רגיל") → per_cv.
+    if (islandId === 4) {
+      const params = PARAMS_PER_ISLAND[4] || DEFAULT_PARAMS;
+      if (ensureIsland4Shape(student[islandId], params.pL0)) {
         const state = loadState();
         if (!state[studentId]) state[studentId] = {};
         state[studentId][islandId] = student[islandId];
@@ -697,6 +778,106 @@ window.AvneiBKT = (function() {
   }
 
   // ============================================================
+  // עדכון אי 4 (sub-BKT פר צירוף CV) — 3.7.2026
+  // key = "<target_letter>_<target_phoneme_group>" (יצירה עצלה).
+  // כל 5 משחקוני אי 4 שולחים target_letter + target_phoneme_group ב-event.
+  // event ללא שניהם → מדולג (return null), כמו אי 3 ללא target_letter.
+  // ה-prior לתא חדש נגזר מ-per_letter של אי 3 (האות = מנבא). בלי דרישת שטף
+  // (response_time_ms בד"כ null במשחקוני הבנייה) — מקביל לאי 5.
+  // ============================================================
+  function _priorForCV(state, studentId, letter, params) {
+    const isl3 = state[studentId] && state[studentId][3];
+    let letterP = params.pL0;
+    if (isl3 && isl3.per_letter && isl3.per_letter[letter] &&
+        typeof isl3.per_letter[letter].pKnown === 'number') {
+      letterP = isl3.per_letter[letter].pKnown;
+    }
+    return CV_PRIOR_LETTER_WEIGHT * letterP + (1 - CV_PRIOR_LETTER_WEIGHT) * params.pL0;
+  }
+
+  function ingestIsland4Event(state, studentId, evt) {
+    const island = state[studentId][4];
+    ensureIsland4Shape(island, (PARAMS_PER_ISLAND[4] || DEFAULT_PARAMS).pL0);
+
+    const letter = evt.target_letter;
+    const group = evt.target_phoneme_group;
+    if (!letter || !ALL_HEBREW_LETTERS_22.includes(letter) || !group) {
+      console.warn('BKT island 4: event without valid target_letter/target_phoneme_group', evt);
+      return null;
+    }
+
+    const params = PARAMS_PER_ISLAND[4] || DEFAULT_PARAMS;
+    const key = cvUnitKey(letter, group);
+
+    // יצירה עצלה — התא נוצר בפעם הראשונה, עם prior נגזר-אות.
+    if (!island.per_cv[key]) {
+      island.per_cv[key] = {
+        letter: letter,
+        phoneme_group: group,
+        pKnown: _priorForCV(state, studentId, letter, params),
+        attempts: 0, correct: 0, wrong: 0,
+        responseTimesMs: [],
+        masteryAchievedAt: null,
+      };
+    }
+    const cv = island.per_cv[key];
+
+    cv.attempts++;
+    island.total_attempts++;
+    if (evt.is_correct) cv.correct++;
+    else cv.wrong++;
+
+    if (typeof evt.response_time_ms === 'number' && evt.response_time_ms > 0) {
+      cv.responseTimesMs.push(evt.response_time_ms);
+      if (cv.responseTimesMs.length > 100) {
+        cv.responseTimesMs = cv.responseTimesMs.slice(-100);
+      }
+    }
+
+    cv.pKnown = bktUpdate(cv.pKnown, evt.is_correct === true, params);
+
+    // mastery פר צירוף — בלי דרישת שטף (מקביל לאי 5).
+    if (!cv.masteryAchievedAt && cv.pKnown >= MASTERY_THRESHOLD) {
+      cv.masteryAchievedAt = Date.now();
+    }
+
+    // aggregate — ממוצע התאים שתורגלו.
+    const practiced = Object.values(island.per_cv).filter(c => c.attempts > 0);
+    if (practiced.length > 0) {
+      island.aggregate_pKnown = practiced.reduce((s, c) => s + c.pKnown, 0) / practiced.length;
+    }
+
+    // consolidation — סיום סשן. "הכול נשלט" = כל התאים שתורגלו נשלטו.
+    if (evt.session_id && evt.session_id !== island.lastSessionId) {
+      const allMastered = practiced.length > 0 &&
+        practiced.every(c => c.masteryAchievedAt !== null);
+      if (allMastered) island.sessionsAtMastery++;
+      else island.sessionsAtMastery = 0;
+      island.lastSessionId = evt.session_id;
+    }
+
+    // mastery של האי כולו — כל הצירופים שתורגלו + 2 סשנים רצופים.
+    if (
+      !island.masteryAchievedAt &&
+      practiced.length > 0 &&
+      practiced.every(c => c.masteryAchievedAt !== null) &&
+      island.sessionsAtMastery >= 2
+    ) {
+      island.masteryAchievedAt = Date.now();
+    }
+
+    return {
+      pKnown_cv: cv.pKnown,
+      pKnown_island: island.aggregate_pKnown,
+      cv_key: key,
+      letter: letter,
+      phoneme_group: group,
+      masteryAchieved: !!island.masteryAchievedAt,
+      cv_mastery: !!cv.masteryAchievedAt,
+    };
+  }
+
+  // ============================================================
   // עדכון אי רגיל
   // ============================================================
   function ingestRegularIslandEvent(state, studentId, islandId, evt) {
@@ -846,6 +1027,9 @@ window.AvneiBKT = (function() {
     let islandResult;
     if (islandId === 3) {
       islandResult = ingestIsland3Event(state, studentId, evt);
+    } else if (islandId === 4) {
+      // אי 4 (3.7.2026) — sub-BKT פר צירוף CV.
+      islandResult = ingestIsland4Event(state, studentId, evt);
     } else if (islandId === 5) {
       // אי 5 (סוכן 30 · 30.5.2026) — sub-BKT פר אורך-מילה.
       islandResult = ingestIsland5Event(state, studentId, evt);
@@ -1056,6 +1240,41 @@ window.AvneiBKT = (function() {
           ? 'mastered'
           : weakLengths.length > 0
             ? `אורכי מילים חלשים: ${weakLengths.map(w => WORD_LENGTH_DISPLAY_HE[w] || w).join(', ')}`
+            : `דורש שני סשנים רצופים — כרגע ${island.sessionsAtMastery}`,
+      };
+    }
+
+    if (islandId === 4) {
+      // אי 4 (3.7.2026) — בדיקה פר צירוף CV (מפתחות דינמיים).
+      ensureIsland4Shape(island, (PARAMS_PER_ISLAND[4] || DEFAULT_PARAMS).pL0);
+      const cvStatus = {};
+      const weakCVs = [];
+      Object.keys(island.per_cv).forEach(key => {
+        const cv = island.per_cv[key];
+        const mastered = cv.masteryAchievedAt !== null;
+        cvStatus[key] = {
+          pKnown: cv.pKnown,
+          mastered,
+          attempts: cv.attempts,
+          accuracy: cv.attempts > 0 ? cv.correct / cv.attempts : null,
+          letter: cv.letter,
+          phoneme_group: cv.phoneme_group,
+          displayHe: cvDisplayHe(key),
+        };
+        if (!mastered && cv.attempts > 0 && cv.pKnown < MASTERY_THRESHOLD) {
+          weakCVs.push(key);
+        }
+      });
+      return {
+        mastered: !!island.masteryAchievedAt,
+        aggregate_pKnown: island.aggregate_pKnown,
+        per_cv: cvStatus,
+        weak_cvs: weakCVs,
+        consolidationOk: island.sessionsAtMastery >= 2,
+        reason: island.masteryAchievedAt
+          ? 'mastered'
+          : weakCVs.length > 0
+            ? `צירופים חלשים: ${weakCVs.map(cvDisplayHe).join(', ')}`
             : `דורש שני סשנים רצופים — כרגע ${island.sessionsAtMastery}`,
       };
     }
@@ -1554,6 +1773,100 @@ window.AvneiBKT = (function() {
     return dist;
   }
 
+  // ============================================================
+  // API חדש — Sub-BKT פר צירוף CV (אי 4 · 3.7.2026)
+  // מקביל ל-getWordLengthState/getWeakestWordLengths/getWordLengthMasteryDistribution,
+  // אבל על מפתחות דינמיים (per_cv נבנה עצלן) — אין רשימת מפתחות קבועה.
+  // ============================================================
+  function _resolvePerCV(studentId) {
+    const state = loadState();
+    const s = state[studentId];
+    if (!s || !s[4]) return null;
+    const params = PARAMS_PER_ISLAND[4] || DEFAULT_PARAMS;
+    if (ensureIsland4Shape(s[4], params.pL0)) saveState(state);
+    return s[4].per_cv || null;
+  }
+
+  // getCVState(studentId, cvKey) — cvKey = "<letter>_<group>" (או שימוש ב-cvUnitKey).
+  function getCVState(studentId, cvKey) {
+    const perCV = _resolvePerCV(studentId);
+    if (!perCV || !perCV[cvKey]) return null;
+    const cv = perCV[cvKey];
+    return {
+      cv_key: cvKey,
+      displayHe: cvDisplayHe(cvKey),
+      letter: cv.letter,
+      phoneme_group: cv.phoneme_group,
+      pKnown: cv.pKnown,
+      attempts: cv.attempts || 0,
+      correct: cv.correct || 0,
+      wrong: cv.wrong || 0,
+      accuracy: (cv.attempts > 0) ? (cv.correct / cv.attempts) : null,
+      median_response_time_ms: median((cv.responseTimesMs || []).slice(-20)),
+      mastered: cv.masteryAchievedAt !== null && cv.masteryAchievedAt !== undefined,
+      masteryAchievedAt: cv.masteryAchievedAt || null,
+    };
+  }
+
+  // getWeakestCVs — n הצירופים החלשים ביותר, ממוין pKnown עולה.
+  // רק תאים עם attempts >= CV_MIN_ATTEMPTS_FOR_BUCKET, לא-נשלטים.
+  // opts.letter — סינון לאות מסוימת (שימושי לדשבורד פר-ילדה).
+  function getWeakestCVs(studentId, n, opts) {
+    const limit = (typeof n === 'number' && n > 0) ? n : 3;
+    const options = opts || {};
+    const perCV = _resolvePerCV(studentId);
+    if (!perCV) return [];
+    const entries = Object.keys(perCV)
+      .map(key => {
+        const cv = perCV[key];
+        if (!cv) return null;
+        if (options.letter && cv.letter !== options.letter) return null;
+        const attempts = cv.attempts || 0;
+        if (attempts < CV_MIN_ATTEMPTS_FOR_BUCKET) return null;
+        if (cv.masteryAchievedAt) return null;
+        return {
+          cv_key: key,
+          displayHe: cvDisplayHe(key),
+          letter: cv.letter,
+          phoneme_group: cv.phoneme_group,
+          pKnown: cv.pKnown,
+          attempts,
+          accuracy: attempts > 0 ? (cv.correct / attempts) : null,
+        };
+      })
+      .filter(Boolean);
+    entries.sort((a, b) => a.pKnown - b.pKnown);
+    return entries.slice(0, limit);
+  }
+
+  // getCVMasteryDistribution — חתך 3 דליים על הצירופים שנפגשו (untouched לא רלוונטי —
+  // תאים נוצרים עצלן, אז "לא-נגע" = לא קיים כתא). total = מספר הצירופים שנפגשו.
+  function getCVMasteryDistribution(studentId) {
+    const perCV = _resolvePerCV(studentId);
+    const dist = {
+      mastered: 0,
+      in_progress: 0,
+      weak: 0,
+      by_bucket: { mastered: [], in_progress: [], weak: [] },
+      total: 0,
+    };
+    if (!perCV) return dist;
+    const keys = Object.keys(perCV);
+    dist.total = keys.length;
+    keys.forEach(key => {
+      const cv = perCV[key];
+      const attempts = cv.attempts || 0;
+      if (cv.masteryAchievedAt) {
+        dist.mastered++; dist.by_bucket.mastered.push(key);
+      } else if (attempts < CV_MIN_ATTEMPTS_FOR_BUCKET || cv.pKnown >= CV_WEAK_THRESHOLD) {
+        dist.in_progress++; dist.by_bucket.in_progress.push(key);
+      } else {
+        dist.weak++; dist.by_bucket.weak.push(key);
+      }
+    });
+    return dist;
+  }
+
   function getOralSkillMasteryDistribution(studentId) {
     const perSkill = _resolvePerOralSkill(studentId);
     const dist = {
@@ -1653,5 +1966,16 @@ window.AvneiBKT = (function() {
     WORD_LENGTH_DISPLAY_HE,
     WORD_LENGTH_WEAK_THRESHOLD,
     WORD_LENGTH_MIN_ATTEMPTS_FOR_BUCKET,
+
+    // ---- API חדש — Sub-BKT פר צירוף CV (אי 4 · 3.7.2026) ----
+    getCVState,
+    getWeakestCVs,
+    getCVMasteryDistribution,
+    cvUnitKey,
+    cvDisplayHe,
+    PHONEME_GROUP_DISPLAY_HE,
+    CV_WEAK_THRESHOLD,
+    CV_MIN_ATTEMPTS_FOR_BUCKET,
+    CV_PRIOR_LETTER_WEIGHT,
   };
 })();
