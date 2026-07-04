@@ -118,11 +118,78 @@ button { font-family: inherit; }
 }
 .pill-btn:hover { background: var(--mint, #DDF3E6); }
 
-/* ===== LAYOUT ===== */
+/* ===== LAYOUT — תפריט צד + תוכן ===== */
+.layout {
+  display: flex;
+  align-items: flex-start;
+  max-width: 1480px;
+  margin: 0 auto;
+}
+.side-nav {
+  position: sticky;
+  top: 84px;
+  flex: none;
+  width: 200px;
+  padding: 28px 24px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.side-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  text-align: right;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-light);
+  padding: 11px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease;
+}
+.side-link:hover { background: var(--white); color: var(--text); }
+.side-link.active { background: var(--white); color: var(--primary-dark); box-shadow: var(--shadow-sm); }
+.side-badge {
+  background: var(--peach, #FFD8C7);
+  color: var(--tier-red-ink);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 1px 8px;
+  border-radius: 999px;
+}
+.pview > .section-title:first-child { margin-top: 0; }
+/* ייצוא PDF — מדפיסים את כל התצוגות, בלי תפריט הצד */
+@media print {
+  .side-nav { display: none !important; }
+  .pview { display: block !important; }
+}
+@media (max-width: 900px) {
+  .layout { display: block; }
+  .side-nav {
+    position: sticky;
+    top: 0;
+    z-index: 45;
+    width: auto;
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 10px 16px;
+    gap: 8px;
+    background: var(--bg, #F7FBFA);
+  }
+  .side-link { white-space: nowrap; background: var(--white); box-shadow: var(--shadow-sm); padding: 8px 14px; }
+}
+
 .container {
   max-width: 1280px;
   margin: 0 auto;
   padding: 28px 28px 90px;
+  flex: 1;
+  min-width: 0;
 }
 .section-title {
   font-family: 'Rubik';
@@ -918,9 +985,22 @@ button { font-family: inherit; }
   </div>
 </div>
 
+<div class="layout">
+
+<aside class="side-nav" id="side-nav" aria-label="אזורי הדשבורד">
+  <button type="button" class="side-link active" data-view="overview">תמונת מצב ומפה</button>
+  <button type="button" class="side-link" data-view="trends">מגמות</button>
+  <button type="button" class="side-link" data-view="questions">שאלות חזקות · לחיזוק</button>
+  <button type="button" class="side-link" data-view="movers">תנועות ופערים</button>
+  <button type="button" class="side-link" data-view="interventions">התערבויות</button>
+  <button type="button" class="side-link" data-view="alerts">התראות <span class="side-badge">4</span></button>
+  <button type="button" class="side-link" data-view="links">כניסה לפולסים</button>
+</aside>
+
 <div class="container">
 
-  <!-- ===== PULSE NAV STRIP ===== -->
+  <!-- ===== VIEW: LINKS (כניסה לפולסים) ===== -->
+  <div class="pview" data-view="links">
   <div class="section-title">כניסה לפולסים — תצוגה מקדימה</div>
   <nav class="nav-strip" aria-label="כניסה לפולסים">
     <a class="nav-card" href="pulse-questionnaire.html">
@@ -956,8 +1036,10 @@ button { font-family: inherit; }
       <span class="nav-card-arrow" aria-hidden="true">‹</span>
     </a>
   </nav>
+  </div>
 
-  <!-- ===== KPI ROW ===== -->
+  <!-- ===== VIEW: OVERVIEW (תמונת מצב + מפת כיתות) ===== -->
+  <div class="pview" data-view="overview">
   <div class="kpi-row">
     <div class="kpi-card">
       <div class="kpi-chip mint" aria-hidden="true">✓</div>
@@ -1119,7 +1201,10 @@ button { font-family: inherit; }
     </div>
   </div>
 
-  <!-- ===== WIDGET: SCHOOL-WIDE TRENDS BY DIMENSION ===== -->
+  </div><!-- /overview -->
+
+  <!-- ===== VIEW: TRENDS ===== -->
+  <div class="pview" data-view="trends">
   <div class="widget-card">
     <div class="widget-head">
       <h3>📊 מגמות בית-ספריות · לפי תחום</h3>
@@ -1169,7 +1254,10 @@ button { font-family: inherit; }
     </div>
   </div>
 
-  <!-- ===== WIDGET: STRONG / WEAK QUESTIONS ===== -->
+  </div><!-- /trends -->
+
+  <!-- ===== VIEW: QUESTIONS ===== -->
+  <div class="pview" data-view="questions">
   <div class="widget-card">
     <div class="widget-head">
       <h3>💬 שאלות חזקות · שאלות לחיזוק</h3>
@@ -1226,8 +1314,10 @@ button { font-family: inherit; }
     </div>
     <div class="q-note">שאלה "לחיזוק" היא הזדמנות לעבודה כיתתית ולשיחה עם המחנכות — לא ציון לילד.ה או לכיתה. הפירוט המלא פר כיתה נמצא בדשבורד המחנכת.</div>
   </div>
+  </div><!-- /questions -->
 
-  <!-- ===== WIDGETS 3 + 4 (grid) ===== -->
+  <!-- ===== VIEW: MOVERS + EQUITY ===== -->
+  <div class="pview" data-view="movers">
   <div class="widgets-grid">
 
     <!-- WIDGET 3: MOVERS -->
@@ -1297,8 +1387,10 @@ button { font-family: inherit; }
     </div>
 
   </div>
+  </div><!-- /movers -->
 
-  <!-- ===== WIDGET 5: ACTIVE INTERVENTIONS ===== -->
+  <!-- ===== VIEW: INTERVENTIONS ===== -->
+  <div class="pview" data-view="interventions">
   <div class="widget-card">
     <div class="widget-head">
       <h3>🛠 התערבויות פעילות</h3>
@@ -1336,8 +1428,10 @@ button { font-family: inherit; }
     </div>
     <button class="btn-primary" id="btnOpenCatalog">+ הצעי התערבות חדשה מהקטלוג</button>
   </div>
+  </div><!-- /interventions -->
 
-  <!-- Alerts feed -->
+  <!-- ===== VIEW: ALERTS ===== -->
+  <div class="pview" data-view="alerts">
   <div class="section-title">התראות פעילות (4 מתוך 15 הכללים נדלקו השבוע)</div>
   <div class="alerts-section">
 
@@ -1378,6 +1472,7 @@ button { font-family: inherit; }
     </div>
 
   </div>
+  </div><!-- /alerts -->
 
   <!-- ===== LEGAL BANNER ===== -->
   <div class="legal-banner">
@@ -1389,6 +1484,7 @@ button { font-family: inherit; }
     דשבורד זה מציג <strong>תמונה כוללת ברמת בית-ספר</strong>. נתוני ילדים פרטניים זמינים רק ליועצת ולמחנכת הרלוונטית.
   </div>
 </div>
+</div><!-- /layout -->
 
 <!-- ===== INTERVENTION PICKER MODAL ===== -->
 <div class="modal-overlay" id="catalogModal" role="dialog" aria-modal="true" aria-labelledby="catalogTitle">
@@ -1597,6 +1693,24 @@ document.querySelectorAll('.heatmap-cell').forEach(cell => {
     if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); go(); }
   });
 });
+
+// ═══════ תפריט צד — מעבר בין תצוגות ═══════
+// ברירת המחדל: תמונת מצב בית-ספרית + מפת הכיתות. כל השאר נפתח מהתפריט.
+let activeView = 'overview';
+function applyView() {
+  document.querySelectorAll('.pview').forEach(el => {
+    el.style.display = el.dataset.view === activeView ? '' : 'none';
+  });
+  document.querySelectorAll('.side-link').forEach(b =>
+    b.classList.toggle('active', b.dataset.view === activeView));
+}
+document.querySelectorAll('.side-link').forEach(b =>
+  b.addEventListener('click', () => {
+    activeView = b.dataset.view;
+    applyView();
+    window.scrollTo({ top: 0 });
+  }));
+applyView();
 
 // חיפוש במפת הכיתות
 const heatSearch = document.getElementById('heatSearch');

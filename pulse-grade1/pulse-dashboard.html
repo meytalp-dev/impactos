@@ -69,11 +69,67 @@ body { font-family: "Rubik","Assistant","Heebo",Arial,sans-serif; }
   box-shadow: var(--shadow-card);
 }
 
+/* ═══════ LAYOUT — תפריט צד + תוכן ═══════ */
+.layout {
+  display: flex;
+  align-items: flex-start;
+  max-width: 1320px;
+  margin: 0 auto;
+}
+.side-nav {
+  position: sticky;
+  top: 84px;
+  flex: none;
+  width: 190px;
+  padding: 28px 20px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.side-link {
+  text-align: right;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-size: .92rem;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 11px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease;
+}
+.side-link:hover { background: var(--surface); color: var(--ink); }
+.side-link.active { background: var(--surface); color: var(--aqua-deep); box-shadow: var(--shadow-card); }
+.view > .section:first-child { margin-top: 0; }
+/* הדפסה — כל התצוגות, בלי תפריט הצד */
+@media print {
+  .side-nav { display: none !important; }
+  #container .view { display: block !important; }
+}
+@media (max-width: 900px) {
+  .layout { display: block; }
+  .side-nav {
+    position: sticky;
+    top: 0;
+    z-index: 45;
+    width: auto;
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 10px 16px;
+    gap: 8px;
+    background: var(--bg);
+  }
+  .side-link { white-space: nowrap; background: var(--surface); box-shadow: var(--shadow-card); padding: 8px 14px; }
+}
+
 /* ═══════ CONTAINER ═══════ */
 .container {
   max-width: 1120px;
   margin: 0 auto;
   padding: 28px 20px 80px;
+  flex: 1;
+  min-width: 0;
 }
 
 /* ═══════ HERO — כרטיס לבן עם שמש, מטא־שורה, ושני כפתורים רכים ═══════ */
@@ -238,7 +294,7 @@ body { font-family: "Rubik","Assistant","Heebo",Arial,sans-serif; }
   height: 8px;
   border-radius: 999px;
   position: relative;
-  overflow: hidden;
+  /* overflow גלוי — מעוין "מבט המורה" בולט מעל הפס */
 }
 .dim-bar-fill {
   position: absolute; top: 0; right: 0;
@@ -251,6 +307,38 @@ body { font-family: "Rubik","Assistant","Heebo",Arial,sans-serif; }
 .trend-up   { color: var(--ok); }
 .trend-down { color: #C2705C; }
 .trend-flat { color: var(--muted); }
+
+/* ═══════ "מבט המורה" — מעוין כהה על פס הממד + הערת מקרא ═══════ */
+.dim-teacher-marker {
+  position: absolute;
+  top: 50%;
+  width: 10px; height: 10px;
+  transform: translateY(-50%) rotate(45deg);
+  background: var(--ink);
+  border: 2px solid #fff;
+  border-radius: 2px;
+  box-shadow: 0 1px 4px rgba(36,50,56,.35);
+}
+.teacher-lens-note {
+  margin: 12px 2px 0;
+  font-size: .84rem;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.teacher-lens-note strong { color: var(--ink); }
+.lens-marker {
+  display: inline-block;
+  width: 9px; height: 9px;
+  transform: rotate(45deg);
+  background: var(--ink);
+  border: 2px solid #fff;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(36,50,56,.3);
+  margin-left: 4px;
+  vertical-align: middle;
+}
+.kh-flag { box-shadow: inset 0 0 0 2px var(--aqua-deep); font-weight: 700; }
+.kh-gap-chip { font-size: .66rem; padding: 1px 8px; margin-right: 4px; }
 
 .trend-card {
   background: var(--surface);
@@ -686,8 +774,16 @@ details.drawer[open] summary::after { content: "–"; }
   </div>
 </header>
 
-<div class="container" id="container">
-  <!-- Filled by JS -->
+<div class="layout">
+  <aside class="side-nav" id="side-nav" aria-label="אזורי הדשבורד">
+    <button type="button" class="side-link active" data-view="overview">תמונת מצב</button>
+    <button type="button" class="side-link" data-view="trends">מגמות</button>
+    <button type="button" class="side-link" data-view="questions">שאלות הפולס</button>
+    <button type="button" class="side-link" data-view="tools">כלים והתערבויות</button>
+  </aside>
+  <div class="container" id="container">
+    <!-- Filled by JS -->
+  </div>
 </div>
 
 <!-- Demo banner -->
@@ -794,9 +890,39 @@ const DIMENSIONS = [
 // עיקרון סגור: בלי השוואה בין כיתות בדשבורד המחנכת.
 const ROLE = new URLSearchParams(location.search).get('role') === 'principal' ? 'principal' : 'teacher';
 
+// ═══════ תצוגות (תפריט צד): תמונת מצב · מגמות · שאלות · כלים ═══════
+// המסך הראשי נשאר נקי — תמונת מצב + הילדים שכדאי לראות. השאר בתפריט הצד.
+let activeView = 'overview';
+function applyView() {
+  document.querySelectorAll('#container .view').forEach(el => {
+    el.style.display = el.dataset.view === activeView ? '' : 'none';
+  });
+  document.querySelectorAll('.side-link').forEach(b =>
+    b.classList.toggle('active', b.dataset.view === activeView));
+}
+function setView(v) {
+  activeView = v;
+  applyView();
+  window.scrollTo({ top: 0 });
+}
+
 // ═══════ DATA LAYER (localStorage לדמו) ═══════
 function getSubmissions() {
   return JSON.parse(localStorage.getItem('pulse-demo-responses') || '[]');
+}
+
+// ═══════ "מבט המורה" — טופס הדירוג הדו-שבועי ═══════
+// המפתח המשותף שטופס הדירוג (pulse-teacher-form) כותב אליו בעת "שליחה".
+// סולם המורה: 1–4 (לא ראיתי → כמעט תמיד). הילדים: 1–3. שניהם מוצגים על 1–5.
+const TEACHER_OBS_KEY = 'pulse-demo-teacher-observations';
+function getTeacherObs(classId) {
+  try {
+    return JSON.parse(localStorage.getItem(TEACHER_OBS_KEY) || '[]')
+      .find(o => o.class === classId) || null;
+  } catch (_) { return null; }
+}
+function teacherToDisplay5(avg1to4) {
+  return (avg1to4 * 5 / 4);
 }
 
 // ═══════ תצוגה בסולם 1–5 ═══════
@@ -810,6 +936,7 @@ function toDisplay5(avg1to3) {
 function clearData() {
   if (confirm('למחוק את כל נתוני הדמו?')) {
     localStorage.removeItem('pulse-demo-responses');
+    localStorage.removeItem(TEACHER_OBS_KEY);
     render();
   }
 }
@@ -923,6 +1050,32 @@ function seedData() {
     });
   }
   localStorage.setItem('pulse-demo-responses', JSON.stringify(seeds));
+
+  // "מבט המורה" — דירוג טופס אחד לכל כיתה (סולם 1–4), נגזר מאותם baseP,
+  // + אי-הסכמה מכוונת בילד.ה אחד.ת פר כיתה בממד "חברים" — להדגמת "שווה מבט"
+  // (הילד.ה מסמן.ת "כן", המורה רואה אחרת — האיתות המעניין באמת).
+  const DISAGREE = { "א'1": 'רועי שמש', "א'2": 'עינב סלע', "א'3": 'לי עוז', "א'4": 'עומר נחום' };
+  const obs = Object.keys(CLASS_META).map(classId => {
+    const perStudent = {};
+    KIDS.filter(k => k.class === classId).forEach(kid => {
+      const dims = {};
+      DIMENSIONS.forEach(d => {
+        const r = pseudoRand('t:' + kid.id + ':' + d.id);
+        let v = 1 + kid.base[d.id] * 3 + (r - 0.5) * 0.8;
+        if (DISAGREE[classId] === kid.name && d.id === 'friend') v = 1.5;
+        dims[d.id] = Math.max(1, Math.min(4, Math.round(v * 2) / 2));
+      });
+      perStudent[kid.name] = dims;
+    });
+    const dimAverages = {};
+    DIMENSIONS.forEach(d => {
+      const vals = Object.values(perStudent).map(x => x[d.id]);
+      dimAverages[d.id] = vals.reduce((a, b) => a + b, 0) / vals.length;
+    });
+    return { class: classId, submittedAt: new Date(now).toISOString(), scale: '1-4', perStudent, dimAverages };
+  });
+  localStorage.setItem(TEACHER_OBS_KEY, JSON.stringify(obs));
+
   render();
 }
 
@@ -1055,8 +1208,10 @@ const ICONS = {
   tools: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg>'
 };
 
-// פתיחת מגירת "המפה המלאה" מתוך כפתור ה-hero
+// פתיחת מגירת "המפה המלאה" מתוך כפתור ה-hero — עוברים לתצוגת "כלים" ופותחים
 function openMapDrawer() {
+  activeView = 'tools';
+  applyView();
   const d = document.getElementById('map-drawer');
   if (d) {
     d.open = true;
@@ -1248,11 +1403,26 @@ function getStudentHistory(classId, sid) {
     }));
 }
 
-// טבלת מיני בכרטיס ילד.ה: שורה פר ממד, עמודה פר פולס — רואים איפה ענה.תה פחות
-function renderKidHistory(classId, sid) {
+// טבלת מיני בכרטיס ילד.ה: שורה פר ממד, עמודה פר פולס — רואים איפה ענה.תה פחות.
+// אם יש דירוג מורה לילד.ה — עמודה נוספת "המורה", ודגש כשהמבטים שונים ("שווה מבט").
+const T_LABEL = v => v < 2 ? 'לא ראיתי' : v < 3 ? 'לפעמים' : 'הרבה';
+const T_CLASS = v => v < 2 ? 'kh-no' : v < 3 ? 'kh-some' : 'kh-yes';
+function kidDisagrees(childScore, teacherVal) {
+  // הילד.ה "כן" והמורה כמעט לא ראתה — או להפך
+  return teacherVal != null && childScore != null &&
+    ((childScore === 3 && teacherVal < 2.25) || (childScore === 1 && teacherVal >= 3.25));
+}
+
+function renderKidHistory(classId, sid, name) {
   const hist = getStudentHistory(classId, sid).slice(-4);
   if (hist.length < 2) return '';
-  const head = hist.map(h => `<span class="kh-head">פולס ${h.week}</span>`).join('');
+  const tobs = getTeacherObs(classId);
+  const tdims = tobs && tobs.perStudent ? tobs.perStudent[name] : null;
+  const latest = hist[hist.length - 1].dims;
+
+  const head = hist.map(h => `<span class="kh-head">פולס ${h.week}</span>`).join('')
+    + (tdims ? '<span class="kh-head">המורה</span>' : '');
+
   const rows = DIMENSIONS.map(d => {
     const cells = hist.map(h => {
       const s = h.dims[d.id];
@@ -1260,12 +1430,28 @@ function renderKidHistory(classId, sid) {
       const txt = s === 3 ? 'כן' : s === 2 ? 'קצת' : s === 1 ? 'לא' : '—';
       return `<span class="kh-cell ${cls}" role="img" aria-label="${escapeHtml(d.name)} · פולס ${h.week}: ${txt}">${txt}</span>`;
     }).join('');
-    return `<span class="kh-dim" style="color:${d.deep}">${escapeHtml(d.name)}</span>${cells}`;
+    let tCell = '';
+    if (tdims) {
+      const tv = tdims[d.id];
+      if (tv == null) {
+        tCell = '<span class="kh-cell kh-none">—</span>';
+      } else {
+        const flag = kidDisagrees(latest[d.id], tv);
+        tCell = `<span class="kh-cell ${T_CLASS(tv)}${flag ? ' kh-flag' : ''}" role="img"
+          aria-label="מבט המורה · ${escapeHtml(d.name)}: ${T_LABEL(tv)}${flag ? ' — שונה ממה שהילד.ה סימן.ה' : ''}">${T_LABEL(tv)}</span>`;
+      }
+    }
+    return `<span class="kh-dim" style="color:${d.deep}">${escapeHtml(d.name)}</span>${cells}${tCell}`;
   }).join('');
+
+  const anyFlag = tdims && DIMENSIONS.some(d => kidDisagrees(latest[d.id], tdims[d.id]));
   return `
     <div class="kid-history">
-      <div class="kid-history-caption">מה ענה.תה בפולסים האחרונים:</div>
-      <div class="kh-grid" style="grid-template-columns:52px repeat(${hist.length},1fr)">
+      <div class="kid-history-caption">
+        מה ענה.תה בפולסים${tdims ? ' + מבט המורה' : ''}:
+        ${anyFlag ? '<span class="chip chip-info kh-gap-chip">שווה מבט — המבטים שונים</span>' : ''}
+      </div>
+      <div class="kh-grid" style="grid-template-columns:52px repeat(${hist.length},1fr)${tdims ? ' 1.25fr' : ''}">
         <span></span>${head}
         ${rows}
       </div>
@@ -1344,7 +1530,7 @@ function renderDimensionGroups(classId, biweek) {
             <span class="chip ${r.lows >= 2 ? 'chip-attention' : 'chip-notice'}">${r.lows >= 2 ? 'לבדיקה' : 'איתות עדין'}</span>
           </div>
           <p class="kid-note">סימן.ה "לא" ב"${escapeHtml(d.name)}" בפולס האחרון — כדאי לשים לב, בנחת.</p>
-          ${renderKidHistory(classId, r.sid)}
+          ${renderKidHistory(classId, r.sid, r.name)}
         </div>
       `),
       ...improvedKids.map(r => `
@@ -1354,7 +1540,7 @@ function renderDimensionGroups(classId, biweek) {
             <span class="chip chip-ok">שיפור נראה</span>
           </div>
           <p class="kid-note">עלה.תה מ"לא" בפולס הקודם — מגמה משמחת ב"${escapeHtml(d.name)}".</p>
-          ${renderKidHistory(classId, r.sid)}
+          ${renderKidHistory(classId, r.sid, r.name)}
         </div>
       `)
     ].join('');
@@ -1629,6 +1815,10 @@ function render() {
   const classId = document.getElementById('class-select').value;
   const container = document.getElementById('container');
 
+  // תפריט הצד רלוונטי רק לתצוגת כיתה — במבט שכבה מסתירים
+  const sideNav = document.getElementById('side-nav');
+  if (sideNav) sideNav.style.display = classId === 'layer' ? 'none' : '';
+
   if (classId === 'layer') {
     return renderLayerView(container);
   }
@@ -1636,21 +1826,32 @@ function render() {
   const data = aggregateClass(classId);
 
   if (!data) {
+    activeView = 'overview';
     container.innerHTML = `
+      <div class="view" data-view="overview">
       <div class="empty">
         <h3>עדיין אין תשובות לכיתה ${escapeHtml(classId)}</h3>
         <p>הילדים עוד לא מילאו פולס. אפשר לשלוח להם את הקישור.</p>
         <a class="btn" href="pulse-questionnaire.html?class=${encodeURIComponent(classId)}&biweek=1" target="_blank" rel="noopener">פתיחת השאלון</a>
         <p style="margin-top:20px;font-size:0.85rem;">או — ללחוץ "טען דוגמה" למטה כדי לראות איך זה נראה עם נתונים.</p>
       </div>
-      ${renderNavStrip(classId)}
+      </div>
+      <div class="view" data-view="tools">${renderNavStrip(classId)}</div>
       ${renderFooter()}
     `;
+    applyView();
     return;
   }
 
   const hero = generateHero(data);
   const teacherName = CLASS_META[classId] ? CLASS_META[classId].teacher : '';
+
+  // "מבט המורה" — אם טופס הדירוג נשלח, מסמנים מעוין כהה על כל פס
+  const tobs = getTeacherObs(classId);
+  const gapDims = tobs ? DIMENSIONS.filter(d => {
+    const t = tobs.dimAverages[d.id], c = data.dimAverages[d.id];
+    return t != null && c != null && Math.abs(toDisplay5(c) - teacherToDisplay5(t)) >= 1;
+  }) : [];
 
   const dimBars = DIMENSIONS.map(d => {
     const avg = data.dimAverages[d.id] || 0;
@@ -1658,17 +1859,37 @@ function render() {
     const trend = data.dimTrends[d.id];
     const trendText = trend === 'up' ? '↑ עלייה' : trend === 'down' ? '↓ ירידה' : '→ יציב';
     const trendClass = trend === 'up' ? 'trend-up' : trend === 'down' ? 'trend-down' : 'trend-flat';
+    const tAvg = tobs ? tobs.dimAverages[d.id] : null;
+    const tMarker = tAvg == null ? '' : `
+      <span class="dim-teacher-marker" style="right:calc(${(tAvg / 4) * 100}% - 5px)" role="img"
+        aria-label="מבט המורה ב${escapeHtml(d.name)}: ${teacherToDisplay5(tAvg).toFixed(1)} מתוך 5"
+        title="מבט המורה: ${teacherToDisplay5(tAvg).toFixed(1)} מתוך 5"></span>`;
     return `
       <div class="dim-row">
         <div class="dim-name" style="color:${d.deep}"><span class="dim-dot" style="background:${d.soft}" aria-hidden="true"></span>${escapeHtml(d.name)}</div>
         <div class="dim-bar" style="background:color-mix(in srgb, ${d.soft} 18%, white)">
           <div class="dim-bar-fill" style="background:${d.soft}; width:${widthPct}%;"></div>
+          ${tMarker}
         </div>
         <div class="dim-score" style="color:${d.deep}">${toDisplay5(avg).toFixed(1)}</div>
         <div class="dim-trend ${trendClass}">${trendText}</div>
       </div>
     `;
   }).join('');
+
+  const formLink = `pulse-teacher-form-mockup.html?class=${encodeURIComponent(classId)}`;
+  const teacherNote = tobs ? `
+    <p class="teacher-lens-note">
+      <span class="lens-marker" aria-hidden="true"></span>
+      המעוין הכהה על כל פס = <strong>מבט המורה</strong>, מטופס הדירוג האחרון ששלחת.
+      ${gapDims.length
+        ? `יש פער בולט בין מה שהילדים סימנו למה שראית ב: <strong>${gapDims.map(d => `"${escapeHtml(d.name)}"`).join(', ')}</strong> — שווה מבט.`
+        : 'שני המבטים די קרובים — אין פער בולט.'}
+    </p>` : `
+    <p class="teacher-lens-note">
+      עדיין אין כאן "מבט המורה" — אחרי שתמלאי את <a href="${formLink}">טופס הדירוג</a> ותלחצי "שליחה",
+      הדירוג שלך יופיע על הפסים האלה לצד מה שהילדים סימנו.
+    </p>`;
 
   // 4 גרפי מיני — מגמת כל תחום לאורך הפולסים האחרונים
   const trendMinis = DIMENSIONS.map(d => {
@@ -1704,6 +1925,7 @@ function render() {
     .filter(r => r.status === 'attention' || r.status === 'watch').length;
 
   container.innerHTML = `
+    <div class="view" data-view="overview">
     <section class="hero">
       <div class="hero-top">
         <div class="hero-id">
@@ -1760,8 +1982,6 @@ function render() {
       </div>
     </div>
 
-    ${renderNavStrip(classId)}
-
     ${renderActionsSection(classId, data)}
 
     <section class="section">
@@ -1769,18 +1989,33 @@ function render() {
         <span class="section-icon si-lavender" aria-hidden="true">${ICONS.bars}</span>
         <h2 class="section-title">אקלים הכיתה · 4 ממדים</h2>
       </div>
-      <p class="section-micro">סיכום קבוצתי בלי שמות, מתוך מה שהילדים עצמם סימנו.</p>
+      <p class="section-micro">סיכום קבוצתי בלי שמות — הפס הצבעוני = מה שהילדים סימנו, המעוין הכהה = מבט המורה.</p>
       <div class="dim-list">${dimBars}</div>
-
-      <p class="trend-title" style="margin:18px 0 0">המגמות לאורך הפולסים — עמודה לכל פולס, הכהה ביותר = הפולס האחרון:</p>
-      <div class="trend-grid">${trendMinis}</div>
+      ${teacherNote}
 
       ${data.alertText ? `<div class="alert">${data.alertText}</div>` : ''}
     </section>
 
-    ${renderQuestionStats(data)}
-
     ${renderDimensionGroups(classId, data.biweek)}
+    </div>
+
+    <div class="view" data-view="trends">
+      <section class="section" style="margin-top:0">
+        <div class="section-head">
+          <span class="section-icon si-mint" aria-hidden="true">${ICONS.bars}</span>
+          <h2 class="section-title">מגמות לאורך הפולסים · לפי תחום</h2>
+        </div>
+        <p class="section-micro">עמודה לכל פולס, הכהה ביותר = הפולס האחרון.</p>
+        <div class="trend-grid">${trendMinis}</div>
+      </section>
+    </div>
+
+    <div class="view" data-view="questions">
+      ${renderQuestionStats(data)}
+    </div>
+
+    <div class="view" data-view="tools">
+    ${renderNavStrip(classId)}
 
     <section class="section">
       <div class="section-head">
@@ -1827,9 +2062,11 @@ function render() {
         </div>
       </details>
     </section>
+    </div>
 
     ${renderFooter()}
   `;
+  applyView();
 }
 
 // טוגל דו-כיווני + שמירה ב-localStorage + משוב toast
@@ -1961,6 +2198,10 @@ document.addEventListener('keydown', e => {
     select.value = 'layer';
   }
   select.addEventListener('change', render);
+
+  // תפריט הצד — מעבר בין תצוגות
+  document.querySelectorAll('.side-link').forEach(b =>
+    b.addEventListener('click', () => setView(b.dataset.view)));
 
   // ═══════ Auto-load demo data ב-?seed=1 / ?demo=1 ═══════
   // נטען נתוני דמו אוטומטית רק אם הפרמטר קיים ועדיין אין תשובות שמורות —

@@ -1130,7 +1130,7 @@ button:disabled {
       <div class="logo">פ</div>
       <div class="brand-text">
         <div class="brand-name">פולס · כיתה א'1</div>
-        <div class="brand-meta">מחנכת: מיטל פלג · נתוני הדגמה</div>
+        <div class="brand-meta">מחנכת: מיטל פלג · בית ספר אימפקט · נתוני הדגמה</div>
       </div>
     </div>
     <span class="demo-badge">נתוני הדגמה בלבד · מיועד להצגת חוויית שימוש</span>
@@ -1174,7 +1174,7 @@ button:disabled {
     <div class="toolbar">
       <div class="toolbar-left">
         <div class="item-progress-pill">
-          <span>דירגת <strong id="ratedCount">0</strong>/25</span>
+          <span>דירגת <strong id="ratedCount">0</strong>/10</span>
           <div class="mini-bar"><div class="mini-bar-fill" id="miniBarFill" style="width: 0%"></div></div>
         </div>
         <button class="bulk-btn" id="bulkBtn">
@@ -1186,7 +1186,7 @@ button:disabled {
     </div>
 
     <div class="student-grid-header">
-      <span>תלמיד.ה (25)</span>
+      <span>תלמיד.ה (10)</span>
       <span>תדירות התנהגות</span>
     </div>
 
@@ -1199,7 +1199,7 @@ button:disabled {
       </button>
       <div class="nav-status" id="navStatus">
         <span class="check-soft">✓</span>
-        סיימת לדרג <strong>0</strong> מתוך 25 ילדים בפריט הזה
+        סיימת לדרג <strong>0</strong> מתוך 10 ילדים בפריט הזה
       </div>
       <button class="nav-btn primary" id="nextBtn" disabled>
         <span>פריט הבא</span>
@@ -1223,8 +1223,8 @@ button:disabled {
       <p class="summary-subtitle">להלן תמונה מהירה של מה שמילאת. אפשר לחזור ולערוך כל פריט, או לשלוח עכשיו לדשבורד הכיתתי.</p>
       <div class="summary-stats">
         <div class="stat-block">
-          <div class="stat-number" id="statFilled">150</div>
-          <div class="stat-label">דירוגים מתוך 200 (8 פריטים × 25 ילדים)</div>
+          <div class="stat-number" id="statFilled">60</div>
+          <div class="stat-label">דירוגים מתוך 80 (8 פריטים × 10 ילדים)</div>
         </div>
         <div class="stat-block">
           <div class="stat-number" id="statTime">7 דק'</div>
@@ -1347,12 +1347,10 @@ const ITEMS = [
   { id: 8, dim: 'joy', dimName: 'שמחה ללמוד', text: 'ממשיך.ה במשימה כשהיא קצת קשה, ולא מוותר.ת מיד.' }
 ];
 
+// רשימת א'1 — תואמת את הדשבורד (בית ספר אימפקט · מחנכת מיטל פלג)
 const STUDENTS = [
-  'נועה כהן', 'איתי לוי', 'שירה אברהם', 'יונתן רחמני', 'תמר ברנשטיין',
-  'עדן אסולין', 'רן שמואלי', 'מיכל פרץ', 'עומר חזן', 'יעל גולדנברג',
-  'אריאל מאירוביץ', 'נטע אביב', 'גלעד אזולאי', 'מאיה דהן', 'ליאם בן-יוסף',
-  'עינב טלמור', 'ישי שטיינברג', 'רומי פרידמן', 'אביב מזרחי', 'אילה חכמון',
-  'אורי טל', 'אלמה שפיגל', 'נדב הראל', 'יובל אסטרין', 'קרן סופר'
+  'אדם לוי', 'דניאל כ.', 'יואב מזרחי', 'נועה כ.', 'אריאל פרץ',
+  'מאיה גולן', 'שירה דהן', 'יונתן אבני', 'נעמה רוזן', 'רועי שמש'
 ];
 
 const FREQ_OPTIONS = [
@@ -1370,7 +1368,7 @@ const DIM_COLORS = {
 };
 
 const STORAGE_KEY = 'pulse-teacher-form-v1';
-const MIN_TO_ADVANCE = 20;
+const MIN_TO_ADVANCE = 8;
 
 // ============ STATE ============
 let state = {
@@ -1570,9 +1568,9 @@ function updateProgress() {
   if (rated === STUDENTS.length) {
     navStatus.innerHTML = `<span class="check-soft">✓</span> דירגת את כל הכיתה. אפשר להמשיך.`;
   } else if (rated >= MIN_TO_ADVANCE) {
-    navStatus.innerHTML = `<span class="check-soft">✓</span> דירגת <strong>${rated}</strong> מתוך 25 — אפשר להמשיך.`;
+    navStatus.innerHTML = `<span class="check-soft">✓</span> דירגת <strong>${rated}</strong> מתוך 10 — אפשר להמשיך.`;
   } else {
-    navStatus.innerHTML = `סיימת לדרג <strong>${rated}</strong> מתוך 25 — לפחות ${MIN_TO_ADVANCE} כדי להמשיך.`;
+    navStatus.innerHTML = `סיימת לדרג <strong>${rated}</strong> מתוך 10 — לפחות ${MIN_TO_ADVANCE} כדי להמשיך.`;
   }
 
   const nextBtn = document.getElementById('nextBtn');
@@ -1655,6 +1653,37 @@ function showToast(msg) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
 }
 
+// ============ פרסום לדשבורד — "מבט המורה" ============
+// מתרגם את 8 הפריטים ל-4 הממדים ושומר למפתח משותף שהדשבורד קורא
+// (pulse-demo-teacher-observations). ההערות האישיות לא יוצאות מהטופס.
+const OBS_KEY = 'pulse-demo-teacher-observations';
+const DIM_IDS = ['adjust', 'friend', 'emotion', 'joy'];
+
+function publishObservation() {
+  const classId = new URLSearchParams(location.search).get('class') || "א'1";
+  const perStudent = {};
+  STUDENTS.forEach((name, idx) => {
+    const dims = {};
+    DIM_IDS.forEach(dim => {
+      const vals = ITEMS.filter(it => it.dim === dim)
+        .map(it => state.responses[it.id] && state.responses[it.id][idx])
+        .filter(v => v);
+      if (vals.length) dims[dim] = vals.reduce((a, b) => a + b, 0) / vals.length;
+    });
+    if (Object.keys(dims).length) perStudent[name] = dims;
+  });
+  const dimAverages = {};
+  DIM_IDS.forEach(dim => {
+    const vals = Object.values(perStudent).map(d => d[dim]).filter(v => v != null);
+    if (vals.length) dimAverages[dim] = vals.reduce((a, b) => a + b, 0) / vals.length;
+  });
+  try {
+    const all = JSON.parse(localStorage.getItem(OBS_KEY) || '[]').filter(o => o.class !== classId);
+    all.push({ class: classId, submittedAt: new Date().toISOString(), scale: '1-4', perStudent, dimAverages });
+    localStorage.setItem(OBS_KEY, JSON.stringify(all));
+  } catch (e) { /* localStorage חסום — הדמו ממשיך בלי פרסום */ }
+}
+
 // ============ SUBMIT ============
 function submitForm() {
   const total = totalRated();
@@ -1663,6 +1692,7 @@ function submitForm() {
     backToEdit();
     return;
   }
+  publishObservation();
   state.view = 'sent';
   document.getElementById('itemView').classList.add('hidden');
   document.getElementById('summaryView').classList.remove('active');
@@ -1674,7 +1704,7 @@ function submitForm() {
     `נשמרו <strong>${total}</strong> דירוגים מתוך ${possible} ` +
     `(${ITEMS.length} פריטים × ${STUDENTS.length} ילדים)` +
     (notes ? ` · <strong>${notes}</strong> הערות אישיות` : '') + '.<br>' +
-    'הפולס נשלח לדשבורד הכיתתי כסיכום קבוצתי (בלי שמות). ' +
+    'הדירוג נשלח לדשבורד ומופיע שם כ"מבט המורה" — על פסי אקלים הכיתה ובכרטיסי הילדים. ' +
     'ההערות האישיות נשארות אצלך בלבד.';
 
   showToast('✓ הדירוג נשמר ונשלח');
