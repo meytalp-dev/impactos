@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>הַבַּיִת שֶׁל הַדָּג הַקָּטָן · אוֹת בֵּית · עוֹמֶק הַיָּם הַמּוּאָר</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/stage-3.css">
+  <link rel="stylesheet" href="css/game-shell.css?v=12">
+  <script src="../../demo/journey.js" defer></script>
+
+  <style>
+    /* === התאמות מקומיות לאי ב בלבד (לא נוגעים ב-CSS המשותף) === */
+
+    /* לקח אי 4: overlay שקוף ~35% — השונית נשארת גלויה מאחור (לא 94%). */
+    .tap-to-start,
+    .completion {
+      background: radial-gradient(circle at 50% 35%,
+        rgba(184, 232, 224, 0.35), rgba(99, 216, 208, 0.55));
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+    }
+    .tap-to-start h2,
+    .tap-to-start #introHtmlSlot p,
+    .completion h2,
+    .completion p {
+      background: rgba(255, 255, 255, 0.85);
+      padding: 12px 22px;
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(38, 80, 92, 0.18);
+    }
+
+    /* --- מכניקת הבנייה בגרירה (mechanic-cv-build-drag) --- */
+    .bdrag-prompt {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: clamp(4px, 1.5vw, 10px) 12px;
+      font-family: 'Heebo', sans-serif;
+      direction: rtl;
+    }
+    .bdrag-prompt__label {
+      font-size: clamp(15px, 3.4vw, 21px);
+      font-weight: 700;
+      color: var(--text-main, #26505C);
+      background: rgba(255, 255, 255, 0.85);
+      padding: 8px 18px;
+      border-radius: var(--radius-pill, 999px);
+      box-shadow: 0 2px 10px rgba(38, 80, 92, 0.15);
+    }
+    .bdrag-prompt__letter {
+      font-family: 'Heebo', sans-serif;
+      font-size: clamp(44px, 10vw, 64px);
+      font-weight: 900;
+      line-height: 1;
+      color: var(--text-main, #26505C);
+      background: #FFFFFF;
+      padding: 8px 24px;
+      border-radius: 20px;
+      border: 3px solid var(--water-secondary, #4FB8C9);
+      box-shadow: 0 2px 10px rgba(38, 80, 92, 0.15);
+    }
+    .bdrag-speaker {
+      width: 64px;
+      height: 64px;             /* touch-min 56px+ */
+      border-radius: 50%;
+      border: none;
+      background: var(--water-secondary, #4FB8C9);
+      color: #FFFFFF;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 16px rgba(79, 184, 201, 0.45);
+      transition: transform 0.15s ease;
+    }
+    .bdrag-speaker svg { width: 32px; height: 32px; }
+    .bdrag-speaker:active { transform: scale(0.94); }
+
+    .bdrag-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(10px, 3vh, 26px);
+      padding: clamp(6px, 2vh, 18px) 12px;
+    }
+
+    /* עמדת הבנייה: האות + חריץ הניקוד + (בסבב מילה) שאר המילה */
+    .bdrag-word {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      font-family: 'Heebo', sans-serif;
+    }
+    .bdrag-word__rest {
+      font-size: clamp(56px, 13vw, 84px);
+      font-weight: 900;
+      line-height: 1.3;
+      color: var(--text-main, #26505C);
+      text-shadow: 0 2px 8px rgba(255, 255, 255, 0.8);
+    }
+    .bdrag-anvil {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #FFFFFF;
+      border: 3px dashed var(--water-secondary, #4FB8C9);
+      border-radius: 24px;
+      padding: 10px 26px 4px;
+      box-shadow: 0 6px 20px rgba(38, 80, 92, 0.16);
+      transition: border-color 0.25s ease, transform 0.25s ease;
+    }
+    .bdrag-anvil__letter {
+      font-size: clamp(56px, 13vw, 84px);
+      font-weight: 900;
+      line-height: 1.3;
+      color: var(--text-main, #26505C);
+    }
+    .bdrag-anvil__slot {
+      width: 44px;
+      height: 44px;
+      border: 3px dashed var(--coral, #FFA98D);
+      border-radius: 50%;
+      margin: -6px 0 8px;
+      background: rgba(255, 231, 168, 0.35);
+      animation: slotPulse 1.6s ease-in-out infinite;
+    }
+    @keyframes slotPulse {
+      0%, 100% { transform: scale(1);    opacity: 0.75; }
+      50%      { transform: scale(1.12); opacity: 1; }
+    }
+    .bdrag-anvil.built {
+      border-style: solid;
+      border-color: var(--success, #7CE7B4);
+      transform: scale(1.06);
+    }
+    .bdrag-built {
+      min-height: 1.4em;
+      font-size: clamp(24px, 5.5vw, 34px);
+      font-weight: 800;
+      color: var(--text-main, #26505C);
+    }
+    .bdrag-built strong {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 4px 18px;
+      border-radius: 16px;
+      box-shadow: 0 4px 14px rgba(38, 80, 92, 0.15);
+    }
+
+    /* מגש אבני הניקוד — כל אבן ≥56px */
+    .bdrag-tray {
+      display: flex;
+      gap: clamp(12px, 3vw, 24px);
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .bdrag-stone {
+      width: clamp(72px, 16vw, 96px);
+      height: clamp(72px, 16vw, 96px);
+      border: none;
+      border-radius: 46% 54% 52% 48% / 54% 46% 54% 46%;   /* צורת אבן */
+      background: linear-gradient(150deg, #FFF9F4, var(--stone, #DAD6C9));
+      box-shadow: 0 6px 16px rgba(38, 80, 92, 0.22),
+                  inset 0 -4px 8px rgba(38, 80, 92, 0.08);
+      cursor: grab;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Heebo', sans-serif;
+      touch-action: none;        /* חובה לגרירת pointer במובייל */
+      transition: box-shadow 0.2s ease;
+      position: relative;
+      z-index: 5;
+    }
+    .bdrag-stone__mark {
+      font-size: clamp(34px, 8vw, 46px);
+      font-weight: 900;
+      line-height: 1.5;
+      color: var(--deep, #1E3D47);
+      pointer-events: none;
+    }
+    .bdrag-stone.dragging {
+      cursor: grabbing;
+      z-index: 50;
+      box-shadow: 0 14px 30px rgba(38, 80, 92, 0.35);
+      transition: none;
+    }
+    .bdrag-stone:not(.dragging) { transition: transform 0.25s ease, box-shadow 0.2s ease; }
+    .bdrag-stone.hint-glow {
+      box-shadow: 0 0 0 5px var(--hint, #FFE7A8),
+                  0 0 26px rgba(255, 231, 168, 0.9);
+    }
+    .bdrag-stone.wrong-sway { animation: stoneSway 700ms ease-in-out; }
+    @keyframes stoneSway {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-9px) rotate(-4deg); }
+      50% { transform: translateX(8px) rotate(3deg); }
+      75% { transform: translateX(-5px) rotate(-2deg); }
+    }
+
+    /* לקח אי 4: just-done glow — האבן שנוספה הרגע לבית קופצת וזוהרת */
+    .shell-slot.just-done { animation: slotJustDone 1.2s ease-out; }
+    @keyframes slotJustDone {
+      0%   { transform: scale(1.08); }
+      30%  { transform: scale(1.7);
+             box-shadow: 0 0 24px var(--hint, #FFE7A8),
+                         0 0 44px rgba(255, 169, 141, 0.8); }
+      100% { transform: scale(1.08); }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="stage-scene">
+    <div class="scene-frame">
+      <img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true"
+           onerror="this.style.display='none'">
+
+      <section class="quest-header">
+        <div class="shell-slots" id="shellSlots">
+          <div class="shell-slot" data-shell-slot="0"></div>
+          <div class="shell-slot" data-shell-slot="1"></div>
+          <div class="shell-slot" data-shell-slot="2"></div>
+          <div class="shell-slot" data-shell-slot="3"></div>
+          <div class="shell-slot" data-shell-slot="4"></div>
+        </div>
+      </section>
+
+      <div class="game-area" id="gameRoot"></div>
+
+      <div class="burst" id="burst"></div>
+    </div>
+  </main>
+
+  <img class="noni-fixed" id="noniImg" src="assets/noni-idle.png" alt="נוני">
+
+  <div class="feedback-bubble" id="feedbackBubble"></div>
+
+  <header class="top-bar">
+    <a href="stage-3-island.html" class="icon-btn" aria-label="חֲזָרָה לְאִי 3">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+    <div class="unit-counter" id="unitCounter">
+      <span class="uc-letter" id="ucLetter">ב</span>
+      <span id="unitCountDisplay">0/5 אֲבָנִים</span>
+    </div>
+    <div class="pearl-counter" aria-label="פְּנִינִים">
+      <span class="pearl" aria-hidden="true"></span>
+      <span class="count" id="pearlCount">0</span>
+    </div>
+  </header>
+
+  <div class="tap-to-start" id="tapToStart">
+    <h2>הַבַּיִת שֶׁל הַדָּג הַקָּטָן</h2>
+    <button class="intro-speaker" id="introSpeaker" aria-label="שִׁמְעוּ אֶת הַהֶסְבֵּר">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>הַקִּישׁוּ לִשְׁמֹעַ</span>
+    </button>
+    <div id="introHtmlSlot">
+      <p>הַגַּלִּים פֵּרְקוּ אֶת הַבַּיִת שֶׁל הַדָּג הַקָּטָן — וְאֵין לוֹ אֵיפֹה לִישֹׁן!</p>
+      <p>נוֹנִי מָצָא חֲמֵשׁ אַבְנֵי צְלִילִים. בְּנוּ אֶת הַצְּלִילִים — וְכֹל אֶבֶן תִּבְנֶה אֶת הַבַּיִת מֵחָדָשׁ.</p>
+    </div>
+    <button class="start-btn" id="startBtn">בּוֹאוּ נַתְחִיל</button>
+  </div>
+
+  <div class="completion" id="completion">
+    <h2>הַבַּיִת מוּכָן!</h2>
+    <p id="completionMsg">הַדָּג הַקָּטָן נִכְנַס הַבַּיְתָה.</p>
+    <a href="stage-3-island.html" class="btn-primary">חֲזָרָה לְאִי 3</a>
+  </div>
+
+  <script src="js/state.js"></script>
+  <script src="js/shared/bkt.js"></script>
+  <script src="js/shared/epa.js"></script>
+  <script src="js/shared/event-logger.js"></script>
+  <script src="js/shared/mastery-check.js"></script>
+  <script src="js/shared/audio.js"></script>
+  <script src="js/shared/noni.js"></script>
+  <script src="js/shared/feedback.js"></script>
+  <!-- אי ב: בניית צירופים דורשת את vowel-adapter (buildCV / דגש קל / phoneme groups) -->
+  <script src="js/shared/vowel-adapter.js"></script>
+
+  <script src="js/templates/game-shell.js"></script>
+  <script src="js/templates/mechanic-tap-all.js"></script>
+  <script src="js/templates/mechanic-pick.js"></script>
+  <script src="js/templates/mechanic-quest.js"></script>
+  <!-- D.15 v2 — מכניקות חדשות + letter-anim overlay -->
+  <script src="js/templates/mechanic-memory-pair.js?v=2"></script>
+  <script src="js/templates/mechanic-sort-by-letter.js?v=2"></script>
+  <script src="js/templates/letter-anims.js?v=2"></script>
+  <!-- אי ב: בנייה בגרירה — אבן-ניקוד נגררת אל האות (התאמת mechanic-cv-build לגרירה) -->
+  <script src="js/templates/mechanic-cv-build-drag.js?v=1"></script>
+
+  <script src="js/shared/scaffolding.js"></script>
+  <script src="js/shared/shell.js"></script>
+  <script src="js/shared/instruction.js"></script>
+  <script src="js/activities/sound-match.js"></script>
+  <script src="js/activities/letter-shape.js"></script>
+  <script src="js/activities/find-letter.js"></script>
+
+  <script>
+  // אות ב (bet) · הבית של הדג הקטן · בנייה בגרירה: אות + ניקוד = צליל
+  (async function () {
+    const letterKey = 'bet';
+
+    let cfg;
+    try {
+      cfg = await fetch(`data/island-03-letters/${letterKey}.json?v=1`).then(r => r.json());
+    } catch (e) {
+      console.error('Failed to load letter config:', letterKey, e);
+      document.querySelector('#tapToStart h2').textContent = 'שגיאה בטעינת המשחקון';
+      return;
+    }
+
+    document.title = `${cfg.title} · עומק הים המואר`;
+    document.querySelector('#tapToStart h2').textContent = cfg.title;
+    const intro = document.getElementById('introHtmlSlot');
+    if (intro && cfg.intro_html) intro.innerHTML = cfg.intro_html;
+    document.getElementById('ucLetter').textContent = cfg.letter;
+    document.getElementById('unitCountDisplay').textContent =
+      `0/${cfg.counter.total} ${cfg.counter.unit}`;
+    document.querySelector('#completion h2').textContent = cfg.completion.title;
+    document.getElementById('completionMsg').textContent = cfg.completion.message;
+
+    AvneiGameShell.start({
+      theme:                 cfg.theme || 'shells',
+      letter:                cfg.letter,
+      questId:               cfg.quest_id,
+      title:                 cfg.title,
+      counter:               cfg.counter,
+      completion:            cfg.completion,
+      introAudioKeys:        cfg.intro_audio_keys || [],
+      inGamePromptAudioKey:  cfg.in_game_prompt_audio_key || null,
+      finale:                { audioKey: cfg.finale_audio_key },
+      mechanic:              cfg.mechanic,
+      mechanicConfig:        cfg.mechanic_config || {},
+      distractors:           cfg.distractors || [],
+      // just-done glow (לקח אי 4): האבן שנוספה הרגע לבית מקבלת פולס זוהר
+      onUnitWon: (idx) => {
+        const slot = document.querySelector(`[data-shell-slot="${idx}"]`);
+        if (!slot) return;
+        slot.classList.add('filled', 'just-done');
+        setTimeout(() => slot.classList.remove('just-done'), 1300);
+      },
+    });
+  })();
+  </script>
+
+</body>
+</html>
