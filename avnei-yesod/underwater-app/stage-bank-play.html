@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>תרגול מהבנק · השונית של נוני</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css?v=2026-07-04">
+  <link rel="stylesheet" href="css/game-shell.css?v=2026-07-04">
+
+  <!-- ============================================================================
+       stage-bank-play.html — נגן גנרי לבנק-השאלות (curriculum/questions-grade1.json)
+       4.7.2026 · חיווט ימי דקדוק בתוכנית השנתית (demo/teacher-curriculum.html)
+
+       URL: ?unitKey=<prefix[,prefix...]>&tag=<כותרת>
+         unitKey = קידומת characteristic_id (יום שלם: jan-w2-d1, או מאפיין: apr-w4-d1-c2).
+       כל שאלה מנותבת למנגנון לפי interaction:
+         pick_odd_one → mechanic-odd-one-out · כל השאר → mechanic-mcq (ליבת ה-config).
+       EPA פר-מסיח נשמר תחת characteristic_id (G4) · אי לפי strand (phonology→5,
+       morphology→9, oral→14, comprehension→16, writing→19).
+       שאלות stem-אודיו בלי MP3 (ראו WORD_AUDIO) מדולגות בשקט — לא שוברות את היום.
+       ============================================================================ -->
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; min-height: 100dvh;
+      font-family: 'Heebo', sans-serif;
+      background: linear-gradient(180deg, #BFF1FF 0%, #A8E8FF 40%, #73D9D1 100%);
+      color: var(--text-main); direction: rtl; overflow-x: hidden;
+    }
+    .scene-bg {
+      position: fixed; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; object-position: center bottom;
+      z-index: 0; pointer-events: none;
+    }
+    .top-bar {
+      position: sticky; top: 0; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 12px 18px;
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255,255,255,0.6);
+    }
+    .top-bar a.back {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: rgba(255,255,255,0.85); color: var(--text-main);
+      display: inline-flex; align-items: center; justify-content: center;
+      text-decoration: none; font-size: 20px; font-weight: 900;
+      box-shadow: 0 2px 10px rgba(38,80,92,0.15);
+    }
+    .top-bar .title { font-size: clamp(15px, 3.4vw, 19px); font-weight: 800; }
+    .top-bar .counter {
+      height: 40px; padding: 0 14px; border-radius: var(--radius-pill);
+      background: rgba(255,255,255,0.85); display: inline-flex; align-items: center;
+      font-size: 14px; font-weight: 700; box-shadow: 0 2px 10px rgba(38,80,92,0.15);
+    }
+    main {
+      position: relative; z-index: 2;
+      max-width: 760px; margin: 0 auto;
+      padding: 14px 18px 30px;
+    }
+    /* פנינים — התקדמות */
+    .pearls { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 4px auto 12px; }
+    .pearl {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: rgba(255,255,255,0.5); border: 2px solid rgba(255,255,255,0.7);
+      box-shadow: inset 0 -2px 4px rgba(38,80,92,0.12); transition: all 0.35s ease;
+    }
+    .pearl.filled {
+      background: radial-gradient(circle at 35% 30%, #FFF 0%, #CFEFF6 45%, #8FD6E6 100%);
+      border-color: #FFF; box-shadow: 0 0 10px rgba(143,214,230,0.8);
+    }
+    .pearl.just-added { transform: scale(1.6); box-shadow: 0 0 16px 4px rgba(255,231,168,0.9); }
+
+    /* בועת נוני — ההוראה (מנוקדת, לשון רבים — מהבנק) */
+    .noni-row {
+      display: flex; align-items: flex-end; gap: 10px;
+      max-width: 620px; margin: 0 auto 10px; min-height: 64px;
+    }
+    .noni-row img { width: clamp(64px, 13vw, 96px); flex: 0 0 auto; filter: drop-shadow(0 6px 10px rgba(38,80,92,0.25)); }
+    .bubble {
+      position: relative; flex: 1;
+      background: rgba(255,255,255,0.92); border-radius: var(--radius-lg);
+      padding: 12px 16px; font-size: clamp(16px, 3.6vw, 20px); font-weight: 700;
+      line-height: 1.5; box-shadow: 0 4px 16px rgba(38,80,92,0.14);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .bubble::before {
+      content: ''; position: absolute; inset-inline-start: -8px; bottom: 16px;
+      border: 9px solid transparent; border-inline-end-color: rgba(255,255,255,0.92);
+    }
+    .bubble .say {
+      flex: 0 0 auto; width: 48px; height: 48px; border-radius: 50%;
+      border: none; cursor: pointer; font-size: 22px;
+      background: var(--water-secondary); color: #fff;
+      box-shadow: 0 4px 12px rgba(115,217,209,0.55);
+    }
+    .bubble .say:active { transform: scale(0.94); }
+
+    #mountRoot { position: relative; min-height: 46vh; }
+
+    /* מסך פתיחה — שכבת 35% בלבד, נוני מציגה את המשימה */
+    .start-veil {
+      position: fixed; inset: 0; z-index: 20;
+      background: rgba(38,80,92,0.35);
+      display: flex; align-items: center; justify-content: center; padding: 24px;
+    }
+    .start-veil[hidden] { display: none; }   /* display:flex גובר על [hidden] בלעדיו */
+    .noni-row[hidden] { display: none; }
+    .start-card {
+      background: #fff; border-radius: var(--radius-lg); max-width: 420px; width: 100%;
+      padding: 26px 24px; text-align: center; box-shadow: 0 18px 50px rgba(38,80,92,0.3);
+    }
+    .start-card img { width: 110px; }
+    .start-card h1 { font-size: clamp(20px, 5vw, 26px); font-weight: 900; margin: 8px 0 6px; }
+    .start-card p { font-size: 15px; color: var(--text-soft); margin: 0 0 18px; }
+    .start-card button {
+      min-height: 60px; width: 100%; border: none; border-radius: var(--radius-pill);
+      background: var(--water-secondary); color: #fff; cursor: pointer;
+      font-family: inherit; font-size: 22px; font-weight: 900;
+      box-shadow: 0 8px 22px rgba(115,217,209,0.55);
+    }
+    .start-card button:active { transform: scale(0.97); }
+
+    /* מסך סיום */
+    .finish {
+      text-align: center; padding: 30px 10px;
+    }
+    .finish img { width: 140px; animation: finishBob 1.6s ease-in-out infinite; }
+    @keyframes finishBob { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+    .finish h2 { font-size: clamp(24px, 6vw, 32px); font-weight: 900; margin: 10px 0 4px; }
+    .finish p { font-size: 16px; color: var(--text-soft); margin: 0 0 20px; }
+    .finish .btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .finish button, .finish a {
+      min-height: 56px; padding: 0 26px; border: none; border-radius: var(--radius-pill);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: inherit; font-size: 18px; font-weight: 800; cursor: pointer;
+      text-decoration: none;
+    }
+    .finish .again { background: var(--water-secondary); color: #fff; box-shadow: 0 8px 22px rgba(115,217,209,0.55); }
+    .finish .home { background: rgba(255,255,255,0.9); color: var(--text-main); box-shadow: 0 4px 14px rgba(38,80,92,0.15); }
+
+    .empty-note {
+      max-width: 480px; margin: 40px auto; text-align: center;
+      background: rgba(255,255,255,0.92); border-radius: var(--radius-lg);
+      padding: 24px; font-size: 16px; font-weight: 700; color: var(--text-soft);
+    }
+    @media (max-width: 560px) {
+      .noni-row { min-height: 56px; }
+      .noni-row img { width: 58px; }  /* פורטרט: מפנים מקום לנוני ליד הבועה */
+    }
+  </style>
+</head>
+<body>
+  <img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true"
+       onerror="this.style.display='none'">
+
+  <div class="top-bar">
+    <a class="back" href="#" id="backBtn" aria-label="חזרה">→</a>
+    <span class="title" id="pageTitle">תרגול מהבנק</span>
+    <span class="counter" id="counter">—</span>
+  </div>
+
+  <main>
+    <div class="pearls" id="pearls" aria-hidden="true"></div>
+    <div class="noni-row" id="noniRow" hidden>
+      <img id="noniImg" src="assets/noni-idle.png" alt="נוני" onerror="this.style.display='none'">
+      <div class="bubble">
+        <span id="promptText" lang="he"></span>
+        <button class="say" id="sayBtn" aria-label="הַקְשִׁיבוּ שׁוּב" hidden>🔊</button>
+      </div>
+    </div>
+    <div id="mountRoot"></div>
+  </main>
+
+  <div class="start-veil" id="startVeil" hidden>
+    <div class="start-card">
+      <img src="assets/noni-happy.png" alt="נוני" onerror="this.style.display='none'">
+      <h1 id="startTitle">מַתְחִילִים!</h1>
+      <p id="startSub">נוּנִי מְחַכָּה לָכֶם בַּשּׁוּנִית</p>
+      <button id="startBtn">מַתְחִילִים!</button>
+    </div>
+  </div>
+
+  <!-- shared engine -->
+  <script src="js/state.js?v=2026-07-04"></script>
+  <script src="js/shared/audio.js?v=2026-07-04"></script>
+  <script src="js/shared/noni.js?v=2026-07-04"></script>
+  <script src="js/shared/vowel-adapter.js?v=2026-07-04"></script>
+  <script src="js/shared/epa.js?v=2026-07-04"></script>
+  <script src="js/shared/bkt.js?v=2026-07-04"></script>
+  <script src="js/shared/event-logger.js?v=2026-07-04"></script>
+  <script src="js/shared/vocab-image-adapter.js?v=2026-07-04"></script>
+  <script src="js/templates/mechanic-mcq.js?v=2026-07-04"></script>
+  <script src="js/templates/mechanic-odd-one-out.js?v=2026-07-04"></script>
+
+  <script>
+  (function () {
+    'use strict';
+
+    var params = new URLSearchParams(location.search);
+    var KEYS = (params.get('unitKey') || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+    var TAG  = params.get('tag') || 'תַּרְגּוּל';
+
+    // ------------------------------------------------------------------
+    // אודיו — הבנק לא נושא audio_key; המיפוי כאן, לפי המחרוזת המנוקדת
+    // המדויקת (stems של audio_to_written + אופציות של written_to_audio).
+    // קבצים: assets/audio/bank-w-*.mp3 (generate-bank-play-audio.py).
+    // ------------------------------------------------------------------
+    // ⚠️ אין כאן הִבְהִיל/יָשׁ/אוֹן — נפסלו ב-QA תמלול Whisper (4.7.2026):
+    // הִבְהִיל נהגה שגוי בעקביות; יָשׁ (מסיח-תנועה) נשמע /yesh/ = זהה לתשובה
+    // הנכונה → באג מדידה. שאלות שתלויות בהם מדולגות אוטומטית.
+    var WORD_AUDIO = {
+      'הִקְשִׁיב': 'bank-w-hikshiv',
+      'הָיָה': 'bank-w-haya',       'הָיְתָה': 'bank-w-hayta',
+      'מִרְפָּאָה': 'bank-w-mirpaa',
+      'אַתְּ': 'bank-w-at',          'אַתָּה': 'bank-w-ata',
+      'כְּמוֹ': 'bank-w-kmo',
+      'יֵשׁ': 'bank-w-yesh',         'אֵין': 'bank-w-ein',
+      'אֲנִי': 'bank-w-ani',
+      'פִּיל': 'bank-w-pil',         'שִׁיר': 'bank-w-shir',
+      'שִׁירִים': 'bank-w-shirim',   'פִּילִים': 'bank-w-pilim',
+    };
+    // אודיו-משימה לשאלות שה-prompt שלהן נושא את צליל-היעד (תעתיק לא קריא לילד)
+    var TASK_AUDIO = { 'apr-w4-d1-c2-L3': 'bank-task-yesh-find' };
+
+    // strand → אי (bkt.js ISLAND_TO_STRAND: פונולוגיה 1-8, מורפולוגיה 9-11,
+    // שפה דבורה 12-14, הבנת הנקרא 15-18, כתיבה 19-22)
+    var STRAND_ISLAND = {
+      phonology: 5, morphology: 9, oral_language: 14,
+      reading_comprehension: 16, writing: 19,
+    };
+
+    var THEMES = ['shells', 'fish', 'bubbles'];
+
+    // מסיר תעתיק לטיני /yesh/ מתצוגה לילד (נשאר בבנק — מיועד למורה)
+    function cleanHe(s) {
+      return String(s || '').replace(/\s*\/[A-Za-z'’\-]+\/\s*/g, ' ').replace(/\s{2,}/g, ' ').trim();
+    }
+
+    var $ = function (id) { return document.getElementById(id); };
+    var root = $('mountRoot');
+    var current = null;
+    var queue = [];
+    var idx = 0;
+    var skipped = 0;
+
+    $('pageTitle').textContent = TAG;
+    $('backBtn').addEventListener('click', function (e) {
+      e.preventDefault();
+      if (history.length > 1) history.back(); else location.href = 'student-picker.html';
+    });
+
+    // ------------------------------------------------------------------
+    // שאלה → config לפי interaction (הכול mcq חוץ מ-pick_odd_one)
+    // מחזיר null אם השאלה לא ניתנת-למשחק כרגע (stem אודיו בלי MP3 וכד')
+    // ------------------------------------------------------------------
+    function toConfig(q) {
+      var island = STRAND_ISLAND[q.strand] || 5;
+      var opts = (q.options || []).map(function (o) {
+        var mode = o.mode || 'text';
+        if (mode === 'image' && !o.image_src) mode = 'text';   // אין תמונה במאגר → טקסט
+        return {
+          label_he: cleanHe(o.label_he), mode: mode,
+          image_src: o.image_src || '', image_alt: o.image_alt || cleanHe(o.label_he),
+          is_correct: !!o.is_correct, epa: o.epa || null,
+        };
+      });
+
+      var base = {
+        interaction: q.interaction,
+        questId: q.q_id, item_id: q.q_id,
+        characteristic_id: q.characteristic_id || null,
+        primary_island_id: island,
+        theme: THEMES[idx % THEMES.length],
+        promptLine: cleanHe(q.task_he),
+      };
+
+      if (q.interaction === 'pick_odd_one') {
+        base.items = opts;
+        base.mechanic = 'odd-one-out';
+        return base;
+      }
+
+      var stem;
+      if (q.stem_mode === 'audio') {
+        var key = WORD_AUDIO[(q.stem_he || '').trim()];
+        if (!key) return null;                       // אין הקלטה → מדלגים, לא שוברים
+        stem = { mode: 'audio', audio_key: key, text_he: q.stem_he };
+      } else if (q.stem_mode === 'image') {
+        var src = (q.stem && q.stem.image_src) || '';
+        if (!src) {                                  // אין תמונה → כרטיס טקסט של שם העצם
+          stem = { mode: 'text', text_he: cleanHe(String(q.stem_he || '').replace(/^תְּמוּנָה:\s*/, '')) };
+        } else {
+          stem = { mode: 'image', image_src: src, image_alt: cleanHe(q.stem_he) };
+        }
+      } else {
+        stem = { mode: 'text', text_he: cleanHe(q.stem_he) };
+      }
+
+      // written_to_audio: אופציות הופכות לאריחי-שמע (two-tap: נגיעה 1 = האזנה
+      // חופשית, נגיעה 2 = בחירה — מובנה ב-mechanic-mcq) רק אם לכולן יש MP3.
+      // בלי אודיו מלא השאלה טריוויאלית (ה-stem הכתוב = האופציה הנכונה) → דילוג.
+      if (q.interaction === 'written_to_audio') {
+        var allHave = opts.every(function (o) { return WORD_AUDIO[o.label_he]; });
+        if (!allHave) return null;
+        opts.forEach(function (o) { o.mode = 'audio'; o.audio_key = WORD_AUDIO[o.label_he]; });
+      }
+
+      base.stem = stem;
+      base.options = opts;
+      base.mechanic = 'mcq';
+      return base;
+    }
+
+    function renderPearls() {
+      var el = $('pearls');
+      el.innerHTML = '';
+      queue.forEach(function (_, i) {
+        var p = document.createElement('span');
+        p.className = 'pearl' + (i < idx ? ' filled' : '');
+        el.appendChild(p);
+      });
+    }
+
+    function showFinish() {
+      $('noniRow').hidden = true;
+      $('counter').textContent = queue.length + ' / ' + queue.length;
+      root.innerHTML =
+        '<div class="finish">' +
+        '<img src="assets/noni-happy.png" alt="נוני שמחה" onerror="this.style.display=\'none\'">' +
+        '<h2>כָּל הַכָּבוֹד!</h2>' +
+        '<p>סִיַּמְתֶּם אֶת כָּל הַתַּרְגּוּל שֶׁל ' + TAG + '</p>' +
+        '<div class="btns">' +
+        '<button class="again" id="againBtn">עוֹד פַּעַם</button>' +
+        '<a class="home" href="student-picker.html">לַמָּסָךְ הָרָאשִׁי</a>' +
+        '</div></div>';
+      $('againBtn').addEventListener('click', function () { location.reload(); });
+      try { window.AvneiAudio.play('all-done'); } catch (e) {}
+    }
+
+    function mountNext() {
+      if (current && current.unmount) { try { current.unmount(); } catch (e) {} }
+      current = null;
+      renderPearls();
+      if (idx >= queue.length) { showFinish(); return; }
+
+      var cfg = queue[idx];
+      $('counter').textContent = (idx + 1) + ' / ' + queue.length;
+      $('noniRow').hidden = false;
+      $('promptText').textContent = cfg.promptLine;
+
+      // אודיו-משימה (אם קיים) — כפתור 🔊 בבועת נוני + השמעה אוטומטית
+      var taskKey = TASK_AUDIO[cfg.questId] || null;
+      var say = $('sayBtn');
+      say.hidden = !taskKey;
+      say.onclick = taskKey ? function () { window.AvneiAudio.play(taskKey); } : null;
+      if (taskKey) setTimeout(function () { window.AvneiAudio.play(taskKey); }, 400);
+
+      cfg.onComplete = function () {
+        idx++;
+        // פנינה נוספת — glow פר-סבב
+        renderPearls();
+        var pearls = document.querySelectorAll('.pearl');
+        var p = pearls[idx - 1];
+        if (p) { p.classList.add('just-added'); setTimeout(function () { p.classList.remove('just-added'); }, 600); }
+        setTimeout(mountNext, 250);
+      };
+
+      var mech = window.AvneiMechanics[cfg.mechanic];
+      current = mech.mount(root, cfg);
+    }
+
+    // ------------------------------------------------------------------
+    // boot: בנק + תמונות → סינון לפי unitKey → תור לפי (level, characteristic)
+    // ------------------------------------------------------------------
+    function boot() {
+      if (!KEYS.length) {
+        root.innerHTML = '<div class="empty-note">חָסֵר unitKey בַּכְּתֹבֶת.<br>לְדֻגְמָה: ?unitKey=jan-w2-d1</div>';
+        return;
+      }
+      Promise.all([
+        fetch('../curriculum/questions-grade1.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }),
+        (window.AvneiVocabImages ? window.AvneiVocabImages.load().catch(function () {}) : Promise.resolve()),
+      ]).then(function (arr) {
+        var b = arr[0];
+        var list = Array.isArray(b) ? b : (b.questions || b.items || []);
+        var qs = list.filter(function (q) {
+          var cid = q.characteristic_id || '';
+          return KEYS.some(function (k) { return cid.indexOf(k) === 0; });
+        });
+        qs.sort(function (a, z) {
+          return (a.level - z.level) || String(a.characteristic_id).localeCompare(String(z.characteristic_id));
+        });
+        qs.forEach(function (q) {
+          if (window.AvneiVocabImages) { try { window.AvneiVocabImages.applyToQuestion(q); } catch (e) {} }
+        });
+        queue = [];
+        qs.forEach(function (q) {
+          var cfg = toConfig(q);
+          if (cfg) queue.push(cfg); else skipped++;
+        });
+        if (skipped) console.warn('[bank-play] דולגו ' + skipped + ' שאלות ללא נכסי אודיו/תמונה');
+        if (!queue.length) {
+          root.innerHTML = '<div class="empty-note">אֵין כָּרֶגַע שְׁאֵלוֹת מוּכָנוֹת לַנּוֹשֵׂא הַזֶּה.</div>';
+          return;
+        }
+        $('startVeil').hidden = false;
+        $('startSub').textContent = TAG;
+        $('startBtn').addEventListener('click', function () {
+          try { if (window.AvneiAudio.unlock) window.AvneiAudio.unlock(); } catch (e) {}
+          $('startVeil').hidden = true;
+          idx = 0;
+          mountNext();
+        });
+      }).catch(function (err) {
+        console.error('[bank-play] load failed', err);
+        root.innerHTML = '<div class="empty-note">מַשֶּׁהוּ הִשְׁתַּבֵּשׁ בִּטְעִינַת הַשְּׁאֵלוֹת.</div>';
+      });
+    }
+
+    boot();
+  })();
+  </script>
+</body>
+</html>

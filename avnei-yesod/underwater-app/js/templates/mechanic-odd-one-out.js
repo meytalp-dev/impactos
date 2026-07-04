@@ -50,6 +50,9 @@
       activity_variant:     opts.interaction || 'pick_odd_one',
       item_id:              opts.item_id || opts.questId || null,
       target_letter:        opts.target_letter || null,
+      // G4 — מפתח-יחידה למורפולוגיה/הבנה בלי אות-יעד (כמו ב-mechanic-mcq);
+      // בלעדיו epa.ingestEvent מדלג על שאלות-בנק שמגיעות מ-stage-bank-play.
+      characteristic_id:    opts.characteristic_id || null,
       is_correct:           isCorrect,
       failure_type:         epa ? (epa.what || null)  : null,
       letter_position:      epa ? (epa.where || null) : null,
