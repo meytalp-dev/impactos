@@ -77,6 +77,7 @@
     .prac.sum{color:#6D3FC4;background:#F3EEFC;border-color:#DCCEF5;}
     .prac.sum:hover{background:#EAE0F9;}
     .prac.offline{color:#6b7a86;background:#F0F3F5;border-color:#E3E9ED;cursor:default;}
+    .prac.oral{color:#6b7a86;background:#F0F3F5;border-color:#E3E9ED;cursor:default;}
     .prac.gap{color:#B0722A;background:#FCF3E6;border-color:#F0DDBF;border-style:dashed;cursor:help;}
     .praccov{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--text-soft);background:#F4F8F9;border:1px solid #EDF2F2;border-radius:12px;padding:9px 15px;margin-bottom:14px;}
     .praccov span{display:inline-flex;align-items:center;gap:6px;}
@@ -85,6 +86,7 @@
     .praccov .cgap{color:#B0722A;} .praccov .cgap .dot{background:#E0A44A;}
     .praccov .coff{color:#6b7a86;} .praccov .coff .dot{background:#B9C4CC;}
     .praccov .csum{color:#6D3FC4;} .praccov .csum .dot{background:#9A6EE0;}
+    .praccov .coral{color:#6b7a86;} .praccov .coral .dot{background:#B9C4CC;}
   </style>
 </head>
 <body>
@@ -219,12 +221,12 @@
       }
       return seen;
     }
-    // מחזיר {state:'ok'|'offline'|'gap', href, tag}
+    // מחזיר {state:'ok'|'sum'|'offline'|'oral'|'gap', href, tag}
     function resolvePractice(topic,mi,di){
       var t=topic;
       // תרגול-סיכום מצטבר (3.7.2026, שרשרת הפנינים) — ימי "תרגול/סיכום אותיות
-      // שנלמדו" מקבלים את stage-summary-cv עם האותיות שנלמדו בפועל עד אותו יום.
-      if(/תרגול\s+חמש\s+האותיות|סיכום\s+\S*\s*אותיות|זיהוי מהיר של כל הא/.test(t)){
+      // שנלמדו" וימי חזרה כלליים מקבלים את stage-summary-cv עם האותיות שנלמדו בפועל עד אותו יום.
+      if(/תרגול\s+חמש\s+האותיות|סיכום\s+\S*\s*אותיות|זיהוי מהיר של כל הא|חזרה ותחזוקה|חזרה, תרגול והעמקה/.test(t)){
         var learned=lettersLearnedUpTo(mi,di);
         if(learned.length>0){
           return {state:'sum',
@@ -237,6 +239,12 @@
         return LETTERS[L] ? {state:'ok',cat:'letter',href:APP+LETTERS[L],tag:'אות '+lm[1]} : {state:'gap',tag:'אות '+lm[1]};}
       if(/מבדק/.test(t))                                    return {state:'ok',cat:'test',href:'../avnei-yesod/engine/screener.html',tag:'מבדק'};
       if(/כתיב|הכתב/.test(t))                               return {state:'offline',tag:'כתיבה'};
+      // "פרופיל אורייני לכל ילד" = משימת מורה (מסך הפרופיל), לא תרגול תלמיד
+      if(/פרופיל אורייני/.test(t))                          return {state:'ok',cat:'test',href:'teacher-literacy-profile.html',tag:'כלי מורה'};
+      // שיח בכיתה — פעילות דבורה בהנחיית המורה, אין (ולא צריך) משחקון דיגיטלי.
+      // חייב לבוא לפני כללי ה-catch-all (שאלות/מילה/משפט) כדי ש"דיאלוג" וכד' לא ייתפסו שם.
+      if(/חגיגת סיום/.test(t))                              return {state:'oral',tag:'אירוע כיתתי'};
+      if(/בדיבור|דיאלוג|שפה דבורה|תיאור דמות|תיאור בעזרת תארים/.test(t)) return {state:'oral',tag:'שיח בכיתה'};
       if(/שטף|קריאה חוזרת|מילים לדקה|הקראה|בזוגות/.test(t)) return {state:'ok',cat:'fluency',href:APP+'stage-read-aloud.html',tag:'שטף קריאה'};
       if(/סיפור|רצף אירועים/.test(t))                       return {state:'ok',cat:'listen',href:APP+'stage-14-story-sequence.html',tag:'הבנת הנשמע'};
       if(/הנשמע|האזנה|טקסט|הבנה|שאלות/.test(t))             return {state:'ok',cat:'listen',href:APP+'stage-14-listen-and-answer.html',tag:'הבנת הנשמע'};
@@ -250,6 +258,7 @@
       if(pr.state==='ok')      return '<a class="prac ok c-'+(pr.cat||'word')+'" href="'+pr.href+'" target="_blank" rel="noopener"><span class="tic" data-ic="playcircle"></span><span class="pt">פתח תרגול · '+pr.tag+'</span></a>';
       if(pr.state==='sum')     return '<a class="prac sum" href="'+pr.href+'" target="_blank" rel="noopener"><span class="tic" data-ic="star"></span><span class="pt">תרגול '+pr.tag+'</span></a>';
       if(pr.state==='offline') return '<span class="prac offline"><span class="tic" data-ic="edit"></span><span class="pt">כתיבה במחברת</span></span>';
+      if(pr.state==='oral')    return '<span class="prac oral"><span class="tic" data-ic="people"></span><span class="pt">'+pr.tag+'</span></span>';
       return '<span class="prac gap" title="עדיין אין תרגול דיגיטלי לנושא הזה — מסומן כחסר לבנייה">'+
              '<span class="tic" data-ic="alert"></span><span class="pt">חסר תרגול'+(pr.tag?' · '+pr.tag:'')+'</span></span>';
     }
@@ -263,7 +272,7 @@
       document.getElementById('calfocus').innerHTML='<b>מוקד החודש:</b> '+M.focus+(M.tag?' · <b>'+M.tag+'</b>':'');
       document.getElementById('prevM').disabled=(cur===0);
       document.getElementById('nextM').disabled=(cur===SCHOOL.length-1);
-      var days=schoolDays(M.y,M.m),html='',wk=0,grid=false,cov={ok:0,gap:0,off:0,sum:0};
+      var days=schoolDays(M.y,M.m),html='',wk=0,grid=false,cov={ok:0,gap:0,off:0,sum:0,oral:0};
       days.forEach(function(day,i){
         if(day.wd===0){wk++;if(grid)html+='</div>';html+='<div class="wklabel">שבוע '+wk+'</div><div class="wkgrid">';grid=true;}
         if(!grid){html+='<div class="wkgrid">';grid=true;}
@@ -272,7 +281,7 @@
         var key=cur+'-'+i;
         var extras=(EXTRAS[key]||[]).map(function(x,xi){return '<span class="xtopic">'+x+'<span class="rm" data-rm="'+key+'|'+xi+'">✕</span></span>';}).join('');
         var pr=resolvePractice(topic,cur,i);
-        cov[pr.state==='ok'?'ok':pr.state==='sum'?'sum':pr.state==='offline'?'off':'gap']++;
+        cov[pr.state==='ok'?'ok':pr.state==='sum'?'sum':pr.state==='offline'?'off':pr.state==='oral'?'oral':'gap']++;
         html+='<div class="daycard'+(isToday?' today':'')+'" data-key="'+key+'">'+
           '<div class="dchead"><span class="dn">יום '+WD[day.wd]+'</span><span class="dd">'+day.d+'.'+(M.m+1)+'</span>'+(isToday?'<span class="nowtag">היום</span>':'')+'</div>'+
           '<div class="dcbody"><span class="ttext">'+topic+'</span>'+extras+'</div>'+
@@ -287,7 +296,8 @@
         '<span class="cok"><span class="dot"></span>יש תרגול דיגיטלי: <b>'+cov.ok+'</b></span>'+
         (cov.sum?'<span class="csum"><span class="dot"></span>תרגול סיכום: <b>'+cov.sum+'</b></span>':'')+
         '<span class="cgap"><span class="dot"></span>חסר תרגול: <b>'+cov.gap+'</b></span>'+
-        '<span class="coff"><span class="dot"></span>כתיבה במחברת: <b>'+cov.off+'</b></span>';
+        '<span class="coff"><span class="dot"></span>כתיבה במחברת: <b>'+cov.off+'</b></span>'+
+        (cov.oral?'<span class="coral"><span class="dot"></span>שיח בכיתה: <b>'+cov.oral+'</b></span>':'');
       fillTics();
     }
 
