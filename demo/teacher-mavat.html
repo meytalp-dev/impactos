@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#FFFFFF">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>למידה ורגש · הכיתה שלי · בית ספר אימפקט</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="demo.css">
+  <script src="demo-icons.js" defer></script>
+  <script src="journey.js" defer></script>
+  <style>
+    .hero{border-right:4px solid var(--acc-purple);padding:16px 24px;}
+    .hero .q{color:var(--acc-purple-tx);background:var(--acc-purple-bg);}
+
+    /* ===== layout: מבט כיתתי (מפה) ← מבט אישי (פאנל) ===== */
+    .layout{display:grid;grid-template-columns:1.35fr 1fr;gap:14px;align-items:stretch;margin-bottom:22px;}
+    @media (max-width:960px){.layout{grid-template-columns:1fr;}}
+
+    /* ===== quadrant map — הכיתה כולה ===== */
+    .map-card{padding:18px;}
+    .map-head{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;padding:0 4px;flex-wrap:wrap;}
+    .map-head h2{font-size:16.5px;font-weight:800;color:var(--deep);}
+    .map-head small{font-size:12.5px;color:var(--text-soft);}
+    .quads{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:10px;min-height:420px;}
+    .quad{border-radius:16px;padding:14px 15px;display:flex;flex-direction:column;position:relative;}
+    .quad .qh{display:flex;align-items:center;gap:8px;}
+    .quad .qh .qi{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.75);flex:0 0 auto;}
+    .quad .qh .qi .tic svg{width:16px;height:16px;}
+    .quad h3{font-size:14px;font-weight:800;flex:1;line-height:1.25;}
+    .quad .cnt{font-size:15px;font-weight:900;background:rgba(255,255,255,.8);padding:2px 12px;border-radius:var(--pill);}
+    .quad .sub{font-size:11.5px;font-weight:600;opacity:.75;margin:4px 40px 0 0;}
+    .quad .empty{font-size:12.5px;opacity:.55;margin:auto;text-align:center;font-weight:600;}
+    .kchips{display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;margin-top:14px;}
+    .kchip{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:var(--pill);
+      padding:5px 7px 5px 14px;cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:700;color:var(--deep);
+      box-shadow:0 1px 3px rgba(38,80,92,.07);transition:transform .13s,box-shadow .13s;}
+    .kchip:hover{transform:translateY(-2px);box-shadow:0 5px 14px rgba(38,80,92,.13);}
+    .kchip .kav{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:800;
+      background:var(--qbg);color:var(--qtx);font-family:'Heebo',sans-serif;}
+    .kchip.sel{box-shadow:0 0 0 2.5px var(--qtx),0 5px 14px rgba(38,80,92,.13);}
+    .quad.grow{background:var(--okbg);color:#0d6b54;--qbg:var(--okbg);--qtx:#0d6b54;}
+    .quad.ready{background:var(--acc-blue-bg);color:var(--acc-blue-tx);--qbg:var(--acc-blue-bg);--qtx:var(--acc-blue-tx);}
+    .quad.signal{background:var(--watchbg);color:#9c6212;--qbg:var(--watchbg);--qtx:#9c6212;}
+    .quad.both{background:var(--carebg);color:#a23d3d;--qbg:var(--carebg);--qtx:#a23d3d;}
+    .axes{display:flex;justify-content:space-between;margin:10px 4px 0;font-size:11.5px;font-weight:700;color:#9AACB2;}
+    .axes .tic{margin-inline-end:4px;}
+
+    /* ===== detail panel — מבט אישי ===== */
+    .detail{padding:20px;display:flex;flex-direction:column;border-right:5px solid var(--c,var(--line));}
+    .detail.care{--c:var(--care);--cbg:var(--carebg);--ctx:#a23d3d;}
+    .detail.watch{--c:var(--watch);--cbg:var(--watchbg);--ctx:#9c6212;}
+    .detail.ok{--c:var(--ok);--cbg:var(--okbg);--ctx:#0d6b54;}
+    .detail .ph{font-size:12px;font-weight:800;color:var(--acc-purple-tx);background:var(--acc-purple-bg);display:inline-block;padding:3px 12px;border-radius:var(--pill);margin-bottom:10px;align-self:flex-start;}
+    .detail .top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+    .detail .av{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:18px;font-weight:800;color:var(--ctx);background:var(--cbg);flex:0 0 auto;font-family:'Heebo',sans-serif;}
+    .detail h3{font-size:19px;font-weight:800;color:var(--deep);flex:1;}
+    .detail .pill{font-size:11px;font-weight:800;padding:4px 11px;border-radius:var(--pill);white-space:nowrap;background:var(--cbg);color:var(--ctx);}
+    .detail .situ{font-size:14px;color:var(--text-soft);line-height:1.5;margin-bottom:12px;}
+    .detail .situ b{color:var(--text-main);}
+    .lenses{background:var(--soft-bg);border-radius:14px;padding:2px 14px;margin-bottom:11px;}
+    .lrow{display:flex;align-items:flex-start;gap:11px;padding:10px 0;}
+    .lrow + .lrow{border-top:1px solid var(--line);}
+    .lrow .li{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:0 0 auto;margin-top:1px;}
+    .lrow .li .tic svg{width:16px;height:16px;}
+    .lrow.read .li{background:var(--acc-blue-bg);color:var(--acc-blue-tx);}
+    .lrow.pulse .li{background:var(--acc-pink-bg);color:var(--acc-pink-tx);}
+    .lrow .lt{font-size:13.5px;color:var(--text-main);line-height:1.5;}
+    .lrow .lt b{display:block;font-size:11.5px;font-weight:800;margin-bottom:1px;}
+    .lrow.read .lt b{color:var(--acc-blue-tx);} .lrow.pulse .lt b{color:var(--acc-pink-tx);}
+    .detail .interp{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;color:var(--text-soft);line-height:1.5;margin-bottom:11px;}
+    .detail .interp .tic{color:var(--acc-purple-tx);margin-top:2px;}
+    .detail .step{font-size:14px;border-radius:14px;padding:10px 13px;line-height:1.5;margin-top:auto;}
+    .detail.care .step{background:#FFF3EE;color:#7a3b27;} .detail.care .step b{color:#b5611f;}
+    .detail.watch .step{background:#FFF8EC;color:#6e5220;} .detail.watch .step b{color:#9c6212;}
+    .detail.ok .step{background:var(--okbg);color:#0d3b30;} .detail.ok .step b{color:#0d6b54;}
+    .detail .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+    .detail .body{animation:fadein .22s ease;display:flex;flex-direction:column;flex:1;}
+    @keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+
+    /* ===== recommendations rows ===== */
+    .recs-card{padding:16px 20px;margin-bottom:18px;}
+    .recs-card h2{font-size:16.5px;font-weight:800;color:var(--deep);margin-bottom:4px;}
+    .trec{display:flex;align-items:center;gap:12px;padding:11px 0;}
+    .trec + .trec{border-top:1px solid var(--line);}
+    .trec .ti{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;flex:0 0 auto;}
+    .trec .ti .tic svg{width:18px;height:18px;}
+    .trec .tx{font-size:14px;color:var(--text-main);line-height:1.45;flex:1;}
+    .trec .tx b{color:var(--deep);}
+    .trec .who{font-size:12px;font-weight:700;color:var(--chip-tx);background:var(--chip-bg);padding:4px 12px;border-radius:var(--pill);white-space:nowrap;}
+    @media (max-width:560px){.trec .who{display:none;}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <nav class="rail" aria-label="ניווט">
+      <a class="logo" href="index.html"><span class="gm"><svg viewBox="0 0 24 24" fill="none" stroke="#0F7E72" stroke-width="2.3" stroke-linecap="round"><path d="M6 18v-5"/><path d="M12 18V7"/><path d="M18 18v-8"/></svg></span><b>בית ספר<br>אימפקט</b></a>
+      <a class="item" href="teacher-avnei.html"><span class="ic" data-ic="home"></span><span class="t">דף הבית</span></a>
+      <a class="item" href="teacher-profile.html"><span class="ic" data-ic="people"></span><span class="t">הכיתה שלי</span></a>
+      <a class="item" href="teacher-literacy-profile.html"><span class="ic" data-ic="learn"></span><span class="t">פרופיל אורייני</span></a>
+      <a class="item" href="teacher-content-upload.html"><span class="ic" data-ic="upload"></span><span class="t">הכנת תוכן</span></a>
+      <a class="item" href="teacher-pulse.html"><span class="ic" data-ic="pulse"></span><span class="t">פולס</span></a>
+      <a class="item active" href="teacher-mavat.html"><span class="ic" data-ic="link"></span><span class="t">למידה ורגש</span></a>
+      <a class="item" href="teacher-reports.html"><span class="ic" data-ic="report"></span><span class="t">דוחות</span></a>
+      <a class="item" href="teacher-curriculum.html"><span class="ic" data-ic="calendar"></span><span class="t">תוכנית שנתית</span></a>
+      <a class="item" href="teacher-settings.html"><span class="ic" data-ic="settings"></span><span class="t">הגדרות</span></a>
+      <div class="me"><div class="av">מ</div><small>מיטל פלג<span>מורה · א׳1</span></small></div>
+    </nav>
+
+    <main class="main"><div class="main-inner">
+      <div class="topbar">
+        <div class="crumbs"><a href="teacher-avnei.html">בית ספר אימפקט</a> · אבני יסוד · למידה ורגש</div>
+        <div class="date">יום ג׳ · 30.06</div>
+      </div>
+
+      <div class="hero">
+        <span class="q">מבט משולב · למידה ורגש</span>
+        <h1>הכיתה שלך — תמונה אחת שלמה</h1>
+        <p>קודם <b>הכיתה</b>: איפה יושבים 28 הילדים על שתי העדשות — קריאה ורגש. ואז <b>הילד</b>: לחיצה על ילד במוקד פותחת את הסיפור וההמלצה.</p>
+      </div>
+
+      <div class="layout">
+        <!-- מבט כיתתי -->
+        <div class="card map-card">
+          <div class="map-head"><h2>הכיתה במבט אחד</h2><small>28 ילדים · 3 במוקד השבוע · לחצו על ילד</small></div>
+          <div class="quads" id="quads">
+            <div class="quad grow" data-q="grow" data-total="24">
+              <div class="qh"><span class="qi"><span class="tic" data-ic="star"></span></span><h3>צומחים בשניהם</h3><span class="cnt"></span></div>
+              <div class="sub">הלמידה מתקדמת · הרגש יציב — לשמר ולחזק</div>
+              <div class="kchips"></div>
+            </div>
+            <div class="quad ready" data-q="ready" data-total="1">
+              <div class="qh"><span class="qi"><span class="tic" data-ic="leaf"></span></span><h3>פנויים לחיזוק</h3><span class="cnt"></span></div>
+              <div class="sub">קושי בלמידה · הרגש יציב — זמן טוב לקבוצת חיזוק</div>
+              <div class="kchips"></div>
+            </div>
+            <div class="quad signal" data-q="signal" data-total="2">
+              <div class="qh"><span class="qi"><span class="tic" data-ic="heart"></span></span><h3>הרגש מסמן</h3><span class="cnt"></span></div>
+              <div class="sub">הלמידה בסדר · משהו רגשי מעיק — להקשיב</div>
+              <div class="kchips"></div>
+            </div>
+            <div class="quad both" data-q="both" data-total="1">
+              <div class="qh"><span class="qi"><span class="tic" data-ic="handshake"></span></span><h3>צריכים אותנו קודם</h3><span class="cnt"></span></div>
+              <div class="sub">גם הלמידה וגם הרגש — קשר לפני תרגול</div>
+              <div class="kchips"></div>
+            </div>
+          </div>
+          <div class="axes">
+            <span><span class="tic" data-ic="trend"></span>למעלה = הרגש יציב</span>
+            <span><span class="tic" data-ic="book"></span>ימין = הלמידה מתקדמת</span>
+          </div>
+        </div>
+
+        <!-- מבט אישי -->
+        <div class="card detail" id="detail"></div>
+      </div>
+
+      <!-- המלצות -->
+      <div class="card recs-card">
+        <h2>ההמלצות שלך לשבוע</h2>
+        <div class="trec">
+          <span class="ti" style="background:var(--carebg);color:#a23d3d"><span class="tic" data-ic="learn"></span></span>
+          <span class="tx"><b>קבוצת חיזוק קטנה בקריאה</b> — הצלחה מהירה לפני תרגול עצמאי, ואז לבדוק איך מרגישים.</span>
+          <span class="who">איתי כ.</span>
+        </div>
+        <div class="trec">
+          <span class="ti" style="background:var(--acc-pink-bg);color:var(--acc-pink-tx)"><span class="tic" data-ic="handshake"></span></span>
+          <span class="tx"><b>פעילות מתווכת בזוג</b> — חיבור לילד.ה אחד.ת בפעילות של הצלחה וקשר, לא עוד תרגול לבד.</span>
+          <span class="who">מאיה ד.</span>
+        </div>
+        <div class="trec">
+          <span class="ti" style="background:var(--brand-bg);color:var(--brand-deep)"><span class="tic" data-ic="star"></span></span>
+          <span class="tx"><b>תפקיד קטן בקבוצה</b> — אחריות קטנה שמחזקת את ההתקדמות בשני התחומים.</span>
+          <span class="who">נועה כ.</span>
+        </div>
+      </div>
+
+      <div class="note"><b>חשוב:</b> המפה לא מתייגת ולא קובעת מסקנה — היא דרך לראות את הכיתה רגע לפני שמחליטים על השבוע.</div>
+    </div></main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    var KIDS=[
+      {id:'itai',nm:'איתי כ.',s:'care',q:'both',pill:'למידה + רגש',
+        situ:'בתקופה האחרונה קשה לו יותר <b>גם בקריאה וגם בשמחה ללמוד</b>.',
+        read:'מתבלבל בצלילים של כמה אותיות, וצריך חיזוק קצר לפני תרגול עצמאי.',
+        pulse:'נראית ירידה בשמחה ללמוד בשבועיים האחרונים.',
+        interp:'ייתכן שהקושי בקריאה משפיע על הביטחון שלו בשיעור.',
+        step:'קבוצה קטנה עם הצלחה מהירה, ואז לבדוק איתו איך הוא מרגיש בזמן משימות קריאה.'},
+      {id:'maya',nm:'מאיה ד.',s:'watch',q:'signal',pill:'הרגש מסמן',
+        situ:'מצליחה במשימות הקריאה אבל לאט — ובמקביל <b>קושי מתמשך בחברות</b>.',
+        read:'יודעת לזהות נכון, אבל קוראת לאט. כדאי תרגול שטף.',
+        pulse:'קושי מתמשך בחברות לאורך כמה מחזורים.',
+        interp:'ייתכן שתחושת השייכות משפיעה על הנוחות שלה ללמוד עם אחרים.',
+        step:'לא עוד תרגול לבד — פעילות קצרה בזוג או בקבוצה קטנה שבה היא חווה הצלחה וקשר.'},
+      {id:'noa',nm:'נועה כ.',s:'ok',q:'grow',pill:'מתקדמת בשניהם',
+        situ:'מתקדמת היטב בקריאה, ובמקביל <b>עלייה בתחושת החברות</b>.',
+        read:'מתקדמת היטב, אפשר תרגול מתקדם קצר.',
+        pulse:'שיפור בתחושת החברות בפולסים האחרונים.',
+        interp:'ההתקדמות בשני התחומים מחזקת זו את זו.',
+        step:'להמשיך לתת לה תפקיד קטן בקבוצה, כדי לחזק את ההתקדמות.'}
+    ];
+    function initials(n){return n.replace(/[^א-ת]/g,'').slice(0,1)||'·';}
+
+    var selected='itai';
+    function renderMap(){
+      document.querySelectorAll('.quad').forEach(function(qEl){
+        var q=qEl.dataset.q, total=qEl.dataset.total, kids=KIDS.filter(function(x){return x.q===q;});
+        qEl.querySelector('.cnt').textContent=total;
+        var box=qEl.querySelector('.kchips'); box.innerHTML='';
+        if(!kids.length){box.innerHTML='<div class="empty">כולם בשגרה טובה — אין ילד במוקד כאן</div>';return;}
+        kids.forEach(function(x){
+          var b=document.createElement('button');
+          b.className='kchip'+(x.id===selected?' sel':'');
+          b.innerHTML='<span class="kav">'+initials(x.nm)+'</span><span>'+x.nm+'</span>';
+          b.onclick=function(){selected=x.id;renderMap();renderDetail();};
+          box.appendChild(b);
+        });
+      });
+      paintIcons();
+    }
+
+    function renderDetail(){
+      var x=KIDS.find(function(k){return k.id===selected;});
+      var d=document.getElementById('detail');
+      d.className='card detail '+x.s;
+      d.innerHTML='<div class="body">'+
+        '<span class="ph">מבט אישי</span>'+
+        '<div class="top"><div class="av">'+initials(x.nm)+'</div><h3>'+x.nm+'</h3><span class="pill">'+x.pill+'</span></div>'+
+        '<div class="situ">'+x.situ+'</div>'+
+        '<div class="lenses">'+
+          '<div class="lrow read"><span class="li"><span class="tic" data-ic="book"></span></span><div class="lt"><b>בקריאה</b>'+x.read+'</div></div>'+
+          '<div class="lrow pulse"><span class="li"><span class="tic" data-ic="heart"></span></span><div class="lt"><b>ברגש</b>'+x.pulse+'</div></div>'+
+        '</div>'+
+        '<div class="interp"><span class="tic" data-ic="bulb"></span><span>'+x.interp+'</span></div>'+
+        '<div class="step"><b>ההמלצה:</b> '+x.step+'</div>'+
+        '<div class="acts">'+
+          '<button class="btn btn-soft btn-sm" data-toast="פותח את כרטיס התלמיד/ה"><span class="tic" data-ic="eye"></span>כרטיס תלמיד/ה</button>'+
+          '<button class="btn btn-chip btn-sm" data-toast="נוסף לתוכנית השבוע"><span class="tic" data-ic="plus"></span>לתוכנית השבוע</button>'+
+        '</div>'+
+        '</div>';
+      paintIcons();
+    }
+
+    function paintIcons(){
+      var I = window.DemoIcons || {};
+      document.querySelectorAll('[data-ic]').forEach(function(el){ var kk=el.getAttribute('data-ic'); if(I[kk]) el.innerHTML=I[kk]; });
+    }
+    function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},2600);}
+    document.addEventListener('click',function(e){var b=e.target.closest('[data-toast]');if(b)toast(b.dataset.toast);});
+
+    function boot(){renderMap();renderDetail();}
+    if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+  </script>
+</body>
+</html>
