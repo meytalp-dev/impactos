@@ -187,6 +187,40 @@ test.describe('תרגול בית · משימת היום', () => {
   });
 });
 
+test.describe('תרגול בית · דשבורד מורה', () => {
+  test('כפתור "תרגול בית" פותח מודאל: שורות פעילות (דמו) + שליטה במכסה שנקראת אצל הילד.ה', async ({ page }) => {
+    await prepareSession(page, {
+      students: [{ id: 'stu-maya', name: 'מאיה' }],
+      currentStudent: 'stu-maya',
+    });
+    await page.goto('/underwater-app/teacher-dashboard.html?guest=1');
+    await page.waitForLoadState('domcontentloaded');
+
+    await page.locator('#homePracticeBtn').click();
+    const modal = page.locator('#hpBackdrop');
+    await expect(modal).toBeVisible();
+    // עיקרון "בונוס לא חובה" מנוסח במודאל, ושורות הדמו מוצגות
+    await expect(modal).toContainText('בונוס — לא חובה');
+    await expect(modal).toContainText('השבוע');
+    // שליטה במכסה: שינוי ל-10 נשמר במפתח שהילד.ה קורא
+    const firstCap = modal.locator('select[data-hp-cap]').first();
+    const sid = await firstCap.getAttribute('data-hp-cap');
+    await firstCap.selectOption('10');
+    const caps = await page.evaluate(() =>
+      JSON.parse(localStorage.getItem('avnei-yesod-home-caps') || '{}'));
+    expect(caps[sid]).toBe(10);
+
+    // צד הילד.ה: home-context מכבד את המכסה שהמורה קבעה
+    await page.evaluate((sid) => {
+      localStorage.setItem('avnei-yesod-current-student', sid);
+    }, sid);
+    await page.goto('/underwater-app/map.html?context=home');
+    await page.waitForFunction(() => window.AvneiHomeContext);
+    const cap = await page.evaluate(() => window.AvneiHomeContext.getCapMinutes());
+    expect(cap).toBe(10);
+  });
+});
+
 test.describe('תרגול בית · מסך הורה', () => {
   test('מציג אותיות ותרגילים של היום — בלי אחוזים ובלי צבעי-סטטוס', async ({ page }) => {
     await prepareSession(page, {

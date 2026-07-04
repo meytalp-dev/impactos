@@ -21,6 +21,8 @@ window.AvneiHomeContext = (function () {
   const CURRENT_STUDENT_KEY = 'avnei-yesod-current-student';
   // override נשמר ל-sessionStorage כדי לשרוד ניווט בין דפים באותו סשן
   const OVERRIDE_KEY = 'avnei-home-context-override';
+  // מכסות שהמורה קבעה מהדשבורד: { [studentId]: minutes }
+  const CAPS_KEY = 'avnei-yesod-home-caps';
 
   // חלון בית-ספרי (ספק §7): א'–ו' 07:45–14:30 = כיתה · כל השאר (כולל שבת) = בית.
   // קונפיגורציה פר-כיתה — כשיהיה ענן (טבלת classes). כרגע קבוע.
@@ -106,6 +108,12 @@ window.AvneiHomeContext = (function () {
   function getCapMinutes() {
     try {
       const sid = localStorage.getItem(CURRENT_STUDENT_KEY);
+      // 1) מפתח ייעודי שהמורה כותבת מהדשבורד (teacher-dashboard → "תרגול בית").
+      //    נפרד ממאגר התלמידים כי בדמו/ענן הרשומות לא תמיד קיימות מקומית.
+      const caps = JSON.parse(localStorage.getItem(CAPS_KEY) || '{}');
+      const fromTeacher = caps && Number(caps[sid]);
+      if (fromTeacher >= CAP_MIN_MINUTES && fromTeacher <= CAP_MAX_MINUTES) return fromTeacher;
+      // 2) שדה על רשומת התלמיד.ה (ספק §8.2)
       const students = JSON.parse(localStorage.getItem(STUDENTS_KEY) || '[]');
       const rec = Array.isArray(students) ? students.find(x => x && x.id === sid) : null;
       const v = rec ? Number(rec.home_cap_minutes) : NaN;

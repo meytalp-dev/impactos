@@ -1129,6 +1129,7 @@
   <div class="actions">
     <a href="map.html?guest=1" target="_blank" class="map-link" title="פתחי את מפת האיים בכרטיסיה חדשה" style="background:white;border:1px solid #E2E8F0;padding:7px 12px;border-radius:8px;font-size:13px;color:#475569;font-weight:500;text-decoration:none;display:inline-flex;align-items:center;">🗺 מפת איים</a>
     <a href="teacher-setup.html" class="manage-link" style="background:white;border:1px solid #E2E8F0;padding:7px 14px;border-radius:8px;font-size:13px;color:#475569;font-weight:500;text-decoration:none;display:inline-flex;align-items:center;">⚙ ניהול כיתה</a>
+    <button class="rama-btn" id="homePracticeBtn" onclick="openHomePractice()" title="מי תרגל.ה בבית השבוע + מכסה יומית">🏠 תרגול בית</button>
     <button class="rama-btn" onclick="window.location.href='teacher-rama.html'">📊 מבחני ראמ"ה</button>
     <button onclick="if(window._dashboardSupabase){window._dashboardSupabase.auth.signOut().then(()=>location.href='teacher-login.html')}else{location.href='teacher-login.html'}">← יציאה</button>
   </div>
@@ -1402,6 +1403,19 @@
   </div>
 </div>
 
+<!-- ============ HOME PRACTICE MODAL (תרגול בית · 4.7.2026) ============
+     spec: _handoff/2026-07-04-home-practice-spec.md §8.5 — חיווי אינפורמטיבי (לא
+     שיפוטי: מי שלא תרגל.ה לא מופיע.ה כשורה) + שליטת מורה במכסה היומית. -->
+<div class="modal-backdrop" id="hpBackdrop">
+  <div class="modal" style="max-width: 620px;">
+    <div class="modal-head">
+      <h3>🏠 תרגול בית</h3>
+      <button class="close" onclick="closeHomePractice()" aria-label="סגירה">×</button>
+    </div>
+    <div class="modal-body" id="hpBody"></div>
+  </div>
+</div>
+
 <!-- ============ STUDENT DETAIL DRAWER ============ -->
 <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeStudentDetail()"></div>
 <aside class="drawer" id="studentDrawer" role="dialog" aria-labelledby="drawerTitle">
@@ -1669,6 +1683,132 @@
   }
   document.getElementById('pickerBackdrop').addEventListener('click', (e) => {
     if (e.target.id === 'pickerBackdrop') closePicker();
+  });
+
+  // ----- תרגול בית (4.7.2026 · spec §8.5) -----
+  // חיווי אינפורמטיבי בלבד: מוצג רק מי שתרגל.ה; היעדר תרגול-בית ≠ מדד ("בונוס,
+  // לא חובה"). + שליטת המורה במכסה היומית (10–20 ד', ברירת מחדל 15) — נשמרת
+  // ב-localStorage['avnei-yesod-home-caps'] ש-home-context.js קורא בצד הילד.ה.
+  const HP_CAPS_KEY = 'avnei-yesod-home-caps';
+  const HP_STATE_KEY = 'underwater-app:v1';
+  const HP_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+  function hpGetCaps() {
+    try { return JSON.parse(localStorage.getItem(HP_CAPS_KEY) || '{}'); }
+    catch (e) { return {}; }
+  }
+  function hpSetCap(studentId, minutes) {
+    const caps = hpGetCaps();
+    caps[studentId] = minutes;
+    try { localStorage.setItem(HP_CAPS_KEY, JSON.stringify(caps)); } catch (e) {}
+  }
+
+  // אירועי-בית מהשבוע האחרון, מקובצים פר תלמיד.ה (מקור: state.events המתויגים)
+  function hpCollectWeek() {
+    let events = [];
+    try { events = (JSON.parse(localStorage.getItem(HP_STATE_KEY) || '{}').events) || []; }
+    catch (e) {}
+    const now = Date.now();
+    // תאריך מקומי (לא toISOString שהוא UTC) — חייב להתיישר עם calendar_date של האירועים
+    const localDay = (d) => d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    const todayKey = localDay(new Date());
+    const byStudent = {};
+    events.forEach(e => {
+      if (!e || e.context !== 'home') return;
+      if (!e.timestamp || now - e.timestamp > HP_WEEK_MS) return;
+      const rec = byStudent[e.student_id] || (byStudent[e.student_id] = {
+        days: new Set(), todayItems: 0, letters: new Set(),
+      });
+      const day = e.calendar_date || localDay(new Date(e.timestamp));
+      rec.days.add(day);
+      if (day === todayKey) rec.todayItems++;
+      if (e.target_letter) rec.letters.add(e.target_letter);
+    });
+    return byStudent;
+  }
+
+  // דמו: כשאין אף אירוע-בית אמיתי ואנחנו במצב הדגמה — שורות מבוימות (אותו דפוס
+  // כמו setupGuestPlanDemo) כדי שהפיצ'ר יהיה מוחשי בדמו.
+  function hpDemoRows(students) {
+    const demo = {};
+    if (students[0]) demo[students[0].id] = { days: 3, todayItems: 12, letters: ['ב', 'מ'], mission: true };
+    if (students[2]) demo[students[2].id] = { days: 1, todayItems: 0, letters: ['ר'], mission: false };
+    return demo;
+  }
+
+  function openHomePractice() {
+    const students = window._dashboardStudents || [];
+    const caps = hpGetCaps();
+    const week = hpCollectWeek();
+    const MISSION_TARGET = 10;
+
+    // שורות פעילות: אמיתי אם יש; אחרת דמו (רק במצב הדגמה, מזוהה לפי demo-ids)
+    let rows = students
+      .filter(s => week[s.id])
+      .map(s => {
+        const w = week[s.id];
+        return { id: s.id, name: s.name, days: w.days.size, todayItems: w.todayItems,
+                 letters: [...w.letters], mission: w.todayItems >= MISSION_TARGET };
+      });
+    const isDemo = students.length > 0 && students.every(s => String(s.id).startsWith('demo-'));
+    if (rows.length === 0 && isDemo) {
+      const demo = hpDemoRows(students);
+      rows = students.filter(s => demo[s.id]).map(s => ({ id: s.id, name: s.name, ...demo[s.id] }));
+    }
+
+    const rowsHtml = rows.length
+      ? rows.map(r => `
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid #F1F5F9;">
+            <strong style="min-width:64px;">${escapeHtml(r.name)}</strong>
+            <span style="font-size:13px;color:#475569;">תרגל.ה ${r.days === 1 ? 'יום אחד' : '×' + r.days + ' ימים'} השבוע</span>
+            ${r.todayItems ? `<span style="font-size:13px;color:#475569;">· היום: ${r.todayItems} תרגילים</span>` : ''}
+            ${r.mission ? '<span style="font-size:12px;background:#E8F5F1;color:#0EA391;border-radius:999px;padding:3px 10px;font-weight:600;">משימת היום ✓</span>' : ''}
+            <span style="margin-inline-start:auto;font-size:15px;color:#334155;">${r.letters.map(escapeHtml).join(' · ')}</span>
+          </div>`).join('')
+      : `<div style="padding:14px 4px;color:#64748B;font-size:14px;line-height:1.6;">
+           עוד לא היה תרגול בית השבוע. הטאבלט שהולך הביתה כבר מוכן — נוני פותח לבד
+           עם משימת היום, בלי שום הגדרה נוספת.
+         </div>`;
+
+    const capsHtml = students.map(s => {
+      const cur = Number(caps[s.id]) || 15;
+      return `
+        <div style="display:flex;align-items:center;gap:10px;padding:7px 4px;">
+          <span style="min-width:64px;font-weight:600;">${escapeHtml(s.name)}</span>
+          <select data-hp-cap="${escapeHtml(s.id)}" style="border:1px solid #E2E8F0;border-radius:8px;padding:5px 8px;font-family:inherit;font-size:13px;">
+            ${[10, 15, 20].map(m => `<option value="${m}" ${m === cur ? 'selected' : ''}>${m} דקות</option>`).join('')}
+          </select>
+        </div>`;
+    }).join('');
+
+    document.getElementById('hpBody').innerHTML = `
+      <p style="margin:0 0 4px;font-size:14px;color:#475569;line-height:1.6;">
+        בבית נוני פותח עם <strong>משימת יום קצרה</strong> (חיזוק מה שנלמד בכיתה) ואז משחק חופשי,
+        עד המכסה היומית. <strong>בונוס — לא חובה:</strong> ערוץ ההתערבות בכיתה נשאר הערוץ המובטח.
+      </p>
+      <h4 style="margin:16px 0 4px;font-size:14px;">מי תרגל.ה השבוע</h4>
+      ${rowsHtml}
+      <div style="font-size:12px;color:#94A3B8;margin-top:6px;">מוצג רק מי שתרגל.ה — היעדר תרגול בית אינו מדד.</div>
+      <h4 style="margin:18px 0 4px;font-size:14px;">מכסה יומית בבית</h4>
+      ${capsHtml}
+    `;
+
+    document.getElementById('hpBody').querySelectorAll('select[data-hp-cap]').forEach(sel => {
+      sel.addEventListener('change', () => {
+        hpSetCap(sel.dataset.hpCap, parseInt(sel.value, 10));
+        const stu = students.find(s => s.id === sel.dataset.hpCap);
+        toast('מכסת הבית של ' + (stu ? stu.name : '') + ' עודכנה ל-' + sel.value + ' דקות');
+      });
+    });
+
+    document.getElementById('hpBackdrop').classList.add('open');
+  }
+  function closeHomePractice() {
+    document.getElementById('hpBackdrop').classList.remove('open');
+  }
+  document.getElementById('hpBackdrop').addEventListener('click', (e) => {
+    if (e.target.id === 'hpBackdrop') closeHomePractice();
   });
 
   // ----- Practice builder -----
