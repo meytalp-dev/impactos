@@ -20,7 +20,6 @@
     .now h2{font-size:21px;font-weight:900;color:var(--deep);} .now .lab{font-size:13px;font-weight:700;color:#1f7a6b;background:#E2F4F2;display:inline-block;padding:3px 12px;border-radius:999px;margin-bottom:6px;}
     .now p{font-size:15px;color:var(--text-soft);margin-top:6px;}
     .now .btns{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;}
-    .now .btns .btn{border-radius:10px;text-decoration:none;display:inline-flex;align-items:center;}
 
     /* ---------- calendar plan: one lesson/day, editable day-cards (week = 5-card grid) ---------- */
     .calbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;}
@@ -54,6 +53,12 @@
     .dayacts button{width:29px;height:29px;border-radius:8px;border:1px solid #E6ECEC;background:#fff;cursor:pointer;color:#5A7BB0;display:grid;place-items:center;}
     .dayacts button:hover{background:#F4F8F9;color:#1f7a6b;}
     .dayacts button .tic svg{width:14px;height:14px;}
+    /* מכשירי מגע (טאבלט): אין hover — הכפתורים גלויים תמיד ובגודל אצבע */
+    @media (hover:none) and (pointer:coarse){
+      .dayacts{opacity:1;}
+      .dayacts button{width:44px;height:44px;}
+      .dayacts button .tic svg{width:18px;height:18px;}
+    }
     @media (max-width:1100px){.wkgrid{grid-template-columns:repeat(3,minmax(0,1fr));}}
     @media (max-width:640px){.wkgrid{grid-template-columns:repeat(2,minmax(0,1fr));}}
 
@@ -61,8 +66,14 @@
     .prac{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;border-radius:9px;padding:5px 10px;cursor:pointer;border:1px solid transparent;text-decoration:none;transition:background .15s,border-color .15s;max-width:100%;}
     .prac .tic{display:inline-flex;flex:0 0 auto;} .prac .tic svg{width:14px;height:14px;}
     .prac .pt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .prac.ok{color:#1f7a6b;background:#E4F5EF;border-color:#BFE6D8;}
-    .prac.ok:hover{background:#D3EEE3;}
+    /* צבע רך פר קטגוריה פדגוגית — התג הטקסטואלי בצ'יפ הוא המקרא */
+    .prac.c-letter{color:#2E6FA8;background:#EAF3FB;border-color:#CFE4F5;}   /* אות */
+    .prac.c-syll{color:#1F7F94;background:#E6F4F8;border-color:#C6E4EE;}     /* הברה וצלילים */
+    .prac.c-word{color:#5A60BF;background:#EEEFFA;border-color:#D9DBF4;}     /* מילים ומשפטים */
+    .prac.c-listen{color:#AF5687;background:#FAEEF5;border-color:#EFD2E2;}   /* הבנת הנשמע */
+    .prac.c-fluency{color:#A2751F;background:#FAF3E0;border-color:#EBDCAF;}  /* שטף קריאה */
+    .prac.c-test{color:#55708A;background:#EFF3F7;border-color:#D6E0EA;}     /* מבדק */
+    .prac.ok:hover{filter:brightness(.965);}
     .prac.sum{color:#6D3FC4;background:#F3EEFC;border-color:#DCCEF5;}
     .prac.sum:hover{background:#EAE0F9;}
     .prac.offline{color:#6b7a86;background:#F0F3F5;border-color:#E3E9ED;cursor:default;}
@@ -70,7 +81,7 @@
     .praccov{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--text-soft);background:#F4F8F9;border:1px solid #EDF2F2;border-radius:12px;padding:9px 15px;margin-bottom:14px;}
     .praccov span{display:inline-flex;align-items:center;gap:6px;}
     .praccov b{font-weight:800;} .praccov .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
-    .praccov .cok{color:#1f7a6b;} .praccov .cok .dot{background:#27a08c;}
+    .praccov .cok{color:#35708C;} .praccov .cok .dot{background:#5A93C0;}
     .praccov .cgap{color:#B0722A;} .praccov .cgap .dot{background:#E0A44A;}
     .praccov .coff{color:#6b7a86;} .praccov .coff .dot{background:#B9C4CC;}
     .praccov .csum{color:#6D3FC4;} .praccov .csum .dot{background:#9A6EE0;}
@@ -223,20 +234,20 @@
       }
       var lm=t.match(/האות\s+([א-ת])/);
       if(lm){var L=normFinal(lm[1]);
-        return LETTERS[L] ? {state:'ok',href:APP+LETTERS[L],tag:'אות '+lm[1]} : {state:'gap',tag:'אות '+lm[1]};}
-      if(/מבדק/.test(t))                                    return {state:'ok',href:'../avnei-yesod/engine/screener.html',tag:'מבדק'};
+        return LETTERS[L] ? {state:'ok',cat:'letter',href:APP+LETTERS[L],tag:'אות '+lm[1]} : {state:'gap',tag:'אות '+lm[1]};}
+      if(/מבדק/.test(t))                                    return {state:'ok',cat:'test',href:'../avnei-yesod/engine/screener.html',tag:'מבדק'};
       if(/כתיב|הכתב/.test(t))                               return {state:'offline',tag:'כתיבה'};
-      if(/שטף|קריאה חוזרת|מילים לדקה|הקראה|בזוגות/.test(t)) return {state:'ok',href:APP+'stage-read-aloud.html',tag:'שטף קריאה'};
-      if(/סיפור|רצף אירועים/.test(t))                       return {state:'ok',href:APP+'stage-14-story-sequence.html',tag:'הבנת הנשמע'};
-      if(/הנשמע|האזנה|טקסט|הבנה|שאלות/.test(t))             return {state:'ok',href:APP+'stage-14-listen-and-answer.html',tag:'הבנת הנשמע'};
-      if(/הברה|הברות|תנוע/.test(t))                         return {state:'ok',href:APP+'stage-4-cv-build.html',tag:'הברה'};
-      if(/צליל הראשון|צליל האחרון/.test(t))                 return {state:'ok',href:APP+'stage-2-whispers.html',tag:'צליל במילה'};
-      if(/מהברות|מהברה|בניית מילה|הרכבת|מיזוג/.test(t))     return {state:'ok',href:APP+'stage-5-word-merge.html',tag:'הרכבת מילה'};
-      if(/מילה|מילים|משפט|פועל|פעלים|זכר|נקבה|רבים|יחיד|ריבוי|כינוי/.test(t)) return {state:'ok',href:APP+'stage-5-word-build.html',tag:'קריאת מילים'};
+      if(/שטף|קריאה חוזרת|מילים לדקה|הקראה|בזוגות/.test(t)) return {state:'ok',cat:'fluency',href:APP+'stage-read-aloud.html',tag:'שטף קריאה'};
+      if(/סיפור|רצף אירועים/.test(t))                       return {state:'ok',cat:'listen',href:APP+'stage-14-story-sequence.html',tag:'הבנת הנשמע'};
+      if(/הנשמע|האזנה|טקסט|הבנה|שאלות/.test(t))             return {state:'ok',cat:'listen',href:APP+'stage-14-listen-and-answer.html',tag:'הבנת הנשמע'};
+      if(/הברה|הברות|תנוע/.test(t))                         return {state:'ok',cat:'syll',href:APP+'stage-4-cv-build.html',tag:'הברה'};
+      if(/צליל הראשון|צליל האחרון/.test(t))                 return {state:'ok',cat:'syll',href:APP+'stage-2-whispers.html',tag:'צליל במילה'};
+      if(/מהברות|מהברה|בניית מילה|הרכבת|מיזוג/.test(t))     return {state:'ok',cat:'word',href:APP+'stage-5-word-merge.html',tag:'הרכבת מילה'};
+      if(/מילה|מילים|משפט|פועל|פעלים|זכר|נקבה|רבים|יחיד|ריבוי|כינוי/.test(t)) return {state:'ok',cat:'word',href:APP+'stage-5-word-build.html',tag:'קריאת מילים'};
       return {state:'gap',tag:''};   // מודעות פונולוגית כללית / חזרה — עדיין אין משחקון ייעודי
     }
     function pracHTML(pr){
-      if(pr.state==='ok')      return '<a class="prac ok" href="'+pr.href+'" target="_blank" rel="noopener"><span class="tic" data-ic="playcircle"></span><span class="pt">פתח תרגול · '+pr.tag+'</span></a>';
+      if(pr.state==='ok')      return '<a class="prac ok c-'+(pr.cat||'word')+'" href="'+pr.href+'" target="_blank" rel="noopener"><span class="tic" data-ic="playcircle"></span><span class="pt">פתח תרגול · '+pr.tag+'</span></a>';
       if(pr.state==='sum')     return '<a class="prac sum" href="'+pr.href+'" target="_blank" rel="noopener"><span class="tic" data-ic="star"></span><span class="pt">תרגול '+pr.tag+'</span></a>';
       if(pr.state==='offline') return '<span class="prac offline"><span class="tic" data-ic="edit"></span><span class="pt">כתיבה במחברת</span></span>';
       return '<span class="prac gap" title="עדיין אין תרגול דיגיטלי לנושא הזה — מסומן כחסר לבנייה">'+
