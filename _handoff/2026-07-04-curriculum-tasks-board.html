@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>לוח משימות · השלמת תרגולים בתוכנית השנתית</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --deep:#26505C; --text:#3B5560; --soft:#6b8089; --line:#E8EEEF; --bg:#F2F8FA;
+    --green:#1f9488; --green-soft:#E2F4F2; --amber:#B0722A; --amber-soft:#FCF3E6;
+    --blue:#2E6FA8; --blue-soft:#EAF3FB; --purple:#6D3FC4; --purple-soft:#F3EEFC;
+    --gray:#6b7a86; --gray-soft:#F0F3F5;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);padding:28px 18px 80px;}
+  .wrap{max-width:1060px;margin:0 auto;}
+  header h1{font-size:clamp(24px,3.4vw,31px);font-weight:900;color:var(--deep);}
+  header p{font-size:15px;color:var(--soft);margin-top:6px;line-height:1.6;}
+  header .meta{font-size:12.5px;color:#93a6ad;margin-top:4px;}
+
+  .progress{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 20px;margin:20px 0 26px;box-shadow:0 1px 3px rgba(38,80,92,.05);}
+  .progress .nums{display:flex;gap:20px;flex-wrap:wrap;font-size:14px;margin-bottom:10px;}
+  .progress .nums b{font-weight:900;font-size:17px;color:var(--deep);}
+  .progress .nums .done b{color:var(--green);} .progress .nums .doing b{color:var(--blue);} .progress .nums .todo b{color:var(--amber);}
+  .bar{height:10px;border-radius:999px;background:#E9F0F2;overflow:hidden;display:flex;}
+  .bar .fdone{background:var(--green);height:100%;transition:width .3s;}
+  .bar .fdoing{background:#7FB3D8;height:100%;transition:width .3s;}
+
+  .group{margin-bottom:30px;}
+  .group>h2{font-size:18.5px;font-weight:900;color:var(--deep);margin-bottom:4px;display:flex;align-items:center;gap:10px;}
+  .group>h2 .gc{font-size:12px;font-weight:800;border-radius:999px;padding:2px 11px;background:var(--green-soft);color:var(--green);}
+  .group>.gdesc{font-size:13.5px;color:var(--soft);margin-bottom:12px;line-height:1.55;}
+
+  .task{background:#fff;border:1px solid var(--line);border-radius:15px;padding:15px 18px;margin-bottom:10px;box-shadow:0 1px 2px rgba(38,80,92,.04);transition:opacity .2s;}
+  .task.st-done{opacity:.62;}
+  .task.st-done .t-title{text-decoration:line-through;text-decoration-thickness:1.5px;text-decoration-color:#9bc7bf;}
+  .t-head{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;}
+  .t-title{font-size:15.5px;font-weight:800;color:var(--deep);flex:1;min-width:220px;line-height:1.45;}
+  .t-title .tid{font-size:11.5px;font-weight:800;color:#93a6ad;margin-inline-end:7px;}
+  .t-chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+  .chip{font-size:11.5px;font-weight:700;border-radius:999px;padding:3px 10px;white-space:nowrap;}
+  .chip.days{background:var(--blue-soft);color:var(--blue);}
+  .chip.eff{background:var(--gray-soft);color:var(--gray);}
+  .chip.dep{background:var(--amber-soft);color:var(--amber);}
+  .t-desc{font-size:13.5px;color:var(--soft);line-height:1.6;margin-top:8px;}
+  .t-foot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;}
+  .st-sel{font-family:inherit;font-size:13px;font-weight:700;border-radius:10px;padding:7px 12px;border:1px solid var(--line);background:#fff;color:var(--text);cursor:pointer;}
+  .st-sel.v-doing{background:var(--blue-soft);color:var(--blue);border-color:#CFE4F5;}
+  .st-sel.v-done{background:var(--green-soft);color:var(--green);border-color:#BFE3DE;}
+  .btn{font-family:inherit;font-size:13px;font-weight:700;border-radius:10px;padding:7px 14px;border:1px solid var(--line);background:#fff;color:var(--deep);cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+  .btn:hover{background:#F4F8F9;}
+  .btn.copied{background:var(--green-soft);color:var(--green);border-color:#BFE3DE;}
+  .note{flex:1;min-width:180px;font-family:inherit;font-size:13px;border:1px solid var(--line);border-radius:10px;padding:7px 11px;color:var(--text);background:#FBFDFD;outline:none;}
+  .note:focus{border-color:#5FBFA4;box-shadow:0 0 0 3px rgba(95,191,164,.13);}
+  details.prompt{margin-top:10px;border:1px solid var(--line);border-radius:11px;background:#FAFCFC;}
+  details.prompt summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--blue);padding:9px 14px;user-select:none;}
+  details.prompt pre{white-space:pre-wrap;font-family:'Heebo',monospace;font-size:12.8px;line-height:1.65;color:#44606b;padding:4px 16px 14px;direction:rtl;text-align:right;}
+
+  .noway{background:#fff;border:1px dashed #D9C6A8;border-radius:15px;padding:16px 20px;margin-bottom:10px;}
+  .noway h3{font-size:14.5px;font-weight:800;color:var(--amber);margin-bottom:4px;}
+  .noway p{font-size:13.5px;color:var(--soft);line-height:1.6;}
+  .toast{position:fixed;bottom:22px;inset-inline-start:50%;transform:translateX(50%);background:var(--deep);color:#fff;font-size:13.5px;font-weight:600;border-radius:12px;padding:10px 20px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:9;}
+  .toast.show{opacity:1;}
+  footer{margin-top:34px;font-size:12.5px;color:#93a6ad;line-height:1.7;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>לוח משימות · השלמת תרגולים בתוכנית השנתית</h1>
+    <p>כל הפערים שאותרו באודיט התוכנית השנתית (demo/teacher-curriculum.html), מקובצים לפי נושא. לכל משימה יש פרומפט מוכן להעתקה לסוכן. הסטטוס וההערות נשמרים בדפדפן הזה (localStorage).</p>
+    <div class="meta">נוצר 4.7.2026 · מבוסס על סימולציית resolvePractice על 195 ימי־לימוד · 38 ימים "חסר תרגול" + 3 פערים סמויים</div>
+  </header>
+
+  <div class="progress">
+    <div class="nums">
+      <span class="done">הושלמו: <b id="nDone">0</b></span>
+      <span class="doing">בעבודה: <b id="nDoing">0</b></span>
+      <span class="todo">טרם התחילו: <b id="nTodo">0</b></span>
+      <span>סה״כ: <b id="nAll">0</b></span>
+    </div>
+    <div class="bar"><div class="fdone" id="fDone"></div><div class="fdoing" id="fDoing"></div></div>
+  </div>
+
+  <div id="groups"></div>
+
+  <div class="group">
+    <h2>מה שלא ניתן להשלים דיגיטלית <span class="gc" style="background:var(--amber-soft);color:var(--amber)">מתועד · לא לבנייה</span></h2>
+    <div class="gdesc">הימים האלה נשארים בכיתה בכוונה. מתועד כאן כדי שלא יופיעו שוב כ"פערים" בעתיד.</div>
+    <div class="noway"><h3>~5 ימי שיח בעל־פה (מילות מקום בדיבור · מיקום ומרחב · התאמת מין בדיבור · תיאור דמות · תיאור בעזרת תארים)</h3>
+      <p>דורשים הערכת דיבור חופשי של ילד.ה. ממצאי בדיקת שטף־הקריאה (3.7.2026) הראו שאפילו הקראת מילה בודדת אינה אמינה לדיוק פונמי — שיח חופשי רחוק מזה בסדר גודל. אלה שיעורי מורה־כיתה מהותיים. משימה W1 מסמנת אותם "שיח בכיתה" במקום "חסר".</p></div>
+    <div class="noway"><h3>30 ימי כתיבה במחברת</h3>
+      <p>כתיבה מוטורית — מסומנים נכון "כתיבה במחברת". POC מעקב־האצבע (ת מ ר מכוילות) יוכל בעתיד לכסות חלק מימי כתיבת־האותיות, אבל הוא tracing של אות בודדת ולא כתיבת מילים/משפטים/תשובות, שהן רוב הימים האלה.</p></div>
+    <div class="noway"><h3>חגיגת סיום + קריאה משותפת (יוני)</h3>
+      <p>אירוע כיתתי, לא תרגול דיגיטלי. משימה W1 מתייגת אותו בהתאם.</p></div>
+  </div>
+
+  <footer>
+    💡 שימוש: בוחרים משימה → "העתק פרומפט" → מדביקים לסוכן חדש (VS Code נפרד לעבודה מקבילה). כל פרומפט כולל רשימת "אסור לגעת" כדי למנוע התנגשויות בין סוכנים.<br>
+    הסטטוסים נשמרים מקומית בדפדפן. אם פותחים את הדף ממחשב אחר — הסטטוסים לא יעברו.
+  </footer>
+</div>
+<div class="toast" id="toast">הפרומפט הועתק ✓</div>
+
+<script>
+const GROUPS = [
+  {id:'W', name:'תיקוני חיווט מיידיים', chip:'~שעה · תמורה מיידית', desc:'תיקונים קטנים בקובץ אחד (demo/teacher-curriculum.html) שמורידים את מונה ה"חסר" מ־38 ל־~30 אמיתיים.'},
+  {id:'A', name:'איי־אות חסרים — ת · מ · ב · ק · ש', chip:'5 ימים בספטמבר · פתיחת השנה', desc:'האותיות הראשונות שהפיילוט יפגוש. כל אות = סוכן נפרד ב־VS Code נפרד (הדפוס המקבילי המוכח). כולם בונים קובץ חדש משלהם — אפס התנגשויות.'},
+  {id:'V', name:'מנוע התנועות', chip:'שבוע אוּ באפריל + ימי חיריק/שווא', desc:'הפער הסמוי החמור ביותר: שבוע התנועה אוּ מסומן ירוק אבל /u/ לא קיים ב־vowel-adapter (post-MVP).'},
+  {id:'B', name:'בנק השאלות → צ׳יפי התוכנית', chip:'~10 ימי דקדוק + שדרוג 43 ימים גנריים', desc:'הבנק (855 שאלות) כבר מכסה את התוכן; חסר חיווט mechanic-mcq עם unitKey + הפקת מדיה.'},
+  {id:'M', name:'מכניקות חדשות', chip:'12 ימים', desc:'ארבעה משחקונים חדשים, מסודרים לפי תמורה/מאמץ. M1 הכי בשל (התמונות כבר מוכנות).'}
+];
+
+const COMMON_ISLAND = (letter, letterName, fileName, extra) => 'אתה סוכן בפרויקט impactos (אפליקציית "אבני יסוד" — לימוד קריאה לכיתה א׳, עברית, עולם תת־מימי).\n' +
+'משימה: לבנות אי־תרגול חדש לאות ' + letter + ' — קובץ חדש avnei-yesod/underwater-app/' + fileName + '.\n\n' +
+'לפני שנוגעים בקוד — ללמוד את הדוגמאות הקנוניות: stage-3-lamed.html ו־stage-3-nun.html (מבנה, אודיו, logging, סבבים). האי החדש חייב להיות עקבי איתם.\n\n' +
+'חוקים מחייבים (לקחים מאי 4 — כל סטייה = באג):\n' +
+'1. רקע: <img class="scene-bg" src="assets/scene-stage-3-bg.png"> + tokens.css. אסור gradient ייחודי לאי.\n' +
+'2. נוני = תמנון סגול. להשתמש ב־PNG הקיימים assets/noni-*.png (idle/happy/thinking/sad/surprised, שקופים). אסור להמציא SVG או דמות אחרת.\n' +
+'3. סיפור אמיתי עם בעיה→פתרון סביב נושא ימי (דגים/צדפים/בועות) — לא wrapper גנרי. ההבחנה בין איים = נושא הסבבים, לא צבע רקע.\n' +
+'4. אודיו: MP3 מוקלט מראש בצנרת הקיימת של האיים (לבדוק איך stage-3-lamed עושה זאת ואיפה סקריפטי ההפקה). קול נוני = ElevenLabs eleven_v3, voice ZI6I4a3UGgs1DXxqWjBV, דרך _eleven_tts.py. PYTHONIOENCODING=utf-8 חובה. QA אודיו = תמלול Whisper (אתה לא שומע — תמלל ובדוק). אסור Web Speech API.\n' +
+'5. אודיו הנחיה מתנגן פעם אחת ב־mount של סבב. אחרי תשובה נכונה — פידבק ויזואלי בלבד, לא לחזור על האודיו.\n' +
+'6. קבלת phoneme group: ' + letter + 'ַ ו־' + letter + 'ָ שניהם /a/ — שתי הצורות תשובה נכונה.\n' +
+'7. pack mode: צירוף שונה בכל סבב (לא אותו צירוף ×5).\n' +
+'8. just-done glow פר סבב; overlay של שכבות רקע ב־35% opacity (לא 94%).\n' +
+'9. cache bust בזמן פיתוח (?v=).\n' +
+'10. אוצר מילים: לא להמציא! לבדוק anchor words ב־js/shared/vowel-adapter.js עבור ' + letter + '. אם הערך null (מסומן ASK) — להשאיר TODO ברור בקוד ולציין בדוח הסיום שצריך את מיטל.\n' +
+'11. כל טקסט שהילד.ה רואה: מנוקד מלא, פנייה בלשון רבים (גְּעוּ, הַקְשִׁיבוּ — לא נְגַע.י), פונט Heebo (כתב דפוס). ב/כ/פ בראש הברה = עם דגש קל.\n' +
+'12. logging: לחקות במדויק את דפוס ה־event logging של stage-3-lamed (verdict → BKT). לוודא שהשדות עוברים את הרשימה הלבנה של event-logger.\n\n' +
+(extra ? 'ייחודי לאות הזו:\n' + extra + '\n\n' : '') +
+'אסור לגעת: demo/teacher-curriculum.html (עדכון מפת LETTERS = משימה נפרדת A6) · איים אחרים · js/state.js · קבצים של סוכנים אחרים.\n' +
+'סיום: לפתוח את האי בדפדפן ולעבור סבב מלא, לוודא קונסולה נקייה, ואז commit של הקבצים החדשים בלבד עם הודעה בעברית. לדווח: מה נבנה, אילו מילות אוצר חסרות (ASK), ומה נותר.';
+
+const TASKS = [
+ {id:'W1', g:'W', title:'שלושה תיקונים ב־resolvePractice (קובץ אחד, סוכן אחד)', days:'8 ימים', eff:'~שעה', dep:null,
+  desc:'(א) "חזרה ותחזוקה" + ימי המילוי "חזרה, תרגול והעמקה" → תרגול־סיכום שרשרת הפנינים. (ב) "פרופיל אורייני לכל ילד" → קישור למסך המורה. (ג) מצב חדש "שיח בכיתה" לימי דיבור/דיאלוג + "אירוע" לחגיגת הסיום.',
+  prompt:'אתה סוכן בפרויקט impactos. משימה ממוקדת בקובץ יחיד: demo/teacher-curriculum.html — הפונקציה resolvePractice() שממפה כל יום־לימוד לצ׳יפ תרגול.\n\nשלושה תיקונים:\n\n1. ימי "חזרה ותחזוקה" (נובמבר) וימי ברירת־המחדל "חזרה, תרגול והעמקה" נופלים היום ל־gap. הוסף כלל: אם הנושא מכיל "חזרה ותחזוקה" או "חזרה, תרגול והעמקה" → החזר state:"sum" עם href ל־stage-summary-cv.html?letters= לפי lettersLearnedUpTo(mi,di) (בדיוק כמו הכלל הקיים של תרגול־הסיכום). אם עוד לא נלמדו אותיות — gap כרגיל.\n\n2. היום "פרופיל אורייני לכל ילד" (יוני) הוא משימת מורה, לא תרגול תלמיד. הוסף כלל: נושא שמכיל "פרופיל אורייני" → state:"ok", cat:"test", href:"teacher-literacy-profile.html", tag:"כלי מורה".\n\n3. הוסף state חדש "oral" עם תווית "שיח בכיתה" (מסך מורה — בלי ניקוד). עיצוב כמו .prac.offline (אפור, לא קליקבילי). כלל: נושא שמכיל "בדיבור" או "דיאלוג" או "שפה דבורה" או "תיאור דמות" או "תיאור בעזרת תארים" → oral. נושא שמכיל "חגיגת סיום" → oral עם תווית "אירוע כיתתי". חשוב: הכלל של oral חייב לבוא לפני ה־catch-all של מילה/מילים/משפט. עדכן גם את מוני הכיסוי (praccov) — הוסף מונה "שיח בכיתה" בנפרד מ"כתיבה במחברת".\n\nזהירות: הקובץ הזה משתנה גם ע"י סוכנים אחרים — קרא אותו מחדש מיד לפני העריכה. אל תיגע בשום דבר אחר בקובץ (עיצוב הכרטיסיות, EXTRAS, עריכה inline). בדוק בדפדפן: ספטמבר, נובמבר, יוני — ודא שהמונים מסתדרים ושאין ימים שנפלו ל־gap בטעות. commit של הקובץ הזה בלבד, הודעה בעברית.'},
+
+ {id:'A1', g:'A', title:'אי האות ת — stage-3-tav.html', days:'ספט׳ יום 1', eff:'סוכן־יום', dep:null,
+  desc:'האות הראשונה בשנה. יש כבר כיול tracing לכתיבת ת (פיצ׳ר נפרד) — האי הזה הוא אי קריאה/זיהוי רגיל.',
+  prompt: COMMON_ISLAND('ת','תו','stage-3-tav.html','זו האות הראשונה שנלמדת בשנה — האי צריך להניח אפס ידע קודם. קיים פיצ׳ר כתיבת־ת נפרד (stage-3-write-tav-accurate.html) — אל תיגע בו ואל תתבלבל איתו; אתה בונה אי זיהוי־וקריאה.')},
+ {id:'A2', g:'A', title:'אי האות מ — stage-3-mem.html', days:'ספט׳ יום 2', eff:'סוכן־יום', dep:null,
+  desc:'האות השנייה בשנה. כולל צורה סופית ם (זיהוי בלבד).',
+  prompt: COMMON_ISLAND('מ','מם','stage-3-mem.html','לכלול חשיפה לצורה הסופית ם (זיהוי "אותה אות בסוף מילה"), כמו שאיים קיימים מטפלים באותיות סופיות אם יש דוגמה כזו — בדוק את stage-3-nun.html (נ/ן) והעתק את הדפוס.')},
+ {id:'A3', g:'A', title:'אי האות ב — stage-3-bet.html', days:'ספט׳ יום 6', eff:'סוכן־יום', dep:null,
+  desc:'קריטי: כלל הדגש הקל. בַּ = /ba/ ולא /va/ — בבנייה דינמית ובאודיו.',
+  prompt: COMMON_ISLAND('ב','בית','stage-3-bet.html','🔴 כלל בגד־כפת: בכל צירוף CV בתחילת הברה האות חייבת דגש קל — בַּ בָּ בִּ (U+05BC). בלי דגש AvriNeural/TTS יבטא /va/ וזה באג. לוודא את הדגש גם בתצוגה, גם במחרוזות שנשלחות ל־TTS, וגם בבדיקת ה־QA (תמלול Whisper צריך להחזיר /b/).')},
+ {id:'A4', g:'A', title:'אי האות ק — stage-3-kuf.html', days:'ספט׳ יום 7', eff:'סוכן־יום', dep:null,
+  desc:'יום הלימוד נקרא "האות ק (הבחנה ב/כ)" — כנראה שגיאת כתיב בתוכנית (אמור להיות ק/כ). האי כולל סבב הבחנה ק/כ.',
+  prompt: COMMON_ISLAND('ק','קוף','stage-3-kuf.html','יום הלימוד בתוכנית נקרא "האות ק (הבחנה ב/כ)" — קרוב לוודאי שגיאת הקלדה של ק/כ (שני עיצורים שנשמעים /k/). לכלול סבב אחד של הבחנת ק מול כּ (אותו צליל, צורה שונה — "איזו אות רואים?"). לציין בדוח הסיום שכדאי שמיטל תתקן את נוסח היום בתוכנית.')},
+ {id:'A5', g:'A', title:'אי האות ש — stage-3-shin.html', days:'ספט׳ יום 17', eff:'סוכן־יום', dep:null,
+  desc:'בספטמבר מלמדים רק שׁ (ימנית). שׂ שמאלית מגיעה בפברואר — לא לערבב.',
+  prompt: COMMON_ISLAND('ש','שין','stage-3-shin.html','החלטה פדגוגית מחייבת: בספטמבר מלמדים רק שׁ ימנית (/sh/). אסור להכניס שׂ שמאלית לאי הזה — היא נלמדת בפברואר (משימה נפרדת M3). כל המילים והאודיו עם שׁ בלבד, ועם נקודת השי"ן הימנית מוצגת במפורש.')},
+ {id:'A6', g:'A', title:'עדכון מפת LETTERS בתוכנית השנתית', days:'סוגר את A1–A5', eff:'10 דקות', dep:'אחרי A1–A5',
+  desc:'הוספת חמש האותיות החדשות למפה ב־teacher-curriculum.html כדי שהצ׳יפים יהפכו ירוקים. לבצע רק אחרי שהאיים קיימים.',
+  prompt:'אתה סוכן בפרויקט impactos. משימה קטנה: בקובץ demo/teacher-curriculum.html יש מפה בשם LETTERS שממפה אות → קובץ אי־תרגול. חמישה איים חדשים נבנו: stage-3-tav.html (ת), stage-3-mem.html (מ), stage-3-bet.html (ב), stage-3-kuf.html (ק), stage-3-shin.html (ש).\n\n1. ודא קודם שכל חמשת הקבצים באמת קיימים ב־avnei-yesod/underwater-app/ ונפתחים בלי שגיאות קונסולה. אם חלקם חסרים — הוסף רק את הקיימים ודווח.\n2. הוסף אותם למפת LETTERS ועדכן/מחק את ההערה "חסרות עדיין: ב · מ · ק · ש · ת".\n3. פתח את הדף, נווט לספטמבר, ודא שימי האותיות האלה ירוקים ושמונה ה"חסר" ירד בהתאם.\n\nזהירות: הקובץ משתנה גם ע"י סוכנים אחרים — קרא אותו מחדש מיד לפני העריכה. commit של הקובץ הזה בלבד, הודעה בעברית.'},
+
+ {id:'V1', g:'V', title:'הוספת /u/ (שורוק + קובוץ) ל־vowel-adapter', days:'שבוע שלם באפריל (פער סמוי!)', eff:'סוכן־חצי־יום', dep:null,
+  desc:'שבוע "התנועה אוּ" מסומן ירוק בתוכנית אבל vowel-adapter.js מגדיר /u/ = post-MVP. המנוע לא יכול לתרגל מֻ/בּוּ.',
+  prompt:'אתה סוכן בפרויקט impactos (אבני יסוד). ב־avnei-yesod/underwater-app/js/shared/vowel-adapter.js מערכת התנועות כוללת קמץ/פתח/שווא/חיריק/חולם/צירי/סגול — אבל /u/ (קובוץ ֻ ושורוק וּ) מסומן בהערות כ־post-MVP (סביב שורות 67–74). בתוכנית השנתית יש שבוע שלם באפריל על התנועה אוּ, והוא כרגע "ירוק" רק על הנייר.\n\nמשימה:\n1. הוסף לרשימת התנועות: kubutz (סימן ֻ) ו־shuruk (וּ), שניהם phoneme /u/, phoneme_group "u", book 5. עדכן את מפת שמות־הקבוצות ("u": "קובוץ-שורוק") ואת ההערות המיושנות.\n2. anchor words: לכל אות שיש לה כבר רשומות במפה, הוסף ערכי X:kubutz / X:shuruk. להשתמש רק במילים שנמצאות בחומרי התוכן הקיימים (חפש בתיקיות התוכן/curriculum). מה שאין — null עם הערת ASK, בדיוק כמו הדפוס הקיים. לא להמציא מילים!\n3. בדוק ש־stage-4-cv-build.html מציג ומקבל את התנועות החדשות בלי שבירה (שים לב: שורוק כולל את האות ו — ודא שהרינדור של "בּוּ" תקין ולא נשבר לשני תווים).\n4. אודיו: אם יש צנרת הפקת MP3 להברות — הפק להברות מ/ב/ל עם /u/ לפחות (מֻ, בּוּ, לוּ). זכור דגש קל בבי"ת (בּוּ = /bu/). QA = תמלול Whisper. אם הצנרת לא ברורה — דווח מה חסר במקום לנחש.\n\nאסור לגעת: demo/teacher-curriculum.html, איי stage-3-*. commit ממוקד, הודעה בעברית, ודוח קצר: מה נוסף, אילו anchor words חסרים (ASK), והאם cv-build עובד עם /u/ בדפדפן.'},
+ {id:'V2', g:'V', title:'פרמטר תנועה ל־cv-build + חיווט ימי חיריק/שווא/חולם', days:'~5 ימים (ינו׳/דצמ׳/פבר׳)', eff:'סוכן־חצי־יום', dep:'רצוי אחרי V1',
+  desc:'stage-4-cv-build יקבל ?vowel= כדי למקד תנועה ספציפית, וימי "משחק התאמת חיריק", "חזרה — חיריק", "השווא — איפה שומעים" יקבלו צ׳יפ ממוקד.',
+  prompt:'אתה סוכן בפרויקט impactos (אבני יסוד). שני חלקים:\n\nחלק א — avnei-yesod/underwater-app/stage-4-cv-build.html: הוסף תמיכה בפרמטר URL ?vowel=<id> (למשל ?vowel=hiriq או ?vowel=shva או ?vowel=holam, לפי ה־id-ים ב־js/shared/vowel-adapter.js). כשהפרמטר קיים — הסבבים מתמקדים בתנועה הזו (היא היעד ברוב הסבבים, עם מסיחים מתנועות שכבר נלמדו). בלי פרמטר — התנהגות קיימת ללא שינוי. שמור על קבלת phoneme_group (קמץ+פתח שניהם /a/). אל תשבור את ה־logging הקיים.\n\nחלק ב — demo/teacher-curriculum.html, פונקציית resolvePractice(): הוסף כללים לפני הכלל הגנרי של /הברה|הברות|תנוע/:\n- נושא עם "חיריק" → cv-build?vowel=hiriq (tag "חיריק")\n- נושא עם "שווא" (שאינו יום כתיבה — כללי הכתיבה קודמים) → cv-build?vowel=shva (tag "שווא")\n- נושא עם "חולם" → cv-build?vowel=holam\n- נושא עם "צירי" או "סגול" → cv-build?vowel=tzere\nשים לב לסדר הכללים — ימי "כתיבת הברת חיריק" חייבים להישאר "כתיבה במחברת".\n\nזהירות: teacher-curriculum.html משתנה גם ע"י סוכנים אחרים — קרא מחדש לפני עריכה. בדוק בדפדפן את דצמבר וינואר. commit של שני הקבצים בלבד, הודעה בעברית.'},
+
+ {id:'B1', g:'B', title:'חיווט mechanic-mcq עם unitKey לצ׳יפי התוכנית', days:'~10 ימי דקדוק + שדרוג 43 גנריים', eff:'סוכן־יום', dep:null,
+  desc:'הבנק (855 שאלות) כבר מכסה היה/היתה, מילות שאלה, יש/אין, שמות תואר, כְּמוֹ, יחיד/רבים ועוד — חסר רק מיפוי יום→unitKey ופתיחת המשחקון הגנרי.',
+  prompt:'אתה סוכן בפרויקט impactos (אבני יסוד). רקע חובה לקריאה לפני עבודה: _handoff/2026-06-29-minigame-fit-report.md (התאמת 855 שאלות × 17 משחקונים; G1–G4 סגורים; המנוע ממפתח EPA פר unitKey — אות או characteristic_id) + הקבצים avnei-yesod/curriculum/questions-grade1.json ו־mastery-criteria-grade1.json + ליבת mechanic-mcq (חפש mechanic-mcq בריפו).\n\nהבעיה: בתוכנית השנתית (demo/teacher-curriculum.html) ~10 ימי דקדוק נופלים ל"חסר" (היה/היתה · אַתְּ/אַתָּה · מילות שאלה · "מה יוצא דופן"+יש/אין · יֵשׁ/אֵין בתמונה · שמות תואר · מילת הדימוי כְּמוֹ) ו־43 ימים נוספים מקבלים catch-all גנרי של stage-5-word-build בלי פרמטר נושא.\n\nמשימה:\n1. בנה מיפוי יום→unitKey: עבור כל אחד מ־10 ימי הדקדוק החסרים, אתר את ה־unitKey/characteristic_id המתאים בבנק וודא שיש לו לפחות 5 שאלות. תעד ימים שאין להם כיסוי אמיתי — אל תמתח שאלות לא רלוונטיות.\n2. צור (אם אין) דף נגן גנרי שפותח mechanic-mcq עם ?unitKey=... — לפי הדפוס הקיים של המשחקונים.\n3. עדכן את resolvePractice() ב־teacher-curriculum.html: כללים ספציפיים לימים האלה לפני ה־catch-all, עם tag ברור למורה ("היה/היתה", "מילות שאלה"...). קטגוריית צבע c-word.\n4. שדרוג ה־43 הגנריים — רק אם נשאר זמן: התחל בימי יחיד/רבים וזכר/נקבה שיש להם unitKey חד־משמעי.\n\nכללי תוכן: שאלות שילד רואה = מנוקדות, הוראות בלשון רבים. אפשרויות־שמע = דפוס two-tap (נגיעה ראשונה משמיעה, שנייה בוחרת — ניחוש לא נמדד).\n\nזהירות: teacher-curriculum.html משתנה גם ע"י סוכנים אחרים — קרא מחדש לפני עריכה. אסור לגעת: איי stage-3-*, vowel-adapter. commit ממוקד + דוח: אילו ימים חווטו, אילו בלי כיסוי בבנק ולמה.'},
+ {id:'B2', g:'B', title:'הפקת MP3 + תמונות לשאלות הבנק המחווטות', days:'משרת את B1', eff:'סוכן־יום + עלות API', dep:'אחרי B1',
+  desc:'חסם ההפקה מדוח ה־fit: לשאלות אין עדיין אודיו ותמונות. מתחילים רק בשאלות שנכנסו לשימוש ב־B1 — לא כל ה־855.',
+  prompt:'אתה סוכן בפרויקט impactos (אבני יסוד). משימת הפקת מדיה לשאלות בנק שנכנסו לשימוש בתוכנית השנתית (רשימת ה־unitKeys — בדוח הסיום של משימה B1; אם אין, גזור מהצ׳יפים ב־demo/teacher-curriculum.html שמפנים ל־mechanic-mcq).\n\nהיקף: רק השאלות שבשימוש בפועל, לא כל ה־855.\n\nאודיו:\n- הגיות/הקראות שאלה: לפי הצנרת הקיימת של האיים (בדוק את סקריפטי ההפקה הקיימים בריפו לפני שממציא חדש).\n- קול נוני (נרטיב): ElevenLabs eleven_v3, voice ZI6I4a3UGgs1DXxqWjBV, דרך _eleven_tts.py. PYTHONIOENCODING=utf-8. נוני = נוּנִי בשורוק.\n- 🔴 QA חובה: תמלול Whisper לכל קובץ (אתה לא שומע). ב/כ/פ בתחילת הברה עם דגש קל — אחרת התמלול יחזיר /v/ במקום /b/ וזה פסול.\n\nתמונות (אם יש שאלות תמונה ב־unitKeys האלה):\n- השיטה המנצחת מצינור תמונות־האוצר: GPT מייצר רשת־אחת־פר־באץ׳ → חיתוך ב־PIL → אימות ב־contact-sheet מוקטן. ראה tools/סקריפטים של vocab-image pipeline ו־_handoff/2026-07-03-vocab-images-GPT-prompts.md כדוגמת פורמט פרומפטים.\n- 🔴 לא לטעון PNG בגודל מלא לקונטקסט — רק manifest ותצוגות מוקטנות.\n\nסיום: עדכן את קבצי השאלות עם נתיבי המדיה, פתח משחקון אחד ובדוק סבב מלא. commit (שים לב אם אודיו ב־gitignore — אז רק ה־JSON). דוח: כמה קבצים הופקו, כמה נכשלו ב־QA, מה חסר.'},
+
+ {id:'M1', g:'M', title:'משחקון אוצר־מילים מילה↔תמונה', days:'4 ימים (הרחבת אוצר · שדות סמנטיים · אסוציאציות · חיפוש פריטים)', eff:'סוכן־יום', dep:null,
+  desc:'הכי בשל: 47/47 תמונות האוצר כבר מוכנות ו־committed, יש adapter ו־manifest. נשאר לבנות מכניקת התאמה/מיון ולחווט.',
+  prompt:'אתה סוכן בפרויקט impactos (אבני יסוד). משימה: משחקון אוצר־מילים חדש avnei-yesod/underwater-app/stage-vocab-match.html.\n\nתשתית קיימת (ללמוד לפני): צינור תמונות האוצר — _manifest.json + js/vocab-image-adapter.js (מזריק image_src) + דף QA qa-vocab-images.html. כל 47 התמונות כבר בריפו. ליבת mechanic-mcq קיימת — העדף להרכיב עליה ולא לכתוב מנוע מאפס.\n\nמצבי משחק:\n1. מילה→תמונה: מילה מנוקדת + אודיו, 3 תמונות — בוחרים את המתאימה.\n2. תמונה→מילה: תמונה אחת, 3 מילים מנוקדות.\n3. מיון לקטגוריות (שדות סמנטיים): 2 קטגוריות (חיות/אוכל וכד׳ לפי מה שקיים ב־manifest), גוררים או נוגעים לשיוך.\nמסיחים = מאותו שדה סמנטי כשאפשר (קושי אמיתי), אחרת אקראי.\n\nחוקי עולם: scene-bg PNG + tokens.css + נוני תמנון (PNG קיימים) + touch-min 56px + טקסט ילד מנוקד בלשון רבים + Heebo. אודיו הנחיה פעם אחת ב־mount; אם יש אפשרויות־שמע — דפוס two-tap (נגיעה ראשונה=האזנה, שנייה=בחירה). 🔴 לא לטעון PNG מלא לקונטקסט — לעבוד עם ה־manifest.\n\nחיווט: ב־demo/teacher-curriculum.html הוסף כלל ב־resolvePractice לפני ה־catch-all: נושאים עם "הרחבת אוצר" / "שדות סמנטיים" / "אסוציאציות וקטגוריות" / "חיפוש פריטים" → המשחקון החדש (tag "אוצר מילים", cat c-word). זהירות: הקובץ משתנה גם ע"י סוכנים אחרים — קרא מחדש לפני עריכה.\n\nlogging לפי דפוס האיים הקיימים. commit ממוקד + דוח קצר.'},
+ {id:'M2', g:'M', title:'וריאנט הבנת־הנקרא של stage-14 + תיקון מיפוי מאי', days:'3 ימים + מתקן בלוק שלם במאי', eff:'סוכן־יום', dep:null,
+  desc:'קיים רק מנוע הבנת הנשמע. ימי "קריאת תיאור/פסקה" חסרים, וימי הטקסטים של מאי ממופים בטעות למשחקוני האזנה.',
+  prompt:'אתה סוכן בפרויקט impactos (אבני יסוד). קיים מנוע הבנת הנשמע: avnei-yesod/underwater-app/stage-14-listen-and-answer.html (+stage-14-story-sequence.html). בתוכנית השנתית יש ימי הבנת **הנקרא** ("קריאת תיאור + התאמה לדמות", "קריאת תיאור ארוך", "קריאת פסקה עצמית") שנופלים ל"חסר", וגרוע מזה — ימי הקריאה של מאי ("קריאת סיפור יום שוק בגינה", "טקסט מידע לווייתנים/דבורים") ממופים בטעות למשחקוני ההאזנה כי ה־regex תופס "סיפור/טקסט".\n\nמשימה:\n1. בנה stage-14-read-and-answer.html — וריאנט קריאה של listen-and-answer: במקום אודיו של קטע, מוצג טקסט קצר מנוקד מלא על המסך (Heebo, גדול, שורות קצרות). השאלות והמסיחים — אותו מבנה נתונים. כפתור רמקול קטן ליד השאלה עצמה מותר (הנגשה), אבל הטקסט הנקרא — בלי הקראה אוטומטית, זו כל הפואנטה.\n2. תוכן: בדוק אם קטעי הטקסט של מאי (יום שוק בגינה, לווייתנים, דבורים) קיימים כבר בחומרי curriculum/questions-grade1.json או בקבצי התוכן. אם לא — כתוב 2–3 קטעים קצרים (3–4 משפטים, מנוקדים, רק אותיות/תנועות שנלמדו עד אותו חודש לפי התוכנית) + 3 שאלות לכל קטע, וסמן אותם בדוח כטעוני אישור פדגוגי של מיטל.\n3. עדכן resolvePractice() ב־demo/teacher-curriculum.html: נושאים שמתחילים ב"קריאת סיפור/טקסט/תיאור/פסקה" או "איתור מידע בטקסט"/"מבנה טקסט מידע" → הווריאנט החדש (cat c-listen? לא — צור/השתמש בקטגוריה מתאימה, tag "הבנת הנקרא"). ימי האזנה אמיתיים ("הבנת הנשמע", "האזנה") נשארים על stage-14 הקיים. שים לב לסדר הכללים!\n\nחוקי עולם: scene-bg + tokens.css + נוני PNG + טקסט ילד מנוקד ברבים. logging לפי הדפוס הקיים. זהירות ב־teacher-curriculum.html (סוכנים מקבילים — קרא מחדש לפני עריכה). commit + דוח.'},
+ {id:'M3', g:'M', title:'מכניקת הבחנה בין דומים (minimal pairs)', days:'4 ימים (אותיות דומות · צ/ץ · שׁ/שׂ ×2)', eff:'סוכן־יום', dep:null,
+  desc:'הבחנה חזותית (ד/ר, ה/ח, צ/ץ) והבחנה שמיעתית (שׁ/שׂ). הבנק כבר מכיל מסיחים נגזרי־EPA.',
+  prompt:'אתה סוכן בפרויקט impactos (אבני יסוד). משימה: משחקון הבחנה בין דומים — avnei-yesod/underwater-app/stage-discrimination.html עם פרמטר ?pair= .\n\nימי היעד בתוכנית: "הבחנה בין אותיות דומות" (ספטמבר — ת/ר, ד/ר, ה/ח לפי מה שנלמד), "הבחנת צ/ץ" (ינואר), "שׁ ימנית מול שׂ שמאלית" + "אבחנה שמיעתית שׁ/שׂ" (פברואר).\n\nשני מצבים:\n1. הבחנה חזותית: מציגים אות גדולה, שומעים צליל/שם — "גְּעוּ בָּאוֹת שֶׁשְּׁמַעְתֶּם" מבין 2–3 דומות חזותית (ד/ר, ה/ח, ת/ר, צ/ץ, כ/ב). לצורות סופיות (צ/ץ): "איפה האות בסוף מילה?" עם מילים אמיתיות מהתוכן הקיים.\n2. הבחנה שמיעתית (שׁ/שׂ): שומעים מילה (שָׁר/שָׂר) ובוחרים את הכתיב הנכון. 🔴 אפשרויות־שמע = דפוס two-tap חובה: נגיעה ראשונה באפשרות משמיעה אותה (לא נמדד), נגיעה שנייה = בחירה (רק היא נרשמת ל־BKT). בלי זה ניחוש־מיקום נרשם כאי־ידיעה.\n\nתוכן: בדוק קודם אם questions-grade1.json מכיל שאלות הבחנה מתאימות (מסיחים נגזרי־EPA קיימים בבנק) — העדף אותן על פני המצאה. מילים — רק מהתוכן הקיים.\n\nאודיו: צנרת MP3 קיימת, לא Web Speech. QA תמלול Whisper. חוקי עולם: scene-bg + tokens.css + נוני PNG + ניקוד מלא + לשון רבים + Heebo + touch 56px. logging לפי דפוס האיים.\n\nחיווט: resolvePractice() ב־demo/teacher-curriculum.html — כללים לימים הנ"ל לפני ה־catch-all (זהירות, סוכנים מקבילים — קרא מחדש לפני עריכה). commit + דוח: אילו זוגות ממומשים, מה מקור התוכן.'},
+ {id:'M4', g:'M', title:'מכניקת חריזה שמיעתית', days:'2 ימים (חריזה · זיהוי חרוזים)', eff:'סוכן־יום', dep:'אחרון בתור',
+  desc:'מכניקה חדשה לגמרי, שמיעתית — לכן אחרונה בסדר העדיפויות. two-tap חובה.',
+  prompt:'אתה סוכן בפרויקט impactos (אבני יסוד). משימה: משחקון חריזה — avnei-yesod/underwater-app/stage-rhyme.html.\n\nימי היעד: "חריזה" (פברואר), "זיהוי חרוזים (אוצר)" (אפריל). קהל: כיתה א׳, מודעות פונולוגית.\n\nמכניקה: נוני אומרת מילה (אודיו + המילה מנוקדת על המסך), ומציגים 3 אפשרויות — "אֵיזוֹ מִלָּה מִתְחָרֶזֶת?". 🔴 אפשרויות = דפוס two-tap חובה: נגיעה ראשונה באפשרות משמיעה אותה בלבד (האזנה חופשית, לא נמדדת), נגיעה שנייה = בחירה שנרשמת. חריזה היא שמיעתית — אסור שהילד ינחש לפי מראה המילה בלבד, לכן כל אפשרות חייבת רמקול.\n\nתוכן: זוגות חרוזים רק ממילים שקיימות בחומרי התוכן (curriculum/, vowel-adapter anchor words, בנק השאלות). אם אין מספיק זוגות — רשימת המילים החסרות בדוח, לאישור מיטל. לא להמציא מילים בעצמך. מסיח טוב = מילה שמתחילה באותו צליל אבל לא מתחרזת (מבחין חריזה מדמיון כללי).\n\nאודיו: צנרת MP3 קיימת (לא Web Speech), QA תמלול Whisper, דגש קל בב/כ/פ. חוקי עולם: scene-bg + tokens.css + נוני PNG + ניקוד + לשון רבים + Heebo. logging לפי דפוס האיים.\n\nחיווט: resolvePractice() ב־demo/teacher-curriculum.html — נושא עם "חריזה"/"חרוזים" (שאינו יום כתיבה — כללי כתיבה קודמים) → המשחקון (זהירות, סוכנים מקבילים — קרא מחדש לפני עריכה). commit + דוח.'}
+];
+
+const LS_KEY='curriculum-tasks-board-v1';
+let state={};
+try{state=JSON.parse(localStorage.getItem(LS_KEY)||'{}');}catch(e){state={};}
+function save(){localStorage.setItem(LS_KEY,JSON.stringify(state));}
+function st(id){return (state[id]&&state[id].s)||'todo';}
+
+function render(){
+  const root=document.getElementById('groups');
+  root.innerHTML=GROUPS.map(g=>{
+    const tasks=TASKS.filter(t=>t.g===g.id);
+    const done=tasks.filter(t=>st(t.id)==='done').length;
+    return '<div class="group"><h2>'+g.name+' <span class="gc">'+done+'/'+tasks.length+' · '+g.chip+'</span></h2>'+
+      '<div class="gdesc">'+g.desc+'</div>'+
+      tasks.map(t=>{
+        const s=st(t.id), note=(state[t.id]&&state[t.id].n)||'';
+        return '<div class="task st-'+s+'" id="task-'+t.id+'">'+
+          '<div class="t-head"><div class="t-title"><span class="tid">'+t.id+'</span>'+t.title+'</div>'+
+          '<div class="t-chips"><span class="chip days">'+t.days+'</span><span class="chip eff">'+t.eff+'</span>'+(t.dep?'<span class="chip dep">תלות: '+t.dep+'</span>':'')+'</div></div>'+
+          '<div class="t-desc">'+t.desc+'</div>'+
+          '<div class="t-foot">'+
+            '<select class="st-sel v-'+s+'" data-id="'+t.id+'">'+
+              '<option value="todo"'+(s==='todo'?' selected':'')+'>◻ טרם התחיל</option>'+
+              '<option value="doing"'+(s==='doing'?' selected':'')+'>◐ בעבודה</option>'+
+              '<option value="done"'+(s==='done'?' selected':'')+'>✓ הושלם</option>'+
+            '</select>'+
+            '<button class="btn copy" data-id="'+t.id+'">📋 העתק פרומפט</button>'+
+            '<input class="note" data-id="'+t.id+'" placeholder="הערה (איזה סוכן, איפה עומד…)" value="'+note.replace(/"/g,'&quot;')+'">'+
+          '</div>'+
+          '<details class="prompt"><summary>הצג פרומפט</summary><pre></pre></details>'+
+        '</div>';
+      }).join('')+'</div>';
+  }).join('');
+  // Fill prompts as textContent (avoids HTML-escaping issues)
+  TASKS.forEach(t=>{document.querySelector('#task-'+t.id+' details pre').textContent=t.prompt;});
+  updateProgress();
+}
+function updateProgress(){
+  const all=TASKS.length;
+  const done=TASKS.filter(t=>st(t.id)==='done').length;
+  const doing=TASKS.filter(t=>st(t.id)==='doing').length;
+  document.getElementById('nAll').textContent=all;
+  document.getElementById('nDone').textContent=done;
+  document.getElementById('nDoing').textContent=doing;
+  document.getElementById('nTodo').textContent=all-done-doing;
+  document.getElementById('fDone').style.width=(done/all*100)+'%';
+  document.getElementById('fDoing').style.width=(doing/all*100)+'%';
+}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200);}
+
+document.getElementById('groups').addEventListener('change',e=>{
+  const sel=e.target.closest('.st-sel');
+  if(sel){const id=sel.dataset.id;(state[id]=state[id]||{}).s=sel.value;save();render();return;}
+});
+document.getElementById('groups').addEventListener('input',e=>{
+  const n=e.target.closest('.note');
+  if(n){const id=n.dataset.id;(state[id]=state[id]||{}).n=n.value;save();}
+});
+document.getElementById('groups').addEventListener('click',e=>{
+  const b=e.target.closest('.btn.copy');
+  if(!b)return;
+  const t=TASKS.find(x=>x.id===b.dataset.id);
+  const doCopy=txt=>{
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(()=>{b.classList.add('copied');b.textContent='✓ הועתק';setTimeout(()=>{b.classList.remove('copied');b.textContent='📋 העתק פרומפט';},1800);toast('הפרומפט של '+t.id+' הועתק');},()=>fallback(txt));
+    }else fallback(txt);
+  };
+  const fallback=txt=>{
+    const ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();
+    try{document.execCommand('copy');toast('הפרומפט של '+t.id+' הועתק');}catch(err){toast('ההעתקה נכשלה — פתחי "הצג פרומפט" והעתיקי ידנית');}
+    document.body.removeChild(ta);
+  };
+  doCopy(t.prompt);
+});
+
+render();
+</script>
+</body>
+</html>
