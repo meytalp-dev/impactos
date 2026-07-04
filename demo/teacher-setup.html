@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#EAF8FE">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>כניסה ראשונה · הקמת הכיתה · בית ספר אימפקט</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="demo.css">
+  <script src="demo-icons.js" defer></script>
+  <style>
+    .rail .logo .gm{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:#DDF3EC;}
+    .rail .logo .gm svg{width:22px;height:22px;}
+    .tic{display:inline-flex;align-items:center;vertical-align:-.16em;line-height:0;color:inherit;}
+    .tic svg{width:1.08em;height:1.08em;display:block;}
+
+    .page-h{margin-bottom:20px;}
+    .page-h h1{font-size:clamp(20px,2.4vw,25px);font-weight:800;color:var(--deep);}
+    .page-h p{font-size:13.5px;color:var(--text-soft);margin-top:7px;max-width:72ch;line-height:1.5;}
+
+    /* wizard progress strip */
+    .wsteps{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;}
+    .wchip{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:800;padding:7px 14px;border-radius:var(--pill);
+      background:#F1F5F6;color:#7E929A;border:1px solid #E7EDEF;}
+    .wchip .n{width:19px;height:19px;border-radius:50%;background:#C8D3D6;color:#fff;display:grid;place-items:center;font-size:11px;flex:0 0 auto;}
+    .wchip.done{color:#0d6b54;background:var(--okbg);border-color:#CFE9DA;} .wchip.done .n{background:#4FBF8B;}
+    .wchip.on{color:#1f7a6b;background:#E8F4F0;border-color:#C6E6DC;} .wchip.on .n{background:#0F7E72;}
+
+    /* step section */
+    .stepc{margin-bottom:22px;border:1px solid #ECF0F0;border-radius:20px;background:#fff;box-shadow:0 1px 3px rgba(38,80,92,.05);overflow:hidden;transition:opacity .25s;}
+    .stepc .sh{display:flex;align-items:center;gap:13px;padding:17px 20px;}
+    .stepc.open .sh{border-bottom:1px solid #F0F4F4;}
+    .stepc .sh .n{width:40px;height:40px;border-radius:12px;flex:0 0 auto;display:grid;place-items:center;font-weight:800;font-size:17px;color:var(--cf,#0F7E72);background:var(--cb,#DDF3EC);}
+    .stepc .sh .n .tic svg{width:21px;height:21px;stroke:currentColor;}
+    .stepc .sh h2{font-size:16.5px;font-weight:800;color:var(--deep);flex:1;line-height:1.25;}
+    .stepc .sh h2 small{display:block;font-size:12.5px;font-weight:600;color:var(--text-soft);margin-top:2px;}
+    .stepc .sh .stat{font-size:12px;font-weight:800;padding:5px 13px;border-radius:var(--pill);white-space:nowrap;}
+    .stepc .sh .openbtn{font-family:inherit;font-size:12px;font-weight:800;color:#48707C;background:#F0F5F6;border:none;border-radius:var(--pill);padding:7px 14px;cursor:pointer;white-space:nowrap;}
+    .stepc .sh .openbtn:hover{background:#E7EEEF;color:var(--deep);}
+    .stepc .sb{padding:18px 20px 20px;}
+    .stepc.locked{opacity:.5;} .stepc.locked .sb{display:none;}
+    .stepc.done:not(.open) .sb{display:none;}
+    .st-done{background:var(--okbg);color:#0d6b54;} .st-wait{background:var(--watchbg);color:#9c6212;}
+    .st-none{background:#EAF0F7;color:#41689a;} .st-care{background:var(--carebg);color:#a23d3d;}
+
+    /* forms */
+    .form{background:#F8FBFA;border:1px solid #EDF2F1;border-radius:16px;padding:16px 17px;}
+    .form h3{font-size:13px;font-weight:900;color:#1f7a6b;margin-bottom:12px;display:flex;align-items:center;gap:7px;}
+    .fld{margin-bottom:12px;}
+    .fld label{display:block;font-size:12px;font-weight:700;color:var(--text-soft);margin-bottom:5px;}
+    .fld label em{font-style:normal;font-weight:600;color:#AEBFC4;}
+    .fld input,.fld textarea{width:100%;box-sizing:border-box;font-family:'Rubik',sans-serif;font-size:15px;font-weight:700;color:var(--deep);
+      background:#fff;border:1.5px solid #E1E9EA;border-radius:11px;padding:10px 13px;outline:none;transition:border-color .15s;}
+    .fld textarea{font-size:14px;font-weight:600;resize:vertical;min-height:64px;line-height:1.5;}
+    .fld input:focus,.fld textarea:focus{border-color:#5FBFA4;}
+    .fld input::placeholder,.fld textarea::placeholder{color:#AEBFC4;font-weight:500;}
+    .frow{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    @media (max-width:560px){.frow{grid-template-columns:1fr;}}
+    .seg{display:flex;gap:8px;flex-wrap:wrap;}
+    .seg button{flex:1;min-width:64px;font-family:inherit;font-size:13.5px;font-weight:800;color:#48707C;background:#fff;
+      border:1.5px solid #E1E9EA;border-radius:11px;padding:10px;cursor:pointer;transition:all .15s;}
+    .seg button.sel{color:#1f7a6b;border-color:#5FBFA4;background:#F1FBF7;box-shadow:0 0 0 1px #5FBFA4 inset;}
+    .fhint{font-size:11px;color:var(--text-soft);margin-top:5px;line-height:1.4;}
+
+    .nextrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px;}
+    .nextbtn{display:inline-flex;align-items:center;gap:9px;background:#5FBFA4;color:#fff;border:none;border-radius:13px;
+      padding:13px 24px;font-family:inherit;font-weight:800;font-size:15px;cursor:pointer;
+      box-shadow:0 2px 6px rgba(38,80,92,.07);transition:transform .15s,box-shadow .15s;}
+    .nextbtn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(38,80,92,.12);}
+    .skipbtn{font-family:inherit;font-size:12.5px;font-weight:800;color:#48707C;background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:3px;}
+    .skipbtn:hover{color:#1f7a6b;}
+
+    /* ---------- step 2: two entry paths ---------- */
+    .paths{display:grid;grid-template-columns:minmax(280px,380px) 1fr;gap:18px;margin-bottom:18px;}
+    @media (max-width:880px){.paths{grid-template-columns:1fr;}}
+    .drop{border:2px dashed #CFE0DB;border-radius:16px;background:#FBFDFD;padding:22px 18px;text-align:center;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;transition:border-color .15s,background .15s;}
+    .drop.over{border-color:#5FBFA4;background:#F1FBF7;}
+    .drop .di{width:52px;height:52px;border-radius:15px;display:grid;place-items:center;background:#EAF0F7;color:#41689A;}
+    .drop .di .tic svg{width:26px;height:26px;}
+    .drop h4{font-size:15px;font-weight:800;color:var(--deep);}
+    .drop p{font-size:12.5px;color:var(--text-soft);line-height:1.5;max-width:42ch;}
+    .drop .btns{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin-top:2px;}
+    .addbtn{width:100%;justify-content:center;margin-top:4px;font-size:14.5px;min-height:48px;}
+
+    /* ---------- roster ---------- */
+    .rtop{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+    .rtop h3{font-size:13.5px;font-weight:900;color:var(--text-soft);display:flex;align-items:center;gap:7px;flex:1;}
+    .rtop h3 b{color:#1f7a6b;font-size:15px;}
+    .fieldchips{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+    .fch{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:800;color:#6A59B8;background:#EEEBF8;border-radius:var(--pill);padding:5px 11px;}
+    .fch button{border:none;background:none;color:#9b8fd6;font-weight:900;cursor:pointer;font-size:13px;line-height:1;padding:0;}
+    .fch button:hover{color:#6A59B8;}
+    .addfield{display:inline-flex;align-items:center;gap:6px;font-family:inherit;font-size:11.5px;font-weight:800;color:#48707C;
+      background:#F0F5F6;border:1px dashed #C9D6D9;border-radius:var(--pill);padding:5px 12px;cursor:pointer;}
+    .addfield:hover{color:#1f7a6b;border-color:#5FBFA4;}
+    .fieldform{display:none;align-items:center;gap:8px;}
+    .fieldform.show{display:inline-flex;}
+    .fieldform input{font-family:inherit;font-size:12.5px;font-weight:700;color:var(--deep);border:1.5px solid #E1E9EA;border-radius:var(--pill);padding:5px 13px;outline:none;width:170px;}
+    .fieldform input:focus{border-color:#5FBFA4;}
+
+    .empty{border:1px dashed #DCE5E4;border-radius:16px;background:#FBFDFD;padding:26px;text-align:center;color:var(--text-soft);font-size:13.5px;font-weight:600;line-height:1.6;}
+
+    .srow{border:1px solid #EEF2F2;border-radius:14px;background:#FBFDFD;margin-bottom:9px;overflow:hidden;}
+    .srow .top{display:flex;align-items:center;gap:12px;padding:10px 13px;}
+    .srow .a{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px;flex:0 0 auto;
+      background:var(--okbg);color:#0d6b54;font-family:'Heebo',sans-serif;}
+    .srow .who{flex:1;min-width:120px;}
+    .srow .who .nm{font-size:14.5px;font-weight:800;color:var(--deep);}
+    .srow .who .sub{font-size:11.5px;color:var(--text-soft);font-weight:600;margin-top:1px;}
+    .srow .tags{display:flex;gap:7px;flex-wrap:wrap;align-items:center;}
+    .stg{font-size:11px;font-weight:800;padding:4px 11px;border-radius:var(--pill);white-space:nowrap;display:inline-flex;align-items:center;gap:5px;}
+    .stg .d{width:6px;height:6px;border-radius:50%;background:currentColor;flex:0 0 auto;}
+    .srow .acts{display:flex;gap:7px;}
+    .abtn{display:inline-flex;align-items:center;gap:6px;font-family:inherit;font-size:12px;font-weight:800;cursor:pointer;
+      border-radius:10px;padding:8px 13px;border:1px solid transparent;text-decoration:none;}
+    .abtn .tic svg{width:14px;height:14px;}
+    .abtn-go{background:#5FBFA4;color:#fff;} .abtn-go:hover{filter:brightness(1.04);}
+    .abtn-soft{background:#fff;color:#48707C;border-color:#DDE5E6;} .abtn-soft:hover{background:#F6F9F9;}
+    .abtn-del{background:none;color:#B9C7CB;border:none;padding:8px 6px;} .abtn-del:hover{color:#a23d3d;}
+    @media (max-width:640px){.srow .top{flex-wrap:wrap;} .srow .acts{margin-inline-start:auto;}}
+
+    /* inline editor */
+    .sedit{display:none;border-top:1px solid #EDF2F1;background:#fff;padding:15px 16px;}
+    .srow.editing .sedit{display:block;}
+    .sedit .grp{margin-bottom:14px;}
+    .sedit .grp>h4{font-size:12px;font-weight:900;color:#1f7a6b;margin-bottom:9px;display:flex;align-items:center;gap:6px;}
+    .sedit .grp>h4.hp{color:#B05A86;}
+    .sedit .grp>h4.hn{color:#6A59B8;}
+    .sedit .savebar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;}
+    .rowmore{border:1px dashed #DCE5E4;border-radius:14px;background:#FBFDFD;padding:11px;text-align:center;
+      color:var(--text-soft);font-size:12.5px;font-weight:800;cursor:pointer;width:100%;font-family:inherit;}
+    .rowmore:hover{color:#1f7a6b;border-color:#5FBFA4;}
+
+    /* ---------- step 3: parents & consent ---------- */
+    .cstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:15px;}
+    .cs{display:flex;align-items:center;gap:11px;background:#F8FBFA;border:1px solid #EDF2F1;border-radius:14px;padding:11px 14px;}
+    .cs .v{font-size:23px;font-weight:900;color:var(--deep);line-height:1;font-family:'Heebo',sans-serif;}
+    .cs .t{font-size:11.5px;font-weight:700;color:var(--text-soft);line-height:1.3;}
+    .consent-note{font-size:13px;color:var(--text-main);line-height:1.55;background:#FDF4F8;border:1px solid #F3D8E5;border-radius:13px;padding:11px 15px;margin-bottom:15px;}
+    .consent-note b{color:#B05A86;}
+    .bulkrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+
+    /* ---------- step 4: team ---------- */
+    .s4grid{display:grid;grid-template-columns:minmax(280px,380px) 1fr;gap:18px;}
+    @media (max-width:880px){.s4grid{grid-template-columns:1fr;}}
+    .urow{display:flex;align-items:center;gap:12px;padding:11px 13px;border:1px solid #EEF2F2;border-radius:14px;background:#FBFDFD;margin-bottom:9px;}
+    .urow .a{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px;flex:0 0 auto;
+      background:#EEEBF8;color:#6A59B8;font-family:'Heebo',sans-serif;}
+    .urow .who{flex:1;min-width:110px;}
+    .urow .who .nm{font-size:14px;font-weight:800;color:var(--deep);}
+    .urow .who .sub{font-size:11.5px;color:var(--text-soft);font-weight:600;direction:ltr;text-align:right;}
+    .permnote{font-size:12.5px;color:var(--text-soft);line-height:1.55;background:#F8FBFA;border:1px solid #EDF2F1;border-radius:13px;padding:11px 15px;margin-top:12px;}
+    .permnote b{color:var(--text-main);}
+
+    /* ---------- step 5: done ---------- */
+    .sumgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px;}
+    .bigcta{display:inline-flex;align-items:center;gap:9px;background:#5FBFA4;color:#fff;border:none;border-radius:13px;
+      padding:14px 24px;font-family:inherit;font-weight:800;font-size:15px;cursor:pointer;text-decoration:none;
+      box-shadow:0 2px 6px rgba(38,80,92,.07);transition:transform .15s,box-shadow .15s;}
+    .bigcta:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(38,80,92,.12);}
+    .ctarow{display:flex;align-items:center;gap:11px;flex-wrap:wrap;}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <nav class="rail" aria-label="ניווט">
+      <a class="logo" href="index.html"><span class="gm"><svg viewBox="0 0 24 24" fill="none" stroke="#0F7E72" stroke-width="2.3" stroke-linecap="round"><path d="M6 18v-5"/><path d="M12 18V7"/><path d="M18 18v-8"/></svg></span><b>בית ספר<br>אימפקט</b></a>
+      <a class="item" href="teacher-avnei.html"><span class="ic" data-ic="home"></span><span class="t">דף הבית</span></a>
+      <a class="item" href="teacher-profile.html"><span class="ic" data-ic="people"></span><span class="t">הכיתה שלי</span></a>
+      <a class="item" href="teacher-literacy-profile.html"><span class="ic" data-ic="learn"></span><span class="t">פרופיל אורייני</span></a>
+      <a class="item" href="teacher-content-upload.html"><span class="ic" data-ic="upload"></span><span class="t">הכנת תוכן</span></a>
+      <a class="item" href="teacher-pulse.html"><span class="ic" data-ic="pulse"></span><span class="t">פולס</span></a>
+      <a class="item" href="teacher-reports.html"><span class="ic" data-ic="report"></span><span class="t">דוחות</span></a>
+      <a class="item" href="teacher-curriculum.html"><span class="ic" data-ic="calendar"></span><span class="t">תוכנית שנתית</span></a>
+      <a class="item active" href="teacher-settings.html"><span class="ic" data-ic="settings"></span><span class="t">הגדרות</span></a>
+      <div class="me"><div class="av">מ</div><small>מיטל פלג<span>מורה · א׳1</span></small></div>
+    </nav>
+
+    <main class="main"><div class="main-inner">
+      <div class="topbar"><div class="crumbs">בית ספר אימפקט · אבני יסוד · כניסה ראשונה</div><div class="date">הקמת הכיתה</div></div>
+
+      <div class="page-h">
+        <h1>ברוכה הבאה! בואי נקים את הכיתה שלך</h1>
+        <p>חמישה צעדים קצרים, פחות מעשר דקות: נכיר אותך, נכניס את התלמידים (ידנית או מקובץ אקסל), נשלים פרטי הורים והסכמות, ותוכלי גם להזמין אנשי צוות נוספים. אפשר לעצור באמצע ולחזור מתי שנוח — הכל נשמר.</p>
+      </div>
+
+      <div class="wsteps" id="wsteps">
+        <span class="wchip" data-w="1"><span class="n">1</span>הפרטים שלך</span>
+        <span class="wchip" data-w="2"><span class="n">2</span>רישום התלמידים</span>
+        <span class="wchip" data-w="3"><span class="n">3</span>הורים והסכמות</span>
+        <span class="wchip" data-w="4"><span class="n">4</span>הזמנת צוות</span>
+        <span class="wchip" data-w="5"><span class="n">5</span>סיום</span>
+      </div>
+
+      <!-- ================= STEP 1 · teacher ================= -->
+      <section class="stepc" data-step="1" style="--cb:#DDF3EC;--cf:#0F7E72">
+        <div class="sh">
+          <span class="n"><span class="tic" data-ic="edit"></span></span>
+          <h2>שלב 1 · נעים להכיר<small>הפרטים שלך — כך המערכת תדע לפנות אלייך, ולאן לשלוח עדכונים.</small></h2>
+          <span class="stat" data-stat hidden></span>
+          <button class="openbtn" data-open hidden>עריכה</button>
+        </div>
+        <div class="sb">
+          <div class="form" style="max-width:560px">
+            <div class="frow">
+              <div class="fld"><label>שם מלא</label><input id="t-name" type="text" value="מיטל פלג" autocomplete="off"></div>
+              <div class="fld"><label>אימייל</label><input id="t-mail" type="text" value="meytal@impact.school" autocomplete="off" style="direction:ltr;text-align:right"></div>
+            </div>
+            <div class="frow">
+              <div class="fld"><label>נייד <em>· לעדכונים חשובים בלבד</em></label><input id="t-phone" type="text" placeholder="050-0000000" autocomplete="off" style="direction:ltr;text-align:right"></div>
+              <div class="fld"><label>בית ספר</label><input id="t-school" type="text" value="בית ספר אימפקט" autocomplete="off"></div>
+            </div>
+            <div class="fld"><label>הכיתה שלך</label>
+              <div class="seg" id="t-class">
+                <button type="button" class="sel">א׳1</button>
+                <button type="button">א׳2</button>
+                <button type="button">א׳3</button>
+                <button type="button">א׳4</button>
+              </div>
+              <div class="fhint">אפשר להוסיף עוד כיתה בהמשך, מתוך ההגדרות.</div>
+            </div>
+          </div>
+          <div class="nextrow"><button class="nextbtn" data-next="1">שמירה והמשך לרישום התלמידים ‹</button></div>
+        </div>
+      </section>
+
+      <!-- ================= STEP 2 · students ================= -->
+      <section class="stepc locked" data-step="2" style="--cb:#EAF0F7;--cf:#41689A">
+        <div class="sh">
+          <span class="n"><span class="tic" data-ic="userplus"></span></span>
+          <h2>שלב 2 · רישום התלמידים<small>ידנית — או מקובץ אקסל בבת אחת. את כל השאר (פרטי הורים, הערות) אפשר להשלים גם אחר-כך.</small></h2>
+          <span class="stat" data-stat hidden></span>
+          <button class="openbtn" data-open hidden>פתיחה</button>
+        </div>
+        <div class="sb">
+          <div class="paths">
+            <div class="form">
+              <h3><span class="tic" data-ic="edit"></span>הוספת תלמיד.ה אחד.ת</h3>
+              <div class="fld"><label>שם פרטי</label><input id="s-first" type="text" placeholder="למשל: יעל" autocomplete="off"></div>
+              <div class="fld"><label>שם משפחה</label><input id="s-last" type="text" placeholder="למשל: ברק" autocomplete="off"></div>
+              <div class="fld"><label>בת / בן</label>
+                <div class="seg" id="s-seg">
+                  <button type="button" data-g="f" class="sel">בת</button>
+                  <button type="button" data-g="m">בן</button>
+                </div>
+                <div class="fhint">כדי שהמערכת תפנה לכל ילד.ה נכון בעברית.</div>
+              </div>
+              <button class="btn btn-primary addbtn" id="s-add"><span class="tic" data-ic="userplus"></span>הוספה לכיתה</button>
+            </div>
+            <div class="drop" id="drop">
+              <span class="di"><span class="tic" data-ic="upload"></span></span>
+              <h4>יש לך רשימה מוכנה? העלי קובץ</h4>
+              <p>גררו לכאן קובץ אקסל או CSV — למשל ייצוא ממשו״ב — וכל הכיתה נקלטת בבת אחת. המערכת מזהה לבד את העמודות: שם פרטי · שם משפחה · בן/בת · שם הורה · טלפון · אימייל.</p>
+              <div class="btns">
+                <button class="abtn abtn-go" id="pickfile"><span class="tic" data-ic="doc"></span>בחירת קובץ מהמחשב</button>
+                <button class="abtn abtn-soft" id="demofile"><span class="tic" data-ic="sparkle"></span>טעינת רשימה לדוגמה</button>
+              </div>
+              <input type="file" id="fileinput" accept=".xlsx,.xls,.csv" hidden>
+            </div>
+          </div>
+
+          <div class="rtop">
+            <h3><span class="tic" data-ic="people"></span>רשימת הכיתה · <b id="rcount">0</b> תלמידים</h3>
+            <div class="fieldchips" id="fieldchips"></div>
+            <button class="addfield" id="addfieldbtn"><span class="tic" data-ic="plus"></span>שדה כיתתי חדש</button>
+            <span class="fieldform" id="fieldform">
+              <input id="fieldname" type="text" placeholder="למשל: אלרגיות, שפת בית" autocomplete="off">
+              <button class="abtn abtn-go" id="fieldok">הוספה</button>
+            </span>
+          </div>
+          <div id="roster"></div>
+
+          <div class="nextrow">
+            <button class="nextbtn" data-next="2">המשך לפרטי הורים ‹</button>
+            <span class="fhint" style="margin:0">אפשר להוסיף ולערוך תלמידים גם אחרי הסיום — המסך הזה תמיד זמין מתוך "הגדרות".</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= STEP 3 · parents & consent ================= -->
+      <section class="stepc locked" data-step="3" style="--cb:#FBEBF2;--cf:#B05A86">
+        <div class="sh">
+          <span class="n"><span class="tic" data-ic="heart"></span></span>
+          <h2>שלב 3 · פרטי הורים והסכמות<small>למי מתקשרים כשצריך — ואישור ההורים שהמערכת מלווה את הילד.ה ושומרת נתונים באופן מאובטח.</small></h2>
+          <span class="stat" data-stat hidden></span>
+          <button class="openbtn" data-open hidden>פתיחה</button>
+        </div>
+        <div class="sb">
+          <div class="consent-note"><b>למה צריך הסכמה?</b> המערכת שומרת את התקדמות הלמידה של כל ילד.ה. ההורים מקבלים הסבר קצר ומאשרים בלחיצה אחת — בוואטסאפ או במייל. ילד.ה ללא הסכמה יכול.ה לתרגל רגיל, פשוט בלי שמירת נתונים אישיים.</div>
+          <div class="cstats" id="cstats"></div>
+          <div class="bulkrow">
+            <button class="abtn abtn-go" id="sendall"><span class="tic" data-ic="chat"></span>שליחת בקשת הסכמה לכל ההורים</button>
+            <span class="fhint" style="margin:0">נשלחת הודעה עם הסבר קצר וכפתור אישור. מי שלא ענה — מקבל תזכורת עדינה אחרי שלושה ימים.</span>
+          </div>
+          <div id="parentrows"></div>
+          <div class="nextrow"><button class="nextbtn" data-next="3">המשך להזמנת צוות ‹</button>
+            <button class="skipbtn" data-next="3">אשלים אחר-כך — דילוג</button></div>
+        </div>
+      </section>
+
+      <!-- ================= STEP 4 · team ================= -->
+      <section class="stepc locked" data-step="4" style="--cb:#EEEBF8;--cf:#6A59B8">
+        <div class="sh">
+          <span class="n"><span class="tic" data-ic="handshake"></span></span>
+          <h2>שלב 4 · הזמנת אנשי צוות<small>מורה משלימה, סייעת או יועצת — כל אחת מקבלת גישה משלה, בדיוק למה שהיא צריכה.</small></h2>
+          <span class="stat" data-stat hidden></span>
+          <button class="openbtn" data-open hidden>פתיחה</button>
+        </div>
+        <div class="sb">
+          <div class="s4grid">
+            <div class="form">
+              <h3><span class="tic" data-ic="userplus"></span>הזמנת איש.ת צוות</h3>
+              <div class="fld"><label>שם מלא</label><input id="u-name" type="text" placeholder="למשל: רותם שגב" autocomplete="off"></div>
+              <div class="fld"><label>אימייל</label><input id="u-mail" type="text" placeholder="name@school.org.il" autocomplete="off" style="direction:ltr;text-align:right"></div>
+              <div class="fld"><label>תפקיד</label>
+                <div class="seg" id="u-role">
+                  <button type="button" class="sel">מורה משלימה</button>
+                  <button type="button">סייעת</button>
+                  <button type="button">יועצת</button>
+                </div>
+              </div>
+              <button class="btn btn-primary addbtn" id="u-add"><span class="tic" data-ic="userplus"></span>שליחת הזמנה</button>
+            </div>
+            <div>
+              <h3 style="font-size:13px;font-weight:900;color:var(--text-soft);margin-bottom:11px;display:flex;align-items:center;gap:7px;"><span class="tic" data-ic="people"></span>מי כבר במערכת</h3>
+              <div id="userrows"></div>
+              <div class="permnote"><b>מה כל תפקיד רואה?</b> מורה משלימה וסייעת — את הכיתה שלך בלבד. יועצת — תמונת רווחה, בלי ציוני תרגול. המנהלת — מבט-על בית-ספרי, בלי פרטים רגישים של ילד בודד. אף אחד לא רואה יותר ממה שהוא צריך.</div>
+            </div>
+          </div>
+          <div class="nextrow"><button class="nextbtn" data-next="4">סיום ההקמה ‹</button>
+            <button class="skipbtn" data-next="4">אין כרגע מי להזמין — דילוג</button></div>
+        </div>
+      </section>
+
+      <!-- ================= STEP 5 · done ================= -->
+      <section class="stepc locked" data-step="5" style="--cb:#FBF0E4;--cf:#B5611F">
+        <div class="sh">
+          <span class="n"><span class="tic" data-ic="flag"></span></span>
+          <h2>שלב 5 · הכיתה שלך מוכנה<small>כל מה שהוקם — במבט אחד. הצעד הבא: מבדק הפתיחה, שממנו נבנית תוכנית אישית לכל ילד.ה.</small></h2>
+          <span class="stat" data-stat hidden></span>
+        </div>
+        <div class="sb">
+          <div class="sumgrid" id="sumgrid"></div>
+          <div class="ctarow">
+            <a class="bigcta" href="teacher-onboarding.html">הצעד הבא: מבדק הפתיחה לכל ילד.ה ‹</a>
+            <button class="abtn abtn-soft" data-toast="בגרסה המלאה: המערכת מדפיסה כרטיס אישי לכל ילד.ה — עם קוד-תמונה פשוט לכניסה, בלי סיסמה"><span class="tic" data-ic="doc"></span>הדפסת כרטיסי כניסה לתלמידים</button>
+            <a class="abtn abtn-soft" href="teacher-avnei.html"><span class="tic" data-ic="home"></span>לדף הבית</a>
+          </div>
+        </div>
+      </section>
+    </div></main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    /* ---------- helpers ---------- */
+    function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},2800);}
+    document.addEventListener('click',function(e){var b=e.target.closest('[data-toast]');if(b)toast(b.dataset.toast);});
+    function fillTics(){if(!window.DemoIcons)return;document.querySelectorAll('.tic[data-ic]').forEach(function(el){if(!el.firstChild&&DemoIcons[el.dataset.ic])el.innerHTML=DemoIcons[el.dataset.ic];});}
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fillTics);else fillTics();
+    window.addEventListener('load',fillTics);
+    function esc(s){return String(s||'').replace(/[<>&"]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];});}
+    function initial(nm){return (nm||'').replace(/[^א-ת]/g,'').charAt(0)||'?';}
+
+    /* ---------- wizard state ---------- */
+    var current=1, MAX=5;
+    function refreshSteps(){
+      document.querySelectorAll('.stepc').forEach(function(sec){
+        var n=+sec.dataset.step;
+        sec.classList.remove('locked','open','done');
+        var ob=sec.querySelector('[data-open]');
+        if(n===current){sec.classList.add('open');if(ob)ob.hidden=true;}
+        else if(n<current){sec.classList.add('done');if(ob){ob.hidden=false;ob.textContent=n===2?'הוספה ועריכה':'עריכה';}}
+        else {sec.classList.add('locked');if(ob)ob.hidden=true;}
+      });
+      document.querySelectorAll('#wsteps .wchip').forEach(function(ch){
+        var n=+ch.dataset.w;ch.classList.remove('on','done');
+        if(n===current)ch.classList.add('on');else if(n<current)ch.classList.add('done');
+        ch.querySelector('.n').textContent=n<current?'✓':n;
+      });
+    }
+    function goTo(n){current=n;refreshSteps();
+      var sec=document.querySelector('.stepc[data-step="'+n+'"]');
+      if(sec)setTimeout(function(){sec.scrollIntoView({behavior:'smooth',block:'start'});},60);}
+    document.addEventListener('click',function(e){
+      var ob=e.target.closest('[data-open]');
+      if(ob){var sec=ob.closest('.stepc');sec.classList.toggle('open');ob.textContent=sec.classList.contains('open')?'סגירה':(+sec.dataset.step===2?'הוספה ועריכה':'עריכה');return;}
+    });
+
+    /* seg behavior (all seg groups) */
+    document.addEventListener('click',function(e){
+      var b=e.target.closest('.seg button');if(!b)return;
+      b.parentElement.querySelectorAll('button').forEach(function(x){x.classList.remove('sel');});b.classList.add('sel');
+    });
+
+    /* ---------- data ---------- */
+    var ROSTER=[];   /* {id,first,last,g,p:{nm,phone,mail},consent:'none'|'sent'|'ok',notes,custom:{}} */
+    var CUSTOM=[];   /* class-wide custom fields the teacher defines */
+    var nextId=1;
+
+    var DEMO=[
+      ['נועה','כהן','f','דנה כהן','052-8804312','dana.c@gmail.com'],
+      ['שירה','לוי','f','אורית לוי','054-6613270','orit.levi@gmail.com'],
+      ['מאיה','דיין','f','רועי דיין','050-7742981',''],
+      ['דני','רוזן','m','מיכל רוזן','052-3390417','michal.rz@gmail.com'],
+      ['איתי','כץ','m','שרון כץ','054-9921053','sharon.katz@gmail.com'],
+      ['יעל','ברק','f','','',''],
+      ['אריאל','שמש','m','טל שמש','050-6218734',''],
+      ['נועם','פרץ','m','הילה פרץ','052-4487160','hila.p@gmail.com'],
+      ['תמר','אלון','f','יעל אלון','054-3352819',''],
+      ['יהונתן','גל','m','ליאור גל','050-9174226','lior.gal@gmail.com'],
+      ['רוני','אשכנזי','f','מור אשכנזי','052-6640395',''],
+      ['עמית','ברזילי','m','ענת ברזילי','054-8813542','anat.brz@gmail.com'],
+      ['אלה','נחום','f','דורית נחום','050-2296178',''],
+      ['דוד','חדד','m','','',''],
+      ['מיכל','עוז','f','נגה עוז','052-9958314','noga.oz@gmail.com'],
+      ['יובל','שרון','m','איה שרון','054-1170463',''],
+      ['אגם','דורון','f','רותם דורון','050-5583927','rotem.d@gmail.com'],
+      ['אורי','אביב','m','שני אביב','052-7749018',''],
+      ['ליה','מזרחי','f','קרן מזרחי','054-6027851','keren.mz@gmail.com'],
+      ['איתמר','גולן','m','עדי גולן','050-3318694',''],
+      ['אביגיל','סער','f','נועה סער','052-2264739',''],
+      ['לביא','ניר','m','גלית ניר','054-9906128','galit.nir@gmail.com'],
+      ['נטע','אורן','f','','',''],
+      ['אדם','שגיא','m','דפנה שגיא','050-8841562',''],
+      ['שקד','ימין','f','אסנת ימין','052-5570349','osnat.y@gmail.com']
+    ];
+    function addStudent(first,last,g,pnm,pphone,pmail,fresh){
+      ROSTER.push({id:'st'+(nextId++),first:first,last:last||'',g:g||'f',
+        p:{nm:pnm||'',phone:pphone||'',mail:pmail||''},consent:'none',notes:'',custom:{},fresh:!!fresh});
+    }
+
+    /* ---------- roster rendering ---------- */
+    var rosterEl=document.getElementById('roster');
+    function fullName(k){return k.first+(k.last?' '+k.last:'');}
+    function parentTag(k){
+      if(!k.p.nm&&!k.p.phone)return '<span class="stg st-care"><span class="d"></span>חסרים פרטי הורה</span>';
+      return '<span class="stg st-done"><span class="d"></span>הורה: '+esc(k.p.nm||k.p.phone)+'</span>';
+    }
+    function consentTag(k){
+      if(k.consent==='ok')return '<span class="stg st-done"><span class="d"></span>הסכמה התקבלה</span>';
+      if(k.consent==='sent')return '<span class="stg st-wait"><span class="d"></span>הסכמה — ממתינה</span>';
+      return '<span class="stg st-none"><span class="d"></span>הסכמה — טרם נשלחה</span>';
+    }
+    function editorHTML(k){
+      var custom=CUSTOM.map(function(f,i){
+        return '<div class="fld"><label>'+esc(f)+'</label><input data-e="custom'+i+'" type="text" value="'+esc(k.custom[f]||'')+'" autocomplete="off"></div>';
+      }).join('');
+      return '<div class="grp"><h4>פרטי הילד.ה</h4><div class="frow">'+
+          '<div class="fld"><label>שם פרטי</label><input data-e="first" type="text" value="'+esc(k.first)+'"></div>'+
+          '<div class="fld"><label>שם משפחה</label><input data-e="last" type="text" value="'+esc(k.last)+'"></div></div>'+
+          '<div class="fld"><label>בת / בן</label><div class="seg" data-e="seg">'+
+            '<button type="button" data-g="f"'+(k.g==='f'?' class="sel"':'')+'>בת</button>'+
+            '<button type="button" data-g="m"'+(k.g==='m'?' class="sel"':'')+'>בן</button></div></div></div>'+
+        '<div class="grp"><h4 class="hp">פרטי הורה · איש.ת קשר</h4><div class="frow">'+
+          '<div class="fld"><label>שם ההורה</label><input data-e="pnm" type="text" value="'+esc(k.p.nm)+'" placeholder="למשל: דנה כהן"></div>'+
+          '<div class="fld"><label>טלפון</label><input data-e="pphone" type="text" value="'+esc(k.p.phone)+'" placeholder="050-0000000" style="direction:ltr;text-align:right"></div></div>'+
+          '<div class="fld"><label>אימייל <em>· רשות</em></label><input data-e="pmail" type="text" value="'+esc(k.p.mail)+'" placeholder="parent@gmail.com" style="direction:ltr;text-align:right"></div></div>'+
+        '<div class="grp"><h4 class="hn">מה חשוב שנדע? · רואה רק את</h4>'+
+          '<div class="fld"><textarea data-e="notes" placeholder="למשל: ביישנית בקבוצה גדולה, אוהבת חיות, צריכה עידוד בהתחלות...">'+esc(k.notes)+'</textarea></div>'+custom+'</div>'+
+        '<div class="savebar"><button class="abtn abtn-go" data-save="'+k.id+'">שמירה</button>'+
+          '<button class="abtn abtn-soft" data-cancel="'+k.id+'">ביטול</button></div>';
+    }
+    function renderRoster(){
+      rosterEl.innerHTML='';
+      if(!ROSTER.length){
+        rosterEl.innerHTML='<div class="empty">עוד אין תלמידים ברשימה.<br>הוסיפי ידנית מהטופס — או העלי קובץ, וכל הכיתה תיקלט בבת אחת.</div>';
+      } else {
+        ROSTER.forEach(function(k){
+          var d=document.createElement('div');d.className='srow'+(k.fresh?' fresh':'');d.dataset.id=k.id;
+          d.innerHTML='<div class="top">'+
+            '<div class="a">'+initial(k.first)+'</div>'+
+            '<div class="who"><div class="nm">'+esc(fullName(k))+'</div>'+
+            (k.notes||Object.keys(k.custom).some(function(f){return k.custom[f];})?'<div class="sub">יש הערות מורה</div>':'')+'</div>'+
+            '<div class="tags">'+parentTag(k)+consentTag(k)+'</div>'+
+            '<div class="acts"><button class="abtn abtn-soft" data-edit="'+k.id+'"><span class="tic" data-ic="edit"></span>עריכה</button>'+
+            '<button class="abtn abtn-del" data-del="'+k.id+'" title="הסרה">✕</button></div></div>'+
+            '<div class="sedit"></div>';
+          rosterEl.appendChild(d);
+        });
+      }
+      document.getElementById('rcount').textContent=ROSTER.length;
+      var st2=document.querySelector('.stepc[data-step="2"] [data-stat]');
+      if(ROSTER.length){st2.hidden=false;st2.className='stat st-done';st2.textContent=ROSTER.length+' תלמידים במערכת';}
+      renderFieldChips();renderParents();renderSummary();fillTics();
+    }
+    function renderFieldChips(){
+      var fc=document.getElementById('fieldchips');
+      fc.innerHTML=CUSTOM.map(function(f,i){return '<span class="fch">'+esc(f)+'<button data-delfield="'+i+'" title="הסרת השדה">✕</button></span>';}).join('');
+    }
+
+    /* roster events */
+    document.addEventListener('click',function(e){
+      var eb=e.target.closest('[data-edit]');
+      if(eb){var row=eb.closest('.srow');var k=ROSTER.find(function(x){return x.id===eb.dataset.edit;});
+        document.querySelectorAll('.srow.editing').forEach(function(r){r.classList.remove('editing');});
+        row.querySelector('.sedit').innerHTML=editorHTML(k);row.classList.add('editing');fillTics();return;}
+      var cb=e.target.closest('[data-cancel]');
+      if(cb){cb.closest('.srow').classList.remove('editing');return;}
+      var sb=e.target.closest('[data-save]');
+      if(sb){var row2=sb.closest('.srow');var k2=ROSTER.find(function(x){return x.id===sb.dataset.save;});
+        var g=function(sel){return row2.querySelector('[data-e="'+sel+'"]');};
+        k2.first=g('first').value.trim()||k2.first;k2.last=g('last').value.trim();
+        k2.g=row2.querySelector('[data-e="seg"] .sel').dataset.g;
+        var hadParent=!!(k2.p.nm||k2.p.phone);
+        k2.p={nm:g('pnm').value.trim(),phone:g('pphone').value.trim(),mail:g('pmail').value.trim()};
+        k2.notes=g('notes').value.trim();
+        CUSTOM.forEach(function(f,i){k2.custom[f]=g('custom'+i).value.trim();});
+        if(!hadParent&&(k2.p.nm||k2.p.phone))toast('פרטי ההורה של '+k2.first+' נשמרו ✓');
+        else toast('הפרטים של '+k2.first+' עודכנו ✓');
+        renderRoster();return;}
+      var db=e.target.closest('[data-del]');
+      if(db){var k3=ROSTER.find(function(x){return x.id===db.dataset.del;});
+        if(k3&&confirm('להסיר את '+fullName(k3)+' מהרשימה?')){ROSTER=ROSTER.filter(function(x){return x.id!==k3.id;});renderRoster();toast(fullName(k3)+' — הוסר.ה מהרשימה');}return;}
+      var df=e.target.closest('[data-delfield]');
+      if(df){var f=CUSTOM[+df.dataset.delfield];CUSTOM.splice(+df.dataset.delfield,1);
+        ROSTER.forEach(function(k){delete k.custom[f];});renderRoster();toast('השדה "'+f+'" הוסר');return;}
+    });
+
+    /* add single student */
+    document.getElementById('s-add').addEventListener('click',function(){
+      var f=document.getElementById('s-first'),l=document.getElementById('s-last');
+      var first=f.value.trim(),last=l.value.trim();
+      if(!first){toast('חסר שם פרטי');f.focus();return;}
+      var g=document.querySelector('#s-seg .sel').dataset.g;
+      ROSTER.forEach(function(k){k.fresh=false;});
+      addStudent(first,last,g,'','','',true);
+      renderRoster();
+      toast(first+' '+(g==='m'?'הוכנס':'הוכנסה')+' למערכת ✓ — אפשר להוסיף פרטי הורה בעריכה');
+      f.value='';l.value='';f.focus();
+    });
+
+    /* custom class-wide fields */
+    document.getElementById('addfieldbtn').addEventListener('click',function(){
+      var ff=document.getElementById('fieldform');ff.classList.add('show');document.getElementById('fieldname').focus();this.style.display='none';
+    });
+    function commitField(){
+      var inp=document.getElementById('fieldname');var v=inp.value.trim();
+      var ff=document.getElementById('fieldform');
+      if(v){CUSTOM.push(v);toast('השדה "'+v+'" נוסף לכל התלמידים — יופיע בעריכת כל ילד.ה');}
+      inp.value='';ff.classList.remove('show');document.getElementById('addfieldbtn').style.display='';
+      renderRoster();
+    }
+    document.getElementById('fieldok').addEventListener('click',commitField);
+    document.getElementById('fieldname').addEventListener('keydown',function(e){if(e.key==='Enter')commitField();});
+
+    /* file upload (simulated import) */
+    var drop=document.getElementById('drop');
+    document.getElementById('pickfile').addEventListener('click',function(){document.getElementById('fileinput').click();});
+    document.getElementById('fileinput').addEventListener('change',function(){if(this.files.length)importFile(this.files[0].name);this.value='';});
+    ['dragover','dragenter'].forEach(function(ev){drop.addEventListener(ev,function(e){e.preventDefault();drop.classList.add('over');});});
+    ['dragleave','drop'].forEach(function(ev){drop.addEventListener(ev,function(e){e.preventDefault();drop.classList.remove('over');});});
+    drop.addEventListener('drop',function(e){var f=e.dataTransfer.files&&e.dataTransfer.files[0];importFile(f?f.name:'הקובץ');});
+    document.getElementById('demofile').addEventListener('click',function(){importFile('רשימה לדוגמה');});
+    function importFile(name){
+      if(ROSTER.length>=DEMO.length){toast('הרשימה כבר מלאה — בגרסה המלאה הקובץ היה מתמזג עם הקיים');return;}
+      toast('קוראת את "'+name+'"...');
+      setTimeout(function(){
+        var added=0;
+        DEMO.forEach(function(r){
+          var exists=ROSTER.some(function(k){return k.first===r[0]&&k.last===r[1];});
+          if(!exists){addStudent(r[0],r[1],r[2],r[3],r[4],r[5]);added++;}
+        });
+        renderRoster();
+        var missing=ROSTER.filter(function(k){return !k.p.nm&&!k.p.phone;}).length;
+        toast(added+' תלמידים נקלטו מהקובץ ✓'+(missing?' · ל-'+missing+' חסרים פרטי הורה — מסומנים באדום':''));
+      },900);
+    }
+
+    /* ---------- step 3: parents & consent ---------- */
+    function renderParents(){
+      var wrap=document.getElementById('parentrows');if(!wrap)return;
+      var ok=ROSTER.filter(function(k){return k.consent==='ok';}).length;
+      var sent=ROSTER.filter(function(k){return k.consent==='sent';}).length;
+      var miss=ROSTER.filter(function(k){return !k.p.nm&&!k.p.phone;}).length;
+      document.getElementById('cstats').innerHTML=
+        '<div class="cs"><span class="v" style="color:#0d6b54">'+ok+'</span><span class="t">הסכמות התקבלו</span></div>'+
+        '<div class="cs"><span class="v" style="color:#9c6212">'+sent+'</span><span class="t">נשלחו · ממתינות</span></div>'+
+        '<div class="cs"><span class="v" style="color:#a23d3d">'+miss+'</span><span class="t">חסרים פרטי הורה</span></div>'+
+        '<div class="cs"><span class="v">'+ROSTER.length+'</span><span class="t">תלמידים בכיתה</span></div>';
+      wrap.innerHTML='';
+      if(!ROSTER.length){wrap.innerHTML='<div class="empty">קודם נרשום תלמידים בשלב 2 — ואז נשלים כאן את פרטי ההורים.</div>';return;}
+      ROSTER.forEach(function(k){
+        var d=document.createElement('div');d.className='srow';
+        var hasP=!!(k.p.nm||k.p.phone);
+        var acts=hasP
+          ?(k.consent==='none'?'<button class="abtn abtn-go" data-consent="'+k.id+'"><span class="tic" data-ic="chat"></span>שליחת בקשה</button>':'<button class="abtn abtn-soft" data-editp="'+k.id+'"><span class="tic" data-ic="edit"></span>עריכת פרטים</button>')
+          :'<button class="abtn abtn-go" data-editp="'+k.id+'"><span class="tic" data-ic="edit"></span>השלמת פרטי הורה</button>';
+        d.innerHTML='<div class="top"><div class="a">'+initial(k.first)+'</div>'+
+          '<div class="who"><div class="nm">'+esc(fullName(k))+'</div>'+
+          '<div class="sub">'+(hasP?esc(k.p.nm)+(k.p.phone?' · '+esc(k.p.phone):''):'אין עדיין איש.ת קשר')+'</div></div>'+
+          '<div class="tags">'+consentTag(k)+'</div><div class="acts">'+acts+'</div></div>';
+        wrap.appendChild(d);
+      });
+      fillTics();
+      var st3=document.querySelector('.stepc[data-step="3"] [data-stat]');
+      if(ROSTER.length){st3.hidden=false;
+        if(ok===ROSTER.length){st3.className='stat st-done';st3.textContent='כל ההסכמות התקבלו';}
+        else{st3.className='stat st-wait';st3.textContent=ok+' מתוך '+ROSTER.length+' הסכמות';}}
+    }
+    document.addEventListener('click',function(e){
+      var c=e.target.closest('[data-consent]');
+      if(c){var k=ROSTER.find(function(x){return x.id===c.dataset.consent;});k.consent='sent';
+        renderRoster();toast('בקשת הסכמה נשלחה ל'+(k.p.nm||'הורה של '+k.first)+' ✓');
+        setTimeout(function(){k.consent='ok';renderRoster();toast(k.p.nm+' אישר.ה את ההסכמה ✓');},2600);return;}
+      var ep=e.target.closest('[data-editp]');
+      if(ep){goTo2AndEdit(ep.dataset.editp);return;}
+    });
+    function goTo2AndEdit(id){
+      var sec2=document.querySelector('.stepc[data-step="2"]');
+      sec2.classList.add('open');var ob=sec2.querySelector('[data-open]');if(ob)ob.textContent='סגירה';
+      var row=rosterEl.querySelector('.srow[data-id="'+id+'"]');
+      if(row){row.querySelector('[data-edit]').click();
+        setTimeout(function(){row.scrollIntoView({behavior:'smooth',block:'center'});},60);}
+    }
+    document.getElementById('sendall').addEventListener('click',function(){
+      var targets=ROSTER.filter(function(k){return (k.p.nm||k.p.phone)&&k.consent==='none';});
+      if(!targets.length){toast('אין למי לשלוח — או שכבר נשלח לכולם, או שחסרים פרטי הורה');return;}
+      targets.forEach(function(k){k.consent='sent';});
+      renderRoster();
+      toast('בקשת הסכמה נשלחה ל-'+targets.length+' הורים ✓');
+      setTimeout(function(){
+        var n=0;
+        targets.forEach(function(k,i){if(i%4!==3){k.consent='ok';n++;}});
+        renderRoster();toast(n+' הורים כבר אישרו ✓ — לשאר תישלח תזכורת עדינה');
+      },2800);
+    });
+
+    /* ---------- step 4: team ---------- */
+    var USERS=[{nm:'ד״ר נעה שרון',role:'מנהלת',mail:'noa@impact.school',st:'active'}];
+    function renderUsers(){
+      var wrap=document.getElementById('userrows');
+      wrap.innerHTML='';
+      USERS.forEach(function(u,i){
+        var d=document.createElement('div');d.className='urow';
+        d.innerHTML='<div class="a">'+initial(u.nm)+'</div>'+
+          '<div class="who"><div class="nm">'+esc(u.nm)+' · '+esc(u.role)+'</div><div class="sub">'+esc(u.mail)+'</div></div>'+
+          (u.st==='active'
+            ?'<span class="stg st-done"><span class="d"></span>במערכת</span>'
+            :'<span class="stg st-wait"><span class="d"></span>הוזמן.ה · ממתין.ה</span>'+
+             '<button class="abtn abtn-del" data-deluser="'+i+'" title="ביטול הזמנה">✕</button>');
+        wrap.appendChild(d);
+      });
+      var st4=document.querySelector('.stepc[data-step="4"] [data-stat]');
+      var invited=USERS.length-1;
+      if(invited>0){st4.hidden=false;st4.className='stat st-done';st4.textContent=invited+' הוזמנו';}
+      renderSummary();
+    }
+    document.getElementById('u-add').addEventListener('click',function(){
+      var n=document.getElementById('u-name'),m=document.getElementById('u-mail');
+      if(!n.value.trim()){toast('חסר שם');n.focus();return;}
+      if(!m.value.trim()){toast('חסר אימייל — לשם נשלחת ההזמנה');m.focus();return;}
+      var role=document.querySelector('#u-role .sel').textContent;
+      USERS.push({nm:n.value.trim(),role:role,mail:m.value.trim(),st:'invited'});
+      renderUsers();
+      toast('הזמנה נשלחה ל'+n.value.trim()+' ('+role+') ✓');
+      n.value='';m.value='';n.focus();
+    });
+    document.addEventListener('click',function(e){
+      var du=e.target.closest('[data-deluser]');
+      if(du){var u=USERS[+du.dataset.deluser];USERS.splice(+du.dataset.deluser,1);renderUsers();toast('ההזמנה של '+u.nm+' בוטלה');}
+    });
+
+    /* ---------- step 5: summary ---------- */
+    function renderSummary(){
+      var el=document.getElementById('sumgrid');if(!el)return;
+      var ok=ROSTER.filter(function(k){return k.consent==='ok';}).length;
+      var withP=ROSTER.filter(function(k){return k.p.nm||k.p.phone;}).length;
+      el.innerHTML=
+        '<div class="cs"><span class="v">'+ROSTER.length+'</span><span class="t">תלמידים בכיתה א׳1</span></div>'+
+        '<div class="cs"><span class="v">'+withP+'</span><span class="t">עם פרטי הורה</span></div>'+
+        '<div class="cs"><span class="v" style="color:#0d6b54">'+ok+'</span><span class="t">הסכמות הורים</span></div>'+
+        '<div class="cs"><span class="v">'+USERS.length+'</span><span class="t">אנשי צוות במערכת</span></div>';
+    }
+
+    /* ---------- next buttons ---------- */
+    document.addEventListener('click',function(e){
+      var nb=e.target.closest('[data-next]');if(!nb)return;
+      var n=+nb.dataset.next;
+      if(n===1){
+        var nm=document.getElementById('t-name').value.trim()||'מיטל פלג';
+        var cls=document.querySelector('#t-class .sel').textContent;
+        var st1=document.querySelector('.stepc[data-step="1"] [data-stat]');
+        st1.hidden=false;st1.className='stat st-done';st1.textContent=nm+' · '+cls;
+        toast('נעים להכיר, '+nm.split(' ')[0]+'! עכשיו נרשום את התלמידים');
+      }
+      if(n===2&&!ROSTER.length){toast('הרשימה עוד ריקה — הוסיפי לפחות ילד.ה אחד.ת, או טעני קובץ');return;}
+      if(n===4){
+        var st5=document.querySelector('.stepc[data-step="5"] [data-stat]');
+        st5.hidden=false;st5.className='stat st-done';st5.textContent='ההקמה הושלמה';
+        toast('הכיתה שלך מוכנה 🎉');
+      }
+      goTo(Math.min(n+1,MAX));
+    });
+
+    refreshSteps();renderRoster();renderUsers();
+  </script>
+</body>
+</html>

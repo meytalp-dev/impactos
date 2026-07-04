@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#FFFFFF">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>בֹּאוּ נַכִּיר · אבני יסוד</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;800;900&family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="journey.js" defer></script>
+  <style>
+    :root{--ink:#143A42;--soft:#577179;--mut:#8AA0A6;--line:#E7EDEE;--noni:#7363C4;--ease:cubic-bezier(.32,.72,0,1);}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Heebo',sans-serif;color:var(--ink);min-height:100dvh;overflow-x:hidden;background:#EAF8FE;}
+    /* רקע השונית — כמו בכל המשחקונים (DNA אבני יסוד) */
+    .scene-bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;object-position:center bottom;z-index:0;pointer-events:none;}
+    .veil{position:fixed;inset:0;z-index:1;pointer-events:none;background:rgba(255,255,255,.35);}
+    .wrap{position:relative;z-index:2;min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:34px clamp(16px,4vw,48px) 60px;}
+
+    /* top bar: progress + child */
+    .top{width:100%;max-width:820px;display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:10px;}
+    .who{display:inline-flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px 6px 6px;
+      box-shadow:0 6px 18px -12px rgba(20,58,66,.3);}
+    .who .av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:16px;
+      font-family:'Frank Ruhl Libre',serif;background:linear-gradient(145deg,#1F9E92,#36C2B2);}
+    .who .nm{font-size:15px;font-weight:700;color:var(--ink);}
+    .tag-boy{font-size:12px;font-weight:700;color:var(--soft);background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 15px;
+      box-shadow:0 6px 18px -12px rgba(20,58,66,.3);}
+    @media(max-width:640px){.tag-boy{display:none;}}
+    .steps{display:flex;gap:8px;}
+    .steps .dot{width:34px;height:8px;border-radius:999px;background:#E7EDEE;transition:background .4s var(--ease);}
+    .steps .dot.on{background:var(--noni);} .steps .dot.done{background:#5FBFA4;}
+
+    /* screens */
+    .screen{width:100%;max-width:820px;display:none;flex-direction:column;align-items:center;}
+    .screen.on{display:flex;animation:fadeUp .6s var(--ease) both;}
+
+    /* Noni + speech bubble */
+    .noni-row{display:flex;align-items:flex-end;gap:16px;margin:26px 0 30px;max-width:660px;}
+    .noni{width:clamp(96px,15vw,132px);height:auto;flex:0 0 auto;filter:drop-shadow(0 14px 24px rgba(115,99,196,.28));animation:bob 4s ease-in-out infinite;}
+    @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+    .bubble{position:relative;background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px 22px;
+      box-shadow:0 16px 34px -22px rgba(20,58,66,.4);}
+    .bubble::after{content:"";position:absolute;bottom:18px;inset-inline-start:-9px;width:18px;height:18px;background:#fff;
+      border-inline-start:1px solid var(--line);border-bottom:1px solid var(--line);transform:rotate(45deg);}
+    .bubble .say{font-size:clamp(17px,2.4vw,21px);font-weight:700;color:var(--ink);line-height:1.5;}
+    .bubble .spk{margin-top:12px;display:inline-flex;align-items:center;gap:9px;height:44px;padding:0 18px;cursor:pointer;
+      background:#F3F0FC;border:1px solid #E3DCF7;border-radius:999px;color:var(--noni);font-family:inherit;font-weight:700;font-size:14.5px;}
+    .bubble .spk:hover{background:#ECE6FA;} .bubble .spk svg{width:20px;height:20px;}
+    .bubble .spk.playing .wv i{animation:wv .9s ease-in-out infinite;}
+    .wv{display:inline-flex;align-items:center;gap:3px;height:18px;}
+    .wv i{width:3px;height:7px;border-radius:2px;background:var(--noni);display:block;}
+    .wv i:nth-child(2){height:13px;animation-delay:.15s;} .wv i:nth-child(3){height:18px;animation-delay:.3s;}
+    .wv i:nth-child(4){height:11px;animation-delay:.45s;}
+    @keyframes wv{0%,100%{transform:scaleY(.5)}50%{transform:scaleY(1)}}
+
+    /* answer options — letters / syllables */
+    .opts{display:grid;gap:16px;width:100%;}
+    .opts.g-letters{grid-template-columns:repeat(3,1fr);max-width:560px;}
+    .opts.g-syl{grid-template-columns:repeat(3,1fr);max-width:560px;}
+    .opts.g-pic{grid-template-columns:repeat(3,1fr);max-width:620px;}
+    @media(max-width:560px){.opts.g-letters,.opts.g-syl{grid-template-columns:repeat(2,1fr);}.opts.g-pic{grid-template-columns:1fr;}}
+    .opt{position:relative;cursor:pointer;font-family:'Frank Ruhl Libre',serif;background:#fff;border:2px solid var(--line);
+      border-radius:22px;min-height:104px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+      font-size:clamp(40px,6vw,58px);font-weight:800;color:var(--ink);transition:transform .3s var(--ease),border-color .3s,box-shadow .3s;
+      box-shadow:0 10px 26px -18px rgba(20,58,66,.3);}
+    .opt:hover{transform:translateY(-4px);border-color:#CFE0E3;}
+    .opt.pic{font-family:'Heebo',sans-serif;font-size:15px;font-weight:700;padding:16px;}
+    .opt.pic .emo{font-size:46px;line-height:1;}
+    .opt .cap{font-family:'Heebo',sans-serif;font-size:13px;font-weight:600;color:var(--mut);}
+    .opt.right{border-color:#5FBFA4;background:#F1FBF7;box-shadow:0 0 0 4px #E3F6EC;transform:translateY(-4px);}
+    .opt.dim{opacity:.4;pointer-events:none;}
+    .opt .chk{position:absolute;top:10px;inset-inline-end:10px;width:26px;height:26px;border-radius:50%;background:#5FBFA4;color:#fff;
+      display:none;place-items:center;font-size:15px;} .opt.right .chk{display:grid;}
+
+    /* generic pill/CTA */
+    .cta{display:inline-flex;align-items:center;justify-content:center;gap:9px;height:58px;padding:0 30px;cursor:pointer;border:none;
+      background:linear-gradient(145deg,#5FBFA4,#3E9E9A);color:#fff;font-family:inherit;font-weight:800;font-size:18px;border-radius:999px;
+      box-shadow:0 16px 30px -14px rgba(63,158,154,.7);transition:transform .3s var(--ease),filter .3s;margin-top:6px;}
+    .cta:hover{transform:translateY(-3px);filter:brightness(1.04);} .cta svg{width:22px;height:22px;}
+    .ghost{background:#fff;color:var(--soft);border:1px solid var(--line);box-shadow:0 6px 18px -12px rgba(20,58,66,.3);height:48px;font-size:15px;font-weight:700;}
+
+    /* intro / done big text */
+    .big{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:clamp(34px,6vw,58px);text-align:center;margin-top:10px;}
+    .lead{font-size:clamp(15px,2vw,18px);color:var(--soft);text-align:center;margin:14px 0 30px;max-width:52ch;line-height:1.6;}
+    .task-list{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:34px;}
+    .task-list .t{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px 18px;
+      box-shadow:0 8px 20px -16px rgba(20,58,66,.35);font-size:15px;font-weight:700;color:var(--ink);}
+    .task-list .t .n{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:15px;}
+
+    /* result card */
+    .rescard{width:100%;max-width:560px;background:#fff;border:1px solid var(--line);border-radius:26px;padding:28px;text-align:center;
+      box-shadow:0 24px 50px -30px rgba(20,58,66,.45);margin-top:8px;}
+    .rescard .isl{width:88px;height:88px;border-radius:24px;margin:0 auto 16px;display:grid;place-items:center;color:#fff;line-height:1;
+      background:linear-gradient(150deg,#5FBFA4,#3E9E9A);box-shadow:0 16px 30px -14px rgba(63,158,154,.7);}
+    .rescard .isl .t{font-size:13px;font-weight:700;opacity:.9;} .rescard .isl .b{font-family:'Frank Ruhl Libre',serif;font-size:40px;font-weight:900;}
+    .rescard .rn{font-family:'Frank Ruhl Libre',serif;font-size:26px;font-weight:900;color:var(--ink);}
+    .rescard .rs{font-size:15px;color:var(--soft);margin-top:6px;line-height:1.5;}
+    .teacher-note{display:flex;align-items:center;gap:12px;background:#F3F0FC;border:1px solid #E3DCF7;border-radius:16px;padding:14px 16px;
+      margin-top:20px;text-align:right;font-size:14px;color:#4b3f86;line-height:1.5;}
+    .teacher-note b{color:var(--noni);}
+    .acts{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:22px;}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+    @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+  </style>
+</head>
+<body>
+  <img class="scene-bg" src="../avnei-yesod/underwater-app/assets/scene-stage-3-bg.png" alt="" aria-hidden="true" onerror="this.style.display='none'">
+  <div class="veil" aria-hidden="true"></div>
+  <main class="wrap">
+    <div class="top">
+      <span class="who"><span class="av" id="w-av">נ</span><span class="nm" id="w-nm">נֹעָה</span></span>
+      <span class="tag-boy">מִפְגַּשׁ הֶכֵּרוּת · תְּחִלַּת שָׁנָה</span>
+      <div class="steps"><span class="dot on" data-s="1"></span><span class="dot" data-s="2"></span><span class="dot" data-s="3"></span></div>
+    </div>
+
+    <!-- INTRO -->
+    <section class="screen on" id="s-intro">
+      <div class="noni-row">
+        <img class="noni" id="noni-intro" src="../avnei-yesod/underwater-app/assets/noni-happy.png" alt="נוני" onerror="this.style.display='none'">
+        <div class="bubble">
+          <div class="say">שָׁלוֹם! אֲנִי נוֹנִי 🐙<br>בֹּאוּ נַכִּיר — יֵשׁ לִי שָׁלוֹשׁ מְשִׂימוֹת קְטַנּוֹת בִּשְׁבִילְכֶם.</div>
+          <button class="spk" data-spk><span class="wv"><i></i><i></i><i></i><i></i></span> הַקְשִׁיבוּ</button>
+        </div>
+      </div>
+      <div class="big">בֹּאוּ נַתְחִיל!</div>
+      <div class="lead">שָׁלוֹשׁ מְשִׂימוֹת קְצָרוֹת — נוֹנִי תַּסְבִּיר כָּל אַחַת. אֵין נְכוֹן אוֹ לֹא נְכוֹן, פָּשׁוּט תְּנַסּוּ.</div>
+      <div class="task-list">
+        <div class="t"><span class="n" style="background:#5FBFA4">1</span>אוֹתִיּוֹת</div>
+        <div class="t"><span class="n" style="background:#7C9BD0">2</span>הֲבָרוֹת</div>
+        <div class="t"><span class="n" style="background:#E8A55F">3</span>סִפּוּר</div>
+      </div>
+      <button class="cta" data-go="s-r1">בֹּאוּ נַתְחִיל <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+    </section>
+
+    <!-- ROUND 1 — letters -->
+    <section class="screen" id="s-r1">
+      <div class="noni-row">
+        <img class="noni" src="../avnei-yesod/underwater-app/assets/noni-thinking.png" alt="נוני" onerror="this.src='../avnei-yesod/underwater-app/assets/noni-happy.png'">
+        <div class="bubble">
+          <div class="say">לַחֲצוּ עַל הָאוֹת שֶׁשְּׁמַעְתֶּם: <b>ל</b></div>
+          <button class="spk" data-spk><span class="wv"><i></i><i></i><i></i><i></i></span> שִׁמְעוּ שׁוּב</button>
+        </div>
+      </div>
+      <div class="opts g-letters" id="r1-opts"></div>
+    </section>
+
+    <!-- ROUND 2 — syllables -->
+    <section class="screen" id="s-r2">
+      <div class="noni-row">
+        <img class="noni" src="../avnei-yesod/underwater-app/assets/noni-thinking.png" alt="נוני" onerror="this.src='../avnei-yesod/underwater-app/assets/noni-happy.png'">
+        <div class="bubble">
+          <div class="say">אֵיזוֹ הֲבָרָה שְׁמַעְתֶּם? <b>לָ</b></div>
+          <button class="spk" data-spk><span class="wv"><i></i><i></i><i></i><i></i></span> שִׁמְעוּ שׁוּב</button>
+        </div>
+      </div>
+      <div class="opts g-syl" id="r2-opts"></div>
+    </section>
+
+    <!-- ROUND 3 — comprehension -->
+    <section class="screen" id="s-r3">
+      <div class="noni-row">
+        <img class="noni" src="../avnei-yesod/underwater-app/assets/noni-happy.png" alt="נוני" onerror="this.style.display='none'">
+        <div class="bubble">
+          <div class="say">נוֹנִי מְצָאָה צְדָפָה עַל הַחוֹל וְשָׂמְחָה מְאוֹד.<br>אֵיךְ נוֹנִי מַרְגִּישָׁה?</div>
+          <button class="spk" data-spk><span class="wv"><i></i><i></i><i></i><i></i></span> שִׁמְעוּ שׁוּב</button>
+        </div>
+      </div>
+      <div class="opts g-pic" id="r3-opts"></div>
+    </section>
+
+    <!-- DONE / RESULT -->
+    <section class="screen" id="s-done">
+      <div class="noni-row">
+        <img class="noni" src="../avnei-yesod/underwater-app/assets/noni-happy.png" alt="נוני" onerror="this.style.display='none'">
+        <div class="bubble"><div class="say">כָּל הַכָּבוֹד! סִיַּמְתֶּם אֶת הַהֶכֵּרוּת 🎉</div></div>
+      </div>
+      <div class="rescard">
+        <div class="isl"><div class="t">אי</div><div class="b" id="res-num">4</div></div>
+        <div class="rn" id="res-name">הַשּׁוֹנִית הַשְּׁקֵטָה</div>
+        <div class="rs" id="res-skill">מַתְחִילִים מִכָּאן — אוֹת, נִקּוּד וְצֶלִיל</div>
+        <div class="teacher-note">
+          <span style="font-size:22px">👩‍🏫</span>
+          <div>הַתּוֹצָאוֹת נִשְׁלְחוּ <b>לַמּוֹרָה</b> — הִיא תְּאַשֵּׁר מֵאֵיפֹה מַתְחִילִים.</div>
+        </div>
+        <div class="acts">
+          <a class="cta" href="teacher-literacy-profile.html">למסך המורה <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></a>
+          <button class="cta ghost" data-go="s-intro">מהתחלה</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    var $=function(s){return document.querySelector(s);};
+    var $$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s));};
+
+    /* which child is taking it (from picker, else default נועה) */
+    var CHILD={id:'s-noa',nm:'נֹעָה',c:'#1F9E92',c2:'#36C2B2'};
+    try{var cur=localStorage.getItem('avnei-yesod-current-student');
+      var MAP={'s-noa':{nm:'נֹעָה',c:'#1F9E92',c2:'#36C2B2'},'s-maya':{nm:'מָאיָה',c:'#E06A82',c2:'#F2949F'},
+        's-itai':{nm:'אִיתַי',c:'#2BA070',c2:'#48C18F'},'s-dani':{nm:'דָּנִי',c:'#7363C4',c2:'#9A87E0'},
+        's-shira':{nm:'שִׁירָה',c:'#D8943A',c2:'#EBB35E'},'s-yael':{nm:'יָעֵל',c:'#3F8FD0',c2:'#5FB0E6'}};
+      if(cur&&MAP[cur]){CHILD.id=cur;CHILD.nm=MAP[cur].nm;CHILD.c=MAP[cur].c;CHILD.c2=MAP[cur].c2;}
+    }catch(e){}
+    $('#w-nm').textContent=CHILD.nm;
+    $('#w-av').textContent=CHILD.nm.replace(/[^א-ת]/g,'').charAt(0);
+    $('#w-av').style.background='linear-gradient(145deg,'+CHILD.c+','+CHILD.c2+')';
+
+    /* per-child suggested island — coherent with teacher-literacy-profile.html */
+    var ISL={
+      1:{name:'מִפְרַץ הַבּוּעוֹת הַמְּזַמֵּר',skill:'מַתְחִילִים מִכָּאן — צְלִילִים וַהֲבָרוֹת'},
+      3:{name:'אַלְמוֹגֵי הָאוֹתִיּוֹת',      skill:'מַתְחִילִים מִכָּאן — אוֹתִיּוֹת וְהַצְּלִילִים שֶׁלָּהֶן'},
+      4:{name:'הַשּׁוֹנִית הַשְּׁקֵטָה',       skill:'מַתְחִילִים מִכָּאן — אוֹת, נִקּוּד וְצֶלִיל'},
+      5:{name:'שׁוֹנִית הַצְּדָפִית',         skill:'מַתְחִילִים מִכָּאן — מְחַבְּרִים אוֹתִיּוֹת לְמִלִּים'}
+    };
+    var CHILD_ISL={'s-noa':5,'s-shira':4,'s-maya':4,'s-dani':3,'s-itai':1,'s-yael':3};
+    (function(){var n=CHILD_ISL[CHILD.id]||4,o=ISL[n];
+      $('#res-num').textContent=n;$('#res-name').textContent=o.name;$('#res-skill').textContent=o.skill;})();
+
+    /* rounds data — mockup: taps advance, correct answer glows */
+    var R1=[{t:'מ'},{t:'ל',ok:1},{t:'ש'},{t:'ר'},{t:'א'},{t:'ד'}];
+    var R2=[{t:'לָ',ok:1},{t:'לִי'},{t:'לוֹ'}];
+    var R3=[{emo:'😄',cap:'שְׂמֵחָה',ok:1},{emo:'😢',cap:'עֲצוּבָה'},{emo:'😴',cap:'עֲיֵפָה'}];
+
+    var order=['s-intro','s-r1','s-r2','s-r3','s-done'];
+    function show(id){
+      $$('.screen').forEach(function(s){s.classList.remove('on');});
+      $('#'+id).classList.add('on');
+      window.scrollTo({top:0,behavior:'smooth'});
+      // step dots
+      var idx=order.indexOf(id); // 0..4
+      $$('.steps .dot').forEach(function(d,i){
+        d.classList.remove('on','done');
+        var stepScreen=i+1; // dot i → round i+1 → screen index i+1
+        if(idx>stepScreen) d.classList.add('done');
+        else if(idx===stepScreen) d.classList.add('on');
+        else if(idx===0&&i===0) d.classList.add('on');
+      });
+      playFor(id); /* נוני מדברת פעם אחת בכניסה למסך; "שמעו שוב" חוזר עליה */
+    }
+
+    function buildLetters(){
+      var el=$('#r1-opts');el.innerHTML='';
+      R1.forEach(function(o){var b=document.createElement('button');b.className='opt';
+        b.innerHTML=o.t+'<span class="chk">✓</span>';
+        b.addEventListener('click',function(){pick(b,el,'s-r2');});el.appendChild(b);});
+    }
+    function buildSyl(){
+      var el=$('#r2-opts');el.innerHTML='';
+      R2.forEach(function(o){var b=document.createElement('button');b.className='opt';
+        b.innerHTML=o.t+'<span class="chk">✓</span>';
+        b.addEventListener('click',function(){pick(b,el,'s-r3');});el.appendChild(b);});
+    }
+    function buildPic(){
+      var el=$('#r3-opts');el.innerHTML='';
+      R3.forEach(function(o){var b=document.createElement('button');b.className='opt pic';
+        b.innerHTML='<span class="emo">'+o.emo+'</span><span class="cap">'+o.cap+'</span><span class="chk">✓</span>';
+        b.addEventListener('click',function(){pick(b,el,'s-done');});el.appendChild(b);});
+    }
+    /* any tap = gentle accept: glow the tapped card, dim siblings, advance */
+    function pick(btn,container,next){
+      Array.prototype.forEach.call(container.children,function(c){if(c!==btn)c.classList.add('dim');});
+      btn.classList.add('right');
+      setTimeout(function(){show(next);},760);
+    }
+
+    /* ---- audio: קול נוני (ElevenLabs) + קליפי CV קיימים מהאיים ---- */
+    var AUD='../avnei-yesod/underwater-app/assets/audio/';
+    var SCREEN_AUDIO={
+      's-intro':['boy-intro.mp3'],
+      's-r1':['boy-r1-ask.mp3','cv-lamed-shva.mp3'],
+      's-r2':['boy-r2-ask.mp3','cv-lamed-kamatz.mp3'],
+      's-r3':['boy-r3.mp3'],
+      's-done':['all-done.mp3']
+    };
+    var curA=null,curBtn=null;
+    function stopAudio(){
+      if(curA){curA.onended=null;curA.pause();curA=null;}
+      if(curBtn){curBtn.classList.remove('playing');curBtn=null;}
+    }
+    function playFor(id){
+      stopAudio();
+      var list=(SCREEN_AUDIO[id]||[]).slice();
+      if(!list.length)return;
+      var scr=document.getElementById(id);
+      curBtn=scr?scr.querySelector('[data-spk]'):null;
+      if(curBtn)curBtn.classList.add('playing');
+      (function next(){
+        var f=list.shift();
+        if(!f){stopAudio();return;}
+        curA=new Audio(AUD+f);
+        curA.onended=next;
+        curA.play().catch(stopAudio); /* autoplay לפני מגע ראשון — נכשל בשקט */
+      })();
+    }
+    document.addEventListener('click',function(e){
+      var spk=e.target.closest('[data-spk]');
+      if(spk){var scr=spk.closest('.screen');playFor(scr?scr.id:'');return;}
+      var go=e.target.closest('[data-go]');
+      if(go){var id=go.dataset.go;if(id==='s-intro'){buildLetters();buildSyl();buildPic();}show(id);}
+    });
+
+    buildLetters();buildSyl();buildPic();
+    show('s-intro');
+  </script>
+</body>
+</html>
