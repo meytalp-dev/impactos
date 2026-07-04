@@ -14,10 +14,10 @@
   --primary-dark: #2F8A82;
   --primary-soft: #E7F6F4;
   /* 4 הממדים — גרסה פסטלית-קריאה (נקודות + צ'יפים, תמיד עם טקסט לצד הצבע) */
-  --dim-adjust: #E9BE5F;
-  --dim-friend: #E8A8C4;
-  --dim-emotion: #A99BD8;
-  --dim-joy: #6FCABF;
+  --dim-adjust: #F2B844;
+  --dim-friend: #E08FAF;
+  --dim-emotion: #8B6BC0;
+  --dim-joy: #5BC0A8;
   --tier-green: var(--ok, #7CBF9E);
   --tier-yellow: var(--notice, #F3D37A);
   --tier-red: var(--attention, #E8A08F);
@@ -476,6 +476,85 @@ button { font-family: inherit; }
 .legend-chip.sand  { background: var(--sand, #F7E8D4);  color: var(--tier-yellow-ink); }
 .legend-chip.peach { background: var(--peach, #FFD8C7); color: var(--tier-red-ink); }
 
+/* ===== WIDGET: SCHOOL-WIDE TRENDS BY DIMENSION ===== */
+.school-trends {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+@media (max-width: 760px) { .school-trends { grid-template-columns: repeat(2, 1fr); } }
+.strend {
+  background: var(--surface-soft, #F1F8F6);
+  border-radius: 14px;
+  padding: 14px 16px 30px;
+}
+.strend-name { font-weight: 600; font-size: 0.86rem; margin-bottom: 10px; }
+.strend-name .col-dot {
+  display: inline-block;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  margin-left: 5px;
+  vertical-align: middle;
+}
+.strend-chart { display: flex; align-items: flex-end; gap: 7px; height: 64px; }
+.strend-bar {
+  flex: 1; min-height: 4px;
+  border-radius: 5px 5px 0 0;
+  opacity: .45;
+  position: relative;
+}
+.strend-bar:last-child { opacity: 1; }
+.strend-bar::after {
+  content: attr(data-label);
+  position: absolute; bottom: -18px; left: 0; right: 0;
+  text-align: center;
+  font-size: 0.6rem;
+  color: var(--text-muted);
+}
+.strend-delta { font-size: 0.74rem; font-weight: 600; margin-top: 24px; line-height: 1.5; }
+.strend-delta.up   { color: var(--tier-green-ink); }
+.strend-delta.down { color: var(--tier-red-ink); }
+.strend-delta.flat { color: var(--text-light); }
+
+/* ===== WIDGET: STRONG / WEAK QUESTIONS ===== */
+.q-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 760px) { .q-cols { grid-template-columns: 1fr; } }
+.q-col h4 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 6px;
+}
+.q-col.strong h4 { color: var(--tier-green-ink); }
+.q-col.weak h4   { color: var(--tier-red-ink); }
+.q-item {
+  background: var(--surface-soft, #F1F8F6);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+.q-item-text { font-weight: 600; font-size: 0.86rem; line-height: 1.5; }
+.q-item-meta { font-size: 0.76rem; color: var(--text-light); margin: 3px 0 8px; }
+.q-dist { display: flex; height: 14px; border-radius: 999px; overflow: hidden; background: var(--white); }
+.q-dseg { height: 100%; }
+.q-dseg.yes  { background: var(--tier-green); }
+.q-dseg.some { background: var(--tier-yellow); }
+.q-dseg.no   { background: var(--tier-red); }
+.q-legend {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  font-size: 0.74rem; color: var(--text-light);
+  margin-top: 12px;
+}
+.q-note {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: color-mix(in srgb, var(--sky, #D8EEF7) 40%, white);
+  border-radius: 12px;
+  font-size: 0.8rem;
+  color: var(--text-light);
+  line-height: 1.6;
+}
+
 /* ===== GRID FOR WIDGETS 3-4 ===== */
 .widgets-grid {
   display: grid;
@@ -834,7 +913,7 @@ button { font-family: inherit; }
   <div class="topbar-meta">
     <span class="demo-badge">נתוני הדגמה בלבד · מיועד להצגת חוויית שימוש</span>
     <span class="role-pill">מנהלת</span>
-    <span>בית ספר יסודי דוגמה · 4 כיתות א'</span>
+    <span>בית ספר אימפקט · 4 כיתות א'</span>
     <button class="pill-btn" type="button" id="btnExportPdf">⤓ ייצוא PDF תקופתי</button>
   </div>
 </div>
@@ -999,32 +1078,32 @@ button { font-family: inherit; }
         <div class="heatmap-h"><span class="col-dot" style="background:var(--dim-joy);"></span>שמחה ללמוד</div>
       </div>
 
-      <div class="heat-row" data-label="א'1 יעל">
-        <div class="heatmap-class">א'1<small>מחנכת: יעל</small></div>
+      <div class="heat-row" data-label="א'1 מיטל פלג">
+        <div class="heatmap-class">א'1<small>מחנכת: מיטל פלג</small></div>
         <div class="heatmap-cell cell-green" role="button" tabindex="0" aria-label="כיתה א'1, הסתגלות: 4.2, ירוק — שגרה"><span class="cell-val">4.2</span><span class="cell-status">שגרה</span></div>
         <div class="heatmap-cell cell-green" role="button" tabindex="0" aria-label="כיתה א'1, חברות: 4.0, ירוק — שגרה"><span class="cell-val">4.0</span><span class="cell-status">שגרה</span></div>
         <div class="heatmap-cell cell-yellow" role="button" tabindex="0" aria-label="כיתה א'1, שפה רגשית: 3.4, צהוב — תמיכה קלה"><span class="cell-val">3.4</span><span class="cell-status">תמיכה קלה</span></div>
         <div class="heatmap-cell cell-green" role="button" tabindex="0" aria-label="כיתה א'1, שמחה ללמוד: 4.1, ירוק — שגרה"><span class="cell-val">4.1</span><span class="cell-status">שגרה</span></div>
       </div>
 
-      <div class="heat-row" data-label="א'2 רונית">
-        <div class="heatmap-class">א'2<small>מחנכת: רונית</small></div>
+      <div class="heat-row" data-label="א'2 לירון גולן">
+        <div class="heatmap-class">א'2<small>מחנכת: לירון גולן</small></div>
         <div class="heatmap-cell cell-yellow" role="button" tabindex="0" aria-label="כיתה א'2, הסתגלות: 3.5, צהוב — תמיכה קלה"><span class="cell-val">3.5</span><span class="cell-status">תמיכה קלה</span></div>
         <div class="heatmap-cell cell-yellow" role="button" tabindex="0" aria-label="כיתה א'2, חברות: 3.6, צהוב — תמיכה קלה"><span class="cell-val">3.6</span><span class="cell-status">תמיכה קלה</span></div>
         <div class="heatmap-cell cell-red" role="button" tabindex="0" aria-label="כיתה א'2, שפה רגשית: 2.8, אדום — ליווי מוגבר"><span class="cell-val">2.8</span><span class="cell-status">ליווי מוגבר</span></div>
         <div class="heatmap-cell cell-red" role="button" tabindex="0" aria-label="כיתה א'2, שמחה ללמוד: 2.6, אדום — ליווי מוגבר"><span class="cell-val">2.6</span><span class="cell-status">ליווי מוגבר</span></div>
       </div>
 
-      <div class="heat-row" data-label="א'3 שירה">
-        <div class="heatmap-class">א'3<small>מחנכת: שירה</small></div>
+      <div class="heat-row" data-label="א'3 אופיר שטיינברג">
+        <div class="heatmap-class">א'3<small>מחנכת: אופיר שטיינברג</small></div>
         <div class="heatmap-cell cell-green" role="button" tabindex="0" aria-label="כיתה א'3, הסתגלות: 4.1, ירוק — שגרה"><span class="cell-val">4.1</span><span class="cell-status">שגרה</span></div>
         <div class="heatmap-cell cell-green" role="button" tabindex="0" aria-label="כיתה א'3, חברות: 4.3, ירוק — שגרה"><span class="cell-val">4.3</span><span class="cell-status">שגרה</span></div>
         <div class="heatmap-cell cell-green" role="button" tabindex="0" aria-label="כיתה א'3, שפה רגשית: 4.0, ירוק — שגרה"><span class="cell-val">4.0</span><span class="cell-status">שגרה</span></div>
         <div class="heatmap-cell cell-yellow" role="button" tabindex="0" aria-label="כיתה א'3, שמחה ללמוד: 3.5, צהוב — תמיכה קלה"><span class="cell-val">3.5</span><span class="cell-status">תמיכה קלה</span></div>
       </div>
 
-      <div class="heat-row" data-label="א'4 מיכל">
-        <div class="heatmap-class">א'4<small>מחנכת: מיכל</small></div>
+      <div class="heat-row" data-label="א'4 עמית אביטבול">
+        <div class="heatmap-class">א'4<small>מחנכת: עמית אביטבול</small></div>
         <div class="heatmap-cell cell-yellow" role="button" tabindex="0" aria-label="כיתה א'4, הסתגלות: 3.7, צהוב — תמיכה קלה"><span class="cell-val">3.7</span><span class="cell-status">תמיכה קלה</span></div>
         <div class="heatmap-cell cell-green" role="button" tabindex="0" aria-label="כיתה א'4, חברות: 4.2, ירוק — שגרה"><span class="cell-val">4.2</span><span class="cell-status">שגרה</span></div>
         <div class="heatmap-cell cell-yellow" role="button" tabindex="0" aria-label="כיתה א'4, שפה רגשית: 3.3, צהוב — תמיכה קלה"><span class="cell-val">3.3</span><span class="cell-status">תמיכה קלה</span></div>
@@ -1038,6 +1117,114 @@ button { font-family: inherit; }
       <span class="legend-chip sand">צהוב = תמיכה קלה</span>
       <span class="legend-chip peach">אדום = ליווי מוגבר</span>
     </div>
+  </div>
+
+  <!-- ===== WIDGET: SCHOOL-WIDE TRENDS BY DIMENSION ===== -->
+  <div class="widget-card">
+    <div class="widget-head">
+      <h3>📊 מגמות בית-ספריות · לפי תחום</h3>
+      <div class="widget-meta">ממוצע בית-ספרי (1–5) · 4 המחזורים האחרונים · העמודה הכהה = המחזור האחרון</div>
+    </div>
+    <div class="school-trends">
+      <div class="strend">
+        <div class="strend-name"><span class="col-dot" style="background:var(--dim-adjust);"></span>הסתגלות</div>
+        <div class="strend-chart" role="img" aria-label="הסתגלות לאורך 4 מחזורים: 3.6, 3.8, 3.9, 3.9 — עלייה עדינה">
+          <div class="strend-bar" style="height:72%; background:var(--dim-adjust);" data-label="פולס 1"></div>
+          <div class="strend-bar" style="height:76%; background:var(--dim-adjust);" data-label="פולס 2"></div>
+          <div class="strend-bar" style="height:78%; background:var(--dim-adjust);" data-label="פולס 3"></div>
+          <div class="strend-bar" style="height:78%; background:var(--dim-adjust);" data-label="פולס 4"></div>
+        </div>
+        <div class="strend-delta up">↑ 3.6 → 3.9 · עלייה עדינה מאז תחילת השנה</div>
+      </div>
+      <div class="strend">
+        <div class="strend-name"><span class="col-dot" style="background:var(--dim-friend);"></span>חברות</div>
+        <div class="strend-chart" role="img" aria-label="חברות לאורך 4 מחזורים: 4.0, 4.1, 4.0, 4.0 — יציב וגבוה">
+          <div class="strend-bar" style="height:80%; background:var(--dim-friend);" data-label="פולס 1"></div>
+          <div class="strend-bar" style="height:82%; background:var(--dim-friend);" data-label="פולס 2"></div>
+          <div class="strend-bar" style="height:80%; background:var(--dim-friend);" data-label="פולס 3"></div>
+          <div class="strend-bar" style="height:80%; background:var(--dim-friend);" data-label="פולס 4"></div>
+        </div>
+        <div class="strend-delta flat">→ יציב וגבוה · התחום החזק של בית הספר</div>
+      </div>
+      <div class="strend">
+        <div class="strend-name"><span class="col-dot" style="background:var(--dim-emotion);"></span>שפה רגשית</div>
+        <div class="strend-chart" role="img" aria-label="שפה רגשית לאורך 4 מחזורים: 3.5, 3.4, 3.5, 3.4 — יציב אך נמוך">
+          <div class="strend-bar" style="height:70%; background:var(--dim-emotion);" data-label="פולס 1"></div>
+          <div class="strend-bar" style="height:68%; background:var(--dim-emotion);" data-label="פולס 2"></div>
+          <div class="strend-bar" style="height:70%; background:var(--dim-emotion);" data-label="פולס 3"></div>
+          <div class="strend-bar" style="height:68%; background:var(--dim-emotion);" data-label="פולס 4"></div>
+        </div>
+        <div class="strend-delta flat">→ יציב אך נמוך · שווה חיזוק שפה רגשית בכל הכיתות</div>
+      </div>
+      <div class="strend">
+        <div class="strend-name"><span class="col-dot" style="background:var(--dim-joy);"></span>שמחה ללמוד</div>
+        <div class="strend-chart" role="img" aria-label="שמחה ללמוד לאורך 4 מחזורים: 3.9, 3.7, 3.6, 3.4 — ירידה שלושה מחזורים ברצף">
+          <div class="strend-bar" style="height:78%; background:var(--dim-joy);" data-label="פולס 1"></div>
+          <div class="strend-bar" style="height:74%; background:var(--dim-joy);" data-label="פולס 2"></div>
+          <div class="strend-bar" style="height:72%; background:var(--dim-joy);" data-label="פולס 3"></div>
+          <div class="strend-bar" style="height:68%; background:var(--dim-joy);" data-label="פולס 4"></div>
+        </div>
+        <div class="strend-delta down">↓ 3.9 → 3.4 · ירידה 3 מחזורים ברצף — בולט בא'2</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== WIDGET: STRONG / WEAK QUESTIONS ===== -->
+  <div class="widget-card">
+    <div class="widget-head">
+      <h3>💬 שאלות חזקות · שאלות לחיזוק</h3>
+      <div class="widget-meta">כל התשובות בבית הספר · המחזור האחרון · 70 ילדים + 52 הורים</div>
+    </div>
+    <div class="q-cols">
+      <div class="q-col strong">
+        <h4>🌟 שאלות חזקות — הרבה ענו טוב מאוד</h4>
+        <div class="q-item">
+          <div class="q-item-text">"האם יש לנוני עם מי לשחק בשונית?"</div>
+          <div class="q-item-meta">פולס תלמידים · חברות — 58 מתוך 70 ענו "כן" (83%)</div>
+          <div class="q-dist" role="img" aria-label="פילוח תשובות: 83% כן, 11% קצת, 6% לא">
+            <div class="q-dseg yes" style="width:83%"></div>
+            <div class="q-dseg some" style="width:11%"></div>
+            <div class="q-dseg no" style="width:6%"></div>
+          </div>
+        </div>
+        <div class="q-item">
+          <div class="q-item-text">"באיזו מידה הילד.ה שמח.ה ללכת לבית הספר השבוע?"</div>
+          <div class="q-item-meta">פולס הורים · ממוצע 4.2 מתוך 5 — 76% ענו "די הרבה" או "המון"</div>
+          <div class="q-dist" role="img" aria-label="פילוח תשובות: 76% גבוה, 18% בינוני, 6% נמוך">
+            <div class="q-dseg yes" style="width:76%"></div>
+            <div class="q-dseg some" style="width:18%"></div>
+            <div class="q-dseg no" style="width:6%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="q-col weak">
+        <h4>🌱 שאלות לחיזוק — הרבה ענו נמוך</h4>
+        <div class="q-item">
+          <div class="q-item-text">"האם כיף לנוני לגלות משהו חדש?"</div>
+          <div class="q-item-meta">פולס תלמידים · שמחה ללמוד — 24 מתוך 70 ענו "לא" (34%) · בולט בא'2</div>
+          <div class="q-dist" role="img" aria-label="פילוח תשובות: 39% כן, 27% קצת, 34% לא">
+            <div class="q-dseg yes" style="width:39%"></div>
+            <div class="q-dseg some" style="width:27%"></div>
+            <div class="q-dseg no" style="width:34%"></div>
+          </div>
+        </div>
+        <div class="q-item">
+          <div class="q-item-text">"כשנוני כועס, האם יש משהו שעוזר לו להירגע?"</div>
+          <div class="q-item-meta">פולס תלמידים · שפה רגשית — 20 מתוך 70 ענו "לא" (29%)</div>
+          <div class="q-dist" role="img" aria-label="פילוח תשובות: 43% כן, 28% קצת, 29% לא">
+            <div class="q-dseg yes" style="width:43%"></div>
+            <div class="q-dseg some" style="width:28%"></div>
+            <div class="q-dseg no" style="width:29%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="q-legend">
+      <span class="legend-chip mint">ירוק = ענו טוב</span>
+      <span class="legend-chip sand">צהוב = ענו באמצע</span>
+      <span class="legend-chip peach">אדום = ענו נמוך</span>
+    </div>
+    <div class="q-note">שאלה "לחיזוק" היא הזדמנות לעבודה כיתתית ולשיחה עם המחנכות — לא ציון לילד.ה או לכיתה. הפירוט המלא פר כיתה נמצא בדשבורד המחנכת.</div>
   </div>
 
   <!-- ===== WIDGETS 3 + 4 (grid) ===== -->
@@ -1167,7 +1354,7 @@ button { font-family: inherit; }
       <div class="alert-icon high"><span aria-hidden="true">⚠</span><span class="visually-hidden">איתות בעדיפות גבוהה</span></div>
       <div class="alert-body">
         <div class="alert-title">כלל #4 · א'2 — > 25% מהכיתה בליווי מוגבר בשמחה ללמוד</div>
-        <div class="alert-desc">7 ילדים מ-25 דיווחו "אין כיף בלמידה" השבוע. קבוצתי-קריטי. מומלץ לדבר עם רונית (מחנכת).</div>
+        <div class="alert-desc">7 ילדים מ-25 דיווחו "אין כיף בלמידה" השבוע. קבוצתי-קריטי. מומלץ לדבר עם לירון (מחנכת).</div>
       </div>
       <div class="alert-time">לפני 2 ימים</div>
     </div>
@@ -1239,7 +1426,7 @@ const CATALOG = [
   { dim:'joy', color:'var(--dim-joy)', name:'בחירת דרך להראות ידע', cat:'Co-Creation', file:'intervention-catalog/cat-11-co-creation.md' },
 ];
 const DIM_LABEL = { adjust:'הסתגלות', friend:'חברות', emotion:'שפה רגשית', joy:'שמחה ללמוד' };
-const CLASSES = ['א\'1 · יעל', 'א\'2 · רונית', 'א\'3 · שירה', 'א\'4 · מיכל'];
+const CLASSES = ['א\'1 · מיטל פלג', 'א\'2 · לירון גולן', 'א\'3 · אופיר שטיינברג', 'א\'4 · עמית אביטבול'];
 
 const modal = document.getElementById('catalogModal');
 const catList = document.getElementById('catList');

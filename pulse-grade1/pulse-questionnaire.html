@@ -549,6 +549,7 @@ body {
   .seabed { height: 22vh; }
 }
 </style>
+  <script src="../demo/journey.js" defer></script>
 </head>
 <body>
 
@@ -875,10 +876,22 @@ const SETUP_TIME_GATE_MS = 2500;
 
 // URL params
 const params = new URLSearchParams(window.location.search);
-const classId = params.get('class') || 'א1';
+const classId = params.get('class') || 'א\'1';
 const sid = params.get('sid') || 'test-' + Math.random().toString(36).slice(2, 7);
 const biweek = params.get('biweek') || '1';
 const sessionId = 's-' + Date.now();
+
+// ═══════ פולס ממוקד — ?dims=emotion או ?dims=adjust,joy ═══════
+// המורה בוחרת בדשבורד איזה פולס לשלוח: מלא (ברירת מחדל) או ממוקד בממד אחד.
+// ערך לא מוכר / ריק → הפולס המלא, בלי שבירה. תחנות עודפות מוסתרות בהמשך.
+(function applyDimFilter() {
+  const wanted = (params.get('dims') || '').split(',').map(s => s.trim()).filter(Boolean);
+  if (!wanted.length) return;
+  const keep = DIMENSIONS.filter(d => wanted.includes(d.id));
+  if (!keep.length || keep.length === DIMENSIONS.length) return;
+  DIMENSIONS.length = 0;
+  DIMENSIONS.push(...keep);
+})();
 
 // ═══════ פרטיות (דמו בלבד) ═══════
 // בפיילוט האמיתי תשובות ילדים נשלחות ל-backend בלבד ולא נשמרות
@@ -912,6 +925,10 @@ const STATION_ICONS = [
 ];
 document.querySelectorAll('.progress-station').forEach((el, i) => { el.innerHTML = STATION_ICONS[i]; });
 document.querySelectorAll('.bridge-station').forEach((el, i) => { el.innerHTML = STATION_ICONS[i]; });
+
+// פולס ממוקד — מסתירים תחנות ים מעבר למספר הממדים הפעילים
+document.querySelectorAll('.progress-station').forEach((el, i) => { if (i >= DIMENSIONS.length) el.style.display = 'none'; });
+document.querySelectorAll('.bridge-station').forEach((el, i) => { if (i >= DIMENSIONS.length) el.style.display = 'none'; });
 
 // ═══════ BUBBLES BG ═══════
 (function createBubbles() {
