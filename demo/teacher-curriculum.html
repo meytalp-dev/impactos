@@ -244,6 +244,14 @@
         return LETTERS[L] ? {state:'ok',cat:'letter',href:APP+LETTERS[L],tag:'אות '+lm[1]} : {state:'gap',tag:'אות '+lm[1]};}
       if(/מבדק/.test(t))                                    return {state:'ok',cat:'test',href:'../avnei-yesod/engine/screener.html',tag:'מבדק'};
       if(/כתיב|הכתב/.test(t))                               return {state:'offline',tag:'כתיבה'};
+      // חריזה (M4, 4.7.2026) — "חריזה" (פברואר) + "השלמת משפט בחריזה" / "זיהוי חרוזים
+      // (אוצר)" (אפריל) → משחקון שרשרת החרוזים (two-tap שמיעתי). חייב לבוא אחרי כלל
+      // הכתיבה ("כתיבת מילה חורזת" = מחברת). cid = characteristic_id ל-EPA: ימי אפריל
+      // = זיהוי חרוז שמיעתי (apr-w1-d4-c1), פברואר = בחירת מילה מתחרזת (feb-w4-d1-c2).
+      if(/חריזה|חרוז/.test(t)){
+        var rcid=/זיהוי חרוזים/.test(t)?'apr-w1-d4-c1':'feb-w4-d1-c2';
+        return {state:'ok',cat:'syll',href:APP+'stage-rhyme.html?cid='+rcid,tag:'חריזה'};
+      }
       // "פרופיל אורייני לכל ילד" = משימת מורה (מסך הפרופיל), לא תרגול תלמיד
       if(/פרופיל אורייני/.test(t))                          return {state:'ok',cat:'test',href:'teacher-literacy-profile.html',tag:'כלי מורה'};
       // שיח בכיתה — פעילות דבורה בהנחיית המורה, אין (ולא צריך) משחקון דיגיטלי.

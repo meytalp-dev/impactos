@@ -341,6 +341,13 @@
       tile.classList.add('wrong-sway');
       setTimeout(function () { tile.classList.remove('wrong-sway'); }, SWAY_MS);
 
+      // two-tap (אפשרויות-שמע): אחרי טעות מנקים את סימון ההאזנה — חייבים
+      // להקשיב שוב לפני בחירה חוזרת (מונע ספאם בחירות שמזהם את המדידה).
+      if (state.audioActiveTile) {
+        state.audioActiveTile.classList.remove('mcq-option--listening');
+        state.audioActiveTile = null;
+      }
+
       if (state.attempts === 2) {
         noni('hint');
         targetTiles().forEach(function (t) { t.classList.add('hint-glow'); });

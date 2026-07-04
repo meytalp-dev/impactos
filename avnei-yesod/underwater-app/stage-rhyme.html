@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>שַׁרְשֶׁרֶת הַחֲרוּזִים · השונית של נוני</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css?v=2026-07-04">
+  <link rel="stylesheet" href="css/game-shell.css?v=2026-07-04">
+
+  <!-- ============================================================================
+       stage-rhyme.html — משחקון חריזה שמיעתית "שַׁרְשֶׁרֶת הַחֲרוּזִים" (M4 · 4.7.2026)
+       ימי היעד בתוכנית השנתית: "חריזה" (פברואר) · "זיהוי חרוזים (אוצר)" +
+       "השלמת משפט בחריזה" (אפריל) — חיווט ב-demo/teacher-curriculum.html.
+
+       נרטיב: שרשרת החרוזים של נוני נקרעה (חָרוּז = גם bead וגם rhyme) —
+       כל מילה מתחרזת שמוצאים מחזירה חרוז צבעוני לשרשרת.
+
+       מכניקה: נוני אומרת מילה (אודיו + המילה מנוקדת על המסך) → 3 רמקולים
+       זהים-מראה. 🔴 two-tap (מובנה ב-mechanic-mcq): נגיעה 1 = האזנה חופשית
+       (לא נמדדת) · נגיעה 2 על אותו רמקול = בחירה (רק היא נרשמת ל-BKT/EPA).
+       חריזה היא שמיעתית — האפשרויות אודיו-בלבד, אין מה לנחש לפי מראה.
+
+       תוכן: data/rhyme-rounds.json — מילים מחומרי התוכן בלבד.
+       דיווח: primary_island_id=1 (מודעות פונולוגית, P2 rhyme-awareness) ·
+       characteristic_id מ-?cid= (ברירת מחדל feb-w4-d1-c2) → EPA unitKey.
+       אודיו: rhyme-w-*.mp3 + rhyme-intro.mp3 (generate-rhyme-audio.py, QA Whisper).
+       ============================================================================ -->
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; min-height: 100dvh;
+      font-family: 'Heebo', sans-serif;
+      background: linear-gradient(180deg, #BFF1FF 0%, #A8E8FF 40%, #73D9D1 100%);
+      color: var(--text-main); direction: rtl; overflow-x: hidden;
+    }
+    .scene-bg {
+      position: fixed; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; object-position: center bottom;
+      z-index: 0; pointer-events: none;
+    }
+    .top-bar {
+      position: sticky; top: 0; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 12px 18px;
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255,255,255,0.6);
+    }
+    .top-bar a.back {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: rgba(255,255,255,0.85); color: var(--text-main);
+      display: inline-flex; align-items: center; justify-content: center;
+      text-decoration: none; font-size: 20px; font-weight: 900;
+      box-shadow: 0 2px 10px rgba(38,80,92,0.15);
+    }
+    .top-bar .title { font-size: clamp(15px, 3.4vw, 19px); font-weight: 800; }
+    .top-bar .counter {
+      height: 40px; padding: 0 14px; border-radius: var(--radius-pill);
+      background: rgba(255,255,255,0.85); display: inline-flex; align-items: center;
+      font-size: 14px; font-weight: 700; box-shadow: 0 2px 10px rgba(38,80,92,0.15);
+    }
+    main {
+      position: relative; z-index: 2;
+      max-width: 760px; margin: 0 auto;
+      padding: 14px 18px 30px;
+    }
+
+    /* === שרשרת החרוזים — התקדמות (חרוזים צבעוניים, לא פנינים) === */
+    .beads {
+      display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+      gap: 6px; margin: 4px auto 12px;
+    }
+    .bead {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(255,255,255,0.45); border: 2px dashed rgba(255,255,255,0.8);
+      transition: all 0.35s ease; position: relative;
+    }
+    .bead + .bead::before {
+      /* חוט השרשרת בין החרוזים */
+      content: ''; position: absolute; inset-inline-end: 100%; top: 50%;
+      width: 6px; height: 2px; background: rgba(255,255,255,0.7);
+    }
+    .bead.filled { border-style: solid; border-color: #FFF; box-shadow: 0 2px 8px rgba(38,80,92,0.2); }
+    .bead.filled.c0 { background: var(--coral); }
+    .bead.filled.c1 { background: var(--mint); }
+    .bead.filled.c2 { background: var(--lavender); }
+    .bead.filled.c3 { background: var(--hint); }
+    .bead.filled.c4 { background: var(--shell-pink); }
+    .bead.filled.c5 { background: var(--peach); }
+    .bead.filled.c6 { background: var(--sea-green); }
+    .bead.filled.c7 { background: var(--water-soft); }
+    .bead.just-added { transform: scale(1.7); box-shadow: 0 0 16px 4px rgba(255,231,168,0.95), 0 0 8px rgba(124,231,180,0.8); }
+
+    /* === בועת נוני — ההוראה === */
+    .noni-row {
+      display: flex; align-items: flex-end; gap: 10px;
+      max-width: 620px; margin: 0 auto 10px; min-height: 64px;
+    }
+    .noni-row img { width: clamp(64px, 13vw, 96px); flex: 0 0 auto; filter: drop-shadow(0 6px 10px rgba(38,80,92,0.25)); }
+    .bubble {
+      position: relative; flex: 1;
+      background: rgba(255,255,255,0.92); border-radius: var(--radius-lg);
+      padding: 12px 16px; font-size: clamp(16px, 3.6vw, 20px); font-weight: 700;
+      line-height: 1.5; box-shadow: 0 4px 16px rgba(38,80,92,0.14);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .bubble::before {
+      content: ''; position: absolute; inset-inline-start: -8px; bottom: 16px;
+      border: 9px solid transparent; border-inline-end-color: rgba(255,255,255,0.92);
+    }
+    .bubble .say {
+      flex: 0 0 auto; width: 48px; height: 48px; border-radius: 50%;
+      border: none; cursor: pointer; font-size: 22px;
+      background: var(--water-secondary); color: #fff;
+      box-shadow: 0 4px 12px rgba(115,217,209,0.55);
+    }
+    .bubble .say:active { transform: scale(0.94); }
+
+    #mountRoot { position: relative; min-height: 46vh; }
+
+    /* two-tap: הרמקול שנשמע מסומן — "עוד נגיעה = בחירה" (דפוס cv-summary) */
+    #mountRoot .mcq-option--audio { position: relative; }
+    #mountRoot .mcq-option--listening::after {
+      content: 'עוֹד נְגִיעָה = בְּחִירָה';
+      position: absolute; bottom: 6px; inset-inline: 0;
+      font-size: 11px; font-weight: 700; color: var(--text-soft);
+      text-align: center; pointer-events: none;
+    }
+
+    /* מסך פתיחה */
+    .start-veil {
+      position: fixed; inset: 0; z-index: 20;
+      background: rgba(38,80,92,0.35);
+      display: flex; align-items: center; justify-content: center; padding: 24px;
+    }
+    .start-veil[hidden] { display: none; }
+    .noni-row[hidden] { display: none; }
+    .start-card {
+      background: #fff; border-radius: var(--radius-lg); max-width: 440px; width: 100%;
+      padding: 26px 24px; text-align: center; box-shadow: 0 18px 50px rgba(38,80,92,0.3);
+    }
+    .start-card img { width: 110px; }
+    .start-card h1 { font-size: clamp(20px, 5vw, 26px); font-weight: 900; margin: 8px 0 6px; }
+    .start-card p { font-size: clamp(15px, 3.6vw, 17px); color: var(--text-soft); margin: 0 0 18px; line-height: 1.6; }
+    .start-card .start-beads { display: flex; justify-content: center; gap: 5px; margin: 0 0 16px; }
+    .start-card .start-beads span { width: 16px; height: 16px; border-radius: 50%; }
+    .start-card button {
+      min-height: 60px; width: 100%; border: none; border-radius: var(--radius-pill);
+      background: var(--water-secondary); color: #fff; cursor: pointer;
+      font-family: inherit; font-size: 22px; font-weight: 900;
+      box-shadow: 0 8px 22px rgba(115,217,209,0.55);
+    }
+    .start-card button:active { transform: scale(0.97); }
+
+    /* מסך סיום */
+    .finish { text-align: center; padding: 30px 10px; }
+    .finish img { width: 140px; animation: finishBob 1.6s ease-in-out infinite; }
+    @keyframes finishBob { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+    .finish h2 { font-size: clamp(24px, 6vw, 32px); font-weight: 900; margin: 10px 0 4px; }
+    .finish p { font-size: 16px; color: var(--text-soft); margin: 0 0 20px; }
+    .finish .btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .finish button, .finish a {
+      min-height: 56px; padding: 0 26px; border: none; border-radius: var(--radius-pill);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: inherit; font-size: 18px; font-weight: 800; cursor: pointer;
+      text-decoration: none;
+    }
+    .finish .again { background: var(--water-secondary); color: #fff; box-shadow: 0 8px 22px rgba(115,217,209,0.55); }
+    .finish .home { background: rgba(255,255,255,0.9); color: var(--text-main); box-shadow: 0 4px 14px rgba(38,80,92,0.15); }
+
+    .empty-note {
+      max-width: 480px; margin: 40px auto; text-align: center;
+      background: rgba(255,255,255,0.92); border-radius: var(--radius-lg);
+      padding: 24px; font-size: 16px; font-weight: 700; color: var(--text-soft);
+    }
+    @media (max-width: 560px) {
+      .noni-row { min-height: 56px; }
+      .noni-row img { width: 58px; }  /* פורטרט: מפנים מקום לנוני ליד הבועה */
+    }
+  </style>
+</head>
+<body>
+  <img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true"
+       onerror="this.style.display='none'">
+
+  <div class="top-bar">
+    <a class="back" href="#" id="backBtn" aria-label="חזרה">→</a>
+    <span class="title">שַׁרְשֶׁרֶת הַחֲרוּזִים</span>
+    <span class="counter" id="counter">—</span>
+  </div>
+
+  <main>
+    <div class="beads" id="beads" aria-hidden="true"></div>
+    <div class="noni-row" id="noniRow" hidden>
+      <img id="noniImg" src="assets/noni-idle.png" alt="נוני" onerror="this.style.display='none'">
+      <div class="bubble">
+        <span id="promptText" lang="he"></span>
+        <button class="say" id="sayBtn" aria-label="הַקְשִׁיבוּ שׁוּב לַמִּלָּה">🔊</button>
+      </div>
+    </div>
+    <div id="mountRoot"></div>
+  </main>
+
+  <div class="start-veil" id="startVeil" hidden>
+    <div class="start-card">
+      <img src="assets/noni-surprised.png" alt="נוני" onerror="this.src='assets/noni-idle.png'">
+      <h1>שַׁרְשֶׁרֶת הַחֲרוּזִים</h1>
+      <p>הַשַּׁרְשֶׁרֶת שֶׁל נוּנִי נִקְרְעָה וְכָל הַחֲרוּזִים הִתְפַּזְּרוּ!<br>
+         מִצְאוּ אֶת הַמִּלָּה שֶׁמִּתְחָרֶזֶת — וְכָל חָרוּז יַחְזֹר לַשַּׁרְשֶׁרֶת.</p>
+      <div class="start-beads" aria-hidden="true">
+        <span style="background:var(--coral)"></span><span style="background:var(--mint)"></span>
+        <span style="background:var(--lavender)"></span><span style="background:var(--hint)"></span>
+        <span style="background:var(--shell-pink)"></span>
+      </div>
+      <button id="startBtn">מַתְחִילִים!</button>
+    </div>
+  </div>
+
+  <!-- shared engine -->
+  <script src="js/state.js?v=2026-07-04"></script>
+  <script src="js/shared/audio.js?v=2026-07-04"></script>
+  <script src="js/shared/noni.js?v=2026-07-04"></script>
+  <script src="js/shared/vowel-adapter.js?v=2026-07-04"></script>
+  <script src="js/shared/epa.js?v=2026-07-04"></script>
+  <script src="js/shared/bkt.js?v=2026-07-04"></script>
+  <script src="js/shared/event-logger.js?v=2026-07-04"></script>
+  <script src="js/templates/mechanic-mcq.js?v=2026-07-04"></script>
+
+  <script>
+  (function () {
+    'use strict';
+
+    var params = new URLSearchParams(location.search);
+    // characteristic_id → EPA unitKey. ברירת מחדל: "בוחר.ת מילה מתחרזת" (פברואר);
+    // ימי אפריל מחווטים עם ?cid=apr-w1-d4-c1 (זיהוי חרוז שמיעתי — אוצר).
+    var CID = params.get('cid') || null;
+    var ISLAND_PA = 1;   // אי 1 — מודעות פונולוגית (P2 rhyme-awareness)
+
+    var $ = function (id) { return document.getElementById(id); };
+    var root = $('mountRoot');
+    var current = null;
+    var rounds = [];
+    var idx = 0;
+    var defaultCid = 'feb-w4-d1-c2';
+
+    $('backBtn').addEventListener('click', function (e) {
+      e.preventDefault();
+      if (history.length > 1) history.back(); else location.href = 'student-picker.html';
+    });
+
+    function shuffle(arr) {
+      var a = arr.slice();
+      for (var i = a.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = a[i]; a[i] = a[j]; a[j] = t;
+      }
+      return a;
+    }
+
+    function renderBeads() {
+      var el = $('beads');
+      el.innerHTML = '';
+      rounds.forEach(function (_, i) {
+        var b = document.createElement('span');
+        b.className = 'bead' + (i < idx ? ' filled c' + (i % 8) : '');
+        el.appendChild(b);
+      });
+    }
+
+    // round (מ-rhyme-rounds.json) → config של mechanic-mcq
+    function toConfig(round) {
+      return {
+        mechanic: 'mcq',
+        interaction: 'pick_rhyming_word',
+        questId: round.id, item_id: round.id,
+        characteristic_id: CID || defaultCid,
+        primary_island_id: ISLAND_PA,
+        secondary_island_ids: [],
+        theme: ['shells', 'fish', 'bubbles'][idx % 3],
+        promptLine: 'אֵיזוֹ מִלָּה מִתְחָרֶזֶת?',
+        // המילה מוצגת מנוקדת + מושמעת אוטומטית (stem.audio_key)
+        stem: { mode: 'text', text_he: round.target.word, audio_key: round.target.audio_key },
+        // אפשרויות = רמקולים זהים-מראה (two-tap מובנה ב-mcq): חריזה נבחנת באוזן
+        options: round.options.map(function (o) {
+          return {
+            label_he: o.word, mode: 'audio', audio_key: o.audio_key,
+            is_correct: !!o.is_correct, epa: o.epa || null,
+          };
+        }),
+      };
+    }
+
+    function showFinish() {
+      $('noniRow').hidden = true;
+      $('counter').textContent = rounds.length + ' / ' + rounds.length;
+      root.innerHTML =
+        '<div class="finish">' +
+        '<img src="assets/noni-kiss.png" alt="נוני שמחה" onerror="this.src=\'assets/noni-happy.png\'">' +
+        '<h2>הַשַּׁרְשֶׁרֶת שְׁלֵמָה! 🎉</h2>' +
+        '<p>כָּל הַחֲרוּזִים חָזְרוּ לַשַּׁרְשֶׁרֶת שֶׁל נוּנִי. כָּל הַכָּבוֹד!</p>' +
+        '<div class="btns">' +
+        '<button class="again" id="againBtn">עוֹד פַּעַם</button>' +
+        '<a class="home" href="student-picker.html">לַמָּסָךְ הָרָאשִׁי</a>' +
+        '</div></div>';
+      $('againBtn').addEventListener('click', function () { location.reload(); });
+      try { window.AvneiAudio.play('all-done'); } catch (e) {}
+    }
+
+    function mountNext() {
+      if (current && current.unmount) { try { current.unmount(); } catch (e) {} }
+      current = null;
+      renderBeads();
+      if (idx >= rounds.length) { showFinish(); return; }
+
+      var round = rounds[idx];
+      var cfg = toConfig(round);
+      $('counter').textContent = (idx + 1) + ' / ' + rounds.length;
+      $('noniRow').hidden = false;
+      $('promptText').textContent = cfg.promptLine;
+      $('sayBtn').onclick = function () { try { window.AvneiAudio.play(round.target.audio_key); } catch (e) {} };
+
+      cfg.onComplete = function () {
+        idx++;
+        renderBeads();
+        var beads = document.querySelectorAll('.bead');
+        var b = beads[idx - 1];
+        if (b) { b.classList.add('just-added'); setTimeout(function () { b.classList.remove('just-added'); }, 700); }
+        setTimeout(mountNext, 300);
+      };
+
+      current = window.AvneiMechanics['mcq'].mount(root, cfg);
+    }
+
+    // אינטרו: נוני מספרת את הסיפור (rhyme-intro.mp3) → הסבב הראשון עולה בסופו.
+    // fallback: אם האודיו חסר/נכשל — מתחילים אחרי רגע קצר. ?skipintro=1 מדלג (בדיקות/דמו).
+    function playIntroThenStart() {
+      if (params.get('skipintro')) { mountNext(); return; }
+      var started = false;
+      function begin() {
+        if (started) return;
+        started = true;
+        mountNext();
+      }
+      $('promptText').textContent = 'מִלִּים שֶׁמִּתְחָרְזוֹת נִשְׁמָעוֹת אוֹתוֹ דָּבָר בַּסּוֹף — כְּמוֹ דָּג וְגַג!';
+      $('noniRow').hidden = false;
+      $('sayBtn').onclick = function () { try { window.AvneiAudio.play('rhyme-intro'); } catch (e) {} };
+      try {
+        var a = window.AvneiAudio.preload('rhyme-intro');
+        a.onended = begin;
+        a.onerror = function () { setTimeout(begin, 600); };
+        window.AvneiAudio.play('rhyme-intro');
+        setTimeout(begin, 16000);   // רשת-ביטחון — לא נתקעים על אודיו
+      } catch (e) { begin(); }
+    }
+
+    function boot() {
+      fetch('data/rhyme-rounds.json', { cache: 'no-cache' })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          defaultCid = data.default_characteristic_id || defaultCid;
+          rounds = shuffle(data.rounds || []);
+          if (!rounds.length) {
+            root.innerHTML = '<div class="empty-note">אֵין כָּרֶגַע סְבָבִים בַּמִּשְׂחָק.</div>';
+            return;
+          }
+          renderBeads();
+          $('startVeil').hidden = false;
+          $('startBtn').addEventListener('click', function () {
+            try { if (window.AvneiAudio.unlock) window.AvneiAudio.unlock(); } catch (e) {}
+            $('startVeil').hidden = true;
+            idx = 0;
+            playIntroThenStart();
+          });
+        })
+        .catch(function (err) {
+          console.error('[stage-rhyme] load failed', err);
+          root.innerHTML = '<div class="empty-note">מַשֶּׁהוּ הִשְׁתַּבֵּשׁ בִּטְעִינַת הַמִּשְׂחָק.</div>';
+        });
+    }
+
+    boot();
+  })();
+  </script>
+</body>
+</html>
