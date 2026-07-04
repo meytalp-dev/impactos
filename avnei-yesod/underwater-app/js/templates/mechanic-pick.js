@@ -8,7 +8,7 @@
 //   - השמיע ההוראה במשחק עוברת מ-playLetterSound ל-inGamePromptAudioKey
 //     (find-<letter-key>.mp3 — אותו דפוס כמו tap-all)
 //   - תשובה נכונה: צליל-אות → 220ms → שבח רנדומלי מתוך
-//     praise-yofi/metzuyan/mealeh (pick-without-replacement)
+//     praise-metzuyan/mealeh (pick-without-replacement; יופי הוסר 4.7.2026)
 //   - cancelPendingPraise למניעת overlap בהקשות מהירות
 //
 // תאימות אחור: stage-3-rescue.html (משחקון אמנותי לאות ק) משתמש בקוד
@@ -28,7 +28,7 @@ window.AvneiMechanics['pick'] = (function () {
   // → שבח רנדומלי (יופי 600ms / מצוין 800ms / מעולה ~1100ms) → buffer.
   // היה 2400ms וגרם ל-cutoff של "מעולה" (F1.3 fix · 27.5).
   const INTER_ROUND_DELAY_MS = 2800;
-  const PRAISE_POOL = ['praise-yofi', 'praise-metzuyan', 'praise-mealeh'];
+  const PRAISE_POOL = ['praise-metzuyan', 'praise-mealeh']; // יופי הוסר — הגייה לא טובה ב-eleven_v3 (מיטל 4.7.2026)
 
   function shuffle(arr) {
     const a = arr.slice();

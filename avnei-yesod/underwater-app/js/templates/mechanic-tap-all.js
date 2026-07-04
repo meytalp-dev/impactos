@@ -21,7 +21,7 @@ window.AvneiMechanics['tap-all'] = (function () {
 
   // משוב מגוון — מחליף את great.mp3 הישן (שכלל "כָּל הכבוד" עם קמץ-קטן
   // שש-AvriNeural קורא "kal"). מיטל אישרה 27.5: יופי/מצוין/מעולה ברנדום.
-  const PRAISE_POOL = ['praise-yofi', 'praise-metzuyan', 'praise-mealeh'];
+  const PRAISE_POOL = ['praise-metzuyan', 'praise-mealeh']; // יופי הוסר — הגייה לא טובה ב-eleven_v3 (מיטל 4.7.2026)
 
   function pickRandom(arr) {
     return arr[Math.floor(Math.random() * arr.length)];

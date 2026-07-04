@@ -24,7 +24,7 @@ window.AvneiMechanics = window.AvneiMechanics || {};
 
 window.AvneiMechanics['sort-by-letter'] = (function () {
 
-  const PRAISE_POOL = ['praise-yofi', 'praise-metzuyan', 'praise-mealeh'];
+  const PRAISE_POOL = ['praise-metzuyan', 'praise-mealeh']; // יופי הוסר — הגייה לא טובה ב-eleven_v3 (מיטל 4.7.2026)
 
   function shuffle(arr) {
     const a = arr.slice();

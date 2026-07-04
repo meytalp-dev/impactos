@@ -27,7 +27,7 @@ window.AvneiMechanics = window.AvneiMechanics || {};
 window.AvneiMechanics['memory-pair'] = (function () {
 
   const FLIP_BACK_DELAY_MS = 1100; // זמן הקלף השני להישאר חשוף לפני שחוזר הפוך
-  const PRAISE_POOL = ['praise-yofi', 'praise-metzuyan', 'praise-mealeh'];
+  const PRAISE_POOL = ['praise-metzuyan', 'praise-mealeh']; // יופי הוסר — הגייה לא טובה ב-eleven_v3 (מיטל 4.7.2026)
 
   function shuffle(arr) {
     const a = arr.slice();

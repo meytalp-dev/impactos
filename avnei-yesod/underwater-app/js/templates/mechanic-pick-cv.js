@@ -38,7 +38,7 @@ window.AvneiMechanics = window.AvneiMechanics || {};
 window.AvneiMechanics['pick-cv'] = (function () {
 
   const INTER_ROUND_DELAY_MS = 2800;
-  const PRAISE_POOL = ['praise-yofi', 'praise-metzuyan', 'praise-mealeh'];
+  const PRAISE_POOL = ['praise-metzuyan', 'praise-mealeh']; // יופי הוסר — הגייה לא טובה ב-eleven_v3 (מיטל 4.7.2026)
 
   function shuffle(arr) {
     const a = arr.slice();

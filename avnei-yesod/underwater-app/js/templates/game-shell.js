@@ -37,7 +37,7 @@ window.AvneiGameShell = (function () {
   ];
 
   // משוב מגוון — מחליף את great.mp3 הישן (kal hakavod). מיטל 27.5.
-  const PRAISE_POOL = ['praise-yofi', 'praise-metzuyan', 'praise-mealeh'];
+  const PRAISE_POOL = ['praise-metzuyan', 'praise-mealeh']; // יופי הוסר — הגייה לא טובה ב-eleven_v3 (מיטל 4.7.2026)
   function pickRandomPraise() {
     return PRAISE_POOL[Math.floor(Math.random() * PRAISE_POOL.length)];
   }
@@ -233,7 +233,7 @@ window.AvneiGameShell = (function () {
       (config.introAudioKeys || []).forEach(k => { if (k) AvneiAudio.preload(k); });
       if (config.inGamePromptAudioKey) AvneiAudio.preload(config.inGamePromptAudioKey);
       if (config.finale && config.finale.audioKey) AvneiAudio.preload(config.finale.audioKey);
-      ['praise-yofi', 'praise-metzuyan', 'praise-mealeh'].forEach(k => AvneiAudio.preload(k));
+      ['praise-metzuyan', 'praise-mealeh'].forEach(k => AvneiAudio.preload(k));
       const soundFile = (AvneiAudio.LETTER_TO_SOUND_FILE || {})[config.letter];
       if (soundFile) AvneiAudio.preload(soundFile);
       // D.15 v2 — preload של word-X.mp3 לאנימציה האסוציאטיבית פר אות

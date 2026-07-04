@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
-אי ת (תיבת האוצר) — הפקת האודיו החדש היחיד הנדרש: intro-tav-treasure.mp3.
+אי ת (תיבת האוצר) — הפקת האודיו הייעודי: intro-tav-treasure + finale-tav-treasure.
 
-שאר האודיו של האי כבר קיים ומאומת מול טקסט-המקור:
-  find-tav.mp3               "מִצְאוּ אֶת הָאוֹת תָּו"      (generate-letter-shape-prompts.py)
-  finale-found-treasure.mp3  "מְצָאתֶם אֶת הָאוֹצָר!..."    (תואם נושא התיבה)
-  cv-tav-<vowel>.mp3         כל 7 התנועות                  (generate-island-04-cv-audio.py)
-  praise-* / press-here      משותפים לכל האיים
+שאר האודיו של האי כבר קיים ומאומת מול טקסט-המקור (כולו קול נוני ממיגרציית 29.6):
+  find-tav.mp3        "מִצְאוּ אֶת הָאוֹת תָּו"   (generate-letter-shape-prompts.py)
+  cv-tav-<vowel>.mp3  כל 7 התנועות               (generate-island-04-cv-audio.py)
+  praise-* / press-here — משותפים לכל האיים
+הערה: finale-found-treasure הישן (23.5) לא בשימוש כאן — קול AvriNeural ישן
+(שני קולות באי) + "יוֹפִי גָּדוֹל" שהגייתו לא טובה. הוחלף ב-finale-tav-treasure.
 
 קול: ElevenLabs eleven_v3, voice נוני (ZI6I4a3UGgs1DXxqWjBV) דרך שכבת
 התאימות _eleven_tts. בטקסט ל-TTS: נוּנִי בשורוק (reference-noni-voice-elevenlabs);
@@ -39,6 +40,12 @@ ITEMS = [
         "עַל הַתֵּבָה חֲמִשָּׁה מַנְעוּלִים. "
         "הַקְשִׁיבוּ לַצְּלִיל, גְּעוּ בְּאֶבֶן הַחֵן הַנְּכוֹנָה — וְכֹל מַנְעוּל יִפָּתַח. "
         "בּוֹאוּ נִפְתַּח אֶת הַתֵּבָה!"
+    ),
+    # פינאלה ייעודית — מחליפה את finale-found-treasure (23.5, קול AvriNeural ישן
+    # + "יוֹפִי גָּדוֹל"). בלי "יוֹפִי" — הגייה לא טובה ב-eleven_v3 (מיטל 4.7.2026).
+    (
+        "finale-tav-treasure",
+        "מְצָאתֶם אֶת הָאוֹצָר! כֹּל הַמַּנְעוּלִים נִפְתְּחוּ. אֵיזֶה אוֹצָר נוֹצֵץ!"
     ),
 ]
 
