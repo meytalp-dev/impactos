@@ -212,6 +212,15 @@ window.AvneiMechanics['scene-search'] = (function () {
         img.src = VOCAB_BASE + file;
         img.alt = it.word;
         img.draggable = false;
+        // קובץ חסר בדיסק (למרות ה-manifest) → מציגים את המילה במקום <img>
+        // שבור, כדי שיעד לא ייעלם והסבב יישאר עביר.
+        img.onerror = () => {
+          const fspan = document.createElement('span');
+          fspan.lang = 'he';
+          fspan.textContent = it.word;
+          fspan.style.cssText = 'font-weight:800;font-size:clamp(16px,3vw,24px);color:#1F4651;';
+          btn.replaceChild(fspan, img);
+        };
         btn.appendChild(img);
         btn.addEventListener('click', () => handleSearchTap(btn, it));
         scene.appendChild(btn);

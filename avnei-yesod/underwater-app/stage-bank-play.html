@@ -409,6 +409,12 @@
           if (cfg) queue.push(cfg); else skipped++;
         });
         if (skipped) console.warn('[bank-play] דולגו ' + skipped + ' שאלות ללא נכסי אודיו/תמונה');
+        // חימום cache — טוענים את תמונות התור ברקע פעם אחת (בלי הבזק-ריק בין סבבים)
+        queue.forEach(function (cfg) {
+          [cfg.stem].concat(cfg.options || cfg.items || []).forEach(function (o) {
+            if (o && o.image_src) { (new Image()).src = o.image_src; }
+          });
+        });
         if (!queue.length) {
           root.innerHTML = '<div class="empty-note">אֵין כָּרֶגַע שְׁאֵלוֹת מוּכָנוֹת לַנּוֹשֵׂא הַזֶּה.</div>';
           return;

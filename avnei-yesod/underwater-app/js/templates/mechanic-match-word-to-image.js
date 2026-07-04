@@ -67,11 +67,15 @@
     const prompt = document.createElement('div');
     prompt.className = 'match-image-prompt';
     if (direction === 'image_to_word') {
-      const img = document.createElement('img');
-      img.className = 'match-image-stem-img';
-      img.src = stem.image_src || stem.anchor_image || '';
-      img.alt = stem.image_alt || stem.text_he || '';
-      prompt.appendChild(img);
+      const stemSrc = stem.image_src || stem.anchor_image || '';
+      if (stemSrc) {                 // src ריק → בלי <img> שבור
+        const img = document.createElement('img');
+        img.className = 'match-image-stem-img';
+        img.src = stemSrc;
+        img.alt = stem.image_alt || stem.text_he || '';
+        img.onerror = function () { img.style.display = 'none'; };
+        prompt.appendChild(img);
+      }
     } else {
       const label = document.createElement('span');
       label.className = 'match-image-label';
@@ -153,12 +157,19 @@
       tile.dataset.correct = opt.is_correct ? '1' : '0';
       const optMode = opt.mode || (direction === 'image_to_word' ? 'text' : 'image');
       if (optMode === 'image' && (opt.image_src || opt.anchor_image)) {
+        const imgAlt = opt.image_alt || opt.label_he || '';
         const img = document.createElement('img');
         img.src = opt.image_src || opt.anchor_image;
-        img.alt = opt.image_alt || opt.label_he || '';
+        img.alt = imgAlt;
         img.className = 'match-image-img';
+        // 404 → נפילה חיננית לגלוס טקסטואלי במקום <img> שבור
+        img.onerror = function () {
+          const fspan = document.createElement('span');
+          fspan.className = 'match-image-gloss'; fspan.lang = 'he'; fspan.textContent = imgAlt;
+          tile.innerHTML = ''; tile.appendChild(fspan);
+        };
         tile.appendChild(img);
-        tile.setAttribute('aria-label', img.alt || 'תְּמוּנָה');
+        tile.setAttribute('aria-label', imgAlt || 'תְּמוּנָה');
       } else {
         const span = document.createElement('span');
         span.className = (optMode === 'text') ? 'match-image-word-opt' : 'match-image-gloss';
@@ -240,6 +251,13 @@
         img.src = w.anchor_image;
         img.alt = w.meaning_he || '';
         img.className = 'match-image-img';
+        // 404 → נפילה חיננית לגלוס טקסטואלי במקום <img> שבור
+        img.onerror = function () {
+          const fspan = document.createElement('span');
+          fspan.className = 'match-image-gloss'; fspan.lang = 'he';
+          fspan.textContent = w.meaning_he || w.text;
+          tile.innerHTML = ''; tile.appendChild(fspan);
+        };
         tile.appendChild(img);
       } else {
         const span = document.createElement('span');

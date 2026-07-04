@@ -139,11 +139,14 @@
     } else if (stem.mode === 'image') {
       var card = document.createElement('div');
       card.className = 'mcq-stem-card mcq-stem-card--image';
-      var img = document.createElement('img');
-      img.className = 'mcq-stem-img';
-      img.src = stem.image_src || '';
-      img.alt = stem.image_alt || '';
-      card.appendChild(img);
+      if (stem.image_src) {           // src ריק → בלי <img> שבור; הכיתוב עדיין מוצג
+        var img = document.createElement('img');
+        img.className = 'mcq-stem-img';
+        img.src = stem.image_src;
+        img.alt = stem.image_alt || '';
+        img.onerror = function () { img.style.display = 'none'; };
+        card.appendChild(img);
+      }
       if (stem.text_he) {
         var cap = document.createElement('div');
         cap.className = 'mcq-stem-caption';
@@ -242,12 +245,26 @@
       tile.dataset.correct = opt.is_correct ? '1' : '0';
 
       if (opt.mode === 'image') {
-        var oimg = document.createElement('img');
-        oimg.className = 'mcq-option__img';
-        oimg.src = opt.image_src || '';
-        oimg.alt = opt.image_alt || optionLabel(opt) || '';
-        tile.appendChild(oimg);
-        tile.setAttribute('aria-label', oimg.alt || 'תְּמוּנָה');
+        var imgAlt = opt.image_alt || optionLabel(opt) || '';
+        // src ריק / 404 → נפילה חיננית לתווית טקסט במקום <img> שבור
+        var imgFallback = function () {
+          var fspan = document.createElement('span');
+          fspan.className = 'mcq-option__label'; fspan.lang = 'he';
+          fspan.textContent = imgAlt;
+          tile.innerHTML = '';
+          tile.appendChild(fspan);
+        };
+        if (opt.image_src) {
+          var oimg = document.createElement('img');
+          oimg.className = 'mcq-option__img';
+          oimg.src = opt.image_src;
+          oimg.alt = imgAlt;
+          oimg.onerror = imgFallback;
+          tile.appendChild(oimg);
+        } else {
+          imgFallback();
+        }
+        tile.setAttribute('aria-label', imgAlt || 'תְּמוּנָה');
       } else if (opt.mode === 'audio') {
         var spk = document.createElement('span');
         spk.className = 'mcq-option__spk'; spk.setAttribute('aria-hidden', 'true');

@@ -97,11 +97,17 @@
       }
     });
     // כיוון image_to_word: ה-stem הוא תמונת התשובה הנכונה.
-    if (q.stem && q.stem.mode === 'image' && !q.stem.image_src && Array.isArray(q.options)) {
+    // הבנק מסמן stem-תמונה ב-stem_mode:'image' (top-level) — אובייקט q.stem
+    // קיים רק כשה-src הוזרק ידנית; יוצרים אותו כאן כשיש רשומת manifest.
+    var stemIsImage = (q.stem && q.stem.mode === 'image') || q.stem_mode === 'image';
+    if (stemIsImage && !(q.stem && q.stem.image_src) && Array.isArray(q.options)) {
       var correctIdx = q.options.findIndex(function (o) { return o && o.is_correct; });
       if (correctIdx >= 0) {
         var s = srcFor(q.q_id, correctIdx);
-        if (s) q.stem.image_src = s;
+        if (s) {
+          if (!q.stem) q.stem = { mode: 'image' };
+          q.stem.image_src = s;
+        }
       }
     }
     return q;

@@ -70,9 +70,22 @@
     tile.type = 'button';
     tile.className = 'mp-tile mp-tile--' + (side.mode || 'text');
     if (side.mode === 'image') {
-      var img = document.createElement('img'); img.className = 'mp-tile__img';
-      img.src = side.image_src || ''; img.alt = side.image_alt || side.label_he || '';
-      tile.appendChild(img); tile.setAttribute('aria-label', img.alt || 'תְּמוּנָה');
+      var imgAlt = side.image_alt || side.label_he || '';
+      // src ריק / 404 → נפילה חיננית לתווית טקסט במקום <img> שבור (כמו mechanic-mcq)
+      var imgFallback = function () {
+        var fspan = document.createElement('span');
+        fspan.className = 'mp-tile__label'; fspan.lang = 'he'; fspan.textContent = imgAlt;
+        tile.innerHTML = ''; tile.appendChild(fspan);
+      };
+      if (side.image_src) {
+        var img = document.createElement('img'); img.className = 'mp-tile__img';
+        img.src = side.image_src; img.alt = imgAlt;
+        img.onerror = imgFallback;
+        tile.appendChild(img);
+      } else {
+        imgFallback();
+      }
+      tile.setAttribute('aria-label', imgAlt || 'תְּמוּנָה');
     } else if (side.mode === 'audio') {
       var spk = document.createElement('span'); spk.className = 'mp-tile__spk'; spk.setAttribute('aria-hidden', 'true'); spk.textContent = '🔊';
       tile.appendChild(spk); tile.setAttribute('aria-label', 'הַאֲזָנָה');
