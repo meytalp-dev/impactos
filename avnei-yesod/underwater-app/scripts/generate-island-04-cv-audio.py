@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-generate-island-04-cv-audio.py — מפיק MP3 ל-154 CV pairs (22 × 7 vowels)
+generate-island-04-cv-audio.py — מפיק MP3 ל-198 CV pairs (22 × 9 vowels)
 לאי 4 — אות-ניקוד-צליל.
 
 סוכן 29 · 29.5.2026 ערב — מטמיע אחרי שמיטל אישרה לעבור מ-Web Speech ל-AvriNeural
@@ -19,8 +19,8 @@ generate-island-04-cv-audio.py — מפיק MP3 ל-154 CV pairs (22 × 7 vowels)
 
 דורש: pip install edge-tts
 הרצה:
-  python scripts/generate-island-04-cv-audio.py            # כל 154
-  python scripts/generate-island-04-cv-audio.py --letter מ  # אות אחת (7 קבצים)
+  python scripts/generate-island-04-cv-audio.py            # כל 198
+  python scripts/generate-island-04-cv-audio.py --letter מ  # אות אחת (9 קבצים)
   python scripts/generate-island-04-cv-audio.py --force     # דריסה מלאה
 """
 import argparse
@@ -46,7 +46,7 @@ LETTER_KEY = {
     'ש': 'shin',  'ת': 'tav',
 }
 
-# 7 ה-vowels — תואם vowel-adapter.VOWELS
+# 9 ה-vowels — תואם vowel-adapter.VOWELS (קובוץ+שורוק נוספו 4.7.2026 — שבוע אוּ)
 VOWELS = [
     {'id': 'kamatz', 'symbol': 'ָ'},   # ָ
     {'id': 'patach', 'symbol': 'ַ'},   # ַ
@@ -55,6 +55,8 @@ VOWELS = [
     {'id': 'holam',  'symbol': 'ֹ'},   # ֹ
     {'id': 'tzere',  'symbol': 'ֵ'},   # ֵ
     {'id': 'segol',  'symbol': 'ֶ'},   # ֶ
+    {'id': 'kubutz', 'symbol': 'ֻ'},   # ֻ
+    {'id': 'shuruk', 'symbol': 'וּ'},  # וּ — אות ו + דגש, לא combining mark
 ]
 
 # טקסט שיוקרא ע"י AvriNeural — CV כ-string (אות + ניקוד + דגש אם רלוונטי).
@@ -63,8 +65,14 @@ VOWELS = [
 BKP_LETTERS = {'ב', 'כ', 'פ'}
 DAGESH = 'ּ'   # HEBREW POINT DAGESH OR MAPIQ
 
-def cv_text(letter: str, vowel_symbol: str) -> str:
-    """letter + vowel + dagesh (אם ב/כ/פ). סדר Unicode 5d1 5b7 5bc תואם vowel-adapter."""
+def cv_text(letter: str, vowel_id: str, vowel_symbol: str) -> str:
+    """letter + vowel + dagesh (אם ב/כ/פ). סדר Unicode 5d1 5b7 5bc תואם vowel-adapter.
+
+    שורוק יוצא דופן: וּ = אות ו + דגש (לא combining mark), והדגש הקל של ב/כ/פ
+    יושב על העיצור *לפני* ה-ו: בּוּ = 5d1 5bc 5d5 5bc. תואם buildCV ב-vowel-adapter.
+    """
+    if vowel_id == 'shuruk':
+        return (letter + DAGESH if letter in BKP_LETTERS else letter) + vowel_symbol
     if letter in BKP_LETTERS:
         return letter + vowel_symbol + DAGESH
     return letter + vowel_symbol
@@ -96,7 +104,7 @@ async def gen_one(text: str, filename: str, force: bool, retries: int = 3) -> st
 async def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--letter', help='הגבל לאות אחת (תו עברי בודד, למשל: מ)')
-    ap.add_argument('--vowel', help='הגבל ל-vowel id אחד (kamatz/patach/.../segol)')
+    ap.add_argument('--vowel', help='הגבל ל-vowel id אחד (kamatz/patach/.../shuruk)')
     ap.add_argument('--force', action='store_true', help='דרוס קבצים קיימים')
     args = ap.parse_args()
 
@@ -116,7 +124,7 @@ async def main():
     for letter in letters:
         key = LETTER_KEY[letter]
         for v in vowels:
-            text = cv_text(letter, v['symbol'])
+            text = cv_text(letter, v['id'], v['symbol'])
             filename = f"cv-{key}-{v['id']}"
             jobs.append((text, filename))
 

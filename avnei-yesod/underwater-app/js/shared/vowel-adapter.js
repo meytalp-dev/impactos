@@ -15,9 +15,10 @@
 //   • getTopWeakCVs עדיין נגזר מ-getWeakestLetters (פאזה 1). שדרוג לקריאת pKnown
 //     אמיתי פר-צירוף (bkt.getWeakestCVs) = פאזה 2 נפרדת, לא בוצע עדיין.
 //
-// 7 ה-vowels (פר רצף מטח · vocab-bank.complete_niqqud_sequence):
-//   קמץ · פתח · שווא · חיריק · חולם · צירי · סגול
+// 9 ה-vowels (פר רצף מטח · vocab-bank.complete_niqqud_sequence):
+//   קמץ · פתח · שווא · חיריק · חולם · צירי · סגול · קובוץ · שורוק
 //   (vowels של MOY task_5 — קריאת 45 צירופים מנוקדים)
+//   קובוץ+שורוק נוספו 4.7.2026 — שבוע אוּ בתוכנית השנתית (אפריל).
 //
 // schema localStorage:
 //   avnei-teacher-vowel-targets-v1 / avnei-teacher-vowel-freeze-v1 —
@@ -32,7 +33,7 @@
 //   buildCV(letter, vowelId)             → string CV (e.g., "מַ")
 //   parseCV(cvKey)                       → { letter, vowelId } | null
 //   cvKey(letter, vowelId)               → canonical "letter:vowelId"
-//   getAllCVPairs(opts?)                 → 154 entries (or filtered)
+//   getAllCVPairs(opts?)                 → 198 entries (22×9, or filtered)
 //
 //   // Anchor words (lookup ב-vocab-bank; ב-MVP — manual seeds)
 //   getAnchorWord(letter, vowelId)       → string | null
@@ -60,18 +61,19 @@
   'use strict';
 
   // --------------------------------------------------------------------------
-  // 7 ה-Vowels
+  // 9 ה-Vowels
   //
   // הערה על Unicode:
   //   ניקוד הוא combining marks שמופיעים _אחרי_ האות (visual under/around).
-  //   חולם החסר (U+05B9) ושורוק עם וי"ו (חולם מלא U+05B9 עם ו) — ב-MVP אנו
-  //   משתמשים בצורת ה-CHASER (combining ABOVE) שעובדת על כל אות.
+  //   חולם — צורת ה-CHASER (combining ABOVE, U+05B9) שעובדת על כל אות.
+  //   שורוק — יוצא דופן: לא combining mark אלא האות ו + דגש (U+05D5 U+05BC).
+  //   buildCV מטפל בו במיוחד (הדגש הקל של ב/כ/פ יושב על העיצור, לפני ה-ו).
   // --------------------------------------------------------------------------
   // phoneme_group — קבוצת צליל (חשוב פדגוגית!).
   // מטח מלמדים vowels באותה קבוצת צליל ביחד כיחידה אחת:
   //   /a/ = קמץ + פתח (חוברת 2 שיעורים 1-9)
   //   /e/ = צירי + סגול (חוברת 4 שיעורים 7-12)
-  //   /u/ = קובוץ + שורוק (חוברת 5 — post-MVP)
+  //   /u/ = קובוץ + שורוק (חוברת 5 · שבוע אוּ באפריל — נוסף 4.7.2026)
   // מקור: vocab-bank.complete_niqqud_sequence + bootstrap "רצף ניקוד מומלץ".
   const VOWELS = Object.freeze([
     { id: 'kamatz',  displayHe: 'קמץ',  symbol: 'ָ', phoneme: '/a/', phoneme_group: 'a',    book: 2 },
@@ -81,6 +83,8 @@
     { id: 'holam',   displayHe: 'חולם', symbol: 'ֹ', phoneme: '/o/', phoneme_group: 'o',    book: 4 },
     { id: 'tzere',   displayHe: 'צירי', symbol: 'ֵ', phoneme: '/e/', phoneme_group: 'e',    book: 4 },
     { id: 'segol',   displayHe: 'סגול', symbol: 'ֶ', phoneme: '/e/', phoneme_group: 'e',    book: 4 },
+    { id: 'kubutz',  displayHe: 'קובוץ', symbol: 'ֻ', phoneme: '/u/', phoneme_group: 'u',    book: 5 },
+    { id: 'shuruk',  displayHe: 'שורוק', symbol: 'וּ', phoneme: '/u/', phoneme_group: 'u',    book: 5 },
   ]);
 
   // PHONEME_GROUP_HE — תיוג עברי לקבוצת הצליל (למסך מורה ולמסך תלמיד.ה).
@@ -89,6 +93,7 @@
     'e':    'צירי-סגול',
     'i':    'חיריק',
     'o':    'חולם',
+    'u':    'קובוץ-שורוק',
     'shwa': 'שווא',
   });
 
@@ -143,6 +148,8 @@
     'מ:holam':   null,         // ASK
     'מ:tzere':   null,         // ASK
     'מ:segol':   'מֶלֶךְ',     // king (סטנדרטי)
+    'מ:kubutz':  null,         // ASK — בתוכן יש רק מֻנָּח/מֻכָּרוֹת/מֻשָּׂג (לא לשון-ילדים)
+    'מ:shuruk':  'מוּל',       // facing (questions-grade1 — נפוץ; מוכר מדיבור: "מול הבית")
 
     // ב
     'ב:kamatz':  'בָּרָק',     // book_2_station_2
@@ -152,6 +159,8 @@
     'ב:holam':   null,         // ASK
     'ב:tzere':   'בֵּיצָה',    // egg (book_2_station_10 — "ביצה")
     'ב:segol':   null,         // ASK
+    'ב:kubutz':  'בֻּבָּה',    // doll (vocab-bank book_5 — "בֻּבָּה" correct word)
+    'ב:shuruk':  'בּוּעוֹת',   // bubbles (vocab-bank ב-words + mastery-criteria — תמטי לשונית!)
 
     // ר
     'ר:kamatz':  null,         // ASK
@@ -161,6 +170,8 @@
     'ר:holam':   null,         // ASK
     'ר:tzere':   null,         // ASK
     'ר:segol':   null,         // ASK
+    'ר:kubutz':  null,         // ASK — לא נמצאה מילת רֻ בתוכן הקיים
+    'ר:shuruk':  'רוּחַ',      // wind (vocab-bank + island-14 passages)
 
     // ק
     'ק:kamatz':  null,         // ASK
@@ -170,6 +181,8 @@
     'ק:holam':   null,         // ASK
     'ק:tzere':   null,         // ASK
     'ק:segol':   null,         // ASK
+    'ק:kubutz':  'קֻבִּיָּה',  // cube (vocab-bank other_words_seen + questions-grade1)
+    'ק:shuruk':  'קוּמְקוּם',  // kettle (vocab-bank shuruk_uu · initial)
 
     // ת
     'ת:kamatz':  'תָּמָר',     // name/fruit (book_2_station_2)
@@ -179,16 +192,20 @@
     'ת:holam':   null,         // ASK
     'ת:tzere':   null,         // ASK
     'ת:segol':   null,         // ASK
+    'ת:kubutz':  'תֻּכִּי',    // parrot (vocab-bank nouns_animals + questions-grade1)
+    'ת:shuruk':  'תּוּת',      // strawberry (vocab-bank nouns_food)
 
     // ל — אות הדמו (לא pilot letter). זרעים מגובים בקובצי אודיו word-* קיימים בלבד.
     // השאר null עד שמיטל תספק מ-vocab-bank (לא להמציא — reference: "vocab — לבקש").
     'ל:tzere':   'לֵב',        // heart — word-lev.mp3 קיים
-    'ל:holam':   'לוּל',       // coop — word-lamed-vav-lamed-lul.mp3 קיים
+    'ל:holam':   null,         // ASK — לוּל ישב כאן בטעות (הוא שורוק /lul/); הועבר ל-ל:shuruk 4.7.2026
     'ל:kamatz':  'לָקַח',      // took — word-lamed-qof-het-lakach.mp3 קיים
     'ל:patach':  null,         // ASK
     'ל:shva':    null,         // ASK
     'ל:hiriq':   null,         // ASK (מועמד: לִיצָן — לאמת אודיו)
     'ל:segol':   null,         // ASK
+    'ל:kubutz':  null,         // ASK — לא נמצאה מילת לֻ בתוכן הקיים
+    'ל:shuruk':  'לוּל',       // coop (vocab-bank + moy-items) — word-lamed-vav-lamed-lul.mp3 קיים
   });
 
   // --------------------------------------------------------------------------
@@ -287,6 +304,12 @@
     if (!letter || !ALL_HEBREW_LETTERS_22.includes(letter)) return '';
     const v = VOWELS_BY_ID[vowelId];
     if (!v) return '';
+    // שורוק = האות ו + דגש (וּ), לא combining mark. הדגש הקל של ב/כ/פ חייב
+    // לשבת על העיצור עצמו לפני ה-ו: בּוּ = ב+דגש+ו+דגש (5d1 5bc 5d5 5bc).
+    // הדפוס הרגיל (letter+symbol+DAGESH) היה שם דגש שני על ה-ו — שבור.
+    if (vowelId === 'shuruk') {
+      return (BKP_LETTERS.includes(letter) ? letter + DAGESH : letter) + v.symbol;
+    }
     // ב/כ/פ בתחילת CV → תמיד עם דגש קל (אחרת AvriNeural ו-קוראים מבטאים /v·x·f/).
     // Unicode order: letter + vowel + dagesh (5d1 5b7 5bc) — תואם input methods טיפוסיים
     // ולקריאת AvriNeural. החריג היחיד הוא שווא נח באמצע מילה — לא רלוונטי ב-CV pair בודד.
@@ -328,7 +351,7 @@
 
   // getAllCVPairs(opts):
   //   opts.letters  → רק אותיות אלה (default: כל 22)
-  //   opts.vowels   → רק vowels אלה (default: כל 7)
+  //   opts.vowels   → רק vowels אלה (default: כל 9)
   //   opts.books    → רק vowels של ספרי לימוד אלה (סבון מחושב מעל)
   // החזרה: array של { letter, vowelId, cv, key, anchor_word }.
   function getAllCVPairs(opts) {
@@ -412,11 +435,11 @@
   //
   // הלוגיקה:
   //   1. שאל את BKT מי האותיות החלשות (top N*2 לבחירה).
-  //   2. הכפל כל אות ב-vowels הפעילים (default: כל 7; אפשרי לסנן לפי books).
+  //   2. הכפל כל אות ב-vowels הפעילים (default: כל 9; אפשרי לסנן לפי books).
   //   3. חתוך ל-N תוצאות.
   //   4. סנן CV pairs שב-frozen.
   //
-  // ב-MVP, "vowels פעילים" = כל 7. בעתיד יקבל פאק חודשי (לדוגמה נובמבר=קמץ+פתח).
+  // ב-MVP, "vowels פעילים" = כל 9. בעתיד יקבל פאק חודשי (לדוגמה נובמבר=קמץ+פתח).
   // --------------------------------------------------------------------------
   function getTopWeakCVs(sid, n, opts) {
     const limit = (typeof n === 'number' && n > 0) ? n : 3;

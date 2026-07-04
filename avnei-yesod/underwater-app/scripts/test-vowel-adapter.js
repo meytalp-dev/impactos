@@ -5,9 +5,9 @@
 //
 // בודק:
 //   - API surface (constants + functions)
-//   - VOWELS (7 פריטים) + getVowelById
-//   - buildCV / parseCV / cvKey (round-trip)
-//   - getAllCVPairs (default 154, filtered by letters/vowels/books)
+//   - VOWELS (9 פריטים, כולל קובוץ+שורוק) + getVowelById
+//   - buildCV / parseCV / cvKey (round-trip, כולל שורוק=ו+דגש)
+//   - getAllCVPairs (default 198, filtered by letters/vowels/books)
 //   - getAnchorWord (seeded values + nulls)
 //   - getTopWeakCVs (derived from BKT.getWeakestLetters, frozen filter)
 //   - addTarget/removeTarget/getTargets (כולל auto-freeze on add)
@@ -95,15 +95,15 @@ header('1. API surface + constants');
 }
 
 // --------------------------------------------------------
-header('2. VOWELS — 7 פריטים');
+header('2. VOWELS — 9 פריטים');
 {
   clearMocks();
   global.localStorage = makeLocalStorageMock();
   const VA = loadModule();
   const vs = VA.getVowels();
-  assert(Array.isArray(vs) && vs.length === 7, '7 vowels');
+  assert(Array.isArray(vs) && vs.length === 9, '9 vowels');
   const ids = vs.map(function (v) { return v.id; });
-  ['kamatz','patach','shva','hiriq','holam','tzere','segol'].forEach(function (id) {
+  ['kamatz','patach','shva','hiriq','holam','tzere','segol','kubutz','shuruk'].forEach(function (id) {
     assert(ids.indexOf(id) >= 0, 'מכיל ' + id);
   });
   // הכל יחד עם שדות חובה
@@ -115,6 +115,10 @@ header('2. VOWELS — 7 פריטים');
 
   const k = VA.getVowelById('kamatz');
   assert(k && k.symbol === 'ָ' && k.phoneme === '/a/', 'getVowelById(kamatz) → ָ /a/');
+  const kb = VA.getVowelById('kubutz');
+  assert(kb && kb.symbol === 'ֻ' && kb.phoneme === '/u/' && kb.book === 5, 'getVowelById(kubutz) → ֻ /u/ book 5');
+  const sh = VA.getVowelById('shuruk');
+  assert(sh && sh.symbol === 'וּ' && sh.phoneme === '/u/' && sh.book === 5, 'getVowelById(shuruk) → וּ /u/ book 5');
   assert(VA.getVowelById('nonsense') === null, 'getVowelById(unknown) → null');
 }
 
@@ -143,6 +147,15 @@ header('3. buildCV / parseCV / cvKey');
   // אותיות אחרות לא משתנות (ג/ד/ת קלות לא רלוונטי בעברית מודרנית)
   assert(VA.buildCV('ד', 'patach') === 'דַ',  'buildCV(ד, patach) = דַ (ללא דגש)');
   assert(VA.buildCV('ג', 'kamatz') === 'גָ',  'buildCV(ג, kamatz) = גָ (ללא דגש)');
+
+  // קובוץ — combining mark רגיל (דפוס letter+vowel+dagesh ל-ב/כ/פ)
+  assert(VA.buildCV('מ', 'kubutz') === 'מֻ',   'buildCV(מ, kubutz) = מֻ');
+  assert(VA.buildCV('ב', 'kubutz') === 'בֻּ',  'buildCV(ב, kubutz) = בֻּ (דגש)');
+  // שורוק — ו+דגש; הדגש הקל של ב/כ/פ על העיצור לפני ה-ו (5d1 5bc 5d5 5bc)
+  assert(VA.buildCV('ל', 'shuruk') === 'לוּ',  'buildCV(ל, shuruk) = לוּ');
+  assert(VA.buildCV('מ', 'shuruk') === 'מוּ',  'buildCV(מ, shuruk) = מוּ');
+  assert(VA.buildCV('ב', 'shuruk') === 'ב' + 'ּ' + 'ו' + 'ּ', 'buildCV(ב, shuruk) = בּוּ (דגש על ב, לא כפול על ו)');
+  assert(VA.buildCV('ב', 'shuruk').length === 4, 'בּוּ = 4 code units (ב+דגש+ו+דגש)');
   // Constants חשופים
   assert(Array.isArray(VA.BKP_LETTERS) && VA.BKP_LETTERS.length === 3, 'BKP_LETTERS = [ב,כ,פ]');
   assert(VA.DAGESH === 'ּ', 'DAGESH = U+05BC');
@@ -170,7 +183,7 @@ header('4. getAllCVPairs — default + filters');
   const VA = loadModule();
 
   const all = VA.getAllCVPairs();
-  assert(all.length === 22 * 7, '22 × 7 = 154 CV pairs');
+  assert(all.length === 22 * 9, '22 × 9 = 198 CV pairs');
 
   // Each entry has required fields
   const sample = all[0];
@@ -180,7 +193,7 @@ header('4. getAllCVPairs — default + filters');
 
   // filter by letters
   const onlyMem = VA.getAllCVPairs({ letters: ['מ'] });
-  assert(onlyMem.length === 7, 'filter letters=[מ] → 7 entries');
+  assert(onlyMem.length === 9, 'filter letters=[מ] → 9 entries');
   assert(onlyMem.every(function (e) { return e.letter === 'מ'; }), 'כולן עם מ');
 
   // filter by vowels
@@ -195,6 +208,13 @@ header('4. getAllCVPairs — default + filters');
   const bookVowels = new Set(onlyBook2.map(function (e) { return e.vowelId; }));
   assert(bookVowels.has('kamatz') && bookVowels.has('patach') && bookVowels.has('shva'),
     'books=[2] → רק קמץ+פתח+שווא');
+
+  // book 5 = קובוץ + שורוק = 2 vowels × 22 = 44
+  const onlyBook5 = VA.getAllCVPairs({ books: [5] });
+  assert(onlyBook5.length === 22 * 2, 'filter books=[5] → 44 entries');
+  const book5Vowels = new Set(onlyBook5.map(function (e) { return e.vowelId; }));
+  assert(book5Vowels.has('kubutz') && book5Vowels.has('shuruk') && book5Vowels.size === 2,
+    'books=[5] → רק קובוץ+שורוק');
 
   // combined letters + vowels
   const combo = VA.getAllCVPairs({ letters: ['מ', 'ב'], vowels: ['kamatz', 'patach'] });
@@ -212,9 +232,17 @@ header('5. getAnchorWord — seeded + missing');
   assert(VA.getAnchorWord('ת', 'patach') === 'תַּפּוּז', 'getAnchorWord(ת, patach) = תַּפּוּז');
   assert(VA.getAnchorWord('ק', 'patach') === 'קַר', 'getAnchorWord(ק, patach) = קַר');
   assert(VA.getAnchorWord('ב', 'shva') === 'בְּרֵכָה', 'getAnchorWord(ב, shva) = בְּרֵכָה');
+  // /u/ — קובוץ + שורוק (נוספו 4.7.2026, מקור: vocab-bank/questions-grade1)
+  assert(VA.getAnchorWord('ב', 'kubutz') === 'בֻּבָּה', 'getAnchorWord(ב, kubutz) = בֻּבָּה');
+  assert(VA.getAnchorWord('ב', 'shuruk') === 'בּוּעוֹת', 'getAnchorWord(ב, shuruk) = בּוּעוֹת');
+  assert(VA.getAnchorWord('ת', 'kubutz') === 'תֻּכִּי', 'getAnchorWord(ת, kubutz) = תֻּכִּי');
+  assert(VA.getAnchorWord('ת', 'shuruk') === 'תּוּת', 'getAnchorWord(ת, shuruk) = תּוּת');
+  assert(VA.getAnchorWord('ל', 'shuruk') === 'לוּל', 'getAnchorWord(ל, shuruk) = לוּל (הועבר מ-holam)');
+  assert(VA.getAnchorWord('ל', 'holam') === null, 'getAnchorWord(ל, holam) = null (לוּל תוקן → shuruk)');
   // missing seed → null
   assert(VA.getAnchorWord('ר', 'kamatz') === null, 'getAnchorWord(ר, kamatz) = null (חסר seed)');
   assert(VA.getAnchorWord('מ', 'shva') === null, 'getAnchorWord(מ, shva) = null');
+  assert(VA.getAnchorWord('ל', 'kubutz') === null, 'getAnchorWord(ל, kubutz) = null (ASK)');
   // invalid
   assert(VA.getAnchorWord('Z', 'patach') === null, 'getAnchorWord(Z, patach) = null');
   assert(VA.getAnchorWord('מ', 'bogus') === null, 'getAnchorWord(מ, bogus) = null');
@@ -387,6 +415,8 @@ header('11. Phoneme groups (chalupa B — מ:patach + מ:kamatz = /a/)');
   assert(VA.getPhonemeGroup('tzere')  === 'e', 'tzere → e');
   assert(VA.getPhonemeGroup('segol')  === 'e', 'segol → e');
   assert(VA.getPhonemeGroup('shva')   === 'shwa', 'shva → shwa');
+  assert(VA.getPhonemeGroup('kubutz') === 'u', 'kubutz → u');
+  assert(VA.getPhonemeGroup('shuruk') === 'u', 'shuruk → u');
   assert(VA.getPhonemeGroup('bogus')  === null, 'unknown → null');
 
   // getVowelsInGroup
@@ -399,6 +429,9 @@ header('11. Phoneme groups (chalupa B — מ:patach + מ:kamatz = /a/)');
   assert(VA.getVowelsInGroup('i').length === 1, 'group i = hiriq בלבד');
   assert(VA.getVowelsInGroup('o').length === 1, 'group o = holam בלבד');
   assert(VA.getVowelsInGroup('shwa').length === 1, 'group shwa = shva בלבד');
+  const groupU = VA.getVowelsInGroup('u').map(function (v) { return v.id; }).sort();
+  assert(groupU.length === 2 && groupU[0] === 'kubutz' && groupU[1] === 'shuruk',
+    'group u = kubutz + shuruk');
 
   // getSisterVowels
   const sistersPatach = VA.getSisterVowels('patach');
@@ -409,6 +442,10 @@ header('11. Phoneme groups (chalupa B — מ:patach + מ:kamatz = /a/)');
   assert(sistersTzere.length === 1 && sistersTzere[0].id === 'segol', 'tzere sister = segol');
   const sistersHiriq = VA.getSisterVowels('hiriq');
   assert(sistersHiriq.length === 0, 'hiriq sister = [] (solo)');
+  const sistersKubutz = VA.getSisterVowels('kubutz');
+  assert(sistersKubutz.length === 1 && sistersKubutz[0].id === 'shuruk', 'kubutz sister = shuruk');
+  const sistersShuruk = VA.getSisterVowels('shuruk');
+  assert(sistersShuruk.length === 1 && sistersShuruk[0].id === 'kubutz', 'shuruk sister = kubutz');
   const sistersBogus = VA.getSisterVowels('bogus');
   assert(sistersBogus.length === 0, 'unknown sister = []');
 }
@@ -440,6 +477,11 @@ header('12. CV audio key naming + letter_key');
   // PHONEME_GROUP_HE
   assert(VA.PHONEME_GROUP_HE && VA.PHONEME_GROUP_HE.a === 'פתח-קמץ', 'PHONEME_GROUP_HE.a');
   assert(VA.PHONEME_GROUP_HE.e === 'צירי-סגול', 'PHONEME_GROUP_HE.e');
+  assert(VA.PHONEME_GROUP_HE.u === 'קובוץ-שורוק', 'PHONEME_GROUP_HE.u');
+
+  // cvAudioKey לתנועות החדשות
+  assert(VA.cvAudioKey('מ', 'kubutz') === 'cv-mem-kubutz', 'cvAudioKey(מ, kubutz)');
+  assert(VA.cvAudioKey('ב', 'shuruk') === 'cv-bet-shuruk', 'cvAudioKey(ב, shuruk)');
 }
 
 // --------------------------------------------------------

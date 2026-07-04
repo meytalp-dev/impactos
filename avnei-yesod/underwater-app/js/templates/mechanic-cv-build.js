@@ -98,6 +98,8 @@
       { id: 'hiriq',  label: 'חיריק',       forms: [vsym('hiriq')] },
       { id: 'holam',  label: 'חולם',        forms: [vsym('holam')] },
       { id: 'tzere',  label: 'צירי · סגול', forms: [vsym('tzere'), vsym('segol')] },
+      // /u/ — canonical=kubutz. שורוק (וּ) אינו combining mark — ה-form מוצג כ-X+וּ.
+      { id: 'kubutz', label: 'קובוץ · שורוק', forms: [vsym('kubutz'), vsym('shuruk')] },
     ];
 
     // --- DOM ---
