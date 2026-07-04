@@ -18,6 +18,53 @@
     .page-h h1{font-size:clamp(20px,2.4vw,25px);font-weight:800;color:var(--deep);}
     .page-h p{font-size:13.5px;color:var(--text-soft);margin-top:7px;max-width:70ch;line-height:1.5;}
 
+    /* tabs */
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+    .tab{border:1px solid #E3EAEB;background:#fff;color:#48707C;font-family:inherit;font-size:14px;font-weight:800;
+      padding:10px 18px;border-radius:var(--pill);cursor:pointer;display:inline-flex;align-items:center;gap:7px;
+      transition:background .15s,color .15s,border-color .15s;}
+    .tab:hover{background:#F4F7F8;}
+    .tab.on{background:#DDF3EC;color:#0F7E72;border-color:#C4E8DD;}
+    .tab .tic svg{width:17px;height:17px;}
+    .tabpane{display:none;}
+    .tabpane.on{display:block;animation:tfade .3s both;}
+    @keyframes tfade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+    .pane-note{font-size:13.5px;color:var(--text-soft);line-height:1.55;margin-bottom:16px;max-width:75ch;}
+    .pane-note b{color:var(--text-main);}
+
+    /* group suggestion cards */
+    .ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(262px,1fr));gap:16px;}
+    .gpcard{background:#fff;border:1px solid #ECF0F0;border-radius:18px;padding:18px;box-shadow:0 1px 3px rgba(38,80,92,.05);
+      display:flex;flex-direction:column;gap:10px;}
+    .gpcard .gp-tile{width:48px;height:48px;border-radius:13px;display:grid;place-items:center;flex:0 0 auto;background:var(--gb,#EAF0F7);color:var(--gc,#41689A);}
+    .gpcard .gp-tile .tic svg{width:24px;height:24px;}
+    .gpcard h3{font-size:17px;font-weight:800;color:var(--deep);line-height:1.2;}
+    .gpcard .gp-kids{font-size:14px;color:var(--text-main);line-height:1.5;} .gpcard .gp-kids b{color:var(--deep);}
+    .gpcard .gp-meta{display:flex;gap:8px;flex-wrap:wrap;}
+    .gpcard .gp-meta span{font-size:12px;font-weight:700;color:#48707C;background:#F0F5F6;border-radius:999px;padding:4px 11px;}
+    .gpcard .gp-why{font-size:13px;color:var(--text-soft);line-height:1.55;flex:1;} .gpcard .gp-why b{color:#48707C;}
+    .gpcard .gp-btns{display:flex;gap:8px;flex-wrap:wrap;}
+
+    /* interventions accordion */
+    .recipe{background:#fff;border:1px solid #ECF0F0;border-radius:16px;padding:14px 16px;margin-bottom:12px;
+      box-shadow:0 1px 3px rgba(38,80,92,.05);transition:border-color .15s;}
+    .recipe.open{border-color:#CFE0EC;}
+    .recipe .rh{display:flex;align-items:center;gap:10px;cursor:pointer;}
+    .recipe .rh .ric{width:36px;height:36px;border-radius:11px;background:#EAF0F7;color:#41689A;display:grid;place-items:center;flex:0 0 auto;}
+    .recipe .rh .ric svg{width:20px;height:20px;}
+    .recipe .rh .rt{flex:1;}
+    .recipe .rh h4{font-size:16px;font-weight:800;color:var(--deep);}
+    .recipe .rh .rmeta{font-size:12.5px;color:var(--text-soft);margin-top:1px;}
+    .recipe .rh .chev{color:#9bb0b8;font-weight:900;transition:transform .25s;}
+    .recipe.open .rh .chev{transform:rotate(180deg);}
+    .recipe .rbody{max-height:0;overflow:hidden;transition:max-height .3s ease;}
+    .recipe.open .rbody{max-height:460px;}
+    .recipe .rin{padding-top:12px;font-size:14px;color:var(--text-main);line-height:1.6;}
+    .recipe .rin .line{margin-bottom:7px;}
+    .recipe .rin .lab{font-weight:800;color:#48707C;}
+    .recipe .rsel{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;}
+    .rtag{font-size:10.5px;font-weight:800;color:#0d6b54;background:var(--okbg);border-radius:var(--pill);padding:3px 10px;white-space:nowrap;flex:0 0 auto;}
+
     /* status pastels — shared by avatar + pill + bar */
     .st-exc,.st-good{background:var(--okbg);color:#0d6b54;}
     .st-part{background:var(--watchbg);color:#9c6212;}
@@ -127,13 +174,30 @@
 
       <div class="page-h">
         <h1>הכיתה שלי</h1>
-        <p>תמונה מלאה לכל תלמיד.ה — קצב ההתקדמות, המסע שלו.ה במפת האיים, וההתערבויות שהמערכת מציעה לפי הקשיים או החוזקות. לחצו על כרטיס לפרופיל המלא.</p>
+        <p>תמונה מלאה לכל תלמיד.ה — ולצידה ההצעות של המערכת: קבוצות קטנות לפי צורך משותף, והתערבויות הוראה קצרות לפי הקושי שזוהה.</p>
       </div>
 
-      <div class="csum" id="csum"></div>
+      <div class="tabs" role="tablist">
+        <button class="tab on" data-tab="kids" role="tab"><span class="tic" data-ic="people"></span>התלמידים</button>
+        <button class="tab" data-tab="groups" role="tab"><span class="tic" data-ic="target"></span>הצעות לקבוצות</button>
+        <button class="tab" data-tab="interv" role="tab"><span class="tic" data-ic="tools"></span>הצעות להתערבויות</button>
+      </div>
 
-      <div class="sec-title">רשימת הכיתה</div>
-      <div class="kgrid" id="kgrid"></div>
+      <div class="tabpane on" id="pane-kids" role="tabpanel">
+        <div class="csum" id="csum"></div>
+        <div class="sec-title">רשימת הכיתה</div>
+        <div class="kgrid" id="kgrid"></div>
+      </div>
+
+      <div class="tabpane" id="pane-groups" role="tabpanel">
+        <p class="pane-note">המערכת מזהה ילדים עם <b>צורך משותף</b> ומציעה קבוצת בוקר קטנה — במקום עוד תרגול לבד. את מחליטה: לפתוח, לשנות הרכב, או לדחות.</p>
+        <div class="ggrid" id="ggrid"></div>
+      </div>
+
+      <div class="tabpane" id="pane-interv" role="tabpanel">
+        <p class="pane-note">פעולות הוראה קצרות וממוקדות מתוך <b>קטלוג ההתערבויות</b>. המערכת מסמנת מה מותאם לקשיי הכיתה השבוע — ואת בוחרת מה לפתוח.</p>
+        <div id="recipes"></div>
+      </div>
     </div></main>
   </div>
 
@@ -258,6 +322,82 @@
     document.getElementById('scrim').addEventListener('click',closeDrawer);
     document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDrawer();});
     document.addEventListener('click',function(e){var b=e.target.closest('button[data-toast]');if(b){e.stopPropagation();toast(b.dataset.toast);}});
+
+    /* ---------- tabs ---------- */
+    function showTab(name){
+      document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('on',t.dataset.tab===name);});
+      document.querySelectorAll('.tabpane').forEach(function(p){p.classList.toggle('on',p.id==='pane-'+name);});
+      fillTics();
+    }
+    document.querySelectorAll('.tab').forEach(function(t){t.addEventListener('click',function(){showTab(t.dataset.tab);});});
+
+    /* ---------- suggested groups ---------- */
+    var GROUPS=[
+      {nm:'קבוצת הבחנה ד׳/ר׳',ic:'scale',gb:'#EEEBF8',gc:'#6A59B8',
+        kids:'איתי כ. · דני ר.',iv:'twins',ivnm:'תאומות עם תנועה',time:'8 דק׳',size:'2 ילדים',
+        why:'שניהם מתבלבלים בין ד׳ ל-ר׳. דני פנוי רגשית — חלון טוב להתערבות; לאיתי כדאי לצרף שיחה קצרה ומחזקת.'},
+      {nm:'קבוצת שטף וקריאה חוזרת',ic:'pulse',gb:'#DDF3EC',gc:'#0F7E72',
+        kids:'מאיה ד. · שירה ל. <b>(חונכת)</b>',iv:'rhythm',ivnm:'קצב והברה',time:'6 דק׳',size:'2-3 ילדים',
+        why:'מאיה מדייקת אך קוראת לאט, וזקוקה גם לחיבור חברתי. שירה סיימה ומדייקת — תפקיד חונכת מחזק את שתיהן.'},
+      {nm:'תרגול פתיחה — היכרות',ic:'userplus',gb:'#EAF0F7',gc:'#41689A',
+        kids:'יעל',iv:'',ivnm:'2-3 משימות קצרות ומזמינות',time:'5 דק׳',size:'יחיד',
+        why:'ליעל אין עדיין היסטוריית תרגול — אוספים נקודת התחלה לפני כל החלטה. בדקי שוב מחר.'}
+    ];
+    var gg=document.getElementById('ggrid');
+    GROUPS.forEach(function(g){var d=document.createElement('div');d.className='gpcard';
+      d.style.setProperty('--gb',g.gb);d.style.setProperty('--gc',g.gc);
+      d.innerHTML='<span class="gp-tile"><span class="tic" data-ic="'+g.ic+'"></span></span>'+
+        '<h3>'+g.nm+'</h3>'+
+        '<div class="gp-kids"><b>מי בקבוצה:</b> '+g.kids+'</div>'+
+        '<div class="gp-meta"><span>'+g.ivnm+'</span><span>'+g.time+'</span><span>'+g.size+'</span></div>'+
+        '<div class="gp-why"><b>למה:</b> '+g.why+'</div>'+
+        '<div class="gp-btns"><button class="btn btn-primary btn-sm" data-toast="נפתחה '+g.nm+' · המשימות הוקצו לקבוצה">פתחי לקבוצה</button>'+
+        (g.iv?'<button class="btn btn-chip btn-sm" data-goiv="'+g.iv+'">צפי בהתערבות</button>':'')+'</div>';
+      gg.appendChild(d);});
+
+    /* ---------- interventions catalog ---------- */
+    var INTERV=[
+      {id:'twins',ic:'scale',col:'#6A59B8',colbg:'#EEEBF8',nm:'תאומות עם תנועה',matched:true,
+        when:'בלבול בין אותיות שנראות דומות (ד׳/ר׳, ב׳/כ׳, ג׳/נ׳, ע׳/א׳).',
+        how:'מציגים את שתי "התאומות" זו לצד זו, מראים מה שונה ביניהן, מוסיפים תנועה (בָּ / כָּ) ומשחקים "על איזו שמעת?".',
+        mat:'כרטיסי זוגות — עם ניקוד ובלי.',time:'8 דק׳',grp:'2-3 ילדים'},
+      {id:'sound3',ic:'sound',col:'#41689A',colbg:'#EAF0F7',nm:'מי אני, מה השם, מה הצליל',matched:true,
+        when:'מכיר.ה את שם האות אבל מתבלבל.ת בצליל שלה (או הפוך).',
+        how:'על כל אות שואלים שלוש שאלות — מי אני? מה השם שלי? מה הצליל שלי? — ומתקנים בעדינות את מה שהתבלבל.',
+        mat:'כרטיס אות (לא חובה).',time:'6 דק׳',grp:'יחיד או זוג'},
+      {id:'rhythm',ic:'pulse',col:'#0F7E72',colbg:'#DDF3EC',nm:'קצב והברה',matched:true,
+        when:'מזהה את האות אבל "נתקע.ת" כשצריך להגיד את הצליל בקול.',
+        how:'עומדים במעגל, אומרים הברה ומוחאים כף (בָּ! מָ!), עוברים למילים, ואז לצליל לבד.',
+        mat:'ללא — אפשר תוף קטן לקצב.',time:'6 דק׳',grp:'4-6 ילדים'},
+      {id:'hunt',ic:'eye',col:'#B5611F',colbg:'#FBF0E4',nm:'ציד אות במילה',matched:false,
+        when:'מזהה אות לבד, אבל מתקשה למצוא אותה באמצע או בסוף מילה.',
+        how:'נותנים שלוש מילים שיש בהן האות, והילדים מחפשים איפה היא מתחבאת — בהתחלה, באמצע, בסוף.',
+        mat:'כרטיסי מילים או מסך "ציד אות".',time:'7 דק׳',grp:'2-4 ילדים'},
+      {id:'build',ic:'tools',col:'#B5611F',colbg:'#FBF0E4',nm:'בנייה ביד ובחומר',matched:false,
+        when:'כותב.ת אות בכיוון הפוך (אות-מראה) או מתבלבל.ת בצורת האות.',
+        how:'בונים את האות בידיים — קודם בחימר, אחר כך באצבע בחול, ולבסוף באוויר — תמיד באותו כיוון כתיבה.',
+        mat:'חימר, מגש חול, כרטיס אות עם חץ כיוון.',time:'10 דק׳',grp:'2-4 ילדים'}
+    ];
+    var rc=document.getElementById('recipes');
+    INTERV.forEach(function(x){var r=document.createElement('div');r.className='recipe';r.setAttribute('data-id',x.id);
+      r.innerHTML='<div class="rh"><span class="ric" style="background:'+x.colbg+';color:'+x.col+'"><span class="tic" data-ic="'+x.ic+'"></span></span>'+
+        '<div class="rt"><h4>'+x.nm+'</h4><div class="rmeta">'+x.time+' · '+x.grp+'</div></div>'+
+        (x.matched?'<span class="rtag">מותאם לכיתה השבוע</span>':'')+'<span class="chev">⌄</span></div>'+
+        '<div class="rbody"><div class="rin">'+
+          '<div class="line"><span class="lab">מתי משתמשים:</span> '+x.when+'</div>'+
+          '<div class="line"><span class="lab">איך עושים:</span> '+x.how+'</div>'+
+          '<div class="line"><span class="lab">חומרי עזר:</span> '+x.mat+'</div>'+
+          '<div class="rsel"><button class="btn btn-primary btn-sm" data-toast="נבחרה התערבות: '+x.nm+' · נוספה לקבוצת בוקר">בחרי לקבוצת בוקר</button></div>'+
+        '</div></div>';
+      rc.appendChild(r);});
+    rc.addEventListener('click',function(e){var h=e.target.closest('.rh');if(h&&!e.target.closest('button')){h.parentElement.classList.toggle('open');}});
+
+    /* group card → jump to its intervention */
+    document.addEventListener('click',function(e){var b=e.target.closest('button[data-goiv]');if(!b)return;
+      showTab('interv');
+      document.querySelectorAll('#recipes .recipe').forEach(function(r){r.classList.remove('open');});
+      var t=document.querySelector('#recipes .recipe[data-id="'+b.dataset.goiv+'"]');
+      if(t){t.classList.add('open');setTimeout(function(){t.scrollIntoView({behavior:'smooth',block:'center'});},150);}});
 
     function fillTics(){if(!window.DemoIcons)return;document.querySelectorAll('.tic[data-ic]').forEach(function(el){if(!el.firstChild&&DemoIcons[el.dataset.ic])el.innerHTML=DemoIcons[el.dataset.ic];});}
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fillTics);else fillTics();
