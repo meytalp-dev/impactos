@@ -228,6 +228,22 @@
       'אֲנִי': 'bank-w-ani',
       'פִּיל': 'bank-w-pil',         'שִׁיר': 'bank-w-shir',
       'שִׁירִים': 'bank-w-shirim',   'פִּילִים': 'bank-w-pilim',
+      // B3 (4.7.2026, אושר מיטל) — jan-w1-d4: יוצא-דופן בהאזנה + יש/אין בשמע
+      'דָּג': 'bank-w-dag',           'סַל': 'bank-w-sal',
+      'חָלָב': 'bank-w-chalav',       'מִיץ': 'bank-w-mitz',
+      'יָד': 'bank-w-yad',            'רַגְלַיִם': 'bank-w-raglayim',
+      'מִכְנָסַיִם': 'bank-w-michnasayim',
+      'הִנֵּה סַל, וּבְתוֹךְ הַסַּל תַּפּוּחַ גָּדוֹל.': 'bank-s-yeshein-1',
+      'עַל הַשֻּׁלְחָן יֵשׁ מִיץ, וְאֵין חָלָב.': 'bank-s-yeshein-2',
+      'דָּנִי חִפֵּשׂ בַּתִּיק וְלֹא מָצָא בָּנָנָה.': 'bank-s-yeshein-3',
+      'יֵשׁ תַּפּוּחַ בַּסַּל': 'bank-o-yesh-tapuach-basal',
+      'אֵין תַּפּוּחַ בַּסַּל': 'bank-o-ein-tapuach-basal',
+      'יֵשׁ פִּיל בַּסַּל': 'bank-o-yesh-pil-basal',
+      'אֵין חָלָב': 'bank-o-ein-chalav',   'יֵשׁ חָלָב': 'bank-o-yesh-chalav',
+      'אֵין מִיץ': 'bank-o-ein-mitz',
+      'אֵין בָּנָנָה בַּתִּיק': 'bank-o-ein-banana-batik',
+      'יֵשׁ בָּנָנָה בַּתִּיק': 'bank-o-yesh-banana-batik',
+      'אֵין תִּיק': 'bank-o-ein-tik',
     };
     // אודיו-משימה לשאלות שה-prompt שלהן נושא את צליל-היעד (תעתיק לא קריא לילד)
     var TASK_AUDIO = { 'apr-w4-d1-c2-L3': 'bank-task-yesh-find' };
@@ -265,15 +281,23 @@
     // ------------------------------------------------------------------
     function toConfig(q) {
       var island = STRAND_ISLAND[q.strand] || 5;
+      var missingOptAudio = false;
       var opts = (q.options || []).map(function (o) {
         var mode = o.mode || 'text';
         if (mode === 'image' && !o.image_src) mode = 'text';   // אין תמונה במאגר → טקסט
-        return {
+        var out = {
           label_he: cleanHe(o.label_he), mode: mode,
           image_src: o.image_src || '', image_alt: o.image_alt || cleanHe(o.label_he),
           is_correct: !!o.is_correct, epa: o.epa || null,
         };
+        // אריח-שמע ישירות מהבנק (B3, יוצא-דופן בהאזנה) — two-tap מובנה במכניקות
+        if (mode === 'audio') {
+          out.audio_key = WORD_AUDIO[out.label_he];
+          if (!out.audio_key) missingOptAudio = true;
+        }
+        return out;
       });
+      if (missingOptAudio) return null;                        // אין הקלטה → מדלגים
 
       var base = {
         interaction: q.interaction,
