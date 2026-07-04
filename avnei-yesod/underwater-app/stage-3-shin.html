@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>מִשְׁפְּחוֹת הַדְּגִיגִים · אוֹת שִׁין · עוֹמֶק הַיָּם הַמּוּאָר</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/stage-3.css">
+  <link rel="stylesheet" href="css/game-shell.css?v=12">
+  <script src="../../demo/journey.js" defer></script>
+
+  <style>
+    /* === התאמות מקומיות לאי ש בלבד (לא נוגעים ב-CSS המשותף) === */
+
+    /* לקח אי 4: overlay שקוף ~35% — השונית נשארת גלויה מאחור (לא 94%) */
+    .tap-to-start,
+    .completion {
+      background: radial-gradient(circle at 50% 35%,
+        rgba(184, 232, 224, 0.35), rgba(99, 216, 208, 0.55));
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+    }
+    .tap-to-start h2,
+    .tap-to-start #introHtmlSlot p,
+    .completion h2,
+    .completion p {
+      background: rgba(255, 255, 255, 0.85);
+      padding: 12px 22px;
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(38, 80, 92, 0.18);
+    }
+
+    /* לקח אי 4: just-done glow — המשפחה שחזרה הרגע קופצת וזוהרת */
+    .shell-slot.just-done { animation: slotJustDone 1.2s ease-out; }
+    @keyframes slotJustDone {
+      0%   { transform: scale(1.08); }
+      30%  { transform: scale(1.7);
+             box-shadow: 0 0 24px var(--hint, #FFE7A8),
+                         0 0 44px rgba(255, 169, 141, 0.8); }
+      100% { transform: scale(1.08); }
+    }
+
+    /* ===== mechanic-swim-hunt — פריסה ===== */
+    .mechanic-swim-hunt {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      /* stretch מפורש — .game-area המשותף מגדיר align-items:center שמכווץ
+         את .swim-field לרוחב 0 (הדגים נעלמים ב-overflow:hidden) */
+      align-items: stretch;
+      justify-content: flex-start;
+      /* top padding מפנה את top-bar (52px) + רצועת ה-shell-slots (כמו tap-all) */
+      padding: clamp(120px, 18vh, 150px) 8px clamp(8px, 2vh, 20px);
+      box-sizing: border-box;
+      z-index: 20;
+    }
+
+    /* prompt bar — האות שׁ הגדולה + הוראה + רמקול (האזנה חופשית, לא נמדדת) */
+    .swim-prompt {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: clamp(4px, 1.5vw, 10px) 12px;
+      font-family: 'Heebo', sans-serif;
+      direction: rtl;
+    }
+    .swim-prompt__letter {
+      font-family: 'Rubik', 'Heebo', sans-serif;
+      font-size: clamp(44px, 10vw, 64px);
+      font-weight: 900;
+      line-height: 1.15;
+      color: var(--text-main, #26505C);
+      background: #FFFFFF;
+      padding: 8px 24px;
+      border-radius: 20px;
+      border: 3px solid var(--water-secondary, #4FB8C9);
+      box-shadow: 0 2px 10px rgba(38, 80, 92, 0.15);
+      direction: rtl;
+      unicode-bidi: isolate;
+    }
+    .swim-prompt__label {
+      font-size: clamp(16px, 3.6vw, 22px);
+      font-weight: 700;
+      color: var(--text-main, #26505C);
+      background: rgba(255, 255, 255, 0.85);
+      padding: 8px 18px;
+      border-radius: var(--radius-pill, 999px);
+      box-shadow: 0 2px 10px rgba(38, 80, 92, 0.15);
+    }
+    .swim-prompt__speaker {
+      width: 64px;
+      height: 64px;            /* touch-min 56px+ */
+      border-radius: 50%;
+      border: none;
+      background: var(--water-secondary, #4FB8C9);
+      color: #FFFFFF;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 16px rgba(79, 184, 201, 0.45);
+      transition: transform 0.15s ease;
+    }
+    .swim-prompt__speaker svg { width: 32px; height: 32px; }
+    .swim-prompt__speaker:active { transform: scale(0.94); }
+    /* portrait: נוני קבועה למעלה-ימין (z-index 30) — מפנים לה מקום כדי
+       שכרטיס האות הגדול לא יוסתר מאחוריה */
+    @media (orientation: portrait) {
+      .swim-prompt { padding-right: clamp(110px, 27vw, 175px); }
+    }
+
+    /* שדה השחייה — הדגים נעים בתוכו במסלולים אופקיים */
+    .swim-field {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    /* דג — כפתור מרופד: hitbox ≥64px גם בתנועה (עדין, בלי לחץ-זמן) */
+    .swim-fish {
+      position: absolute;
+      left: 0;
+      appearance: none;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      width: clamp(96px, 19vw, 128px);
+      height: clamp(68px, 14vw, 92px);
+      padding: 6px;              /* ריפוד — מרחיב את יעד המגע מעבר לציור */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      z-index: 5;
+      transition: opacity 240ms ease;
+    }
+
+    /* גוף הדג — SVG כמו theme-fish הקנוני; flip לפי כיוון, בנפרד מהאות */
+    .swim-fish__body {
+      position: absolute;
+      inset: 6px;
+      background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 70'><defs><linearGradient id='fi' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23FFE4B5'/><stop offset='50%25' stop-color='%23FFA94D'/><stop offset='100%25' stop-color='%23FF6B35'/></linearGradient></defs><ellipse cx='42' cy='35' rx='32' ry='22' fill='url(%23fi)' stroke='%23FFFFFF' stroke-width='2.5'/><polygon points='74,35 95,17 95,53' fill='%23FF6B35' stroke='%23FFFFFF' stroke-width='2'/><circle cx='32' cy='30' r='3.5' fill='%23FFFFFF'/><circle cx='32' cy='30' r='2' fill='%23000000'/></svg>") no-repeat center / contain;
+      filter: drop-shadow(0 4px 10px rgba(38, 80, 92, 0.3));
+      animation: fish-bob 3.4s ease-in-out infinite;
+    }
+    /* גיוון צבע חזותי בלבד — מוקצה רנדומלית, לא מקודד נכון/שגוי */
+    .swim-fish.fish-1 .swim-fish__body { filter: hue-rotate(140deg) drop-shadow(0 4px 10px rgba(38, 80, 92, 0.3)); }
+    .swim-fish.fish-2 .swim-fish__body { filter: hue-rotate(45deg)  drop-shadow(0 4px 10px rgba(38, 80, 92, 0.3)); }
+    /* הדג בציור פונה שמאלה; דג ששט ימינה מתהפך — האות נשארת קריאה (אחות נפרדת) */
+    .swim-fish.swim-right .swim-fish__body { transform: scaleX(-1); }
+
+    .swim-fish__letter {
+      position: relative;
+      font-family: 'Rubik', 'Heebo', sans-serif;
+      font-weight: 900;
+      font-size: clamp(26px, 6vw, 36px);
+      line-height: 1.2;
+      color: #5A2200;
+      text-shadow: 0 1px 2px rgba(255, 248, 220, 0.95),
+                   0 0 8px rgba(255, 255, 255, 0.6);
+      user-select: none;
+      pointer-events: none;
+      direction: rtl;
+      unicode-bidi: isolate;
+      margin-right: -10%;        /* האות על גוף הדג, לא על הזנב */
+    }
+    @keyframes fish-bob {
+      0%, 100% { translate: 0 0; }
+      50%      { translate: 0 -6px; }
+    }
+
+    /* דג נכון — שוחה בשמחה אל נוני ונעלם (ה-transform הסופי נכתב inline
+       ב-JS על בסיס המיקום הנוכחי; כאן רק המעבר, השקיפות והשכבה) */
+    .swim-fish.found {
+      transition: transform 1.1s cubic-bezier(.4, .1, .6, 1), opacity 1.1s ease;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 40;
+    }
+
+    /* דג שגוי — מנענע סנפיר וממשיך (על הגוף, לא על ה-transform של המיקום) */
+    .swim-fish__body.fin-shake {
+      animation: fish-bob 3.4s ease-in-out infinite,
+                 fin-shake 600ms ease-in-out;
+    }
+    .swim-fish.swim-right .swim-fish__body.fin-shake {
+      animation: fish-bob 3.4s ease-in-out infinite,
+                 fin-shake-flipped 600ms ease-in-out;
+    }
+    @keyframes fin-shake {
+      0%, 100% { rotate: 0deg; }
+      25%      { rotate: -7deg; }
+      55%      { rotate: 6deg; }
+      80%      { rotate: -3deg; }
+    }
+    @keyframes fin-shake-flipped {
+      0%, 100% { transform: scaleX(-1) rotate(0deg); }
+      25%      { transform: scaleX(-1) rotate(-7deg); }
+      55%      { transform: scaleX(-1) rotate(6deg); }
+      80%      { transform: scaleX(-1) rotate(-3deg); }
+    }
+
+    /* hint-glow — פעימה עדינה סביב דג-יעד */
+    .swim-fish.hint-glow .swim-fish__body {
+      animation: fish-bob 3.4s ease-in-out infinite,
+                 fish-hint-pulse 1.4s ease-in-out infinite;
+    }
+    @keyframes fish-hint-pulse {
+      0%, 100% { filter: drop-shadow(0 4px 10px rgba(38, 80, 92, 0.3)); }
+      50%      { filter: drop-shadow(0 4px 10px rgba(38, 80, 92, 0.3))
+                         drop-shadow(0 0 18px rgba(255, 224, 122, 0.95))
+                         drop-shadow(0 0 30px rgba(255, 169, 141, 0.7)); }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="stage-scene">
+    <div class="scene-frame">
+      <img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true"
+           onerror="this.style.display='none'">
+
+      <section class="quest-header">
+        <div class="shell-slots" id="shellSlots">
+          <div class="shell-slot" data-shell-slot="0"></div>
+          <div class="shell-slot" data-shell-slot="1"></div>
+          <div class="shell-slot" data-shell-slot="2"></div>
+          <div class="shell-slot" data-shell-slot="3"></div>
+          <div class="shell-slot" data-shell-slot="4"></div>
+        </div>
+      </section>
+
+      <div class="game-area" id="gameRoot"></div>
+
+      <div class="burst" id="burst"></div>
+    </div>
+  </main>
+
+  <img class="noni-fixed" id="noniImg" src="assets/noni-idle.png" alt="נוני">
+
+  <div class="feedback-bubble" id="feedbackBubble"></div>
+
+  <header class="top-bar">
+    <a href="stage-3-island.html" class="icon-btn" aria-label="חֲזָרָה לְאִי 3">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+    <div class="unit-counter" id="unitCounter">
+      <span class="uc-letter" id="ucLetter">שׁ</span>
+      <span id="unitCountDisplay">0/5 מִשְׁפָּחוֹת</span>
+    </div>
+    <div class="pearl-counter" aria-label="פְּנִינִים">
+      <span class="pearl" aria-hidden="true"></span>
+      <span class="count" id="pearlCount">0</span>
+    </div>
+  </header>
+
+  <div class="tap-to-start" id="tapToStart">
+    <h2>מִשְׁפְּחוֹת הַדְּגִיגִים</h2>
+    <button class="intro-speaker" id="introSpeaker" aria-label="שִׁמְעוּ אֶת הַהֶסְבֵּר">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>הַקִּישׁוּ לִשְׁמֹעַ</span>
+    </button>
+    <div id="introHtmlSlot">
+      <p>הַדְּגִיגִים עִם הָאוֹת <strong>שׁ</strong> הָלְכוּ לְאִבּוּד בַּיָּם הַגָּדוֹל!</p>
+      <p>גְּעוּ בְּכֹל דָּג עִם הָאוֹת <strong>שׁ</strong> — וְהוּא יַחֲזֹר אֶל נוֹנִי.</p>
+    </div>
+    <button class="start-btn" id="startBtn">בּוֹאוּ נַתְחִיל</button>
+  </div>
+
+  <div class="completion" id="completion">
+    <h2>כֹּל הַמִּשְׁפָּחוֹת חָזְרוּ הַבַּיְתָה!</h2>
+    <p id="completionMsg">דְּגִיג קָטָן עִם הָאוֹת שׁ הִצְטָרֵף לְעוֹלָם שֶׁל נוֹנִי.</p>
+    <a href="stage-3-island.html" class="btn-primary">חֲזָרָה לְאִי 3</a>
+  </div>
+
+  <script src="js/state.js"></script>
+  <script src="js/shared/bkt.js"></script>
+  <script src="js/shared/epa.js"></script>
+  <script src="js/shared/event-logger.js"></script>
+  <script src="js/shared/mastery-check.js"></script>
+  <script src="js/shared/audio.js"></script>
+  <script src="js/shared/noni.js"></script>
+  <script src="js/shared/feedback.js"></script>
+
+  <script src="js/templates/game-shell.js"></script>
+  <script src="js/templates/mechanic-tap-all.js"></script>
+  <script src="js/templates/mechanic-pick.js"></script>
+  <script src="js/templates/mechanic-quest.js"></script>
+  <!-- D.15 v2 — מכניקות חדשות + letter-anim overlay -->
+  <script src="js/templates/mechanic-memory-pair.js?v=2"></script>
+  <script src="js/templates/mechanic-sort-by-letter.js?v=2"></script>
+  <script src="js/templates/letter-anims.js?v=2"></script>
+  <!-- אי ש: צַיִד בִּתְנוּעָה — דגים שטים נושאי אותיות (A5 · 4.7.2026) -->
+  <script src="js/templates/mechanic-swim-hunt.js?v=1"></script>
+
+  <script src="js/shared/scaffolding.js"></script>
+  <script src="js/shared/shell.js"></script>
+  <script src="js/shared/instruction.js"></script>
+  <script src="js/activities/sound-match.js"></script>
+  <script src="js/activities/letter-shape.js"></script>
+  <script src="js/activities/find-letter.js"></script>
+
+  <script>
+  // אות ש (shin) · מִשְׁפְּחוֹת הַדְּגִיגִים · A5 — צַיִד בִּתְנוּעָה
+  // 🔴 בספטמבר מלמדים רק שׁ ימנית. הקונפיג = shin-hunt.json (לא shin.json —
+  // הישן הוא תבנית-המאסטר של stage-3-template-demo, לא נוגעים בו).
+  (async function () {
+    const letterKey = 'shin-hunt';
+
+    let cfg;
+    try {
+      cfg = await fetch(`data/island-03-letters/${letterKey}.json?v=1`).then(r => r.json());
+    } catch (e) {
+      console.error('Failed to load letter config:', letterKey, e);
+      document.querySelector('#tapToStart h2').textContent = 'שגיאה בטעינת המשחקון';
+      return;
+    }
+
+    document.title = `${cfg.title} · עומק הים המואר`;
+    document.querySelector('#tapToStart h2').textContent = cfg.title;
+    const intro = document.getElementById('introHtmlSlot');
+    if (intro && cfg.intro_html) intro.innerHTML = cfg.intro_html;
+    // בכותרת מציגים את הצורה עם נקודת השי"ן הימנית (שׁ) — לא ש סתמית
+    document.getElementById('ucLetter').textContent =
+      (cfg.mechanic_config && cfg.mechanic_config.displayLetter) || cfg.letter;
+    document.getElementById('unitCountDisplay').textContent =
+      `0/${cfg.counter.total} ${cfg.counter.unit}`;
+    document.querySelector('#completion h2').textContent = cfg.completion.title;
+    document.getElementById('completionMsg').textContent = cfg.completion.message;
+
+    AvneiGameShell.start({
+      theme:                 cfg.theme || 'fish',
+      letter:                cfg.letter,
+      questId:               cfg.quest_id,
+      title:                 cfg.title,
+      counter:               cfg.counter,
+      completion:            cfg.completion,
+      introAudioKeys:        cfg.intro_audio_keys || [],
+      inGamePromptAudioKey:  cfg.in_game_prompt_audio_key || null,
+      finale:                { audioKey: cfg.finale_audio_key },
+      mechanic:              cfg.mechanic,
+      mechanicConfig:        cfg.mechanic_config || {},
+      distractors:           cfg.distractors || [],
+      // just-done glow (לקח אי 4): המשפחה שחזרה הרגע מקבלת פולס זוהר
+      onUnitWon: (idx) => {
+        const slot = document.querySelector(`[data-shell-slot="${idx}"]`);
+        if (!slot) return;
+        slot.classList.add('filled', 'just-done');
+        setTimeout(() => slot.classList.remove('just-done'), 1300);
+      },
+    });
+  })();
+  </script>
+
+</body>
+</html>
