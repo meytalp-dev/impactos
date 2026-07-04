@@ -16,6 +16,23 @@
     .hero{border-right:4px solid var(--acc-purple);padding:16px 24px;}
     .hero .q{color:var(--acc-purple-tx);background:var(--acc-purple-bg);}
 
+    /* ===== class strip — מבט כיתתי ===== */
+    .classes{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px;margin-bottom:22px;}
+    .ccard{padding:14px 16px;cursor:pointer;transition:transform .14s,box-shadow .14s;position:relative;}
+    .ccard:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(38,80,92,.10);}
+    .ccard.sel{box-shadow:0 0 0 2.5px var(--acc-purple),0 8px 22px rgba(38,80,92,.10);}
+    .ccard .ch{display:flex;align-items:baseline;gap:8px;margin-bottom:10px;}
+    .ccard h3{font-size:16px;font-weight:800;color:var(--deep);}
+    .ccard .tt{font-size:12px;font-weight:600;color:var(--text-soft);flex:1;}
+    .ccard .foc{font-size:11px;font-weight:800;color:var(--acc-purple-tx);background:var(--acc-purple-bg);padding:2px 9px;border-radius:var(--pill);white-space:nowrap;}
+    .mini{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:5px;margin-bottom:9px;}
+    .mini span{height:36px;border-radius:9px;display:grid;place-items:center;font-size:13.5px;font-weight:800;}
+    .mini .mg{background:var(--okbg);color:#0d6b54;}
+    .mini .mr{background:var(--acc-blue-bg);color:var(--acc-blue-tx);}
+    .mini .ms{background:var(--watchbg);color:#9c6212;}
+    .mini .mb{background:var(--carebg);color:#a23d3d;}
+    .ccard .cl{font-size:12px;color:var(--text-soft);line-height:1.45;}
+
     /* ===== layout: map + detail side by side ===== */
     .layout{display:grid;grid-template-columns:1.35fr 1fr;gap:14px;align-items:stretch;margin-bottom:22px;}
     @media (max-width:960px){.layout{grid-template-columns:1fr;}}
@@ -119,13 +136,17 @@
       <div class="hero">
         <span class="q">מבט משולב · למידה ורגש</span>
         <h1>אותו ילד — תמונה אחת שלמה</h1>
-        <p>כל ילד מופיע על המפה לפי שתי עדשות: <b>קריאה</b> ו<b>רגש</b>. לחיצה על ילד פותחת את הסיפור וההמלצה. לא מתייגים — מזמינים שיחה עם המורה.</p>
+        <p>מלמעלה למטה: <b>הכיתות</b> ← <b>הילדים שבמוקד</b> ← <b>ההמלצה</b>. כל ילד מופיע על המפה לפי שתי עדשות — קריאה ורגש. לא מתייגים — מזמינים שיחה עם המורה.</p>
       </div>
+
+      <!-- מבט כיתתי -->
+      <div class="sec-title">לפי כיתות <span class="tag">לחצו על כיתה לסינון המפה</span></div>
+      <div class="classes" id="classes"></div>
 
       <div class="layout">
         <!-- המפה -->
         <div class="card map-card">
-          <div class="map-head"><h2>מפת הילדים השבוע</h2><small>4 ילדים · לחצו על ילד לפרטים</small></div>
+          <div class="map-head"><h2>הילדים במוקד השבוע</h2><small id="maphint"></small></div>
           <div class="quads" id="quads">
             <div class="quad grow" data-q="grow">
               <div class="qh"><span class="qi"><span class="tic" data-ic="star"></span></span><h3>צומחים בשניהם</h3><span class="cnt"></span></div>
@@ -218,11 +239,45 @@
     ];
     function initials(n){return n.replace(/[^א-ת]/g,'').slice(0,1)||'·';}
 
+    /* --- classes (מבט כיתתי) --- */
+    var CLASSES=[
+      {nm:'א׳1',t:'מיטל פלג',   d:{grow:22,ready:1,signal:2,both:1},line:'3 ילדים במוקד — הרגש מוביל השבוע.'},
+      {nm:'א׳2',t:'לירון גולן', d:{grow:25,ready:2,signal:1,both:0},line:'שקטה השבוע · קבוצת חיזוק קטנה מתוכננת.'},
+      {nm:'א׳3',t:'אופיר שטיינברג',d:{grow:24,ready:0,signal:2,both:0},line:'ילד אחד במוקד — דיווח מהבית.'},
+      {nm:'א׳4',t:'עמית אביטבול',d:{grow:26,ready:1,signal:0,both:0},line:'תמונה יציבה — אין ילדים במוקד.'}
+    ];
+    var classFilter=null;
+    function focusCount(c){return KIDS.filter(function(x){return x.cls===c;}).length;}
+    function renderClasses(){
+      var box=document.getElementById('classes'); box.innerHTML='';
+      CLASSES.forEach(function(c){
+        var n=focusCount(c.nm);
+        var el=document.createElement('div');
+        el.className='card ccard'+(classFilter===c.nm?' sel':'');
+        el.innerHTML='<div class="ch"><h3>'+c.nm+'</h3><span class="tt">'+c.t+'</span>'+
+          (n?'<span class="foc">'+n+' במוקד</span>':'')+'</div>'+
+          '<div class="mini"><span class="mg">'+c.d.grow+'</span><span class="mr">'+(c.d.ready||'—')+'</span>'+
+          '<span class="ms">'+(c.d.signal||'—')+'</span><span class="mb">'+(c.d.both||'—')+'</span></div>'+
+          '<div class="cl">'+c.line+'</div>';
+        el.onclick=function(){
+          classFilter=(classFilter===c.nm)?null:c.nm;
+          var pool=visibleKids();
+          if(!pool.some(function(x){return x.id===selected;})) selected=pool.length?pool[0].id:null;
+          renderClasses();renderMap();renderDetail();
+        };
+        box.appendChild(el);
+      });
+    }
+
     /* --- map chips --- */
     var selected='itai';
+    function visibleKids(){return classFilter?KIDS.filter(function(x){return x.cls===classFilter;}):KIDS;}
     function renderMap(){
+      var pool=visibleKids();
+      document.getElementById('maphint').textContent=(classFilter?'מציג את '+classFilter+' בלבד':'כל בית הספר')+
+        (pool.length?' · '+pool.length+' ילדים במוקד · לחצו על ילד':' · אין ילדים במוקד השבוע');
       document.querySelectorAll('.quad').forEach(function(qEl){
-        var q=qEl.dataset.q, kids=KIDS.filter(function(x){return x.q===q;});
+        var q=qEl.dataset.q, kids=pool.filter(function(x){return x.q===q;});
         qEl.querySelector('.cnt').textContent=kids.length? kids.length : '—';
         var box=qEl.querySelector('.kchips'); box.innerHTML='';
         if(!kids.length){box.innerHTML='<div class="empty">אין ילדים כאן השבוע</div>';return;}
@@ -241,6 +296,13 @@
     function renderDetail(){
       var x=KIDS.find(function(k){return k.id===selected;});
       var d=document.getElementById('detail');
+      if(!x){
+        d.className='card detail';
+        d.innerHTML='<div class="body" style="align-items:center;justify-content:center;text-align:center;color:var(--text-soft);font-size:14px;padding:30px 10px;">'+
+          '<div style="font-weight:800;color:var(--deep);font-size:16px;margin-bottom:6px;">אין ילדים במוקד בכיתה זו</div>'+
+          'זו בשורה טובה — התמונה יציבה. אפשר לחזור למבט על כל בית הספר.</div>';
+        paintIcons();return;
+      }
       d.className='card detail '+x.s;
       d.innerHTML='<div class="body">'+
         '<div class="top"><div class="av">'+initials(x.nm)+'</div><h3>'+x.nm+'</h3><span class="chip soft">'+x.cls+'</span><span class="pill">'+x.pill+'</span></div>'+
@@ -266,7 +328,7 @@
     function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},2600);}
     document.addEventListener('click',function(e){var b=e.target.closest('[data-toast]');if(b)toast(b.dataset.toast);});
 
-    function boot(){renderMap();renderDetail();}
+    function boot(){renderClasses();renderMap();renderDetail();}
     if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
   </script>
 </body>
