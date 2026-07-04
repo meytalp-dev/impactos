@@ -2,7 +2,8 @@
 // B1 דילג על שאלות בלי נכסים; B2 השלים: bank-w-hivhil + bank-w-on (QA Whisper)
 // + תמונות stem לילד/ילדה (reuse assets/vocab דרך questions-grade1.json).
 // מאמת: jan-w2-d1 = 9/9 (הִבְהִיל חזר) · jan-w2-d3 = 6/6 עם stem-תמונה ·
-// יום יֵשׁ/אֵין = 8/9 (יָשׁ עדיין פסול — apr-w4-d1-c2-L1 מדולגת בכוונה).
+// יום יֵשׁ/אֵין = 9/9 מאז B3ב: המסיח יָשׁ הוחלף ב-יוֹשׁ (מיטל 4.7.2026 —
+// /yash/ ו-/yesh/ לא מובחנים גם לאוזן אנושית) ו-apr-w4-d1-c2-L1 חזרה לנגן.
 const { test, expect } = require('@playwright/test');
 const { prepareSession } = require('./helpers');
 
@@ -63,9 +64,9 @@ test.describe('נגן הבנק · מדיה B2', () => {
     await playThrough(page, 6);
   });
 
-  test('יום יֵשׁ/אֵין: אוֹן פתח את L2 — ‏8 מתוך 9 (יָשׁ עדיין פסול)', async ({ page }) => {
+  test('יום יֵשׁ/אֵין: יוֹשׁ החליף את יָשׁ — ‏9 מתוך 9', async ({ page }) => {
     test.setTimeout(120_000);
-    await startRound(page, 'apr-w4-d1-c2,apr-w4-d2-c1,apr-w4-d2-c2', 8);
-    await playThrough(page, 8);
+    await startRound(page, 'apr-w4-d1-c2,apr-w4-d2-c1,apr-w4-d2-c2', 9);
+    await playThrough(page, 9);
   });
 });

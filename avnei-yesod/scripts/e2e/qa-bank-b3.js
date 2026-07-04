@@ -44,13 +44,26 @@ const { chromium } = require('@playwright/test');
     if (res.status() !== 200) process.exitCode = 1;
   });
 
-  // 5 ולא 6: apr-w3-d3-c2-L1 הוותיקה (written_to_audio עַל/עוֹל/אֶל) מדולגת
-  // מאז B1 — אין קליפים למסיחי המינימל-פר. 3 החדשות + 2 legacy משוחקות.
-  await check('apr-w3-d3', 5, async () => {
+  // 6/6 מאז B3ב: עוֹל הוחלף בכְּמוֹ (קליפ קיים) + הופקו עַל/אֶל — c2-L1 חזרה.
+  await check('apr-w3-d3', 6, async () => {
     const res = await page.request.get('http://localhost:8765/underwater-app/assets/vocab/prch.png');
     console.log(`  prch.png (stem תמונה): ${res.status()}`);
     if (res.status() !== 200) process.exitCode = 1;
   });
+
+  // B3ב: תחיליות דצמבר — הבנק כיסה, החיווט + הקליפים הושלמו 4.7.2026
+  await check('dec-w1-d3', 6, async () => {
+    const res = await page.request.get('http://localhost:8765/underwater-app/assets/audio/bank-w-lenadav.mp3');
+    console.log(`  bank-w-lenadav.mp3: ${res.status()}`);
+    if (res.status() !== 200) process.exitCode = 1;
+  });
+  await check('dec-w3-d3', 9, async () => {
+    const res = await page.request.get('http://localhost:8765/underwater-app/assets/audio/cv-bet-shva.mp3');
+    console.log(`  cv-bet-shva.mp3 (בְּ תחילית): ${res.status()}`);
+    if (res.status() !== 200) process.exitCode = 1;
+  });
+  // B3ב: יום יש/אין — יוֹשׁ החליף את יָשׁ, 9/9
+  await check('apr-w4-d1-c2,apr-w4-d2-c1,apr-w4-d2-c2', 9, async () => {});
 
   await browser.close();
   console.log(process.exitCode ? 'QA-B3 FAILED' : 'QA-B3 PASSED');
