@@ -61,6 +61,15 @@ const DEFAULT_STATE = {
   // events מוגבל ל-1000 אחרונים (FIFO) כדי לא לתפוח ב-localStorage.
   events: [],
   teacherFlags: [],
+
+  // ===== חדש 2.7.2026 — אי פתיחה מהפרופיל האורייני (placement) =====
+  // id התלמיד.ה שעבורה כבר הוזרק אי הפתיחה (מונע הזרקה חוזרת). ראו applyPlacement.
+  placementInitializedFor: null,
+
+  // ===== חדש 4.7.2026 — תרגול בית (spec: _handoff/2026-07-04-home-practice-spec.md §8.2) =====
+  // מונה דקות-פעילות יומי בהקשר-בית. מתאפס כשהתאריך מתחלף.
+  // נכתב ע"י js/shared/home-context.js (heartbeat); כאן רק ברירת המחדל + חשיפת debug.
+  dailyUsage: { date: null, home_active_seconds: 0 },
 };
 
 const EVENTS_MAX = 1000;
@@ -154,6 +163,36 @@ function getMapState(islandId) {
 
 function isIslandVisible(islandId) {
   return getMapState(islandId) !== 'horizon';
+}
+
+// ============================================================
+// אי פתיחה (placement) — מהפרופיל האורייני (spec 2.7.2026)
+// ============================================================
+// מזריק currentStageId + completedStages לפי אי הפתיחה שקבעה המורה.
+// עיקרון: placement = השערת פתיחה, לא גזר דין. לכן מזריקים **רק על מצב טרי**
+// (בלי התקדמות אמיתית) ופעם אחת פר תלמיד.ה — ברגע שיש פעילות, היא מנצחת ולא נדרסת.
+// האיים שלפני אי הפתיחה מסומנים completed כדי ש-completeStage/getMapState יעבדו נכון.
+// מגבלה ידועה (פיילוט): STATE_KEY גלובלי (לא פר-תלמיד.ה) — במכשיר משותף רק
+// התלמיד.ה הראשונה שנבחרה תיהנה מההזרקה. תואם ל-1:1 (הורים מקצים טאבלטים).
+// מחזיר true אם הוזרק, false אם דילג (מצב לא-טרי / כבר הוזרק / אי 1).
+function applyPlacement(startIsland, studentId) {
+  const target = parseInt(startIsland, 10);
+  if (!(target >= 2 && target <= 22)) return false; // אי 1 = ברירת מחדל, אין מה להזריק
+  const s = loadState();
+  const untouched =
+    (s.currentStageId || 1) === 1 &&
+    (s.completedStages || []).length === 0 &&
+    Object.keys(s.letterProgress || {}).length === 0 &&
+    (s.events || []).length === 0;
+  if (!untouched) return false;                                           // התקדמות אמיתית — לא לדרוס
+  if (s.placementInitializedFor === (studentId || 'local')) return false; // כבר הוזרק
+  const completed = [];
+  for (let i = 1; i < target; i++) completed.push(i);
+  s.completedStages = completed;
+  s.currentStageId = target;
+  s.placementInitializedFor = studentId || 'local';
+  saveState(s);
+  return true;
 }
 
 // ============================================================
@@ -400,9 +439,11 @@ window.__avneiYesod = {
   completeIsland: completeStage,
   addAquarium: addAquariumItem,
   mapState: getMapState,
+  applyPlacement: applyPlacement,
   // חדש
   events: getEvents,
   flags: getTeacherFlags,
+  dailyUsage: () => loadState().dailyUsage,
   growth: getLetterGrowthPercent,
   available: getAvailableActivities,
   recordActivity: recordActivityComplete,

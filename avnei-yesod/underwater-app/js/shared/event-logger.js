@@ -41,10 +41,42 @@
     .catch(err => console.warn('[event-logger] Cloud stack autoload failed:', err));
 })();
 
+// Auto-load home-context (4.7.2026 — תרגול בית, spec: _handoff/2026-07-04-home-practice-spec.md).
+// אותו pattern כמו ה-cloud stack: טעינה מכאן חוסכת עריכה של 33 דפי stage.
+// home-context אחראי על מונה-הדקות והמכסה; event-logger רק מתייג context/calendar_date.
+(function autoloadHomeContext() {
+  if (typeof document === 'undefined') return;
+  if (window.AvneiHomeContext) return;
+  const s = document.createElement('script');
+  s.src = 'js/shared/home-context.js';
+  document.head.appendChild(s);
+})();
+
 window.AvneiEventLogger = (function() {
 
   // session_id נוצר פעם אחת בטעינת הדף
   const SESSION_ID = 'sess-' + Date.now();
+
+  // 4.7.2026 · תרגול-בית — יום קלנדרי מקומי (YYYY-MM-DD). session_id מתחלף בכל
+  // רענון-דף, בעוד ש"סשן" אמיתי במערכת הוא יום (ראו mastery-check.js) — השדה הזה
+  // נותן לניתוחים עוגן יציב בלי לנחש מ-timestamp.
+  function localDateKey() {
+    const d = new Date();
+    return d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0');
+  }
+
+  // fallback לזיהוי context כשמודול home-context עוד לא נטען (טעינה אסינכרונית):
+  // אותו חלון-שעות (א'–ו' 07:45–14:30 = school). מקור-האמת המלא (כולל ?context=
+  // override) הוא AvneiHomeContext.getContext() — הכפילות הקטנה כאן מבטיחה שהשדה
+  // לעולם אינו null גם באירוע שנרשם מיד עם טעינת הדף.
+  function fallbackContext() {
+    const d = new Date();
+    if (d.getDay() === 6) return 'home';
+    const mins = d.getHours() * 60 + d.getMinutes();
+    return (mins >= 7 * 60 + 45 && mins < 14 * 60 + 30) ? 'school' : 'home';
+  }
 
   // אי הזיהוי (letter-shape / sound-match / find-letter). משמש רק לטווח דגלי המורה
   // (detectAndRecordFlags) — הדפוסים שם הם ספציפיים לאי 3 (צורת אות מול צליל).
@@ -204,6 +236,13 @@ window.AvneiEventLogger = (function() {
       hint_used:            result.hint_used === true,
       auto_hint_triggered:  result.auto_hint_triggered === true,
       noni_guidance_used:   result.noni_guidance_used === true,
+      // 4.7.2026 · תרגול-בית (spec §8.1) — תיוג הקשר + יום קלנדרי. ה-BKT סופר
+      // ראיות-בית כרגיל (אין weighting); ההפרדה חיה ברמת דוח/דגל "שווה מבט" בלבד.
+      // אירועים ישנים בלי השדות → undefined (ללא שינוי התנהגות).
+      context:              (window.AvneiHomeContext
+                              ? window.AvneiHomeContext.getContext()
+                              : fallbackContext()),
+      calendar_date:        localDateKey(),
       timestamp:            Date.now(),
     };
     appendEvent(evt);  // מ-state.js

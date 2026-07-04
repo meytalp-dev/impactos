@@ -492,6 +492,14 @@
       <span class="pearl" aria-hidden="true"></span>
       <span class="count">0</span>
     </div>
+    <!-- שער-הורים (תרגול בית · spec §6): לחיצה ארוכה של 2.5 שניות פותחת את
+         "מה תרגלנו היום". שער-מבוגר פשוט — ילד.ה בנגיעה קצרה לא מגיע.ה לשם. -->
+    <button class="icon-btn" id="parentsGateBtn" aria-label="לְהוֹרִים — לחיצה ארוכה" title="להורים — לחיצה ארוכה">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M12 20s-7-4.5-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.5-7 10-7 10z"
+              stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
+      </svg>
+    </button>
   </header>
 
   <div class="rotate-hint" aria-hidden="true">
@@ -525,6 +533,106 @@
       const ring = document.getElementById('echoRing');
       if (ring) ring.style.display = 'block';
     }
+  </script>
+
+  <!-- ═══ תרגול בית · "נוני בבית" (4.7.2026) ═══
+       spec: _handoff/2026-07-04-home-practice-spec.md
+       bkt.js נדרש להמלצת המשימה (getWeakLetters); home-context אוכף מכסה;
+       home-mission בוחר לאן ללכת. במצב כיתה (context=school) — אפס שינוי בזרימה. -->
+  <script src="js/shared/bkt.js"></script>
+  <script src="js/shared/home-context.js"></script>
+  <script src="js/shared/home-mission.js"></script>
+  <script>
+    (function homeFlow() {
+      const HC = window.AvneiHomeContext;
+      const HM = window.AvneiHomeMission;
+
+      // --- שער-הורים: לחיצה ארוכה (2.5 שניות) → מסך "מה תרגלנו היום" ---
+      const gate = document.getElementById('parentsGateBtn');
+      if (gate) {
+        let holdTimer = null;
+        const start = () => {
+          gate.style.transform = 'scale(1.15)';
+          holdTimer = setTimeout(() => { location.href = 'parent-today.html'; }, 2500);
+        };
+        const cancel = () => {
+          gate.style.transform = '';
+          if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+        };
+        gate.addEventListener('pointerdown', start);
+        ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => gate.addEventListener(ev, cancel));
+      }
+
+      if (!HC || HC.getContext() !== 'home') return;
+
+      // --- מכסה מוצתה — home-context כבר מציג "זֶהוּ לְהַיּוֹם" (boot). אין משימה. ---
+      if (HC.isCapReached()) return;
+
+      const mission = HC.getMissionProgress();
+
+      // --- המשימה הושלמה — חגיגה קטנה פעם אחת בסשן, ואז משחק חופשי ---
+      if (mission.completed) {
+        try {
+          if (!sessionStorage.getItem('avnei-home-mission-celebrated')) {
+            sessionStorage.setItem('avnei-home-mission-celebrated', '1');
+            const b = document.createElement('div');
+            b.id = 'homeMissionDoneBubble';
+            b.setAttribute('dir', 'rtl');
+            b.style.cssText = 'position:fixed;bottom:150px;right:20px;z-index:80;background:#fff;' +
+              'border-radius:24px;padding:14px 20px;max-width:300px;font-weight:700;font-size:18px;' +
+              'color:#26505C;box-shadow:0 6px 18px rgba(0,0,0,0.15);';
+            b.textContent = 'מְעוּלֶה! סִיַּמְתֶּם אֶת מְשִׂימַת הַיּוֹם — עַכְשָׁו מְשַׂחֲקִים!';
+            document.body.appendChild(b);
+            try { if (window.AvneiAudio) AvneiAudio.play('home-mission-done'); } catch (e) {}
+            setTimeout(() => b.remove(), 6000);
+          }
+        } catch (e) {}
+        return;
+      }
+
+      // --- משימת היום: נוני פותח עם המלצה. אין המלצה (אין היסטוריה) = משחק חופשי,
+      //     כי בבית לא לומדים חדש (spec §4.1). ---
+      const rec = HM ? HM.getRecommendation() : null;
+      if (!rec) return;
+
+      const started = mission.done > 0;
+      const progressLine = started
+        ? 'כְּבָר עֲנִיתֶם עַל ' + mission.done + ' — עוֹד קְצָת וּמְסַיְּמִים!'
+        : 'מְשִׂימָה קְטַנָּה וְאַחַר כָּךְ מְשַׂחֲקִים חָפְשִׁי!';
+
+      const ov = document.createElement('div');
+      ov.id = 'homeMissionOverlay';
+      ov.setAttribute('dir', 'rtl');
+      ov.innerHTML =
+        '<style>' +
+        '#homeMissionOverlay{position:fixed;inset:0;z-index:900;display:flex;align-items:center;justify-content:center;' +
+          'background:linear-gradient(180deg,rgba(184,232,224,0.45),rgba(99,216,208,0.6));' +
+          'backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);font-family:"Heebo",sans-serif;}' +
+        '#homeMissionOverlay .hm-card{background:rgba(255,255,255,0.92);border-radius:28px;padding:30px 34px;' +
+          'max-width:460px;width:calc(100% - 48px);text-align:center;box-shadow:0 18px 44px rgba(38,80,92,0.25);}' +
+        '#homeMissionOverlay img{width:120px;height:120px;object-fit:contain;margin-bottom:6px;' +
+          'animation:hm-bob 3s ease-in-out infinite;}' +
+        '@keyframes hm-bob{0%,100%{transform:translateY(-5px)}50%{transform:translateY(5px)}}' +
+        '#homeMissionOverlay h2{margin:0 0 6px;font-size:26px;font-weight:900;color:#26505C;}' +
+        '#homeMissionOverlay .hm-sub{margin:0 0 20px;font-size:18px;font-weight:600;color:#4D6F78;}' +
+        '#homeMissionOverlay .hm-go{display:inline-flex;align-items:center;justify-content:center;min-height:56px;' +
+          'padding:12px 34px;border:none;border-radius:999px;cursor:pointer;text-decoration:none;' +
+          'background:linear-gradient(135deg,#FFE7A8,#FFC8AE);color:#26505C;font-family:inherit;' +
+          'font-size:21px;font-weight:800;box-shadow:0 8px 20px rgba(38,80,92,0.18);}' +
+        '#homeMissionOverlay .hm-go:active{transform:scale(0.96);}' +
+        '</style>' +
+        '<div class="hm-card">' +
+          '<img src="assets/noni-happy.png" alt="נוני">' +
+          '<h2>' + rec.noniText + '</h2>' +
+          '<p class="hm-sub">' + progressLine + '</p>' +
+          '<a class="hm-go" id="homeMissionGo" href="' + rec.url +
+            (rec.url.indexOf('?') === -1 ? '?' : '&') + 'mission=1">לַמְּשִׂימָה!</a>' +
+        '</div>';
+      document.body.appendChild(ov);
+      if (!started) {
+        try { if (window.AvneiAudio) AvneiAudio.play('home-intro'); } catch (e) {}
+      }
+    })();
   </script>
 
 </body>
