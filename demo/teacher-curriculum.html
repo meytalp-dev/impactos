@@ -72,6 +72,7 @@
     .prac.c-syll{color:#2E7A66;background:#EFF6F3;border-color:#D6ECE3;}     /* הברה וצלילים */
     .prac.c-word{color:#6A59B8;background:#EEEBF8;border-color:#DDD5F0;}     /* מילים ומשפטים */
     .prac.c-listen{color:#B05A86;background:#FBEBF2;border-color:#F2D7E4;}   /* הבנת הנשמע */
+    .prac.c-read{color:#3D7A8C;background:#EAF5F8;border-color:#D5E9EE;}     /* הבנת הנקרא */
     .prac.c-fluency{color:#B5611F;background:#FBF0E4;border-color:#F0DFC8;}  /* שטף קריאה */
     .prac.c-test{color:#48707C;background:#F0F5F6;border-color:#DDE5E6;}     /* מבדק */
     .prac.ok:hover{filter:brightness(.965);}
@@ -250,6 +251,14 @@
       if(/חגיגת סיום/.test(t))                              return {state:'oral',tag:'אירוע כיתתי'};
       if(/בדיבור|דיאלוג|שפה דבורה|תיאור דמות|תיאור בעזרת תארים/.test(t)) return {state:'oral',tag:'שיח בכיתה'};
       if(/שטף|קריאה חוזרת|מילים לדקה|הקראה|בזוגות/.test(t)) return {state:'ok',cat:'fluency',href:APP+'stage-read-aloud.html',tag:'שטף קריאה'};
+      // הבנת הנקרא (M2, 4.7.2026) — ימי קריאה עצמית (הטקסט על המסך, בלי הקראה) →
+      // stage-14-read-and-answer. חייב לבוא לפני כללי ההאזנה (סיפור/טקסט/הבנה) — אחרת
+      // ימי הקריאה של מאי ("קריאת סיפור", "טקסט מידע") נתפסים בטעות כהבנת הנשמע.
+      // קטעי מאי מקבלים deep-link ‎?text=‎ לקטע הספציפי (יום שוק/לווייתנים/דבורים).
+      if(/^קריאת\s+(סיפור|טקסט|תיאור|פסקה)|^טקסט\s+מידע|איתור מידע בטקסט|מבנה טקסט מידע/.test(t)){
+        var rtxt=/שוק/.test(t)?'shuk':/לוו?יי?ת[נן]/.test(t)?'whales':/דבור/.test(t)?'bees':null;
+        return {state:'ok',cat:'read',href:APP+'stage-14-read-and-answer.html'+(rtxt?'?text='+rtxt:''),tag:'הבנת הנקרא'};
+      }
       if(/סיפור|רצף אירועים/.test(t))                       return {state:'ok',cat:'listen',href:APP+'stage-14-story-sequence.html',tag:'הבנת הנשמע'};
       if(/הנשמע|האזנה|טקסט|הבנה|שאלות/.test(t))             return {state:'ok',cat:'listen',href:APP+'stage-14-listen-and-answer.html',tag:'הבנת הנשמע'};
       // שבועות-תנועה (4.7.2026): נושא שמזכיר תנועה ספציפית → cv-build ממוקד (?vowel=).

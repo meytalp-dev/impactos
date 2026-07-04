@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>אי 14 · לקרוא ולענות — הבנת הנקרא</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css?v=2026-07-04">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Heebo', sans-serif;
+      color: var(--text-main, #26505C);
+      line-height: 1.5;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #BFF1FF 0%, #A8E8FF 40%, #73D9D1 100%);
+      -webkit-font-smoothing: antialiased;
+    }
+    .scene-bg {
+      position: fixed; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center bottom;
+      z-index: 0; pointer-events: none;
+    }
+
+    .page-wrap {
+      position: relative; z-index: 1;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 92px 16px 170px;
+    }
+
+    /* Top bar */
+    .top-bar {
+      position: fixed; top: 0; left: 0; right: 0;
+      padding: 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      z-index: 50;
+    }
+    .icon-btn {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: rgba(255,255,255,0.92); border: 1.5px solid rgba(255,255,255,0.95);
+      box-shadow: 0 6px 16px rgba(38,80,92,0.15);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-main, #26505C); text-decoration: none;
+    }
+    .icon-btn:active { transform: scale(0.92); }
+    .title-pill {
+      background: rgba(255,255,255,0.92);
+      padding: 8px 22px; border-radius: 999px;
+      font-weight: 900; font-size: 18px; color: var(--deep, #1E3D47);
+      box-shadow: 0 6px 16px rgba(38,80,92,0.15);
+    }
+
+    /* Intro: text picker */
+    .intro-card {
+      background: rgba(255,255,255,0.92);
+      border-radius: var(--radius-lg, 28px);
+      padding: 28px 24px;
+      box-shadow: 0 20px 50px rgba(38,80,92,0.18);
+      text-align: center;
+      animation: fade-up 600ms ease-out;
+    }
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .intro-title { font-size: 26px; font-weight: 900; color: var(--deep, #1E3D47); margin-bottom: 8px; }
+    .intro-sub { color: var(--text-soft, #4D6F78); font-size: 17px; margin-bottom: 22px; }
+    .text-grid { display: grid; gap: 14px; }
+    .text-card {
+      min-height: var(--touch-min, 56px);
+      background: var(--warm-white, #FFF9F4);
+      border: 2.5px solid var(--mint, #B8F2CF);
+      border-radius: var(--radius-md, 24px);
+      padding: 18px 20px;
+      font-family: inherit; cursor: pointer;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      transition: transform 160ms ease, border-color 180ms ease, background 180ms ease;
+      text-align: right;
+    }
+    .text-card:hover { transform: translateY(-2px); border-color: var(--sea-green, #8ED9B8); background: #F2FBF6; }
+    .text-card .tc-title { font-weight: 900; font-size: 22px; color: var(--deep, #1E3D47); }
+    .text-card .tc-kind {
+      font-weight: 700; font-size: 14px; color: var(--text-soft, #4D6F78);
+      background: var(--hint, #FFE7A8); border-radius: 999px; padding: 4px 14px; white-space: nowrap;
+    }
+
+    /* קטע הקריאה — Heebo גדול, שורות קצרות, בלי הקראה */
+    .mlmcq-wrap { display: flex; flex-direction: column; align-items: stretch; }
+    .mlmcq-wrap > * + * { margin-top: 16px; }
+    .mechanic-listen-mcq { animation: fade-up 600ms ease-out; }
+
+    .mlmcq-progress {
+      font-weight: 800; font-size: 16px;
+      color: var(--deep, #1E3D47); text-align: center;
+      background: rgba(255,255,255,0.88);
+      padding: 6px 18px; border-radius: 999px; display: inline-block;
+      box-shadow: 0 4px 12px rgba(38,80,92,0.1);
+      margin: 0 auto 12px; align-self: center;
+    }
+
+    .mlmcq-passage-card, .mlmcq-question-card {
+      background: rgba(255,255,255,0.94);
+      border-radius: var(--radius-md, 24px);
+      padding: 22px;
+      box-shadow: 0 16px 40px rgba(38,80,92,0.14);
+    }
+    .read-title {
+      display: none;
+      font-weight: 900; font-size: clamp(24px, 5vw, 30px); color: var(--deep, #1E3D47);
+      text-align: center;
+      background: rgba(255,255,255,0.9);
+      border-radius: 999px; padding: 8px 26px;
+      align-self: center; margin: 0 auto 14px;
+      box-shadow: 0 6px 16px rgba(38,80,92,0.12);
+    }
+    .mlmcq-passage-text {
+      font-family: 'Heebo', sans-serif;
+      font-size: clamp(24px, 5.2vw, 32px);
+      font-weight: 600;
+      line-height: 2.1;
+      white-space: pre-line;           /* כל משפט בשורה משלו */
+      background: var(--warm-white, #FFF9F4);
+      border: 2px solid var(--sand, #F8E3D6);
+      border-radius: var(--radius-sm, 16px);
+      padding: 20px 24px;
+      direction: rtl; text-align: right;
+      color: var(--deep, #1E3D47);
+    }
+    /* כל הפואנטה: הטקסט נקרא לבד — אין כפתור הקראה לקטע */
+    .mlmcq-passage-btn { display: none !important; }
+
+    .mlmcq-question-text {
+      font-weight: 800;
+      font-size: clamp(20px, 4vw, 24px);
+      color: var(--deep, #1E3D47);
+      margin-bottom: 6px;
+      direction: rtl; text-align: right;
+    }
+    /* כפתור רמקול קטן ליד השאלה — הנגשה בלבד */
+    .mlmcq-question-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--water-depth, #63CFE5);
+      color: var(--deep, #1E3D47); border: none;
+      padding: 10px 18px; min-height: 44px;
+      border-radius: 999px;
+      font-family: inherit; font-weight: 800; font-size: 14px;
+      cursor: pointer; box-shadow: 0 5px 12px rgba(38,80,92,0.18);
+      margin-top: 10px;
+    }
+    .mlmcq-question-btn:hover { transform: translateY(-1px); }
+
+    .mlmcq-options { display: grid; gap: 12px; margin-top: 18px; }
+    .mlmcq-option {
+      min-height: var(--touch-min, 56px);
+      background: var(--warm-white, #FFF9F4);
+      border: 2.5px solid var(--stone, #DAD6C9);
+      border-radius: var(--radius-sm, 16px);
+      padding: 16px 22px;
+      font-family: inherit; font-weight: 700;
+      font-size: clamp(19px, 4vw, 23px);
+      color: var(--deep, #1E3D47);
+      cursor: pointer;
+      transition: transform 150ms ease, border-color 180ms ease, background 180ms ease;
+      direction: rtl; text-align: right;
+    }
+    .mlmcq-option:hover:not(:disabled) {
+      border-color: var(--sea-green, #8ED9B8);
+      background: #F2FBF6;
+      transform: translateY(-1px);
+    }
+    .mlmcq-option:disabled { cursor: default; }
+    .mlmcq-option--correct {
+      border-color: var(--success, #7CE7B4); background: #E9FBF2;
+      box-shadow: var(--glow-success, 0 0 20px #7CE7B4);
+    }
+    .mlmcq-option--wrong { border-color: var(--coral, #FFA98D); background: #FFF1EB; }
+    .mlmcq-feedback {
+      min-height: 22px;
+      font-weight: 800; font-size: 17px;
+      text-align: center; margin-top: 14px;
+    }
+    .mlmcq-feedback--ok   { color: #2E7A66; }
+    .mlmcq-feedback--miss { color: #B5611F; }
+    .mlmcq-error {
+      background: var(--hint, #FFE7A8); border: 1px dashed var(--peach, #FFC8AE); border-radius: 12px;
+      padding: 16px; color: var(--deep, #1E3D47); text-align: center; font-weight: 600;
+    }
+
+    /* Summary */
+    .summary-card {
+      background: rgba(255,255,255,0.94);
+      border-radius: var(--radius-lg, 28px);
+      padding: 28px 22px;
+      text-align: center;
+      box-shadow: 0 16px 40px rgba(38,80,92,0.14);
+      animation: fade-up 600ms ease-out;
+    }
+    .summary-title { font-size: 24px; font-weight: 900; color: var(--deep, #1E3D47); margin-bottom: 8px; }
+    .summary-score { font-size: 48px; font-weight: 900; color: var(--sea-green, #8ED9B8); margin: 12px 0; }
+    .summary-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
+    .summary-btn {
+      min-height: var(--touch-min, 56px);
+      background: var(--sea-green, #8ED9B8);
+      color: var(--deep, #1E3D47); border: none; padding: 14px 26px; border-radius: 999px;
+      font-family: inherit; font-weight: 800; font-size: 16px; cursor: pointer;
+      box-shadow: 0 8px 20px rgba(38,80,92,0.18);
+      text-decoration: none; display: inline-flex; align-items: center;
+    }
+    .summary-btn--ghost {
+      background: transparent; color: var(--deep, #1E3D47);
+      border: 2px solid var(--sea-green, #8ED9B8);
+      box-shadow: none;
+    }
+
+    /* נוני */
+    .noni-fixed {
+      position: fixed; bottom: 18px; right: 14px;
+      width: clamp(84px, 18vw, 120px); height: auto;
+      animation: float-bob 3s ease-in-out infinite;
+      pointer-events: none; z-index: 10;
+      filter: drop-shadow(0 8px 14px rgba(38,80,92,0.25));
+    }
+    @keyframes float-bob {
+      0%, 100% { transform: translateY(-8px); }
+      50%      { transform: translateY(8px); }
+    }
+    .noni-bubble {
+      position: fixed; bottom: 150px; right: 16px;
+      background: #fff; border-radius: var(--radius-md, 24px);
+      padding: 14px 20px; max-width: 270px;
+      box-shadow: 0 6px 18px rgba(38,80,92,0.18);
+      z-index: 10;
+      font-weight: 700; font-size: 16px; color: var(--deep, #1E3D47);
+      transition: opacity 300ms ease;
+    }
+    .noni-bubble.hidden { opacity: 0; pointer-events: none; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .intro-card, .mechanic-listen-mcq, .summary-card { animation: none !important; }
+      .noni-fixed { animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true"
+     onerror="this.style.display='none'">
+
+<header class="top-bar">
+  <a href="stage-14-island.html" class="icon-btn" aria-label="חזרה לאי 14">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+  <div class="title-pill">לִקְרֹא וְלַעֲנוֹת</div>
+  <div style="width:52px;height:52px;" aria-hidden="true"></div>
+</header>
+
+<main class="page-wrap">
+
+  <!-- Intro: בחירת קטע -->
+  <section id="introSection" class="intro-card">
+    <h1 class="intro-title">בַּחֲרוּ קֶטַע לִקְרֹא</h1>
+    <p class="intro-sub">קִרְאוּ אֶת הַקֶּטַע לְבַד, בְּשֶׁקֶט — וְאַחַר כָּךְ עֲנוּ עַל הַשְּׁאֵלוֹת.</p>
+    <div class="text-grid" id="textGrid" role="group" aria-label="בחירת קטע קריאה"></div>
+  </section>
+
+  <!-- כותרת הקטע הנבחר -->
+  <div class="read-title" id="readTitle"></div>
+
+  <!-- Game mount root -->
+  <section id="gameRoot" style="display:none;"></section>
+
+  <!-- Summary -->
+  <section id="summarySection" class="summary-card" style="display:none;">
+    <h1 class="summary-title">סִיַּמְתֶּם אֶת הַקֶּטַע!</h1>
+    <div class="summary-score" id="summaryScore">— / —</div>
+    <p id="summaryMsg" style="color:var(--text-soft, #4D6F78);"></p>
+    <div class="summary-actions">
+      <button class="summary-btn" id="anotherTextBtn" type="button">קֶטַע אַחֵר</button>
+      <a class="summary-btn summary-btn--ghost" href="stage-14-island.html">חֲזָרָה לְאִי 14</a>
+    </div>
+  </section>
+
+</main>
+
+<img class="noni-fixed" id="noniImg" src="assets/noni-idle.png" alt="נוני">
+<div class="noni-bubble" id="noniBubble">קִרְאוּ בְּשֶׁקֶט, לְאַט לְאַט. אֲנִי אִתְּכֶם!</div>
+
+<!-- Scripts -->
+<script src="js/state.js"></script>
+<script src="js/shared/event-logger.js"></script>
+<script src="js/shared/bkt.js"></script>
+<script src="js/shared/oral-skill-adapter.js"></script>
+<script src="js/templates/mechanic-listen-mcq.js"></script>
+
+<script>
+  (function () {
+    const DATA_URL = 'data/island-14-reading/passages-read.json';
+    const KIND_HE = { story: 'סִפּוּר', info: 'טֶקְסְט מִידָע' };
+
+    const studentId = localStorage.getItem('avnei-yesod-current-student') || 'local';
+    const intro     = document.getElementById('introSection');
+    const grid      = document.getElementById('textGrid');
+    const readTitle = document.getElementById('readTitle');
+    const root      = document.getElementById('gameRoot');
+    const summary   = document.getElementById('summarySection');
+    const score     = document.getElementById('summaryScore');
+    const msg       = document.getElementById('summaryMsg');
+    const another   = document.getElementById('anotherTextBtn');
+    const noniImg   = document.getElementById('noniImg');
+    const noniBub   = document.getElementById('noniBubble');
+
+    let passages = [];
+    let noniTimer = null;
+
+    function noniSay(text) {
+      if (!noniBub) return;
+      noniBub.textContent = text;
+      noniBub.classList.remove('hidden');
+    }
+    function noniMood(src, ms) {
+      if (!noniImg) return;
+      noniImg.src = 'assets/noni-' + src + '.png';
+      if (noniTimer) clearTimeout(noniTimer);
+      if (ms) noniTimer = setTimeout(() => { noniImg.src = 'assets/noni-idle.png'; }, ms);
+    }
+
+    // המרת passage לרשימת items שטוחים (question אחד פר item) — כמו ה-adapter,
+    // אבל לפי סדר השאלות (לא אקראי): הקטע נשאר על המסך לאורך כל השאלות שלו.
+    function flatten(passage) {
+      return (passage.questions || []).map(q => ({
+        item_id: passage.item_id,
+        q_id: q.q_id,
+        level: passage.level || 1,
+        passage_text: passage.passage_text,
+        question_text: q.question_text,
+        skill: q.skill,
+        options: q.options,
+        primary_island_id: 14,
+      }));
+    }
+
+    function renderPicker() {
+      grid.innerHTML = '';
+      passages.forEach(p => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'text-card';
+        btn.innerHTML = '<span class="tc-title"></span><span class="tc-kind"></span>';
+        btn.querySelector('.tc-title').textContent = p.title;
+        btn.querySelector('.tc-kind').textContent = KIND_HE[p.kind] || 'קֶטַע';
+        btn.addEventListener('click', () => startPassage(p));
+        grid.appendChild(btn);
+      });
+    }
+
+    function startPassage(passage) {
+      intro.style.display = 'none';
+      summary.style.display = 'none';
+      root.style.display = '';
+      root.innerHTML = '';
+      readTitle.textContent = passage.title;
+      readTitle.style.display = 'inline-block';
+      noniMood('idle');
+      noniSay('קִרְאוּ בְּשֶׁקֶט, לְאַט לְאַט. אֲנִי אִתְּכֶם!');
+
+      window.AvneiMechanicListenMCQ.init({
+        studentId,
+        level: passage.level || 1,
+        mode: 'read',                      // אין הקראה אוטומטית — הילד.ה קורא.ת לבד
+        primary_island_id: 14,
+        batchSize: passage.questions.length,
+        items: flatten(passage),
+        mountRoot: root,
+        onProgress: (p) => {
+          if (p.isCorrect) noniMood('happy', 1400);
+          else noniMood('thinking', 1400);
+        },
+        onComplete: (payload) => {
+          root.style.display = 'none';
+          readTitle.style.display = 'none';
+          summary.style.display = '';
+          const pct = payload.total > 0 ? Math.round((payload.correct / payload.total) * 100) : 0;
+          score.textContent = payload.correct + ' / ' + payload.total;
+          if (pct >= 70) {
+            noniMood('happy', 4000);
+            msg.textContent = 'כָּל הַכָּבוֹד! קְרָאתֶם לְבַד וַעֲנִיתֶם נָכוֹן.';
+            noniSay('אֵיזֶה כֵּיף! קְרָאתֶם לְגַמְרֵי לְבַד!');
+          } else {
+            msg.textContent = 'עֲנִיתֶם עַל ' + pct + '% מֵהַשְּׁאֵלוֹת. אֶפְשָׁר לִקְרֹא שׁוּב וּלְנַסּוֹת עוֹד פַּעַם.';
+            noniSay('בּוֹאוּ נִקְרָא שׁוּב בְּיַחַד לְאַט.');
+          }
+        },
+      });
+      window.AvneiMechanicListenMCQ.start();
+    }
+
+    another.addEventListener('click', () => {
+      summary.style.display = 'none';
+      intro.style.display = '';
+      noniMood('idle');
+      noniSay('קִרְאוּ בְּשֶׁקֶט, לְאַט לְאַט. אֲנִי אִתְּכֶם!');
+    });
+
+    fetch(DATA_URL)
+      .then(r => { if (!r.ok) throw new Error('failed to load ' + DATA_URL); return r.json(); })
+      .then(data => {
+        passages = (data && Array.isArray(data.passages)) ? data.passages : [];
+        if (!passages.length) throw new Error('no passages');
+        renderPicker();
+        // deep-link מהתוכנית השנתית: ?text=shuk|whales|bees
+        const want = new URLSearchParams(location.search).get('text');
+        const match = want && passages.find(p => p.topic === want);
+        if (match) startPassage(match);
+      })
+      .catch(err => {
+        console.error('stage-14-read-and-answer:', err);
+        grid.innerHTML = '<div class="mlmcq-error" lang="he">אוֹפְּס, לֹא הִצְלַחְנוּ לִטְעֹן אֶת הַקְּטָעִים. נַסּוּ שׁוּב מְאֻחָר יוֹתֵר.</div>';
+      });
+  })();
+</script>
+
+</body>
+</html>

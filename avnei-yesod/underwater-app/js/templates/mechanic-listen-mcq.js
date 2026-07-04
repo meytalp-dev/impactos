@@ -48,12 +48,14 @@
   // ADAPT-8 (minigame-fit T3, 30.6.2026) — העדפת ElevenLabs MP3 על-פני Web Speech.
   // מנגן את audioKey דרך AvneiAudio אם קיים; אחרת — נופל ל-Web Speech רק כשלא במצב
   // קריאה (read). במצב read הילד.ה קורא.ת בעצמו.ה ואין הקראה אוטומטית.
+  // force=true (M2, 4.7.2026) — עוקף את חסימת ה-readMode עבור לחיצה מפורשת על
+  // כפתור הרמקול של השאלה (הנגשה); הקטע עצמו לעולם לא מוקרא במצב read.
   // ⚠️ להסרה מלאה של Web Speech (DNA אודיו) — דרושה הפקת MP3 לפריטי אי 14 (§7.3).
-  function playText(audioKey, text) {
+  function playText(audioKey, text, force) {
     if (audioKey && typeof window !== 'undefined' && window.AvneiAudio) {
       try { window.AvneiAudio.play(audioKey); return Promise.resolve(true); } catch (e) {}
     }
-    if (_state && _state.readMode) return Promise.resolve(false);
+    if (_state && _state.readMode && !force) return Promise.resolve(false);
     return speakHebrew(text);
   }
 
@@ -190,7 +192,8 @@
 
   function onPlayQuestion() {
     if (!_state || !_state.currentItem) return;
-    playText(_state.currentItem.question_audio_key, _state.currentItem.question_text || '');
+    // force — במצב read מותרת הקראת השאלה בלבד, ורק בלחיצה מפורשת (הנגשה).
+    playText(_state.currentItem.question_audio_key, _state.currentItem.question_text || '', true);
   }
 
   // --------------------------------------------------------------------------
