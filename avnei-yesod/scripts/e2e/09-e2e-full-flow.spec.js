@@ -60,11 +60,6 @@ test.describe('Story 1→9 chain · pilot journey integration', () => {
       expect(state.moy[s].suggested_intervention.patternId).toBe('phonological');
     });
 
-    // Step 8 — F.21E reads the same state; letters header is shown.
-    await page.goto(`/underwater-app/teacher-action.html?student=${sid}`);
-    await expect(page.locator('#lettersSection')).toBeAttached({ timeout: 5000 });
-    await expect(
-      page.locator('h2.ta-section-title', { hasText: 'נקודות לחיזוק' })
-    ).toBeVisible({ timeout: 5000 });
+    // Step 8 (F.21E / teacher-action.html) הוסר — המסך אורכב ב-4.7.2026.
   });
 });

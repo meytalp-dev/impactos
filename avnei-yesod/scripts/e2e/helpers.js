@@ -6,7 +6,7 @@
 //   underwater-app:assessments      → AvneiAssessments state {boy, moy:{[sid]:{...attempts}}, eoy}
 //   avnei-bkt-v1 / avnei-bkt-strand-v1 → BKT state (per_island, per_letter, per_strand)
 //   avnei-event-log-v1              → event log array (event-logger.js)
-//   teacher_authed (sessionStorage) → PIN gate bypass for teacher-rama / teacher-action
+//   teacher_authed (sessionStorage) → PIN gate bypass for teacher-rama
 //
 // PIN code for teacher pages: 4521
 //

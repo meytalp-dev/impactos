@@ -58,18 +58,5 @@ test.describe('Verification report screenshots', () => {
     });
   });
 
-  test('teacher-action · F.21E letters section', async ({ page }, testInfo) => {
-    await bypassPin(page);
-    await prepareSession(page, {
-      students: [{ id: 'stu-done', name: 'דנה', profile: 'B' }],
-      currentStudent: 'stu-done',
-      weakBkt: { studentId: 'stu-done', letters: ['מ', 'ש', 'ק'] },
-    });
-    await page.goto('/underwater-app/teacher-action.html?student=stu-done');
-    await page.locator('#lettersSection').waitFor({ timeout: 5000 });
-    await page.screenshot({
-      path: `screenshots/${testInfo.project.name}-08-teacher-action-letters.png`,
-      fullPage: true,
-    });
-  });
+  // הבדיקה 'teacher-action · F.21E letters section' הוסרה — המסך אורכב ב-4.7.2026.
 });
