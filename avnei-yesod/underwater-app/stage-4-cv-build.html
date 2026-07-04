@@ -370,7 +370,7 @@
   <main>
     <div class="build-intro">
       <h1>הַרְכִּיבוּ אֶת הַצְּלִיל</h1>
-      <p>הַקְשִׁיבוּ לַצְּלִיל 🔊 — וְהַרְכִּיבוּ אוֹתוֹ מֵאוֹת וְנִקּוּד</p>
+      <p id="buildIntroSub">הַקְשִׁיבוּ לַצְּלִיל 🔊 — וְהַרְכִּיבוּ אוֹתוֹ מֵאוֹת וְנִקּוּד</p>
     </div>
 
     <div id="gameRoot"></div>
@@ -408,6 +408,54 @@
         }
         document.removeEventListener('click', unlock);
       }, { once: true });
+
+      // --- מיקוד-תנועה: ?vowel=<id> (שבועות-תנועה בתוכנית השנתית · 4.7.2026) ---
+      // כשהפרמטר קיים ותקין (id מ-vowel-adapter): 4/5 סבבים על התנועה הממוקדת,
+      // באותיות בעלות צליל ייחודי (בלי תאומות ת/ט · ק/כ · א/ע — כמו PILOT_TARGETS),
+      // + סבב-ניגוד אחד מתנועה שכבר נלמדה לפי רצף מטח. בלי פרמטר — ההתנהגות
+      // הקיימת ללא שינוי. קבלת phoneme_group (קמץ+פתח=/a/) וה-logging נשארים
+      // במנוע כמו שהם.
+      // מימוש: עטיפת getTopWeakCVs בדף הזה בלבד — mechanic-cv-build בונה ממנה
+      // את רשימת ה-targets כשהיא מחזירה מספיק פריטים (בלי לגעת בקובץ המנוע).
+      // ⚠️ שווא: אודיו cv-*-shva ידוע כבעייתי (מבטא "te" — ראה feedback 3.7.2026);
+      //    מצב ?vowel=shva עובד טכנית אך דורש הפקת אודיו מחדש לפני שימוש בכיתה.
+      var VA = window.AvneiVowelAdapter;
+      var focusId = new URLSearchParams(location.search).get('vowel');
+      var focusVowel = (focusId && VA && typeof VA.getVowelById === 'function') ? VA.getVowelById(focusId) : null;
+      if (focusVowel) {
+        // סדר ההוראה (ב-canonical של אריחי המנוע): /a/ → שווא → /i/ → /o/ → /e/ → /u/
+        var TEACH_SEQ = ['patach', 'shva', 'hiriq', 'holam', 'tzere', 'kubutz'];
+        var CANON = { kamatz: 'patach', segol: 'tzere', shuruk: 'kubutz' };
+        var canonFocus = CANON[focusId] || focusId;
+        // לקבוצת /u/ (קובוץ/שורוק) קיימים קובצי אודיו cv-* רק לאותיות ב/ל/מ
+        var FOCUS_LETTERS = (VA.getPhonemeGroup(focusId) === 'u') ? ['ב', 'ל', 'מ'] : ['מ', 'ב', 'ל', 'ש', 'ר'];
+        var learnedPool = TEACH_SEQ.slice(0, Math.max(0, TEACH_SEQ.indexOf(canonFocus)));
+        var pick = function (arr) { return arr[Math.floor(Math.random() * arr.length)]; };
+        var lettersShuffled = FOCUS_LETTERS.slice().sort(function () { return Math.random() - 0.5; });
+        var focusTargets = [];
+        for (var i = 0; i < 5; i++) {
+          focusTargets.push({ letter: lettersShuffled[i % lettersShuffled.length], vowelId: focusId });
+        }
+        // סבב-ניגוד אחד (לא הראשון) מתנועה שכבר נלמדה — אם קיימת כזו
+        if (learnedPool.length > 0) {
+          focusTargets[3] = { letter: pick(lettersShuffled), vowelId: pick(learnedPool) };
+        }
+        VA.getTopWeakCVs = function (sid, n) {
+          var count = (typeof n === 'number' && n > 0) ? n : focusTargets.length;
+          var out = [];
+          for (var j = 0; j < count; j++) out.push(focusTargets[j % focusTargets.length]);
+          return out;
+        };
+        // כותרת-משנה ממוקדת (מנוקד — מסך ילד.ה)
+        var VOWEL_NAME_NIQUD = {
+          kamatz: 'קָמָץ', patach: 'פַּתָּח', shva: 'שְׁוָא', hiriq: 'חִירִיק', holam: 'חוֹלָם',
+          tzere: 'צֵירֵי', segol: 'סֶגּוֹל', kubutz: 'קֻבּוּץ', shuruk: 'שׁוּרוּק',
+        };
+        var introSub = document.getElementById('buildIntroSub');
+        if (introSub && VOWEL_NAME_NIQUD[focusId]) {
+          introSub.innerHTML = 'הַיּוֹם מִתְאַמְּנִים עַל <b>' + VOWEL_NAME_NIQUD[focusId] + '</b> — הַקְשִׁיבוּ 🔊 וְהַרְכִּיבוּ';
+        }
+      }
 
       // Mount the mechanic — task mode עם 5 trials
       window.AvneiMechanics['cv-build'].mount(document.getElementById('gameRoot'), {
