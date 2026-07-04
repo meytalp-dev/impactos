@@ -56,6 +56,8 @@
     .prac .tic{display:inline-flex;} .prac .tic svg{width:15px;height:15px;}
     .prac.ok{color:#1f7a6b;background:#E4F5EF;border-color:#BFE6D8;}
     .prac.ok:hover{background:#D3EEE3;}
+    .prac.sum{color:#6D3FC4;background:#F3EEFC;border-color:#DCCEF5;}
+    .prac.sum:hover{background:#EAE0F9;}
     .prac.offline{color:#6b7a86;background:#F0F3F5;border-color:#E3E9ED;cursor:default;}
     .prac.gap{color:#B0722A;background:#FCF3E6;border-color:#F0DDBF;border-style:dashed;cursor:help;}
     .praccov{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--text-soft);background:#F4F8F9;border:1px solid #EDF2F2;border-radius:12px;padding:9px 15px;margin-bottom:14px;}
@@ -64,6 +66,7 @@
     .praccov .cok{color:#1f7a6b;} .praccov .cok .dot{background:#27a08c;}
     .praccov .cgap{color:#B0722A;} .praccov .cgap .dot{background:#E0A44A;}
     .praccov .coff{color:#6b7a86;} .praccov .coff .dot{background:#B9C4CC;}
+    .praccov .csum{color:#6D3FC4;} .praccov .csum .dot{background:#9A6EE0;}
   </style>
 </head>
 <body>
@@ -185,9 +188,32 @@
       // חסרות עדיין: ב · מ · ק · ש · ת  → יסומנו "חסר"
     };
     function normFinal(c){return {'ך':'כ','ם':'מ','ן':'נ','ף':'פ','ץ':'צ'}[c]||c;}
+    // אילו אותיות נלמדו עד יום נתון (כולל אותו יום לא-כולל) — סריקה מצטברת
+    // של "האות X" בכל הנושאים הקודמים. משמש את תרגול-הסיכום (שרשרת הפנינים).
+    function lettersLearnedUpTo(mi,di){
+      var seen=[];
+      for(var m=0;m<=mi&&m<SCHOOL.length;m++){
+        var days=SCHOOL[m].days, lim=(m===mi)?di:days.length;
+        for(var d=0;d<lim;d++){
+          var lm=(days[d]||'').match(/האות\s+([א-ת])/);
+          if(lm){var L=normFinal(lm[1]);if(seen.indexOf(L)<0)seen.push(L);}
+        }
+      }
+      return seen;
+    }
     // מחזיר {state:'ok'|'offline'|'gap', href, tag}
-    function resolvePractice(topic){
+    function resolvePractice(topic,mi,di){
       var t=topic;
+      // תרגול-סיכום מצטבר (3.7.2026, שרשרת הפנינים) — ימי "תרגול/סיכום אותיות
+      // שנלמדו" מקבלים את stage-summary-cv עם האותיות שנלמדו בפועל עד אותו יום.
+      if(/תרגול\s+חמש\s+האותיות|סיכום\s+\S*\s*אותיות|זיהוי מהיר של כל הא/.test(t)){
+        var learned=lettersLearnedUpTo(mi,di);
+        if(learned.length>0){
+          return {state:'sum',
+            href:APP+'stage-summary-cv.html?letters='+encodeURIComponent(learned.join(',')),
+            tag:learned.length<=5?'סיכום · '+learned.join(' '):'סיכום '+learned.length+' אותיות'};
+        }
+      }
       var lm=t.match(/האות\s+([א-ת])/);
       if(lm){var L=normFinal(lm[1]);
         return LETTERS[L] ? {state:'ok',href:APP+LETTERS[L],tag:'אות '+lm[1]} : {state:'gap',tag:'אות '+lm[1]};}
@@ -204,6 +230,7 @@
     }
     function pracHTML(pr){
       if(pr.state==='ok')      return '<a class="prac ok" href="'+pr.href+'" target="_blank" rel="noopener"><span class="tic" data-ic="playcircle"></span>פתח תרגול · '+pr.tag+'</a>';
+      if(pr.state==='sum')     return '<a class="prac sum" href="'+pr.href+'" target="_blank" rel="noopener"><span class="tic" data-ic="star"></span>תרגול '+pr.tag+'</a>';
       if(pr.state==='offline') return '<span class="prac offline"><span class="tic" data-ic="edit"></span>כתיבה במחברת</span>';
       return '<span class="prac gap" title="עדיין אין תרגול דיגיטלי לנושא הזה — מסומן כחסר לבנייה">'+
              '<span class="tic" data-ic="alert"></span>חסר תרגול'+(pr.tag?' · '+pr.tag:'')+'</span>';
@@ -218,15 +245,15 @@
       document.getElementById('calfocus').innerHTML='<b>מוקד החודש:</b> '+M.focus+(M.tag?' · <b>'+M.tag+'</b>':'');
       document.getElementById('prevM').disabled=(cur===0);
       document.getElementById('nextM').disabled=(cur===SCHOOL.length-1);
-      var days=schoolDays(M.y,M.m),html='',wk=0,cov={ok:0,gap:0,off:0};
+      var days=schoolDays(M.y,M.m),html='',wk=0,cov={ok:0,gap:0,off:0,sum:0};
       days.forEach(function(day,i){
         if(day.wd===0){wk++;html+='<div class="wklabel">שבוע '+wk+'</div>';}
         var topic=M.days[i]||'חזרה, תרגול והעמקה';
         var isToday=(cur===TODAY.mi&&i===TODAY.di);
         var key=cur+'-'+i;
         var extras=(EXTRAS[key]||[]).map(function(x,xi){return '<span class="xtopic">'+x+'<span class="rm" data-rm="'+key+'|'+xi+'">✕</span></span>';}).join('');
-        var pr=resolvePractice(topic);
-        cov[pr.state==='ok'?'ok':pr.state==='offline'?'off':'gap']++;
+        var pr=resolvePractice(topic,cur,i);
+        cov[pr.state==='ok'?'ok':pr.state==='sum'?'sum':pr.state==='offline'?'off':'gap']++;
         html+='<div class="dayrow'+(isToday?' today':'')+'" data-key="'+key+'">'+
           '<div class="daydate"><div class="dn">'+WD[day.wd]+'</div><div class="dd">'+day.d+'.'+(M.m+1)+'</div>'+(isToday?'<div class="nowtag">היום</div>':'')+'</div>'+
           '<div class="daymid"><span class="ttext">'+topic+'</span>'+extras+'<div>'+pracHTML(pr)+'</div></div>'+
@@ -237,6 +264,7 @@
       document.getElementById('caldays').innerHTML=html;
       document.getElementById('praccov').innerHTML=
         '<span class="cok"><span class="dot"></span>יש תרגול דיגיטלי: <b>'+cov.ok+'</b></span>'+
+        (cov.sum?'<span class="csum"><span class="dot"></span>תרגול סיכום: <b>'+cov.sum+'</b></span>':'')+
         '<span class="cgap"><span class="dot"></span>חסר תרגול: <b>'+cov.gap+'</b></span>'+
         '<span class="coff"><span class="dot"></span>כתיבה במחברת: <b>'+cov.off+'</b></span>';
       fillTics();
