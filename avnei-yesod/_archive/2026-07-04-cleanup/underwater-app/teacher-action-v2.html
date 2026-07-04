@@ -1,0 +1,1862 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>דשבורד פעולת בוקר · v2 רגוע · אבני יסוד</title>
+
+<!--
+  ============================================================
+  F.21E v2 — "מצב בוקר רגוע"
+  גרסת עיצוב חלופית להשוואה עם teacher-action.html
+  31.5.2026
+  ============================================================
+  שינויים מ-v1 (CSS + HTML scaffold בלבד — ה-JS זהה):
+    1. עמודה אחת, רוחב 720px, focal point = קבוצות מעל הקיפול.
+    2. סולו/MOY/אותיות/ביצוע — accordion (<details>) סגור כברירת מחדל.
+    3. פלטה רגועה — לבן נקי + צל רך במקום border טורקיז סביב הכל.
+    4. "למה עכשיו?" — טקסט אופקי נטוי, לא קופסה ירוקה.
+    5. אותיות — inline, לא קופסה צהובה.
+    6. KPI — pills קטנים, לא 4 קופסאות גדולות.
+    7. הסרת אימוג'ים מכותרות סקשנים (🌅📋👤⚠️🎯✓). icon פר-pattern נשאר.
+    8. כל ה-IDs וה-classes שמיוצרים ב-JS נשמרים זהים → אפס שינוי ב-JS.
+    9. הסקריפט קטע (סקריפטים, modal styles, presentation mode, print) — זהה ל-v1.
+  ============================================================
+-->
+
+<style>
+  /* ============ Base ============ */
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Assistant', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: #F7FBFA;
+    color: #2B3D3D;
+    direction: rtl;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.55;
+  }
+
+  /* ============ PIN gate (תואם teacher-rama) ============ */
+  #pinGate {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: #F7FBFA;
+    z-index: 9999;
+  }
+  #pinGate .gate-card {
+    background: white; padding: 36px 40px;
+    border-radius: 16px;
+    box-shadow: 0 1px 2px rgba(36,59,59,0.04), 0 12px 36px rgba(36,59,59,0.06);
+    width: min(360px, 92vw); text-align: center;
+    border: 0;
+  }
+  #pinGate h1 { font-size: 20px; color: #1a4d4d; margin: 0 0 8px; font-weight: 700; }
+  #pinGate p { font-size: 13px; color: #5a6d6d; margin: 0 0 18px; }
+  #pinGate input {
+    width: 140px; padding: 11px 14px;
+    font-size: 18px; text-align: center;
+    border: 1.5px solid #E0EBE9; border-radius: 10px;
+    font-family: inherit; direction: ltr;
+    transition: border-color 0.15s;
+  }
+  #pinGate input:focus { outline: none; border-color: #2c7a7b; }
+  #pinGate button {
+    margin-top: 14px;
+    background: #2c7a7b; color: white; border: 0;
+    padding: 11px 26px; border-radius: 10px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    font-family: inherit;
+  }
+  #pinGate button:hover { background: #1e5f5f; }
+  #pinErr { color: #b91c1c; font-size: 12px; margin-top: 10px; min-height: 14px; }
+
+  /* ============ Container ============ */
+  #mainContent {
+    display: none;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 28px 24px 80px;
+  }
+
+  /* ============ Header — quiet ============ */
+  .ta-header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px;
+    margin-bottom: 28px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+  .ta-header-meta { display: flex; flex-direction: column; gap: 2px; }
+  .ta-title {
+    font-size: 13px; font-weight: 600;
+    color: #5a6d6d; letter-spacing: 0.02em;
+    margin: 0;
+  }
+  .ta-sub { font-size: 12px; color: #8a9a9a; margin: 0; }
+  .ta-header-actions { display: flex; gap: 8px; }
+  .ta-btn {
+    background: transparent; color: #5a6d6d;
+    border: 1px solid #E0EBE9;
+    padding: 7px 14px;
+    border-radius: 8px; font-size: 13px; font-weight: 500;
+    cursor: pointer; font-family: inherit;
+    min-height: 34px;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .ta-btn:hover { background: white; border-color: #C2D4D1; color: #1a4d4d; }
+  .ta-btn-primary {
+    background: transparent; color: #2c7a7b; border-color: #B5D6D2;
+  }
+  .ta-btn-primary:hover { background: #F0F8F6; border-color: #2c7a7b; color: #1e5f5f; }
+
+  /* ============ Hero — calm greeting + KPI pills ============ */
+  .ta-hero {
+    background: transparent;
+    border: 0; padding: 0;
+    margin-bottom: 36px;
+  }
+  .ta-hero-sentence {
+    font-size: 22px; font-weight: 600;
+    color: #1a4d4d;
+    line-height: 1.45;
+    margin: 0 0 16px;
+    max-width: 620px;
+  }
+  .ta-kpi-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    grid-template-columns: none;
+  }
+  .ta-kpi {
+    display: inline-flex; align-items: baseline; gap: 5px;
+    background: #EEF4F3;
+    border: 0;
+    border-radius: 999px;
+    padding: 5px 14px;
+    min-height: 0;
+  }
+  .ta-kpi-num {
+    font-size: 14px; font-weight: 700;
+    color: #1a4d4d;
+  }
+  .ta-kpi-label {
+    font-size: 12px; font-weight: 500;
+    color: #5a6d6d;
+  }
+
+  /* ============ Main = single column ============ */
+  .ta-main {
+    display: block;
+    grid-template-columns: none;
+  }
+  .ta-section {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    margin-bottom: 0;
+  }
+  .ta-section-head {
+    display: flex; align-items: baseline;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .ta-section-title {
+    font-size: 13px; font-weight: 600;
+    color: #5a6d6d; letter-spacing: 0.04em;
+    margin: 0;
+    text-transform: none;
+  }
+  .ta-section-count {
+    background: #EEF4F3; color: #5a6d6d;
+    padding: 2px 9px; border-radius: 999px;
+    font-size: 11px; font-weight: 600;
+  }
+  .ta-empty {
+    background: transparent;
+    border: 0;
+    padding: 8px 0;
+    color: #8a9a9a;
+    font-size: 14px;
+    font-style: italic;
+    line-height: 1.6;
+  }
+  .ta-empty a { color: #2c7a7b; font-weight: 600; }
+  .ta-empty button {
+    background: transparent; border: 1px solid #E0EBE9;
+    color: #5a6d6d; padding: 4px 10px; border-radius: 6px;
+    font-family: inherit; font-size: 13px; cursor: pointer;
+  }
+
+  /* ============ Group cards — clean editorial ============ */
+  .ta-cards { display: flex; flex-direction: column; gap: 14px; }
+  .ta-card {
+    background: #FFFFFF;
+    border: 0;
+    border-radius: 14px;
+    padding: 22px 24px;
+    box-shadow: 0 1px 2px rgba(36,59,59,0.04), 0 6px 20px rgba(36,59,59,0.04);
+    transition: box-shadow 0.18s ease;
+  }
+  .ta-card:hover {
+    box-shadow: 0 1px 2px rgba(36,59,59,0.05), 0 10px 28px rgba(36,59,59,0.07);
+  }
+  .ta-card-head {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 4px;
+  }
+  .ta-card-icon {
+    font-size: 22px;
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    background: #F2F8F7;
+    border-radius: 12px;
+    flex-shrink: 0;
+  }
+  .ta-card-title {
+    font-size: 17px; font-weight: 700; color: #1a4d4d;
+  }
+  .ta-card-students {
+    font-size: 14px; color: #5a6d6d;
+    margin: 6px 0 12px 52px;
+  }
+  /* "למה עכשיו?" — טקסט אופקי, בלי קופסה */
+  .ta-card-why {
+    background: transparent;
+    border: 0; border-right: 0;
+    padding: 0;
+    border-radius: 0;
+    margin: 0 52px 10px 0;
+    margin-right: 52px;
+    font-size: 14px;
+    color: #5a6d6d;
+    font-style: italic;
+    line-height: 1.55;
+  }
+  .ta-card-why-label {
+    font-style: normal;
+    font-weight: 600;
+    color: #2c7a7b;
+    margin-left: 6px;
+  }
+  /* אותיות — inline, בלי קופסה צהובה */
+  .ta-card-letters {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    margin: 0 52px 14px 0;
+    margin-right: 52px;
+    font-size: 14px;
+    color: #5a6d6d;
+  }
+  .ta-card-letters strong {
+    color: #5a6d6d;
+    font-weight: 500;
+    margin-left: 4px;
+  }
+  .ta-letter {
+    display: inline-block;
+    background: transparent;
+    color: #1a4d4d;
+    font-weight: 800;
+    font-size: 16px;
+    padding: 0 4px;
+    margin: 0;
+    border-radius: 0;
+    min-width: 0;
+  }
+  .ta-card-actions {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin: 4px 52px 0 0;
+    margin-right: 52px;
+    padding-top: 4px;
+  }
+  .ta-action-btn {
+    border: 0; padding: 9px 16px;
+    border-radius: 10px; font-family: inherit;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    min-height: 38px;
+    transition: background 0.15s, color 0.15s;
+  }
+  .ta-action-primary { background: #2c7a7b; color: white; }
+  .ta-action-primary:hover { background: #1e5f5f; }
+  .ta-action-mark { background: #EAF3F1; color: #2c7a7b; }
+  .ta-action-mark:hover { background: #D9E9E6; }
+  .ta-action-mark.is-done { background: #F0F3F3; color: #8a9a9a; }
+  .ta-action-mark.is-done:hover { background: #E2E8E8; }
+  .ta-action-undo { background: white; color: #5a6d6d; border: 1px solid #E0EBE9; }
+  .ta-action-undo:hover { background: #F7FAFA; color: #1a4d4d; }
+  .ta-action-secondary { background: transparent; color: #5a6d6d; padding: 9px 14px; }
+  .ta-action-secondary:hover { background: #EEF4F3; color: #1a4d4d; }
+
+  /* status row — שקט */
+  .ta-card-status {
+    font-size: 12px; color: #8a9a9a;
+    margin: 14px 52px 0 0;
+    margin-right: 52px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .ta-badge {
+    display: inline-block; padding: 2px 9px;
+    border-radius: 999px; font-size: 11px; font-weight: 500;
+  }
+  .ta-badge-pending { background: transparent; color: #8a9a9a; padding-right: 0; padding-left: 0; }
+  .ta-badge-done-today { background: #E8F2EC; color: #2D6A4F; }
+  .ta-badge-done-week { background: transparent; color: #8a9a9a; padding-right: 0; padding-left: 0; }
+  .ta-badge-attn { background: #FCE9DC; color: #9C3A14; }
+  .ta-badge-waiting { background: #F5EEDB; color: #7C5A12; }
+
+  /* ============ Accordion — secondary sections ============ */
+  .ta-accordion {
+    margin-top: 44px;
+    border-top: 1px solid #E0EBE9;
+    padding-top: 24px;
+  }
+  .ta-accordion-title {
+    font-size: 12px; font-weight: 600;
+    color: #8a9a9a; letter-spacing: 0.06em;
+    margin: 0 0 8px;
+    text-transform: uppercase;
+  }
+  details.ta-fold {
+    border: 0;
+    border-bottom: 1px solid #EAF1EF;
+  }
+  details.ta-fold:last-child { border-bottom: 0; }
+  details.ta-fold > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 16px 2px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px;
+    user-select: none;
+    transition: color 0.15s;
+  }
+  details.ta-fold > summary::-webkit-details-marker { display: none; }
+  details.ta-fold > summary::marker { display: none; content: ''; }
+  details.ta-fold > summary .ta-fold-left {
+    display: flex; align-items: center; gap: 10px;
+  }
+  details.ta-fold > summary .ta-fold-title {
+    font-size: 14px; font-weight: 600; color: #1a4d4d;
+  }
+  details.ta-fold > summary .ta-fold-count {
+    background: #EEF4F3; color: #5a6d6d;
+    padding: 2px 9px; border-radius: 999px;
+    font-size: 11px; font-weight: 600;
+  }
+  details.ta-fold > summary .ta-fold-chevron {
+    color: #8a9a9a;
+    font-size: 14px;
+    transition: transform 0.2s ease;
+    display: inline-block;
+  }
+  details.ta-fold[open] > summary .ta-fold-chevron { transform: rotate(180deg); }
+  details.ta-fold > summary:hover .ta-fold-title { color: #2c7a7b; }
+  details.ta-fold > .ta-fold-body {
+    padding: 4px 2px 22px;
+  }
+
+  /* ============ Solo cards (inside fold) ============ */
+  .ta-solo-card {
+    background: #FAFCFB;
+    border: 0;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .ta-solo-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 4px;
+  }
+  .ta-solo-name {
+    font-size: 14px; font-weight: 700; color: #1a4d4d;
+    background: transparent; border: 0; padding: 0;
+    cursor: pointer; font-family: inherit;
+    text-decoration: none;
+  }
+  .ta-solo-name:hover { color: #2c7a7b; text-decoration: underline; }
+  .ta-solo-need {
+    font-size: 13px; color: #5a6d6d;
+    margin: 4px 0 6px;
+  }
+  .ta-solo-microcopy {
+    font-size: 12px; color: #5a6d6d;
+    background: transparent; padding: 0;
+    margin: 4px 0 10px;
+    line-height: 1.55;
+    font-style: italic;
+  }
+
+  /* ============ MOY cards (inside fold) ============ */
+  .ta-moy-card {
+    background: #FFFBF3;
+    border: 0;
+    border-right: 3px solid #F5B947;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+  }
+  .ta-moy-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+  .ta-moy-name { font-size: 14px; font-weight: 700; color: #6E4A0F; }
+  .ta-moy-task { font-size: 13px; color: #7C5A12; margin: 2px 0 8px; }
+  .ta-moy-type { font-size: 12px; color: #6E4A0F; margin-bottom: 8px; }
+
+  /* ============ Letters section (inside fold) ============ */
+  .ta-letters-list { font-size: 13px; color: #1a4d4d; }
+  .ta-letter-block {
+    padding: 12px 0;
+    border-bottom: 1px solid #EAF1EF;
+  }
+  .ta-letter-block:first-child { padding-top: 4px; }
+  .ta-letter-block:last-child { border-bottom: 0; padding-bottom: 4px; }
+  .ta-letter-block .ta-letter-stu-name {
+    font-weight: 700; color: #1a4d4d; font-size: 13px; margin-bottom: 8px;
+  }
+  .ta-letter-item {
+    display: flex; align-items: center; gap: 8px;
+    flex-wrap: wrap;
+    padding: 5px 0;
+  }
+  .ta-letter-item .ta-letter {
+    display: inline-block; min-width: 26px; text-align: center;
+    background: #F2F8F7;
+    color: #1a4d4d;
+    padding: 3px 9px; border-radius: 7px;
+    font-weight: 700; font-size: 14px;
+  }
+  .ta-letter-status {
+    font-size: 12px; padding: 2px 9px;
+    border-radius: 999px; white-space: nowrap;
+    font-weight: 500;
+  }
+  .ta-letter-status.is-auto { background: #E8F2EC; color: #2D6A4F; }
+  .ta-letter-status.is-miss { background: #FCE9DC; color: #9C3A14; }
+  .ta-letter-status.is-off  { background: #F5EEDB; color: #7C5A12; }
+  .ta-letter-status.is-targeted { background: #DDEAF7; color: #1E40AF; }
+  .ta-letter-btn {
+    border: 1px solid #E0EBE9; padding: 5px 11px;
+    border-radius: 7px; font-family: inherit;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    min-height: 30px;
+    background: white; color: #2c7a7b;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .ta-letter-btn:hover { background: #EEF4F3; border-color: #B5D6D2; }
+  .ta-letter-btn.is-secondary { color: #5a6d6d; }
+  .ta-letter-btn.is-secondary:hover { background: #F7FAFA; }
+  .ta-letter-spacer { flex: 1; }
+  .ta-letter-summary {
+    background: #F2F7FB;
+    border: 0;
+    border-radius: 8px;
+    padding: 8px 12px !important;
+    margin-bottom: 6px;
+  }
+  .ta-letter-targets-list {
+    color: #1E40AF; font-size: 13px; font-weight: 600;
+    background: white; padding: 3px 9px; border-radius: 6px;
+  }
+
+  /* ============ Execution widget (inside fold) ============ */
+  .ta-exec-widget {
+    background: #F2F7F4;
+    border: 0;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px; color: #1F4A30;
+    line-height: 1.7;
+  }
+  .ta-exec-widget strong { font-size: 16px; font-weight: 800; color: #1a4d4d; }
+
+  /* ============ Loading ============ */
+  .ta-loading {
+    text-align: center; padding: 40px 16px;
+    color: #5a6d6d; font-size: 14px;
+  }
+
+  /* ============ Modal (B.7) — UNCHANGED from v1 ============ */
+  .iv-modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(26, 35, 50, 0.55);
+    z-index: 1100;
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px;
+  }
+  .iv-modal {
+    background: white; border-radius: 14px;
+    box-shadow: 0 24px 70px rgba(0,0,0,0.30);
+    max-width: 760px; width: 100%;
+    max-height: 92vh; overflow-y: auto;
+    direction: rtl;
+  }
+  .iv-modal .iv-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding: 18px 22px;
+    border-bottom: 1px solid #edf2f7;
+    background: linear-gradient(135deg, #fef5e7 0%, #fde68a 100%);
+    border-radius: 14px 14px 0 0;
+  }
+  .iv-modal .iv-title { font-size: 19px; font-weight: 800; color: #744210; }
+  .iv-modal .iv-sub { font-size: 13px; color: #92400e; margin-top: 4px; }
+  .iv-modal .iv-close {
+    background: transparent; border: 0;
+    width: 32px; height: 32px; border-radius: 50%;
+    cursor: pointer; font-size: 18px; color: #744210;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .iv-modal .iv-close:hover { background: rgba(0,0,0,0.06); }
+  .iv-modal .iv-body { padding: 18px 22px 22px; }
+  .iv-meta-row {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    font-size: 12px; margin-bottom: 12px;
+  }
+  .iv-meta-row .iv-tag {
+    background: #f7fafc; color: #4a5568;
+    padding: 4px 10px; border-radius: 999px;
+  }
+  .iv-meta-row .iv-tag strong { color: #1a2332; }
+  .iv-goal {
+    background: #f0fdfa; border-right: 4px solid #2c7a7b;
+    padding: 10px 14px; border-radius: 8px;
+    font-size: 14px; color: #1a2332; margin-bottom: 12px;
+  }
+  .iv-goal .iv-goal-label { color: #2c7a7b; font-weight: 700; margin-left: 6px; }
+  .iv-students-card {
+    background: #f7fafc; padding: 10px 14px; border-radius: 8px;
+    margin-bottom: 12px;
+  }
+  .iv-students-card h4 {
+    font-size: 13px; color: #2c7a7b; margin: 0 0 6px; font-weight: 700;
+  }
+  .iv-students-card ul { list-style: none; padding: 0; margin: 0; }
+  .iv-students-card li {
+    padding: 5px 10px; background: white; border-radius: 6px;
+    margin-bottom: 4px; font-size: 13px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .iv-students-card .iv-stu-letters {
+    background: #fee2e2; color: #7f1d1d;
+    padding: 2px 8px; border-radius: 6px; font-size: 12px;
+    font-weight: 700; margin-right: auto;
+  }
+  .iv-materials {
+    background: #fffaf0; padding: 10px 14px; border-radius: 8px;
+    border: 1px solid #fde68a;
+    font-size: 13px; margin-bottom: 12px;
+  }
+  .iv-materials h4 {
+    font-size: 13px; color: #744210; margin: 0 0 6px; font-weight: 700;
+  }
+  .iv-materials ul { list-style: none; padding: 0; margin: 0; }
+  .iv-materials li { padding: 2px 0; color: #1a2332; }
+  .iv-materials li::before { content: '· '; color: #4a5568; }
+  .iv-stage {
+    border: 1px solid #e2e8f0; border-radius: 10px;
+    padding: 12px 14px; margin-bottom: 10px;
+    background: white;
+  }
+  .iv-stage-head {
+    display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .iv-stage-title { font-size: 14px; font-weight: 800; color: #2c7a7b; }
+  .iv-stage-dur { font-size: 12px; color: #4a5568; }
+  .iv-stage-say {
+    background: #f0fdfa; border-radius: 8px;
+    padding: 8px 12px; margin-bottom: 6px;
+    font-size: 13px; color: #1a2332;
+  }
+  .iv-stage-say::before {
+    content: '💬 המורה אומרת: '; color: #2c7a7b; font-weight: 700;
+  }
+  .iv-stage-do {
+    background: #fef5e7; border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px; color: #744210;
+  }
+  .iv-stage-do::before {
+    content: '👉 פעולה: '; color: #d97706; font-weight: 700;
+  }
+  .iv-stage-notes {
+    font-size: 12px; color: #718096; font-style: italic;
+    margin-top: 6px;
+  }
+  .iv-stage-criterion {
+    background: #c6f6d5; color: #22543d;
+    padding: 5px 12px; border-radius: 6px;
+    font-size: 12px; font-weight: 700; margin-top: 6px;
+    display: inline-block;
+  }
+  .iv-actions {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    padding-top: 14px;
+    border-top: 1px solid #edf2f7;
+    margin-top: 6px;
+  }
+  .iv-actions button {
+    border: 0; padding: 10px 16px;
+    border-radius: 8px; font-family: inherit;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    min-height: 44px;
+  }
+  .iv-actions button.iv-btn-print { background: #2c7a7b; color: white; }
+  .iv-actions button.iv-btn-print:hover { background: #1e5f5f; }
+  .iv-actions button.iv-btn-done { background: #38a169; color: white; }
+  .iv-actions button.iv-btn-done:hover { background: #2f855a; }
+  .iv-actions button.iv-btn-cancel { background: #edf2f7; color: #4a5568; }
+  .iv-actions button.iv-btn-cancel:hover { background: #cbd5e0; }
+  .iv-evidence {
+    margin-top: 14px;
+    font-size: 11px; color: #718096;
+    border-top: 1px dashed #e2e8f0;
+    padding-top: 10px;
+  }
+  .iv-history-card {
+    background: #f0fdfa; border-right: 3px solid #2c7a7b;
+    padding: 8px 12px; border-radius: 6px;
+    font-size: 12px; color: #234e52;
+    margin-bottom: 12px;
+  }
+
+  /* ============ Responsive ============ */
+  @media (max-width: 540px) {
+    #mainContent { padding: 20px 16px 60px; }
+    .ta-hero-sentence { font-size: 18px; }
+    .ta-card { padding: 18px 18px; }
+    .ta-card-students,
+    .ta-card-why,
+    .ta-card-letters,
+    .ta-card-actions,
+    .ta-card-status { margin-right: 0; }
+    .ta-action-btn { flex: 1 1 auto; }
+  }
+
+  /* ============ Print mode — UNCHANGED ============ */
+  @media print {
+    body * { visibility: hidden; }
+    [data-iv-modal], [data-iv-modal] * { visibility: visible; }
+    [data-iv-modal] {
+      position: absolute; inset: 0;
+      background: white; padding: 1cm;
+      direction: rtl; font-family: 'Heebo', system-ui, sans-serif;
+      color: #1a2332;
+    }
+    .iv-close, .iv-btn-print, .iv-btn-done, .iv-btn-cancel { display: none !important; }
+    .iv-modal-backdrop { background: transparent !important; }
+    .iv-stage { page-break-inside: avoid; }
+    @page { size: A4; margin: 1.5cm; }
+  }
+
+  /* === Presentation mode (?presentation=1) — מקופל,
+         משאיר את ה-base החדש שמתחת ועוטף ב-card גדול לדמואים. */
+  body.presentation #refreshBtn,
+  body.presentation .ta-solo-microcopy,
+  body.presentation [data-go-student-moy] {
+    display: none !important;
+  }
+  body.presentation .ta-hide-in-presentation { display: none !important; }
+  body.presentation {
+    background:
+      radial-gradient(ellipse at top, rgba(180, 230, 220, 0.4) 0%, transparent 50%),
+      linear-gradient(180deg, #F0F9F7 0%, #DDF0EC 100%) !important;
+    min-height: 100vh;
+  }
+  body.presentation .ta-hero {
+    background: linear-gradient(135deg, #ffffff 0%, #F4FBF9 100%);
+    border-radius: 18px;
+    padding: 26px 28px;
+    box-shadow: 0 8px 28px rgba(38, 80, 92, 0.12), inset 0 1px 0 rgba(255,255,255,0.9);
+    margin-bottom: 22px;
+  }
+  body.presentation .ta-card {
+    background: linear-gradient(180deg, #ffffff 0%, #FBFEFD 100%);
+    box-shadow: 0 6px 20px rgba(38, 80, 92, 0.09), inset 0 1px 0 rgba(255,255,255,0.95) !important;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ PIN GATE ============ -->
+<div id="pinGate">
+  <div class="gate-card">
+    <h1>בוקר טוב</h1>
+    <p>הזיני PIN של המורה</p>
+    <form id="pinForm" autocomplete="off">
+      <input id="pinInput" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]*" autocomplete="off" />
+      <div id="pinErr"></div>
+      <button type="submit">היכנסי</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ MAIN ============ -->
+<div id="mainContent">
+
+  <!-- Quiet header -->
+  <div class="ta-header">
+    <div class="ta-header-meta">
+      <h1 class="ta-title">דשבורד פעולת בוקר</h1>
+      <p class="ta-sub" id="headerSub">כיתה א׳1 · </p>
+    </div>
+    <div class="ta-header-actions">
+      <button class="ta-btn" id="backBtn" type="button" title="חזרה" aria-label="חזרה">חזרה</button>
+      <button class="ta-btn ta-btn-primary" id="refreshBtn" type="button" title="רענון" aria-label="רענן">רענון</button>
+    </div>
+  </div>
+
+  <!-- Hero — greeting + KPI pills -->
+  <div class="ta-hero" id="heroSection">
+    <p class="ta-hero-sentence" id="heroSentence">מכינים לך את תמונת היום...</p>
+    <div class="ta-kpi-grid" id="kpiGrid"></div>
+  </div>
+
+  <!-- Primary section — groups (focal point) -->
+  <div class="ta-main">
+    <div class="ta-section">
+      <div class="ta-section-head">
+        <h2 class="ta-section-title">קבוצות בוקר מומלצות</h2>
+        <span class="ta-section-count" id="groupsCount">0</span>
+      </div>
+      <div id="actionList"></div>
+    </div>
+
+    <!-- Secondary sections — collapsed by default -->
+    <div class="ta-accordion">
+      <div class="ta-accordion-title">מידע נוסף</div>
+
+      <details class="ta-fold">
+        <summary>
+          <span class="ta-fold-left">
+            <span class="ta-fold-title">תלמידות ללא קבוצה</span>
+            <span class="ta-fold-count" id="soloCount">0</span>
+          </span>
+          <span class="ta-fold-chevron">⌄</span>
+        </summary>
+        <div class="ta-fold-body">
+          <div id="soloStudents"></div>
+        </div>
+      </details>
+
+      <details class="ta-fold">
+        <summary>
+          <span class="ta-fold-left">
+            <span class="ta-fold-title">התראות אמצע שנה</span>
+            <span class="ta-fold-count" id="moyCount">0</span>
+          </span>
+          <span class="ta-fold-chevron">⌄</span>
+        </summary>
+        <div class="ta-fold-body">
+          <div id="moyAlerts"></div>
+        </div>
+      </details>
+
+      <details class="ta-fold ta-hide-in-presentation">
+        <summary>
+          <span class="ta-fold-left">
+            <span class="ta-fold-title">נקודות לחיזוק היום</span>
+          </span>
+          <span class="ta-fold-chevron">⌄</span>
+        </summary>
+        <div class="ta-fold-body">
+          <div id="lettersSection"></div>
+        </div>
+      </details>
+
+      <details class="ta-fold ta-hide-in-presentation">
+        <summary>
+          <span class="ta-fold-left">
+            <span class="ta-fold-title">מעקב ביצוע</span>
+          </span>
+          <span class="ta-fold-chevron">⌄</span>
+        </summary>
+        <div class="ta-fold-body">
+          <div id="executionTracking"></div>
+        </div>
+      </details>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============ Scripts (זהים ל-v1 — אותו סדר כמו teacher-rama) ============ -->
+<script src="js/state.js"></script>
+<script src="js/shared/bkt.js"></script>
+<script src="js/shared/epa.js"></script>
+<script src="js/shared/event-logger.js"></script>
+<script src="js/shared/mastery-check.js"></script>
+<script src="js/shared/pack-bkt-bridge.js?v=1"></script>
+<script src="js/shared/interventions.js?v=1"></script>
+<script src="js/shared/assessments.js?v=1"></script>
+<script src="js/shared/intervention-matcher.js?v=1"></script>
+<script src="js/shared/group-suggester.js?v=1"></script>
+<script src="js/shared/letter-targets.js?v=1"></script>
+<script src="js/shared/skill-units.js?v=1"></script>
+<script src="js/shared/f21e-helpers.js?v=1"></script>
+
+<script>
+// ============================================================
+// F.21E — teacher-action.html (v2 — אותו JS כמו v1)
+// PIN gate משותף עם F.21A (sessionStorage key 'teacher_authed').
+// ============================================================
+const TEACHER_PIN = '4521';
+const SESSION_AUTH_KEY = 'teacher_authed';
+const STUDENTS_KEY = 'avnei-yesod-students';
+
+// labels — תואם IV_PATTERN_LABELS של teacher-rama (אייקונים + שם)
+const IV_PATTERN_LABELS = {
+  phonological:     { icon: '🔊', label: 'מודעות פונולוגית' },
+  letter_knowledge: { icon: '🔤', label: 'ידיעת אותיות' },
+  decoding:         { icon: '📖', label: 'פענוח לפי הקשר' },
+  fluency:          { icon: '⏱', label: 'שטף קריאה' },
+  letter_cluster:   { icon: '🎯', label: 'חיזוק אותיות חלשות' }
+};
+
+// _activeGroups - virtual store ל-modal (כל virtualGroup דחוף כאן עם idx)
+let _activeGroups = [];
+
+// ============================================================
+// PIN gate — same SESSION_AUTH_KEY כמו F.21A
+// ============================================================
+(function initPinGate() {
+  const gate = document.getElementById('pinGate');
+  const main = document.getElementById('mainContent');
+  const form = document.getElementById('pinForm');
+  const input = document.getElementById('pinInput');
+  const err = document.getElementById('pinErr');
+
+  if (sessionStorage.getItem(SESSION_AUTH_KEY) === '1') {
+    gate.style.display = 'none';
+    main.style.display = 'block';
+    // setTimeout(boot, 0): דחייה ל-task הבא כדי שכל script tag יסיים לרוץ
+    // לפני boot() (תואם pattern מ-teacher-rama, Finding B fix).
+    setTimeout(boot, 0);
+    return;
+  }
+
+  setTimeout(function () { input.focus(); }, 100);
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (input.value === TEACHER_PIN) {
+      sessionStorage.setItem(SESSION_AUTH_KEY, '1');
+      gate.style.display = 'none';
+      main.style.display = 'block';
+      setTimeout(boot, 0);
+    } else {
+      err.textContent = 'PIN שגוי. נסי שוב.';
+      input.value = '';
+      input.focus();
+    }
+  });
+})();
+
+// ============================================================
+// Storage helpers
+// ============================================================
+function readJson(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    return JSON.parse(raw);
+  } catch (e) { return fallback; }
+}
+
+function getAllStudents() {
+  return readJson(STUDENTS_KEY, []);
+}
+
+function escapeHtml(str) {
+  return String(str == null ? '' : str).replace(/[&<>"']/g, function (c) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+  });
+}
+
+function _fmtDate(ts) {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  return d.getDate() + '/' + (d.getMonth() + 1);
+}
+
+function _fmtDateHe(date) {
+  try {
+    return date.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' });
+  } catch (e) {
+    return date.getDate() + '/' + (date.getMonth() + 1);
+  }
+}
+
+// ============================================================
+// Boot
+// ============================================================
+function boot() {
+  // Presentation mode (?presentation=1) — מסתיר sections secondary + עיצוב יפה + auto-seed לדמואים.
+  if (new URLSearchParams(window.location.search).has('presentation')) {
+    document.body.classList.add('presentation');
+    // אם אין דמו data — redirect ל-seed-demo עם autoseed (יחזיר אוטומטית עם presentation=1)
+    const _students = JSON.parse(localStorage.getItem('avnei-yesod-students') || '[]');
+    if (_students.length === 0) {
+      window.location.href = 'seed-demo.html?autoseed=1';
+      return;
+    }
+  }
+
+  // header sub
+  const headerSub = document.getElementById('headerSub');
+  if (headerSub) {
+    headerSub.textContent = 'כיתה א׳1 · ' + _fmtDateHe(new Date());
+  }
+
+  document.getElementById('backBtn').addEventListener('click', function () {
+    if (window.history && window.history.length > 1) {
+      window.history.back();
+    } else {
+      window.location.href = 'teacher-rama.html';
+    }
+  });
+
+  document.getElementById('refreshBtn').addEventListener('click', function () {
+    render();
+  });
+
+  // refresh on focus (spec §2.6)
+  window.addEventListener('focus', function () {
+    if (document.getElementById('mainContent').style.display !== 'none') {
+      // אל תרענן כש-modal פתוח — שלא לאבד reference
+      if (!document.querySelector('[data-iv-modal]')) {
+        render();
+      }
+    }
+  });
+
+  render();
+}
+
+// ============================================================
+// Computations
+// ============================================================
+function computeKpis(students) {
+  const H = window.AvneiF21EHelpers;
+  const G = window.AvneiGroupSuggester;
+  const M = window.AvneiInterventionMatcher;
+  const A = window.AvneiAssessments;
+
+  const studentIds = students.map(function (s) { return s.id; });
+
+  let suggestions = [];
+  if (G && typeof G.suggestGroups === 'function') {
+    // min_confidence:'low' = פיילוט בית הערבה (החלטת מיטל 29.5.2026 · OBS-2).
+    // ילדה עם MOY-fail בלי EPA-signal תיכנס לרשימת קבוצת הבוקר — מורה תחליט.
+    // לחזור ל-'med' (ברירת המחדל של ה-suggester) אחרי 2-3 שבועות פיילוט.
+    try { suggestions = G.suggestGroups(studentIds, { min_confidence: 'low' }) || []; }
+    catch (e) { suggestions = []; }
+  }
+
+  // Solo: יש match אבל לא בקבוצה ≥3 בכל ה-suggestions
+  const inGroupIds = new Set();
+  suggestions.forEach(function (sg) {
+    sg.students.forEach(function (st) { inGroupIds.add(st.studentId); });
+  });
+  const soloIds = [];
+  if (M && typeof M.matchForStudent === 'function') {
+    studentIds.forEach(function (sid) {
+      if (inGroupIds.has(sid)) return;
+      let m = null;
+      try { m = M.matchForStudent(sid); } catch (e) { m = null; }
+      if (m && m.pattern_id) soloIds.push(sid);
+    });
+  }
+
+  // MOY alerts
+  let moyAlertsCount = 0;
+  const moyAlertSids = [];
+  if (A && typeof A.getMOYStatus === 'function') {
+    studentIds.forEach(function (sid) {
+      const st = A.getMOYStatus(sid);
+      if (!st || !st.measured) return;
+      if (st.latest_status === 'fail' || st.suggested_intervention || st.next_review_due) {
+        moyAlertsCount++;
+        moyAlertSids.push(sid);
+      }
+    });
+  }
+
+  const log = H ? H.getActionLog() : [];
+  const completedWeek = H ? H.countCompletedThisWeek(log, Date.now()) : 0;
+  const completedToday = H ? H.countCompletedToday(log, Date.now()) : 0;
+
+  return {
+    suggestions: suggestions,
+    soloIds: soloIds,
+    moyAlertsCount: moyAlertsCount,
+    moyAlertSids: moyAlertSids,
+    completedWeek: completedWeek,
+    completedToday: completedToday,
+    log: log,
+    students: students,
+    studentsMap: (function () {
+      const m = {};
+      students.forEach(function (s) { m[s.id] = s; });
+      return m;
+    })()
+  };
+}
+
+// ============================================================
+// Render
+// ============================================================
+function render() {
+  const students = getAllStudents();
+  // empty state — אין תלמידים בכלל
+  if (!students || students.length === 0) {
+    renderEmptyAll();
+    return;
+  }
+
+  // API availability check
+  if (!window.AvneiGroupSuggester || !window.AvneiInterventionMatcher ||
+      !window.AvneiAssessments || !window.AvneiF21EHelpers) {
+    renderApiError();
+    return;
+  }
+
+  const ctx = computeKpis(students);
+
+  renderHero(ctx);
+  renderActionList(ctx);
+  renderSoloStudents(ctx);
+  renderMoyAlerts(ctx);
+  renderLettersSection(ctx);
+  renderExecutionTracking(ctx);
+}
+
+function renderEmptyAll() {
+  document.getElementById('heroSentence').textContent = 'עדיין לא נמצאו תלמידים.';
+  document.getElementById('kpiGrid').innerHTML = '';
+  const empty = '<div class="ta-empty">עדיין לא נמצאו תלמידים.<br>כדאי לבדוק שהנתונים נטענו, או לפתוח את <a href="../engine/onboarding-profile.html" style="color:#2c7a7b; font-weight:700;">כלי הניהול</a> להוספת כיתה.</div>';
+  document.getElementById('actionList').innerHTML = empty;
+  document.getElementById('soloStudents').innerHTML = '';
+  document.getElementById('moyAlerts').innerHTML = '';
+  document.getElementById('lettersSection').innerHTML = '';
+  document.getElementById('executionTracking').innerHTML = '';
+  document.getElementById('groupsCount').textContent = '0';
+  document.getElementById('soloCount').textContent = '0';
+  document.getElementById('moyCount').textContent = '0';
+}
+
+function renderApiError() {
+  document.getElementById('heroSentence').textContent = 'לא הצלחנו לטעון את ההמלצות כרגע.';
+  document.getElementById('kpiGrid').innerHTML = '';
+  const html = '<div class="ta-empty">לא הצלחנו לטעון את ההמלצות כרגע.<br>אפשר ' +
+               '<button class="ta-btn" onclick="render()">רענון</button> או ' +
+               '<a href="teacher-rama.html" style="color:#2c7a7b; font-weight:700;">לחזור למבט כיתה</a>.</div>';
+  document.getElementById('actionList').innerHTML = html;
+}
+
+// ===== Hero =====
+function renderHero(ctx) {
+  const H = window.AvneiF21EHelpers;
+  const greeting = H.getGreetingByHour(new Date().getHours());
+  const heroState = {
+    groups: ctx.suggestions.length,
+    no_group: ctx.soloIds.length,
+    moy_alerts: ctx.moyAlertsCount,
+    completed_week: ctx.completedWeek,
+    greeting: greeting
+  };
+  document.getElementById('heroSentence').textContent = H.buildHeroSentence(heroState);
+
+  const kpis = [
+    { num: heroState.groups,         label: heroState.groups === 1 ? 'קבוצה היום' : 'קבוצות היום' },
+    { num: heroState.no_group,       label: 'ללא קבוצה' },
+    { num: heroState.moy_alerts,     label: 'התראות' },
+    { num: heroState.completed_week, label: 'בוצעו השבוע' }
+  ];
+  document.getElementById('kpiGrid').innerHTML = kpis.map(function (k) {
+    return '<div class="ta-kpi"><span class="ta-kpi-num">' + k.num + '</span>' +
+           '<span class="ta-kpi-label">' + escapeHtml(k.label) + '</span></div>';
+  }).join('');
+}
+
+// ===== Action List (B.9 cards) =====
+function renderActionList(ctx) {
+  const H = window.AvneiF21EHelpers;
+  const list = document.getElementById('actionList');
+  document.getElementById('groupsCount').textContent = String(ctx.suggestions.length);
+
+  if (ctx.suggestions.length === 0) {
+    list.innerHTML = '<div class="ta-empty">אין קבוצות דחופות לפתיחה היום.<br>אפשר להמשיך תרגול קצר לפי האותיות שזקוקות לחיזוק.</div>';
+    return;
+  }
+
+  const cardsHtml = ctx.suggestions.map(function (sg, idx) {
+    const meta = IV_PATTERN_LABELS[sg.pattern_id] || { icon: '📋', label: sg.pattern_id };
+    const names = sg.students.map(function (st) {
+      const sr = ctx.studentsMap[st.studentId];
+      return sr ? (sr.name || st.studentId) : st.studentId;
+    }).join(' · ');
+
+    // letters בכרטיס רק עבור letter_knowledge / letter_cluster
+    let lettersHtml = '';
+    if (sg.pattern_id === 'letter_knowledge' || sg.pattern_id === 'letter_cluster') {
+      const sids = sg.students.map(function (s) { return s.studentId; });
+      const overlap = H.groupLetterOverlap(sids);
+      if (overlap.length >= 3) {
+        const ltrSpans = overlap.slice(0, 3).map(function (l) {
+          return '<span class="ta-letter">' + escapeHtml(l) + '</span>';
+        }).join('');
+        lettersHtml = '<div class="ta-card-letters"><strong>אותיות רלוונטיות:</strong> ' + ltrSpans + '</div>';
+      }
+    }
+
+    const why = H.reasonByEvidence(sg.evidence);
+    const groupKey = H.logEntryKey('group', sg.pattern_id + '_' +
+                     sg.students.map(function (s) { return s.studentId; }).sort().join('-'));
+    const status = H.statusForEntry('group', groupKey, ctx.log, Date.now());
+    const isDone = status !== 'none';
+
+    let badge;
+    if (status === 'today') badge = '<span class="ta-badge ta-badge-done-today">בוצע היום</span>';
+    else if (status === 'week') badge = '<span class="ta-badge ta-badge-done-week">בוצע השבוע</span>';
+    else badge = '<span class="ta-badge ta-badge-pending">טרם בוצע היום</span>';
+
+    return '<div class="ta-card" data-action-idx="' + idx + '">' +
+      '<div class="ta-card-head">' +
+        '<span class="ta-card-icon">' + meta.icon + '</span>' +
+        '<span class="ta-card-title">קבוצה ' + (idx + 1) + ' · ' + escapeHtml(H.patternToSimpleHe(sg.pattern_id)) + '</span>' +
+      '</div>' +
+      '<div class="ta-card-students">' + escapeHtml(names) + '</div>' +
+      '<div class="ta-card-why"><span class="ta-card-why-label">למה עכשיו?</span> ' + escapeHtml(why) + '</div>' +
+      lettersHtml +
+      '<div class="ta-card-actions">' +
+        '<button type="button" class="ta-action-btn ta-action-primary" data-open-group="' + idx + '" aria-label="פתחי תרגול קבוצתי">📋 פתחי תרגול</button>' +
+        '<button type="button" class="ta-action-btn ta-action-mark' + (isDone ? ' is-done' : '') + '" data-mark-group="' + idx + '" data-group-key="' + escapeHtml(groupKey) + '" aria-label="סמני שטופל בכיתה">' +
+          (isDone ? '✓ בוטלי סימון' : '✓ סמני כבוצע') +
+        '</button>' +
+      '</div>' +
+      '<div class="ta-card-status">סטטוס: ' + badge + '</div>' +
+    '</div>';
+  }).join('');
+
+  list.innerHTML = '<div class="ta-cards">' + cardsHtml + '</div>';
+
+  // hooks
+  list.querySelectorAll('button[data-open-group]').forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const idx = Number(btn.dataset.openGroup);
+      const sg = ctx.suggestions[idx];
+      if (sg) openMorningGroupModal(sg, ctx);
+    });
+  });
+  list.querySelectorAll('button[data-mark-group]').forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const groupKey = btn.dataset.groupKey;
+      const isDone = btn.classList.contains('is-done');
+      if (isDone) {
+        H.removeActionLog('group', groupKey);
+      } else {
+        H.appendActionLog({ type: 'group', key: groupKey });
+      }
+      render();
+    });
+  });
+}
+
+// ===== Solo Students =====
+function renderSoloStudents(ctx) {
+  const H = window.AvneiF21EHelpers;
+  const M = window.AvneiInterventionMatcher;
+  const list = document.getElementById('soloStudents');
+  document.getElementById('soloCount').textContent = String(ctx.soloIds.length);
+
+  if (ctx.soloIds.length === 0) {
+    list.innerHTML = '<div class="ta-empty">כל מי שזקוק.ה למענה שובצ.ה כרגע לקבוצה מתאימה.</div>';
+    return;
+  }
+
+  const cardsHtml = ctx.soloIds.map(function (sid) {
+    const stu = ctx.studentsMap[sid] || { id: sid, name: sid };
+    let need = '';
+    try {
+      const m = M.matchForStudent(sid);
+      if (m && m.pattern_id) need = H.patternToSimpleHe(m.pattern_id);
+    } catch (e) { /* swallow */ }
+
+    const indivKey = H.logEntryKey('individual', sid);
+    const status = H.statusForEntry('individual', indivKey, ctx.log, Date.now());
+    const isDone = status === 'today';
+
+    // כמה units כבר ב-targets פעילים לתלמיד.ה הזה (פידבק מספרי + state של הכפתור)
+    let targetCount = 0;
+    try {
+      const SU = window.AvneiSkillUnits;
+      if (SU && typeof SU.getTargets === 'function') {
+        targetCount = (SU.getTargets(sid) || []).length;
+      }
+    } catch (e) { /* swallow */ }
+
+    // Primary button — דינמי לפי targetCount (משוב מיידי למורה)
+    const primaryBtn = targetCount > 0
+      ? '<button type="button" class="ta-action-btn ta-action-undo" data-cancel-push-solo="' + escapeHtml(sid) + '" aria-label="בטלי תרגול אישי">↺ בטלי תרגול אישי (' + targetCount + ')</button>'
+      : '<button type="button" class="ta-action-btn ta-action-primary" data-push-solo="' + escapeHtml(sid) + '" aria-label="שלחי תרגול ממוקד למכשיר">📲 שלחי תרגול ממוקד למכשיר</button>';
+
+    return '<div class="ta-solo-card" style="margin-bottom:8px;">' +
+      '<div class="ta-solo-head">' +
+        '<button class="ta-solo-name" type="button" data-go-student="' + escapeHtml(sid) + '" aria-label="פתחי מבט תלמיד.ה">' + escapeHtml(stu.name || sid) + '</button>' +
+        '<span class="ta-badge ta-badge-waiting">ממתינ.ה לקבוצה</span>' +
+      '</div>' +
+      '<div class="ta-solo-need">צורך: ' + escapeHtml(need || 'תרגול ממוקד') + '</div>' +
+      '<div class="ta-solo-microcopy">' +
+        (targetCount > 0
+          ? '✓ נשלחו ' + targetCount + ' נקודות לתרגול אישי במכשיר. המכשיר יתעדף אותן בסשן הבא.'
+          : 'אין מספיק תלמידים לפתיחת קבוצה. אפשר לשלוח את ה-3 הנקודות החלשות ביותר לתרגול ממוקד במכשיר.') +
+      '</div>' +
+      '<div class="ta-card-actions">' +
+        primaryBtn +
+        '<button type="button" class="ta-action-btn ta-action-mark' + (isDone ? ' is-done' : '') + '" data-mark-solo="' + escapeHtml(sid) + '" aria-label="סמני שטופל בכיתה">' +
+          (isDone ? '✓ בוטלי סימון' : '✓ סמני שטופל בכיתה') +
+        '</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  list.innerHTML = cardsHtml;
+
+  list.querySelectorAll('button[data-go-student]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const sid = btn.dataset.goStudent;
+      window.location.href = 'teacher-rama.html?student=' + encodeURIComponent(sid);
+    });
+  });
+  // 📲 שלחי תרגול ממוקד למכשיר — דוחף top-3 weak units ל-targets + מסמן ב-log
+  list.querySelectorAll('button[data-push-solo]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const sid = btn.dataset.pushSolo;
+      const SU = window.AvneiSkillUnits;
+      if (!SU) return;
+      const units = SU.getWeakUnits(sid, 3) || [];
+      let pushed = 0;
+      units.forEach(function (u) {
+        if (SU.addTarget(sid, u, 'teacher-send-solo')) pushed++;
+      });
+      // mark action log (אם לא כבר היום)
+      const indivKey = H.logEntryKey('individual', sid);
+      if (H.statusForEntry('individual', indivKey, ctx.log, Date.now()) !== 'today') {
+        H.appendActionLog({ type: 'individual', key: indivKey });
+      }
+      render();
+    });
+  });
+  // ↺ בטלי תרגול אישי — מסיר את כל ה-targets + frozen
+  list.querySelectorAll('button[data-cancel-push-solo]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const sid = btn.dataset.cancelPushSolo;
+      const SU = window.AvneiSkillUnits;
+      if (!SU) return;
+      const targets = SU.getTargets(sid) || [];
+      targets.forEach(function (u) {
+        SU.removeTarget(sid, u);
+        SU.removeFrozen(sid, u);
+      });
+      // לא מבטל את ה-action log — היא עדיין סימנה אותו כבוצע היום
+      render();
+    });
+  });
+  list.querySelectorAll('button[data-mark-solo]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const sid = btn.dataset.markSolo;
+      const indivKey = H.logEntryKey('individual', sid);
+      const status = H.statusForEntry('individual', indivKey, ctx.log, Date.now());
+      if (status === 'today') {
+        H.removeActionLog('individual', indivKey);
+      } else {
+        H.appendActionLog({ type: 'individual', key: indivKey });
+      }
+      render();
+    });
+  });
+}
+
+// ===== MOY Alerts =====
+function renderMoyAlerts(ctx) {
+  const H = window.AvneiF21EHelpers;
+  const A = window.AvneiAssessments;
+  const list = document.getElementById('moyAlerts');
+  document.getElementById('moyCount').textContent = String(ctx.moyAlertSids.length);
+
+  if (ctx.moyAlertSids.length === 0) {
+    list.innerHTML = '<div class="ta-empty">אין התראות אמצע שנה פתוחות כרגע.</div>';
+    return;
+  }
+
+  const cardsHtml = ctx.moyAlertSids.map(function (sid) {
+    const stu = ctx.studentsMap[sid] || { id: sid, name: sid };
+    let st = null;
+    try { st = A.getMOYStatus(sid); } catch (e) { st = null; }
+    if (!st) return '';
+
+    let taskLabel = '';
+    if (st.last_attempt) {
+      const failed = [];
+      if (st.last_attempt.task_3 && st.last_attempt.task_3.status === 'fail') failed.push('משימה 3 — הבנת טקסט');
+      if (st.last_attempt.task_4 && st.last_attempt.task_4.status === 'fail') failed.push('משימה 4 — מודעות לשונית');
+      taskLabel = failed.join(' · ');
+    }
+
+    const moyKey = H.logEntryKey('moy', sid);
+    const status = H.statusForEntry('moy', moyKey, ctx.log, Date.now());
+    const isDone = status === 'today';
+    const typeLabel = H.moyAlertSimpleHe(st);
+
+    return '<div class="ta-moy-card" style="margin-bottom:8px;">' +
+      '<div class="ta-moy-head">' +
+        '<span class="ta-moy-name">' + escapeHtml(stu.name || sid) + '</span>' +
+        '<span class="ta-badge ta-badge-attn">' + escapeHtml(typeLabel) + '</span>' +
+      '</div>' +
+      (taskLabel ? '<div class="ta-moy-task">' + escapeHtml(taskLabel) + '</div>' : '') +
+      '<div class="ta-card-actions">' +
+        (st.suggested_intervention
+          ? '<button type="button" class="ta-action-btn ta-action-primary" data-open-moy-sid="' + escapeHtml(sid) + '" data-pattern="' + escapeHtml(st.suggested_intervention.patternId) + '" aria-label="פתחי תרגול ממוקד MOY">📋 פתחי תרגול</button>'
+          : '') +
+        '<button type="button" class="ta-action-btn ta-action-mark' + (isDone ? ' is-done' : '') + '" data-mark-moy="' + escapeHtml(sid) + '" aria-label="סמני שטופל">' +
+          (isDone ? '✓ בוטלי סימון' : '✓ סמני שטופל') +
+        '</button>' +
+        '<button type="button" class="ta-action-btn ta-action-secondary" data-go-student-moy="' + escapeHtml(sid) + '" aria-label="פתחי מבט תלמיד.ה">👁 מבט תלמיד.ה</button>' +
+      '</div>' +
+    '</div>';
+  }).filter(Boolean).join('');
+
+  list.innerHTML = cardsHtml;
+
+  list.querySelectorAll('button[data-open-moy-sid]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const sid = btn.dataset.openMoySid;
+      const pattern = btn.dataset.pattern;
+      openMOYStudentModal(sid, pattern, ctx);
+    });
+  });
+  list.querySelectorAll('button[data-mark-moy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const sid = btn.dataset.markMoy;
+      const moyKey = H.logEntryKey('moy', sid);
+      const status = H.statusForEntry('moy', moyKey, ctx.log, Date.now());
+      if (status === 'today') {
+        H.removeActionLog('moy', moyKey);
+      } else {
+        H.appendActionLog({ type: 'moy', key: moyKey });
+      }
+      render();
+    });
+  });
+  list.querySelectorAll('button[data-go-student-moy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const sid = btn.dataset.goStudentMoy;
+      window.location.href = 'teacher-rama.html?student=' + encodeURIComponent(sid);
+    });
+  });
+}
+
+// ===== Skill Units Section (A+B integration · unit-agnostic) =====
+// "🎯 נקודות לחיזוק היום" — היום: אותיות (sub-BKT). post-pilot: תנועות, מילים,
+// מורפמות, מיומנויות פונולוגיות וכו'. כל זה דרך AvneiSkillUnits שמסיג את
+// הסוג הספציפי. ה-UI אגנוסטי — לא יודע אם זה אות או תנועה.
+//
+// פר תלמיד.ה: top-1 unit חלש (frozen excluded · auto-covered hidden).
+// פר unit: badge סטטוס + 2 כפתורים:
+//   📲 שלחי לתרגול אישי (B) → SU.addTarget(sid, unit) + הקפאה אוטומטית
+//   ✓ טיפלתי בכיתה (A)     → SU.markFrozen(sid, unit) בלבד
+function renderLettersSection(ctx) {
+  const H = window.AvneiF21EHelpers;
+  const SU = window.AvneiSkillUnits;
+  const PB = window.AvneiPackBridge;
+
+  const wrap = document.getElementById('lettersSection');
+  if (!SU) {
+    wrap.innerHTML = '<div class="ta-empty">לא הצלחנו לטעון את מנגנון הטרגוט. נסי לרענן.</div>';
+    return;
+  }
+
+  // current pack context — לפי תאריך, fallback ל-september-2026
+  let pack = null;
+  try { pack = PB && PB.loadCurrentPack ? PB.loadCurrentPack() : null; }
+  catch (e) { pack = null; }
+  if (!pack && PB && typeof PB.loadPack === 'function') {
+    try { pack = PB.loadPack('september-2026'); }
+    catch (e) { /* swallow */ }
+  }
+
+  // Demo cap: 1 unit פר תלמיד.ה. + סינון auto-covered.
+  const MAX_UNITS_PER_STUDENT = 1;
+
+  // getUnitStatus — מחזיר 'targeted' | 'auto-covered' | 'pack-misses' | 'pack-off' | 'unknown'
+  // היום עובד רק עבור type='letter'. post-pilot — להרחיב פר type.
+  function getUnitStatus(sid, unit) {
+    if (unit.type === 'letter') {
+      return H.getLetterStatus(sid, unit.id, pack);
+    }
+    // לא-letter (vowel/word/...): מחזירים 'pack-off' כסטטוס ניטרלי
+    // עד שיוסיף תמיכה ספציפית בפאקים.
+    return 'pack-off';
+  }
+
+  // unitStatusLabel — שפת מורה (לא טכני; spec §1.4)
+  function unitStatusLabel(status) {
+    if (status === 'targeted') return '📲 בתרגול אישי';
+    if (status === 'auto-covered') return '✓ בתרגול היומי במכשיר';
+    if (status === 'pack-misses' || status === 'pack-off') return '⚠ דרושה החלטה שלך';
+    return '';
+  }
+
+  const blocks = ctx.students.map(function (s) {
+    // 📲 קודם כל — targets פעילים (פירות של auto-push מ-B.7 או "שלחי" ידני)
+    const activeTargets = SU.getTargets(s.id);
+
+    const allWeak = SU.getWeakUnits(s.id, 6);  // משוך יותר ל-filtering (frozen כבר מסונן)
+
+    // Option 1: hide auto-covered (הפאק כבר מתעדף אותן אוטומטית)
+    const units = allWeak.filter(function (u) {
+      return getUnitStatus(s.id, u) !== 'auto-covered';
+    }).slice(0, MAX_UNITS_PER_STUDENT);
+
+    // אם אין targets ואין weak units — לא להציג
+    if (activeTargets.length === 0 && units.length === 0) return null;
+
+    // Summary line של targets — מציג את כל ה-units שנשלחו, עם undo כללי
+    let targetSummaryHtml = '';
+    if (activeTargets.length > 0) {
+      const displayList = activeTargets.map(function (u) {
+        return SU.unitToDisplayHe(u);
+      }).join(' · ');
+      targetSummaryHtml = '<div class="ta-letter-item ta-letter-summary">' +
+        '<span class="ta-letter-status is-targeted">📲 ' + activeTargets.length + ' בתרגול אישי</span>' +
+        '<span class="ta-letter-targets-list">' + escapeHtml(displayList) + '</span>' +
+        '<span class="ta-letter-spacer"></span>' +
+        '<button type="button" class="ta-letter-btn is-secondary" data-action="untarget-all" data-sid="' + escapeHtml(s.id) + '" aria-label="בטלי את כל היעדים לתלמיד.ה זו">↺ בטלי הכל</button>' +
+      '</div>';
+    }
+
+    const itemsHtml = units.map(function (unit) {
+      const status = getUnitStatus(s.id, unit);
+      const statusLabel = unitStatusLabel(status);
+      const statusClass = ({
+        'targeted': 'is-targeted',
+        'auto-covered': 'is-auto',
+        'pack-misses': 'is-miss',
+        'pack-off': 'is-off'
+      })[status] || '';
+      const displayHe = SU.unitToDisplayHe(unit);
+      const dataAttrs = 'data-sid="' + escapeHtml(s.id) + '" ' +
+                       'data-unit-type="' + escapeHtml(unit.type) + '" ' +
+                       'data-unit-id="' + escapeHtml(unit.id) + '"';
+
+      // Targeted → רק badge + "בטלי"
+      if (status === 'targeted') {
+        return '<div class="ta-letter-item">' +
+          '<span class="ta-letter">' + escapeHtml(displayHe) + '</span>' +
+          '<span class="ta-letter-status ' + statusClass + '">' + escapeHtml(statusLabel) + '</span>' +
+          '<span class="ta-letter-spacer"></span>' +
+          '<button type="button" class="ta-letter-btn is-secondary" data-action="untarget" ' + dataAttrs + ' aria-label="בטלי יעד">↺ בטלי</button>' +
+        '</div>';
+      }
+
+      return '<div class="ta-letter-item">' +
+        '<span class="ta-letter">' + escapeHtml(displayHe) + '</span>' +
+        (statusLabel ? '<span class="ta-letter-status ' + statusClass + '">' + escapeHtml(statusLabel) + '</span>' : '') +
+        '<span class="ta-letter-spacer"></span>' +
+        '<button type="button" class="ta-letter-btn" data-action="target" ' + dataAttrs + ' title="שלחי לתרגול אישי במכשיר" aria-label="שלחי לתרגול אישי במכשיר">📲 שלחי לתרגול</button>' +
+        '<button type="button" class="ta-letter-btn is-secondary" data-action="handle" ' + dataAttrs + ' title="הקפאה 3 ימים בלי שליחה" aria-label="טיפלתי בכיתה — הקפאה 3 ימים">✓ טיפלתי בכיתה</button>' +
+      '</div>';
+    }).join('');
+
+    return '<div class="ta-letter-block">' +
+      '<div class="ta-letter-stu-name">' + escapeHtml(s.name || s.id) + '</div>' +
+      targetSummaryHtml +
+      itemsHtml +
+    '</div>';
+  }).filter(Boolean);
+
+  if (blocks.length === 0) {
+    wrap.innerHTML = '<div class="ta-empty">אין כרגע נקודות פעילות לחיזוק. ייתכן שהכל בהקפאה (טופלו ב-3 הימים האחרונים).</div>';
+    return;
+  }
+
+  wrap.innerHTML = '<div class="ta-letters-list">' + blocks.join('') + '</div>';
+
+  // unified click handler — קורא data-action + type/id מה-button
+  function _unitFromBtn(btn) {
+    return {
+      type: btn.dataset.unitType,
+      id: btn.dataset.unitId,
+      displayHe: btn.dataset.unitId  // letter: id IS display
+    };
+  }
+  wrap.querySelectorAll('button[data-action]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const action = btn.dataset.action;
+      const sid = btn.dataset.sid;
+      if (action === 'untarget-all') {
+        // בטלי הכל — מסיר את כל ה-targets + frozen של התלמיד.ה
+        const targets = SU.getTargets(sid) || [];
+        targets.forEach(function (u) {
+          SU.removeTarget(sid, u);
+          SU.removeFrozen(sid, u);
+        });
+        render();
+        return;
+      }
+      const unit = _unitFromBtn(btn);
+      if (action === 'target') {
+        SU.addTarget(sid, unit, 'teacher-send');  // אוטומטית מקפיא
+      } else if (action === 'handle') {
+        SU.markFrozen(sid, unit, 'teacher-handled');
+      } else if (action === 'untarget') {
+        SU.removeTarget(sid, unit);
+        SU.removeFrozen(sid, unit);
+      }
+      render();
+    });
+  });
+}
+
+// ===== Execution Tracking =====
+function renderExecutionTracking(ctx) {
+  const H = window.AvneiF21EHelpers;
+  const wrap = document.getElementById('executionTracking');
+  const week = H.countCompletedThisWeek(ctx.log, Date.now());
+  const today = H.countCompletedToday(ctx.log, Date.now());
+  const openGroups = Math.max(0, ctx.suggestions.length - countGroupsMarkedToday(ctx, H));
+
+  wrap.innerHTML = '<div class="ta-exec-widget">' +
+    '<div><strong>' + today + '</strong> סומנו היום</div>' +
+    '<div><strong>' + week + '</strong> השבוע</div>' +
+    '<div style="margin-top:6px;">' + openGroups + ' קבוצות עוד פתוחות</div>' +
+  '</div>';
+}
+
+function countGroupsMarkedToday(ctx, H) {
+  let n = 0;
+  ctx.suggestions.forEach(function (sg) {
+    const key = H.logEntryKey('group', sg.pattern_id + '_' +
+                sg.students.map(function (s) { return s.studentId; }).sort().join('-'));
+    if (H.statusForEntry('group', key, ctx.log, Date.now()) === 'today') n++;
+  });
+  return n;
+}
+
+// ============================================================
+// Modal (B.7) — שכפול UI מ-teacher-rama (אותם APIs)
+// reuse של data flow: AvneiInterventions.loadScript + interpolateScript.
+// טעם השכפול: openInterventionModal הקיים תלוי ב-state פנימי של teacher-rama.
+// ============================================================
+
+// בונה virtualGroup ב-shape של _activeGroups (תואם openMorningGroupModal של teacher-rama).
+function openMorningGroupModal(suggestion, ctx) {
+  if (!suggestion || !suggestion.students || suggestion.students.length === 0) return;
+
+  // העשרת details פר-ילדה (רק ל-letter_cluster)
+  const groupStudents = suggestion.students.map(function (ms) {
+    const rec = ctx.studentsMap[ms.studentId] || {};
+    const out = { id: ms.studentId, name: rec.name || ms.studentId };
+    if (suggestion.pattern_id === 'letter_cluster' && window.AvneiInterventions) {
+      try {
+        const triggers = window.AvneiInterventions.detectForStudent(ms.studentId) || [];
+        const lc = triggers.find(function (t) { return t.patternId === 'letter_cluster'; });
+        if (lc && lc.details) out.details = lc.details;
+      } catch (e) { /* swallow */ }
+    }
+    return out;
+  });
+
+  // groupCommonDetails
+  let groupCommonDetails = {};
+  if (suggestion.pattern_id === 'letter_knowledge' && window.AvneiInterventions) {
+    try {
+      const first = suggestion.students[0];
+      const triggers = window.AvneiInterventions.detectForStudent(first.studentId) || [];
+      const lk = triggers.find(function (t) { return t.patternId === 'letter_knowledge'; });
+      if (lk && lk.details) {
+        groupCommonDetails = {
+          confused_pair: lk.details.confused_pair,
+          example_a: lk.details.example_a,
+          example_b: lk.details.example_b,
+          distinction: lk.details.distinction
+        };
+      }
+    } catch (e) { /* swallow */ }
+  } else if (suggestion.pattern_id === 'decoding' && window.AvneiInterventions) {
+    try {
+      const first = suggestion.students[0];
+      const triggers = window.AvneiInterventions.detectForStudent(first.studentId) || [];
+      const dec = triggers.find(function (t) { return t.patternId === 'decoding'; });
+      if (dec && dec.details && dec.details.context_value) {
+        groupCommonDetails = { context_value: dec.details.context_value };
+      }
+    } catch (e) { /* swallow */ }
+  }
+
+  // dedupe
+  let idx = _activeGroups.findIndex(function (g) {
+    return g && g._mgSourced && g.patternId === suggestion.pattern_id;
+  });
+  if (idx === -1) {
+    _activeGroups.push({
+      patternId: suggestion.pattern_id,
+      students: groupStudents,
+      groupCommonDetails: groupCommonDetails,
+      confidence: suggestion.confidence,
+      _mgSourced: true
+    });
+    idx = _activeGroups.length - 1;
+  }
+  openInterventionModal(idx);
+}
+
+// solo student — בונה virtual group עם תלמיד יחיד לפי matchForStudent
+function openSoloInterventionModal(sid, ctx) {
+  const M = window.AvneiInterventionMatcher;
+  if (!M) return;
+  let m = null;
+  try { m = M.matchForStudent(sid); } catch (e) { m = null; }
+  if (!m || !m.pattern_id) {
+    alert('לא נמצא תרגול מתאים לתלמיד.ה כרגע.');
+    return;
+  }
+  const stu = ctx.studentsMap[sid] || { id: sid, name: sid };
+  const virtualGroup = {
+    patternId: m.pattern_id,
+    students: [{ id: sid, name: stu.name || sid }],
+    groupCommonDetails: {},
+    confidence: m.confidence || 'low',
+    _soloSourced: true
+  };
+  // העשרה ל-letter_cluster
+  if (m.pattern_id === 'letter_cluster' && window.AvneiInterventions) {
+    try {
+      const triggers = window.AvneiInterventions.detectForStudent(sid) || [];
+      const lc = triggers.find(function (t) { return t.patternId === 'letter_cluster'; });
+      if (lc && lc.details) virtualGroup.students[0].details = lc.details;
+    } catch (e) { /* swallow */ }
+  }
+  _activeGroups.push(virtualGroup);
+  openInterventionModal(_activeGroups.length - 1);
+}
+
+// MOY student → modal עם pattern מ-suggested_intervention
+function openMOYStudentModal(sid, patternId, ctx) {
+  if (!patternId) return;
+  const stu = ctx.studentsMap[sid] || { id: sid, name: sid };
+  const virtualGroup = {
+    patternId: patternId,
+    students: [{ id: sid, name: stu.name || sid }],
+    groupCommonDetails: {},
+    confidence: 'low',
+    _moySourced: true
+  };
+  _activeGroups.push(virtualGroup);
+  openInterventionModal(_activeGroups.length - 1);
+}
+
+function _getGroupSharedLetterDetails(group) {
+  if (!group || group.patternId !== 'letter_cluster') return null;
+  const counts = {};
+  (group.students || []).forEach(function (s) {
+    const letters = s && s.details && Array.isArray(s.details.weak_letters) ? s.details.weak_letters : [];
+    letters.forEach(function (l) { counts[l] = (counts[l] || 0) + 1; });
+  });
+  const ranked = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; });
+  if (ranked.length === 0) return null;
+  return { weak_letters: ranked.slice(0, 3) };
+}
+
+function openInterventionModal(groupIdx) {
+  closeInterventionModal();
+  const group = _activeGroups[groupIdx];
+  if (!group) return;
+  const script = window.AvneiInterventions.loadScript(group.patternId);
+  if (!script) {
+    alert('שגיאה: לא ניתן לטעון את ה-script של ' + group.patternId);
+    return;
+  }
+  const meta = IV_PATTERN_LABELS[group.patternId] || { icon: '📋', label: group.patternId };
+
+  const studentsHtml = group.students.map(function (s) {
+    let letters = '';
+    if (group.patternId === 'letter_cluster' && s.details && s.details.weak_letters) {
+      letters = '<span class="iv-stu-letters">' + escapeHtml(s.details.weak_letters.join(' · ')) + '</span>';
+    }
+    return '<li>· ' + escapeHtml(s.name) + letters + '</li>';
+  }).join('');
+
+  const sharedDetails = _getGroupSharedLetterDetails(group);
+  const interp = window.AvneiInterventions.interpolateScript(script, group.groupCommonDetails || {}, sharedDetails);
+
+  const recentRecs = group.students.length > 0
+    ? window.AvneiInterventions.getInterventionsFor(group.students[0].id).filter(function (r) { return r.pattern === group.patternId; }).slice(-1)
+    : [];
+  const historyHtml = recentRecs.length > 0
+    ? '<div class="iv-history-card">📅 ביצוע אחרון: ' + _fmtDate(recentRecs[0].date) + ' · ' + escapeHtml(recentRecs[0].success_check || '') + ' · ' + escapeHtml(recentRecs[0].teacher_note || '') + '</div>'
+    : '';
+
+  const dur = interp.duration_minutes || { total_planned: 12 };
+  const grpSize = interp.group_size || { min: 3, max: 4 };
+  const metaRow = '<div class="iv-meta-row">' +
+    '<span class="iv-tag"><strong>⏱</strong> ' + (dur.total_planned || (dur.min + '-' + dur.max)) + ' דק\'</span>' +
+    '<span class="iv-tag"><strong>👥</strong> ' + grpSize.min + '-' + grpSize.max + ' תלמידים</span>' +
+    '<span class="iv-tag"><strong>📅</strong> ' + escapeHtml(interp.weekly_frequency || '4-5 ימים') + '</span>' +
+    '<span class="iv-tag"><strong>🏷</strong> ' + escapeHtml(interp.tier || 'Tier-2 RTI') + '</span>' +
+  '</div>';
+
+  const matsHtml = (interp.materials || []).map(function (m) { return '<li>' + escapeHtml(m) + '</li>'; }).join('');
+
+  const stagesHtml = (interp.stages || []).map(function (st) {
+    const crit = st.success_criterion
+      ? '<div class="iv-stage-criterion">קריטריון: ' + escapeHtml(st.success_criterion) + '</div>'
+      : '';
+    return '<div class="iv-stage">' +
+      '<div class="iv-stage-head">' +
+        '<span class="iv-stage-title">' + escapeHtml(st.title || st.id) + '</span>' +
+        '<span class="iv-stage-dur">' + (st.duration_minutes != null ? st.duration_minutes + ' דק\'' : '') + '</span>' +
+      '</div>' +
+      '<div class="iv-stage-say">' + escapeHtml(st.teacher_say || '') + '</div>' +
+      '<div class="iv-stage-do">' + escapeHtml(st.teacher_do || '') + '</div>' +
+      (st.notes ? '<div class="iv-stage-notes">' + escapeHtml(st.notes) + '</div>' : '') +
+      crit +
+    '</div>';
+  }).join('');
+
+  const evidenceHtml = (interp.evidence || []).length > 0
+    ? '<div class="iv-evidence">📚 בסיס מחקרי: ' + (interp.evidence || []).map(function (e) { return escapeHtml(e); }).join(' · ') + '</div>'
+    : '';
+
+  const bodyHtml =
+    metaRow +
+    '<div class="iv-goal"><span class="iv-goal-label">🎯 מטרה:</span>' + escapeHtml(interp.goal || '') + '</div>' +
+    historyHtml +
+    '<div class="iv-students-card">' +
+      '<h4>קבוצה (' + group.students.length + ' תלמידים):</h4>' +
+      '<ul>' + studentsHtml + '</ul>' +
+    '</div>' +
+    '<div class="iv-materials">' +
+      '<h4>📦 חומרים:</h4>' +
+      '<ul>' + matsHtml + '</ul>' +
+    '</div>' +
+    stagesHtml +
+    evidenceHtml +
+    '<div class="iv-actions">' +
+      '<button type="button" class="iv-btn-print" data-iv-print aria-label="הדפיסי את הסקריפט">🖨️ הדפיסי</button>' +
+      '<button type="button" class="iv-btn-done" data-iv-done="' + groupIdx + '" aria-label="סמני שביצעתי היום">✓ סמני שביצעתי היום</button>' +
+      '<button type="button" class="iv-btn-cancel" data-iv-cancel aria-label="סגירה">× סגירה</button>' +
+    '</div>';
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'iv-modal-backdrop';
+  backdrop.setAttribute('data-iv-modal', '1');
+  backdrop.innerHTML =
+    '<div class="iv-modal" role="dialog" aria-modal="true" aria-labelledby="ivModalTitle">' +
+      '<div class="iv-head">' +
+        '<div>' +
+          '<div class="iv-title" id="ivModalTitle">' + meta.icon + ' ' + escapeHtml(interp.title || meta.label) + '</div>' +
+          '<div class="iv-sub">' + escapeHtml(meta.label) + '</div>' +
+        '</div>' +
+        '<button type="button" class="iv-close" data-iv-cancel aria-label="סגירה">×</button>' +
+      '</div>' +
+      '<div class="iv-body">' + bodyHtml + '</div>' +
+    '</div>';
+
+  document.body.appendChild(backdrop);
+
+  // ESC + click backdrop
+  document.addEventListener('keydown', _ivModalEscHandler);
+  backdrop.addEventListener('click', function (e) {
+    if (e.target === backdrop) closeInterventionModal();
+  });
+  backdrop.querySelectorAll('[data-iv-cancel]').forEach(function (btn) {
+    btn.addEventListener('click', closeInterventionModal);
+  });
+  backdrop.querySelectorAll('[data-iv-print]').forEach(function (btn) {
+    btn.addEventListener('click', function () { window.print(); });
+  });
+  backdrop.querySelectorAll('[data-iv-done]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const idx = Number(btn.dataset.ivDone);
+      const grp = _activeGroups[idx];
+      if (!grp) return;
+      // Record ב-AvneiInterventions (תואם teacher-rama)
+      try {
+        window.AvneiInterventions.recordIntervention(
+          grp.students.map(function (s) { return s.id; }),
+          grp.patternId,
+          { duration_minutes: dur.total_planned || 12, success_check: 'מהיר', teacher_note: '' }
+        );
+      } catch (e) { /* swallow */ }
+
+      // 🎯 Auto-push לתרגול במכשיר — סוגרת את הפער בין Tier-2 (מורה) ל-Tier-1 (פאק).
+      // המורה לחצה "ביצעתי" → המערכת אוטומטית מסנכרנת units חלשים פר חבר.ת קבוצה
+      // ל-pack engine. כך התרגול ב-MV ממשיך מה שהמורה עשתה.
+      try {
+        const SU = window.AvneiSkillUnits;
+        if (SU && typeof SU.addTarget === 'function') {
+          grp.students.forEach(function (s) {
+            let unitsToPush = [];
+            // letter_knowledge: זוג האותיות המתבלבלות (לא BKT-driven)
+            if (grp.patternId === 'letter_knowledge' &&
+                grp.groupCommonDetails && Array.isArray(grp.groupCommonDetails.confused_pair)) {
+              grp.groupCommonDetails.confused_pair.forEach(function (letter) {
+                unitsToPush.push(SU.makeLetterUnit(letter));
+              });
+            }
+            // letter_cluster: weak_letters פר תלמיד (מ-detectForStudent)
+            else if (grp.patternId === 'letter_cluster' &&
+                     s.details && Array.isArray(s.details.weak_letters)) {
+              s.details.weak_letters.slice(0, 3).forEach(function (letter) {
+                unitsToPush.push(SU.makeLetterUnit(letter));
+              });
+            }
+            // phonological / decoding / fluency: top-3 weak units כללי
+            else {
+              unitsToPush = SU.getWeakUnits(s.id, 3) || [];
+            }
+            unitsToPush.forEach(function (u) {
+              SU.addTarget(s.id, u, 'auto-from-b7-completion');
+            });
+          });
+        }
+      } catch (e) { /* swallow — auto-push לא קריטי לסגירת ה-flow */ }
+
+      // וגם ב-action log המקומי שלנו
+      const H = window.AvneiF21EHelpers;
+      const groupKey = grp._mgSourced
+        ? H.logEntryKey('group', grp.patternId + '_' + grp.students.map(function (s) { return s.id; }).sort().join('-'))
+        : grp._soloSourced
+          ? H.logEntryKey('individual', grp.students[0].id)
+          : H.logEntryKey('moy', grp.students[0].id);
+      const type = grp._mgSourced ? 'group' : grp._soloSourced ? 'individual' : 'moy';
+      H.appendActionLog({ type: type, key: groupKey });
+      closeInterventionModal();
+      render();
+    });
+  });
+}
+
+function _ivModalEscHandler(e) {
+  if (e.key === 'Escape') closeInterventionModal();
+}
+
+function closeInterventionModal() {
+  const existing = document.querySelector('[data-iv-modal]');
+  if (existing) existing.remove();
+  document.removeEventListener('keydown', _ivModalEscHandler);
+}
+
+// expose render() for inline error retry
+window.render = render;
+</script>
+
+</body>
+</html>

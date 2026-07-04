@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>בדיקת קולות Web Speech</title>
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 20px; direction: rtl; }
+    h1 { color: #1a5a7a; }
+    table { border-collapse: collapse; margin-top: 12px; }
+    th, td { border: 1px solid #ccc; padding: 6px 12px; text-align: right; }
+    tr.hebrew { background: #B8F2CF; font-weight: 700; }
+    button { background: #4a9dc4; color: white; border: 0; padding: 10px 20px; border-radius: 8px; font-size: 16px; cursor: pointer; margin: 4px; }
+    .status { padding: 12px; border-radius: 8px; margin: 10px 0; font-weight: 600; }
+    .status.ok { background: #B8F2CF; color: #1a5a7a; }
+    .status.bad { background: #FFD3D8; color: #9c1a3a; }
+  </style>
+</head>
+<body>
+  <h1>בדיקת Web Speech</h1>
+
+  <div id="status" class="status">טוען…</div>
+
+  <button id="speakKamatz">השמע "מָ"</button>
+  <button id="speakPatach">השמע "מַ"</button>
+  <button id="speakSentence">השמע משפט עברית</button>
+  <button id="speakEnglish">השמע English (לוודא TTS עובד)</button>
+  <button id="reload">רענן רשימת קולות</button>
+
+  <h2>כל הקולות הזמינים:</h2>
+  <table id="voicesTable">
+    <thead><tr><th>#</th><th>name</th><th>lang</th><th>default</th><th>localService</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    function renderVoices() {
+      const voices = window.speechSynthesis.getVoices();
+      const tbody = document.querySelector('#voicesTable tbody');
+      tbody.innerHTML = '';
+      voices.forEach((v, i) => {
+        const isHe = v.lang && (v.lang.startsWith('he') || v.lang.toLowerCase().includes('iw'));
+        const tr = document.createElement('tr');
+        if (isHe) tr.className = 'hebrew';
+        tr.innerHTML = '<td>' + i + '</td>' +
+                       '<td>' + v.name + '</td>' +
+                       '<td>' + v.lang + '</td>' +
+                       '<td>' + (v.default ? '✓' : '') + '</td>' +
+                       '<td>' + (v.localService ? '✓ local' : 'remote') + '</td>';
+        tbody.appendChild(tr);
+      });
+
+      const heVoices = voices.filter(v => v.lang && (v.lang.startsWith('he') || v.lang.toLowerCase().includes('iw')));
+      const status = document.getElementById('status');
+      if (heVoices.length > 0) {
+        status.className = 'status ok';
+        status.textContent = '✓ נמצאו ' + heVoices.length + ' קולות עבריים: ' + heVoices.map(v => v.name).join(', ');
+      } else {
+        status.className = 'status bad';
+        status.textContent = '✗ אין קולות עברית מותקנים. ב-Windows: Settings → Time & Language → Speech → Add voices → Hebrew. אחרי התקנה — אתחול דפדפן.';
+      }
+    }
+
+    window.speechSynthesis.onvoiceschanged = renderVoices;
+    renderVoices();
+
+    function speak(text, langPreference) {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = langPreference || 'he-IL';
+      const voices = window.speechSynthesis.getVoices();
+      const heVoice = voices.find(v => v.lang && (v.lang.startsWith('he') || v.lang.toLowerCase().includes('iw')));
+      if (heVoice && langPreference !== 'en-US') {
+        u.voice = heVoice;
+        console.log('[diag] using voice:', heVoice.name, heVoice.lang);
+      } else {
+        console.log('[diag] no Hebrew voice — falling back to default for lang:', u.lang);
+      }
+      u.rate = 0.85;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(u);
+    }
+
+    document.getElementById('speakKamatz').onclick = () => speak('מָ');
+    document.getElementById('speakPatach').onclick = () => speak('מַ');
+    document.getElementById('speakSentence').onclick = () => speak('שלום, אני יודעת לדבר עברית');
+    document.getElementById('speakEnglish').onclick = () => speak('Hello, this is a test', 'en-US');
+    document.getElementById('reload').onclick = renderVoices;
+  </script>
+</body>
+</html>
