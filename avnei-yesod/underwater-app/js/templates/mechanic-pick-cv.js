@@ -9,7 +9,14 @@
 //     podsPerRound: 4,
 //     rounds: [
 //       { "type": "letter" },                 // מצאו את האות עצמה
-//       { "type": "cv", "vowelId": "kamatz" } // שמעו /ta/ → געו בצירוף
+//       { "type": "cv", "vowelId": "kamatz" }, // שמעו /ta/ → געו בצירוף
+//       {                                      // אות סופית (אי מ · 4.7.2026):
+//         "type": "final",                     // "אותה אות בסוף מילה"
+//         "target": "ם",                       // צורת הסופית
+//         "distractors": ["ן", "ץ", "ף"],      // סופיות אחרות בלבד
+//         "audioKey": "final-mem-sofit",       // הסבר קולי ייעודי לסבב
+//         "promptLabel": "..."                 // טקסט ילד.ה: מנוקד, רבים
+//       }
 //     ]
 //   }
 //
@@ -80,6 +87,7 @@ window.AvneiMechanics['pick-cv'] = (function () {
           const k = VA.cvAudioKey(letter, r.vowelId);
           if (k) AvneiAudio.preload(k);
         }
+        if (r.type === 'final' && r.audioKey) AvneiAudio.preload(r.audioKey);
       });
       AvneiAudio.preload('press-here');
     }
@@ -115,6 +123,9 @@ window.AvneiMechanics['pick-cv'] = (function () {
     function roundAudioKey(round) {
       if (round.type === 'cv' && round.vowelId) {
         return VA.cvAudioKey(letter, round.vowelId);
+      }
+      if (round.type === 'final' && round.audioKey) {
+        return round.audioKey; // הסבר ייעודי: "לָאוֹת ... יֵשׁ צוּרָה בְּסוֹף מִלָּה"
       }
       return inGamePromptKey; // סבב אות — הוראת המשחק (find-tav-treasure)
     }
@@ -174,6 +185,18 @@ window.AvneiMechanics['pick-cv'] = (function () {
       return shuffle(targets.concat(dList));
     }
 
+    // סבב אות סופית — היעד הוא צורת הסופית (ם), המסיחים = סופיות אחרות בלבד
+    // (ן/ץ/ף/ך). הרגילה מוצגת בפרומפט כעוגן ויזואלי: "אותה אות, צורה של סוף מילה".
+    function buildFinalPods(round) {
+      const target = round.target;
+      const pool = shuffle((round.distractors || []).filter(d => d !== target));
+      const dList = [];
+      for (let i = 0; i < podsPerRound - 1; i++) {
+        dList.push({ label: pool[i % pool.length] || 'ן', isTarget: false });
+      }
+      return shuffle([{ label: target, isTarget: true }].concat(dList));
+    }
+
     function renderPrompt(round) {
       if (round.type === 'cv') {
         promptBar.innerHTML =
@@ -184,6 +207,14 @@ window.AvneiMechanics['pick-cv'] = (function () {
             '</svg>' +
           '</button>' +
           '<span class="pick-cv-prompt__label">' + cvLabel + '</span>';
+      } else if (round.type === 'final') {
+        // האות הרגילה כעוגן ויזואלי + תווית "בסוף מילה" — הילד.ה מחפש.ת את
+        // אותה האות בצורתה הסופית בין הפודים.
+        const label = round.promptLabel || cfg.finalPromptLabel ||
+          'לָאוֹת יֵשׁ צוּרָה אַחֶרֶת בְּסוֹף מִלָּה — גְּעוּ בָּהּ!';
+        promptBar.innerHTML =
+          '<span class="pick-cv-prompt__letter" aria-hidden="true">' + letter + '</span>' +
+          '<span class="pick-cv-prompt__label">' + label + '</span>';
       } else {
         promptBar.innerHTML =
           '<span class="pick-cv-prompt__letter" aria-hidden="true">' + letter + '</span>' +
@@ -204,7 +235,9 @@ window.AvneiMechanics['pick-cv'] = (function () {
 
       const pods = (round.type === 'cv')
         ? buildCVPods(round.vowelId)
-        : buildLetterPods();
+        : (round.type === 'final')
+          ? buildFinalPods(round)
+          : buildLetterPods();
 
       pods.forEach((p) => {
         const pod = document.createElement('button');
@@ -267,10 +300,13 @@ window.AvneiMechanics['pick-cv'] = (function () {
             peima_target:        opts.peima_target,
           });
         } else {
-          // דפוס mechanic-pick (stage-3-lamed) — אחד-לאחד.
+          // דפוס mechanic-pick (stage-3-lamed) — אחד-לאחד. סבב סופית מדווח על
+          // אות-הבסיס (מ) עם letter_position:'final' (שדה קיים ברשימה הלבנה
+          // של event-logger) — ה-BKT/EPA מזכים את האות, הציר נשמר לניתוח.
           AvneiEventLogger.logActivityResult({
             activity_type: 'rescue',
             target_letter: letter,
+            letter_position: (round.type === 'final') ? 'final' : null,
             item_id: opts.questId + '-round-' + (state.wins + 1),
             supportLevel: 1,
             is_correct: isCorrect,
