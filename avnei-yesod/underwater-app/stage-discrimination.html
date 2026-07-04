@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>מִשְׂחַק הַדּוֹמִים · השונית של נוני</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css?v=2026-07-04">
+  <link rel="stylesheet" href="css/game-shell.css?v=2026-07-04">
+
+  <!-- ============================================================================
+       stage-discrimination.html — משחקון הבחנה בין דומים (חזותי + שמיעתי)
+       4.7.2026 · ימי "הבחנה בין אותיות דומות" (ספטמבר) · "הבחנת צ/ץ" (ינואר) ·
+       "שׁ ימנית מול שׂ שמאלית" + "אבחנה שמיעתית שׁ/שׂ" (פברואר) בתוכנית השנתית.
+
+       URL: ?pair=<id[,id...]>&tag=<כותרת>   (ראו PAIRS למזהים)
+       התוכן כולו מבנק-השאלות (curriculum/questions-grade1.json) — מסיחים נגזרי-EPA
+       קיימים; הדף רק מסנן לפי characteristic_id של זוג-ההבחנה וממפה אודיו.
+       שני מצבים באותו מנוע (mechanic-mcq):
+         חזותי  — stem אודיו (צליל/שם אות), אפשרויות = אותיות דומות חזותית.
+         שמיעתי — שומעים מילה, אפשרויות-שמע = two-tap (נגיעה 1 = האזנה חופשית,
+                  לא נמדדת; נגיעה 2 = בחירה — רק היא נרשמת ל-BKT). מובנה ב-mcq.
+       שאלות בלי נכסי אודיו מדולגות בשקט (דפוס stage-bank-play).
+       ============================================================================ -->
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; min-height: 100dvh;
+      font-family: 'Heebo', sans-serif;
+      background: linear-gradient(180deg, #BFF1FF 0%, #A8E8FF 40%, #73D9D1 100%);
+      color: var(--text-main); direction: rtl; overflow-x: hidden;
+    }
+    .scene-bg {
+      position: fixed; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; object-position: center bottom;
+      z-index: 0; pointer-events: none;
+    }
+    .top-bar {
+      position: sticky; top: 0; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 12px 18px;
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255,255,255,0.6);
+    }
+    .top-bar a.back {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: rgba(255,255,255,0.85); color: var(--text-main);
+      display: inline-flex; align-items: center; justify-content: center;
+      text-decoration: none; font-size: 20px; font-weight: 900;
+      box-shadow: 0 2px 10px rgba(38,80,92,0.15);
+    }
+    .top-bar .title { font-size: clamp(15px, 3.4vw, 19px); font-weight: 800; }
+    .top-bar .counter {
+      height: 40px; padding: 0 14px; border-radius: var(--radius-pill);
+      background: rgba(255,255,255,0.85); display: inline-flex; align-items: center;
+      font-size: 14px; font-weight: 700; box-shadow: 0 2px 10px rgba(38,80,92,0.15);
+    }
+    main {
+      position: relative; z-index: 2;
+      max-width: 760px; margin: 0 auto;
+      padding: 14px 18px 30px;
+    }
+    /* פנינים — התקדמות */
+    .pearls { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 4px auto 12px; }
+    .pearl {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: rgba(255,255,255,0.5); border: 2px solid rgba(255,255,255,0.7);
+      box-shadow: inset 0 -2px 4px rgba(38,80,92,0.12); transition: all 0.35s ease;
+    }
+    .pearl.filled {
+      background: radial-gradient(circle at 35% 30%, #FFF 0%, #CFEFF6 45%, #8FD6E6 100%);
+      border-color: #FFF; box-shadow: 0 0 10px rgba(143,214,230,0.8);
+    }
+    .pearl.just-added { transform: scale(1.6); box-shadow: 0 0 16px 4px rgba(255,231,168,0.9); }
+
+    /* בועת נוני — ההוראה (מנוקדת, לשון רבים) */
+    .noni-row {
+      display: flex; align-items: flex-end; gap: 10px;
+      max-width: 620px; margin: 0 auto 10px; min-height: 64px;
+    }
+    .noni-row img { width: clamp(64px, 13vw, 96px); flex: 0 0 auto; filter: drop-shadow(0 6px 10px rgba(38,80,92,0.25)); }
+    .bubble {
+      position: relative; flex: 1;
+      background: rgba(255,255,255,0.92); border-radius: var(--radius-lg);
+      padding: 12px 16px; font-size: clamp(16px, 3.6vw, 20px); font-weight: 700;
+      line-height: 1.5; box-shadow: 0 4px 16px rgba(38,80,92,0.14);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .bubble::before {
+      content: ''; position: absolute; inset-inline-start: -8px; bottom: 16px;
+      border: 9px solid transparent; border-inline-end-color: rgba(255,255,255,0.92);
+    }
+    .bubble .say {
+      flex: 0 0 auto; width: 48px; height: 48px; border-radius: 50%;
+      border: none; cursor: pointer; font-size: 22px;
+      background: var(--water-secondary); color: #fff;
+      box-shadow: 0 4px 12px rgba(115,217,209,0.55);
+    }
+    .bubble .say:active { transform: scale(0.94); }
+
+    #mountRoot { position: relative; min-height: 46vh; }
+
+    /* מסך פתיחה — שכבת 35% בלבד, השונית נשארת גלויה */
+    .start-veil {
+      position: fixed; inset: 0; z-index: 20;
+      background: rgba(38,80,92,0.35);
+      display: flex; align-items: center; justify-content: center; padding: 24px;
+    }
+    .start-veil[hidden] { display: none; }
+    .noni-row[hidden] { display: none; }
+    .start-card {
+      background: #fff; border-radius: var(--radius-lg); max-width: 420px; width: 100%;
+      padding: 26px 24px; text-align: center; box-shadow: 0 18px 50px rgba(38,80,92,0.3);
+    }
+    .start-card img { width: 110px; }
+    .start-card h1 { font-size: clamp(20px, 5vw, 26px); font-weight: 900; margin: 8px 0 6px; }
+    .start-card p { font-size: 15px; color: var(--text-soft); margin: 0 0 18px; }
+    .start-card button {
+      min-height: 60px; width: 100%; border: none; border-radius: var(--radius-pill);
+      background: var(--water-secondary); color: #fff; cursor: pointer;
+      font-family: inherit; font-size: 22px; font-weight: 900;
+      box-shadow: 0 8px 22px rgba(115,217,209,0.55);
+    }
+    .start-card button:active { transform: scale(0.97); }
+
+    /* מסך סיום */
+    .finish { text-align: center; padding: 30px 10px; }
+    .finish img { width: 140px; animation: finishBob 1.6s ease-in-out infinite; }
+    @keyframes finishBob { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+    .finish h2 { font-size: clamp(24px, 6vw, 32px); font-weight: 900; margin: 10px 0 4px; }
+    .finish p { font-size: 16px; color: var(--text-soft); margin: 0 0 20px; }
+    .finish .btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .finish button, .finish a {
+      min-height: 56px; padding: 0 26px; border: none; border-radius: var(--radius-pill);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: inherit; font-size: 18px; font-weight: 800; cursor: pointer;
+      text-decoration: none;
+    }
+    .finish .again { background: var(--water-secondary); color: #fff; box-shadow: 0 8px 22px rgba(115,217,209,0.55); }
+    .finish .home { background: rgba(255,255,255,0.9); color: var(--text-main); box-shadow: 0 4px 14px rgba(38,80,92,0.15); }
+
+    .empty-note {
+      max-width: 480px; margin: 40px auto; text-align: center;
+      background: rgba(255,255,255,0.92); border-radius: var(--radius-lg);
+      padding: 24px; font-size: 16px; font-weight: 700; color: var(--text-soft);
+    }
+    @media (max-width: 560px) {
+      .noni-row { min-height: 56px; }
+      .noni-row img { width: 58px; }
+    }
+  </style>
+</head>
+<body>
+  <img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true"
+       onerror="this.style.display='none'">
+
+  <div class="top-bar">
+    <a class="back" href="#" id="backBtn" aria-label="חזרה">→</a>
+    <span class="title" id="pageTitle">מִשְׂחַק הַדּוֹמִים</span>
+    <span class="counter" id="counter">—</span>
+  </div>
+
+  <main>
+    <div class="pearls" id="pearls" aria-hidden="true"></div>
+    <div class="noni-row" id="noniRow" hidden>
+      <img id="noniImg" src="assets/noni-idle.png" alt="נוני" onerror="this.style.display='none'">
+      <div class="bubble">
+        <span id="promptText" lang="he"></span>
+        <button class="say" id="sayBtn" aria-label="הַקְשִׁיבוּ שׁוּב" hidden>🔊</button>
+      </div>
+    </div>
+    <div id="mountRoot"></div>
+  </main>
+
+  <div class="start-veil" id="startVeil" hidden>
+    <div class="start-card">
+      <img src="assets/noni-happy.png" alt="נוני" onerror="this.style.display='none'">
+      <h1>הַתְּאוֹמִים שֶׁל הַשּׁוּנִית</h1>
+      <p id="startSub">בַּשּׁוּנִית מִסְתּוֹבְבוֹת אוֹתִיּוֹת דּוֹמוֹת־דּוֹמוֹת.<br>עִזְרוּ לְנוּנִי לְגַלּוֹת מִי זֶה מִי!</p>
+      <button id="startBtn">מַתְחִילִים!</button>
+    </div>
+  </div>
+
+  <!-- shared engine -->
+  <script src="js/state.js?v=2026-07-04"></script>
+  <script src="js/shared/audio.js?v=2026-07-04"></script>
+  <script src="js/shared/noni.js?v=2026-07-04"></script>
+  <script src="js/shared/vowel-adapter.js?v=2026-07-04"></script>
+  <script src="js/shared/epa.js?v=2026-07-04"></script>
+  <script src="js/shared/bkt.js?v=2026-07-04"></script>
+  <script src="js/shared/event-logger.js?v=2026-07-04"></script>
+  <script src="js/templates/mechanic-mcq.js?v=2026-07-04"></script>
+  <script src="js/templates/mechanic-odd-one-out.js?v=2026-07-04"></script>
+
+  <script>
+  (function () {
+    'use strict';
+
+    var params = new URLSearchParams(location.search);
+    var TAG = params.get('tag') || '';
+
+    // ------------------------------------------------------------------
+    // זוגות-ההבחנה — כל זוג = קבוצת characteristic_id בבנק (מקור-האמת של
+    // התוכן; אין כאן שאלות מומצאות). ראו דוח _handoff על מקור כל קבוצה.
+    // ------------------------------------------------------------------
+    var PAIRS = {
+      // חזותי — "גְּעוּ בָּאוֹת שֶׁשְּׁמַעְתֶּם" בין דומות-צורה
+      'tav-resh':   { he: 'ת / ר',  keys: ['sep-w1-d3-c3'] },
+      'bet-kaf':    { he: 'ב / כ',  keys: ['sep-w2-d2-c3', 'sep-w3-d3-c1', 'oct-w2-d3-c2'] },
+      'hey-het':    { he: 'ה / ח',  keys: ['sep-w3-d3-c2', 'oct-w1-d3-c2'] },
+      'dalet-resh': { he: 'ד / ר',  keys: ['oct-w1-d1-c3'] },
+      // צורה סופית — "אֵיזוֹ אוֹת בָּאָה בְּסוֹף מִילָה?" + השלמת עֵץ (מילה מהתוכן)
+      'tzadi-final':{ he: 'צ / ץ',  keys: ['jan-w4-d1-c1', 'jan-w4-d1-c2'] },
+      // שׁ/שׂ חזותי — זיהוי מקום הנקודה לפי הצליל
+      'shin-sin':   { he: 'שׁ / שׂ', keys: ['feb-w1-d1-c1', 'feb-w1-d1-c2', 'feb-w1-d1-c3'] },
+      // שׁ/שׂ שמיעתי-כתיב — שומעים מילה (שָׁר/שָׂר) ובוחרים כתיב, או קוראים
+      // ובוחרים הגייה (אפשרויות-שמע = two-tap)
+      'shin-sin-words':  { he: 'מִלִּים עִם שׁ / שׂ', keys: ['feb-w1-d2-c1', 'feb-w1-d2-c2', 'feb-w1-d2-c3'] },
+      // שׁ/שׂ שמיעתי טהור — איזה צליל שומעים (שפה דבורה, אי 14)
+      'shin-sin-listen': { he: 'הַאֲזָנָה שׁ / שׂ',   keys: ['feb-w1-d4-c1'] },
+    };
+
+    var PAIR_IDS = (params.get('pair') || '').split(',')
+      .map(function (s) { return s.trim(); })
+      .filter(function (p) { return PAIRS[p]; });
+
+    var MAX_QUESTIONS = 12;   // יום רב-זוגות (ספטמבר) לא הופך למרתון
+
+    // ------------------------------------------------------------------
+    // אודיו — הבנק לא נושא audio_key; המיפוי כאן לפי המחרוזת המדויקת.
+    // 'seq:a+b' = רצף (עטיפת AvneiAudio.play למטה → playSequence).
+    // צלילי-אות (sound-*) ושמות-אות קיימים מאי 3; מילים חדשות:
+    // scripts/generate-discrimination-audio.py (+ QA תמלול Whisper).
+    // ------------------------------------------------------------------
+    var STEM_AUDIO = {
+      'זֹאת הָאוֹת תָּו':  'disc-stem-zot-tav',
+      'זֹאת הָאוֹת רֵישׁ': 'disc-stem-zot-resh',
+      'זֹאת הָאוֹת בֵּית': 'disc-stem-zot-bet',
+      'זֹאת הָאוֹת כָּף':  'disc-stem-zot-kaf',
+      'זֹאת הָאוֹת חֵית':  'disc-stem-zot-het',
+      'זֹאת הָאוֹת הֵא':   'disc-stem-zot-hey',
+      'אֵיזוֹ אוֹת הִיא ד (דָּלֶת)?': 'disc-stem-which-dalet',
+      'אֵיזוֹ אוֹת הִיא ה (הֵא)?':   'disc-stem-which-hey',
+      'אֵיזוֹ אוֹת הִיא כ (כָּף)?':  'disc-stem-which-kaf',
+      'מִי כָּאן ד?': 'disc-stem-who-dalet',
+      'מִי כָּאן ה?': 'disc-stem-who-hey',
+      'מִי כָּאן כ?': 'disc-stem-who-kaf',
+      'צָ': 'cv-tzadi-kamatz',
+      'צֵ': 'cv-tzadi-tzere',
+      // צליל מבודד = הקלטת sound-* המאומתת מאי 3 (לא TTS של שווא בודד —
+      // ראו feedback-no-shva-in-cv-listening-rounds) + "כְּמוֹ בַּמִּלָּה..."
+      '/ש/ כְּמוֹ בְּ-שָׁר': 'seq:sound-shin+disc-kmo-shar',
+      '/ס/ כְּמוֹ בְּ-שָׂר': 'seq:sound-samekh+disc-kmo-sar',
+      '/שָׁר/':   'word-shin-resh-shar',
+      '/שָׂר/':   'disc-w-sar',
+      '/שָׁמֶשׁ/': 'word-shemesh',
+      '/שָׂר/ · /שָׁר/': 'seq:disc-w-sar+word-shin-resh-shar',
+    };
+    // העשרת stem פר-שאלה: השלמת עֵץ — שומעים את המילה השלמה (מהתוכן הקיים)
+    var QID_STEM_AUDIO = { 'jan-w4-d1-c2-L3': 'word-etz' };
+
+    // אפשרויות-שמע (two-tap): label → key. שָׂר/סָר הומופונים — אותה הקלטה.
+    var OPT_AUDIO = {
+      '/שָׁר/': 'word-shin-resh-shar',
+      '/שָׂר/': 'disc-w-sar',
+      '/סָר/':  'disc-w-sar',
+      '/דָּג/':  'word-dag',
+      '/מָר/':  'word-mem-resh-mar',
+      '/רָץ/':  'disc-w-ratz',
+      '/שָׁל/':  'disc-w-shal',
+      '/סָב/':  'disc-w-sav',
+      '/צָר/':  'disc-w-tzar',
+      '/ש/': 'sound-shin', '/ס/': 'sound-samekh', '/מ/': 'sound-mem', '/ר/': 'sound-resh',
+      'שְׁתֵּיהֶן': 'disc-w-shteihen',
+    };
+
+    // strand → אי (כמו stage-bank-play: פונולוגיה→5, שפה דבורה→14)
+    var STRAND_ISLAND = { phonology: 5, oral_language: 14 };
+    var THEMES = ['shells', 'fish', 'bubbles'];
+
+    // עטיפת play — תמיכה במפתחות 'seq:a+b' (רצף) בלי לגעת ב-audio.js
+    var rawPlay = window.AvneiAudio.play.bind(window.AvneiAudio);
+    window.AvneiAudio.play = function (key) {
+      if (typeof key === 'string' && key.indexOf('seq:') === 0) {
+        window.AvneiAudio.playSequence(key.slice(4).split('+'), 450);
+        return Promise.resolve();
+      }
+      return rawPlay(key);
+    };
+
+    // הבנק מנוסח לנקבה-יחידה; פנייה לילדים = לשון רבים
+    // (feedback-student-instructions-plural-form)
+    function pluralize(s) {
+      return String(s || '')
+        .replace(/הַקְשִׁיבִי/g, 'הַקְשִׁיבוּ')
+        .replace(/הִסְתַּכְּלִי/g, 'הִסְתַּכְּלוּ')
+        .replace(/בְּחַרִי/g, 'בַּחֲרוּ')
+        .replace(/בְחַרִי/g, 'בַחֲרוּ')
+        .replace(/גְּעִי/g, 'גְּעוּ');
+    }
+    // מסיר תעתיק לטיני מטקסט-לילד (נשאר בבנק — מיועד למורה)
+    function cleanHe(s) {
+      return String(s || '').replace(/\s*\/[A-Za-z'’\-]+\/\s*/g, ' ').replace(/\s{2,}/g, ' ').trim();
+    }
+
+    var $ = function (id) { return document.getElementById(id); };
+    var root = $('mountRoot');
+    var current = null;
+    var queue = [];
+    var idx = 0;
+    var skipped = 0;
+
+    $('backBtn').addEventListener('click', function (e) {
+      e.preventDefault();
+      if (history.length > 1) history.back(); else location.href = 'student-picker.html';
+    });
+
+    // ------------------------------------------------------------------
+    // שאלה → config (דפוס stage-bank-play; מחזיר null = אין נכסי אודיו)
+    // ------------------------------------------------------------------
+    function toConfig(q) {
+      var island = STRAND_ISLAND[q.strand] || 5;
+      var opts = (q.options || []).map(function (o) {
+        return {
+          label_he: o.label_he, mode: o.mode || 'text',
+          is_correct: !!o.is_correct, epa: o.epa || null,
+        };
+      });
+
+      var base = {
+        interaction: q.interaction,
+        questId: q.q_id, item_id: q.q_id,
+        characteristic_id: q.characteristic_id || null,
+        primary_island_id: island,
+        theme: THEMES[idx % THEMES.length],
+        promptLine: pluralize(cleanHe(q.task_he)),
+      };
+
+      // stem אודיו — חובה מיפוי; בלעדיו השאלה לא ניתנת-למשחק
+      var stemKey = null;
+      if (q.stem_mode === 'audio') {
+        stemKey = STEM_AUDIO[(q.stem_he || '').trim()];
+        if (!stemKey) return null;
+      }
+
+      if (q.interaction === 'pick_odd_one') {
+        base.items = opts;
+        base.mechanic = 'odd-one-out';
+        base.taskAudioKey = stemKey;   // אין stem במנגנון — משמיעים דרך בועת נוני
+        return base;
+      }
+
+      var stem;
+      if (stemKey) {
+        stem = { mode: 'audio', audio_key: stemKey, text_he: q.stem_he };
+      } else if (q.interaction === 'fill_missing') {
+        // "עֵ_" → כרטיס השלמה עם חריץ
+        var m = String(q.stem_he || '').split('_');
+        stem = { mode: 'fill', fill: { before: m[0] || '', after: m[1] || '' } };
+        if (QID_STEM_AUDIO[q.q_id]) stem.audio_key = QID_STEM_AUDIO[q.q_id];
+      } else {
+        stem = { mode: 'text', text_he: cleanHe(q.stem_he) };
+      }
+
+      // אפשרויות-שמע: two-tap מובנה ב-mechanic-mcq (נגיעה 1 = האזנה חופשית
+      // לא-נמדדת, נגיעה 2 = בחירה שנרשמת ל-BKT). רק אם לכולן יש MP3.
+      var audioOpts = opts.filter(function (o) { return o.mode === 'audio'; });
+      if (audioOpts.length) {
+        var allHave = audioOpts.every(function (o) { return OPT_AUDIO[o.label_he]; });
+        if (!allHave) return null;
+        audioOpts.forEach(function (o) { o.audio_key = OPT_AUDIO[o.label_he]; });
+      }
+
+      base.stem = stem;
+      base.options = opts;
+      base.mechanic = 'mcq';
+      return base;
+    }
+
+    function renderPearls() {
+      var el = $('pearls');
+      el.innerHTML = '';
+      queue.forEach(function (_, i) {
+        var p = document.createElement('span');
+        p.className = 'pearl' + (i < idx ? ' filled' : '');
+        el.appendChild(p);
+      });
+    }
+
+    function showFinish() {
+      $('noniRow').hidden = true;
+      $('counter').textContent = queue.length + ' / ' + queue.length;
+      root.innerHTML =
+        '<div class="finish">' +
+        '<img src="assets/noni-happy.png" alt="נוני שמחה" onerror="this.style.display=\'none\'">' +
+        '<h2>כָּל הַכָּבוֹד!</h2>' +
+        '<p>גִּלִּיתֶם אֶת כָּל הַתְּאוֹמִים שֶׁל ' + TAG + '</p>' +
+        '<div class="btns">' +
+        '<button class="again" id="againBtn">עוֹד פַּעַם</button>' +
+        '<a class="home" href="student-picker.html">לַמָּסָךְ הָרָאשִׁי</a>' +
+        '</div></div>';
+      $('againBtn').addEventListener('click', function () { location.reload(); });
+      try { window.AvneiAudio.play('all-done'); } catch (e) {}
+    }
+
+    function mountNext() {
+      if (current && current.unmount) { try { current.unmount(); } catch (e) {} }
+      current = null;
+      renderPearls();
+      if (idx >= queue.length) { showFinish(); return; }
+
+      var cfg = queue[idx];
+      $('counter').textContent = (idx + 1) + ' / ' + queue.length;
+      $('noniRow').hidden = false;
+      $('promptText').textContent = cfg.promptLine;
+
+      // odd-one-out בלי stem — משמיעים את שאלת-האודיו דרך בועת נוני
+      var taskKey = cfg.taskAudioKey || null;
+      var say = $('sayBtn');
+      say.hidden = !taskKey;
+      say.onclick = taskKey ? function () { window.AvneiAudio.play(taskKey); } : null;
+      if (taskKey) setTimeout(function () { window.AvneiAudio.play(taskKey); }, 400);
+
+      cfg.onComplete = function () {
+        idx++;
+        renderPearls();
+        var pearls = document.querySelectorAll('.pearl');
+        var p = pearls[idx - 1];
+        if (p) { p.classList.add('just-added'); setTimeout(function () { p.classList.remove('just-added'); }, 600); }
+        setTimeout(mountNext, 250);
+      };
+
+      var mech = window.AvneiMechanics[cfg.mechanic];
+      current = mech.mount(root, cfg);
+    }
+
+    // ------------------------------------------------------------------
+    // תור מאוזן: L1 של כל מאפיין, אחר-כך L2, L3 — עד MAX_QUESTIONS.
+    // ביום רב-זוגות (ספטמבר) זה מערבב זוגות ושומר מדרג קושי עולה.
+    // ------------------------------------------------------------------
+    function buildQueue(qs) {
+      var byChar = {};
+      var order = [];
+      qs.forEach(function (q) {
+        var c = q.characteristic_id;
+        if (!byChar[c]) { byChar[c] = []; order.push(c); }
+        byChar[c].push(q);
+      });
+      order.forEach(function (c) { byChar[c].sort(function (a, z) { return a.level - z.level; }); });
+      var out = [];
+      for (var round = 0; out.length < MAX_QUESTIONS; round++) {
+        var added = false;
+        for (var i = 0; i < order.length && out.length < MAX_QUESTIONS; i++) {
+          var q = byChar[order[i]][round];
+          if (q) { out.push(q); added = true; }
+        }
+        if (!added) break;
+      }
+      return out;
+    }
+
+    function boot() {
+      if (!PAIR_IDS.length) {
+        root.innerHTML = '<div class="empty-note">חָסֵר ?pair= בַּכְּתֹבֶת.<br>לְדֻגְמָה: ?pair=tav-resh אוֹ ?pair=shin-sin</div>';
+        return;
+      }
+      if (!TAG) TAG = PAIR_IDS.map(function (p) { return PAIRS[p].he; }).join(' · ');
+      $('pageTitle').textContent = TAG;
+
+      var KEYS = [];
+      PAIR_IDS.forEach(function (p) { KEYS = KEYS.concat(PAIRS[p].keys); });
+
+      fetch('../curriculum/questions-grade1.json', { cache: 'no-cache' })
+        .then(function (r) { return r.json(); })
+        .then(function (b) {
+          var list = Array.isArray(b) ? b : (b.questions || b.items || []);
+          var qs = list.filter(function (q) {
+            var cid = q.characteristic_id || '';
+            return KEYS.some(function (k) { return cid.indexOf(k) === 0; });
+          });
+          queue = [];
+          buildQueue(qs).forEach(function (q) {
+            var cfg = toConfig(q);
+            if (cfg) queue.push(cfg); else skipped++;
+          });
+          if (skipped) console.warn('[discrimination] דולגו ' + skipped + ' שאלות ללא נכסי אודיו');
+          if (!queue.length) {
+            root.innerHTML = '<div class="empty-note">אֵין כָּרֶגַע שְׁאֵלוֹת מוּכָנוֹת לַזּוּג הַזֶּה.</div>';
+            return;
+          }
+          $('startVeil').hidden = false;
+          $('startBtn').addEventListener('click', function () {
+            try { if (window.AvneiAudio.unlock) window.AvneiAudio.unlock(); } catch (e) {}
+            $('startVeil').hidden = true;
+            idx = 0;
+            mountNext();
+          });
+        }).catch(function (err) {
+          console.error('[discrimination] load failed', err);
+          root.innerHTML = '<div class="empty-note">מַשֶּׁהוּ הִשְׁתַּבֵּשׁ בִּטְעִינַת הַשְּׁאֵלוֹת.</div>';
+        });
+    }
+
+    boot();
+  })();
+  </script>
+</body>
+</html>
