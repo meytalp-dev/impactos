@@ -44,32 +44,27 @@
     .csum .cs .cnum{font-size:22px;font-weight:800;color:var(--deep);line-height:1;}
     .csum .cs .clab{font-size:12px;color:var(--text-soft);font-weight:600;margin-top:3px;line-height:1.3;}
 
-    /* kid grid cards */
-    .kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:14px;}
-    .kcard{background:#fff;border:1px solid #ECF0F0;border-radius:18px;padding:15px 15px 0;overflow:hidden;
-      box-shadow:0 1px 3px rgba(38,80,92,.05);cursor:pointer;display:flex;flex-direction:column;transition:transform .16s,box-shadow .16s;}
-    .kcard:hover{transform:translateY(-3px);box-shadow:0 10px 26px rgba(38,80,92,.10);}
-    .kc-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px;}
-    .kc-id{display:flex;flex-direction:column;align-items:flex-end;gap:6px;text-align:right;min-width:0;}
-    .kc-nm{font-size:15px;font-weight:800;color:var(--deep);line-height:1.1;}
-    .kc-av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:16px;flex:0 0 auto;font-family:'Heebo',sans-serif;}
-    /* start-island recommendation on card */
-    .kc-plc{display:flex;align-items:center;gap:9px;background:#F1F9F6;border:1px solid #DCEDE6;border-radius:12px;padding:11px;margin-bottom:12px;}
-    .kc-plc .fl{width:26px;height:26px;border-radius:8px;background:#DDF3EC;color:#0F7E72;display:grid;place-items:center;flex:0 0 auto;}
-    .kc-plc .fl .tic svg{width:15px;height:15px;}
-    .kc-plc .pb{min-width:0;line-height:1.25;}
-    .kc-plc .pl{font-size:10px;font-weight:700;color:#3E8C78;}
-    .kc-plc .pi{font-size:12.5px;font-weight:800;color:#1f7a6b;}
-    .kc-plc.none{background:#F4F6F8;border-color:#E6EAEF;}
-    .kc-plc.none .fl{background:#EAF0F7;color:#41689A;} .kc-plc.none .pl{color:#5b7089;} .kc-plc.none .pi{color:#41689a;}
-    /* pending teacher approval — soft amber tint on the recommendation itself */
-    .kc-plc.pend{background:#FDF7EC;border-color:#F2E4C6;}
-    .kc-plc.pend .fl{background:#FCEFD9;color:#B27A24;} .kc-plc.pend .pl{color:#9c6212;} .kc-plc.pend .pi{color:#7a5a1a;}
-    .kc-send{width:100%;justify-content:center;margin-bottom:14px;}
-    .kc-send[disabled]{opacity:.6;cursor:default;}
-    .kc-foot{margin:0 -15px;padding:10px 15px;border-top:1px solid #EEF2F2;text-align:center;font-size:12.5px;font-weight:800;color:#48707C;display:flex;align-items:center;justify-content:center;gap:6px;}
-    .kc-foot .chev{font-weight:900;font-size:15px;line-height:0;}
-    .kcard:hover .kc-foot{color:#1f7a6b;background:#FAFDFC;}
+    /* kid grid cards — mirror the gate role-cards (icon tile · title · soft line · footer link) */
+    .kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;}
+    .kcard{position:relative;background:#fff;border:1px solid #ECF0F0;border-radius:18px;padding:18px 18px 15px;
+      box-shadow:0 1px 3px rgba(38,80,92,.05);cursor:pointer;display:flex;flex-direction:column;gap:11px;min-height:188px;
+      transition:transform .5s cubic-bezier(.32,.72,0,1),box-shadow .5s cubic-bezier(.32,.72,0,1),border-color .3s;}
+    .kcard:hover{transform:translateY(-6px);box-shadow:0 12px 28px rgba(38,80,92,.11);border-color:#DCE4E5;}
+    .kc-tile{width:56px;height:56px;border-radius:15px;display:grid;place-items:center;font-weight:800;font-size:23px;font-family:'Heebo',sans-serif;
+      transition:transform .4s cubic-bezier(.32,.72,0,1);}
+    .kcard:hover .kc-tile{transform:translateY(-2px) scale(1.04);}
+    .kc-nm{font-size:19px;font-weight:800;color:var(--deep);line-height:1.15;}
+    .kc-ds{font-size:13.5px;color:var(--text-soft);line-height:1.5;flex:1;}
+    .kc-ds b{color:var(--deep);font-weight:700;}
+    .kc-tag{position:absolute;top:14px;left:14px;font-size:10.5px;font-weight:800;color:#9c6212;background:#FCEFD9;padding:4px 10px;border-radius:999px;}
+    .kc-acts{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+    .kc-go{display:inline-flex;align-items:center;gap:6px;border:none;background:none;padding:0;cursor:pointer;font-family:inherit;
+      font-size:14px;font-weight:700;color:#0F7E72;}
+    .kc-go .tic svg{width:18px;height:18px;transition:transform .4s;}
+    .kcard:hover .kc-go .tic svg{transform:translateX(-4px);}
+    .kc-go[disabled]{opacity:.6;cursor:default;}
+    .kc-more{font-size:12.5px;font-weight:700;color:var(--text-soft);white-space:nowrap;}
+    .kcard:hover .kc-more{color:#48707C;}
 
     /* live note */
     .livenote{display:flex;align-items:center;gap:13px;margin-top:22px;background:#F5FAF8;border:1px solid #E1EFE9;border-radius:16px;padding:15px 19px;}
@@ -251,32 +246,25 @@
     var grid=document.getElementById('kgrid');
     function cardHTML(k,i){
       var L=LVL[k.lvl];var isl=kidIsland(k);
-      var plc,act;
+      var ds,act;
       if(isl){
-        var pend=!k.apr;
-        plc='<div class="kc-plc'+(pend?' pend':'')+'"><span class="fl"><span class="tic" data-ic="flag"></span></span>'+
-            '<div class="pb"><div class="pl">'+(pend?'הצעת המערכת · ממתין לאישורך':'נקודת הפתיחה לתרגול')+'</div>'+
-            '<div class="pi">אי '+isl.n+' · '+isl.skill+'</div></div></div>';
-        act='<button class="dbtn dbtn-ok kc-send" data-practice="'+i+'"><span class="tic" data-ic="playcircle"></span>פתיחת התרגול באי '+isl.n+'</button>';
+        ds='נקודת הפתיחה: <b>אי '+isl.n+'</b> · '+isl.skill;
+        act='<button class="kc-go" data-practice="'+i+'">פתיחת התרגול <span class="tic" data-ic="chevleft"></span></button>';
       } else {
-        plc='<div class="kc-plc none"><span class="fl"><span class="tic" data-ic="flag"></span></span>'+
-            '<div class="pb"><div class="pl">נקודת הפתיחה לתרגול</div>'+
-            '<div class="pi">טרם נקבעה — נדרש מבדק</div></div></div>';
-        act='<button class="dbtn dbtn-ok kc-send" data-send="'+i+'"><span class="tic" data-ic="userplus"></span>שליחת מבדק ל'+k.nm+'</button>';
+        ds='טרם נקבעה נקודת פתיחה — נדרש מבדק קצר.';
+        act='<button class="kc-go" data-send="'+i+'">שליחת מבדק <span class="tic" data-ic="chevleft"></span></button>';
       }
-      return '<div class="kc-head">'+
-          '<div class="kc-id"><div class="kc-nm">'+k.nm+'</div></div>'+
-          '<div class="kc-av '+L.cls+'">'+initial(k.nm)+'</div>'+
-        '</div>'+
-        plc+
-        act+
-        '<div class="kc-foot">לפרופיל המלא <span class="chev">‹</span></div>';
+      return (isl&&!k.apr?'<span class="kc-tag">ממתין לאישורך</span>':'')+
+        '<span class="kc-tile '+L.cls+'">'+initial(k.nm)+'</span>'+
+        '<div class="kc-nm">'+k.nm+'</div>'+
+        '<div class="kc-ds">'+ds+'</div>'+
+        '<div class="kc-acts">'+act+'<span class="kc-more">לפרופיל המלא ‹</span></div>';
     }
     function refreshCard(i){var el=grid.querySelector('.kcard[data-i="'+i+'"]');if(el){el.innerHTML=cardHTML(KIDS[i],i);fillTics();}}
     KIDS.forEach(function(k,i){var el=document.createElement('div');el.className='kcard';
       el.style.setProperty('--c',LVL[k.lvl].c);el.setAttribute('data-i',i);
       el.innerHTML=cardHTML(k,i);
-      el.addEventListener('click',function(e){if(e.target.closest('[data-send]'))return;openDrawer(i);});
+      el.addEventListener('click',function(e){if(e.target.closest('[data-send],[data-practice]'))return;openDrawer(i);});
       grid.appendChild(el);});
 
     /* ---------- full-observation drawer ---------- */
