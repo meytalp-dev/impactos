@@ -3,8 +3,10 @@
    Owner: gate + navigation layer. Does NOT alter dashboard design.
    Activates ONLY when sessionStorage 'avnei-journey' === '1'.
    Focus child: איתי כ. · א'1  (reading: confuses sounds · pulse: drop in joy)
-   Works on demo/ step screens AND on excursion screens (the ל game / pulse
-   check-in) where it shows only a minimal "back to journey" pill.
+   Spine (8): placement → student morning → teacher → teacher pulse →
+   teacher mavat → principal → principal pulse (pulse-grade1/) → meshulav.
+   Works on step screens AND on excursion screens (games / pulse check-in)
+   where it shows only a minimal "back to journey" pill.
    ============================================================ */
 (function () {
   'use strict';
@@ -13,41 +15,56 @@
   var CHILD = sessionStorage.getItem('avnei-journey-child') || 'איתי כ.';
   var file = (location.pathname.split('/').pop() || '').toLowerCase();
 
-  // ----- journey spine (demo/ screens) -----
+  // ----- journey spine -----
+  // NOTE: step URLs are written as '../<folder>/<file>' so they resolve the
+  // same from demo/ AND from pulse-grade1/ (step 7 lives there).
   var STEPS = [
+    { key: 'teacher-literacy-profile.html', role: 'מורה', chip: 'פתיחת שנה',
+      title: 'פתיחת שנה — המיפוי ההתחלתי',
+      sub: 'לפני הכול: איתי שיחק משחק קצר עם נוני, והמערכת הציעה לו נקודת התחלה. ההצעה נשארת הצעה — המורה רואה את התמונה, משנה ומאשרת. בלי תיוג אוטומטי.',
+      activities: [
+        { icon: '🧒', label: 'איך זה נראה אצל הילד · המבדק', url: '../demo/student-literacy-check.html' }
+      ],
+      highlight: true, next: '../demo/student-avnei.html',
+      nextLabel: 'ומכאן — שנת הלמידה ›' },
     { key: 'student-avnei.html', role: 'תלמיד',
       title: 'הבוקר של איתי',
-      sub: 'איתי מתחיל ביום משחקי — קצר ונעים, בלי ציונים. שתי פעילויות בוקר:',
+      sub: 'כמה שבועות לתוך השנה. איתי מתחיל ביום משחקי — קצר ונעים, בלי ציונים. שתי פעילויות בוקר:',
       activities: [
         { icon: '📖', label: 'קריאה · הרכבת הצליל', url: '../avnei-yesod/underwater-app/stage-4-cv-build.html?presentation=1&demo=1' },
         { icon: '💜', label: 'צ׳ק-אין רגשי · פולס', url: "../pulse-grade1/pulse-questionnaire.html?class=א'1" }
       ],
-      next: 'teacher-avnei.html' },
+      next: '../demo/teacher-avnei.html', nextLabel: 'מה המורה רואה? ›' },
     { key: 'teacher-avnei.html', role: 'מורה', chip: 'המורה רואה',
       title: 'המורה רואה — ופועלת',
       sub: 'מאותן לחיצות קטנות עולה תמונה: איתי מתבלבל בכמה צלילים, וגם פחות שמח ללמוד. ההמלצה: קבוצת חיזוק קטנה.',
       activities: [
-        { icon: '📅', label: 'איפה זה בשנה · תוכנית שנתית', url: 'teacher-curriculum.html' }
+        { icon: '📅', label: 'איפה זה בשנה · תוכנית שנתית', url: '../demo/teacher-curriculum.html' }
       ],
-      highlight: true, next: 'teacher-literacy-profile.html',
-      nextLabel: 'איך המערכת הציבה את איתי? ›' },
-    { key: 'teacher-literacy-profile.html', role: 'מורה', chip: 'הצבה',
-      title: 'המערכת מציעה — המורה מכריעה',
-      sub: 'מבדק הפתיחה (משחק קצר עם נוני) הציע לאיתי אי התחלה. ההצעה נשארת הצעה: המורה רואה את התמונה, משנה ומאשרת. בלי תיוג אוטומטי.',
-      activities: [
-        { icon: '🧒', label: 'איך זה נראה אצל הילד · המבדק', url: 'student-literacy-check.html' }
-      ],
-      highlight: true, next: 'teacher-pulse.html',
+      highlight: true, next: '../demo/teacher-pulse.html',
       nextLabel: 'ומה עם הרגש? ›' },
     { key: 'teacher-pulse.html', role: 'מורה', chip: 'רגש',
       title: 'אותו ילד — הצד הרגשי',
       sub: 'הפולס מראה את מה שקשה לתפוס בעין: אצל איתי יש ירידה בשמחה ללמוד. לא מערכת נוספת — אותו מסך, אותו ילד, וצעד הבא אחד.',
-      highlight: true, next: 'principal-avnei.html',
+      activities: [
+        { icon: '📊', label: 'דשבורד הפולס המלא · א׳1', url: '../pulse-grade1/pulse-dashboard.html?seed=1' }
+      ],
+      highlight: true, next: '../demo/teacher-mavat.html',
+      nextLabel: 'לחבר למידה ורגש ›' },
+    { key: 'teacher-mavat.html', role: 'מורה', chip: 'מבט משולב',
+      title: 'למידה ורגש — על מפה אחת',
+      sub: 'המבט המשולב של המורה: קודם הכיתה כולה על מפת רבעים — למידה מול רגש. ואז איתי עצמו: למה הוא נמצא שם, ומה הצעד הבא.',
+      highlight: true, next: '../demo/principal-avnei.html',
       nextLabel: 'המשך למנהלת ›' },
     { key: 'principal-avnei.html', role: 'מנהלת',
       title: 'תמונת בית הספר',
       sub: 'המנהלת לא רואה כל לחיצה — היא רואה אילו כיתות בשגרה, איפה צריך ליווי, ומי הילדים שחשוב לא לפספס.',
-      next: 'mavat-meshulav.html', nextLabel: 'החיבור: קריאה ורגש ›' },
+      next: '../pulse-grade1/pulse-principal-dashboard.html',
+      nextLabel: 'הרגש בעיני המנהלת ›' },
+    { key: 'pulse-principal-dashboard.html', role: 'מנהלת', chip: 'רגש בית-ספרי',
+      title: 'הרווחה של כל כיתות א׳',
+      sub: 'אותו פולס, בגובה מנהלת: אילו כיתות בשגרה טובה ואיפה כדאי ליווי — ברמת כיתה, בלי חשיפת תשובות של ילד בודד.',
+      next: '../demo/mavat-meshulav.html', nextLabel: 'החיבור: קריאה ורגש ›' },
     { key: 'mavat-meshulav.html', role: 'החיבור',
       title: 'קריאה ורגש — על אותו ילד',
       sub: 'כאן נפגשים שני העולמות אצל איתי: מה שקורה בקריאה ומה שקורה ברגש. לא תיוג — צעד הבא אחד, ברור.',
@@ -58,13 +75,14 @@
   // value = how to get back to the demo/ folder from that screen
   var EXCURSIONS = {
     'stage-3-lamed.html': '../../demo/student-avnei.html',
-    'student-literacy-check.html': 'teacher-literacy-profile.html',
-    'teacher-curriculum.html': 'teacher-avnei.html',
+    'student-literacy-check.html': '../demo/teacher-literacy-profile.html',
+    'teacher-curriculum.html': '../demo/teacher-avnei.html',
     'stage-4-cv-build.html': '../../demo/student-avnei.html',
     'stage-4-cv-tap.html': '../../demo/student-avnei.html',
     'map.html': '../../demo/student-avnei.html',
     'pulse-questionnaire.html': '../demo/student-avnei.html',
-    'pulse-summary.html': '../demo/student-avnei.html'
+    'pulse-summary.html': '../demo/student-avnei.html',
+    'pulse-dashboard.html': '../demo/teacher-pulse.html'
   };
 
   // ===== EXCURSION MODE: minimal floating "back to journey" pill only =====
@@ -145,7 +163,7 @@
   document.body.appendChild(bar);
   document.getElementById('jwExit').addEventListener('click', function () {
     sessionStorage.removeItem('avnei-journey'); sessionStorage.removeItem('avnei-journey-child');
-    location.href = 'index.html';
+    location.href = '../demo/index.html';
   });
 
   var acts = (step.activities || []).map(function (a) {
@@ -168,7 +186,7 @@
   document.getElementById('jwNext').addEventListener('click', function () {
     if (step.last) {
       sessionStorage.removeItem('avnei-journey'); sessionStorage.removeItem('avnei-journey-child');
-      location.href = 'index.html?journey-done=1';
+      location.href = '../demo/index.html?journey-done=1';
     } else { location.href = step.next; }
   });
 
