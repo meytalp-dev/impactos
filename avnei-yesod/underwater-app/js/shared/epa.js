@@ -36,7 +36,9 @@ window.AvneiEPA = (function() {
 
   // 29.6.2026 · התאמה לבנק השאלות (questions-grade1.json epa_axes) — minigame-fit G2/G3.
   // נוספו: Comprehension/WrongPlural/GenderMismatch (הבנה/מורפולוגיה) · decode (פענוח — ערך ה-task הנפוץ בבנק).
-  // הערכים הישנים נשמרו במלואם (תוספתי, לא שובר). ⚠️ להוסיף מתכוני התערבות לערכים החדשים ב-B.8.
+  // הערכים הישנים נשמרו במלואם (תוספתי, לא שובר).
+  // ✅ T6 (5.7.2026): מתכוני-התערבות לערכים החדשים נוספו — interventions/comprehension.json ·
+  //    wrong-plural.json · gender-mismatch.json + זיהוי ב-interventions.js (טעונים אישור פדגוגי).
   const FAILURE_VALUES = ['Shape', 'Sound', 'Name', 'Direction', 'Comprehension', 'WrongPlural', 'GenderMismatch'];
   const CONTEXT_VALUES = ['isolation', 'initial', 'medial', 'final', 'font'];
   const TASK_VALUES    = ['recognition', 'find', 'name', 'write', 'decode'];

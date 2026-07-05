@@ -7,6 +7,11 @@
 //   4-5 ימים שבועיים). זיהוי אוטומטי מתוך EPA + Sub-BKT — F.21A מציע
 //   "פתחי קבוצת תמיכה" כשהוא רואה דפוס משותף ל-3+ ילדות.
 //
+// T6 · 5.7.2026 (minigame-fit): +3 דפוסים מבנק-השאלות — comprehension /
+//   wrong_plural / gender_mismatch (EPA failure=Comprehension/WrongPlural/
+//   GenderMismatch). scripts: interventions/comprehension.json ·
+//   wrong-plural.json · gender-mismatch.json (טעונים אישור פדגוגי של מיטל).
+//
 // API (נחשף ב-window.AvneiInterventions):
 //   loadScript(patternId)                          → script JSON (cache or load)
 //   preloadAll()                                   → Promise<{patternId: script}>
@@ -39,7 +44,11 @@
     'letter_knowledge',
     'decoding',
     'fluency',
-    'letter_cluster'
+    'letter_cluster',
+    // T6 · 5.7.2026 — דפוסי EPA מבנק-השאלות (minigame-fit G2/G3):
+    'comprehension',
+    'wrong_plural',
+    'gender_mismatch'
   ]);
 
   const STORAGE_KEY = 'avnei-interventions-v1';
@@ -62,7 +71,16 @@
     fluencyMinSamples: 5,                  // לפחות 5 ניסיונות לחישוב median
     fluencyPercentile: 0.75,               // P75 בכיתה
     // Letter cluster
-    letterClusterMinWeak: 3                // §3.5 — 3+ אותיות weak
+    letterClusterMinWeak: 3,               // §3.5 — 3+ אותיות weak
+    // T6 · 5.7.2026 — דפוסי EPA failure מבנק-השאלות (Comprehension/WrongPlural/GenderMismatch).
+    // ספים בסגנון phonological: מינימום כשלים מצטבר + חלק מכלל הכשלים.
+    // הבנה נמדדת בנפח שאלות גדול יותר → סף גבוה מעט. ניתן לכיול בפיילוט.
+    comprehensionMinFailures: 8,
+    comprehensionMinErrorRate: 0.25,
+    wrongPluralMinFailures: 6,
+    wrongPluralMinErrorRate: 0.25,
+    genderMismatchMinFailures: 6,
+    genderMismatchMinErrorRate: 0.25
   });
 
   // CONFUSED_PAIRS — זוגות אותיות מתבלבלות (פדגוגית-ידועות).
@@ -374,6 +392,66 @@
     };
   }
 
+  // T6 · 5.7.2026 — גלאי גנרי לערך failure בודד ב-EPA (באותו מבנה כמו phonological).
+  // סופר את כשלי ה-value המבוקש על פני כל האיים וכל ה-unitKeys (אות או characteristic_id),
+  // ומפעיל trigger כשיש גם מינימום כשלים וגם חלק מספיק מכלל הכשלים.
+  function _detectFailureValue(studentId, failureValue, patternId, minCount, minRate) {
+    const EPA = _getEPA();
+    if (!EPA || !EPA.getEPA) return null;
+    const studentEpa = EPA.getEPA(studentId);
+    if (!studentEpa || Object.keys(studentEpa).length === 0) return null;
+
+    let valueCount = 0;
+    let totalFailureCount = 0;
+    Object.keys(studentEpa).forEach(function (islandId) {
+      const islandRec = studentEpa[islandId] || {};
+      Object.keys(islandRec).forEach(function (unitKey) {
+        const unitRec = islandRec[unitKey] || {};
+        const failureCounts = unitRec.failure || {};
+        Object.keys(failureCounts).forEach(function (val) {
+          const c = failureCounts[val] || 0;
+          totalFailureCount += c;
+          if (val === failureValue) valueCount += c;
+        });
+      });
+    });
+
+    if (valueCount < minCount) return null;
+    if (totalFailureCount === 0) return null;
+    const errorRate = valueCount / totalFailureCount;
+    if (errorRate < minRate) return null;
+
+    return {
+      patternId: patternId,
+      details: {
+        failure_value: failureValue,
+        value_failures: valueCount,
+        total_failures: totalFailureCount,
+        error_rate: errorRate
+      },
+      confidence: valueCount >= minCount * 3 ? 'high'
+        : (valueCount >= minCount * 1.5 ? 'med' : 'low')
+    };
+  }
+
+  function _detectComprehension(studentId) {
+    return _detectFailureValue(studentId, 'Comprehension', 'comprehension',
+      INTERVENTION_DEFAULTS.comprehensionMinFailures,
+      INTERVENTION_DEFAULTS.comprehensionMinErrorRate);
+  }
+
+  function _detectWrongPlural(studentId) {
+    return _detectFailureValue(studentId, 'WrongPlural', 'wrong_plural',
+      INTERVENTION_DEFAULTS.wrongPluralMinFailures,
+      INTERVENTION_DEFAULTS.wrongPluralMinErrorRate);
+  }
+
+  function _detectGenderMismatch(studentId) {
+    return _detectFailureValue(studentId, 'GenderMismatch', 'gender_mismatch',
+      INTERVENTION_DEFAULTS.genderMismatchMinFailures,
+      INTERVENTION_DEFAULTS.genderMismatchMinErrorRate);
+  }
+
   // ==========================================================================
   // detectForStudent — מחזיר מערך של כל triggers שמתאימים לילדה
   // ==========================================================================
@@ -397,6 +475,16 @@
 
     const lc = _detectLetterCluster(studentId);
     if (lc) out.push(lc);
+
+    // T6 — דפוסי EPA failure מבנק-השאלות
+    const comp = _detectComprehension(studentId);
+    if (comp) out.push(comp);
+
+    const wp = _detectWrongPlural(studentId);
+    if (wp) out.push(wp);
+
+    const gm = _detectGenderMismatch(studentId);
+    if (gm) out.push(gm);
 
     return out;
   }
@@ -565,6 +653,25 @@
       }
     })();
 
+    // ===== T6: Comprehension / WrongPlural / GenderMismatch — bucket יחיד פר דפוס =====
+    ['comprehension', 'wrong_plural', 'gender_mismatch'].forEach(function (pid) {
+      const matched = perStudent.filter(function (s) {
+        return s.triggers.some(function (t) { return t.patternId === pid; });
+      });
+      if (matched.length >= minGroupSize) {
+        const studentEntries = matched.map(function (s) {
+          const t = s.triggers.find(function (tt) { return tt.patternId === pid; });
+          return { id: s.studentId, name: s.studentName, details: t.details, confidence: t.confidence };
+        });
+        groups.push({
+          patternId: pid,
+          students: studentEntries,
+          groupCommonDetails: {},
+          confidence: _aggregateConfidence(studentEntries.map(function (e) { return e.confidence; }))
+        });
+      }
+    });
+
     return groups;
   }
 
@@ -712,6 +819,10 @@
     _detectDecoding: _detectDecoding,
     _detectFluency: _detectFluency,
     _detectLetterCluster: _detectLetterCluster,
+    _detectFailureValue: _detectFailureValue,
+    _detectComprehension: _detectComprehension,
+    _detectWrongPlural: _detectWrongPlural,
+    _detectGenderMismatch: _detectGenderMismatch,
     _computeClassP75ResponseTime: _computeClassP75ResponseTime,
     _median: _median,
     _percentile: _percentile

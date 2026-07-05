@@ -110,9 +110,12 @@ section('BLOCK 1 — API surface (9 פונקציות + 4 constants)');
   assert('API.' + fn + ' קיים', typeof Interventions[fn] === 'function');
 });
 
-assert('PATTERN_IDS = 5', Array.isArray(Interventions.PATTERN_IDS) && Interventions.PATTERN_IDS.length === 5);
-assert('PATTERN_IDS מכיל את כל החמשה',
+assert('PATTERN_IDS = 8 (5 ישנים + 3 T6)', Array.isArray(Interventions.PATTERN_IDS) && Interventions.PATTERN_IDS.length === 8);
+assert('PATTERN_IDS מכיל את כל החמשה הישנים',
   ['phonological', 'letter_knowledge', 'decoding', 'fluency', 'letter_cluster']
+    .every(function (id) { return Interventions.PATTERN_IDS.indexOf(id) >= 0; }));
+assert('PATTERN_IDS מכיל את שלושת ה-T6',
+  ['comprehension', 'wrong_plural', 'gender_mismatch']
     .every(function (id) { return Interventions.PATTERN_IDS.indexOf(id) >= 0; }));
 assert('CONFUSED_PAIRS מערך >= 5', Array.isArray(Interventions.CONFUSED_PAIRS) && Interventions.CONFUSED_PAIRS.length >= 5);
 assert('STORAGE_KEY הוא string', typeof Interventions.STORAGE_KEY === 'string');
@@ -122,9 +125,10 @@ assert('INTERVENTION_DEFAULTS object', Interventions.INTERVENTION_DEFAULTS && ty
 // BLOCK 2 — loadScript טוען 5 JSONים מהדיסק
 // ============================================================================
 
-section('BLOCK 2 — loadScript טוען 5 JSONים מ-fs');
+section('BLOCK 2 — loadScript טוען 8 JSONים מ-fs');
 Interventions._clearCache();
-['phonological', 'letter_knowledge', 'decoding', 'fluency', 'letter_cluster'].forEach(function (id) {
+['phonological', 'letter_knowledge', 'decoding', 'fluency', 'letter_cluster',
+ 'comprehension', 'wrong_plural', 'gender_mismatch'].forEach(function (id) {
   const s = Interventions.loadScript(id);
   assert(id + ' נטען', !!s && s.pattern_id === id);
   if (s) {
@@ -427,6 +431,139 @@ assert('resetInterventions() ניקה הכל', Interventions.getInterventionsFor
 // פטרן לא חוקי
 assert('recordIntervention עם patternId לא חוקי → false',
   Interventions.recordIntervention(['stu-a'], 'invalid', {}) === false);
+
+// ============================================================================
+// BLOCK 11 — T6 detectors (comprehension / wrong_plural / gender_mismatch)
+// ============================================================================
+
+section('BLOCK 11 — T6: Comprehension / WrongPlural / GenderMismatch detectors');
+clearMocks();
+
+// בלי EPA = אין trigger
+assert('comprehension בלי EPA → null', Interventions._detectComprehension('stu-t6') === null);
+
+// Comprehension — unitKeys של characteristic_id (מורפולוגיה/הבנה, לא אות)
+setupEpaMock({
+  epaByStudent: {
+    'stu-t6a': {
+      '9': {
+        'sep-w3-comp-c1': { failure: { Comprehension: 6 } },
+        'sep-w4-comp-c2': { failure: { Comprehension: 4, Sound: 2 } }
+      }
+    }
+  }
+});
+// Comprehension=10 >= 8, rate=10/12=83% >= 25% → trigger
+const compRes = Interventions._detectComprehension('stu-t6a');
+assert('Comprehension trigger (10 כשלים, 83%)', compRes && compRes.patternId === 'comprehension');
+assert('Comprehension details.value_failures=10', compRes && compRes.details.value_failures === 10);
+assert('Comprehension details.error_rate ~ 0.83', compRes && Math.abs(compRes.details.error_rate - 10 / 12) < 0.001);
+
+// פחות מ-8 כשלים → לא trigger
+setupEpaMock({
+  epaByStudent: {
+    'stu-t6b': { '9': { 'sep-w3-comp-c1': { failure: { Comprehension: 5 } } } }
+  }
+});
+assert('Comprehension=5 < 8 → no trigger', Interventions._detectComprehension('stu-t6b') === null);
+
+// 8 כשלים אבל שיעור נמוך → לא trigger
+setupEpaMock({
+  epaByStudent: {
+    'stu-t6c': { '9': { 'sep-w3-comp-c1': { failure: { Comprehension: 8, Sound: 100 } } } }
+  }
+});
+assert('rate=8/108=7% < 25% → no trigger', Interventions._detectComprehension('stu-t6c') === null);
+
+// WrongPlural
+setupEpaMock({
+  epaByStudent: {
+    'stu-t6d': {
+      '9': { 'sep-w5-morph-c3': { failure: { WrongPlural: 7, Shape: 2 } } }
+    }
+  }
+});
+const wpRes = Interventions._detectWrongPlural('stu-t6d');
+assert('WrongPlural trigger (7 כשלים, 78%)', wpRes && wpRes.patternId === 'wrong_plural');
+assert('WrongPlural details.failure_value', wpRes && wpRes.details.failure_value === 'WrongPlural');
+
+setupEpaMock({
+  epaByStudent: {
+    'stu-t6e': { '9': { 'sep-w5-morph-c3': { failure: { WrongPlural: 4 } } } }
+  }
+});
+assert('WrongPlural=4 < 6 → no trigger', Interventions._detectWrongPlural('stu-t6e') === null);
+
+// GenderMismatch
+setupEpaMock({
+  epaByStudent: {
+    'stu-t6f': {
+      '9': { 'sep-w6-morph-c4': { failure: { GenderMismatch: 6, Sound: 3 } } }
+    }
+  }
+});
+const gmRes = Interventions._detectGenderMismatch('stu-t6f');
+assert('GenderMismatch trigger (6 כשלים, 67%)', gmRes && gmRes.patternId === 'gender_mismatch');
+
+setupEpaMock({
+  epaByStudent: {
+    'stu-t6g': { '9': { 'sep-w6-morph-c4': { failure: { GenderMismatch: 6, Sound: 30 } } } }
+  }
+});
+assert('GenderMismatch rate=6/36=17% < 25% → no trigger', Interventions._detectGenderMismatch('stu-t6g') === null);
+
+// detectForStudent כולל את החדשים
+setupEpaMock({
+  epaByStudent: {
+    'stu-t6h': {
+      '9': {
+        'sep-w3-comp-c1': { failure: { Comprehension: 12 } },
+        'sep-w5-morph-c3': { failure: { WrongPlural: 8 } }
+      }
+    }
+  }
+});
+setupBktMock({});
+const t6Triggers = Interventions.detectForStudent('stu-t6h');
+assert('detectForStudent מחזיר comprehension', t6Triggers.some(function (t) { return t.patternId === 'comprehension'; }));
+assert('detectForStudent מחזיר wrong_plural', t6Triggers.some(function (t) { return t.patternId === 'wrong_plural'; }));
+
+// ============================================================================
+// BLOCK 12 — T6 group triggers (3+ ילדות עם אותו דפוס)
+// ============================================================================
+
+section('BLOCK 12 — T6: detectGroupTriggers לדפוסים החדשים');
+clearMocks();
+setupBktMock({});
+setupEpaMock({
+  epaByStudent: {
+    'stu-g1': { '9': { 'sep-w3-comp-c1': { failure: { Comprehension: 10 } } } },
+    'stu-g2': { '9': { 'sep-w4-comp-c2': { failure: { Comprehension: 9, Sound: 1 } } } },
+    'stu-g3': { '9': { 'sep-w3-comp-c1': { failure: { Comprehension: 15 } } } },
+    'stu-g4': { '9': { 'sep-w3-comp-c1': { failure: { Sound: 12 } } } }  // לא Comprehension
+  }
+});
+const t6Groups = Interventions.detectGroupTriggers([
+  { id: 'stu-g1', name: 'מאיה' },
+  { id: 'stu-g2', name: 'נועה' },
+  { id: 'stu-g3', name: 'רותם' },
+  { id: 'stu-g4', name: 'שירה' }
+]);
+const compGroup = t6Groups.find(function (g) { return g.patternId === 'comprehension'; });
+assert('קבוצת comprehension זוהתה', !!compGroup);
+assert('קבוצת comprehension = 3 ילדות', compGroup && compGroup.students.length === 3);
+assert('שירה (Sound בלבד) לא בקבוצה', compGroup && !compGroup.students.some(function (s) { return s.id === 'stu-g4'; }));
+
+// רק 2 ילדות → אין קבוצה
+setupEpaMock({
+  epaByStudent: {
+    'stu-g1': { '9': { 'sep-w6-morph-c4': { failure: { GenderMismatch: 8 } } } },
+    'stu-g2': { '9': { 'sep-w6-morph-c4': { failure: { GenderMismatch: 7 } } } }
+  }
+});
+const t6Groups2 = Interventions.detectGroupTriggers([{ id: 'stu-g1' }, { id: 'stu-g2' }]);
+assert('2 ילדות gender_mismatch → אין קבוצה',
+  !t6Groups2.some(function (g) { return g.patternId === 'gender_mismatch'; }));
 
 // ============================================================================
 // סיכום
