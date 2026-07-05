@@ -252,11 +252,13 @@
     (function () {
       'use strict';
 
-      // iOS audio unlock on first gesture
+      // iOS audio unlock on first gesture + פתיח נוני פעם אחת (לקח האיים:
+      // intro פעם אחת בכניסה, בלי לחזור עליו אחרי כל תשובה)
       document.addEventListener('click', function unlock() {
         if (window.AvneiAudio && typeof window.AvneiAudio.unlock === 'function') {
           try { window.AvneiAudio.unlock(); } catch (e) {}
         }
+        try { window.AvneiAudio.play('summary-pearls-intro'); } catch (e) {}
         document.removeEventListener('click', unlock);
       }, { once: true });
 
@@ -297,11 +299,13 @@
             title.textContent = 'הַחֲמִישִׁיָּה יוֹשֶׁבֶת! 🌟';
             sub.textContent = 'הִשְׁלַמְתֶּם אֶת כָּל הַשַּׁרְשֶׁרֶת. כָּל הַכָּבוֹד!';
             document.getElementById('doneNoni').src = 'assets/noni-kiss.png';
+            try { window.AvneiAudio.play('summary-pearls-done'); } catch (e) {}
           } else {
             title.textContent = 'כִּמְעַט! 🦪';
             sub.textContent = (result && result.weakCVs && result.weakCVs.length)
               ? 'עוֹד מַבָּט קָטָן עַל:' : 'עוֹד קְצָת תַּרְגּוּל וְנִשְׁלִים אֶת הַשַּׁרְשֶׁרֶת.';
             document.getElementById('doneNoni').src = 'assets/noni-thinking.png';
+            try { window.AvneiAudio.play('summary-pearls-almost'); } catch (e) {}
             (result && result.weakCVs ? result.weakCVs : []).forEach(function (w) {
               const chip = document.createElement('span');
               chip.className = 'weak-chip';
