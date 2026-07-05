@@ -143,44 +143,44 @@
     // מ
     'מ:kamatz':  'מָחָר',     // tomorrow (book_2_station_6)
     'מ:patach':  'מַטֶּה',    // staff (book_2_station_1)
-    'מ:shva':    null,         // שווא בראש מילה — נדיר; ASK
+    'מ:shva':    'מְעִיל',   // coat — vocab-bank ×7; שווא נע /me/ כמו בְּרֵכָה (אושר מיטל 5.7.2026)
     'מ:hiriq':   'מִכְנָסַיִם', // pants (book_3_station_1)
-    'מ:holam':   null,         // ASK
-    'מ:tzere':   null,         // ASK
+    'מ:holam':   'מוֹרָה',   // teacher — vocab-bank + packs; הקשר בית-ספרי (אושר מיטל 5.7.2026)
+    'מ:tzere':   'מֵאָה',   // hundred — לקסיקון גן (סופרים עד 100) (אושר מיטל 5.7.2026)
     'מ:segol':   'מֶלֶךְ',     // king (סטנדרטי)
-    'מ:kubutz':  null,         // ASK — בתוכן יש רק מֻנָּח/מֻכָּרוֹת/מֻשָּׂג (לא לשון-ילדים)
+    'מ:kubutz':  null,         // הוכרע 5.7.2026: נשאר בלי עוגן — אין שם-עצם ילדי במֻ (מֻתָּר נפסל: מושג, לא שם-עצם)
     'מ:shuruk':  'מוּל',       // facing (questions-grade1 — נפוץ; מוכר מדיבור: "מול הבית")
 
     // ב
     'ב:kamatz':  'בָּרָק',     // book_2_station_2
     'ב:patach':  'בַּת',       // daughter (book_2_station_9)
     'ב:shva':    'בְּרֵכָה',   // pool (book_2_station_10)
-    'ב:hiriq':   null,         // ASK
-    'ב:holam':   null,         // ASK
+    'ב:hiriq':   'בִּרְכַּיִם',   // knees — לקסיקון גן, איברי גוף; דגש קל (אושר מיטל 5.7.2026)
+    'ב:holam':   'בֹּקֶר',   // morning — questions-grade1; חולם חסר תואם-תצוגה! (אושר מיטל 5.7.2026)
     'ב:tzere':   'בֵּיצָה',    // egg (book_2_station_10 — "ביצה")
-    'ב:segol':   null,         // ASK
+    'ב:segol':   'בֶּגֶד',   // garment — questions-grade1 ×3; דגש קל (אושר מיטל 5.7.2026)
     'ב:kubutz':  'בֻּבָּה',    // doll (vocab-bank book_5 — "בֻּבָּה" correct word)
     'ב:shuruk':  'בּוּעוֹת',   // bubbles (vocab-bank ב-words + mastery-criteria — תמטי לשונית!)
 
     // ר
-    'ר:kamatz':  null,         // ASK
+    'ר:kamatz':  'רָחוֹק',   // far — questions-grade1 ×30+ (זוג רחוק/קרוב) (אושר מיטל 5.7.2026)
     'ר:patach':  'רַק',        // only (book_2_station_2)
-    'ר:shva':    null,         // ASK
-    'ר:hiriq':   null,         // ASK
-    'ר:holam':   null,         // ASK
-    'ר:tzere':   null,         // ASK
-    'ר:segol':   null,         // ASK
-    'ר:kubutz':  null,         // ASK — לא נמצאה מילת רֻ בתוכן הקיים
+    'ר:shva':    'רְחוֹב',   // street — לקסיקון גן; שווא נע /re/ (אושר מיטל 5.7.2026)
+    'ר:hiriq':   'רִצְפָּה',   // floor — vocab-bank; לשבת על הרצפה (אושר מיטל 5.7.2026)
+    'ר:holam':   'רוֹפֵא',   // doctor — vocab-bank (אושר מיטל 5.7.2026)
+    'ר:tzere':   'רֵיק',   // empty — questions-grade1 ×3 (אושר מיטל 5.7.2026)
+    'ר:segol':   'רֶגֶל',   // leg — questions-grade1 ×40+ (אושר מיטל 5.7.2026)
+    'ר:kubutz':  null,         // הוכרע 5.7.2026: נשאר בלי עוגן — אין מילת-ילדים ב-רֻ (עדיף null מעוגן מאולץ)
     'ר:shuruk':  'רוּחַ',      // wind (vocab-bank + island-14 passages)
 
     // ק
-    'ק:kamatz':  null,         // ASK
+    'ק:kamatz':  'קָטָן',   // small — questions-grade1 + grammar-syntax (אושר מיטל 5.7.2026)
     'ק:patach':  'קַר',        // cold (book_2_station_2)
     'ק:shva':    'קְפִיץ',     // spring (book_2_station_10)
-    'ק:hiriq':   null,         // ASK
-    'ק:holam':   null,         // ASK
-    'ק:tzere':   null,         // ASK
-    'ק:segol':   null,         // ASK
+    'ק:hiriq':   'קִיר',   // wall — vocab-bank (אושר מיטל 5.7.2026)
+    'ק:holam':   'קוֹף',   // monkey — questions-grade1 ×15+ (אושר מיטל 5.7.2026)
+    'ק:tzere':   'קֵן',   // nest — questions-grade1; קן ציפור (ט"ו בשבט) (אושר מיטל 5.7.2026)
+    'ק:segol':   'קֶשֶׁת',   // rainbow/bow — island-03 qof.json (אושר מיטל 5.7.2026)
     'ק:kubutz':  'קֻבִּיָּה',  // cube (vocab-bank other_words_seen + questions-grade1)
     'ק:shuruk':  'קוּמְקוּם',  // kettle (vocab-bank shuruk_uu · initial)
 
@@ -189,16 +189,16 @@
     'ת:patach':  'תַּפּוּז',   // orange (book_2_station_1)
     'ת:shva':    'תְּרוּפָה',  // medicine (book_2_station_10)
     'ת:hiriq':   'תִּיק',      // bag (book_3_station_1)
-    'ת:holam':   null,         // ASK
-    'ת:tzere':   null,         // ASK
-    'ת:segol':   null,         // ASK
+    'ת:holam':   'תּוֹדָה',   // thanks — vocab-bank; דגש קל (אושר מיטל 5.7.2026)
+    'ת:tzere':   'תֵּה',   // tea — לקסיקון גן; המילה=ההברה עצמה; דגש קל (אושר מיטל 5.7.2026)
+    'ת:segol':   null,         // הוכרע 5.7.2026: נשאר בלי עוגן — תֶּרֶד גבולית למוכרות גיל 6
     'ת:kubutz':  'תֻּכִּי',    // parrot (vocab-bank nouns_animals + questions-grade1)
     'ת:shuruk':  'תּוּת',      // strawberry (vocab-bank nouns_food)
 
     // ל — אות הדמו (לא pilot letter). זרעים מגובים בקובצי אודיו word-* קיימים בלבד.
     // השאר null עד שמיטל תספק מ-vocab-bank (לא להמציא — reference: "vocab — לבקש").
     'ל:tzere':   'לֵב',        // heart — word-lev.mp3 קיים
-    'ל:holam':   null,         // ASK — לוּל ישב כאן בטעות (הוא שורוק /lul/); הועבר ל-ל:shuruk 4.7.2026
+    'ל:holam':   'לֹא',   // no — לקסיקון מוחלט; חולם חסר תואם-תצוגה! (אושר מיטל 5.7.2026)
     'ל:kamatz':  'לָקַח',      // took — word-lamed-qof-het-lakach.mp3 קיים
     'ל:patach':  null,         // ASK
     'ל:shva':    null,         // ASK

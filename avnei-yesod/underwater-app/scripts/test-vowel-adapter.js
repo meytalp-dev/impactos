@@ -238,10 +238,10 @@ header('5. getAnchorWord — seeded + missing');
   assert(VA.getAnchorWord('ת', 'kubutz') === 'תֻּכִּי', 'getAnchorWord(ת, kubutz) = תֻּכִּי');
   assert(VA.getAnchorWord('ת', 'shuruk') === 'תּוּת', 'getAnchorWord(ת, shuruk) = תּוּת');
   assert(VA.getAnchorWord('ל', 'shuruk') === 'לוּל', 'getAnchorWord(ל, shuruk) = לוּל (הועבר מ-holam)');
-  assert(VA.getAnchorWord('ל', 'holam') === null, 'getAnchorWord(ל, holam) = null (לוּל תוקן → shuruk)');
-  // missing seed → null
-  assert(VA.getAnchorWord('ר', 'kamatz') === null, 'getAnchorWord(ר, kamatz) = null (חסר seed)');
-  assert(VA.getAnchorWord('מ', 'shva') === null, 'getAnchorWord(מ, shva) = null');
+  assert(VA.getAnchorWord('ל', 'holam') === 'לֹא', 'getAnchorWord(ל, holam) = לֹא (אושר מיטל 5.7.2026)');
+  // עוגנים שמולאו 5.7.2026 (דוח סוכן-מומחה, אישור מיטל)
+  assert(VA.getAnchorWord('ר', 'kamatz') === 'רָחוֹק', 'getAnchorWord(ר, kamatz) = רָחוֹק');
+  assert(VA.getAnchorWord('מ', 'shva') === 'מְעִיל', 'getAnchorWord(מ, shva) = מְעִיל');
   assert(VA.getAnchorWord('ל', 'kubutz') === null, 'getAnchorWord(ל, kubutz) = null (ASK)');
   // invalid
   assert(VA.getAnchorWord('Z', 'patach') === null, 'getAnchorWord(Z, patach) = null');
