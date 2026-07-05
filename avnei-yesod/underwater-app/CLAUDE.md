@@ -33,6 +33,6 @@ helpers: `getEPA(stu, island)` · `getEPAForUnit(stu, island, unitKey)` · `getD
 G1–G4 כולם סגורים. ליבת `js/templates/mechanic-mcq.js` (config-driven, EPA פר-מסיח) מכסה 5
 אינטראקציות. **T6 בוצע (5.7.2026):** מתכוני-התערבות ל-Comprehension/WrongPlural/GenderMismatch —
 `interventions/comprehension.json` · `wrong-plural.json` · `gender-mismatch.json` + זיהוי ב-
-`js/shared/interventions.js` (8 דפוסים, `scripts/test-interventions.js` 108/108) — **טעונים אישור
-פדגוגי של מיטל.** **נותר:** הפקת MP3/תמונות (לבקש ממיטל — לא להמציא תוכן).
+`js/shared/interventions.js` (8 דפוסים, `scripts/test-interventions.js` 108/108) — **אושרו
+פדגוגית ע"י מיטל 5.7.2026.** הפקת MP3/תמונות לבנק הושלמה (B2+B3, 4-5.7.2026).
 דוח: `../../_handoff/2026-06-29-minigame-fit-report.md`.
