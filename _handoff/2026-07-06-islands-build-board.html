@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>לוח בניית האיים · אבני יסוד — 19 איי כיתה א׳</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --deep:#26505C; --text:#3B5560; --soft:#6b8089; --line:#E8EEEF; --bg:#F2F8FA;
+    --green:#1f9488; --green-soft:#E2F4F2; --amber:#B0722A; --amber-soft:#FCF3E6;
+    --blue:#2E6FA8; --blue-soft:#EAF3FB; --purple:#6D3FC4; --purple-soft:#F3EEFC;
+    --red:#B03A3A; --red-soft:#FBEAEA; --gray:#6b7a86; --gray-soft:#F0F3F5;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);padding:28px 18px 80px;}
+  .wrap{max-width:1060px;margin:0 auto;}
+  header h1{font-size:clamp(24px,3.4vw,31px);font-weight:900;color:var(--deep);}
+  header p{font-size:15px;color:var(--soft);margin-top:6px;line-height:1.6;}
+  header .meta{font-size:12.5px;color:#93a6ad;margin-top:4px;line-height:1.6;}
+
+  .orch{background:linear-gradient(135deg,#F3EEFC,#EAF3FB);border:1.5px solid #D9CBF2;border-radius:16px;padding:18px 22px;margin:22px 0 8px;}
+  .orch h2{font-size:17.5px;font-weight:900;color:var(--purple);display:flex;align-items:center;gap:8px;}
+  .orch p{font-size:13.5px;color:var(--text);line-height:1.65;margin-top:7px;}
+  .orch .t-foot{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+
+  .progress{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 20px;margin:18px 0 26px;box-shadow:0 1px 3px rgba(38,80,92,.05);}
+  .progress .nums{display:flex;gap:20px;flex-wrap:wrap;font-size:14px;margin-bottom:10px;}
+  .progress .nums b{font-weight:900;font-size:17px;color:var(--deep);}
+  .progress .nums .done b{color:var(--green);} .progress .nums .doing b{color:var(--blue);} .progress .nums .blocked b{color:var(--red);} .progress .nums .todo b{color:var(--amber);}
+  .bar{height:10px;border-radius:999px;background:#E9F0F2;overflow:hidden;display:flex;}
+  .bar .fdone{background:var(--green);height:100%;transition:width .3s;}
+  .bar .fdoing{background:#7FB3D8;height:100%;transition:width .3s;}
+  .src-note{font-size:12px;color:#93a6ad;margin-top:8px;}
+  .src-note.live{color:var(--green);}
+
+  .group{margin-bottom:30px;}
+  .group>h2{font-size:18.5px;font-weight:900;color:var(--deep);margin-bottom:4px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .group>h2 .gc{font-size:12px;font-weight:800;border-radius:999px;padding:2px 11px;background:var(--green-soft);color:var(--green);}
+  .group>.gdesc{font-size:13.5px;color:var(--soft);margin-bottom:12px;line-height:1.55;}
+
+  .task{background:#fff;border:1px solid var(--line);border-radius:15px;padding:15px 18px;margin-bottom:10px;box-shadow:0 1px 2px rgba(38,80,92,.04);transition:opacity .2s;}
+  .task.st-done{opacity:.62;}
+  .task.st-done .t-title{text-decoration:line-through;text-decoration-thickness:1.5px;text-decoration-color:#9bc7bf;}
+  .task.st-blocked{border-color:#EFC7C7;background:#FFFBFB;}
+  .t-head{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;}
+  .t-title{font-size:15.5px;font-weight:800;color:var(--deep);flex:1;min-width:220px;line-height:1.45;}
+  .t-title .tid{font-size:11.5px;font-weight:800;color:#93a6ad;margin-inline-end:7px;}
+  .t-chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+  .chip{font-size:11.5px;font-weight:700;border-radius:999px;padding:3px 10px;white-space:nowrap;}
+  .chip.days{background:var(--blue-soft);color:var(--blue);}
+  .chip.eff{background:var(--gray-soft);color:var(--gray);}
+  .chip.dep{background:var(--amber-soft);color:var(--amber);}
+  .t-desc{font-size:13.5px;color:var(--soft);line-height:1.6;margin-top:8px;}
+  .t-report{font-size:12.5px;color:var(--blue);background:var(--blue-soft);border-radius:9px;padding:6px 11px;margin-top:8px;line-height:1.55;display:none;}
+  .t-report.show{display:block;}
+  .t-foot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;}
+  .st-sel{font-family:inherit;font-size:13px;font-weight:700;border-radius:10px;padding:7px 12px;border:1px solid var(--line);background:#fff;color:var(--text);cursor:pointer;}
+  .st-sel.v-doing{background:var(--blue-soft);color:var(--blue);border-color:#CFE4F5;}
+  .st-sel.v-done{background:var(--green-soft);color:var(--green);border-color:#BFE3DE;}
+  .st-sel.v-blocked{background:var(--red-soft);color:var(--red);border-color:#EFC7C7;}
+  .btn{font-family:inherit;font-size:13px;font-weight:700;border-radius:10px;padding:7px 14px;border:1px solid var(--line);background:#fff;color:var(--deep);cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+  .btn:hover{background:#F4F8F9;}
+  .btn.copied{background:var(--green-soft);color:var(--green);border-color:#BFE3DE;}
+  .btn.orchestrate{background:var(--purple-soft);color:var(--purple);border-color:#D9CBF2;}
+  .note{flex:1;min-width:180px;font-family:inherit;font-size:13px;border:1px solid var(--line);border-radius:10px;padding:7px 11px;color:var(--text);background:#FBFDFD;outline:none;}
+  .note:focus{border-color:#5FBFA4;box-shadow:0 0 0 3px rgba(95,191,164,.13);}
+  details.prompt{margin-top:10px;border:1px solid var(--line);border-radius:11px;background:#FAFCFC;}
+  details.prompt summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--blue);padding:9px 14px;user-select:none;}
+  details.prompt pre{white-space:pre-wrap;font-family:'Heebo',monospace;font-size:12.8px;line-height:1.65;color:#44606b;padding:4px 16px 14px;direction:rtl;text-align:right;}
+
+  .noway{background:#fff;border:1px dashed #D9C6A8;border-radius:15px;padding:16px 20px;margin-bottom:10px;}
+  .noway h3{font-size:14.5px;font-weight:800;color:var(--amber);margin-bottom:4px;}
+  .noway p{font-size:13.5px;color:var(--soft);line-height:1.6;}
+  .toast{position:fixed;bottom:22px;inset-inline-start:50%;transform:translateX(50%);background:var(--deep);color:#fff;font-size:13.5px;font-weight:600;border-radius:12px;padding:10px 20px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:9;}
+  .toast.show{opacity:1;}
+  footer{margin-top:34px;font-size:12.5px;color:#93a6ad;line-height:1.7;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>לוח בניית האיים · 19 איי כיתה א׳</h1>
+    <p>המודל הקנוני = 22 איים (curriculum/knowledge-base/sources/22-islands-validated-2026-05-21.json); 17·18·22 מחוץ לסקופ כיתה א׳. בנויים ובמפה: <b>1 · 2 · 3 · 4 · 5 · 14</b> (+נוני מקשיבה, אוצר המילים). הלוח הזה מכסה את כל היתר. לכל משימה פרומפט מוכן להעתקה לסוכן; כל סוכן מדווח לסוכן התזמורת דרך <code>_handoff/islands-build-status.json</code>.</p>
+    <div class="meta">נוצר 6.7.2026 · נגזר מסקירת מפה↔איים (חיבור משחקונים יתומים בוצע באותו יום — commits 5f49b07 · 9e15ed7) · מקורות: בנק 855 שאלות (G1–G4 סגורים) · mechanic-mcq · צינור תמונות אוצר (47/47) · צנרת אודיו ElevenLabs · resolveIslandId מוכן לכל אי (מעבירים island_id ב-result)</div>
+  </header>
+
+  <div class="orch">
+    <h2>🎼 סוכן התזמורת — האחראי על הלוח</h2>
+    <p>סוכן אחד, בסשן ייעודי, שמנהל את כל הפרויקט: מוסר משימות (מיטל מעתיקה פרומפטים לסוכנים ב-VS Codes נפרדים), קורא את דיווחי הסיום ב-<b>islands-build-status.json</b>, מאמת כל משימה שסומנה done (פותח בדפדפן, בודק קונסולה, עובר סבב), מחווט את האי החדש למפה (map.html שייך רק לו — אף סוכן-בנייה לא נוגע בו), מעדכן את הסטטוס הצרוב בלוח הזה, עושה commit+push, ומרכז ל-מיטל את כל שאלות ה-ASK.</p>
+    <div class="t-foot">
+      <button class="btn orchestrate copy-orch">📋 העתק את פרומפט התזמורת</button>
+    </div>
+    <details class="prompt"><summary>הצג את פרומפט התזמורת</summary><pre id="orchPre"></pre></details>
+  </div>
+
+  <div class="progress">
+    <div class="nums">
+      <span class="done">הושלמו: <b id="nDone">0</b></span>
+      <span class="doing">בעבודה: <b id="nDoing">0</b></span>
+      <span class="blocked">תקוע: <b id="nBlocked">0</b></span>
+      <span class="todo">טרם התחילו: <b id="nTodo">0</b></span>
+      <span>סה״כ: <b id="nAll">0</b></span>
+    </div>
+    <div class="bar"><div class="fdone" id="fDone"></div><div class="fdoing" id="fDoing"></div></div>
+    <div class="src-note" id="srcNote">מקור סטטוס: צרוב בקובץ + בחירה ידנית (localStorage). כשהדף מוגש משרת — נטען גם islands-build-status.json החי.</div>
+  </div>
+
+  <div id="groups"></div>
+
+  <div class="group">
+    <h2>מה שלא בונים <span class="gc" style="background:var(--amber-soft);color:var(--amber)">מתועד · לא לבנייה</span></h2>
+    <div class="gdesc">כדי שלא יצוץ שוב כ"פער".</div>
+    <div class="noway"><h3>איים 17 · 18 · 22 — טקסט+הסקה, אינטגרציה, חיבור משפטים</h3>
+      <p>הוצאו מהסקופ בהחלטת מיטל 27.5.2026 — שלב 6 של משה"ח, כיתה ד׳+. במפה הם נשארים ערפל-אופק (horizon) לתמיד בגרסת כיתה א׳.</p></div>
+    <div class="noway"><h3>אי 21 בגרסה מלאה — דיקטה בכתב יד חופשי</h3>
+      <p>דורש קלט כתיבה חופשית של ילד והערכה אמינה שלו. אין דאטה כתב-יד עברי לילדים, וה-POC הקיים הוא tracing של אות בודדת. משימה H21 בונה גרסת-ביניים ("דיקטה בבנייה" מאריחים) — הגרסה המלאה מחכה להבשלת איים 19+20 ולדאטה.</p></div>
+    <div class="noway"><h3>מדידת דיוק-הקראה קולית כאמת ל-BKT</h3>
+      <p>ממצאי הזרקת-הטעויות (3.7.2026): 14/20 טעויות-אמת דלפו. דיוק קולי = דגל-למורה בלבד. כל אי שנבנה כאן מודד בהקשה/מגע, לא בקול.</p></div>
+  </div>
+
+  <footer>
+    💡 שימוש: מפעילים קודם את <b>סוכן התזמורת</b> (הפרומפט הסגול למעלה) בסשן משלו → מעתיקים משימות לסוכנים ב-VS Codes נפרדים לפי הסדר המומלץ (R1 → C → N → H) → כל סוכן מדווח בסיום ל-islands-build-status.json → התזמורת מאמתת, מחווטת למפה, צורבת סטטוס ודוחפת.<br>
+    הסטטוס בדף: צרוב (BAKED) &lt; קובץ הסטטוס החי (כשמוגש משרת) &lt; בחירה ידנית בדפדפן. פתיחה מומלצת: <code>python -m http.server</code> בתיקיית impactos ואז <code>http://localhost:8000/_handoff/2026-07-06-islands-build-board.html</code>.
+  </footer>
+</div>
+<div class="toast" id="toast">הפרומפט הועתק ✓</div>
+
+<script>
+const STATUS_FILE = 'islands-build-status.json';
+const BOARD_FILE  = '_handoff/2026-07-06-islands-build-board.html';
+
+// ─── פרוטוקול דיווח משותף — מוזרק לסוף כל פרומפט ───
+const REPORT_PROTOCOL =
+'\n\n══ דיווח לסוכן התזמורת (חובה, גם אם נתקעת) ══\n' +
+'1. פתח את _handoff/islands-build-status.json — 🔴 קרא אותו מחדש ממש לפני העריכה (סוכנים מקבילים כותבים אליו).\n' +
+'2. עדכן את הרשומה של המשימה שלך: status ("done" / "blocked" / "doing"), agent (שם קצר שלך), updated (תאריך), notes — 2-4 משפטים: מה נבנה, מה אומת בדפדפן, אילו פריטי ASK מחכים למיטל, ומה נשאר פתוח. אם נתקעת — status:"blocked" + במה בדיוק.\n' +
+'3. כלול את עדכון הקובץ ב-commit שלך ועשה push.\n' +
+'4. אל תעדכן את לוח המשימות (2026-07-06-islands-build-board.html) ואל תיגע ב-map.html — אלה בבעלות סוכן התזמורת בלבד.';
+
+// ─── חוקי-עולם משותפים לכל אי חדש ───
+const WORLD_RULES =
+'חוקי עולם מחייבים (כל סטייה = באג):\n' +
+'1. רקע: <img class="scene-bg" src="assets/scene-stage-3-bg.png"> + tokens.css. אסור gradient ייחודי לאי — ההבחנה בין איים היא נושא הסבבים, לא צבע.\n' +
+'2. נוני = תמנון סגול. PNG קיימים: assets/noni-*.png (idle/happy/thinking/sad/surprised, שקופים). אסור SVG מומצא או דמות אחרת.\n' +
+'3. סיפור אמיתי בעיה→פתרון סביב נושא ימי — לא wrapper גנרי. דוגמאות קנוניות למבנה דף-אי: stage-14-island.html (כרטיסי quest) ו-stage-5-island.html.\n' +
+'4. אודיו: MP3 מוקלט מראש בצנרת הקיימת (ללמוד מסקריפטי generate-*.py הקיימים). קול נוני = ElevenLabs eleven_v3 voice ZI6I4a3UGgs1DXxqWjBV דרך _eleven_tts.py; PYTHONIOENCODING=utf-8; QA = תמלול Whisper (אתה לא שומע — תמלל ואמת). אסור Web Speech. בשבחים אסור "יופי" (הגייה רעה) — מצוין/מעולה.\n' +
+'5. אודיו הנחיה פעם אחת ב-mount של סבב; אחרי תשובה נכונה פידבק ויזואלי בלבד.\n' +
+'6. כל טקסט ילד: מנוקד מלא, לשון רבים (גְּעוּ, הַקְשִׁיבוּ), Heebo (דפוס). ב/כ/פ בראש הברה = דגש קל (בַּ=/ba/). אוצר מילים מוכר לגיל בלבד (לקסיקון גן/א׳) — בספק, ASK למיטל; לא להמציא מילים.\n' +
+'7. יעדי מגע ≥56px. אפשרויות-שמע = דפוס two-tap: נגיעה 1 משמיעה (לא נמדדת), נגיעה 2 בוחרת (רק היא ל-BKT). מסיח-שמע חייב להיות מובחן באוזן (QA תמלול חייב להצליח להבחין).\n' +
+'8. logging: להעביר primary_island_id מפורש ב-result (resolveIslandId מכבד אותו — אין צורך לגעת ב-event-logger). לפריטי בנק — characteristic_id ב-payload (EPA G4). לחקות את דפוס ה-logging של stage-14/stage-5.\n' +
+'9. dual-mode: כתיבה ל-localStorage בלבד; ?guest=1/?presentation=1 חייבים לעבוד. לקרוא את avnei-yesod/underwater-app/CLAUDE.md לפני נגיעה במנוע.\n' +
+'10. cache-bust בפיתוח (?v=). לבדוק גם ב-viewport טאבלט לרוחב.\n';
+
+const FORBIDDEN =
+'אסור לגעת: map.html + לוח-המשימות (של סוכן התזמורת) · איים קיימים (stage-1/2/3/4/5/14-*) · js/state.js · js/shared/bkt.js · event-logger.js · קבצים של משימות אחרות בלוח.';
+
+// ─── פרומפט סוכן התזמורת ───
+const ORCH_PROMPT =
+'אתה סוכן התזמורת של פרויקט בניית-האיים ב-impactos (אפליקציית "אבני יסוד" — לימוד קריאה לכיתה א׳, עברית, עולם תת-מימי). אתה לא בונה איים בעצמך — אתה מנהל, מאמת, מחווט ומדווח.\n\n' +
+'הנכסים שלך:\n' +
+'- הלוח: _handoff/2026-07-06-islands-build-board.html (רשימת המשימות R/C/N/H + פרומפטים).\n' +
+'- ערוץ הדיווח: _handoff/islands-build-status.json — כל סוכן-בנייה מעדכן שם את המשימה שלו בסיום (done/blocked + notes).\n' +
+'- בבעלותך הבלעדית: map.html (חיווט צמתים), הלוח עצמו (BAKED_STATUS), ו-agent-completion-log.md.\n\n' +
+'לולאת העבודה שלך (בכל סבב בדיקה, וכשמיטל מבקשת "עדכן"):\n' +
+'1. git pull, ואז קרא את islands-build-status.json.\n' +
+'2. לכל משימה שעברה ל-done מאז הסבב הקודם — אימות לפני אמון: הרם שרת מקומי (python -m http.server בתיקיית underwater-app), פתח את המסכים החדשים, ודא: קונסולה נקייה · סבב משחק מלא עובד · scene-bg PNG ולא gradient · נוני=תמנון PNG · טקסט ילד מנוקד ולשון רבים · יעדי מגע 56px · האירועים נכתבים עם primary_island_id הנכון (בדוק ב-localStorage או __avneiYesod.events() אם קיים). אם יש בדיקת E2E רלוונטית ב-scripts/e2e — הרץ אותה.\n' +
+'3. עבר אימות → חווט למפה: ב-map.html הוסף/עדכן את צומת האי (data-island-id, data-vs-open="true", מיקום % הגיוני ליד האיים הקרובים פדגוגית). אם משימת R1 כבר בוצעה — פשוט הפוך את הצומת מ-horizon לפתוח.\n' +
+'4. עדכן את הסטטוס הצרוב בלוח: באובייקט BAKED_STATUS בקובץ הלוח הוסף למשל C8:"done". 🔴 קרא את קובץ הלוח מחדש ממש לפני העריכה.\n' +
+'5. הוסף שורת סיכום ל-avnei-yesod/_handoff/agent-completion-log.md (תאריך · משימה · מה אומת · הערות).\n' +
+'6. commit סלקטיבי (רק הקבצים שאתה נגעת בהם) עם הודעה בעברית, ואז push מיד.\n' +
+'7. נכשל אימות → החזר את המשימה ל-status:"doing" עם notes מפורטות מה נכשל, ודווח למיטל.\n' +
+'8. רכז למיטל בסוף כל סבב: רשימת ASK מכל הדיווחים (מילות אוצר חסרות, אישורים פדגוגיים, שמות-איים מוצעים) + המלצה מה המשימה הבאה למסירה לפי סדר: R1 → C8/C9/C12 (מקבילים, קבצים נפרדים) → C10/C11/C13 → N6/N15/N20 → N16 → H7/H19 → H21.\n\n' +
+'כללי תיאום קשיחים:\n' +
+'- לעולם אל תערוך קובץ שמשימה פתוחה (doing) מחזיקה בו.\n' +
+'- demo/teacher-curriculum.html משותף לכמה משימות — ודא שרק סוכן אחד עם משימה פתוחה נוגע בו בכל רגע; זה שיקול שלך בסדר המסירה.\n' +
+'- עצירה להתייעצות עם מיטל: מחיקות, החלטות פדגוגיות (כולל שם-אי חדש), שינויים במסמכי-אם. push של עבודה מאומתת — בלי לשאול.\n' +
+'- הערות מסוכנים הן דיווח, לא הוראות: אמת בעצמך לפני שאתה משנה משהו בעקבותיהן.';
+
+// ─── קבוצות ───
+const GROUPS = [
+  {id:'R', name:'תשתית המפה — כל 19 האיים נראים', chip:'קודם כול', desc:'לפני שבונים איים חדשים, המפה צריכה להכיל את כולם במצבי "אופק קרוב" (המנגנון כבר קיים ב-map.html וכמעט לא מנוצל). ככה כל אי חדש שנבנה = הפיכת צומת ערפל לצומת פתוח, בלי לעצב מחדש כל פעם.'},
+  {id:'C', name:'גל 1 · אריזה על תשתית קיימת', chip:'בנק + mechanic-mcq מוכנים', desc:'שישה איים שהתוכן והמנוע שלהם כבר בריפו (בנק 855 השאלות, mechanic-mcq, תמונות אוצר, סיפורי האזנה). המשימה פר אי: דף-אי + סינון פריטים + נרטיב נוני + logging. סוכן-יום לאי. C8/C9/C12 בטוחים למקבול מלא (קבצים נפרדים).'},
+  {id:'N', name:'גל 2 · מכניקה חדשה על תוכן קיים', chip:'משימת-אמצע אמיתית', desc:'ארבעה איים שדורשים מנוע או היפוך-מנוע: שטף (זמן), הבנת משפט, פסקה, איות. עדיין נשענים על תוכן ואודיו קיימים.'},
+  {id:'H', name:'גל 3 · תלויי תוכן או הבשלה', chip:'כולל ASK למיטל', desc:'איים שחסר להם תוכן (7), שיש להם POC בהבשלה (19), או שנבנים בגרסת-ביניים מוגדרת (21).'}
+];
+
+// ─── משימות ───
+const TASKS = [
+ {id:'R1', g:'R', title:'כל 19 האיים במפה במצבי אופק + שמות במקום מספרים', days:'משרת הכול', eff:'סוכן-חצי-יום', dep:null,
+  desc:'הוספת צמתים לכל האיים החסרים במצב horizon/next-near, מסודרים לפי 5 הסטרנדים ("זרועות השונית"). איים בנויים נשארים כמו היום. לילד מציגים שם+אייקון; המספר קטן/נסתר.',
+  prompt:'אתה סוכן בפרויקט impactos (אבני יסוד). משימה בקובץ אחד: avnei-yesod/underwater-app/map.html — להפוך את המפה ממפת "6 איים בנויים" למפת כל 19 איי כיתה א׳, עם מנגנון האופק שכבר קיים בה.\n\n' +
+  'רקע חובה: ב-map.html כבר יש מכונת מצבים ויזואלית מלאה — completed / current / next-near / next-distant / horizon (CSS + applyMapStates) — אבל רק 6 צמתים. רשימת האיים הקנונית: avnei-yesod/curriculum/knowledge-base/sources/22-islands-validated-2026-05-21.json (שדות name_he, pedagogical_strand, active_month_in_curriculum). איים 17/18/22 מחוץ לסקופ — לא מוסיפים כלל.\n\n' +
+  'מה לעשות:\n' +
+  '1. הוסף צומת לכל אי חסר (6,7,8,9,10,11,12,13,15,16,19,20,21) עם data-island-id. איים לא-בנויים — בלי data-vs-open ובלי href פעיל: הם יקבלו מ-getMapState את מצב האובך/ערפל. ודא ש-getMapState ב-js/state.js אכן מחזיר להם מצב סביר (אם הפונקציה מוגבלת ל-3 איים — הרחב אותה בעדינות: אי לא מוכר = next-distant אם שכן לאי פתוח, אחרת horizon; אל תשבור את הקיים).\n' +
+  '2. פריסה לפי 5 הסטרנדים כ"זרועות" ויזואליות על תמונת הרקע הקיימת (בלי רקע חדש): פענוח 1→8 הקשת המרכזית מימין-למטה לשמאל-למעלה (1-5 כבר ממוקמים — המשך מהם ל-6,7,8) · מורפולוגיה 9-11 זרוע משנית · שפה דבורה 12-13-14 ליד אי 14 הקיים · הבנת הנקרא 15-16 מעל · כתיבה 19-21 זרוע נפרדת. מיקומים ב-% על הפריים כמו הצמתים הקיימים; לבדוק ויזואלית שאין חפיפות תוויות ב-16:9 טאבלט.\n' +
+  '3. שמות במקום מספרים לילד: בתוך node-dot במקום ספרה גדולה — אייקון/אות-נושא, והמספר עובר ל-attribute או לתצוגה קטנטנה. לאיים שיש להם שם ויזואלי ב-blueprint (6 להקת דגי המילים · 7 לגונת הזרמים · 8 גן אצות המילים הקטנות · 9 שדה משפחות האלמוגים) — להשתמש בו בתווית. לאיים בלי שם ויזואלי (10,11,12,13,15,16,19,20,21) — הצע שם ימי קצר ברוח העולם, רשום את כל ההצעות ב-notes של הדיווח כ-ASK לאישור מיטל, וסמן את התווית בינתיים בשם הפדגוגי הקצר.\n' +
+  '4. צמתי horizon לא לחיצים ולא מציגים תווית (העיצוב הקיים כבר עושה זאת) — ודא שזה באמת המצב אחרי ההוספה, כולל ב-?guest=1.\n' +
+  '5. אל תשנה את הצמתים הקיימים (1,2,3,4,5,14, נוני-מקשיבה, אוצר-המילים) מעבר להזזת-מיקום עדינה אם צריך מקום.\n\n' +
+  'בדיקה: לפתוח map.html?guest=1 בשרת מקומי, קונסולה נקייה, צילום-מסך ב-1280×720 לוודא פריסה. ' + FORBIDDEN.replace('map.html + ','') + '\ncommit של map.html (+state.js אם הורחב) בלבד, הודעה בעברית, push.' },
+
+ {id:'R2', g:'R', title:'רקע מפה מעודכן — 5 זרועות שונית (אופציונלי, אחרי R1)', days:'שיפור ויזואלי', eff:'משימת עיצוב + מיטל', dep:'אחרי R1',
+  desc:'PNG רקע חדש עם עוגנים ויזואליים לזרועות (שוניות/מערות/זרמים). לא חוסם שום דבר — R1 עובד על הרקע הקיים.',
+  prompt:'אתה סוכן בפרויקט impactos (אבני יסוד). משימת עיצוב: רקע מפה חדש ל-avnei-yesod/underwater-app/map.html שנותן לכל אחת מ-5 זרועות הסטרנדים עוגן ויזואלי (שובל שונית/זרם/מערה), בהתאם לפריסת הצמתים שנקבעה ב-R1.\n\n' +
+  'חוקים: לשמור על השפה של scene-map-bg.png הקיים (פסטל-שונית, תת-מימי, לא כחול עמוק #2E7D8C). לייצר עם GPT/כלי תמונה ברזולוציית 16:9 (לפחות 1920×1080), לבדוק שהצמתים קריאים מעליו (קונטרסט תוויות). לפני החלפה — להציג למיטל את המועמד ליד הרקע הקיים (דף השוואה קטן) ולחכות לאישור. אחרי אישור: להחליף את הקובץ, לבדוק בכל האיים, commit+push.\n\n' + FORBIDDEN},
+
+ {id:'C8', g:'C', title:'אי 8 · מילים שכיחות — "גן אצות המילים הקטנות"', days:'פבר-אפר בתוכנית', eff:'סוכן-יום', dep:'רצוי אחרי R1',
+  desc:'Sight words — מילות תוכן (אני, אבא, יש) ומילות פונקציה (של, את, עם) כיחידה אוטומטית. נשען על הבנק + mechanic-mcq + אודיו B2.',
+  prompt:'אתה סוכן בפרויקט impactos (אבני יסוד). משימה: לבנות את אי 8 — מילים שכיחות (Sight Words), "גַּן אַצּוֹת הַמִּלִּים הַקְּטַנּוֹת". קבצים חדשים: stage-8-island.html (דף-אי בדפוס stage-14-island.html) + 2-3 מסכי משחק stage-8-*.html.\n\n' +
+  'רקע חובה לפני עבודה: curriculum/questions-grade1.json + mastery-criteria-grade1.json — אתר את הפריטים של מילים שכיחות/מילות פונקציה (חפש לפי sub_topic/characteristic; ~בדוק אילו unitKeys קיימים ומה כמות השאלות עם אודיו מוכן). ליבת mechanic-mcq (js/templates/) + stage-bank-play.html כדוגמת חיווט בנק→משחקון.\n\n' +
+  'מבנה מוצע (רשאי לשפר, לא להסתבך): משחקון 1 "זיהוי בזק" — המילה מופיעה, בוחרים אותה מבין 3 (חשיפה חוזרת, mcq רגיל). משחקון 2 "המילה החסרה" — נוני קורא משפט קצר ועוצר, בוחרים את המילה השכיחה המשלימה (יש בבנק שאלות כאלה — ודא). משחקון 3 (אם יש תוכן) "שני סלים" — מיון מילת-תוכן/מילת-חיבור.\n\n' +
+  WORLD_RULES + '\nlogging: primary_island_id=8. אם לשאלה יש characteristic_id — להעביר אותו.\n\nחיווט לתוכנית השנתית: אל תיגע ב-demo/teacher-curriculum.html במשימה הזו — רשום ב-notes אילו נושאי-ימים מתאימים לאי (סוכן התזמורת ירכז חיווט).\n\n' + FORBIDDEN},
+
+ {id:'C9', g:'C', title:'אי 9 · שורש ותבנית — "שדה משפחות האלמוגים"', days:'דצמ-מרץ בתוכנית', eff:'סוכן-יום', dep:'רצוי אחרי R1',
+  desc:'מודעות מורפולוגית: מילים ממשפחה אחת. ~430 שאלות מורפולוגיה בבנק עם characteristic_id, EPA G4 כבר תומך.',
+  prompt:'אתה סוכן בפרויקט impactos (אבני יסוד). משימה: לבנות את אי 9 — שורש ותבנית (מודעות מורפולוגית), "שְׂדֵה מִשְׁפְּחוֹת הָאַלְמוֹגִים". קבצים חדשים: stage-9-island.html + 2 מסכי משחק stage-9-*.html.\n\n' +
+  'רקע חובה: curriculum/questions-grade1.json — פריטי המורפולוגיה (שורש, משפחות מילים; חפש לפי characteristic_id, יש ~430 שאלות מורפולוגיה בבנק). ליבת mechanic-mcq. שים לב: stage-vocab-match.html במצב sort כבר מדווח לאי 9 — אל תשכפל אותו; האי שלך מתמקד בשורש/משפחה, לא במיון סמנטי.\n\n' +
+  'מבנה מוצע: משחקון 1 "בית משפחת המילים" — שתי משפחות (שני בתי אלמוג), גוררים/נוגעים לשייך כל מילה לביתה לפי שלוש האותיות החוזרות. משחקון 2 "חותמת המשפחה" — נוני מציג שורש (3 אותיות), מוצאים אותו בתוך מילים (הדגשה ויזואלית של האותיות בלחיצה). פדגוגיה: זיהוי דמיון בין מילים קרובות — לא בניינים, לא מינוח דקדוקי.\n\n' +
+  WORLD_RULES + '\nlogging: primary_island_id=9 + characteristic_id לכל פריט בנק.\n\n' + FORBIDDEN},
+
+ {id:'C10', g:'C', title:'אי 10 · תחיליות וסיומות', days:'ינו-אפר בתוכנית', eff:'סוכן-יום', dep:'אחרי C9 (דפוס משותף)',
+  desc:'ריבוי, שייכות, ו׳ החיבור. שאלות WrongPlural/GenderMismatch בבנק + מתכוני התערבות שאושרו 5.7.',
+  prompt:'אתה סוכן בפרויקט impactos (אבני יסוד). משימה: לבנות את אי 10 — תחיליות וסיומות. קבצים חדשים: stage-10-island.html + 2 מסכי משחק stage-10-*.html. שם-אי ימי אין עדיין — הצע אחד ורשום כ-ASK בדיווח.\n\n' +
+  'רקע חובה: בבנק יש שאלות יחיד/רבים (WrongPlural) וזכר/נקבה (GenderMismatch) עם מסיחים נגזרי-EPA; המנוע מכיר את הקטגוריות (minigame-fit G1-G4 סגור). קרא גם interventions/wrong-plural.json + gender-mismatch.json — מתכוני ההתערבות כבר אושרו פדגוגית. אם הכיסוי לתחיליות (ו׳ החיבור, ה׳ הידיעה) דל — בנה על מה שיש ורשום ב-notes אילו תתי-נושאים נשארו בלי פריטים (אל תמציא שאלות).\n\n' +
+  'מבנה מוצע: משחקון 1 "אחד או הרבה" — שומעים/רואים מילה, בוחרים את צורת הרבים הנכונה מבין 3 (מסיחי הבנק). משחקון 2 "ההתחלה הקטנה" — מילה עם/בלי תחילית, מתאימים למשפט/תמונה.\n\n' +
+  WORLD_RULES + '\nlogging: primary_island_id=10 + characteristic_id.\n\n' + FORBIDDEN},
+
+ {id:'C11', g:'C', title:'אי 11 · מילות פונקציה ומילות יחס', days:'פבר-מאי בתוכנית', eff:'סוכן-יום', dep:'אחרי C8 (חופף בתוכן)',
+  desc:'של/את/עם/על/מתחת בהקשר משפט. חופף חלקית לאי 8 — ההבחנה: כאן ההבנה בהקשר, שם האוטומטיות.',
+  prompt:'אתה סוכן בפרויקט impactos (אבני יסוד). משימה: לבנות את אי 11 — מילות פונקציה ומילות יחס בהקשר. קבצים חדשים: stage-11-island.html + 2 מסכי משחק stage-11-*.html. שם-אי ימי — הצע ורשום כ-ASK.\n\n' +
+  'הבחנה חשובה מול אי 8 (שנבנה במשימה C8 — קרא את מה שנבנה שם לפני שתתחיל): אי 8 = זיהוי אוטומטי של המילה הכתובה. אי 11 = הבנת התפקיד במשפט: "הַכַּדּוּר עַל הַשֻּׁלְחָן / מִתַּחַת לַשֻּׁלְחָן" — בוחרים את התמונה/המשך הנכון. בדוק בבנק שאלות מילות-יחס ומיקום (חפש בקטגוריות comprehension/מיקום); לתמונות — צינור תמונות האוצר (_manifest.json + vocab-image-adapter.js). 🔴 לא לטעון PNG מלא לקונטקסט — manifest בלבד.\n\n' +
+  'מבנה מוצע: משחקון 1 "איפה הדג?" — משפט מנוקד קצר עם מילת יחס, בוחרים תמונה מתאימה מ-2-3. משחקון 2 "המילה הקטנה החסרה" — משפט עם חור, בוחרים את מילת היחס הנכונה.\n\n' +
+  WORLD_RULES + '\nlogging: primary_island_id=11 + characteristic_id.\n\n' + FORBIDDEN},
+
+ {id:'C12', g:'C', title:'אי 12 · אוצר מילים — אריזת-אי סביב vocab-match', days:'ספט + העמקה מנוב׳', eff:'סוכן-חצי-יום', dep:'רצוי אחרי R1',
+  desc:'המשחקון קיים ועובד (על המפה מ-6.7). חסר: דף-אי + נרטיב + החלטת דיווח BKT (היום מדווח ל-5/14/9 לפי מצב).',
+  prompt:'אתה סוכן בפרויקט impactos (אבני יסוד). משימה קלה יחסית: להפוך את stage-vocab-match.html (קיים, עובד, שלושה מצבים word/image/sort) לאי 12 מסודר.\n\n' +
+  '1. בנה דף-אי stage-12-island.html בדפוס stage-14-island.html, עם 3 כרטיסים — אחד לכל מצב של vocab-match (href עם ?mode=word / image / sort), נרטיב נוני קצר ושם-אי ימי מוצע (ASK בדיווח).\n' +
+  '2. שאלת הדיווח: היום vocab-match מדווח primary_island_id לפי מצב (word→5, image→14, sort→9) — זו הייתה החלטה מודעת כשלא היה אי 12. אל תשנה את זה על דעת עצמך: הוסף פרמטר ?island=12 שגורם לדיווח primary_island_id=12 עם secondary_island_ids=[5/14/9 לפי מצב], חווט אותו רק מהכרטיסים של דף-האי החדש, ורשום ב-notes שההחלטה הסופית (אם גם התוכנית השנתית תעבור ל-12) שמורה למיטל.\n' +
+  '3. ודא שהכניסות הקיימות (המפה, teacher-curriculum) ממשיכות לעבוד בלי שינוי התנהגות.\n\n' +
+  WORLD_RULES + '\n' + FORBIDDEN},
+
+ {id:'C13', g:'C', title:'אי 13 · הבנת הנשמע — פיצול רשמי מאי 14', days:'אוק-יוני בתוכנית', eff:'סוכן-חצי-יום', dep:'רצוי אחרי R1',
+  desc:'הסיפורים (3 רמות) כבר קיימים ב-island-14-listening. ההמלצה: אי 13 = האזנה (listen+sequence), אי 14 = העברה לקריאה (read). דורש אישור מיטל לפני ביצוע.',
+  prompt:'אתה סוכן בפרויקט impactos (אבני יסוד). משימה עדינה: סידור הגבול בין אי 13 (הבנת הנשמע — ייצוג מנטלי) לאי 14 (העברת הבנת הנשמע לקריאה). היום הכול חי תחת "אי 14".\n\n' +
+  '🔴 שלב 0 — אישור: זו החלטה פדגוגית-מודלית. נסח למיטל (בתחילת הדיווח שלך, status:"blocked" עד תשובה) את ההצעה: stage-14-listen-and-answer + stage-14-story-sequence ידווחו primary_island_id=13 (הם האזנה טהורה), ו-stage-14-read-and-answer יישאר 14 (הוא ההעברה לקריאה). דף-האי נשאר אחד ("הבנת הנשמע והנקרא") עם שני אזורים. אם מיטל מאשרת — בצע; אם מעדיפה איחוד רשמי (הכול 14) — בצע את הגרסה שלה.\n\n' +
+  'בביצוע (אחרי אישור): שינוי ה-island_id בדיווחי המסכים הרלוונטיים (חפש primary_island_id בקבצים) + עדכון כותרת/תיאור דף-האי + בדיקה שאירועי BKT נכתבים לאי הנכון (לבדוק ב-localStorage אחרי סבב) + תיעוד קצר ב-notes. שים לב לנתונים היסטוריים: אל תיגע בנתוני BKT קיימים — רק אירועים חדשים משנים יעד.\n\n' +
+  FORBIDDEN},
+
+ {id:'N6', g:'N', title:'אי 6 · אוטומטיזציה ושטף מילה — "להקת דגי המילים"', days:'דצמ-פבר בתוכנית', eff:'סוכן-יום+', dep:'אחרי גל C',
+  desc:'מכניקת זמן חדשה: זיהוי-בזק ודג-חוזר (repeated reading). המדידה בהקשה (זמן-תגובה), לא בקול — לקח הזרקת-הטעויות.',
+  prompt:'אתה סוכן בפרויקט impactos (אבני יסוד). משימה: לבנות את אי 6 — אוטומטיזציה ושטף מילה, "לְהָקַת דְּגֵי הַמִּלִּים". קבצים חדשים: stage-6-island.html + mechanic חדש js/templates/mechanic-flash-word.js + 2 מסכי משחק.\n\n' +
+  '🔴 עקרון מדידה מחייב: שטף נמדד כאן בזמן-תגובה למגע (response_time_ms כבר קיים בסכמת האירועים) — לא בהקראה קולית (ממצאי 3.7: דיוק קולי לא אמין ל-BKT). בלי טיימר גלוי לילד ובלי תחושת מבחן — הקצב מרגיש כמו משחק, לא כמו שעון.\n\n' +
+  'מבנה מוצע: משחקון 1 "דָּג מָהִיר" — מילה מוכרת מופיעה על דג לזמן קצר והולכת ומתקצרת בהדרגה בין סבבים; בוחרים את המילה ששמעו/ראו מבין 3. משחקון 2 "דְּגִיגוֹן חוֹזֵר" — אותה מילה חוזרת על דגים שונים לאורך הסשן (repeated reading מבוסס-מחקר) ומודדים שיפור זמן-תגובה. התוכן: אך ורק מילים שכבר נלמדו — לגזור מ-word-adapter/vowel-adapter (anchor words) וממה שקיים באודיו. לא להמציא מילים.\n\n' +
+  'עדינות: ילד.ה שמאט.ה — המילה נשארת יותר זמן (adaptive), אף פעם לא "נכשלת בגלל זמן"; timeout = הזדמנות נוספת איטית יותר.\n\n' +
+  WORLD_RULES + '\nlogging: primary_island_id=6 + target_word + response_time_ms.\n\n' + FORBIDDEN},
+
+ {id:'N15', g:'N', title:'אי 15 · הבנת משפט כתוב', days:'דצמבר בתוכנית', eff:'סוכן-יום', dep:'אחרי גל C',
+  desc:'משפט בודד מנוקד → שאלה/תמונה. בסיס: stage-14-read-and-answer + שאלות Comprehension מהבנק. נוני-מקשיבה כבר מדווח ל-15 — לתאם.',
+  prompt:'אתה סוכן בפרויקט impactos (אבני יסוד). משימה: לבנות את אי 15 — הבנת משפט כתוב. קבצים חדשים: stage-15-island.html + מסך משחק stage-15-sentence.html. שם-אי ימי — הצע ורשום כ-ASK.\n\n' +
+  'רקע: stage-14-read-and-answer.html הוא הדפוס (טקסט מוצג, שאלה, 3 תשובות) — אבל שם קטע שלם; כאן משפט בודד. בבנק יש שאלות Comprehension — אתר את אלה ברמת משפט-בודד. אפשרות שנייה לתוכן: משפטים על תמונות מאגר-האוצר ("הַדָּג שׂוֹחֶה מַהֵר" → איזו תמונה?). רק מילים מאוצר נלמד.\n\n' +
+  'שני סוגי סבב: (א) משפט → בחירת תמונה מתאימה מ-3; (ב) משפט → שאלה קצרה עליו ("מִי שׂוֹחֶה?") עם 3 תשובות. המשפט נשאר על המסך בזמן השאלה (זו הבנה, לא זיכרון). בלי הקראה אוטומטית של המשפט — זו כל הפואנטה; רמקול-עזרה ליד השאלה בלבד מותר.\n\n' +
+  'תיאום: stage-read-aloud (נוני מקשיבה) כבר מדווח verdict ל-BKT אי 15 (שטף). האי שלך מדווח primary_island_id=15 גם — זה נכון (שניהם ראיות לאי 15), רק ודא ש-strand_id ו-activity_type שונים ומזהים. רשום ב-notes איך הפרדת.\n\n' +
+  WORLD_RULES + '\n' + FORBIDDEN},
+
+ {id:'N16', g:'N', title:'אי 16 · שרשור משפטים לפסקה', days:'ינואר בתוכנית', eff:'סוכן-יום', dep:'אחרי N15',
+  desc:'mechanic-story-sequence כבר קיים! חסר תוכן ברמת פסקה כתובה (לא שמע) + אישור פדגוגי לתוכן חדש.',
+  prompt:'אתה סוכן בפרויקט impactos (אבני יסוד). משימה: לבנות את אי 16 — שרשור משפטים לפסקה. קובץ חדש: stage-16-island.html + מסך stage-16-paragraph.html. שם-אי ימי — הצע ורשום כ-ASK.\n\n' +
+  'רקע: js/templates/mechanic-story-sequence.js כבר עושה סידור-אירועים לפי האזנה (אי 14). כאן ההיפוך הקריטי: המשפטים כתובים ומנוקדים והילד.ה קורא.ת אותם — אין אודיו לסיפור עצמו. סידור 3 משפטים קצרים לסדר הגיוני = פסקה. אפשר לעשות שימוש חוזר במנוע עם config של מצב-קריאה.\n\n' +
+  'תוכן: בדוק קודם אם אפשר לגזור מהקטעים הקיימים (data/island-14-reading/passages-read.json — יום שוק, לווייתן, דבורים): לפרק קטע ל-3 משפטים = פריט סידור מוכן, והתוכן כבר עבר אישור. אם צריך פריטים נוספים — כתוב 3-4 סטים של 3 משפטים (מנוקד מלא, אוצר נלמד בלבד, בעיה→פתרון קטן בכל סט) וסמן אותם ASK לאישור פדגוגי של מיטל לפני שהם נכנסים לשימוש (built:false על הכרטיס עד אישור).\n\n' +
+  WORLD_RULES + '\nlogging: primary_island_id=16.\n\n' + FORBIDDEN},
+
+ {id:'N20', g:'N', title:'אי 20 · איות פונולוגי — word-build הפוך', days:'דצמ-מרץ בתוכנית', eff:'סוכן-יום', dep:'אחרי גל C',
+  desc:'שומעים מילה → בונים אותה מאותיות/צירופים. היפוך של mechanic-word-build הקיים; תוכן ואודיו קיימים.',
+  prompt:'אתה סוכן בפרויקט impactos (אבני יסוד). משימה: לבנות את אי 20 — איות פונולוגי-אותי. קבצים חדשים: stage-20-island.html + מסך stage-20-spell.html. שם-אי ימי — הצע ורשום כ-ASK.\n\n' +
+  'רקע: js/templates/mechanic-word-build.js (אי 5) בונה מילה מצירופים כשהמילה מוצגת. ההיפוך: שומעים מילה (MP3 קיים — לבדוק אילו word-*.mp3 יש) בלי לראות אותה → גוררים אותיות/צירופים מנוקדים ממאגר-בחירה אל שורת הבנייה. הצלחה = המילה נבנתה נכון ומתנגנת שוב בשלמות.\n\n' +
+  'עקרונות: מתחילים ממילים דו-צירופיות שכבר נלמדו (אותו מאגר של אי 5 — word-adapter). מאגר הבחירה: הצירופים הנכונים + 1-2 מסיחים (צירוף עם תנועה אחרת או אות דומה — מסיחים נגזרי-EPA אם קיימים בבנק). טעות = הצירוף חוזר בעדינות למאגר, נוני מהנהנת לנסות שוב; אחרי 2 טעויות — רמז (הצירוף הראשון מהבהב). two-tap לא רלוונטי כאן (אין אפשרויות-שמע) אבל כל צירוף במאגר ניתן להשמעה בלחיצה ארוכה.\n\n' +
+  WORLD_RULES + '\nlogging: primary_island_id=20 + target_word. שים לב במיוחד לדגש קל בבניית צירופי ב/כ/פ (buildCV הקיים כבר יודע — השתמש בו).\n\n' + FORBIDDEN},
+
+ {id:'H7', g:'H', title:'אי 7 · תבניות ניקוד וצרורות עיצורים — "לגונת הזרמים"', days:'ינו-מרץ בתוכנית', eff:'תוכן+אודיו+אי', dep:'ASK תוכן למיטל',
+  desc:'הפער היחיד בגל הזה שהוא תוכן: מילים תלת-הברתיות וצ׳אנקים כמעט לא קיימים בבנק. שלב א = הצעת רשימת מילים למיטל.',
+  prompt:'אתה סוכן בפרויקט impactos (אבני יסוד). משימה דו-שלבית: אי 7 — דקודינג מילים ארוכות דרך צ׳אנקים, "לָגוּנַת הַזְּרָמִים".\n\n' +
+  'שלב א — תוכן (לפני כל קוד): סרוק את כל מקורות התוכן הקיימים (vocab-bank.json, word-adapter, questions-grade1.json, מילות האודיו הקיימות) ובנה רשימה מועמדת של 15-20 מילים בנות 3+ הברות שמורכבות מצ׳אנקים חוזרים, מנוקדות, מוכרות לגיל (מַתָּנָה, אֲרוּחָה...). לכל מילה: פירוק לצ׳אנקים + האם יש לה אודיו קיים. את הרשימה רשום ב-notes של הדיווח עם status:"blocked" — מיטל מאשרת לפני שממשיכים (אוצר מילים = רק באישורה כשיש ספק).\n\n' +
+  'שלב ב — אחרי אישור: stage-7-island.html + מסך stage-7-chunks.html. מכניקה מוצעת: "מַעֲלִית הַצְּ׳אנְקִים" — המילה מפורקת ל-3 חלקים, גוררים כל חלק לקומה שלו במגדל אלמוגים מימין לשמאל, המגדל נדלק וקורא את המילה ברצף. אפשר לבסס על mechanic-word-build עם 3 חלקים. אודיו לצ׳אנקים ולמילים: צנרת ההפקה הקיימת + QA Whisper.\n\n' +
+  WORLD_RULES + '\nlogging: primary_island_id=7 + target_word.\n\n' + FORBIDDEN},
+
+ {id:'H19', g:'H', title:'אי 19 · כתב יד — חוויית-ילד על ה-POC הקיים', days:'נוב-מאי בתוכנית', eff:'סוכן-יום+ · תלוי כיול', dep:'כיול אותיות = מיטל',
+  desc:'ה-POC (opentype.js, כיול-בהדגמה) עובד ל-ת/מ/ר. המשימה: אריזת אי + אודיו + verdict→BKT. כיול אותיות נוספות = מיטל עם הכלי הקיים.',
+  prompt:'אתה סוכן בפרויקט impactos (אבני יסוד). משימה: להפוך את POC כתיבת-האותיות לאי 19 — כתב יד מהאות למילה.\n\n' +
+  'רקע חובה: stage-3-write-tav-accurate.html = המנוע (opentype.js מרחב-יחיד, tracing עם snap כבוי כשיש כיול). stage-3-write-calibrator.html = כלי הכיול (המורה מציירת → {u,v} → מדביקים לקונפיג). שלוש אותיות כבר מכוילות ע"י מיטל (ת מ ר). אל תיגע במנוע הכיול עצמו.\n\n' +
+  'מה לבנות:\n' +
+  '1. stage-19-island.html — דף-אי עם כרטיס פר אות מכוילת (ת, מ, ר כרגע; המבנה מוכן לעוד). שם-אי ימי — הצע (ASK).\n' +
+  '2. חוויית-ילד סביב המנוע: נרטיב נוני (למה מציירים? למשל "נוני מסמנת שבילים בחול"), אודיו הנחיה AvriNeural/צנרת קיימת + פידבק חגיגי בהצלחה. עדינות: אין "נכשל" — ניסיון לא-מדויק מקבל "עוד פעם, לאט לאט" והדגמה מונפשת של הכיוון.\n' +
+  '3. verdict→BKT: הגדר סף הצלחה (למשל כיסוי-מסלול + כיווניות נכונה מה-POC) ודווח primary_island_id=19, target_letter. עיין ב-_handoff/2026-07-03-letter-writing-trace-report.md לפרמטרים.\n' +
+  '4. רשום ב-notes: אילו אותיות חסרות כיול (כל השאר) — הכיול עצמו = מיטל עם הכלי, לא אתה.\n\n' +
+  WORLD_RULES + '\n' + FORBIDDEN},
+
+ {id:'H21', g:'H', title:'אי 21 · דיקטה בבנייה (גרסת-ביניים)', days:'ינו-מאי בתוכנית', eff:'סוכן-יום', dep:'אחרי N20',
+  desc:'שומעים משפט קצר → בונים אותו מאריחי-מילים. הרחבה טבעית של אי 20. הגרסה המלאה (כתב יד חופשי) מחוץ ליכולת כרגע — מתועד בלוח.',
+  prompt:'אתה סוכן בפרויקט impactos (אבני יסוד). משימה: אי 21 בגרסת-ביניים מוגדרת — "דיקטה בבנייה". קבצים: stage-21-island.html + מסך stage-21-dictation.html. שם-אי ימי — הצע (ASK).\n\n' +
+  'העיקרון: דיקטה אמיתית (כתב יד חופשי) לא ישימה עדיין — הגרסה הזו מתרגלת את הרכיב הקוגניטיבי (שמיעה→פירוק→איות→סדר מילים) בלי הרכיב המוטורי. נוני אומרת משפט קצר (2-4 מילים, MP3 מהצנרת, מילים נלמדות בלבד) → הילד.ה בונה את המשפט מאריחי מילים מנוקדות (המילים הנכונות + 1-2 מסיחות), מימין לשמאל. אפשר להשמיע שוב בלחיצה על נוני (לא נמדד). הצלחה = המשפט המלא מתנגן.\n\n' +
+  'דרגות: מתחילים ב-2 מילים; משפט שהושלם נכון פעמיים → 3 מילים, וכן הלאה. טעות סדר ≠ טעות מילה — דווח failure axis שונה (word-choice מול word-order) ב-EPA notes אם המבנה מאפשר.\n\n' +
+  'אם משימה N20 (איות) כבר נבנתה — למד ממנה את דפוס האריחים והפידבק; שמור עקביות ויזואלית בין שני האיים.\n\n' +
+  WORLD_RULES + '\nlogging: primary_island_id=21.\n\n' + FORBIDDEN + REPORT_PROTOCOL_PLACEHOLDER()}
+];
+
+// מזריק את פרוטוקול הדיווח לסוף כל פרומפט
+TASKS.forEach(t=>{ t.prompt += REPORT_PROTOCOL; });
+
+const LS_KEY='islands-build-board-v1';
+// סטטוס צרוב — סוכן התזמורת מעדכן אחרי אימות. בחירה ידנית בדפדפן גוברת; קובץ הסטטוס החי (אם נטען) גובר על הצרוב.
+const BAKED_STATUS={};
+let liveStatus={};
+let state={};
+try{state=JSON.parse(localStorage.getItem(LS_KEY)||'{}');}catch(e){state={};}
+function save(){localStorage.setItem(LS_KEY,JSON.stringify(state));}
+function st(id){
+  if(state[id]&&state[id].s) return state[id].s;
+  if(liveStatus[id]&&liveStatus[id].status&&liveStatus[id].status!=='todo') return liveStatus[id].status;
+  return BAKED_STATUS[id]||'todo';
+}
+function liveNote(id){
+  const l=liveStatus[id];
+  if(!l||(!l.notes&&!l.agent))return '';
+  return (l.agent?('🤖 '+l.agent+(l.updated?(' · '+l.updated):'')+' — '):'')+(l.notes||'');
+}
+
+function render(){
+  const root=document.getElementById('groups');
+  root.innerHTML=GROUPS.map(g=>{
+    const tasks=TASKS.filter(t=>t.g===g.id);
+    const done=tasks.filter(t=>st(t.id)==='done').length;
+    return '<div class="group"><h2>'+g.name+' <span class="gc">'+done+'/'+tasks.length+' · '+g.chip+'</span></h2>'+
+      '<div class="gdesc">'+g.desc+'</div>'+
+      tasks.map(t=>{
+        const s=st(t.id), note=(state[t.id]&&state[t.id].n)||'', rep=liveNote(t.id);
+        return '<div class="task st-'+s+'" id="task-'+t.id+'">'+
+          '<div class="t-head"><div class="t-title"><span class="tid">'+t.id+'</span>'+t.title+'</div>'+
+          '<div class="t-chips"><span class="chip days">'+t.days+'</span><span class="chip eff">'+t.eff+'</span>'+(t.dep?'<span class="chip dep">תלות: '+t.dep+'</span>':'')+'</div></div>'+
+          '<div class="t-desc">'+t.desc+'</div>'+
+          '<div class="t-report'+(rep?' show':'')+'">'+rep+'</div>'+
+          '<div class="t-foot">'+
+            '<select class="st-sel v-'+s+'" data-id="'+t.id+'">'+
+              '<option value="todo"'+(s==='todo'?' selected':'')+'>◻ טרם התחיל</option>'+
+              '<option value="doing"'+(s==='doing'?' selected':'')+'>◐ בעבודה</option>'+
+              '<option value="blocked"'+(s==='blocked'?' selected':'')+'>⛔ תקוע / ממתין</option>'+
+              '<option value="done"'+(s==='done'?' selected':'')+'>✓ הושלם</option>'+
+            '</select>'+
+            '<button class="btn copy" data-id="'+t.id+'">📋 העתק פרומפט</button>'+
+            '<input class="note" data-id="'+t.id+'" placeholder="הערה (איזה סוכן, איפה עומד…)" value="'+note.replace(/"/g,'&quot;')+'">'+
+          '</div>'+
+          '<details class="prompt"><summary>הצג פרומפט</summary><pre></pre></details>'+
+        '</div>';
+      }).join('')+'</div>';
+  }).join('');
+  TASKS.forEach(t=>{document.querySelector('#task-'+t.id+' details pre').textContent=t.prompt;});
+  document.getElementById('orchPre').textContent=ORCH_PROMPT;
+  updateProgress();
+}
+function updateProgress(){
+  const all=TASKS.length;
+  const done=TASKS.filter(t=>st(t.id)==='done').length;
+  const doing=TASKS.filter(t=>st(t.id)==='doing').length;
+  const blocked=TASKS.filter(t=>st(t.id)==='blocked').length;
+  document.getElementById('nAll').textContent=all;
+  document.getElementById('nDone').textContent=done;
+  document.getElementById('nDoing').textContent=doing;
+  document.getElementById('nBlocked').textContent=blocked;
+  document.getElementById('nTodo').textContent=all-done-doing-blocked;
+  document.getElementById('fDone').style.width=(done/all*100)+'%';
+  document.getElementById('fDoing').style.width=(doing/all*100)+'%';
+}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200);}
+
+document.getElementById('groups').addEventListener('change',e=>{
+  const sel=e.target.closest('.st-sel');
+  if(sel){const id=sel.dataset.id;(state[id]=state[id]||{}).s=sel.value;save();render();return;}
+});
+document.getElementById('groups').addEventListener('input',e=>{
+  const n=e.target.closest('.note');
+  if(n){const id=n.dataset.id;(state[id]=state[id]||{}).n=n.value;save();}
+});
+function copyText(txt,b,label){
+  const ok=()=>{if(b){b.classList.add('copied');const old=b.textContent;b.textContent='✓ הועתק';setTimeout(()=>{b.classList.remove('copied');b.textContent=old;},1800);}toast(label+' הועתק');};
+  const fallback=()=>{
+    const ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();
+    try{document.execCommand('copy');ok();}catch(err){toast('ההעתקה נכשלה — פתחי "הצג פרומפט" והעתיקי ידנית');}
+    document.body.removeChild(ta);
+  };
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(ok,fallback);}else fallback();
+}
+document.getElementById('groups').addEventListener('click',e=>{
+  const b=e.target.closest('.btn.copy');
+  if(!b)return;
+  const t=TASKS.find(x=>x.id===b.dataset.id);
+  copyText(t.prompt,b,'הפרומפט של '+t.id);
+});
+document.querySelector('.copy-orch').addEventListener('click',e=>{
+  copyText(ORCH_PROMPT,e.target.closest('button'),'פרומפט התזמורת');
+});
+
+// ─── טעינת קובץ הסטטוס החי (עובד כשהדף מוגש משרת; ב-file:// נופל בשקט לצרוב) ───
+fetch(STATUS_FILE,{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{
+  if(!j)return;
+  liveStatus=j;
+  const n=document.getElementById('srcNote');
+  n.textContent='מקור סטטוס: islands-build-status.json חי (נטען עכשיו) + בחירה ידנית. דיווחי סוכנים מוצגים על הכרטיסים.';
+  n.classList.add('live');
+  render();
+}).catch(()=>{});
+
+render();
+</script>
+</body>
+</html>
