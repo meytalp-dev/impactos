@@ -19,6 +19,11 @@
   // NOTE: step URLs are written as '../<folder>/<file>' so they resolve the
   // same from demo/ AND from pulse-grade1/ (step 7 lives there).
   var STEPS = [
+    { key: 'reading-journey.html', role: 'המפה', chip: 'המפה',
+      title: 'רגע לפני — איך המערכת עובדת',
+      sub: 'המפה של המסע: חמש תחנות בדרך מ"לא קורא" ל"קורא ומבין" — וכיתה שלמה שלומדת יחד את אותו נושא, כל ילד באי שלו. שימו לב לאיתי — תכף נצא למסע שלו.',
+      highlight: true, next: '../demo/teacher-literacy-profile.html',
+      nextLabel: 'עכשיו נכיר את איתי ›' },
     { key: 'teacher-literacy-profile.html', role: 'מורה', chip: 'פתיחת שנה',
       title: 'פתיחת שנה — המיפוי ההתחלתי',
       sub: 'לפני הכול: איתי שיחק משחק קצר עם נוני, והמערכת הציעה לו נקודת התחלה. ההצעה נשארת הצעה — המורה רואה את התמונה, משנה ומאשרת. בלי תיוג אוטומטי.',
