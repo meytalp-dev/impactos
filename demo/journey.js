@@ -128,9 +128,16 @@
     '.jw-chip.done .n{background:#4FBF8B;}',
     '.jw-exit{background:none;border:1px solid #E1ECEE;color:#8197A0;border-radius:8px;padding:6px 12px;font:600 12px Heebo,Arial;cursor:pointer;white-space:nowrap;}',
     '.jw-exit:hover{background:#F6FAFB;}',
-    '.jw-call{position:fixed;z-index:9000;right:18px;bottom:18px;max-width:440px;background:#fff;border:1px solid #E1ECEE;',
+    '.jw-call{position:fixed;z-index:9000;left:18px;bottom:18px;max-width:440px;background:#fff;border:1px solid #E1ECEE;',
       'border-radius:16px;box-shadow:0 22px 50px -22px rgba(20,55,67,.5);padding:18px 20px;font-family:Heebo,Arial,sans-serif;',
       'animation:jwUp .5s cubic-bezier(.32,.72,0,1) both;}',
+    '.jw-min{position:absolute;top:10px;left:12px;width:30px;height:30px;border-radius:50%;border:1px solid #E1ECEE;',
+      'background:#fff;color:#8197A0;cursor:pointer;font:800 15px/1 Heebo,Arial;display:flex;align-items:center;justify-content:center;}',
+    '.jw-min:hover{background:#F6FAFB;color:#0F7E72;}',
+    '.jw-mini{position:fixed;z-index:9000;left:18px;bottom:18px;display:none;align-items:center;gap:8px;',
+      'background:#0F7E72;color:#fff;border:none;border-radius:999px;padding:11px 18px;',
+      'font:800 13.5px Heebo,Arial,sans-serif;cursor:pointer;box-shadow:0 12px 30px -12px rgba(15,126,114,.7);}',
+    '.jw-mini:hover{background:#0a655c;}',
     '@keyframes jwUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}',
     '.jw-call .role{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:800;color:#0F7E72;',
       'background:#E8F4F0;border-radius:999px;padding:3px 11px;margin-bottom:9px;}',
@@ -177,12 +184,27 @@
     ? '<button class="jw-next" id="jwNext">סיום המסע ✦</button>'
     : '<button class="jw-next" id="jwNext">' + (step.nextLabel || ('המשך ל' + STEPS[idx + 1].role + ' ›')) + '</button>';
   call.innerHTML =
+    '<button class="jw-min" id="jwMin" title="מזעור ההנחיה">–</button>' +
     '<span class="role"><span style="width:7px;height:7px;border-radius:2px;background:#0F7E72;display:inline-block;"></span>' +
       (idx + 1) + ' מתוך ' + STEPS.length + ' · ' + step.role + '</span>' +
     '<h4>' + step.title + '</h4><p>' + step.sub + '</p>' +
     (acts ? '<div class="jw-acts">' + acts + '</div>' : '') +
     '<div class="jw-row">' + nextBtn + '</div>';
   document.body.appendChild(call);
+
+  // minimized pill — reopens the guidance card; preference persists across steps
+  var mini = document.createElement('button');
+  mini.className = 'jw-mini';
+  mini.innerHTML = '▸ המסע · ' + (idx + 1) + '/' + STEPS.length;
+  document.body.appendChild(mini);
+  function setMin(on) {
+    call.style.display = on ? 'none' : '';
+    mini.style.display = on ? 'flex' : 'none';
+    sessionStorage.setItem('avnei-journey-min', on ? '1' : '0');
+  }
+  document.getElementById('jwMin').addEventListener('click', function () { setMin(true); });
+  mini.addEventListener('click', function () { setMin(false); });
+  if (sessionStorage.getItem('avnei-journey-min') === '1') setMin(true);
 
   document.getElementById('jwNext').addEventListener('click', function () {
     if (step.last) {
