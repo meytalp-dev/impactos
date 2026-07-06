@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <script src="js/shared/file-protocol-shim.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>אי 12 · מערת האוצרות</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css?v=2026-07-06">
+
+  <!-- ============================================================================
+       stage-12-island.html — אי 12 · מְעָרַת הָאוֹצָרוֹת (אוצר מילים בהקשר)
+       6.7.2026 · דף-אי בדפוס stage-14-island: 3 כרטיסי-quest, כל אחד = מצב אחד
+       של stage-vocab-match.html (המשחקון הקיים — לא שוכפל).
+
+       הכרטיסים מעבירים ?island=12 → המשחקון מדווח primary_island_id=12 עם
+       secondary_island_ids=[האי ההיסטורי של המצב: word→5, image→14, sort→9].
+       כניסות קיימות (teacher-curriculum, בלי הפרמטר) — התנהגות ללא שינוי.
+       השם "מערת האוצרות" אושר ע"י מיטל 6.7 ונצרב במפה (map.html, צומת 12).
+       ============================================================================ -->
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Heebo', sans-serif;
+      color: var(--text-main, #26505C);
+      line-height: 1.5;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #BFF1FF 0%, #A8E8FF 40%, #73D9D1 100%);
+      -webkit-font-smoothing: antialiased;
+    }
+    .scene-bg {
+      position: fixed; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center bottom;
+      z-index: 0; pointer-events: none;
+    }
+
+    /* Top bar */
+    .top-bar {
+      position: fixed; top: 0; left: 0; right: 0;
+      padding: 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      z-index: 50;
+    }
+    .icon-btn {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: rgba(255,255,255,0.92); border: 1.5px solid rgba(255,255,255,0.95);
+      box-shadow: 0 6px 16px rgba(38,80,92,0.15);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-main, #26505C); text-decoration: none;
+      cursor: pointer; font-family: inherit;
+    }
+    .icon-btn:active { transform: scale(0.92); }
+
+    .island-header {
+      position: relative; z-index: 1;
+      padding: 92px 16px 16px;
+      text-align: center;
+      animation: fade-down 700ms ease-out;
+    }
+    @keyframes fade-down { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+    .island-title {
+      display: inline-block;
+      font-size: clamp(26px, 6vw, 38px);
+      font-weight: 900;
+      color: var(--deep, #1E3D47);
+      background: rgba(255,255,255,0.9);
+      border-radius: 999px;
+      padding: 10px 30px;
+      box-shadow: 0 8px 22px rgba(38,80,92,0.16);
+      margin-bottom: 10px;
+    }
+    .island-subtitle {
+      font-size: clamp(15px, 3vw, 19px);
+      font-weight: 700;
+      color: var(--deep, #1E3D47);
+      background: rgba(255,255,255,0.78);
+      border-radius: 999px;
+      display: inline-block;
+      padding: 6px 20px;
+      max-width: 56ch;
+      margin: 0 auto;
+    }
+
+    /* נרטיב נוני — הבעיה של האי (זרם ערבב את האוצר) */
+    .story-strip {
+      position: relative; z-index: 1;
+      max-width: 920px; margin: 0 auto 16px;
+      padding: 0 16px;
+      animation: fade-up 700ms ease-out;
+    }
+    @keyframes fade-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .story-strip-inner {
+      background: rgba(255,255,255,0.92);
+      border-radius: var(--radius-md, 24px);
+      padding: 14px 20px;
+      display: flex; align-items: center; gap: 14px;
+      box-shadow: 0 8px 20px rgba(38,80,92,0.12);
+    }
+    .story-strip-inner p {
+      flex: 1;
+      font-size: clamp(15px, 3.2vw, 18px);
+      font-weight: 700;
+      color: var(--deep, #1E3D47);
+    }
+    .story-strip-inner .speak-btn {
+      flex: 0 0 auto;
+      width: 56px; height: 56px; border-radius: 50%;
+      border: none; cursor: pointer;
+      background: var(--water-secondary, #73D9D1); color: #fff;
+      box-shadow: 0 4px 12px rgba(115,217,209,0.55);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .story-strip-inner .speak-btn:active { transform: scale(0.94); }
+
+    /* Quest cards */
+    .quests-wrap {
+      position: relative; z-index: 1;
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 0 16px 170px;
+    }
+    .quests-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .quest-card {
+      background: rgba(255,255,255,0.94);
+      border-radius: var(--radius-md, 24px);
+      padding: 24px 22px;
+      box-shadow: 0 14px 38px rgba(38,80,92,0.16);
+      text-decoration: none;
+      color: var(--text-main, #26505C);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+      border: 2.5px solid transparent;
+      animation: fade-up 700ms ease-out;
+    }
+    .quest-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 22px 48px rgba(38,80,92,0.2);
+      border-color: var(--sea-green, #8ED9B8);
+    }
+    .quest-card:nth-of-type(2) { animation-delay: 120ms; }
+    .quest-card:nth-of-type(3) { animation-delay: 240ms; }
+
+    .quest-card .qc-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 64px; height: 64px; border-radius: 18px;
+      color: var(--deep, #1E3D47);
+    }
+    .qc-badge--word  { background: var(--mint, #B8F2CF); }
+    .qc-badge--image { background: var(--sand, #F8E3D6); }
+    .qc-badge--sort  { background: var(--lavender, #D9D2FF); }
+
+    .quest-card h2 {
+      font-size: 22px; font-weight: 900;
+      color: var(--deep, #1E3D47);
+    }
+    .quest-card p {
+      font-size: 15px;
+      color: var(--text-soft, #4D6F78);
+    }
+    .quest-card .qc-cta {
+      align-self: flex-start;
+      min-height: var(--touch-min, 56px);
+      display: inline-flex; align-items: center;
+      background: var(--sea-green, #8ED9B8);
+      color: var(--deep, #1E3D47); padding: 10px 24px;
+      border-radius: 999px; font-weight: 800; font-size: 16px;
+      box-shadow: 0 6px 14px rgba(38,80,92,0.18);
+    }
+
+    /* נוני */
+    .noni-fixed {
+      position: fixed; bottom: 18px; right: 14px;
+      width: clamp(84px, 18vw, 120px); height: auto;
+      animation: float-bob 3s ease-in-out infinite;
+      pointer-events: none; z-index: 10;
+      filter: drop-shadow(0 8px 14px rgba(38,80,92,0.25));
+    }
+    @keyframes float-bob {
+      0%, 100% { transform: translateY(-8px); }
+      50%      { transform: translateY(8px); }
+    }
+    .noni-bubble {
+      position: fixed; bottom: 150px; right: 16px;
+      background: #fff; border-radius: var(--radius-md, 24px);
+      padding: 14px 20px; max-width: 270px;
+      box-shadow: 0 6px 18px rgba(38,80,92,0.18);
+      z-index: 10;
+      font-weight: 700; font-size: 16px; color: var(--deep, #1E3D47);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .island-header, .quest-card, .story-strip { animation: none !important; }
+      .noni-fixed { animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true"
+     onerror="this.style.display='none'">
+
+<header class="top-bar">
+  <a href="map.html" class="icon-btn" aria-label="חזרה למפה">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+  <div style="width:52px;height:52px;" aria-hidden="true"></div>
+</header>
+
+<section class="island-header">
+  <h1 class="island-title">אִי 12 · מְעָרַת הָאוֹצָרוֹת</h1>
+  <p class="island-subtitle">לִקְרֹא מִלִּים · לְהַתְאִים תְּמוּנוֹת · לְמַיֵּן לִקְבוּצוֹת.</p>
+</section>
+
+<!-- הסיפור: הזרם ערבב את תיבת האוצר של נוני -->
+<section class="story-strip">
+  <div class="story-strip-inner">
+    <!-- הטקסט = הנוסח שהוקלט ב-intro-isl12.mp3 (וריאנט v1 שעבר QA-תמלול) -->
+    <p>נוּנִי צָלְלָה אֶל מְעָרַת הָאוֹצָרוֹת, וּמָצְאָה תֵּבָה מְלֵאָה מִלִּים וּתְמוּנוֹת. אֲבָל זֶרֶם חָזָק עָבַר בַּמְּעָרָה, וְהַכֹּל הִתְעַרְבֵּב! בּוֹאוּ נְסַדֵּר אֶת הָאוֹצָר!</p>
+    <button class="speak-btn" id="speakBtn" aria-label="הַקְשִׁיבוּ לַסִּפּוּר">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+    </button>
+  </div>
+</section>
+
+<main class="quests-wrap">
+  <div class="quests-grid">
+
+    <a class="quest-card" href="stage-vocab-match.html?mode=word&island=12">
+      <div class="qc-badge qc-badge--word" aria-hidden="true">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+          <path d="M4 6h16M4 12h10M4 18h13" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h2>אֵיזוֹ תְּמוּנָה?</h2>
+      <p>קִרְאוּ אֶת הַמִּלָּה מֵהָאוֹצָר, וְהַקִּישׁוּ עַל הַתְּמוּנָה הַמַּתְאִימָה מִתּוֹךְ שָׁלוֹשׁ.</p>
+      <span class="qc-cta">לְהַתְחִיל</span>
+    </a>
+
+    <a class="quest-card" href="stage-vocab-match.html?mode=image&island=12">
+      <div class="qc-badge qc-badge--image" aria-hidden="true">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="4" width="18" height="16" rx="3" stroke="currentColor" stroke-width="2.2"/>
+          <circle cx="9" cy="10" r="2" stroke="currentColor" stroke-width="2"/>
+          <path d="M4 18l5-5 3 3 4-4 4 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h2>אֵיזוֹ מִלָּה?</h2>
+      <p>הִסְתַּכְּלוּ בַּתְּמוּנָה מֵהָאוֹצָר, וְהַקִּישׁוּ עַל הַמִּלָּה הַמַּתְאִימָה מִתּוֹךְ שָׁלוֹשׁ.</p>
+      <span class="qc-cta">לְהַתְחִיל</span>
+    </a>
+
+    <a class="quest-card" href="stage-vocab-match.html?mode=sort&island=12">
+      <div class="qc-badge qc-badge--sort" aria-hidden="true">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="3" width="8" height="8" rx="2" stroke="currentColor" stroke-width="2.2"/>
+          <rect x="13" y="13" width="8" height="8" rx="2" stroke="currentColor" stroke-width="2.2"/>
+          <path d="M17 3v6M14 6h6M7 13v6M4 16h6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h2>לְאֵיזוֹ קְבוּצָה?</h2>
+      <p>מַיְּנוּ אֶת הָאוֹצָר לִשְׁתֵּי קְבוּצוֹת — לְמָשָׁל חַיּוֹת וּדְבָרִים.</p>
+      <span class="qc-cta">לְהַתְחִיל</span>
+    </a>
+
+  </div>
+</main>
+
+<img class="noni-fixed" id="noniImg" src="assets/noni-idle.png" alt="נוני">
+<div class="noni-bubble" id="noniBubble">בּוֹאוּ אִתִּי לַמְּעָרָה!</div>
+
+<script src="js/shared/audio.js?v=2026-07-06"></script>
+<script>
+  (function () {
+    'use strict';
+    // סיפור האי — intro-isl12.mp3 (ElevenLabs, נוצר ע"י generate-island-12-intro-audio.py)
+    document.getElementById('speakBtn').addEventListener('click', function () {
+      if (window.AvneiAudio && typeof window.AvneiAudio.unlock === 'function') {
+        try { window.AvneiAudio.unlock(); } catch (e) {}
+      }
+      if (window.AvneiAudio && typeof window.AvneiAudio.play === 'function') {
+        window.AvneiAudio.play('intro-isl12');
+      }
+    });
+
+    // Auto-unlock audio on first interaction (iOS)
+    document.addEventListener('click', function unlock() {
+      if (window.AvneiAudio && typeof window.AvneiAudio.unlock === 'function') {
+        try { window.AvneiAudio.unlock(); } catch (e) {}
+      }
+      document.removeEventListener('click', unlock);
+    }, { once: true });
+  })();
+</script>
+
+</body>
+</html>

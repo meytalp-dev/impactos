@@ -34,6 +34,9 @@
          word  → nov-w4-d1-c1 "מתאים.ה מילה כתובה לתמונה"        (phonology → אי 5)
          image → dec-w1-d4-c1 "בוחר.ת את המילה המתאימה לאיור"    (oral     → אי 14)
          sort  → feb-w4-d3-c2 "ממיין.ת כמה מילים לשתי קטגוריות"  (morph    → אי 9)
+
+       ?island=12 (6.7.2026): מדף-האי stage-12-island.html — primary_island_id=12,
+       והאי ההיסטורי של המצב עובר ל-secondary_island_ids. בלי הפרמטר — כנ"ל.
        ============================================================================ -->
   <style>
     * { box-sizing: border-box; }
@@ -219,6 +222,14 @@
     var params = new URLSearchParams(location.search);
     var MODE = params.get('mode') || 'mix';   // word | image | sort | mix
 
+    // ?island=12 — דף-האי stage-12-island.html (מְעָרַת הָאוֹצָרוֹת) מעביר את
+    // הפרמטר: הדיווח עובר ל-primary_island_id=12 והאי ההיסטורי של המצב
+    // (word→5, image→14, sort→9) נשמר כ-secondary. בלי הפרמטר (מפה,
+    // teacher-curriculum) — ההתנהגות הקיימת ללא שינוי. ההחלטה אם גם
+    // התוכנית השנתית תעבור לדווח לאי 12 — של מיטל.
+    var ISLAND_OVERRIDE = parseInt(params.get('island'), 10);
+    if (!(ISLAND_OVERRIDE > 0)) ISLAND_OVERRIDE = null;
+
     // ------------------------------------------------------------------
     // המאגר — תת-הקבוצה "אובייקט יחיד" של assets/vocab (המניפסט המלא כולל
     // גם תמונות-משפט שאינן מתאימות למשחקון מילה-בודדת). ניקוד = הצורות
@@ -306,7 +317,7 @@
     // ------------------------------------------------------------------
     function baseCfg(modeKey, item) {
       var m = MODES[modeKey];
-      return {
+      var cfg = {
         interaction: m.interaction,
         questId: 'vocab-match-' + modeKey + '-' + item.file.replace(/\.png$/, ''),
         item_id: 'vocab-match-' + modeKey + '-' + item.file.replace(/\.png$/, ''),
@@ -315,6 +326,11 @@
         promptLine: m.prompt,
         stemAudio: item.audio || null,   // לחיווט כפתור 🔊 בבועת נוני
       };
+      if (ISLAND_OVERRIDE) {
+        cfg.primary_island_id = ISLAND_OVERRIDE;
+        cfg.secondary_island_ids = [m.island];
+      }
+      return cfg;
     }
 
     // מצב 1: מילה מנוקדת (+אודיו פעם אחת ב-mount כשקיים) → 3 תמונות
