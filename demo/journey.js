@@ -27,7 +27,9 @@
     { key: 'reading-journey.html', role: 'המפה', chip: 'התחנות',
       title: 'חמש תחנות — וטעימה חיה מכל אחת',
       sub: 'הדרך מ"לא קורא" ל"קורא ומבין" בחמש תחנות. בכל תחנה יש קישור "נסו בעצמכם" — טעימה חיה מתרגול אמיתי: הקשבה, הברות, מילים, הבנה וכתיבה. שימו לב לאיתי — תכף נצא למסע שלו.',
-      highlight: true, next: '../demo/teacher-literacy-profile.html',
+      // highlightScroll:false — הדף חייב להיפתח מלמעלה (התחנות); בלי זה ההיילייט
+      // של איתי גולל אוטומטית לסעיף השבוע שבתחתית (ביקשה מיטל לתקן, 6.7)
+      highlight: true, highlightScroll: false, next: '../demo/teacher-literacy-profile.html',
       nextLabel: 'עכשיו נכיר את איתי ›' },
     { key: 'teacher-literacy-profile.html', role: 'מורה', chip: 'פתיחת שנה',
       title: 'פתיחת שנה — המיפוי ההתחלתי',
@@ -283,7 +285,12 @@
       for (var c = 0; c < 5 && el && el.parentElement; c++) {
         var w = el.offsetWidth; if (w > 170 && w < 560) break; el = el.parentElement;
       }
-      if (el) { el.classList.add('jw-focus'); try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} }
+      if (el) {
+        el.classList.add('jw-focus');
+        if (step.highlightScroll !== false) {
+          try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+        }
+      }
     }, 600);
   }
 })();
