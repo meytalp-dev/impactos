@@ -41,14 +41,11 @@
       activities: [
         { icon: '📅', label: 'איפה זה בשנה · תוכנית שנתית', url: '../demo/teacher-curriculum.html' }
       ],
-      highlight: true, next: '../demo/teacher-pulse.html',
+      highlight: true, next: '../pulse-grade1/pulse-dashboard.html?seed=1',
       nextLabel: 'ומה עם הרגש? ›' },
-    { key: 'teacher-pulse.html', role: 'מורה', chip: 'רגש',
+    { key: 'pulse-dashboard.html', role: 'מורה', chip: 'רגש',
       title: 'אותו ילד — הצד הרגשי',
-      sub: 'הפולס מראה את מה שקשה לתפוס בעין: אצל איתי יש ירידה בשמחה ללמוד. לא מערכת נוספת — אותו מסך, אותו ילד, וצעד הבא אחד.',
-      activities: [
-        { icon: '📊', label: 'דשבורד הפולס המלא · א׳1', url: '../pulse-grade1/pulse-dashboard.html?seed=1' }
-      ],
+      sub: 'דשבורד הפולס החי של המחנכת: הכיתה בארבעה ממדים רגשיים. מה שקשה לתפוס בעין — כאן רואים: אצל איתי יש ירידה בשמחה ללמוד.',
       highlight: true, next: '../demo/teacher-mavat.html',
       nextLabel: 'לחבר למידה ורגש ›' },
     { key: 'teacher-mavat.html', role: 'מורה', chip: 'מבט משולב',
@@ -67,7 +64,7 @@
       next: '../demo/mavat-meshulav.html', nextLabel: 'החיבור: קריאה ורגש ›' },
     { key: 'mavat-meshulav.html', role: 'החיבור',
       title: 'קריאה ורגש — על אותו ילד',
-      sub: 'כאן נפגשים שני העולמות אצל איתי: מה שקורה בקריאה ומה שקורה ברגש. לא תיוג — צעד הבא אחד, ברור.',
+      sub: 'אותה מפה שראתה המורה — בגובה מנהלת: כל שכבת א׳ על שתי העדשות, ואיתי בתוכה. לא תיוג — צעד הבא אחד, ברור.',
       highlight: true, last: true }
   ];
 
@@ -81,8 +78,7 @@
     'stage-4-cv-tap.html': '../../demo/student-avnei.html',
     'map.html': '../../demo/student-avnei.html',
     'pulse-questionnaire.html': '../demo/student-avnei.html',
-    'pulse-summary.html': '../demo/student-avnei.html',
-    'pulse-dashboard.html': '../demo/teacher-pulse.html'
+    'pulse-summary.html': '../demo/student-avnei.html'
   };
 
   // ===== EXCURSION MODE: minimal floating "back to journey" pill only =====
