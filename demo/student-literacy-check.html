@@ -82,6 +82,14 @@
     .cta:hover{transform:translateY(-3px);filter:brightness(1.04);} .cta svg{width:22px;height:22px;}
     .ghost{background:#fff;color:var(--soft);border:1px solid var(--line);box-shadow:0 6px 18px -12px rgba(20,58,66,.3);height:48px;font-size:15px;font-weight:700;}
 
+    /* word-reading round */
+    .word-show{font-family:'Frank Ruhl Libre',serif;font-size:clamp(44px,7vw,64px);font-weight:900;color:var(--ink);
+      background:#fff;border:2px solid var(--line);border-radius:22px;padding:8px 38px;margin:0 0 20px;
+      box-shadow:0 10px 26px -18px rgba(20,58,66,.3);}
+    .opt.img{padding:14px;min-height:132px;}
+    .opt.img img{width:100%;max-width:112px;height:auto;display:block;}
+    .sub-count{font-family:'Heebo',sans-serif;font-size:13px;font-weight:600;color:var(--mut);margin-inline-start:10px;}
+
     /* intro / done big text */
     .big{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:clamp(34px,6vw,58px);text-align:center;margin-top:10px;}
     .lead{font-size:clamp(15px,2vw,18px);color:var(--soft);text-align:center;margin:14px 0 30px;max-width:52ch;line-height:1.6;}
@@ -142,7 +150,7 @@
       <div class="noni-row">
         <img class="noni" src="../avnei-yesod/underwater-app/assets/noni-thinking.png" alt="נוני" onerror="this.src='../avnei-yesod/underwater-app/assets/noni-happy.png'">
         <div class="bubble">
-          <div class="say">לַחֲצוּ עַל הָאוֹת שֶׁשְּׁמַעְתֶּם: <b>ל</b></div>
+          <div class="say">לַחֲצוּ עַל הָאוֹת שֶׁשְּׁמַעְתֶּם: <b id="r1-target">ל</b><span class="sub-count">אוֹת <span id="r1-count">1</span> מִתּוֹךְ 3</span></div>
           <button class="spk" data-spk><span class="wv"><i></i><i></i><i></i><i></i></span> שִׁמְעוּ שׁוּב</button>
         </div>
       </div>
@@ -166,10 +174,11 @@
       <div class="noni-row">
         <img class="noni" src="../avnei-yesod/underwater-app/assets/noni-thinking.png" alt="נוני" onerror="this.src='../avnei-yesod/underwater-app/assets/noni-happy.png'">
         <div class="bubble">
-          <div class="say">קִרְאוּ אֶת הַמִּלָּה: <b>דָּג</b><br>וְלַחֲצוּ עַל הַתְּמוּנָה הַמַּתְאִימָה</div>
+          <div class="say">כָּתוּב כָּאן: <b>בַּיִת</b><br>קִרְאוּ אֶת הַמִּלָּה וְלַחֲצוּ עַל הַתְּמוּנָה הַנְּכוֹנָה</div>
           <button class="spk" data-spk><span class="wv"><i></i><i></i><i></i><i></i></span> שִׁמְעוּ שׁוּב</button>
         </div>
       </div>
+      <div class="word-show">בַּיִת</div>
       <div class="opts g-pic" id="rw-opts"></div>
     </section>
 
@@ -235,9 +244,16 @@
       $('#res-num').textContent=n;$('#res-name').textContent=o.name;$('#res-skill').textContent=o.skill;})();
 
     /* rounds data — mockup: taps advance, correct answer glows */
-    var R1=[{t:'מ'},{t:'ל',ok:1},{t:'ש'},{t:'ר'},{t:'א'},{t:'ד'}];
+    /* מדגם אותיות: 3 פריטים בדמו (במבדק האמיתי ~8, כולל זוגות דומים ד/ר ב/כ) */
+    var L_ITEMS=[
+      {t:'ל',opts:['מ','ל','ש','ר','א','ד']},
+      {t:'מ',opts:['נ','מ','ב','כ','ט','ק']},
+      {t:'ד',opts:['ר','ד','ך','ז','ו','ה']}
+    ];
     var R2=[{t:'לָ',ok:1},{t:'לִי'},{t:'לוֹ'}];
-    var RW=[{emo:'🍎'},{emo:'🐟',ok:1},{emo:'🏠'}]; /* קריאת מילה: דָּג — תמונות בלבד, בלי כיתוב */
+    /* קריאת מילה: בַּיִת — תמונות אמיתיות מהמאגר, בלי כיתוב (הכיתוב היה מסגיר) */
+    var IMGP='../avnei-yesod/underwater-app/assets/island-03/';
+    var RW=[{img:'balon.png'},{img:'bayit.png',ok:1},{img:'mita.png'}];
     var R3=[{emo:'😄',cap:'שְׂמֵחָה',ok:1},{emo:'😢',cap:'עֲצוּבָה'},{emo:'😴',cap:'עֲיֵפָה'}];
 
     var order=['s-intro','s-r1','s-r2','s-rw','s-r3','s-done'];
@@ -257,11 +273,20 @@
       playFor(id); /* נוני מדברת פעם אחת בכניסה למסך; "שמעו שוב" חוזר עליה */
     }
 
-    function buildLetters(){
+    var lIdx=0;
+    function buildLetters(){lIdx=0;renderLetterItem();}
+    function renderLetterItem(){
+      var it=L_ITEMS[lIdx];
+      $('#r1-target').textContent=it.t;
+      $('#r1-count').textContent=(lIdx+1);
       var el=$('#r1-opts');el.innerHTML='';
-      R1.forEach(function(o){var b=document.createElement('button');b.className='opt';
-        b.innerHTML=o.t+'<span class="chk">✓</span>';
-        b.addEventListener('click',function(){pick(b,el,'s-r2');});el.appendChild(b);});
+      it.opts.forEach(function(ch){var b=document.createElement('button');b.className='opt';
+        b.innerHTML=ch+'<span class="chk">✓</span>';
+        b.addEventListener('click',function(){
+          Array.prototype.forEach.call(el.children,function(c){if(c!==b)c.classList.add('dim');});
+          b.classList.add('right');
+          setTimeout(function(){lIdx++;if(lIdx<L_ITEMS.length)renderLetterItem();else show('s-r2');},760);
+        });el.appendChild(b);});
     }
     function buildSyl(){
       var el=$('#r2-opts');el.innerHTML='';
@@ -271,8 +296,8 @@
     }
     function buildWord(){
       var el=$('#rw-opts');el.innerHTML='';
-      RW.forEach(function(o){var b=document.createElement('button');b.className='opt pic';
-        b.innerHTML='<span class="emo">'+o.emo+'</span><span class="chk">✓</span>';
+      RW.forEach(function(o){var b=document.createElement('button');b.className='opt img';
+        b.innerHTML='<img src="'+IMGP+o.img+'" alt=""><span class="chk">✓</span>';
         b.addEventListener('click',function(){pick(b,el,'s-r3');});el.appendChild(b);});
     }
     function buildPic(){
