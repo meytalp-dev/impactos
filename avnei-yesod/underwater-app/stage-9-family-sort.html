@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <script src="js/shared/file-protocol-shim.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>בֵּית מִשְׁפַּחַת הַמִּלִּים · אי 9</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css?v=2026-07-06">
+  <link rel="stylesheet" href="css/game-shell.css?v=2026-07-06">
+
+  <!-- ==========================================================================
+       stage-9-family-sort.html — אי 9 · משחקון 1: בֵּית מִשְׁפַּחַת הַמִּלִּים
+       C9 · 6.7.2026 · מורכב על ליבת mechanic-mcq (config-driven, EPA פר-מסיח)
+
+       שתי משפחות-מילים = שני בתי-אלמוג. בכל סבב מופיעה מילה (מנוקדת, + הקראה
+       פעם אחת ב-mount), והילדים מקישים על הבית שהחותמת שלו (3 האותיות
+       החוזרות) מתאימה. אחרי תשובה נכונה: אותיות-החותמת נדלקות בתוך המילה —
+       פידבק ויזואלי בלבד (בלי אודיו חוזר).
+
+       פדגוגיה: זיהוי דמיון בין מילים קרובות. בלי מינוח דקדוקי — "חוֹתֶמֶת".
+       מאגר: js/shared/island-9-families.js (8 משפחות, אפס חפיפות-שורש).
+
+       logging: primary_island_id=9 · characteristic_id='isl9-word-family-sort'
+       (אין פריט שורש/משפחות בבנק questions-grade1 — מזהה יציב משלנו; EPA G4
+       ממפתח לפי characteristic_id, unitKey חופשי). טעות → EPA של המסיח.
+       ========================================================================== -->
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; min-height: 100dvh;
+      font-family: 'Heebo', sans-serif;
+      background: linear-gradient(180deg, #BFF1FF 0%, #A8E8FF 40%, #73D9D1 100%);
+      color: var(--text-main); direction: rtl; overflow-x: hidden;
+    }
+    .scene-bg {
+      position: fixed; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; object-position: center bottom;
+      z-index: 0; pointer-events: none;
+    }
+    .top-bar {
+      position: sticky; top: 0; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 12px 18px;
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255,255,255,0.6);
+    }
+    .top-bar a.back {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: rgba(255,255,255,0.85); color: var(--text-main);
+      display: inline-flex; align-items: center; justify-content: center;
+      text-decoration: none; font-size: 20px; font-weight: 900;
+      box-shadow: 0 2px 10px rgba(38,80,92,0.15);
+    }
+    .top-bar .title { font-size: clamp(15px, 3.4vw, 19px); font-weight: 800; }
+    .top-bar .counter {
+      height: 40px; padding: 0 14px; border-radius: var(--radius-pill);
+      background: rgba(255,255,255,0.85); display: inline-flex; align-items: center;
+      font-size: 14px; font-weight: 700; box-shadow: 0 2px 10px rgba(38,80,92,0.15);
+    }
+    main {
+      position: relative; z-index: 2;
+      max-width: 760px; margin: 0 auto;
+      padding: 14px 18px 30px;
+    }
+    .pearls { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 4px auto 12px; }
+    .pearl {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: rgba(255,255,255,0.5); border: 2px solid rgba(255,255,255,0.7);
+      box-shadow: inset 0 -2px 4px rgba(38,80,92,0.12); transition: all 0.35s ease;
+    }
+    .pearl.filled {
+      background: radial-gradient(circle at 35% 30%, #FFF 0%, #CFEFF6 45%, #8FD6E6 100%);
+      border-color: #FFF; box-shadow: 0 0 10px rgba(143,214,230,0.8);
+    }
+    .pearl.just-added { transform: scale(1.6); box-shadow: 0 0 16px 4px rgba(255,231,168,0.9); }
+
+    .noni-row {
+      display: flex; align-items: flex-end; gap: 10px;
+      max-width: 620px; margin: 0 auto 10px; min-height: 64px;
+    }
+    .noni-row img { width: clamp(64px, 13vw, 96px); flex: 0 0 auto; filter: drop-shadow(0 6px 10px rgba(38,80,92,0.25)); }
+    .noni-row[hidden] { display: none; }
+    .bubble {
+      position: relative; flex: 1;
+      background: rgba(255,255,255,0.92); border-radius: var(--radius-lg);
+      padding: 12px 16px; font-size: clamp(16px, 3.6vw, 20px); font-weight: 700;
+      line-height: 1.5; box-shadow: 0 4px 16px rgba(38,80,92,0.14);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .bubble::before {
+      content: ''; position: absolute; inset-inline-start: -8px; bottom: 16px;
+      border: 9px solid transparent; border-inline-end-color: rgba(255,255,255,0.92);
+    }
+    .bubble .say {
+      flex: 0 0 auto; width: 48px; height: 48px; border-radius: 50%;
+      border: none; cursor: pointer; font-size: 22px;
+      background: var(--water-secondary); color: #fff;
+      box-shadow: 0 4px 12px rgba(115,217,209,0.55);
+    }
+    .bubble .say:active { transform: scale(0.94); }
+
+    #mountRoot { position: relative; min-height: 46vh; }
+
+    /* המילה של הסבב — גדולה, מנוקדת */
+    .mechanic-mcq .mcq-stem-card--text {
+      font-size: clamp(34px, 8vw, 52px);
+      font-weight: 900;
+      letter-spacing: 0.02em;
+    }
+    /* אותיות-החותמת שנדלקות במילה אחרי תשובה נכונה */
+    .root-glow {
+      color: #C77800;
+      text-shadow: 0 0 12px rgba(255, 200, 90, 0.8);
+    }
+
+    /* שני בתי-האלמוג — אריחי האופציות */
+    .mechanic-mcq .mcq-option--text.family-house {
+      min-height: 120px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px;
+      border-radius: 26px 26px 18px 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(255,240,230,0.94) 100%);
+    }
+    .family-house .house-roof { font-size: 34px; line-height: 1; pointer-events: none; }
+    .family-house .mcq-option__label {
+      font-size: clamp(26px, 6vw, 38px);
+      font-weight: 900;
+      letter-spacing: 0.06em;
+    }
+
+    /* מסך פתיחה — שכבת 35% בלבד */
+    .start-veil {
+      position: fixed; inset: 0; z-index: 20;
+      background: rgba(38,80,92,0.35);
+      display: flex; align-items: center; justify-content: center; padding: 24px;
+    }
+    .start-veil[hidden] { display: none; }
+    .start-card {
+      background: #fff; border-radius: var(--radius-lg); max-width: 420px; width: 100%;
+      padding: 26px 24px; text-align: center; box-shadow: 0 18px 50px rgba(38,80,92,0.3);
+    }
+    .start-card img { width: 110px; }
+    .start-card h1 { font-size: clamp(20px, 5vw, 26px); font-weight: 900; margin: 8px 0 6px; }
+    .start-card p { font-size: 16px; color: var(--text-soft); margin: 0 0 18px; line-height: 1.6; }
+    .start-card button {
+      min-height: 60px; width: 100%; border: none; border-radius: var(--radius-pill);
+      background: var(--water-secondary); color: #fff; cursor: pointer;
+      font-family: inherit; font-size: 22px; font-weight: 900;
+      box-shadow: 0 8px 22px rgba(115,217,209,0.55);
+    }
+    .start-card button:active { transform: scale(0.97); }
+
+    /* מסך סיום */
+    .finish { text-align: center; padding: 30px 10px; }
+    .finish img { width: 140px; animation: finishBob 1.6s ease-in-out infinite; }
+    @keyframes finishBob { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+    .finish h2 { font-size: clamp(24px, 6vw, 32px); font-weight: 900; margin: 10px 0 4px; }
+    .finish p { font-size: 16px; color: var(--text-soft); margin: 0 0 20px; }
+    .finish .btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .finish button, .finish a {
+      min-height: 56px; padding: 0 26px; border: none; border-radius: var(--radius-pill);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: inherit; font-size: 18px; font-weight: 800; cursor: pointer;
+      text-decoration: none;
+    }
+    .finish .again { background: var(--water-secondary); color: #fff; box-shadow: 0 8px 22px rgba(115,217,209,0.55); }
+    .finish .home { background: rgba(255,255,255,0.9); color: var(--text-main); box-shadow: 0 4px 14px rgba(38,80,92,0.15); }
+
+    @media (max-width: 560px) {
+      .noni-row { min-height: 56px; }
+      .noni-row img { width: 58px; }
+    }
+  </style>
+</head>
+<body>
+  <img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true"
+       onerror="this.style.display='none'">
+
+  <div class="top-bar">
+    <a class="back" href="stage-9-island.html" id="backBtn" aria-label="חזרה">→</a>
+    <span class="title">בֵּית מִשְׁפַּחַת הַמִּלִּים</span>
+    <span class="counter" id="counter">—</span>
+  </div>
+
+  <main>
+    <div class="pearls" id="pearls" aria-hidden="true"></div>
+    <div class="noni-row" id="noniRow" hidden>
+      <img id="noniImg" src="assets/noni-idle.png" alt="נוני" onerror="this.style.display='none'">
+      <div class="bubble">
+        <span id="promptText" lang="he"></span>
+        <button class="say" id="sayBtn" aria-label="הַקְשִׁיבוּ שׁוּב" hidden>🔊</button>
+      </div>
+    </div>
+    <div id="mountRoot"></div>
+  </main>
+
+  <div class="start-veil" id="startVeil" hidden>
+    <div class="start-card">
+      <img src="assets/noni-thinking.png" alt="נוני" onerror="this.style.display='none'">
+      <h1>בֵּית מִשְׁפַּחַת הַמִּלִּים</h1>
+      <p>הַזֶּרֶם פִּזֵּר אֶת הַמִּלִּים מִבָּתֵּי הָאַלְמוֹגִים!<br>
+         מִצְאוּ בְּכֹל מִלָּה אֶת שָׁלוֹשׁ הָאוֹתִיּוֹת שֶׁחוֹזְרוֹת —<br>
+         וְהַחְזִירוּ אוֹתָהּ לַבַּיִת שֶׁלָּהּ.</p>
+      <button id="startBtn">מַתְחִילִים!</button>
+    </div>
+  </div>
+
+  <!-- shared engine -->
+  <script src="js/state.js?v=2026-07-06"></script>
+  <script src="js/shared/audio.js?v=2026-07-06"></script>
+  <script src="js/shared/noni.js?v=2026-07-06"></script>
+  <script src="js/shared/vowel-adapter.js?v=2026-07-06"></script>
+  <script src="js/shared/epa.js?v=2026-07-06"></script>
+  <script src="js/shared/bkt.js?v=2026-07-06"></script>
+  <script src="js/shared/event-logger.js?v=2026-07-06"></script>
+  <script src="js/shared/island-9-families.js?v=2026-07-06"></script>
+  <script src="js/templates/mechanic-mcq.js?v=2026-07-06"></script>
+
+  <script>
+  (function () {
+    'use strict';
+
+    var F = window.Isl9Families;
+    var SEP = '־'; // ־ מקף עברי בין אותיות-החותמת
+
+    var CID = 'isl9-word-family-sort';
+    var ISLAND = 9;
+    var PROMPT = 'אֵיפֹה הַבַּיִת שֶׁל הַמִּלָּה? הַקִּישׁוּ עַל הַחוֹתֶמֶת הַמַּתְאִימָה.';
+    // טעות = לא זוהה הדמיון המורפולוגי בין המילה לחותמת
+    var EPA_WRONG = { what: 'Comprehension', where: 'isolation', task: 'recognition' };
+    var THEMES = ['shells', 'fish', 'bubbles', 'treasure'];
+
+    function shuffle(arr) {
+      var a = arr.slice();
+      for (var i = a.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = a[i]; a[i] = a[j]; a[j] = t;
+      }
+      return a;
+    }
+
+    function stampLabel(fam) { return fam.letters.join(SEP); }
+
+    // סבב אחד: מילה → שני בתים (המשפחה הנכונה + המשפחה השנייה של המשחק)
+    function buildQueue() {
+      var pair = shuffle(F.FAMILIES).slice(0, 2);
+      var items = [];
+      pair.forEach(function (fam) {
+        fam.words.forEach(function (wd) { items.push({ fam: fam, wd: wd }); });
+      });
+      return shuffle(items).map(function (it, i) {
+        return {
+          interaction: 'sort_to_family',
+          questId: 'isl9-sort-' + it.wd.audio.replace('isl9-w-', ''),
+          item_id: 'isl9-sort-' + it.wd.audio.replace('isl9-w-', ''),
+          characteristic_id: CID,
+          primary_island_id: ISLAND,
+          promptLine: PROMPT,
+          stemAudio: it.wd.audio,
+          theme: THEMES[i % THEMES.length],
+          _word: it.wd.w,
+          _letters: it.fam.letters,
+          stem: { mode: 'text', text_he: it.wd.w, audio_key: it.wd.audio },
+          options: pair.map(function (fam) {
+            return {
+              mode: 'text', label_he: stampLabel(fam),
+              is_correct: fam === it.fam,
+              epa: fam === it.fam ? null : EPA_WRONG,
+            };
+          }),
+        };
+      });
+    }
+
+    var $ = function (id) { return document.getElementById(id); };
+    var root = $('mountRoot');
+    var current = null;
+    var queue = [];
+    var idx = 0;
+
+    $('backBtn').addEventListener('click', function (e) {
+      e.preventDefault();
+      if (history.length > 1) history.back(); else location.href = 'stage-9-island.html';
+    });
+
+    function renderPearls() {
+      var el = $('pearls');
+      el.innerHTML = '';
+      queue.forEach(function (_, i) {
+        var p = document.createElement('span');
+        p.className = 'pearl' + (i < idx ? ' filled' : '');
+        el.appendChild(p);
+      });
+    }
+
+    function showFinish() {
+      $('noniRow').hidden = true;
+      $('counter').textContent = queue.length + ' / ' + queue.length;
+      root.innerHTML =
+        '<div class="finish">' +
+        '<img src="assets/noni-happy.png" alt="נוני שמחה" onerror="this.style.display=\'none\'">' +
+        '<h2>כָּל הַכָּבוֹד!</h2>' +
+        '<p>כֹּל הַמִּלִּים חָזְרוּ הַבַּיְתָה לַמִּשְׁפָּחוֹת שֶׁלָּהֶן!</p>' +
+        '<div class="btns">' +
+        '<button class="again" id="againBtn">עוֹד פַּעַם</button>' +
+        '<a class="home" href="stage-9-island.html">חֲזָרָה לָאִי</a>' +
+        '</div></div>';
+      $('againBtn').addEventListener('click', function () { location.reload(); });
+      try { window.AvneiAudio.play(['all-done', 'all-done-2', 'all-done-3'][Math.floor(Math.random() * 3)]); } catch (e) {}
+    }
+
+    function mountNext() {
+      if (current && current.unmount) { try { current.unmount(); } catch (e) {} }
+      current = null;
+      renderPearls();
+      if (idx >= queue.length) { showFinish(); return; }
+
+      var cfg = queue[idx];
+      $('counter').textContent = (idx + 1) + ' / ' + queue.length;
+      $('noniRow').hidden = false;
+      $('promptText').textContent = cfg.promptLine;
+
+      // 🔊 בבועת נוני — משמיע שוב את מילת-הסבב. ההשמעה הראשונה = auto-play
+      // של mechanic-mcq פעם אחת ב-mount; אחרי תשובה נכונה אין אודיו חוזר.
+      var say = $('sayBtn');
+      say.hidden = false;
+      say.onclick = function () { try { window.AvneiAudio.play(cfg.stemAudio); } catch (e) {} };
+
+      // אחרי תשובה נכונה: אותיות-החותמת נדלקות בתוך המילה (ויזואלי בלבד)
+      cfg.onUnitWon = function () {
+        try {
+          var stemCard = root.querySelector('.mcq-stem-card--text');
+          var html = F.highlightRoot(cfg._word, cfg._letters);
+          if (stemCard && html) stemCard.innerHTML = html;
+        } catch (e) {}
+      };
+
+      cfg.onComplete = function () {
+        idx++;
+        renderPearls();
+        var pearls = document.querySelectorAll('.pearl');
+        var p = pearls[idx - 1];
+        if (p) { p.classList.add('just-added'); setTimeout(function () { p.classList.remove('just-added'); }, 600); }
+        setTimeout(mountNext, 250);
+      };
+
+      current = window.AvneiMechanics['mcq'].mount(root, cfg);
+
+      // קישוט בתי-האלמוג — אחרי ה-mount (הליבה לא מכירה "בית", רק אופציה)
+      root.querySelectorAll('.mcq-option--text').forEach(function (tile) {
+        tile.classList.add('family-house');
+        var roof = document.createElement('span');
+        roof.className = 'house-roof';
+        roof.setAttribute('aria-hidden', 'true');
+        roof.textContent = '🪸';
+        tile.insertBefore(roof, tile.firstChild);
+      });
+    }
+
+    function boot() {
+      queue = buildQueue();
+      renderPearls();
+      $('startVeil').hidden = false;
+      $('startBtn').addEventListener('click', function () {
+        try { if (window.AvneiAudio.unlock) window.AvneiAudio.unlock(); } catch (e) {}
+        $('startVeil').hidden = true;
+        idx = 0;
+        // בזמן הוראת-המשימה המסך לא ריק — נוני והבועה כבר מוצגות
+        $('noniRow').hidden = false;
+        $('promptText').textContent = PROMPT;
+        // הוראת המשימה — פעם אחת, בפתיחה; הסבב הראשון עולה רק אחריה
+        // (auto-play של המילה ב-mount היה קוטע אותה), עם גיבוי-זמן אם אין קובץ.
+        var started = false;
+        function begin() { if (!started) { started = true; mountNext(); } }
+        try {
+          var m = window.AvneiAudio.preload('mission-isl09-family-sort');
+          m.onended = begin;
+          m.onerror = begin;
+          window.AvneiAudio.play('mission-isl09-family-sort');
+          setTimeout(begin, 9000);
+        } catch (e) { begin(); }
+      });
+    }
+
+    boot();
+  })();
+  </script>
+</body>
+</html>
