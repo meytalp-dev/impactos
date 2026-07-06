@@ -310,12 +310,20 @@
       // (assets/vocab, 12 מילות-אובייקט): מילה↔תמונה + מיון לשדות סמנטיים דרך ליבת
       // mechanic-mcq. ימי מיון/קטגוריות → ?mode=sort, "חיפוש פריטים" → מילה→תמונה,
       // "הרחבת אוצר" → mix. הכללים לפני ה-catch-all של הברה/מילים.
-      if(/שדות סמנטיים|אסוציאציות וקטגוריות/.test(t))       return {state:'ok',cat:'word',href:APP+'stage-vocab-match.html?mode=sort',tag:'אוצר מילים'};
-      if(/חיפוש פריטים/.test(t))                            return {state:'ok',cat:'word',href:APP+'stage-vocab-match.html?mode=word',tag:'אוצר מילים'};
-      if(/הרחבת אוצר/.test(t))                              return {state:'ok',cat:'word',href:APP+'stage-vocab-match.html',tag:'אוצר מילים'};
-      if(/הברה|הברות|תנוע/.test(t))                         return {state:'ok',cat:'syll',href:APP+'stage-4-cv-build.html',tag:'הברה'};
-      if(/צליל הראשון|צליל האחרון/.test(t))                 return {state:'ok',cat:'syll',href:APP+'stage-2-whispers.html',tag:'צליל במילה'};
+      // ימי אוצר-מילים מדווחים לאי 12 · מערת האוצרות (הכרעת מיטל 6.7.2026):
+      // ?island=12 → primary_island_id=12, האי ההיסטורי של המצב עובר ל-secondary.
+      if(/שדות סמנטיים|אסוציאציות וקטגוריות/.test(t))       return {state:'ok',cat:'word',href:APP+'stage-vocab-match.html?mode=sort&island=12',tag:'אוצר מילים · אי 12'};
+      if(/חיפוש פריטים/.test(t))                            return {state:'ok',cat:'word',href:APP+'stage-vocab-match.html?mode=word&island=12',tag:'אוצר מילים · אי 12'};
+      if(/הרחבת אוצר/.test(t))                              return {state:'ok',cat:'word',href:APP+'stage-vocab-match.html?island=12',tag:'אוצר מילים · אי 12'};
+      // אי 1 · מפרץ הבועות המזמרות (תזמורת 6.7.2026) — "משחקי הברות" בספטמבר = משחק
+      // שמיעתי לפני שמכירים אותיות → דף-האי (4 משחקוני הברות). לפני ה-catch-all של הברה.
+      if(/משחקי הברות/.test(t))                             return {state:'ok',cat:'syll',href:APP+'stage-1-island.html',tag:'משחקי הברות · אי 1'};
+      // אי 5 לפני ה-catch-all של הברה — "בניית מילה מהברות"/"מהברה למילה" = הרכבה, לא קריאת CV.
       if(/מהברות|מהברה|בניית מילה|הרכבת|מיזוג/.test(t))     return {state:'ok',cat:'word',href:APP+'stage-5-word-merge.html',tag:'הרכבת מילה'};
+      if(/הברה|הברות|תנוע/.test(t))                         return {state:'ok',cat:'syll',href:APP+'stage-4-cv-build.html',tag:'הברה'};
+      // אי 2 · צלילים (תזמורת 6.7.2026) — היום מכסה צליל פותח וסוגר יחד → דף-האי
+      // (אצות התאומות=פותח · להקות הדגיגים=מיון · ים השמועות=סוגר).
+      if(/צליל הראשון|צליל האחרון/.test(t))                 return {state:'ok',cat:'syll',href:APP+'stage-2-island.html',tag:'צלילים · אי 2'};
       if(/מילה|מילים|משפט|פועל|פעלים|זכר|נקבה|רבים|יחיד|ריבוי|כינוי/.test(t)) return {state:'ok',cat:'word',href:APP+'stage-5-word-build.html',tag:'קריאת מילים'};
       return {state:'gap',tag:''};   // מודעות פונולוגית כללית / חזרה — עדיין אין משחקון ייעודי
     }
