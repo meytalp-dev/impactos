@@ -62,6 +62,29 @@ window.AvneiAudio = (function() {
     }
   }
 
+  // כמו play(), אבל ה-Promise נפתר רק כשההשמעה *מסתיימת* (או נכשלת).
+  // נחוץ כששני קליפים חייבים לבוא בזה-אחר-זה (סיפור ואז שאלה — אי 14):
+  // play() רגיל נפתר בתחילת ההשמעה, והקריאה הבאה עוצרת את הקליפ באמצע.
+  function playAndWait(key) {
+    return new Promise(resolve => {
+      if (!key) { resolve(false); return; }
+      try {
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+        }
+        const a = preload(key);
+        currentAudio = a;
+        a.currentTime = 0;
+        a.onended = () => { a.onended = null; resolve(true); };
+        a.onerror = () => { a.onerror = null; resolve(false); };
+        a.play().catch(() => resolve(false));
+      } catch (e) {
+        resolve(false);
+      }
+    });
+  }
+
   function playSequence(keys, delay = 800) {
     let i = 0;
     const next = () => {
@@ -114,7 +137,7 @@ window.AvneiAudio = (function() {
   function isUnlocked() { return unlocked; }
 
   return {
-    preload, play, playSequence,
+    preload, play, playAndWait, playSequence,
     playLetterSound, playLetterName, playFindSoundPrompt,
     unlock, isUnlocked,
     LETTER_TO_SOUND_FILE, LETTER_TO_NAME_FILE, LETTER_TO_FIND_SOUND_PROMPT,

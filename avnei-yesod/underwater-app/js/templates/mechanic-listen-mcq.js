@@ -53,6 +53,12 @@
   // ⚠️ להסרה מלאה של Web Speech (DNA אודיו) — דרושה הפקת MP3 לפריטי אי 14 (§7.3).
   function playText(audioKey, text, force) {
     if (audioKey && typeof window !== 'undefined' && window.AvneiAudio) {
+      // playAndWait — הבטחה שנפתרת בסוף ההשמעה, כדי שהשאלה לא תקטע את הסיפור
+      // (play() רגיל נפתר בתחילת ההשמעה והקליפ הבא עוצר את הקודם — הבאג
+      // "לא שומעים את הסיפורים", 6.7.2026).
+      if (typeof window.AvneiAudio.playAndWait === 'function') {
+        return window.AvneiAudio.playAndWait(audioKey);
+      }
       try { window.AvneiAudio.play(audioKey); return Promise.resolve(true); } catch (e) {}
     }
     if (_state && _state.readMode && !force) return Promise.resolve(false);
@@ -109,7 +115,7 @@
         <div class="mlmcq-passage-text" id="mlmcqPassageText" lang="he"></div>
         <button class="mlmcq-audio-btn mlmcq-passage-btn" id="mlmcqPlayPassage" type="button">
           <span class="mlmcq-icon" aria-hidden="true">▶</span>
-          <span class="mlmcq-label">להאזין שוב לסיפור</span>
+          <span class="mlmcq-label">לְהַאֲזִין לַסִּפּוּר</span>
         </button>
       </section>
 
@@ -117,7 +123,7 @@
         <div class="mlmcq-question-text" id="mlmcqQuestionText" lang="he"></div>
         <button class="mlmcq-audio-btn mlmcq-question-btn" id="mlmcqPlayQuestion" type="button">
           <span class="mlmcq-icon" aria-hidden="true">▶</span>
-          <span class="mlmcq-label">להאזין לשאלה</span>
+          <span class="mlmcq-label">לְהַאֲזִין לַשְּׁאֵלָה</span>
         </button>
         <div class="mlmcq-options" id="mlmcqOptions" role="radiogroup"></div>
         <div class="mlmcq-feedback" id="mlmcqFeedback" aria-live="polite"></div>
@@ -271,7 +277,7 @@
       });
     }
     if (feedbackEl) {
-      feedbackEl.textContent = isCorrect ? 'יופי!' : 'התשובה הנכונה מודגשת. ננסה את הבאה.';
+      feedbackEl.textContent = isCorrect ? 'יוֹפִי!' : 'הַתְּשׁוּבָה הַנְּכוֹנָה מֻדְגֶּשֶׁת. נְנַסֶּה אֶת הַבָּאָה.';
       feedbackEl.className = 'mlmcq-feedback ' + (isCorrect ? 'mlmcq-feedback--ok' : 'mlmcq-feedback--miss');
     }
 
@@ -371,7 +377,7 @@
         console.error('mechanic-listen-mcq start failed:', err);
         const root = _state && _state.mountRoot;
         if (root) {
-          root.innerHTML = '<div class="mlmcq-error" lang="he">אופס, לא הצלחנו לטעון סיפורים. נסי שוב מאוחר יותר.</div>';
+          root.innerHTML = '<div class="mlmcq-error" lang="he">אוֹפְּס, לֹא הִצְלַחְנוּ לִטְעֹן אֶת הַסִּפּוּרִים. נַסּוּ שׁוּב מְאֻחָר יוֹתֵר.</div>';
         }
       });
   }
