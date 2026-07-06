@@ -19,9 +19,14 @@
   // NOTE: step URLs are written as '../<folder>/<file>' so they resolve the
   // same from demo/ AND from pulse-grade1/ (step 7 lives there).
   var STEPS = [
-    { key: 'reading-journey.html', role: 'המפה', chip: 'המפה',
-      title: 'רגע לפני — איך המערכת עובדת',
-      sub: 'המפה של המסע: חמש תחנות בדרך מ"לא קורא" ל"קורא ומבין" — וכיתה שלמה שלומדת יחד את אותו נושא, כל ילד באי שלו. שימו לב לאיתי — תכף נצא למסע שלו.',
+    { key: 'map.html', role: 'האי', chip: 'מפת האי',
+      title: 'ברוכים הבאים לים של נוני',
+      sub: 'זה העולם שהילדים פוגשים כל בוקר: מפת איים, וכל אי הוא תחנה בדרך לקריאה. כולם רואים את אותה מפה — אבל כל ילד מפליג בקצב שלו. רגע לפני המסע של איתי, נבין איך המפה בנויה.',
+      next: '../../demo/reading-journey.html',
+      nextLabel: 'איך המפה בנויה? ›' },
+    { key: 'reading-journey.html', role: 'המפה', chip: 'התחנות',
+      title: 'חמש תחנות — וטעימה חיה מכל אחת',
+      sub: 'הדרך מ"לא קורא" ל"קורא ומבין" בחמש תחנות. בכל תחנה יש קישור "נסו בעצמכם" — טעימה חיה מתרגול אמיתי: הקשבה, הברות, מילים, הבנה וכתיבה. שימו לב לאיתי — תכף נצא למסע שלו.',
       highlight: true, next: '../demo/teacher-literacy-profile.html',
       nextLabel: 'עכשיו נכיר את איתי ›' },
     { key: 'teacher-literacy-profile.html', role: 'מורה', chip: 'פתיחת שנה',
@@ -34,8 +39,9 @@
       nextLabel: 'ומכאן — שנת הלמידה ›' },
     { key: 'student-avnei.html', role: 'תלמיד',
       title: 'הבוקר של איתי',
-      sub: 'כמה שבועות לתוך השנה. איתי מתחיל ביום משחקי — קצר ונעים, בלי ציונים. שתי פעילויות בוקר:',
+      sub: 'כמה שבועות לתוך השנה. איתי מתחיל ביום משחקי — קצר ונעים, בלי ציונים. היום הוא באי ההקראה — ושימו לב: נוני בוחר לו בכוונה מילים עם אותיות שהוא עוד לא רכש, ופחות כאלה שהוא כבר שולט בהן. התרגול תמיד בגובה שלו.',
       activities: [
+        { icon: '🎤', label: 'הקראה · נוני מקשיבה', url: '../avnei-yesod/underwater-app/stage-read-aloud.html?presentation=1' },
         { icon: '📖', label: 'קריאה · הרכבת הצליל', url: '../avnei-yesod/underwater-app/stage-4-cv-build.html?presentation=1&demo=1' },
         { icon: '💜', label: 'צ׳ק-אין רגשי · פולס', url: "../pulse-grade1/pulse-questionnaire.html?class=א'1" }
       ],
@@ -50,7 +56,10 @@
       nextLabel: 'ומה עם הרגש? ›' },
     { key: 'pulse-dashboard.html', role: 'מורה', chip: 'רגש',
       title: 'אותו ילד — הצד הרגשי',
-      sub: 'דשבורד הפולס החי של המחנכת: הכיתה בארבעה ממדים רגשיים. מה שקשה לתפוס בעין — כאן רואים: אצל איתי יש ירידה בשמחה ללמוד.',
+      sub: 'דשבורד הפולס החי של המחנכת: הכיתה בארבעה ממדים רגשיים. מה שקשה לתפוס בעין — כאן רואים: אצל איתי יש ירידה בשמחה ללמוד. והתמונה לא נשענת רק על הילדים — גם המורה מדווחת אחת לשבועיים, 8 שאלות קצרות.',
+      activities: [
+        { icon: '📝', label: 'הדיווח של המורה · 8 שאלות', url: '../pulse-grade1/pulse-teacher-form-mockup.html' }
+      ],
       highlight: true, next: '../demo/teacher-mavat.html',
       nextLabel: 'לחבר למידה ורגש ›' },
     { key: 'teacher-mavat.html', role: 'מורה', chip: 'מבט משולב',
@@ -74,34 +83,63 @@
   ];
 
   // ----- excursion screens (the live game / pulse, in other folders) -----
-  // value = how to get back to the demo/ folder from that screen
+  // back = fallback route to the journey (used only when there is no history);
+  // note = small floating explainer shown on the game screen itself.
+  var NOTE_ADAPTIVE = 'איתי משחק באי ההקראה — אבל התרגול נבחר אישית: נוני נותן לו יותר אותיות שהוא עוד לא רכש, ופחות ממה שהוא כבר שולט בו. כך הוא מתאמן תמיד בדיוק בגובה שלו.';
+  var NOTE_TASTE = 'טעימה חיה מתוך תרגול אמיתי — כך זה נראה אצל הילד. חזרו לתחנות כדי לטעום עוד.';
   var EXCURSIONS = {
-    'stage-3-lamed.html': '../../demo/student-avnei.html',
-    'student-literacy-check.html': '../demo/teacher-literacy-profile.html',
-    'teacher-curriculum.html': '../demo/teacher-avnei.html',
-    'stage-4-cv-build.html': '../../demo/student-avnei.html',
-    'stage-4-cv-tap.html': '../../demo/student-avnei.html',
-    'map.html': '../../demo/student-avnei.html',
-    'pulse-questionnaire.html': '../demo/student-avnei.html',
-    'pulse-summary.html': '../demo/student-avnei.html'
+    'stage-3-lamed.html': { back: '../../demo/student-avnei.html' },
+    'student-literacy-check.html': { back: '../demo/teacher-literacy-profile.html' },
+    'teacher-curriculum.html': { back: '../demo/teacher-avnei.html' },
+    'stage-read-aloud.html': { back: '../../demo/student-avnei.html', note: NOTE_ADAPTIVE },
+    'stage-4-cv-build.html': { back: '../../demo/student-avnei.html',
+      note: 'התרגול הזה נבחר אישית לאיתי: יותר צירופים עם אותיות שהוא עוד לא רכש, ופחות ממה שהוא כבר שולט בו.' },
+    'stage-4-cv-tap.html': { back: '../../demo/reading-journey.html', note: NOTE_TASTE },
+    'stage-1-merge-bubble.html': { back: '../../demo/reading-journey.html', note: NOTE_TASTE },
+    'stage-5-word-build.html': { back: '../../demo/reading-journey.html', note: NOTE_TASTE },
+    'stage-14-listen-and-answer.html': { back: '../../demo/reading-journey.html', note: NOTE_TASTE },
+    'stage-14-read-and-answer.html': { back: '../../demo/reading-journey.html', note: NOTE_TASTE },
+    'stage-3-write-tav-accurate.html': { back: '../../demo/reading-journey.html', note: NOTE_TASTE },
+    'pulse-questionnaire.html': { back: '../demo/student-avnei.html' },
+    'pulse-summary.html': { back: '../demo/student-avnei.html' },
+    'pulse-teacher-form-mockup.html': { back: '../pulse-grade1/pulse-dashboard.html?seed=1' }
   };
 
-  // ===== EXCURSION MODE: minimal floating "back to journey" pill only =====
+  // ===== EXCURSION MODE: floating "back to journey" pill + optional note =====
   if (Object.prototype.hasOwnProperty.call(EXCURSIONS, file)) {
-    var back = EXCURSIONS[file];
+    var exc = EXCURSIONS[file];
     var es = document.createElement('style');
     es.textContent =
       '.jw-back{position:fixed;z-index:99999;top:12px;right:12px;display:flex;align-items:center;gap:8px;' +
       'background:rgba(15,126,114,.96);color:#fff;border:none;border-radius:999px;padding:9px 16px;' +
       'font:800 13px Heebo,Arial,sans-serif;cursor:pointer;box-shadow:0 8px 22px -8px rgba(15,126,114,.8);' +
       'backdrop-filter:blur(4px);}' +
-      '.jw-back:hover{background:#0a655c;} .jw-back .x{font-size:15px;}';
+      '.jw-back:hover{background:#0a655c;} .jw-back .x{font-size:15px;}' +
+      '.jw-note{position:fixed;z-index:99998;top:58px;right:12px;max-width:330px;background:rgba(255,255,255,.97);' +
+      'border:1px solid #DCEAEC;border-radius:14px;padding:12px 14px 12px 34px;' +
+      'font:600 12.5px/1.55 Heebo,Arial,sans-serif;color:#1E3D47;box-shadow:0 14px 34px -16px rgba(20,55,67,.45);' +
+      'animation:jwNote .5s cubic-bezier(.32,.72,0,1) both;}' +
+      '.jw-note b{color:#0F7E72;display:block;margin-bottom:3px;font-weight:800;}' +
+      '.jw-note .c{position:absolute;top:8px;left:8px;width:22px;height:22px;border-radius:50%;border:none;' +
+      'background:#F1F5F6;color:#8197A0;cursor:pointer;font:800 12px/1 Heebo,Arial;}' +
+      '.jw-note .c:hover{background:#E8F4F0;color:#0F7E72;}' +
+      '@keyframes jwNote{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:none;}}';
     document.head.appendChild(es);
     var pill = document.createElement('button');
     pill.className = 'jw-back';
     pill.innerHTML = '<span class="x">↩</span> חזרה למסע של איתי';
-    pill.addEventListener('click', function () { location.href = back; });
+    pill.addEventListener('click', function () {
+      if (history.length > 1 && document.referrer) { history.back(); }
+      else { location.href = exc.back; }
+    });
     (document.body || document.documentElement).appendChild(pill);
+    if (exc.note) {
+      var noteEl = document.createElement('div');
+      noteEl.className = 'jw-note';
+      noteEl.innerHTML = '<button class="c" title="סגירה">✕</button><b>מה קורה כאן?</b>' + exc.note;
+      noteEl.querySelector('.c').addEventListener('click', function () { noteEl.remove(); });
+      (document.body || document.documentElement).appendChild(noteEl);
+    }
     return;
   }
 
@@ -169,9 +207,11 @@
     '<span class="jw-steps">' + chips + '</span>' +
     '<button class="jw-exit" id="jwExit">יציאה מהמסע ✕</button>';
   document.body.appendChild(bar);
+  // map.html lives two levels deep (avnei-yesod/underwater-app/) — exit path differs
+  var DEMO_ROOT = (file === 'map.html') ? '../../demo/' : '../demo/';
   document.getElementById('jwExit').addEventListener('click', function () {
     sessionStorage.removeItem('avnei-journey'); sessionStorage.removeItem('avnei-journey-child');
-    location.href = '../demo/index.html';
+    location.href = DEMO_ROOT + 'index.html';
   });
 
   var acts = (step.activities || []).map(function (a) {

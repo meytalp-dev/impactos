@@ -41,13 +41,19 @@
     .quad .sub{font-size:11.5px;font-weight:600;opacity:.75;margin:4px 40px 0 0;}
     .quad .empty{font-size:12.5px;opacity:.55;margin:auto;text-align:center;font-weight:600;}
     .kchips{display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;margin-top:14px;}
-    .kchip{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:var(--pill);
-      padding:5px 7px 5px 14px;cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:700;color:var(--deep);
+    .kchip{display:inline-flex;flex-direction:column;align-items:stretch;gap:6px;background:#fff;border:1px solid var(--line);border-radius:14px;
+      padding:8px 12px;cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:700;color:var(--deep);text-align:right;
       box-shadow:0 1px 3px rgba(38,80,92,.07);transition:transform .13s,box-shadow .13s;}
     .kchip:hover{transform:translateY(-2px);box-shadow:0 5px 14px rgba(38,80,92,.13);}
+    .kchip .krow{display:flex;align-items:center;gap:8px;}
     .kchip .kav{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:800;
-      background:var(--qbg);color:var(--qtx);font-family:'Heebo',sans-serif;}
+      background:var(--qbg);color:var(--qtx);font-family:'Heebo',sans-serif;flex:0 0 auto;}
     .kchip small{font-size:11px;font-weight:700;color:var(--text-soft);}
+    .kchip .klens{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--text-soft);}
+    .kchip .klens .kli{width:18px;height:18px;border-radius:6px;display:grid;place-items:center;flex:0 0 auto;}
+    .kchip .klens .kli .tic svg{width:11px;height:11px;}
+    .kchip .klens.read .kli{background:var(--acc-blue-bg);color:var(--acc-blue-tx);}
+    .kchip .klens.pulse .kli{background:var(--acc-pink-bg);color:var(--acc-pink-tx);}
     .kchip.sel{box-shadow:0 0 0 2.5px var(--qtx),0 5px 14px rgba(38,80,92,.13);}
     .quad.grow{background:var(--okbg);color:#0d6b54;--qbg:var(--okbg);--qtx:#0d6b54;}
     .quad.ready{background:var(--acc-blue-bg);color:var(--acc-blue-tx);--qbg:var(--acc-blue-bg);--qtx:var(--acc-blue-tx);}
@@ -207,30 +213,35 @@
     ];
     var KIDS=[
       {id:'itai',nm:'איתי כ.',cls:'א׳1',clsId:'a1',s:'care',q:'both',pill:'למידה + רגש',
+        rShort:'מתבלבל בצלילי אותיות',pShort:'פחות שמחה ללמוד',
         situ:'בתקופה האחרונה קשה לו יותר <b>גם בקריאה וגם בשמחה ללמוד</b>.',
         read:'מתבלבל בצלילים של כמה אותיות — המורה ממליצה על קבוצת חיזוק קטנה.',
         pulse:'נראית ירידה בשמחה ללמוד בשבועיים האחרונים.',
         interp:'ייתכן שהקושי בקריאה משפיע על הביטחון שלו — כשהוא מרגיש שלא מצליח, הוא מפסיק ליהנות.',
         step:'לגבות את המהלך של מיטל: קבוצה קטנה עם הצלחה מהירה — ולחזור למבט הזה בעוד שבועיים.'},
       {id:'maya',nm:'מאיה ד.',cls:'א׳1',clsId:'a1',s:'watch',q:'signal',pill:'הרגש מסמן',
+        rShort:'קוראת לאט אבל מדויק',pShort:'קושי מתמשך בחברות',
         situ:'מצליחה במשימות הקריאה — ובמקביל <b>קושי מתמשך בחברות</b>.',
         read:'יודעת לזהות נכון, אבל קוראת לאט.',
         pulse:'קושי מתמשך בחברות לאורך כמה מחזורים.',
         interp:'ההצלחה בקריאה לא מתרגמת לתחושת שייכות — עוד תרגול לא יעזור כאן.',
         step:'לוודא שהמענה הוא של קשר, לא של תרגול — מיטל מתכננת פעילות מתווכת בזוג.'},
       {id:'noa',nm:'נועה כ.',cls:'א׳1',clsId:'a1',s:'ok',q:'grow',pill:'מתקדמת בשניהם',
+        rShort:'מתקדמת יפה בקריאה',pShort:'עלייה בתחושת החברות',
         situ:'מתקדמת היטב בקריאה, ובמקביל <b>עלייה בתחושת החברות</b>.',
         read:'מתקדמת היטב, אפשר תרגול מתקדם קצר.',
         pulse:'שיפור בתחושת החברות בפולסים האחרונים.',
         interp:'ההתקדמות בשני התחומים מחזקת זו את זו.',
         step:'לשמר: תפקיד קטן בקבוצה שמחזק את ההתקדמות — ולתת למיטל את הקרדיט.'},
       {id:'roni',nm:'רוני ב.',cls:'א׳2',clsId:'a2',s:'care',q:'both',pill:'למידה + רגש',
+        rShort:'מתקשה בזיהוי אותיות',pShort:'שקטה מאוד בקבוצה',
         situ:'לאורך זמן קשה לה <b>גם בקריאה וגם בהרגשה בכיתה</b> — וזה לא רק אצלה.',
         read:'עדיין מתקשה בזיהוי אותיות שכבר נלמדו.',
         pulse:'שקטה מאוד בפעילויות קבוצתיות, וההרגשה בכיתה יורדת.',
         interp:'כשכמה ילדים באותה כיתה נראים כך — שווה לבדוק קודם את סביבת הכיתה, לא רק את הילדה.',
         step:'שיחת צוות עם לירון: חיזוק פרטני לרוני + מבט על הכיתה כולה. המורה צריכה ליווי, לא רשימת משימות.'},
       {id:'tom',nm:'תום ש.',cls:'א׳3',clsId:'a3',s:'watch',q:'signal',pill:'הרגש מסמן',
+        rShort:'מתקדם יפה בקריאה',pShort:'ההרגשה בבוקר יורדת',
         situ:'הקריאה רק עולה — אבל <b>ההרגשה בבוקר יורדת</b>.',
         read:'מתקדם יפה, אין קושי לימודי.',
         pulse:'ירידה בהרגשה בבוקר, ויש דיווח מהבית על כאבי בטן.',
@@ -271,8 +282,10 @@
         kids.forEach(function(x){
           var b=document.createElement('button');
           b.className='kchip'+(x.id===selected?' sel':'');
-          b.innerHTML='<span class="kav">'+initials(x.nm)+'</span><span>'+x.nm+'</span>'+
-            (selCls==='all'?'<small>· '+x.cls+'</small>':'');
+          b.innerHTML='<span class="krow"><span class="kav">'+initials(x.nm)+'</span><span>'+x.nm+'</span>'+
+            (selCls==='all'?'<small>· '+x.cls+'</small>':'')+'</span>'+
+            '<span class="klens read"><span class="kli"><span class="tic" data-ic="book"></span></span>'+x.rShort+'</span>'+
+            '<span class="klens pulse"><span class="kli"><span class="tic" data-ic="heart"></span></span>'+x.pShort+'</span>';
           b.onclick=function(){selected=x.id;renderMap();renderDetail();};
           box.appendChild(b);
         });

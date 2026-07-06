@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <script src="js/shared/file-protocol-shim.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>כְּתִיבָה מְדֻיֶּקֶת · ת מ ר · עוֹמֶק הַיָּם הַמּוּאָר</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+
+  <!-- opentype.js: הגליף האמיתי של Heebo כ-vector = מקור-אמת יחיד לתצוגה, למסכה ולמשיכות -->
+  <script src="https://unpkg.com/opentype.js@1.3.4/dist/opentype.min.js"></script>
+
+  <style>
+    /* ============================================================
+       POC v3 · כְּתִיבָה מְדֻיֶּקֶת — מרחב-קואורדינטות יחיד
+       הגליף נטען כ-vector (opentype.js) פעם אחת, ומופה ע"י טרנספורם יחיד
+       ל-SVG 0..100. אותו path משמש: (1) תצוגה אפורה (2) צריבת מסכת-דיו
+       ל-containment (3) בסיס-מידה למשיכות המחוברות-ידנית. אין רינדור כפול.
+       ============================================================ */
+    main.stage-scene { position: fixed; inset: 0; overflow: hidden; }
+    .scene-frame { position: absolute; inset: 0; }
+    .scene-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+
+    .bubbles { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+    .bubbles span {
+      position: absolute; bottom: -40px; border-radius: 50%;
+      background: radial-gradient(circle at 32% 30%, rgba(255,255,255,.85), rgba(168,232,255,.25));
+      animation: rise linear infinite;
+    }
+    @keyframes rise { 0%{transform:translateY(0) scale(.6);opacity:0;} 15%{opacity:.7;} 100%{transform:translateY(-110vh) scale(1);opacity:0;} }
+
+    .top-bar { position: absolute; top: 0; inset-inline: 0; z-index: 6; display: flex; align-items: center; gap: 14px; padding: 14px 18px; }
+    .icon-btn { width: 46px; height: 46px; border-radius: var(--radius-pill); display: grid; place-items: center; text-decoration: none;
+                background: rgba(255,255,255,.85); color: var(--text-main); box-shadow: 0 4px 14px rgba(38,80,92,.16); }
+    .accuracy-chip {
+      margin-inline-start: auto; background: rgba(255,255,255,.85); border-radius: var(--radius-pill);
+      padding: 8px 16px; font-weight: 800; font-size: 18px; color: var(--text-main);
+      box-shadow: 0 4px 14px rgba(38,80,92,.14); display: flex; gap: 8px; align-items: center;
+    }
+    .accuracy-chip b { color: var(--success); }
+
+    .instruction { position: absolute; z-index: 6; top: 78px; inset-inline: 0; display: flex; justify-content: center; padding: 0 16px; }
+    .instruction .bubble { background: #fff; border-radius: var(--radius-lg); padding: 12px 20px; max-width: 560px;
+      box-shadow: 0 8px 26px rgba(38,80,92,.18); display: flex; align-items: center; gap: 12px;
+      font-size: var(--font-instruction); font-weight: 600; color: var(--text-main); transition: background .2s; }
+    .instruction .bubble.warn { background: #FFE7E0; }
+    .instruction .bubble strong { color: var(--coral); font-weight: 900; }
+    .speaker { flex: 0 0 auto; width: 44px; height: 44px; border-radius: var(--radius-pill); background: var(--water-secondary); display: grid; place-items: center; }
+    .speaker svg { width: 22px; height: 22px; color: #fff; }
+
+    .stage-wrap { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; padding: 150px 20px 40px; }
+    .write-card { position: relative; width: min(78vw, 62vh, 440px); aspect-ratio: 1 / 1;
+      background: rgba(255,255,255,.95); border-radius: var(--radius-lg);
+      box-shadow: 0 18px 44px rgba(38,80,92,.22); touch-action: none; overflow: hidden; }
+    .write-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+    .ghost-glyph { fill: rgba(38,80,92,.12); stroke: rgba(38,80,92,.18); stroke-width: .3; }
+    .fill-glyph  { fill: var(--coral); opacity: 0; transition: opacity .5s ease; }
+    .fill-glyph.show { opacity: 1; }
+
+    .guide-path { fill:none; stroke: rgba(115,217,209,.6); stroke-width: 1.6; stroke-dasharray: 2.5 3.2; stroke-linecap: round; }
+    .cp-dot { fill: var(--water-depth); opacity: .35; }
+    .cp-dot.done { fill: var(--success); opacity: .9; }
+    .start-star { fill: var(--coral); filter: drop-shadow(0 0 6px rgba(255,169,141,.85));
+      transform-box: fill-box; transform-origin: center; animation: starBob 1.3s ease-in-out infinite; }
+    @keyframes starBob { 0%,100%{transform:scale(1);} 50%{transform:scale(1.22);} }
+    .ink-good { fill:none; stroke: var(--coral); stroke-width: 6.5; stroke-linecap: round; stroke-linejoin: round;
+      filter: drop-shadow(0 0 4px rgba(255,169,141,.55)); }
+    .ink-good.locked { stroke: var(--success); }
+    .ink-bad { fill:none; stroke: #F4726A; stroke-width: 6.5; stroke-linecap: round; stroke-linejoin: round; opacity:.9; }
+
+    /* ===== שלב ההדגמה: עיפרון + דיו הדגמה + מספרי משיכות ===== */
+    .ink-demo { fill:none; stroke: rgba(255,169,141,.85); stroke-width: 5.5; stroke-linecap: round; stroke-linejoin: round; }
+    #pencil { pointer-events:none; filter: drop-shadow(0 2px 2.5px rgba(38,80,92,.35)); transition: opacity .25s; }
+    #pencil.lifted { opacity:.35; }
+    .stroke-num circle { fill: var(--coral); stroke:#fff; stroke-width:.6; }
+    .stroke-num text { fill:#fff; font-family:'Heebo'; font-weight:900; font-size:4px; text-anchor:middle; dominant-baseline:central; }
+    .demo-fade { transition: opacity .6s; opacity:0 !important; }
+
+    .replay-fab { position:absolute; z-index:7; bottom:20px; inset-inline-end:16px; display:none;
+      font-family:'Heebo'; font-weight:800; font-size:16px; padding:11px 18px; border:none; cursor:pointer;
+      border-radius: var(--radius-pill); background: rgba(255,255,255,.92); color: var(--text-main);
+      box-shadow: 0 6px 18px rgba(38,80,92,.2); }
+    .replay-fab.show { display:block; }
+
+    /* שכבת דיבאג (?debug=1) */
+    .dbg-stroke { fill:none; stroke-width:1.1; stroke-linecap:round; stroke-linejoin:round; opacity:.9; }
+    .dbg-num { font-family:'Heebo',sans-serif; font-weight:900; font-size:7px; }
+    .dbg-start { stroke:#fff; stroke-width:.6; }
+
+    .noni-fixed { position: absolute; z-index: 5; bottom: 14px; inset-inline-start: 14px; width: min(30vw, 140px); height: auto;
+      filter: drop-shadow(0 8px 18px rgba(38,80,92,.28)); }
+    .noni-fixed.cheer { animation: cheer .6s ease; }
+    @keyframes cheer { 0%,100%{transform:translateY(0) rotate(0);} 30%{transform:translateY(-16px) rotate(-6deg);} 60%{transform:translateY(-6px) rotate(4deg);} }
+
+    .overlay { position: absolute; inset: 0; z-index: 10; display: grid; place-items: center; text-align: center;
+      background: rgba(20,60,72,.35); backdrop-filter: blur(2px); padding: 24px; }
+    .overlay.hidden { display: none; }
+    .panel { background: #fff; border-radius: var(--radius-lg); padding: 30px 26px; max-width: 470px; width: 100%;
+      box-shadow: 0 20px 50px rgba(38,80,92,.3); }
+    .panel h2 { margin: 0 0 8px; font-size: var(--font-subtitle); color: var(--text-main); }
+    .panel p  { margin: 0 0 18px; font-size: var(--font-instruction); color: var(--text-soft); line-height: 1.5; }
+    .score-big { font-size: 64px; font-weight: 900; margin: 4px 0 6px; }
+    .flags { text-align: start; margin: 0 auto 18px; max-width: 360px; font-size: 19px; line-height: 1.7; color: var(--text-soft); }
+    .flags li { list-style: none; }
+    .btn { display: inline-block; text-decoration: none; background: var(--coral); color: #fff; font-weight: 800;
+      font-size: 21px; padding: 14px 30px; border-radius: var(--radius-pill); box-shadow: 0 8px 20px rgba(255,169,141,.5); border: none; margin: 4px; cursor:pointer; }
+    .btn.ghost { background: #fff; color: var(--text-main); box-shadow: inset 0 0 0 2px var(--water-depth); }
+
+    .live-meter { position:absolute; z-index:8; bottom: 26px; inset-inline:0; display:flex; justify-content:center; pointer-events:none;
+      opacity:0; transition:opacity .2s; }
+    .live-meter.show { opacity:1; }
+    .live-meter span { background: rgba(255,255,255,.95); color: var(--text-main); font-weight:700; font-size:18px;
+      padding: 8px 18px; border-radius: var(--radius-pill); box-shadow: 0 6px 18px rgba(38,80,92,.2); }
+
+    /* בורר אות (רק להדגמה/דיבאג — הרצף הפדגוגי הוא ת→מ→ר) */
+    .letter-tabs { position:absolute; z-index:7; top: 132px; inset-inline:0; display:flex; gap:8px; justify-content:center; }
+    .letter-tabs button { font-family:'Heebo'; font-weight:900; font-size:22px; width:44px; height:44px; border-radius:14px;
+      border:none; background:rgba(255,255,255,.85); color:var(--text-main); box-shadow:0 4px 12px rgba(38,80,92,.14); cursor:pointer; }
+    .letter-tabs button.active { background:var(--coral); color:#fff; }
+
+    /* ===== בורר רמת-תמיכה (POC — בעתיד BKT יקבע) ===== */
+    .level-chips { position:fixed; z-index:20; top:146px; inset-inline:0; display:flex; gap:8px;
+      justify-content:center; align-items:center; pointer-events:none; }
+    .level-chips > * { pointer-events:auto; }
+    .level-chips button { font-family:'Heebo'; font-weight:900; font-size:17px; width:40px; height:40px; border-radius:999px;
+      border:none; background:rgba(255,255,255,.9); color:var(--text-soft); box-shadow:0 3px 10px rgba(38,80,92,.18); cursor:pointer; }
+    .level-chips button.done { background:var(--success); color:#fff; }
+    .level-chips button.active { background:var(--water-secondary); color:#fff; transform:scale(1.12); }
+
+    /* ===== אפקטים של רמות התמיכה ===== */
+    body.lvl3 .ghost-glyph { fill: rgba(38,80,92,.045); stroke: rgba(38,80,92,.06); }  /* צל קלוש */
+    body.lvl4 .ghost-glyph { fill: transparent; stroke: transparent; }                 /* ריק לגמרי */
+    /* בזמן הדגמה ("לראות שוב") — הגליף חוזר להיראות בכל רמה */
+    body.demo-showing .ghost-glyph { fill: rgba(38,80,92,.12) !important; stroke: rgba(38,80,92,.18) !important; }
+    .start-dot { fill: var(--coral); opacity:.85; }                                     /* רמה 3: נקודת התחלה קטנה */
+  </style>
+<script src="../../demo/journey.js" defer></script>
+</head>
+<body>
+  <main class="stage-scene">
+    <div class="scene-frame">
+      <img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true" onerror="this.style.display='none'">
+      <div class="bubbles" id="bubbles" aria-hidden="true"></div>
+
+      <div class="stage-wrap">
+        <div class="write-card" id="card">
+          <svg class="write-svg" id="svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+            <path class="ghost-glyph" id="ghost" d=""></path>
+            <path class="fill-glyph"  id="fill"  d=""></path>
+            <path class="guide-path"  id="guide" d=""></path>
+            <g id="dbgLayer"></g>
+            <g id="cpLayer"></g>
+            <g id="inkLayer"></g>
+            <g id="demoLayer"></g>
+            <path class="start-star" id="star" style="display:none"
+                  d="M0,-5.5 L1.5,-1.7 L5.5,-1.7 L2.2,.9 L3.5,5 L0,2.6 L-3.5,5 L-2.2,.9 L-5.5,-1.7 L-1.5,-1.7 Z"/>
+            <!-- עיפרון ההדגמה: החוד ב-(0,0), הגוף מצביע למעלה-ימין -->
+            <g id="pencil" style="display:none">
+              <polygon points="0,0 1.45,-0.67 0.67,-1.45" fill="#26505C"/>
+              <polygon points="1.45,-0.67 3.39,-1.55 1.55,-3.39 0.67,-1.45" fill="#F8E3D6"/>
+              <polygon points="3.39,-1.55 8.70,-6.86 6.86,-8.70 1.55,-3.39" fill="#FFA98D"/>
+              <polygon points="8.70,-6.86 9.83,-7.99 7.99,-9.83 6.86,-8.70" fill="#FFD3D8"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <button class="replay-fab" id="replayBtn">👀 לִרְאוֹת שׁוּב</button>
+      <div class="live-meter" id="meter"><span></span></div>
+    </div>
+  </main>
+
+  <img class="noni-fixed" id="noni" src="assets/noni-idle.png" alt="נוֹנִי">
+
+  <header class="top-bar">
+    <a href="stage-3-island.html" class="icon-btn" aria-label="חֲזָרָה לְאִי 3">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <div class="accuracy-chip">דִּיּוּק: <b id="accVal">—</b></div>
+  </header>
+
+  <div class="instruction">
+    <div class="bubble" id="instrBubble">
+      <button class="speaker" id="speaker" aria-label="שִׁמְעוּ אֶת הַהַנְחָיָה">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/><path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+      </button>
+      <span id="instrText">עִקְבוּ אַחֲרֵי הַכּוֹכָב וְצַיְּרוּ אֶת הָאוֹת <strong>ת</strong></span>
+    </div>
+  </div>
+
+  <!-- 🅿️ מ' הוסרה מהזרימה (מיטל 4.7 — הפנייה למעלה עוד לא מדויקת); נגישה ל-R&D דרך ?letter=mem -->
+  <div class="letter-tabs" id="tabs" style="display:none">
+    <button data-l="ת">ת</button><button data-l="ר">ר</button>
+  </div>
+
+  <!-- מחוון שלבים (1=הדגמה+מלא · 2=חלקי · 3=מזערי · 4=מהזיכרון). ההתקדמות אוטומטית; לחיצה = קיצור לבדיקות -->
+  <div class="level-chips" id="levelChips" aria-label="שְׁלַבִּים">
+    <button data-lv="1" class="active">1</button>
+    <button data-lv="2">2</button>
+    <button data-lv="3">3</button>
+    <button data-lv="4">4</button>
+  </div>
+
+  <div class="overlay" id="intro">
+    <div class="panel">
+      <h2>שׁוֹנִית הַכְּתִיבָה</h2>
+      <p>נַלְמַד לִכְתֹּב אֶת הָאוֹת <strong style="color:var(--coral)">ת</strong>.<br>
+         קֹדֶם הָעִפָּרוֹן שֶׁל נוֹנִי יַרְאֶה אֵיךְ כּוֹתְבִים —<br>
+         וְאַחַר-כָּךְ אַתֶּם תִּכְתְּבוּ בְּעַצְמְכֶם!</p>
+      <button class="btn" id="startBtn">בּוֹאוּ נַתְחִיל</button>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="done">
+    <div class="panel">
+      <h2 id="doneTitle">כָּתַבְתֶּם אֶת ת!</h2>
+      <div class="score-big" id="scoreBig">100%</div>
+      <ul class="flags" id="flags"></ul>
+      <button class="btn ghost" id="againBtn">עוֹד פַּעַם</button>
+      <button class="btn" id="nextBtn" style="display:none">הָאוֹת הַבָּאָה</button>
+      <a href="stage-3-island.html" class="btn" id="finishLink">סִיּוּם</a>
+    </div>
+  </div>
+
+  <canvas id="hidden" width="400" height="400" style="display:none"></canvas>
+
+  <script>
+  /* ============================================================
+     מנוע כתיבה מדויק · מרחב-קואורדינטות יחיד
+     ------------------------------------------------------------
+     הבאג הישן: הגליף עוּבַּד פעמיים —  <text> ל-SVG (getBBox→gb) ו-<canvas>
+     בגודל-פונט אחר לגמרי (baseline אחר) → cb. המיפוי px→uv→svg הניח ש-gb ו-cb
+     זהים בפרופורציה — הם לא היו. תוצאה: שלד בקנה-מידה שגוי + הזזה ימינה.
+
+     הפתרון: הגליף נטען פעם אחת כ-vector (opentype.js). טרנספורם יחיד T
+     (fontUnits→SVG 0..100) מזין את *כל* השכבות:
+       • ghost/fill  = ה-path עצמו (תצוגה == גיאומטריה, לא ייתכן פער)
+       • canvas mask = אותו path נצרב בפיקסלים (containment מדויק-פיקסל)
+       • strokes     = משיכות מחוברות-ידנית ביחסי-bbox של אותו גליף
+     כך gb ו-cb הם אותו דבר — אי-אפשר שיסתרו.
+
+     נפילה חיננית: אם opentype/הפונט נכשל → fallback ל-<text> + מסכת canvas
+     שנצרבת מ*אותו* text (עדיין מקור יחיד, פחות מדויק בקצוות).
+     ============================================================ */
+
+  // ====== קונפיג פר-אות ======
+  // strokes: משיכות ביחס ל-bounding-box של הגליף. u∈[0,1] שמאל→ימין, v∈[0,1] עליון→תחתון.
+  // (u=0 = הקצה השמאלי של הגליף, u=1 = הקצה הימני; v=0 = ראש, v=1 = בסיס.)
+  // אלה מכוילים-ידנית ל-Heebo דפוס. snap-to-mask מצמיד אותם למרכז הקו האמיתי בזמן ריצה.
+  // ⚠️ צריך אימות ויזואלי אנושי ב-?debug=1 — עדכנו נקודות אם משיכה חורגת מהגליף.
+  // ⚠️ הנקודות נגזרו מ*מדידת המדיאל האמיתי* של גליף Heebo (scan פר-שורת-v, ראו הדוח).
+  //    לא ניחוש. snap-to-mask מכייל עדין נוסף בזמן ריצה. אימות ב-?debug=1: הקו הכחול
+  //    חייב לשבת על אמצע הקו האפור; console מדפיס % נקודות-על-הדיו.
+  // ⚠️ Round 2 (3.7.2026): כל endpoint מסומן `end:1` — מוחרג מ-snap-פנימה (ראו snapSvg).
+  //    לפני כן ה-snap מיצע סביבה → מָשַׁךְ קצוות פנימה וקיצץ את העוקץ. עכשיו הקצה מגיע לקצה-האמת.
+  //    כל נקודה נגזרה ממדידת המדיאל/הקצה האמיתי של Heebo (scan פר-שורה, ראו הדוח Round 2).
+  // ⚙️ Round 3 (4.7.2026): משיכות נגזרות-מכונה לפי הקנון הפדגוגי (וואלה סקול — ראו
+  //    _handoff/2026-07-04-letter-writing-research-pedagogy.md §1.2, §5.א).
+  //    כל נקודה = אמצע-דיו נמדד (medial scan) על גליף **Heebo** האמיתי, ב-Node + opentype.js,
+  //    עם אותו TTF ואותו טרנספורם T של המנוע (סקריפט: c:\tmp\letter-trace\derive.mjs).
+  //    אימות: 100% on-ink strict (בלי קורידור), קצוות 0-3.7% מקצה-האמת של כל חלק (inset מכוון ל-round-cap).
+  //    calibrated:true → המנוע לא עושה snap/smooth — הנקודות משמשות כפי-שהן.
+  // ⚙️ Round 4 (4.7.2026): משיכות פר-פונט — strokesByFont:{heebo,miriam,noto}. כל פונט נמדד
+  //    על הגליף שלו-עצמו (c:\tmp\letter-trace\derive2.mjs, אותם TTF-ים כמו FONTS למטה).
+  //    אימות פר-פונט: 100% on-ink strict, קצוות ≤3.7% מקצה-האמת. buildStrokes בוחר לפי FONT_KEY.
+  const LETTERS = {
+    'ת': {
+      display:'ת',
+      // 📐 קנון: ת = 4 קווים (וואלה): (1) גג שמאל→ימין (2) רגל ימין מלמעלה→למטה
+      //    (3) רגל שמאל מלמעלה→למטה (4) כף-רגל מימין→שמאל בתחתית הרגל השמאלית.
+      calibrated:true,
+      strokesByFont:{
+       // ⚙️ heebo — Round 3 (derive.mjs, 4.7.2026)
+       heebo:[
+        // 1) גג ←  (שמאל→ימין; הקצה הימני צולל מעט — הפינה המעוגלת של Heebo)
+        [ {u:0.101,v:0.107,end:1},{u:0.196,v:0.107},{u:0.291,v:0.107},{u:0.385,v:0.107},{u:0.480,v:0.107},
+          {u:0.575,v:0.107},{u:0.670,v:0.110},{u:0.764,v:0.118},{u:0.856,v:0.140},{u:0.941,v:0.180,end:1} ],
+        // 2) רגל ימין ↓  (מקו-הגג עד למטה)
+        [ {u:0.844,v:0.130,end:1},{u:0.844,v:0.222},{u:0.854,v:0.312},{u:0.858,v:0.404},{u:0.858,v:0.496},
+          {u:0.858,v:0.587},{u:0.858,v:0.679},{u:0.858,v:0.771},{u:0.858,v:0.862},{u:0.858,v:0.954,end:1} ],
+        // 3) רגל שמאל ↓  (מקו-הגג עד קו-הכף)
+        [ {u:0.330,v:0.130,end:1},{u:0.330,v:0.212},{u:0.324,v:0.294},{u:0.313,v:0.376},{u:0.311,v:0.458},
+          {u:0.311,v:0.541},{u:0.311,v:0.623},{u:0.307,v:0.706},{u:0.296,v:0.787},{u:0.288,v:0.869,end:1} ],
+        // 4) כף רגל ←  (ימין→שמאל, מקצה הרגל השמאלית עד הבוהן)
+        [ {u:0.268,v:0.848,end:1},{u:0.233,v:0.854},{u:0.198,v:0.857},{u:0.163,v:0.860},{u:0.133,v:0.878},
+          {u:0.099,v:0.886},{u:0.064,v:0.886},{u:0.028,v:0.884,end:1} ],
+       ],
+       // ⚙️ miriam — 🔀 מוזג ל-2 משיכות רציפות (4.7.2026, עפ"י דפי-עבודה אמיתיים
+       //    ב-c:\tmp\letter-trace\refs + הכיול המקורי של מיטל): הפינות רציפות, בלי הרמת עט.
+       miriam:[
+        // 1) גג ← ואז רגל ימין ↓ בתנועה אחת (פנייה רציפה בפינה)
+        [ {u:0.026,v:0.101,end:1},{u:0.131,v:0.101},{u:0.234,v:0.107},{u:0.340,v:0.107},{u:0.442,v:0.101},
+          {u:0.548,v:0.101},{u:0.653,v:0.101},{u:0.759,v:0.101},{u:0.861,v:0.107},{u:0.890,v:0.130},
+          {u:0.890,v:0.223},{u:0.890,v:0.317},{u:0.890,v:0.410},{u:0.890,v:0.503},{u:0.890,v:0.597},
+          {u:0.890,v:0.690},{u:0.890,v:0.783},{u:0.890,v:0.877},{u:0.890,v:0.970,end:1} ],
+        // 2) רגל שמאל ↓ ואז הכף ← בתנועה אחת
+        [ {u:0.285,v:0.130,end:1},{u:0.285,v:0.216},{u:0.285,v:0.302},{u:0.285,v:0.387},{u:0.285,v:0.473},
+          {u:0.285,v:0.559},{u:0.285,v:0.645},{u:0.285,v:0.730},{u:0.285,v:0.816},{u:0.275,v:0.902},
+          {u:0.232,v:0.902},{u:0.200,v:0.902},{u:0.167,v:0.902},{u:0.135,v:0.902},{u:0.102,v:0.902},
+          {u:0.070,v:0.902},{u:0.037,v:0.902,end:1} ],
+       ],
+       // ⚙️ noto — Round 4 (derive2.mjs, 4.7.2026) · כף-רגל מתחדדת אלכסונית כמו Heebo
+       noto:[
+        // 1) גג ←  (🔧 4.7 תיקון-עין: נגמר בפינה, לא גולש לתוך הקשת של הרגל)
+        [ {u:0.052,v:0.104,end:1},{u:0.153,v:0.104},{u:0.254,v:0.107},{u:0.356,v:0.107},{u:0.457,v:0.104},
+          {u:0.558,v:0.104},{u:0.660,v:0.106},{u:0.761,v:0.115},{u:0.858,v:0.132,end:1} ],
+        // 2) רגל ימין ↓  (🔧 מתחילה במרכז הקשת, לא חותכת את הפינה)
+        [ {u:0.872,v:0.150,end:1},{u:0.874,v:0.235},{u:0.876,v:0.316},{u:0.879,v:0.409},{u:0.879,v:0.503},
+          {u:0.879,v:0.596},{u:0.879,v:0.690},{u:0.879,v:0.783},{u:0.879,v:0.877},{u:0.879,v:0.970,end:1} ],
+        // 3) רגל שמאל ↓
+        [ {u:0.293,v:0.130,end:1},{u:0.293,v:0.215},{u:0.293,v:0.301},{u:0.293,v:0.386},{u:0.293,v:0.471},
+          {u:0.293,v:0.556},{u:0.293,v:0.642},{u:0.290,v:0.727},{u:0.286,v:0.812},{u:0.283,v:0.897,end:1} ],
+        // 4) כף רגל ←
+        [ {u:0.263,v:0.897,end:1},{u:0.228,v:0.897},{u:0.194,v:0.897},{u:0.163,v:0.891},{u:0.136,v:0.889},
+          {u:0.103,v:0.896},{u:0.069,v:0.897},{u:0.035,v:0.897,end:1} ],
+       ],
+      }
+      /* 🖊️ כיול ידני של מיטל — גיבוי (stage-3-write-calibrator.html, 3.7.2026; 2 משיכות):
+      strokes:[
+        [ {u:0.178,v:0.111,end:1},{u:0.306,v:0.120},{u:0.434,v:0.129},{u:0.562,v:0.137},{u:0.690,v:0.146},
+          {u:0.818,v:0.155},{u:0.835,v:0.279},{u:0.853,v:0.403},{u:0.870,v:0.527},{u:0.864,v:0.652},
+          {u:0.859,v:0.777},{u:0.853,v:0.902,end:1} ],
+        [ {u:0.313,v:0.152,end:1},{u:0.309,v:0.242},{u:0.306,v:0.332},{u:0.302,v:0.422},{u:0.299,v:0.512},
+          {u:0.295,v:0.602},{u:0.292,v:0.692},{u:0.288,v:0.782},{u:0.246,v:0.862},{u:0.160,v:0.894},
+          {u:0.074,v:0.926,end:1} ],
+      ] */
+    },
+    'מ': {
+      display:'מ',
+      // 🔀 שילוב (מיטל, 4.7.2026): מ' מגיעה מנוטו — למרים אין חוטם אמיתי (רק זיז שטוח).
+      fontKey:'noto',
+      // 📐 קנון: מ = 4 קווים (וואלה): (1) גג שמאל→ימין (2) החוטם השמאלי-עליון עוֹלֶה
+      //    מלמטה→למעלה — החריג הקנוני היחיד לכלל "תמיד מלמעלה למטה" (3) רגל שמאל
+      //    אלכסונית מלמעלה→למטה (4) רגל ימין מלמעלה→למטה + הבסיס מתעקל שמאלה ונעצר
+      //    באמצע הרוחב (פתח האות). ⚠️ שיוך משיכה 2 לחוטם = פרשנות (ראו דוח Round 3).
+      calibrated:true,
+      strokesByFont:{
+       // ⚙️ heebo — Round 3 (derive.mjs, 4.7.2026) · חוטם = ספייק יורד עם חוד חופשי
+       heebo:[
+        // 1) גג ←  (שמאל→ימין, מימין לחוטם)
+        [ {u:0.115,v:0.146,end:1},{u:0.206,v:0.133},{u:0.298,v:0.130},{u:0.390,v:0.125},{u:0.483,v:0.122},
+          {u:0.574,v:0.113},{u:0.664,v:0.131},{u:0.756,v:0.144},{u:0.844,v:0.169},{u:0.925,v:0.211,end:1} ],
+        // 2) חוטם ↑  (עולה! מהחוד התחתון אל קצה-הגג השמאלי — החריג הקנוני)
+        [ {u:0.085,v:0.260,end:1},{u:0.080,v:0.239},{u:0.075,v:0.218},{u:0.069,v:0.197},{u:0.059,v:0.178},
+          {u:0.052,v:0.157},{u:0.045,v:0.137},{u:0.038,v:0.116,end:1} ],
+        // 3) רגל שמאל ↓  (אלכסון ארוך, מקו-הגג עד למטה)
+        [ {u:0.299,v:0.160,end:1},{u:0.299,v:0.251},{u:0.282,v:0.339},{u:0.258,v:0.427},{u:0.247,v:0.517},
+          {u:0.237,v:0.608},{u:0.226,v:0.698},{u:0.216,v:0.789},{u:0.206,v:0.880},{u:0.196,v:0.970,end:1} ],
+        // 4) רגל ימין ↓ + בסיס ←  (יורד ואז מתעקל שמאלה עד קצה-הבסיס — פתח האות נשאר פתוח)
+        [ {u:0.830,v:0.160,end:1},{u:0.830,v:0.237},{u:0.834,v:0.313},{u:0.849,v:0.388},{u:0.852,v:0.465},
+          {u:0.852,v:0.541},{u:0.852,v:0.618},{u:0.852,v:0.694},{u:0.840,v:0.767},{u:0.784,v:0.823},
+          {u:0.728,v:0.880},{u:0.651,v:0.894},{u:0.568,v:0.894,end:1} ],
+       ],
+       // ⚙️ miriam — Round 4 (derive2.mjs, 4.7.2026) · ⚠️ במרים אין ספייק: החוטם = זיז-שמאלי
+       //    שטוח של הגג המרובע, ולכן משיכה 2 היא מיני-קו אנכי עולה בתוך עובי הזיז (v 0.19→0.05).
+       miriam:[
+        // 1) גג ←  (🔧 4.7 תיקון-עין: קו ישר — בלי השקע בצומת ובלי הזנב שגולש לפינה)
+        [ {u:0.160,v:0.112,end:1},{u:0.260,v:0.111},{u:0.360,v:0.109},{u:0.460,v:0.107},{u:0.560,v:0.105},
+          {u:0.660,v:0.108},{u:0.760,v:0.116},{u:0.850,v:0.128,end:1} ],
+        // 2) חוטם ↑  (עולה! מיני-קו אנכי בזיז השמאלי · 🔧 קוצר פנימה)
+        [ {u:0.068,v:0.175,end:1},{u:0.068,v:0.155},{u:0.068,v:0.135},{u:0.068,v:0.115},{u:0.068,v:0.095},
+          {u:0.068,v:0.072,end:1} ],
+        // 3) רגל שמאל ↓  (כמעט אנכית — מרים מרובעת)
+        [ {u:0.247,v:0.160,end:1},{u:0.247,v:0.250},{u:0.239,v:0.340},{u:0.235,v:0.429},{u:0.235,v:0.520},
+          {u:0.235,v:0.610},{u:0.235,v:0.700},{u:0.235,v:0.790},{u:0.235,v:0.880},{u:0.235,v:0.970,end:1} ],
+        // 4) רגל ימין ↓ + בסיס ←
+        [ {u:0.880,v:0.160,end:1},{u:0.880,v:0.243},{u:0.885,v:0.327},{u:0.887,v:0.410},{u:0.887,v:0.493},
+          {u:0.887,v:0.577},{u:0.887,v:0.660},{u:0.887,v:0.744},{u:0.870,v:0.826},{u:0.802,v:0.874},
+          {u:0.715,v:0.901},{u:0.621,v:0.902},{u:0.527,v:0.901,end:1} ],
+       ],
+       // 🖊️ noto — מבנה של מיטל (4.7.2026, צוירה בכלי ההדגמה, נקודות הוצמדו למדיאל):
+       //    (1) מתחתית האלכסון השמאלי ↗ עולים, מתגלגלים על הגג ← רגל ימין ↓ בסיס ← — תנועה אחת גדולה.
+       //    (2) חוטם ↓ — מהקצה העליון-שמאלי יורד אל הצומת.
+       noto:[
+        // 1) אלכסון עולה ↗ → גג ← → רגל ימין ↓ → בסיס ← — מבנה של מיטל.
+        //    נקודות = snake refinement על שדה-מרחק (mem-snake.mjs, 4.7.2026):
+        //    כל נקודה על רכס מרכז-הקו האמיתי, 0 יציאות-דיו לאורך כל הקטעים.
+        [ {u:0.156,v:0.960,end:1},{u:0.156,v:0.909},{u:0.167,v:0.874},{u:0.177,v:0.839},{u:0.184,v:0.800},
+          {u:0.191,v:0.760},{u:0.198,v:0.720},{u:0.205,v:0.680},{u:0.212,v:0.640},{u:0.219,v:0.600},
+          {u:0.226,v:0.560},{u:0.232,v:0.520},{u:0.239,v:0.480},{u:0.245,v:0.440},{u:0.248,v:0.400},
+          {u:0.252,v:0.372},{u:0.274,v:0.346},{u:0.323,v:0.309},{u:0.358,v:0.261},{u:0.384,v:0.219},
+          {u:0.408,v:0.187},{u:0.436,v:0.162},{u:0.468,v:0.143},{u:0.502,v:0.125},{u:0.540,v:0.111},
+          {u:0.580,v:0.107},{u:0.621,v:0.108},{u:0.662,v:0.116},{u:0.702,v:0.126},{u:0.738,v:0.144},
+          {u:0.769,v:0.168},{u:0.797,v:0.197},{u:0.819,v:0.230},{u:0.837,v:0.265},{u:0.852,v:0.302},
+          {u:0.864,v:0.340},{u:0.873,v:0.380},{u:0.879,v:0.420},{u:0.880,v:0.460},{u:0.880,v:0.500},
+          {u:0.879,v:0.540},{u:0.876,v:0.581},{u:0.868,v:0.622},{u:0.856,v:0.664},{u:0.841,v:0.704},
+          {u:0.823,v:0.743},{u:0.801,v:0.780},{u:0.774,v:0.813},{u:0.744,v:0.841},{u:0.709,v:0.863},
+          {u:0.672,v:0.878},{u:0.635,v:0.887},{u:0.601,v:0.894},{u:0.567,v:0.897},{u:0.533,v:0.902},
+          {u:0.497,v:0.907},{u:0.450,v:0.897,end:1} ],
+        // 2) חוטם ↓ (snake, מהחוד אל הצומת)
+        [ {u:0.131,v:0.060,end:1},{u:0.133,v:0.105},{u:0.150,v:0.140},{u:0.166,v:0.178},{u:0.178,v:0.214},
+          {u:0.190,v:0.248,end:1} ],
+       ],
+      }
+      /* 🖊️ כיול ידני של מיטל — גיבוי (3.7.2026; 2 משיכות):
+      strokes:[
+        [ {u:0.181,v:0.101,end:1},{u:0.333,v:0.108},{u:0.486,v:0.115},{u:0.638,v:0.122},{u:0.790,v:0.129},
+          {u:0.822,v:0.250},{u:0.834,v:0.391},{u:0.846,v:0.531},{u:0.858,v:0.672},{u:0.870,v:0.813},
+          {u:0.766,v:0.883},{u:0.614,v:0.875,end:1} ],
+        [ {u:0.312,v:0.129,end:1},{u:0.299,v:0.210},{u:0.285,v:0.290},{u:0.272,v:0.371},{u:0.259,v:0.451},
+          {u:0.245,v:0.532},{u:0.232,v:0.612},{u:0.219,v:0.693},{u:0.205,v:0.773},{u:0.192,v:0.854,end:1} ],
+      ] */
+    },
+    'ר': {
+      display:'ר',
+      // 📐 קנון: ר = 2 קווים (וואלה): (1) גג שמאל→ימין (2) רגל ימין מלמעלה→למטה.
+      //    לא קו אחד רציף! מרימים את העיפרון בפינה.
+      calibrated:true,
+      strokesByFont:{
+       // ⚙️ heebo — Round 3 (derive.mjs, 4.7.2026)
+       heebo:[
+        // 1) גג ←  (שמאל→ימין)
+        [ {u:0.026,v:0.107,end:1},{u:0.130,v:0.107},{u:0.234,v:0.107},{u:0.337,v:0.107},{u:0.441,v:0.108},
+          {u:0.545,v:0.110},{u:0.648,v:0.117},{u:0.750,v:0.131},{u:0.848,v:0.155},{u:0.936,v:0.193,end:1} ],
+        // 2) רגל ימין ↓  (מקו-הגג עד למטה)
+        [ {u:0.783,v:0.130,end:1},{u:0.783,v:0.224},{u:0.800,v:0.315},{u:0.803,v:0.409},{u:0.803,v:0.502},
+          {u:0.803,v:0.596},{u:0.803,v:0.689},{u:0.803,v:0.783},{u:0.803,v:0.876},{u:0.803,v:0.970,end:1} ],
+       ],
+       // ⚙️ miriam — 🔀 מוזג למשיכה אחת רציפה (4.7.2026, עפ"י דפי-עבודה + הכיול המקורי של מיטל)
+       miriam:[
+        // 1) גג ← ואז רגל ↓ בתנועה אחת רציפה (בלי הרמת עט בפינה)
+        [ {u:0.026,v:0.101,end:1},{u:0.131,v:0.101},{u:0.236,v:0.101},{u:0.341,v:0.101},{u:0.446,v:0.101},
+          {u:0.552,v:0.101},{u:0.657,v:0.101},{u:0.758,v:0.107},{u:0.852,v:0.130},{u:0.852,v:0.223},
+          {u:0.852,v:0.317},{u:0.852,v:0.410},{u:0.852,v:0.503},{u:0.852,v:0.597},{u:0.852,v:0.690},
+          {u:0.852,v:0.783},{u:0.852,v:0.877},{u:0.852,v:0.970,end:1} ],
+       ],
+       // ⚙️ noto — Round 4 (derive2.mjs, 4.7.2026)
+       noto:[
+        // 1) גג ←
+        [ {u:0.028,v:0.129,end:1},{u:0.108,v:0.104},{u:0.214,v:0.104},{u:0.320,v:0.104},{u:0.427,v:0.104},
+          {u:0.533,v:0.107},{u:0.639,v:0.113},{u:0.744,v:0.124},{u:0.846,v:0.145},{u:0.938,v:0.184,end:1} ],
+        // 2) רגל ימין ↓
+        [ {u:0.811,v:0.130,end:1},{u:0.811,v:0.223},{u:0.825,v:0.316},{u:0.828,v:0.409},{u:0.828,v:0.503},
+          {u:0.828,v:0.596},{u:0.828,v:0.690},{u:0.828,v:0.783},{u:0.828,v:0.877},{u:0.828,v:0.970,end:1} ],
+       ],
+      }
+      /* 🖊️ כיול ידני של מיטל — גיבוי (3.7.2026; משיכה אחת רציפה):
+      strokes:[
+        [ {u:0.130,v:0.106,end:1},{u:0.287,v:0.118},{u:0.444,v:0.129},{u:0.601,v:0.141},{u:0.757,v:0.153},
+          {u:0.804,v:0.261},{u:0.798,v:0.373},{u:0.792,v:0.486},{u:0.785,v:0.599},{u:0.779,v:0.712},
+          {u:0.773,v:0.824},{u:0.767,v:0.937,end:1} ],
+      ] */
+    },
+  };
+
+  const R = 400, INK_A = 40, MARGIN = 0.14; // margin = חלק מהצלע שנשאר ריק סביב הגליף
+  // ===== מודל הגליף: A/B בין שני מועמדים (מחקר גופנים 4.7.2026) =====
+  // ?font=miriam (ברירת מחדל · מרים ליברה 700 — שלד חוברות-לימוד, עובי אחיד)
+  // ?font=noto   (נוטו סאנס עברית 700 — ניטרלי, מ' קאנונית יותר)
+  // ?font=heebo  (הישן — לשם השוואה)
+  // ⚠️ המשיכות ב-LETTERS נגזרות פר-פונט (strokesByFont) — לכל גליף עמוד-שדרה משלו.
+  const FONTS = {
+    miriam: { url:'https://fonts.gstatic.com/s/miriamlibre/v19/DdT0798HsHwubBAqfkcBTL_1a7sPlXcE8PJjHzTwk9s.ttf', label:'מרים ליברה 700' },
+    noto:   { url:'https://fonts.gstatic.com/s/notosanshebrew/v50/or3HQ7v33eiDljA1IufXTtVf7V6RvEEdhQlk0LlGxCyaeNKYZC0sqk3xXGiXkI2tog.ttf', label:'נוטו סאנס 700' },
+    heebo:  { url:'https://fonts.gstatic.com/s/heebo/v28/NGSpv5_NC0k9P_v6ZUCbLRAHxK1ECSuccg.ttf', label:'Heebo 800 (ישן)' },
+  };
+  // ===== שילוב (הכרעת מיטל 4.7.2026): מרים ליברה כבסיס (הישרה, כמו חוברות),
+  // אבל מ' מגיעה מנוטו (למרים אין חוטם אמיתי). פונט-פר-אות דרך cfg.fontKey.
+  // ?font=X מפורש עוקף את השילוב (לצורכי השוואה/דיבאג בלבד).
+  const EXPLICIT_FONT = (new URLSearchParams(location.search).get('font')||'').toLowerCase();
+  const FONT_KEY = FONTS[EXPLICIT_FONT] ? EXPLICIT_FONT : 'miriam';
+  let curFontKey = FONT_KEY;   // הפונט האפקטיבי של האות הנוכחית (נקבע ב-buildLetter)
+
+  const svg=document.getElementById('svg'), cpLayer=document.getElementById('cpLayer'),
+        inkLayer=document.getElementById('inkLayer'), dbgLayer=document.getElementById('dbgLayer'),
+        ghost=document.getElementById('ghost'), fill=document.getElementById('fill'),
+        star=document.getElementById('star'), guide=document.getElementById('guide'),
+        noni=document.getElementById('noni'), meter=document.getElementById('meter'),
+        instrBubble=document.getElementById('instrBubble'), instrText=document.getElementById('instrText');
+  const SVGNS='http://www.w3.org/2000/svg';
+  const DEBUG=/[?&]debug=1/.test(location.search);
+
+  let curLetter='ת';
+  let gbox=null;             // bbox הגליף במרחב SVG {x,y,w,h} — מקור יחיד לשתי השכבות
+  let mask=null;             // Uint8Array R*R — מסכת דיו לפי אותו path
+  let strokes=[];            // [{samples:[{u,v,x,y}]}]  אחרי densify+snap
+  let audioCtx=null;
+
+  // מצב ריצה
+  let strokeIdx=0, cpIdx=0, drawing=false, curInk=null, curInkBad=false, inkPts=[];
+  let moves=0, inside=0, offEvents=0, dirWarns=0, lifts=0;
+  let strokeMisses=0, forceAccepts=0;   // שיפוט-בהרמה: פספוסים למשיכה + קבלות-בכוח
+  let letterStruggles=0;                // כישלונות רצופים באות → ירידת-שלב אוטומטית
+  let mode='demo';           // 'demo' = נוני מראה · 'write' = הילד כותב
+  let demoToken=0;           // ביטול הדגמה רצה (החלפת אות באמצע)
+
+  // ===== רמות תמיכה (fading scaffolds) =====
+  // 1=מלאה (הדגמה+קו מקווקו+נקודות+כוכב) · 2=חלקית (כוכב+מספרים, בלי קו)
+  // 3=מזערית (צל קלוש+נקודת התחלה) · 4=מהזיכרון (ריק לגמרי+הנחיה קולית)
+  let level=1;
+  const AUDIO_KEY={'ת':'tav','מ':'mem','ר':'resh'};
+  const LETTER_NAME={'ת':'תָו','מ':'מֵם','ר':'רֵישׁ'};
+  function setLevel(lv){
+    level=lv;
+    document.body.classList.toggle('lvl3', lv===3);
+    document.body.classList.toggle('lvl4', lv===4);
+    document.querySelectorAll('#levelChips button').forEach(b=>{
+      b.classList.toggle('active', +b.dataset.lv===lv);
+      b.classList.toggle('done',   +b.dataset.lv<lv);   // שלבים שכבר עברנו באות הזו
+    });
+  }
+  // הנחיה קולית (רמה 4): MP3 AvriNeural; אם חסר — fallback טקסטואלי עם האות בבועה
+  let curAudio=null;
+  function speakInstr(letter){
+    return new Promise(res=>{
+      try{
+        if(curAudio){ curAudio.pause(); curAudio=null; }
+        const a=new Audio(`assets/audio/write/write-${AUDIO_KEY[letter]}.mp3`);
+        curAudio=a;
+        a.onended=()=>res(true);
+        a.onerror=()=>res(false);
+        a.play().catch(()=>res(false));
+      }catch(e){ res(false); }
+    });
+  }
+
+  // ---------- אודיו ----------
+  function chime(f,d){ try{
+    audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.type='sine'; o.frequency.value=f; g.gain.value=.0001; o.connect(g); g.connect(audioCtx.destination);
+    const t=audioCtx.currentTime; g.gain.exponentialRampToValueAtTime(.16,t+.02); g.gain.exponentialRampToValueAtTime(.0001,t+d);
+    o.start(t); o.stop(t+d+.02);
+  }catch(e){} }
+
+  // ---------- טעינת פונטים (cache פר-מפתח — נדרש לשילוב פונט-פר-אות) ----------
+  const fontCache={};
+  async function loadFontFor(key){
+    if(fontCache[key]) return fontCache[key];
+    if(!window.opentype) throw new Error('opentype missing');
+    const url=(FONTS[key]||FONTS.heebo).url;
+    const buf = await fetch(url).then(r=>{ if(!r.ok) throw new Error('font http '+r.status); return r.arrayBuffer(); });
+    fontCache[key] = opentype.parse(buf);
+    return fontCache[key];
+  }
+
+  /* ============================================================
+     בניית האות — מרחב יחיד
+     1) opentype.getPath של הגליף בגודל שרירותי (fontSize=100 ב-em).
+     2) getBoundingBox → מרכוז+התאמה ל-100×100 עם margin ⇒ טרנספורם T.
+     3) T מייצר: (a) d ל-ghost/fill  (b) צריבה ל-canvas mask.
+     4) המשיכות ממופות לפי gbox (אותו bbox) → snap למרכז הדיו.
+     ============================================================ */
+  async function buildLetter(letter){
+    curLetter = letter;
+    const cfg = LETTERS[letter];
+    // פונט אפקטיבי: השילוב (cfg.fontKey) גובר, אלא אם המשתמש כפה ?font=X מפורש
+    curFontKey = EXPLICIT_FONT ? FONT_KEY : (cfg.fontKey || FONT_KEY);
+    let font=null;
+    try{ font = await loadFontFor(curFontKey); }
+    catch(e){ console.warn('opentype/font נכשל → fallback ל-<text>:', e.message);
+      try{ await document.fonts.load('800 100px Heebo'); await document.fonts.ready; }catch(_){} }
+    // -- מצב עיקרי: opentype vector --
+    if(font){
+      const fontSize = 100; // em נומינלי; נתקנן מיד לפי bbox
+      const p = font.getPath(cfg.display, 0, 0, fontSize);
+      const bb = p.getBoundingBox(); // {x1,y1,x2,y2} במרחב הפונט (y למטה חיובי כי getPath כבר הופך)
+      const gw = bb.x2-bb.x1, gh = bb.y2-bb.y1;
+      const avail = 100*(1-2*MARGIN);
+      const s = Math.min(avail/gw, avail/gh);          // scale אחיד
+      const tx = 50 - (bb.x1+gw/2)*s;                  // מרכוז אופקי
+      const ty = 50 - (bb.y1+gh/2)*s;                  // מרכוז אנכי
+      const T = (x,y)=>[x*s+tx, y*s+ty];               // fontUnits → SVG(0..100)
+
+      // (a) path לתצוגה — אותה גיאומטריה בדיוק
+      const dStr = pathToSvgD(p, s, tx, ty);
+      ghost.setAttribute('d', dStr); fill.setAttribute('d', dStr);
+      // gbox = ה-bbox המשותף (מקור יחיד)
+      const [gx1,gy1]=T(bb.x1,bb.y1), [gx2,gy2]=T(bb.x2,bb.y2);
+      gbox = { x:gx1, y:gy1, w:gx2-gx1, h:gy2-gy1 };
+
+      // (b) צריבת אותו path ל-canvas ⇒ מסכה מיושרת-פיקסל
+      rasterFromPath(p, s, tx, ty);
+    } else {
+      // -- fallback: <text> יחיד (עדיין מקור אחד, פחות מדויק) --
+      buildLetterFallback(letter);
+    }
+    buildStrokes();
+    // רמה 1: קודם הדגמה. רמות 2-4: ישר לכתיבה (הדגמה רק בבקשה — "לראות שוב").
+    if(level===1) startDemo();
+    else beginWrite();
+  }
+
+  // כניסה ישירה לכתיבה (רמות 2-4)
+  async function beginWrite(){
+    demoToken++;                                     // מבטל הדגמה שרצה
+    pencil.style.display='none';
+    document.body.classList.remove('demo-showing');
+    l4Strokes=[]; l4Cur=null; clearTimeout(l4Timer); // איפוס מצב כתיבה-חופשית (שלב 4)
+    forceAccepts=0; smoothPrev=null;                 // איפוס פר-ניסיון
+    mode='write';
+    document.getElementById('replayBtn').classList.add('show');
+    noni.src='assets/noni-idle.png';
+    if(level===4){
+      setInstr('הַקְשִׁיבוּ 🔊 וְכִתְבוּ אֶת הָאוֹת מֵהַזִּכָּרוֹן');
+      const ok=await speakInstr(curLetter);
+      if(!ok) setInstr('כִּתְבוּ אֶת הָאוֹת <strong>'+curLetter+'</strong> מֵהַזִּכָּרוֹן');  // fallback כשאין MP3
+    } else if(level===3){
+      setInstr('כִּתְבוּ אֶת הָאוֹת <strong>'+curLetter+'</strong> — כִּמְעַט לְבַד!');
+    } else {
+      setInstr('כִּתְבוּ אֶת הָאוֹת <strong>'+curLetter+'</strong> — הַתְחִילוּ מֵהַכּוֹכָב');
+    }
+    renderStroke();
+  }
+
+  /* ============================================================
+     שלב א' · "נוֹנִי מַרְאָה" — העיפרון מצייר את האות משיכה-משיכה
+     ============================================================ */
+  const demoLayer=document.getElementById('demoLayer');
+  const pencil=document.getElementById('pencil');
+  const DEMO_SPEED=26;         // יחידות SVG לשנייה
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+  async function startDemo(){
+    const token=++demoToken;
+    mode='demo';
+    document.body.classList.add('demo-showing');   // גם ברמות 3-4 רואים את האות בזמן הדגמה
+    document.getElementById('replayBtn').classList.remove('show');
+    // ניקוי שכבות כתיבה
+    cpLayer.innerHTML=''; inkLayer.innerHTML=''; guide.setAttribute('d','');
+    star.style.display='none'; demoLayer.innerHTML='';
+    noni.src='assets/noni-thinking.png';
+    setInstr('תִּרְאוּ אֵיךְ כּוֹתְבִים אֶת הָאוֹת <strong>'+curLetter+'</strong> 👀');
+    if(DEBUG) drawDebug();
+    await sleep(500); if(token!==demoToken) return;
+
+    for(let si=0; si<strokes.length; si++){
+      if(token!==demoToken) return;
+      const samples=strokes[si].samples;
+      // תג מספר משיכה ליד נקודת ההתחלה
+      const badge=document.createElementNS(SVGNS,'g'); badge.setAttribute('class','stroke-num');
+      const bc=document.createElementNS(SVGNS,'circle');
+      bc.setAttribute('cx',samples[0].x-5); bc.setAttribute('cy',samples[0].y-5); bc.setAttribute('r',3);
+      const bt=document.createElementNS(SVGNS,'text');
+      bt.setAttribute('x',samples[0].x-5); bt.setAttribute('y',samples[0].y-5); bt.textContent=si+1;
+      badge.appendChild(bc); badge.appendChild(bt); demoLayer.appendChild(badge);
+      chime(587+si*100,.12);
+      // דיו הדגמה שנמשך אחרי העיפרון
+      const ink=document.createElementNS(SVGNS,'polyline'); ink.setAttribute('class','ink-demo');
+      ink.setAttribute('points',''); demoLayer.appendChild(ink);
+      // אורכי-קשת מצטברים
+      const cum=[0]; for(let i=1;i<samples.length;i++)
+        cum.push(cum[i-1]+Math.hypot(samples[i].x-samples[i-1].x, samples[i].y-samples[i-1].y));
+      const total=cum[cum.length-1];
+      pencil.style.display=''; pencil.classList.remove('lifted');
+      // אנימציה לאורך המסלול
+      await new Promise(res=>{
+        const t0=performance.now(); let j=0; const pts=[];
+        function frame(now){
+          if(token!==demoToken){ res(); return; }
+          const d=Math.min(total, (now-t0)/1000*DEMO_SPEED);
+          while(j<cum.length-1 && cum[j+1]<=d){ j++; pts.push(`${samples[j].x},${samples[j].y}`); }
+          // אינטרפולציה לנקודת העיפרון
+          let P;
+          if(j>=cum.length-1) P=samples[samples.length-1];
+          else { const t=(d-cum[j])/((cum[j+1]-cum[j])||1e-6);
+            P={ x:samples[j].x+(samples[j+1].x-samples[j].x)*t, y:samples[j].y+(samples[j+1].y-samples[j].y)*t }; }
+          ink.setAttribute('points', pts.concat([`${P.x},${P.y}`]).join(' '));
+          pencil.setAttribute('transform',`translate(${P.x},${P.y})`);
+          if(d>=total){ res(); } else requestAnimationFrame(frame);
+        }
+        requestAnimationFrame(frame);
+      });
+      if(token!==demoToken) return;
+      chime(784,.14);
+      // בין משיכות: מרימים עיפרון
+      if(si<strokes.length-1){
+        pencil.classList.add('lifted');
+        setInstr('מְרִימִים אֶת הָעִפָּרוֹן ✋ וּמַתְחִילִים קַו חָדָשׁ');
+        await sleep(900); if(token!==demoToken) return;
+      }
+    }
+    pencil.style.display='none';
+    noni.src='assets/noni-happy.png';
+    setInstr('רְאִיתֶם? עַכְשָׁו הַתּוֹר שֶׁלָּכֶם! ✍️');
+    await sleep(1100); if(token!==demoToken) return;
+    endDemo();
+  }
+
+  function endDemo(){
+    // דהיית דיו-ההדגמה והמעבר לכתיבה (בהתאם לרמת התמיכה)
+    document.body.classList.remove('demo-showing');
+    demoLayer.classList.add('demo-fade');
+    setTimeout(()=>{ demoLayer.innerHTML=''; demoLayer.classList.remove('demo-fade'); }, 650);
+    beginWrite();
+  }
+
+  // opentype path → מחרוזת d ב-SVG, עם scale+translate ידני (בלי getPath מחדש)
+  function pathToSvgD(p, s, tx, ty){
+    let d='';
+    for(const c of p.commands){
+      const X=(x)=>+(x*s+tx).toFixed(3), Y=(y)=>+(y*s+ty).toFixed(3);
+      if(c.type==='M') d+=`M${X(c.x)} ${Y(c.y)}`;
+      else if(c.type==='L') d+=`L${X(c.x)} ${Y(c.y)}`;
+      else if(c.type==='C') d+=`C${X(c.x1)} ${Y(c.y1)} ${X(c.x2)} ${Y(c.y2)} ${X(c.x)} ${Y(c.y)}`;
+      else if(c.type==='Q') d+=`Q${X(c.x1)} ${Y(c.y1)} ${X(c.x)} ${Y(c.y)}`;
+      else if(c.type==='Z') d+='Z';
+    }
+    return d;
+  }
+
+  // צריבת ה-path ל-canvas בקנה-מידה R/100 (אותו טרנספורם בדיוק, כפול R/100)
+  function rasterFromPath(p, s, tx, ty){
+    const cv=document.getElementById('hidden'), c=cv.getContext('2d');
+    c.clearRect(0,0,R,R);
+    const k=R/100;                                   // SVG(0..100) → canvas px
+    c.beginPath();
+    for(const cmd of p.commands){
+      const X=x=>(x*s+tx)*k, Y=y=>(y*s+ty)*k;
+      if(cmd.type==='M') c.moveTo(X(cmd.x),Y(cmd.y));
+      else if(cmd.type==='L') c.lineTo(X(cmd.x),Y(cmd.y));
+      else if(cmd.type==='C') c.bezierCurveTo(X(cmd.x1),Y(cmd.y1),X(cmd.x2),Y(cmd.y2),X(cmd.x),Y(cmd.y));
+      else if(cmd.type==='Q') c.quadraticCurveTo(X(cmd.x1),Y(cmd.y1),X(cmd.x),Y(cmd.y));
+      else if(cmd.type==='Z') c.closePath();
+    }
+    c.fillStyle='#000'; c.fill('nonzero');
+    readMask(c);
+  }
+
+  function readMask(c){
+    const data=c.getImageData(0,0,R,R).data;
+    mask=new Uint8Array(R*R);
+    for(let i=0,j=3;i<R*R;i++,j+=4) if(data[j]>INK_A) mask[i]=1;
+  }
+
+  // ---------- fallback: רינדור <text> יחיד ל-ghost + לאותה מסכה ----------
+  function buildLetterFallback(letter){
+    // מציגים דרך <text> על ה-SVG ומודדים getBBox; המסכה נצרבת מ*אותו* גודל יחסי.
+    // יוצרים text זמני כדי למדוד.
+    const t=document.createElementNS(SVGNS,'text');
+    t.setAttribute('x',50); t.setAttribute('y',53); t.setAttribute('font-size',72);
+    t.setAttribute('font-family','Heebo'); t.setAttribute('font-weight',800);
+    t.setAttribute('text-anchor','middle'); t.setAttribute('dominant-baseline','central');
+    t.textContent=letter; svg.appendChild(t);
+    const bb=t.getBBox(); svg.removeChild(t);
+    gbox={x:bb.x,y:bb.y,w:bb.width,h:bb.height};
+    // ghost/fill כ-text (מציגים דרך שכבת path ריקה → נחליף לזמן-fallback ב-text ממשי)
+    ensureFallbackText(letter);
+    // מסכה: canvas עם אותו יחס גודל-לגובה-הקלף. משתמשים ב-getBBox כמקור-אמת לגודל.
+    const cv=document.getElementById('hidden'), c=cv.getContext('2d');
+    c.clearRect(0,0,R,R); c.fillStyle='#000'; c.textAlign='center'; c.textBaseline='middle';
+    // מכיילים font-size של ה-canvas כך שרוחב הדיו יתאים ל-gbox.w×(R/100):
+    let fs=Math.round(R*0.5); c.font=`800 ${fs}px Heebo`;
+    const targetW=gbox.w*(R/100);
+    const m=c.measureText(letter); const curW=m.width||targetW;
+    fs=Math.max(10, Math.round(fs*targetW/curW)); c.font=`800 ${fs}px Heebo`;
+    const cx=(gbox.x+gbox.w/2)*(R/100), cy=(gbox.y+gbox.h/2)*(R/100);
+    c.fillText(letter, cx, cy);
+    readMask(c);
+  }
+  let fbText=null;
+  function ensureFallbackText(letter){
+    ghost.setAttribute('d',''); fill.setAttribute('d','');
+    if(!fbText){ fbText=document.createElementNS(SVGNS,'text');
+      fbText.setAttribute('x',50); fbText.setAttribute('y',53); fbText.setAttribute('font-size',72);
+      fbText.setAttribute('font-family','Heebo'); fbText.setAttribute('font-weight',800);
+      fbText.setAttribute('text-anchor','middle'); fbText.setAttribute('dominant-baseline','central');
+      fbText.setAttribute('class','ghost-glyph');   // כך רמות 3-4 (עמעום/הסתרה) חלות גם ב-fallback
+      svg.insertBefore(fbText, ghost); }
+    fbText.textContent=letter;
+  }
+
+  // ---------- containment ----------
+  const isInk=(px,py)=>(px>=0&&py>=0&&px<R&&py<R&&mask[py*R+px]===1);
+  const svgToPx=(x,y)=>[Math.round(x*R/100), Math.round(y*R/100)];
+  // 🤗 כיול-סלחנות (4.7.2026, עפ"י מחקר: Hanzi Writer + מחקרי גיל 5-6 + ריפוי-בעיסוק):
+  // מסדרון ~2.5-3× רוחב הקו · עוגנים 11 · שיפוט רק בהרמת-אצבע · כיוון=פידבק, לא פסילה.
+  const CORRIDOR_TOL = 0.06;   // היה 0.035 — סובלנות סביב הדיו (יח' יחסיות ל-R)
+  const CP_R = 11;             // רדיוס עוגן (היה 7)
+  const END_R = 8;             // "הגיע לסוף" — קפדני: חייבים למתוח את הקו עד קצה הצל (מיטל 4.7)
+  const L4_LENIENCY = 1.4;     // מקדם-גיל לשלב 4 (מזהים: 94% מבוגרים→64% בני 5)
+  function onLetterSvg(x,y){
+    const [px,py]=svgToPx(x,y);
+    if(isInk(px,py)) return true;
+    const s=Math.round(R*CORRIDOR_TOL);
+    for(let a=0;a<8;a++){ const ang=a*Math.PI/4;
+      if(isInk(px+Math.round(Math.cos(ang)*s), py+Math.round(Math.sin(ang)*s))) return true; }
+    return false;
+  }
+  // snap: מזיז נקודת-משיכה אל מרכז-הדיו האמיתי (מרכוז perpendicular על הקו).
+  // ⚠️ Round 2: קצוות (isEnd) מוחרגים ממרכוז-הממוצע. הבאג הקודם: הממוצע סביב פיקסל-הקצה
+  //    מָשַׁךְ אותו פנימה אל מרכז-הגוש (למשל עוקץ ת: הקצה האמיתי u≈0.03 נמשך ל-u≈0.16).
+  //    עכשיו נקודת-קצה שנמצאת על דיו נשארת במקומה (הקצה-האמת); אם היא בדיוק מחוץ לדיו,
+  //    מקפיצים אותה למינימום הדרוש כדי להיכנס — בלי למשוך פנימה אל המרכז.
+  function snapSvg(x,y,isEnd){
+    const [px,py]=svgToPx(x,y);
+    if(isEnd){
+      if(isInk(px,py)) return [x,y];                 // הקצה כבר על הדיו → שמור על קצה-האמת
+      for(let r=1;r<=Math.round(R*0.05);r++){        // מחוץ לדיו → הכנסה מינימלית בלבד
+        for(let a=0;a<16;a++){ const ang=a*Math.PI/8;
+          const X=px+Math.round(Math.cos(ang)*r), Y=py+Math.round(Math.sin(ang)*r);
+          if(isInk(X,Y)) return [X/(R/100), Y/(R/100)]; }
+      }
+      return [x,y];
+    }
+    if(isInk(px,py)) { // נקודת-ביניים על דיו — מרכז לוקאלית ע"י ממוצע דיו בסביבה קטנה (spine)
+      let sx=0,sy=0,n=0,r=Math.round(R*0.03);
+      for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){ const X=px+dx,Y=py+dy;
+        if(isInk(X,Y)){ sx+=X; sy+=Y; n++; } }
+      if(n){ return [ (sx/n)/(R/100), (sy/n)/(R/100) ]; }
+      return [x,y];
+    }
+    // לא על דיו — חפש דיו קרוב ברדיוס גדל
+    for(let r=1;r<=Math.round(R*0.08);r++){
+      for(let a=0;a<16;a++){ const ang=a*Math.PI/8;
+        const X=px+Math.round(Math.cos(ang)*r), Y=py+Math.round(Math.sin(ang)*r);
+        if(isInk(X,Y)) return [X/(R/100), Y/(R/100)]; }
+    }
+    return [x,y];
+  }
+
+  // ---------- בניית משיכות: uv→svg (לפי gbox) → densify → snap → dedupe ----------
+  const uvToSvg=(u,v)=>[ gbox.x+u*gbox.w, gbox.y+v*gbox.h ];
+  function densify(pts, step){ // step ביחידות SVG · דגל end עובר לנקודה האחרונה של המקטע
+    const out=[{x:pts[0].x,y:pts[0].y,end:pts[0].end||0}];
+    for(let i=1;i<pts.length;i++){
+      const a=pts[i-1], b=pts[i]; const d=Math.hypot(b.x-a.x,b.y-a.y);
+      const n=Math.max(1,Math.round(d/step));
+      for(let k=1;k<=n;k++) out.push({x:a.x+(b.x-a.x)*k/n, y:a.y+(b.y-a.y)*k/n, end:(k===n?(b.end||0):0)});
+    }
+    return out;
+  }
+  function buildStrokes(){
+    const cfg=LETTERS[curLetter];
+    strokes = (cfg.strokesByFont[curFontKey] || cfg.strokesByFont.heebo).map(raw=>{
+      // 1) uv→svg (משמרים דגל end)
+      let pts = raw.map(p=>{ const [x,y]=uvToSvg(p.u,p.v); return {x,y,end:p.end?1:0}; });
+      pts[0].end=1; pts[pts.length-1].end=1;             // ראש+זנב תמיד קצוות
+      // 🖊️ מסלול מכויל-ידנית: WYSIWYG — densify עדין בלבד, ללא snap/smooth (הנקודות של המורָה נשמרות בדיוק)
+      if(cfg.calibrated){
+        pts = densify(pts, 2.2).map(p=>({x:p.x,y:p.y,end:p.end,u:(p.x-gbox.x)/gbox.w,v:(p.y-gbox.y)/gbox.h}));
+        return { samples: pts };
+      }
+      // 2) densify כדי שה-snap יעקוב אחרי עקמומיות (הדגל end עובר לנקודה האחרונה של כל מקטע)
+      pts = densify(pts, 2.2);
+      // 3) snap: ביניים→מרכז הדיו · קצוות→נשארים בקצה-האמת (בלי משיכה פנימה)
+      pts = pts.map((p,idx)=>{ const isEnd = p.end===1 || idx===0 || idx===pts.length-1;
+        const [x,y]=snapSvg(p.x,p.y,isEnd);
+        return {x,y,end:p.end,u:(x-gbox.x)/gbox.w,v:(y-gbox.y)/gbox.h}; });
+      // 4) smooth קל + downsample לנקודות-בקרה — ⚠️ משמרים את הקצוות המדויקים אחרי ה-smooth
+      const first={x:pts[0].x,y:pts[0].y,u:pts[0].u,v:pts[0].v};
+      const last ={x:pts[pts.length-1].x,y:pts[pts.length-1].y,u:pts[pts.length-1].u,v:pts[pts.length-1].v};
+      pts = smooth(pts,2);
+      pts[0]=first; pts[pts.length-1]=last;              // הקצה לא נמשך פנימה ע"י ה-smooth
+      pts = downsampleByArc(pts, 4.0);
+      return { samples: pts };
+    });
+  }
+  const smooth=(pts,w)=>pts.map((_,i)=>{ let sx=0,sy=0,c=0; for(let j=-w;j<=w;j++){const k=i+j;
+    if(k>=0&&k<pts.length){sx+=pts[k].x;sy+=pts[k].y;c++;}} return {x:sx/c,y:sy/c,u:pts[i].u,v:pts[i].v}; });
+  function downsampleByArc(pts, minStep){
+    const out=[pts[0]]; let acc=0;
+    for(let i=1;i<pts.length;i++){ acc+=Math.hypot(pts[i].x-pts[i-1].x,pts[i].y-pts[i-1].y);
+      if(acc>=minStep){ out.push(pts[i]); acc=0; } }
+    if(out[out.length-1]!==pts[pts.length-1]) out.push(pts[pts.length-1]);
+    return out;
+  }
+
+  // ---------- שכבת דיבאג (?debug=1) ----------
+  function drawDebug(){
+    dbgLayer.innerHTML='';
+    if(!DEBUG) return;
+    const colors=['#1E90FF','#8E44FF','#E67E22'];
+    strokes.forEach((st,si)=>{
+      const col=colors[si%colors.length];
+      // קו המשיכה
+      const path=document.createElementNS(SVGNS,'path');
+      path.setAttribute('class','dbg-stroke'); path.setAttribute('stroke',col);
+      path.setAttribute('d','M '+st.samples.map(p=>`${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(' L '));
+      dbgLayer.appendChild(path);
+      // נקודות-בקרה
+      st.samples.forEach(p=>{ const c=document.createElementNS(SVGNS,'circle');
+        c.setAttribute('cx',p.x); c.setAttribute('cy',p.y); c.setAttribute('r',0.7);
+        c.setAttribute('fill',col); c.setAttribute('opacity','.8'); dbgLayer.appendChild(c); });
+      // נקודת התחלה מודגשת
+      const s0=st.samples[0];
+      const st0=document.createElementNS(SVGNS,'circle'); st0.setAttribute('class','dbg-start');
+      st0.setAttribute('cx',s0.x); st0.setAttribute('cy',s0.y); st0.setAttribute('r',2.4);
+      st0.setAttribute('fill',col); dbgLayer.appendChild(st0);
+      // מספר סדר המשיכה
+      const tnum=document.createElementNS(SVGNS,'text'); tnum.setAttribute('class','dbg-num');
+      tnum.setAttribute('x',s0.x-4); tnum.setAttribute('y',s0.y-3); tnum.setAttribute('fill',col);
+      tnum.textContent=(si+1); dbgLayer.appendChild(tnum);
+      // חץ כיוון בקצה
+      const e=st.samples[st.samples.length-1], pm=st.samples[Math.max(0,st.samples.length-3)];
+      const ang=Math.atan2(e.y-pm.y, e.x-pm.x);
+      const ar=document.createElementNS(SVGNS,'path'); ar.setAttribute('fill',col);
+      const A=2.6; ar.setAttribute('d',`M${e.x} ${e.y} L${e.x-A*Math.cos(ang-0.4)} ${e.y-A*Math.sin(ang-0.4)} L${e.x-A*Math.cos(ang+0.4)} ${e.y-A*Math.sin(ang+0.4)} Z`);
+      dbgLayer.appendChild(ar);
+    });
+    // דיווח כיסוי-מסכה + קצוות לקונסול (עזר-אימות בלי לראות את הרינדור)
+    let onMask=0,tot=0;
+    strokes.forEach(st=>st.samples.forEach(p=>{ tot++; if(onLetterSvg(p.x,p.y)) onMask++; }));
+    console.log(`[debug] ${curLetter}: ${onMask}/${tot} נקודות-משיכה על הדיו (${Math.round(onMask/tot*100)}%)`,
+                {strokes:strokes.length, gbox});
+    // Round 2: קצה כל משיכה ב-uv (חייב להגיע לקצה-האמת של הגליף)
+    strokes.forEach((st,si)=>{ const a=st.samples[0], b=st.samples[st.samples.length-1];
+      const toUV=p=>({u:+((p.x-gbox.x)/gbox.w).toFixed(3), v:+((p.y-gbox.y)/gbox.h).toFixed(3)});
+      console.log(`[debug]  משיכה ${si+1}: start`,toUV(a),' end',toUV(b),
+        ' start-on-ink:',onLetterSvg(a.x,a.y),' end-on-ink:',onLetterSvg(b.x,b.y)); });
+  }
+
+  // ---------- ציור המשיכה הנוכחית (מדריך) ----------
+  function renderStroke(){
+    cpLayer.innerHTML=''; cpIdx=0; curInkBad=false; strokeMisses=0;
+    const samples=strokes[strokeIdx].samples;
+    const s0=samples[0];
+    // ===== תמיכות לפי רמה =====
+    // רמה 1: קו מקווקו + נקודות + כוכב
+    if(level===1){
+      guide.setAttribute('d','M '+samples.map(p=>`${p.x} ${p.y}`).join(' L '));
+      samples.forEach((p,i)=>{ if(i%2) return;
+        const c=document.createElementNS(SVGNS,'circle'); c.setAttribute('cx',p.x); c.setAttribute('cy',p.y);
+        c.setAttribute('r',1.6); c.classList.add('cp-dot'); c.dataset.i=i; cpLayer.appendChild(c); });
+      star.setAttribute('transform',`translate(${s0.x},${s0.y})`); star.style.display='';
+    }
+    // רמה 2: כוכב + תג מספר משיכה — בלי קו ובלי נקודות
+    else if(level===2){
+      guide.setAttribute('d','');
+      star.setAttribute('transform',`translate(${s0.x},${s0.y})`); star.style.display='';
+      const badge=document.createElementNS(SVGNS,'g'); badge.setAttribute('class','stroke-num');
+      const bc=document.createElementNS(SVGNS,'circle'); bc.setAttribute('cx',s0.x-5); bc.setAttribute('cy',s0.y-5); bc.setAttribute('r',3);
+      const bt=document.createElementNS(SVGNS,'text'); bt.setAttribute('x',s0.x-5); bt.setAttribute('y',s0.y-5); bt.textContent=strokeIdx+1;
+      badge.appendChild(bc); badge.appendChild(bt); cpLayer.appendChild(badge);
+    }
+    // רמה 3: צל קלוש (CSS) + נקודת התחלה קטנה בלבד
+    else if(level===3){
+      guide.setAttribute('d',''); star.style.display='none';
+      const d=document.createElementNS(SVGNS,'circle'); d.setAttribute('class','start-dot');
+      d.setAttribute('cx',s0.x); d.setAttribute('cy',s0.y); d.setAttribute('r',2.2); cpLayer.appendChild(d);
+    }
+    // רמה 4: ריק לגמרי — שום תמיכה ויזואלית
+    else {
+      guide.setAttribute('d',''); star.style.display='none';
+    }
+    newInkRun(false);
+    if(strokeIdx===0) drawDebug(); // מציירים פעם אחת לכל אות
+  }
+  function newInkRun(bad){
+    curInk=document.createElementNS(SVGNS,'polyline');
+    curInk.setAttribute('class', bad?'ink-bad':'ink-good');
+    curInk.setAttribute('points',''); inkLayer.appendChild(curInk); inkPts=[]; curInkBad=bad;
+  }
+  function inkPush(P){ inkPts.push(`${P.x},${P.y}`); curInk.setAttribute('points', inkPts.join(' ')); }
+
+  // ---------- קלט ----------
+  function ptSvg(e){ const r=svg.getBoundingClientRect();
+    const cx=e.touches?e.touches[0].clientX:e.clientX, cy=e.touches?e.touches[0].clientY:e.clientY;
+    return { x:(cx-r.left)/r.width*100, y:(cy-r.top)/r.height*100 }; }
+  const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+
+  function setInstr(html,warn){ instrText.innerHTML=html; instrBubble.classList.toggle('warn',!!warn);
+    if(warn){ clearTimeout(setInstr._t); setInstr._t=setTimeout(()=>instrBubble.classList.remove('warn'),1200);} }
+  function showMeter(){ const a=moves?Math.round(inside/moves*100):100;
+    document.getElementById('accVal').textContent=a+'%';
+    meter.querySelector('span').textContent='דִּיּוּק: '+a+'%'; meter.classList.add('show'); }
+
+  function onDown(e){
+    if(!strokes.length || mode!=='write') return; e.preventDefault();
+    const P=ptSvg(e);
+    // ===== שלב 4: כתיבה חופשית מהזיכרון =====
+    // אין נקודת-פתיחה כפויה ואין containment — הילד כותב איפה שנוח לו,
+    // ובסוף בודקים את *הצורה* (מנורמלת מיקום+גודל) מול תבנית האות.
+    if(level===4){
+      drawing=true; l4Cur=[P]; clearTimeout(l4Timer);
+      smoothPrev={x:P.x,y:P.y};
+      newInkRun(false); inkPush(P); chime(523,.09);
+      return;
+    }
+    const s0=strokes[strokeIdx].samples[0];
+    // נקודת-התחלה = הקריטריון הקפדן ביותר (היררכיית ריפוי-בעיסוק) — אבל ברדיוס מקובל
+    // (15-20% מגובה האות ≈ 13-14 יח'), לא 9 כמו קודם.
+    const startTol = level<=2 ? 14 : 16;
+    if(dist(P,s0)>startTol){
+      if(level<=2) setInstr('הַתְחִילוּ מֵהַכּוֹכָב ⭐',true);
+      else setInstr('הַתְחִילוּ מֵהַנְּקֻדָּה הַכְּתֻמָּה',true);
+      return;
+    }
+    drawing=true; cpIdx=1; star.style.display='none';
+    smoothPrev={x:s0.x,y:s0.y}; lastP={x:s0.x,y:s0.y};
+    if(!curInk||inkPts.length) newInkRun(false);
+    inkPush(s0); markDots(); chime(523,.11);
+  }
+  // החלקת-קלט קלה (EMA) — מרככת רעד-אצבע, הקו של הילד נראה יפה יותר
+  let smoothPrev=null, lastP=null;
+  function smoothPt(P){
+    if(!smoothPrev){ smoothPrev=P; return P; }
+    const q={ x:smoothPrev.x*0.35+P.x*0.65, y:smoothPrev.y*0.35+P.y*0.65 };
+    smoothPrev=q; return q;
+  }
+  function onMove(e){
+    if(!drawing) return; e.preventDefault();
+    let P=ptSvg(e);
+    // שלב 4: רק מקליטים ומציירים — בלי שיפוט תוך-כדי
+    if(level===4){ P=smoothPt(P); inkPush(P); l4Cur.push(P); return; }
+    P=smoothPt(P); lastP=P;
+    // 🤗 אין דיו אדום ואין נזיפות תוך-כדי-תנועה — סופרים בשקט, שופטים בהרמת-אצבע
+    const on=onLetterSvg(P.x,P.y);
+    moves++; if(on) inside++; else offEvents++;
+    inkPush(P);
+    // התקדמות עוגנים סלחנית: רדיוס 11 + דילוג עד 3 עוגנים קדימה (אצבע מהירה)
+    const samples=strokes[strokeIdx].samples;
+    let adv=true;
+    while(adv && cpIdx<samples.length){
+      adv=false;
+      for(let k=0;k<3 && cpIdx+k<samples.length;k++){
+        if(dist(P,samples[cpIdx+k])<=CP_R){ cpIdx+=k+1; adv=true;
+          if(cpIdx%4===0) chime(523+cpIdx*14,.06); break; }
+      }
+    }
+    markDots();
+    // כל העוגנים הושלמו → המשיכה הצליחה (משוב מיידי; חלקי → שיפוט בהרמה)
+    if(cpIdx>=samples.length) finishStroke();
+  }
+  function markDots(){ cpLayer.querySelectorAll('.cp-dot').forEach(d=>{ d.classList.toggle('done', +d.dataset.i<cpIdx); }); }
+
+  function finishStroke(){
+    drawing=false;
+    inkLayer.querySelectorAll('.ink-good').forEach(p=>p.classList.add('locked'));
+    chime(784,.15); strokeIdx++;
+    if(strokeIdx<strokes.length){
+      // Round 3: עד 4 קווים (ת/מ לפי הקנון) — הודעה לפי מספר הקו, לא "השני" קבוע
+      const ORD=['','הַשֵּׁנִי','הַשְּׁלִישִׁי','הָרְבִיעִי','הַחֲמִישִׁי'];
+      setInstr('יָפֶה! עַכְשָׁו הַקַּו '+(ORD[strokeIdx]||'הַבָּא')); setTimeout(renderStroke,300);
+    }
+    else finishLetter();
+  }
+  function onUp(){
+    if(!drawing) return; drawing=false;
+    // שלב 4: הרמת עט = סוף משיכה לגיטימי. הגענו למספר המשיכות? בודקים.
+    // אחרת מחכים רגע — אולי הילד כותב את האות בקו אחד או במשיכה נוספת.
+    if(level===4){
+      if(l4Cur && l4Cur.length>2) l4Strokes.push(l4Cur);
+      l4Cur=null;
+      clearTimeout(l4Timer);
+      if(l4Strokes.length>=strokes.length) evalFreeWriting();
+      else if(l4Strokes.length>0) l4Timer=setTimeout(evalFreeWriting, 2200);
+      return;
+    }
+    // ===== שיפוט בהרמת-אצבע (כמו Hanzi Writer — לא נכשלים תוך-כדי) =====
+    const samples=strokes[strokeIdx].samples;
+    const covered = cpIdx/samples.length;
+    const nearEnd = lastP && dist(lastP, samples[samples.length-1])<=END_R;
+    // לוג משיכות לכיול עתידי על ילדים אמיתיים (POC: console)
+    console.log('[stroke-log]', curLetter, 'stroke', strokeIdx+1, 'covered', +covered.toFixed(2),
+                'nearEnd', !!nearEnd, 'pts', inkPts.length);
+    // 🔧 כיול (מיטל 4.7): השלמה-עד-הסוף היא לא-מתפשרת — 95% מהעוגנים + קצה אמיתי.
+    // הסלחנות נשארת ברוחב המסדרון ובאופן הכישלון (עידוד+רמז), לא בוויתור על סוף הקו.
+    if(covered>=0.95 && nearEnd){ finishStroke(); return; }
+    // פספוס — בעדינות, עם הסלמת-רמז
+    lifts++; strokeMisses++;
+    inkLayer.querySelectorAll('.ink-good:not(.locked)').forEach(p=>p.remove());
+    cpIdx=0; markDots(); newInkRun(false);
+    if(strokeMisses>=3){
+      // force-accept (Hanzi: markStrokeCorrectAfterMisses) — ילד לא נתקע
+      forceAccepts++; setInstr('בְּסֵדֶר גָּמוּר! מַמְשִׁיכִים 🙂');
+      finishStroke(); return;
+    }
+    if(level<=2) star.style.display='';
+    if(strokeMisses===2){
+      // רמז מדורג: הצגת הקו המקווקו גם ברמות 2-3 (ברמה 1 הוא כבר שם)
+      guide.setAttribute('d','M '+samples.map(p=>`${p.x} ${p.y}`).join(' L '));
+      if(level>=3) star.setAttribute('transform',`translate(${samples[0].x},${samples[0].y})`), star.style.display='';
+      setInstr('הִנֵּה הַדֶּרֶךְ — נַסּוּ עוֹד פַּעַם 💪',true);
+    } else {
+      setInstr(covered<0.4 ? 'נַסּוּ שׁוּב מֵהַכּוֹכָב ⭐' : 'כִּמְעַט! עוֹד קְצָת עַד הַסּוֹף',true);
+    }
+  }
+
+  function finishLetter(accOverride){
+    star.style.display='none'; meter.classList.remove('show');
+    fill.classList.add('show'); noni.src='assets/noni-happy.png'; noni.classList.add('cheer');
+    chime(880,.18); setTimeout(()=>chime(1046,.22),140);
+    const acc = accOverride!=null ? accOverride : (moves?Math.round(inside/moves*100):100);
+    document.getElementById('accVal').textContent=acc+'%';   // הציון מוצג בסוף בלבד (לא תוך-כדי)
+    setTimeout(()=>showVerdict(acc),900);
+  }
+
+  /* ============================================================
+     שלב 4 · בדיקת-צורה (כתיבה חופשית מהזיכרון)
+     ------------------------------------------------------------
+     סלחני למיקום/גודל: מה שהילד צייר מנורמל (bbox→bbox) אל תבנית האות.
+     קפדן לזהות: משווים משיכה-מול-משיכה (מרחק ממוצע אחרי resample),
+     בודקים גם סדר משיכות הפוך וגם כיוון הפוך. יוצאת האות הנכונה = עובר.
+     ============================================================ */
+  let l4Strokes=[], l4Cur=null, l4Timer=null;
+
+  function resamplePts(pts,n){
+    if(pts.length<2) return null;
+    const cum=[0]; for(let i=1;i<pts.length;i++) cum.push(cum[i-1]+Math.hypot(pts[i].x-pts[i-1].x,pts[i].y-pts[i-1].y));
+    const total=cum[cum.length-1]; if(total<1e-6) return null;
+    const out=[]; let j=0;
+    for(let k=0;k<n;k++){ const t=k*total/(n-1);
+      while(j<cum.length-2 && cum[j+1]<t) j++;
+      const f=(t-cum[j])/((cum[j+1]-cum[j])||1e-6);
+      out.push({ x:pts[j].x+(pts[j+1].x-pts[j].x)*f, y:pts[j].y+(pts[j+1].y-pts[j].y)*f });
+    }
+    return out;
+  }
+  const meanDist=(a,b)=>{ let s=0; for(let i=0;i<a.length;i++) s+=Math.hypot(a[i].x-b[i].x,a[i].y-b[i].y); return s/a.length; };
+  // DTW-ממוצע: עמיד פי כמה לרעד-ילדים ולקצב לא-אחיד ממרחק נקודה-לנקודה
+  // (מדד-ממוצע ולא מקסימום — קפיצה בודדת לא מפילה; עפ"י דוח האלגוריתמים 4.7.2026)
+  function dtwAvg(a,b){
+    const n=a.length, m=b.length, INF=1e12;
+    const D=Array.from({length:n+1},()=>new Float64Array(m+1).fill(INF));
+    D[0][0]=0;
+    for(let i=1;i<=n;i++)for(let j=1;j<=m;j++){
+      const c=Math.hypot(a[i-1].x-b[j-1].x, a[i-1].y-b[j-1].y);
+      D[i][j]=c+Math.min(D[i-1][j], D[i][j-1], D[i-1][j-1]);
+    }
+    return D[n][m]/(n+m);
+  }
+
+  function evalFreeWriting(){
+    clearTimeout(l4Timer);
+    if(!l4Strokes.length) return;
+    // bbox של הציור
+    let minX=1e9,minY=1e9,maxX=-1e9,maxY=-1e9;
+    l4Strokes.forEach(st=>st.forEach(p=>{ if(p.x<minX)minX=p.x; if(p.x>maxX)maxX=p.x;
+                                          if(p.y<minY)minY=p.y; if(p.y>maxY)maxY=p.y; }));
+    const cw=maxX-minX, ch=maxY-minY;
+    if(cw+ch<12){ // שרבוט זעיר — לא שופטים, מבקשים גדול יותר
+      inkLayer.innerHTML=''; l4Strokes=[]; newInkRun(false);
+      setInstr('כִּתְבוּ גָּדוֹל עַל כֹּל הַכַּרְטִיס ✍️',true); return;
+    }
+    // נרמול: bbox הציור → bbox האות (סקייל אחיד + מרכוז) — סלחנות מלאה למיקום/גודל
+    const s=Math.min(gbox.w/cw, gbox.h/ch);
+    const ccx=(minX+maxX)/2, ccy=(minY+maxY)/2, gcx=gbox.x+gbox.w/2, gcy=gbox.y+gbox.h/2;
+    const norm=l4Strokes.map(st=>st.map(p=>({ x:(p.x-ccx)*s+gcx, y:(p.y-ccy)*s+gcy })));
+    const tmpl=strokes.map(st=>st.samples);
+    const N=28;
+
+    // התאמת משיכה-למשיכה: מנסים גם סדר הפוך (2 משיכות) וגם כיוון הפוך פר-משיכה
+    function matchSet(childSet, order){
+      let total=0, reversedCount=0;
+      for(let i=0;i<order.length;i++){
+        const c=resamplePts(childSet[order[i]],N), t=resamplePts(tmpl[i],N);
+        if(!c||!t) return null;
+        const fwd=dtwAvg(c,t), rev=dtwAvg(c.slice().reverse(),t);   // DTW במקום מרחק נקודתי
+        if(rev<fwd*0.8){ total+=rev; reversedCount++; } else total+=fwd;
+      }
+      return { d: total/order.length, reversedCount };
+    }
+    let best=null, orderSwapped=false;
+    if(norm.length===tmpl.length){
+      const perms = tmpl.length===2 ? [[0,1],[1,0]] : [Array.from(tmpl.keys())];
+      perms.forEach((perm,pi)=>{ const r=matchSet(norm,perm);
+        if(r && (!best || r.d<best.d)){ best=r; orderSwapped=(pi===1); } });
+    }
+    if(!best){
+      // מספר משיכות שונה (כתבו בקו אחד / הרמה מיותרת) — משווים את הכול כרצף אחד
+      const childAll=[].concat(...norm), tmplAll=[].concat(...tmpl);
+      const c=resamplePts(childAll,N*2), t=resamplePts(tmplAll,N*2);
+      if(c&&t){ const fwd=dtwAvg(c,t), rev=dtwAvg(c.slice().reverse(),t);
+        best={ d: Math.min(fwd,rev)+1.2, reversedCount: rev<fwd?1:0 }; }
+    }
+    if(!best){ inkLayer.innerHTML=''; l4Strokes=[]; newInkRun(false);
+      setInstr('נַסּוּ שׁוּב ✍️',true); return; }
+
+    // ציון: DTW-ממוצע → אחוז, עם מקדם-הגיל (1.4). d≈1.5-3=מצוין · 5-7=סביר · 9+=אות אחרת
+    const acc=Math.max(0, Math.min(100, Math.round(100-Math.max(0,best.d-2.0)*10/L4_LENIENCY)));
+    dirWarns += best.reversedCount + (orderSwapped?1:0);
+    document.getElementById('accVal').textContent=acc+'%';
+    console.log('L4 shape-match (DTW)', {letter:curLetter, dtw:+best.d.toFixed(2), acc, orderSwapped, reversed:best.reversedCount});
+    l4Strokes=[];
+    if(acc>=60){ inkLayer.querySelectorAll('.ink-good').forEach(p=>p.classList.add('locked')); }
+    finishLetter(acc);
+  }
+
+  function showVerdict(acc){
+    // ===== מסע האות: אותה אות עולה שלב 1→4, ואז האות הבאה — הכל אוטומטי =====
+    // ילדים לא קוראים — אין כפתורים בין שלבים. חגיגה קצרה (נוני+צליל+עיגול ירוק) → ממשיכים לבד.
+    const performedLevel=level;
+    // 🤗 "כישלון" רק על ציון נמוך באמת — offEvents כבר לא מפיל (המסדרון סופר בשקט לסטטיסטיקה)
+    const struggled = acc<55;
+    const order=['ת','ר']; const li=order.indexOf(curLetter);   // 🅿️ מ' מחוץ לזרימה בינתיים
+    letterStruggles = struggled ? letterStruggles+1 : 0;
+    let plan;
+    if(struggled && letterStruggles>=2 && performedLevel>1)
+                                        plan={type:'leveldown', to:performedLevel-1};  // 2 כישלונות → יותר עזרה
+    else if(struggled)                  plan={type:'retry'};
+    else if(performedLevel<4)           plan={type:'level',  to:performedLevel+1};
+    else if(li>=0 && li<order.length-1) plan={type:'letter', to:order[li+1]};
+    else                                plan={type:'finish'};
+    // POC: verdict → BKT (סטרנד כתיבה). לא מחווט עדיין — רק לוג:
+    const verdict={ letter:curLetter, accuracy:acc, offEvents, dirWarns, lifts, forceAccepts,
+                    supportLevel:performedLevel, next:plan,
+                    stayedOnLetter:offEvents<=moves*0.3, correctOrder:dirWarns===0, oneStroke:lifts<=strokes.length };
+    console.log('WRITE verdict', verdict);
+
+    if(plan.type==='finish'){
+      // מסך סיום יחיד — חגיגי וויזואלי (המבוגר עוזר לצאת)
+      document.getElementById('doneTitle').textContent='🏆 כֹּל הַכָּבוֹד!';
+      const sb=document.getElementById('scoreBig'); sb.textContent='ת · ר ✍️'; sb.style.color='var(--coral)';
+      document.getElementById('flags').innerHTML='<li>כְּתַבְתֶּם לְבַד אֶת הָאוֹתִיּוֹת ת וְ-ר!</li>';
+      document.getElementById('nextBtn').style.display='none';
+      document.getElementById('done').classList.remove('hidden');
+      return;
+    }
+    // חיווי קצר (ויזואלי+קולי, לא תלוי-קריאה) ואז המשך אוטומטי
+    if(plan.type==='level'){ setInstr('🌟 עוֹלִים שָׁלָב!'); chime(880,.14); setTimeout(()=>chime(1175,.2),160); }
+    else if(plan.type==='letter'){ setInstr('🎉 עַכְשָׁו הָאוֹת <strong>'+plan.to+'</strong>!'); chime(880,.14); setTimeout(()=>chime(1046,.14),140); setTimeout(()=>chime(1318,.22),300); }
+    else if(plan.type==='leveldown'){ setInstr('🤗 נְנַסֶּה עִם עוֹד קְצָת עֶזְרָה'); chime(587,.2); }
+    else { setInstr('💪 עוֹד נִסָּיוֹן!'); chime(440,.18); }
+    setTimeout(()=>{
+      if(plan.type==='level'){ setLevel(plan.to); resetLetter(); }
+      else if(plan.type==='leveldown'){ letterStruggles=0; setLevel(plan.to);
+        if(plan.to===1) switchLetter(curLetter);   // חזרה לשלב 1 = גם הדגמת עיפרון מחדש
+        else resetLetter(); }
+      else if(plan.type==='letter'){ setLevel(1); letterStruggles=0; switchLetter(plan.to); }
+      else resetLetter();
+    }, plan.type==='retry' ? 1100 : 1700);
+  }
+
+  function resetLetter(){
+    strokeIdx=0; moves=0; inside=0; offEvents=0; dirWarns=0; lifts=0;
+    inkLayer.innerHTML=''; demoLayer.innerHTML=''; fill.classList.remove('show');
+    noni.src='assets/noni-idle.png'; noni.classList.remove('cheer');
+    document.getElementById('accVal').textContent='—';
+    beginWrite();   // הודעות/קול לפי רמת התמיכה הנוכחית
+  }
+
+  async function switchLetter(letter){
+    document.getElementById('done').classList.add('hidden');
+    strokeIdx=0; moves=0; inside=0; offEvents=0; dirWarns=0; lifts=0;
+    inkLayer.innerHTML=''; fill.classList.remove('show');
+    noni.src='assets/noni-idle.png'; noni.classList.remove('cheer');
+    document.getElementById('accVal').textContent='—';
+    setInstr('עִקְבוּ אַחֲרֵי הַכּוֹכָב וְצַיְּרוּ אֶת הָאוֹת <strong>'+letter+'</strong>');
+    document.getElementById('tabs').querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.l===letter));
+    await buildLetter(letter);
+  }
+
+  // ---------- אירועים ----------
+  svg.addEventListener('mousedown',onDown);
+  svg.addEventListener('touchstart',onDown,{passive:false});
+  window.addEventListener('mousemove',onMove);
+  window.addEventListener('touchmove',onMove,{passive:false});
+  window.addEventListener('mouseup',onUp);
+  window.addEventListener('touchend',onUp);
+  document.getElementById('speaker').addEventListener('click',async()=>{
+    // ברמה 4 — השמעה חוזרת של ההנחיה הקולית; אחרת צליל עדין
+    if(level===4 && mode==='write'){ const ok=await speakInstr(curLetter); if(!ok) chime(660,.14); }
+    else chime(660,.14);
+  });
+
+  document.getElementById('startBtn').addEventListener('click',async()=>{
+    if(audioCtx) audioCtx.resume();
+    document.getElementById('intro').classList.add('hidden');
+    // הפונט נטען בתוך buildLetter (פונט-פר-אות, עם fallback פנימי)
+    // POC/R&D: טאבים גלויים תמיד (בגרסת-ילד יוסתרו). ?letter=tav/mem/resh = פתיחה ישירה על אות.
+    document.getElementById('tabs').style.display='';
+    const LP={tav:'ת',mem:'מ',resh:'ר'};
+    const startLetter = LP[(new URLSearchParams(location.search).get('letter')||'').toLowerCase()] || 'ת';
+    await buildLetter(startLetter);
+    document.getElementById('tabs').querySelectorAll('button').forEach(b=>b.classList.toggle('active', b.dataset.l===startLetter));
+  });
+  document.getElementById('againBtn').addEventListener('click',()=>{
+    // מסך הסיום הוא היחיד עם כפתורים — "עוד פעם" מתחיל את כל המסע מחדש
+    document.getElementById('done').classList.add('hidden');
+    setLevel(1); switchLetter('ת');
+  });
+  document.getElementById('replayBtn').addEventListener('click',()=>{
+    // צפייה חוזרת בהדגמה — מאפס את הניסיון הנוכחי
+    strokeIdx=0; moves=0; inside=0; offEvents=0; dirWarns=0; lifts=0; drawing=false;
+    document.getElementById('accVal').textContent='—'; meter.classList.remove('show');
+    fill.classList.remove('show');
+    startDemo();
+  });
+  document.getElementById('nextBtn').addEventListener('click',(e)=>{
+    const plan=JSON.parse(e.currentTarget.dataset.plan||'{}');
+    document.getElementById('done').classList.add('hidden');
+    if(plan.type==='level'){ setLevel(plan.to); resetLetter(); }        // שלב הבא באותה אות
+    else if(plan.type==='letter'){ setLevel(1); switchLetter(plan.to); } // אות חדשה — מתחילים מהדגמה
+    else resetLetter();                                                  // retry באותו שלב
+  });
+  document.getElementById('tabs').addEventListener('click',(e)=>{
+    const b=e.target.closest('button'); if(b) switchLetter(b.dataset.l);
+  });
+  // בורר רמת-תמיכה (POC): החלפה = ניסיון חדש באותה אות ברמה שנבחרה
+  document.getElementById('levelChips').addEventListener('click',(e)=>{
+    const b=e.target.closest('button'); if(!b) return;
+    setLevel(+b.dataset.lv);
+    if(!strokes.length) return;                    // עוד לא התחלנו (מסך פתיחה)
+    document.getElementById('done').classList.add('hidden');
+    strokeIdx=0; moves=0; inside=0; offEvents=0; dirWarns=0; lifts=0; drawing=false;
+    inkLayer.innerHTML=''; demoLayer.innerHTML=''; fill.classList.remove('show');
+    document.getElementById('accVal').textContent='—'; meter.classList.remove('show');
+    if(level===1) startDemo(); else beginWrite();
+  });
+
+  // בּוּעוֹת רֶקַע
+  (function(){ const w=document.getElementById('bubbles');
+    for(let i=0;i<14;i++){ const b=document.createElement('span'); const s=8+(i*37%22);
+      b.style.width=b.style.height=s+'px'; b.style.left=(i*7.3%100)+'%';
+      b.style.animationDuration=(9+(i*13%8))+'s'; b.style.animationDelay=(i*11%9)+'s'; w.appendChild(b);} })();
+  </script>
+</body>
+</html>

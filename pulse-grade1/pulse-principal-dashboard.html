@@ -555,7 +555,7 @@ button { font-family: inherit; }
   border-radius: 14px;
   padding: 14px 16px 30px;
 }
-.strend-name { font-weight: 600; font-size: 0.86rem; margin-bottom: 10px; }
+.strend-name { font-weight: 600; font-size: 0.86rem; margin-bottom: 4px; }
 .strend-name .col-dot {
   display: inline-block;
   width: 9px; height: 9px;
@@ -563,14 +563,25 @@ button { font-family: inherit; }
   margin-left: 5px;
   vertical-align: middle;
 }
-.strend-chart { display: flex; align-items: flex-end; gap: 7px; height: 64px; }
+/* גובה הגרף הוגדל + מקום לערך המספרי מעל העמודה האחרונה */
+.strend-chart { display: flex; align-items: flex-end; gap: 8px; height: 104px; margin-top: 28px; }
 .strend-bar {
-  flex: 1; min-height: 4px;
-  border-radius: 5px 5px 0 0;
-  opacity: .45;
+  flex: 1; min-height: 6px;
+  border-radius: 6px 6px 0 0;
+  opacity: .32;
   position: relative;
 }
+/* העמודה האחרונה = המחזור הנוכחי — מלאה, עם הערך מעליה */
 .strend-bar:last-child { opacity: 1; }
+.strend-bar:last-child::before {
+  content: attr(data-val);
+  position: absolute; top: -24px; left: 0; right: 0;
+  text-align: center;
+  font-family: 'Rubik';
+  font-weight: 800;
+  font-size: 0.84rem;
+  color: var(--text);
+}
 .strend-bar::after {
   content: attr(data-label);
   position: absolute; bottom: -18px; left: 0; right: 0;
@@ -578,10 +589,18 @@ button { font-family: inherit; }
   font-size: 0.6rem;
   color: var(--text-muted);
 }
-.strend-delta { font-size: 0.74rem; font-weight: 600; margin-top: 24px; line-height: 1.5; }
-.strend-delta.up   { color: var(--tier-green-ink); }
-.strend-delta.down { color: var(--tier-red-ink); }
-.strend-delta.flat { color: var(--text-light); }
+.strend-bar:last-child::after { font-weight: 700; color: var(--text); }
+/* דלתא — גלולת עלייה/ירידה בולטת + שורת הסבר רכה */
+.strend-delta {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 0.76rem; font-weight: 700;
+  margin-top: 26px; padding: 4px 12px;
+  border-radius: 999px; line-height: 1.4;
+}
+.strend-delta.up   { background: var(--mint, #DDF3E6);  color: var(--tier-green-ink); }
+.strend-delta.down { background: var(--peach, #FFD8C7); color: var(--tier-red-ink); }
+.strend-delta.flat { background: var(--white); color: var(--text-light); }
+.strend-note { font-size: 0.74rem; color: var(--text-light); margin-top: 7px; line-height: 1.55; }
 
 /* ===== WIDGET: STRONG / WEAK QUESTIONS ===== */
 .q-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -746,28 +765,68 @@ button { font-family: inherit; }
   color: var(--tier-red-ink);
 }
 
-/* ===== WIDGET 5: ACTIVE INTERVENTIONS ===== */
-.interv-list { display: flex; flex-direction: column; }
-.interv-item {
+/* ===== WIDGET 5: ACTIVE INTERVENTIONS — כרטיסים לפי דחיפות ===== */
+.iv-group-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin: 22px 0 10px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  border-top: 1px solid var(--border);
-  padding: 13px 4px;
-  gap: 10px;
+  gap: 7px;
 }
-.interv-item:first-child { border-top: none; }
-.interv-name { font-size: 0.88rem; font-weight: 600; flex: 1; }
-.interv-meta { font-size: 0.76rem; color: var(--text-light); margin-top: 2px; }
-.interv-status {
-  font-size: 0.74rem;
-  padding: 4px 12px;
-  border-radius: 999px;
+.iv-group-title:first-of-type { margin-top: 0; }
+.iv-group-title.decide  { color: var(--tier-red-ink); }
+.iv-group-title.running { color: var(--text-light); }
+.iv-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+/* מה שדורש החלטה — בולט; מה שרץ תקין — רגוע */
+.iv-card.decide {
+  border-color: color-mix(in srgb, var(--peach, #FFD8C7) 70%, var(--border));
+  background: color-mix(in srgb, var(--peach, #FFD8C7) 14%, white);
+}
+.iv-card.just-added {
+  border-color: var(--border-strong);
+  background: color-mix(in srgb, var(--mint, #DDF3E6) 30%, white);
+}
+.iv-top { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+.iv-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.iv-name { font-weight: 700; font-size: 0.92rem; flex: 1; }
+.iv-chip {
+  font-size: 0.72rem;
   font-weight: 600;
+  padding: 3px 11px;
+  border-radius: 999px;
   white-space: nowrap;
 }
-.interv-status.on-track { background: var(--mint, #DDF3E6); color: var(--tier-green-ink); }
-.interv-status.stuck    { background: var(--sand, #F7E8D4); color: var(--tier-yellow-ink); }
+.iv-chip.decide { background: var(--peach, #FFD8C7); color: var(--tier-red-ink); }
+.iv-chip.ok     { background: var(--mint, #DDF3E6);  color: var(--tier-green-ink); }
+.iv-chip.end    { background: var(--sand, #F7E8D4);  color: var(--tier-yellow-ink); }
+.iv-meta { font-size: 0.76rem; color: var(--text-light); margin-top: 5px; line-height: 1.5; }
+.iv-next {
+  margin-top: 9px;
+  font-size: 0.8rem;
+  background: var(--surface-soft, #F1F8F6);
+  border-radius: 10px;
+  padding: 8px 12px;
+  line-height: 1.55;
+}
+.iv-card.decide .iv-next { background: var(--white); }
+.iv-next b { color: var(--text); }
+.iv-actions { display: flex; align-items: center; gap: 14px; margin-top: 16px; flex-wrap: wrap; }
+.iv-actions .btn-primary { margin-top: 0; width: auto; flex: 1; min-width: 220px; }
+.catalog-link {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--primary-dark);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.catalog-link:hover { text-decoration: underline; }
 .btn-primary {
   background: var(--primary);
   color: white;
@@ -964,7 +1023,6 @@ button { font-family: inherit; }
 }
 .pick-add:hover { filter: brightness(1.05); }
 .pick-add.added { background: var(--mint, #DDF3E6); color: var(--tier-green-ink); }
-.interv-item.just-added { background: color-mix(in srgb, var(--mint, #DDF3E6) 40%, white); border-radius: 10px; }
 </style>
 </head>
 <body>
@@ -1060,9 +1118,9 @@ button { font-family: inherit; }
     <div class="kpi-card">
       <div class="kpi-chip sky" aria-hidden="true">🛠</div>
       <div>
-        <div class="kpi-num">7</div>
+        <div class="kpi-num">4</div>
         <div class="kpi-label">התערבויות פעילות</div>
-        <div class="kpi-sub">18 ילדים משתתפים</div>
+        <div class="kpi-sub">18 ילדים משתתפים · אחת ממתינה להחלטה</div>
       </div>
     </div>
     <div class="kpi-card">
@@ -1214,42 +1272,46 @@ button { font-family: inherit; }
       <div class="strend">
         <div class="strend-name"><span class="col-dot" style="background:var(--dim-adjust);"></span>הסתגלות</div>
         <div class="strend-chart" role="img" aria-label="הסתגלות לאורך 4 מחזורים: 3.6, 3.8, 3.9, 3.9 — עלייה עדינה">
-          <div class="strend-bar" style="height:72%; background:var(--dim-adjust);" data-label="פולס 1"></div>
-          <div class="strend-bar" style="height:76%; background:var(--dim-adjust);" data-label="פולס 2"></div>
-          <div class="strend-bar" style="height:78%; background:var(--dim-adjust);" data-label="פולס 3"></div>
-          <div class="strend-bar" style="height:78%; background:var(--dim-adjust);" data-label="פולס 4"></div>
+          <div class="strend-bar" data-val="3.6" style="background:var(--dim-adjust);" data-label="פולס 1"></div>
+          <div class="strend-bar" data-val="3.8" style="background:var(--dim-adjust);" data-label="פולס 2"></div>
+          <div class="strend-bar" data-val="3.9" style="background:var(--dim-adjust);" data-label="פולס 3"></div>
+          <div class="strend-bar" data-val="3.9" style="background:var(--dim-adjust);" data-label="פולס 4"></div>
         </div>
-        <div class="strend-delta up">↑ 3.6 → 3.9 · עלייה עדינה מאז תחילת השנה</div>
+        <div class="strend-delta up">↑ עלייה של 0.3 · מ-3.6 ל-3.9</div>
+        <div class="strend-note">עלייה עדינה מאז תחילת השנה.</div>
       </div>
       <div class="strend">
         <div class="strend-name"><span class="col-dot" style="background:var(--dim-friend);"></span>חברות</div>
         <div class="strend-chart" role="img" aria-label="חברות לאורך 4 מחזורים: 4.0, 4.1, 4.0, 4.0 — יציב וגבוה">
-          <div class="strend-bar" style="height:80%; background:var(--dim-friend);" data-label="פולס 1"></div>
-          <div class="strend-bar" style="height:82%; background:var(--dim-friend);" data-label="פולס 2"></div>
-          <div class="strend-bar" style="height:80%; background:var(--dim-friend);" data-label="פולס 3"></div>
-          <div class="strend-bar" style="height:80%; background:var(--dim-friend);" data-label="פולס 4"></div>
+          <div class="strend-bar" data-val="4.0" style="background:var(--dim-friend);" data-label="פולס 1"></div>
+          <div class="strend-bar" data-val="4.1" style="background:var(--dim-friend);" data-label="פולס 2"></div>
+          <div class="strend-bar" data-val="4.0" style="background:var(--dim-friend);" data-label="פולס 3"></div>
+          <div class="strend-bar" data-val="4.0" style="background:var(--dim-friend);" data-label="פולס 4"></div>
         </div>
-        <div class="strend-delta flat">→ יציב וגבוה · התחום החזק של בית הספר</div>
+        <div class="strend-delta flat">→ ללא שינוי · יציב סביב 4.0</div>
+        <div class="strend-note">התחום החזק של בית הספר.</div>
       </div>
       <div class="strend">
         <div class="strend-name"><span class="col-dot" style="background:var(--dim-emotion);"></span>שפה רגשית</div>
         <div class="strend-chart" role="img" aria-label="שפה רגשית לאורך 4 מחזורים: 3.5, 3.4, 3.5, 3.4 — יציב אך נמוך">
-          <div class="strend-bar" style="height:70%; background:var(--dim-emotion);" data-label="פולס 1"></div>
-          <div class="strend-bar" style="height:68%; background:var(--dim-emotion);" data-label="פולס 2"></div>
-          <div class="strend-bar" style="height:70%; background:var(--dim-emotion);" data-label="פולס 3"></div>
-          <div class="strend-bar" style="height:68%; background:var(--dim-emotion);" data-label="פולס 4"></div>
+          <div class="strend-bar" data-val="3.5" style="background:var(--dim-emotion);" data-label="פולס 1"></div>
+          <div class="strend-bar" data-val="3.4" style="background:var(--dim-emotion);" data-label="פולס 2"></div>
+          <div class="strend-bar" data-val="3.5" style="background:var(--dim-emotion);" data-label="פולס 3"></div>
+          <div class="strend-bar" data-val="3.4" style="background:var(--dim-emotion);" data-label="פולס 4"></div>
         </div>
-        <div class="strend-delta flat">→ יציב אך נמוך · שווה חיזוק שפה רגשית בכל הכיתות</div>
+        <div class="strend-delta flat">→ ללא שינוי · יציב סביב 3.4</div>
+        <div class="strend-note">יציב אך נמוך — שווה חיזוק שפה רגשית בכל הכיתות.</div>
       </div>
       <div class="strend">
         <div class="strend-name"><span class="col-dot" style="background:var(--dim-joy);"></span>שמחה ללמוד</div>
         <div class="strend-chart" role="img" aria-label="שמחה ללמוד לאורך 4 מחזורים: 3.9, 3.7, 3.6, 3.4 — ירידה שלושה מחזורים ברצף">
-          <div class="strend-bar" style="height:78%; background:var(--dim-joy);" data-label="פולס 1"></div>
-          <div class="strend-bar" style="height:74%; background:var(--dim-joy);" data-label="פולס 2"></div>
-          <div class="strend-bar" style="height:72%; background:var(--dim-joy);" data-label="פולס 3"></div>
-          <div class="strend-bar" style="height:68%; background:var(--dim-joy);" data-label="פולס 4"></div>
+          <div class="strend-bar" data-val="3.9" style="background:var(--dim-joy);" data-label="פולס 1"></div>
+          <div class="strend-bar" data-val="3.7" style="background:var(--dim-joy);" data-label="פולס 2"></div>
+          <div class="strend-bar" data-val="3.6" style="background:var(--dim-joy);" data-label="פולס 3"></div>
+          <div class="strend-bar" data-val="3.4" style="background:var(--dim-joy);" data-label="פולס 4"></div>
         </div>
-        <div class="strend-delta down">↓ 3.9 → 3.4 · ירידה 3 מחזורים ברצף — בולט בא'2</div>
+        <div class="strend-delta down">↓ ירידה של 0.5 · מ-3.9 ל-3.4</div>
+        <div class="strend-note">ירידה 3 מחזורים ברצף — בולט בא'2.</div>
       </div>
     </div>
   </div>
@@ -1394,39 +1456,54 @@ button { font-family: inherit; }
   <div class="widget-card">
     <div class="widget-head">
       <h3>🛠 התערבויות פעילות</h3>
-      <div class="widget-meta">7 התערבויות · 18 ילדים משתתפים</div>
+      <div class="widget-meta">4 תוכניות בשטח · 18 ילדים משתתפים · נתוני דמו</div>
     </div>
-    <div class="interv-list" id="intervList">
-      <div class="interv-item">
-        <div>
-          <div class="interv-name">"פאזל כיתתי" · א'2</div>
-          <div class="interv-meta">חברות · 5 ילדים · 3 שבועות בתהליך · דמו</div>
-        </div>
-        <div class="interv-status on-track">בתהליך</div>
+
+    <div class="iv-group-title decide">על שולחנך — דורש החלטה</div>
+    <div class="iv-card decide">
+      <div class="iv-top">
+        <span class="iv-dot" style="background:var(--dim-joy);" aria-hidden="true"></span>
+        <span class="iv-name">"שאלת השבוע" · א'2</span>
+        <span class="iv-chip decide">בשבוע 6 מתוך 4 — חורגת מהלוח</span>
       </div>
-      <div class="interv-item">
-        <div>
-          <div class="interv-name">"פינת רגיעה" · א'4</div>
-          <div class="interv-meta">שפה רגשית · 8 ילדים · 4 שבועות בתהליך · דמו</div>
-        </div>
-        <div class="interv-status on-track">בתהליך</div>
-      </div>
-      <div class="interv-item">
-        <div>
-          <div class="interv-name">"שאלת השבוע" · א'2</div>
-          <div class="interv-meta">שמחה ללמוד · כל הכיתה · 6 שבועות בתהליך · דמו</div>
-        </div>
-        <div class="interv-status stuck">תקועה</div>
-      </div>
-      <div class="interv-item">
-        <div>
-          <div class="interv-name">"חבר ותיק לילד.ה חדש.ה" · א'3</div>
-          <div class="interv-meta">חברות · 2 ילדים · 4 שבועות בתהליך · דמו</div>
-        </div>
-        <div class="interv-status on-track">בתהליך</div>
-      </div>
+      <div class="iv-meta">שמחה ללמוד · בהובלת לירון גולן (מחנכת) · כל הכיתה (25 ילדים) · התחילה 18.5</div>
+      <div class="iv-next"><b>הצעד הבא:</b> שיחה קצרה עם לירון השבוע — להחליט יחד אם ממשיכים, משנים גישה או מסיימים. <a class="catalog-link" href="intervention-catalog.html#cat-06-curiosity-interest">למתכון בקטלוג</a></div>
     </div>
-    <button class="btn-primary" id="btnOpenCatalog">+ הצעי התערבות חדשה מהקטלוג</button>
+
+    <div class="iv-group-title running">רץ תקין — למעקב בלבד</div>
+    <div class="iv-card">
+      <div class="iv-top">
+        <span class="iv-dot" style="background:var(--dim-friend);" aria-hidden="true"></span>
+        <span class="iv-name">"פאזל כיתתי" · א'2</span>
+        <span class="iv-chip ok">בשבוע 3 מתוך 4</span>
+      </div>
+      <div class="iv-meta">חברות · בהובלת לירון גולן (מחנכת) · 5 ילדים · התחילה 8.6</div>
+      <div class="iv-next"><b>הצעד הבא:</b> בפולס הקרוב בודקים אם ציוני החברות של חמשת הילדים עולים.</div>
+    </div>
+    <div class="iv-card">
+      <div class="iv-top">
+        <span class="iv-dot" style="background:var(--dim-emotion);" aria-hidden="true"></span>
+        <span class="iv-name">"פינת רגיעה" · א'4</span>
+        <span class="iv-chip end">בשבוע 4 מתוך 4 — מסתיימת</span>
+      </div>
+      <div class="iv-meta">שפה רגשית · בהובלת עמית אביטבול (מחנכת) · 8 ילדים · התחילה 1.6</div>
+      <div class="iv-next"><b>הצעד הבא:</b> סיכום קצר עם עמית בסוף השבוע — אם זה עובד, הופכים את הפינה לחלק קבוע מהכיתה.</div>
+    </div>
+    <div class="iv-card">
+      <div class="iv-top">
+        <span class="iv-dot" style="background:var(--dim-friend);" aria-hidden="true"></span>
+        <span class="iv-name">"חבר ותיק לילד.ה חדש.ה" · א'3</span>
+        <span class="iv-chip ok">בשבוע 4 מתוך 6</span>
+      </div>
+      <div class="iv-meta">חברות · בהובלת אופיר שטיינברג (מחנכת) · 2 ילדים · התחילה 25.5</div>
+      <div class="iv-next"><b>הצעד הבא:</b> ממשיכים כרגיל — שני הילדים כבר יושבים יחד בהפסקות.</div>
+    </div>
+    <div id="intervList"></div>
+
+    <div class="iv-actions">
+      <button class="btn-primary" id="btnOpenCatalog">+ הצעי התערבות חדשה מהקטלוג</button>
+      <a class="catalog-link" href="intervention-catalog.html">לקטלוג המלא ‹</a>
+    </div>
   </div>
   </div><!-- /interventions -->
 
@@ -1493,7 +1570,7 @@ button { font-family: inherit; }
       <h3 id="catalogTitle">בחירת התערבות מהקטלוג</h3>
       <button class="modal-close" id="modalClose" type="button" aria-label="סגירה">✕</button>
     </div>
-    <div class="modal-sub">50 מתכוני התערבות · מסוננים לפי ממד. בחרי מתכון → "שייכי לכיתה" כדי להוסיף אותו לרשימת ההתערבויות הפעילות.</div>
+    <div class="modal-sub">50 מתכוני התערבות · מסוננים לפי תחום. בחרי מתכון → "שייכי" כדי להוסיף אותו לרשימת ההתערבויות הפעילות. <a class="catalog-link" href="intervention-catalog.html">לקטלוג המלא ‹</a></div>
     <div class="interv-filter" id="catFilter">
       <button class="equity-pill active" data-dim="all" type="button">הכל</button>
       <button class="equity-pill" data-dim="adjust" type="button">הסתגלות</button>
@@ -1506,20 +1583,20 @@ button { font-family: inherit; }
 </div>
 
 <script>
-// ── נתוני הקטלוג לבורר (שמות אמיתיים מ-intervention-catalog/) ──
+// ── נתוני הקטלוג לבורר — קישורים לעמוד הקטלוג המעוצב (עוגן = שם קובץ המקור בלי הסיומת) ──
 const CATALOG = [
-  { dim:'adjust', color:'var(--dim-adjust)', name:'טקס פתיחה במעגל', cat:'בוקר רגוע', file:'intervention-catalog/cat-01-morning-calm.md' },
-  { dim:'adjust', color:'var(--dim-adjust)', name:'לוח יום ויזואלי', cat:'מעברים והסתגלות', file:'intervention-catalog/cat-04-transitions-adjustment.md' },
-  { dim:'adjust', color:'var(--dim-adjust)', name:'אזהרת 5 דקות לפני מעבר', cat:'מעברים והסתגלות', file:'intervention-catalog/cat-04-transitions-adjustment.md' },
-  { dim:'friend', color:'var(--dim-friend)', name:'חבר.ה ליום', cat:'שייכות וקשר', file:'intervention-catalog/cat-02-belonging-and-connection.md' },
-  { dim:'friend', color:'var(--dim-friend)', name:'מעגל הוקרה', cat:'שייכות וקשר', file:'intervention-catalog/cat-02-belonging-and-connection.md' },
-  { dim:'friend', color:'var(--dim-friend)', name:'buddy ותיק לילד.ה חדש.ה', cat:'הכלת שונות', file:'intervention-catalog/cat-05-embracing-diversity.md' },
-  { dim:'emotion', color:'var(--dim-emotion)', name:'שמות לרגשות', cat:'ויסות רגשי', file:'intervention-catalog/cat-03-emotion-regulation.md' },
-  { dim:'emotion', color:'var(--dim-emotion)', name:'מד הרגשות 1–5', cat:'ויסות רגשי', file:'intervention-catalog/cat-03-emotion-regulation.md' },
-  { dim:'emotion', color:'var(--dim-emotion)', name:'מה מרגיע את נוני? (בנייה משותפת)', cat:'Co-Creation', file:'intervention-catalog/cat-11-co-creation.md' },
-  { dim:'joy', color:'var(--dim-joy)', name:'שאלת השבוע', cat:'סקרנות ועניין', file:'intervention-catalog/cat-06-curiosity-interest.md' },
-  { dim:'joy', color:'var(--dim-joy)', name:'שולחן גילוי (בנייה משותפת)', cat:'Co-Creation', file:'intervention-catalog/cat-11-co-creation.md' },
-  { dim:'joy', color:'var(--dim-joy)', name:'בחירת דרך להראות ידע', cat:'Co-Creation', file:'intervention-catalog/cat-11-co-creation.md' },
+  { dim:'adjust', color:'var(--dim-adjust)', name:'טקס פתיחה במעגל', cat:'בוקר רגוע', file:'intervention-catalog.html#cat-01-morning-calm' },
+  { dim:'adjust', color:'var(--dim-adjust)', name:'לוח יום ויזואלי', cat:'מעברים והסתגלות', file:'intervention-catalog.html#cat-04-transitions-adjustment' },
+  { dim:'adjust', color:'var(--dim-adjust)', name:'אזהרת 5 דקות לפני מעבר', cat:'מעברים והסתגלות', file:'intervention-catalog.html#cat-04-transitions-adjustment' },
+  { dim:'friend', color:'var(--dim-friend)', name:'חבר.ה ליום', cat:'שייכות וקשר', file:'intervention-catalog.html#cat-02-belonging-and-connection' },
+  { dim:'friend', color:'var(--dim-friend)', name:'מעגל הוקרה', cat:'שייכות וקשר', file:'intervention-catalog.html#cat-02-belonging-and-connection' },
+  { dim:'friend', color:'var(--dim-friend)', name:'buddy ותיק לילד.ה חדש.ה', cat:'הכלת שונות', file:'intervention-catalog.html#cat-05-embracing-diversity' },
+  { dim:'emotion', color:'var(--dim-emotion)', name:'שמות לרגשות', cat:'ויסות רגשי', file:'intervention-catalog.html#cat-03-emotion-regulation' },
+  { dim:'emotion', color:'var(--dim-emotion)', name:'מד הרגשות 1–5', cat:'ויסות רגשי', file:'intervention-catalog.html#cat-03-emotion-regulation' },
+  { dim:'emotion', color:'var(--dim-emotion)', name:'מה מרגיע את נוני? (בנייה משותפת)', cat:'בנייה משותפת', file:'intervention-catalog.html#cat-11-co-creation' },
+  { dim:'joy', color:'var(--dim-joy)', name:'שאלת השבוע', cat:'סקרנות ועניין', file:'intervention-catalog.html#cat-06-curiosity-interest' },
+  { dim:'joy', color:'var(--dim-joy)', name:'שולחן גילוי (בנייה משותפת)', cat:'בנייה משותפת', file:'intervention-catalog.html#cat-11-co-creation' },
+  { dim:'joy', color:'var(--dim-joy)', name:'בחירת דרך להראות ידע', cat:'בנייה משותפת', file:'intervention-catalog.html#cat-11-co-creation' },
 ];
 const DIM_LABEL = { adjust:'הסתגלות', friend:'חברות', emotion:'שפה רגשית', joy:'שמחה ללמוד' };
 const CLASSES = ['א\'1 · מיטל פלג', 'א\'2 · לירון גולן', 'א\'3 · אופיר שטיינברג', 'א\'4 · עמית אביטבול'];
@@ -1565,23 +1642,32 @@ function renderCatalog() {
 }
 
 function assignIntervention(it, className, btn) {
-  // מוסיף שורה אמיתית לרשימת ההתערבויות הפעילות — לכיתה שנבחרה
+  // מוסיף כרטיס אמיתי לרשימת ההתערבויות הפעילות — לכיתה שנבחרה
   const list = document.getElementById('intervList');
-  const item = document.createElement('div');
-  item.className = 'interv-item just-added';
-  const wrap = document.createElement('div');
-  const nm = document.createElement('div');
-  nm.className = 'interv-name';
+  const card = document.createElement('div');
+  card.className = 'iv-card just-added';
+  const top = document.createElement('div');
+  top.className = 'iv-top';
+  const dot = document.createElement('span');
+  dot.className = 'iv-dot'; dot.style.background = it.color;
+  const nm = document.createElement('span');
+  nm.className = 'iv-name';
   nm.textContent = '"' + it.name + '" · ' + className.split(' · ')[0];
+  const chip = document.createElement('span');
+  chip.className = 'iv-chip ok';
+  chip.textContent = 'חדשה · טרם התחילה';
+  top.appendChild(dot); top.appendChild(nm); top.appendChild(chip);
   const meta = document.createElement('div');
-  meta.className = 'interv-meta';
-  meta.textContent = DIM_LABEL[it.dim] + ' · מחנכת ' + className.split(' · ')[1] + ' · נוספה זה עתה · דמו';
-  wrap.appendChild(nm); wrap.appendChild(meta);
-  const status = document.createElement('div');
-  status.className = 'interv-status on-track';
-  status.textContent = 'חדשה';
-  item.appendChild(wrap); item.appendChild(status);
-  list.appendChild(item);
+  meta.className = 'iv-meta';
+  meta.textContent = DIM_LABEL[it.dim] + ' · בהובלת ' + className.split(' · ')[1] + ' · נוספה זה עתה · דמו';
+  const next = document.createElement('div');
+  next.className = 'iv-next';
+  const b = document.createElement('b');
+  b.textContent = 'הצעד הבא:';
+  next.appendChild(b);
+  next.appendChild(document.createTextNode(' תיאום עם המחנכת — מתי מתחילים ומי הילדים המשתתפים.'));
+  card.appendChild(top); card.appendChild(meta); card.appendChild(next);
+  list.appendChild(card);
   // משוב רגעי — נשאר פעיל כדי לשייך לעוד כיתות
   const orig = btn.textContent;
   btn.textContent = '✓ שויכה';
@@ -1682,6 +1768,19 @@ document.querySelectorAll('.btn-msg').forEach(btn => {
     btn.style.background = 'var(--mint, #DDF3E6)';
     btn.style.color = '#2E6E5F';
     btn.disabled = true;
+  });
+});
+
+// מגמות — גובה העמודות מחושב יחסית לטווח האמיתי של כל סדרה (min-max),
+// עם רצפה מינימלית, כדי שההבדלים בין המחזורים יקפצו לעין
+document.querySelectorAll('.strend-chart').forEach(chart => {
+  const bars = Array.from(chart.querySelectorAll('.strend-bar'));
+  const vals = bars.map(b => parseFloat(b.dataset.val));
+  const min = Math.min(...vals);
+  const span = Math.max(Math.max(...vals) - min, 0.5); // סדרה שטוחה לא מנופחת מעבר לפרופורציה
+  bars.forEach(b => {
+    const rel = (parseFloat(b.dataset.val) - min) / span; // 0..1
+    b.style.height = Math.round(28 + rel * 67) + '%';     // רצפה 28% · תקרה 95%
   });
 });
 
