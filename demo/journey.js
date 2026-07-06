@@ -156,9 +156,14 @@
       'border-bottom:1px solid #E1ECEE;box-shadow:0 4px 18px -8px rgba(20,55,67,.25);font-family:Heebo,Arial,sans-serif;}',
     '.jw-brand{display:flex;align-items:center;gap:8px;font-weight:800;color:#0F7E72;font-size:14px;white-space:nowrap;}',
     '.jw-brand .d{width:9px;height:9px;border-radius:3px;background:#0F7E72;}',
-    '.jw-steps{display:flex;align-items:center;gap:8px;flex:1;justify-content:center;flex-wrap:wrap;}',
-    '.jw-chip{display:flex;align-items:center;gap:7px;padding:5px 12px;border-radius:999px;font-size:12.5px;font-weight:700;',
-      'color:#7E929A;background:#F1F5F6;border:1px solid #E7EDEF;white-space:nowrap;}',
+    // שורה אחת תמיד — צ'יפים לא-פעילים מציגים רק את העיגול הממוספר (בלי טקסט),
+    // כדי שהסרגל לעולם לא יישבר לשורה שנייה שמסתירה תוכן (כמו כותרת המפה).
+    '.jw-steps{display:flex;align-items:center;gap:6px;flex:1;justify-content:center;flex-wrap:nowrap;overflow:hidden;}',
+    '.jw-chip{display:flex;align-items:center;gap:7px;padding:4px;border-radius:999px;font-size:12.5px;font-weight:700;',
+      'color:#7E929A;background:#F1F5F6;border:1px solid #E7EDEF;white-space:nowrap;flex:0 0 auto;}',
+    '.jw-chip.on{padding:4px 12px 4px 8px;}',
+    '.jw-chip .t{display:none;}',
+    '.jw-chip.on .t{display:inline;}',
     '.jw-chip .n{width:18px;height:18px;border-radius:50%;background:#C8D3D6;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;}',
     '.jw-chip.on{color:#0F7E72;background:#E8F4F0;border-color:#C6E6DC;}',
     '.jw-chip.on .n{background:#0F7E72;}',
@@ -193,6 +198,18 @@
       'box-shadow:0 0 0 6px rgba(15,126,114,.15)!important;scroll-margin:120px;transition:outline .3s;}',
     'body{padding-top:52px!important;}'
   ].join('');
+  // מפת האי: (א) כותרת המפה יורדת אל מתחת לסרגל המסע (המפה fixed — padding לא עוזר);
+  // (ב) בדמו מציגים את *כל* האיים — "אופק קרוב" מסתיר איים רחוקים לילד, אבל
+  // בהדגמה רוצים לראות את העולם המלא: איים עתידיים נחשפים כפנינים רכות באובך.
+  if (file === 'map.html') {
+    css.textContent += [
+      '.map-title{top:64px!important;}',
+      '.map-node.map-state-horizon{display:block!important;opacity:.45!important;pointer-events:none!important;}',
+      '.map-node.map-state-horizon .node-label{display:none!important;}',
+      '.map-node.map-state-next-distant{opacity:.55!important;filter:blur(.4px)!important;}',
+      '.map-node.map-state-next-distant .node-dot{color:#26505C!important;}'
+    ].join('');
+  }
   document.head.appendChild(css);
 
   var bar = document.createElement('div');
@@ -200,8 +217,8 @@
   var chips = STEPS.map(function (s, k) {
     var cls = k < idx ? 'done' : (k === idx ? 'on' : '');
     var mark = k < idx ? '✓' : (k + 1);
-    return '<span class="jw-chip ' + cls + '"><span class="n">' + mark + '</span>' + (s.chip || s.role) + '</span>';
-  }).join('<span style="color:#C8D3D6;">·</span>');
+    return '<span class="jw-chip ' + cls + '" title="' + (s.chip || s.role) + '"><span class="n">' + mark + '</span><span class="t">' + (s.chip || s.role) + '</span></span>';
+  }).join('');
   bar.innerHTML =
     '<span class="jw-brand"><span class="d"></span>מסע אחד · ' + CHILD + '</span>' +
     '<span class="jw-steps">' + chips + '</span>' +
