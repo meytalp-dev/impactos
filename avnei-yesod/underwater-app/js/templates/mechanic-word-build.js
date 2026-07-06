@@ -72,14 +72,217 @@
   }
 
   // --------------------------------------------------------------------------
+  // parseWordToParts(text) — פירוק מילה מנוקדת לחלקי CV.
+  // כל חלק: { letter, vowelId|null, display }. אות אחרונה בלי ניקוד = חלק bare.
+  // --------------------------------------------------------------------------
+  const SYMBOL_TO_VOWEL = (function () {
+    const m = {};
+    Object.keys(VOWEL_SYMBOLS).forEach(function (vid) { m[VOWEL_SYMBOLS[vid]] = vid; });
+    return m;
+  })();
+  const DAGESH = 'ּ';
+
+  function nfc(s) {
+    return (s && s.normalize) ? s.normalize('NFC') : s;
+  }
+
+  function parseWordToParts(text) {
+    const parts = [];
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (ch < 'א' || ch > 'ת') continue; // רק אותיות פותחות חלק
+      let display = ch;
+      let vowelId = null;
+      let j = i + 1;
+      while (j < text.length && text[j] >= '֑' && text[j] <= 'ׇ') {
+        display += text[j];
+        if (SYMBOL_TO_VOWEL[text[j]]) vowelId = SYMBOL_TO_VOWEL[text[j]];
+        j++;
+      }
+      parts.push({ letter: ch, vowelId: vowelId, display: display });
+      i = j - 1;
+    }
+    return parts;
+  }
+
+  // --------------------------------------------------------------------------
+  // mountTarget(root, opts) — מצב מטרה (פישוט 6.7.2026, ביקשה מיטל):
+  // המילה מוצגת גלויה למעלה; הילד.ה מקיש.ה על החלקים לפי הסדר ובונה אותה.
+  // opts:
+  //   targetWords — מערך מילים מנוקדות (חובה)
+  //   distractors — כמה חלקי-הסחה להוסיף לרשת (default 2)
+  //   letters/vowels — מאגר להסחות (default כמו exploration)
+  // --------------------------------------------------------------------------
+  function mountTarget(root, opts) {
+    const words = opts.targetWords.slice();
+    const distractorCount = (opts.distractors == null) ? 2 : opts.distractors;
+    const poolLetters = (opts && opts.letters) || ['מ', 'ב', 'ר', 'ק', 'ת'];
+    const poolVowels = (opts && opts.vowels) || ['patach', 'kamatz', 'hiriq'];
+
+    root.innerHTML = '';
+    root.classList.add('mechanic-word-build');
+
+    const prompt = document.createElement('div');
+    prompt.className = 'word-build-prompt';
+    prompt.textContent = 'הַרְכִּיבוּ אֶת הַמִּלָּה:';
+    root.appendChild(prompt);
+
+    const targetEl = document.createElement('div');
+    targetEl.className = 'word-build-target';
+    root.appendChild(targetEl);
+
+    const hearBtn = document.createElement('button');
+    hearBtn.type = 'button';
+    hearBtn.className = 'word-build-play word-build-hear';
+    hearBtn.textContent = '🔊 הַקְשִׁיבוּ לַמִּלָּה';
+    root.appendChild(hearBtn);
+
+    const buildArea = document.createElement('div');
+    buildArea.className = 'word-build-area';
+    buildArea.setAttribute('aria-label', 'אזור בנייה');
+    root.appendChild(buildArea);
+
+    const letterGrid = document.createElement('div');
+    letterGrid.className = 'word-build-letter-grid word-build-letter-grid--target';
+    root.appendChild(letterGrid);
+
+    const progressEl = document.createElement('div');
+    progressEl.className = 'word-build-progress';
+    root.appendChild(progressEl);
+
+    let wordIdx = 0;
+    let parts = [];
+    let nextIdx = 0;
+    let done = false;
+
+    hearBtn.addEventListener('click', function () {
+      if (done) return;
+      playWord(words[wordIdx]);
+    });
+
+    function renderBuild() {
+      buildArea.innerHTML = '';
+      parts.forEach(function (p, i) {
+        const span = document.createElement('span');
+        span.className = i < nextIdx ? 'word-build-part' : 'word-build-slot';
+        span.textContent = i < nextIdx ? p.display : '·';
+        buildArea.appendChild(span);
+      });
+    }
+
+    function makeTiles() {
+      const tiles = parts.map(function (p, i) {
+        return { display: p.display, letter: p.letter, vowelId: p.vowelId, orderIdx: i };
+      });
+      // הסחות — צירופים שאינם חלק מהמילה. השוואה ב-NFC: סדר סימני הניקוד
+      // (דגש/תנועה) משתנה בין מקורות ושתי מחרוזות זהות-מראה לא ישתוו בלעדיו.
+      const used = {};
+      parts.forEach(function (p) { used[nfc(p.display)] = true; });
+      const candidates = [];
+      poolLetters.forEach(function (L) {
+        poolVowels.forEach(function (vid) {
+          const cv = buildCVForTile(L, vid);
+          if (!used[nfc(cv)]) candidates.push({ display: cv, letter: L, vowelId: vid, orderIdx: -1 });
+        });
+      });
+      shuffle(candidates).slice(0, distractorCount).forEach(function (d) { tiles.push(d); });
+      return shuffle(tiles);
+    }
+
+    function renderGrid() {
+      letterGrid.innerHTML = '';
+      makeTiles().forEach(function (t) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'word-build-letter-btn';
+        btn.textContent = t.display;
+        btn.addEventListener('click', function () {
+          if (done || btn.disabled) return;
+          const expected = parts[nextIdx];
+          if (expected && nfc(t.display) === nfc(expected.display)) {
+            btn.disabled = true;
+            btn.classList.add('used');
+            nextIdx++;
+            renderBuild();
+            if (expected.vowelId) playCV(expected.letter, expected.vowelId);
+            if (nextIdx >= parts.length) wordComplete();
+          } else {
+            btn.classList.remove('shake');
+            void btn.offsetWidth;
+            btn.classList.add('shake');
+          }
+        });
+        letterGrid.appendChild(btn);
+      });
+    }
+
+    function wordComplete() {
+      // המילה השלמה נשמעת פעם אחת — זה הפרס; ואז ממשיכים
+      setTimeout(function () { playWord(words[wordIdx]); }, 500);
+      targetEl.classList.add('celebrate');
+      setTimeout(function () {
+        targetEl.classList.remove('celebrate');
+        wordIdx++;
+        if (wordIdx >= words.length) {
+          done = true;
+          prompt.textContent = 'כֹּל הַמִּלִּים הֻרְכְּבוּ — כֹּל הַכָּבוֹד!';
+          targetEl.textContent = '🎉';
+          buildArea.innerHTML = '';
+          letterGrid.innerHTML = '';
+          hearBtn.style.display = 'none';
+          const again = document.createElement('button');
+          again.type = 'button';
+          again.className = 'word-build-play';
+          again.textContent = '↻ עוֹד פַּעַם';
+          again.addEventListener('click', function () { location.reload(); });
+          letterGrid.appendChild(again);
+          if (typeof opts.onComplete === 'function') try { opts.onComplete(); } catch (e) {}
+        } else {
+          startWord();
+        }
+      }, 2400);
+    }
+
+    function startWord() {
+      parts = parseWordToParts(words[wordIdx]);
+      nextIdx = 0;
+      targetEl.textContent = words[wordIdx];
+      progressEl.textContent = 'מִלָּה ' + (wordIdx + 1) + ' מִתּוֹךְ ' + words.length;
+      renderBuild();
+      renderGrid();
+      // במילה הראשונה: הנחיה קולית ואז המילה (playSequence לא נקטע ע"י play)
+      const WA = getWA();
+      const wKey = WA ? WA.wordAudioKey(words[wordIdx]) : null;
+      if (wordIdx === 0 && opts.introKey && window.AvneiAudio && window.AvneiAudio.playSequence) {
+        window.AvneiAudio.playSequence([opts.introKey, wKey], 600);
+      } else {
+        playWord(words[wordIdx]);
+      }
+    }
+
+    startWord();
+
+    return {
+      unmount: function () {
+        root.innerHTML = '';
+        root.classList.remove('mechanic-word-build');
+      },
+    };
+  }
+
+  // --------------------------------------------------------------------------
   // mount(root, opts)
   // opts:
   //   letters       — אילו אותיות להציע (default: 5 פיילוט מ-vowel-adapter)
   //   vowels        — אילו vowels להציע (default: ['patach','kamatz'])
   //   maxParts      — אורך מילה מקסימלי לבנייה (default 4)
+  //   targetWords   — אם קיים → מצב מטרה (mountTarget) במקום exploration
   //   onComplete    — לא חייב, exploration pure
   // --------------------------------------------------------------------------
   function mount(root, opts) {
+    if (opts && opts.targetWords && opts.targetWords.length) {
+      return mountTarget(root, opts);
+    }
     const VA = getVA();
     if (!VA) {
       console.error('[mechanic-word-build] AvneiVowelAdapter חסר');
