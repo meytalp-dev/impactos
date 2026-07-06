@@ -207,7 +207,7 @@ window.AvneiStage3 = (function() {
         msgEl.textContent = 'גן האותיות התמלא אור. נוני אסף עבורך אלמוג אות זוהר.';
       }
     }
-    AvneiAudio.play('all-done');
+    AvneiAudio.play(['all-done', 'all-done-2', 'all-done-3'][Math.floor(Math.random() * 3)]);
   }
 
   // ============================================================
