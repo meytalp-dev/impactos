@@ -323,7 +323,7 @@
       's-r3':['boy-r3.mp3'],
       's-done':['all-done.mp3']
     };
-    var curA=null,curBtn=null;
+    var curA=null,curBtn=null,pendingScreen=null;
     function stopAudio(){
       if(curA){curA.onended=null;curA.pause();curA=null;}
       if(curBtn){curBtn.classList.remove('playing');curBtn=null;}
@@ -340,9 +340,20 @@
         if(!f){stopAudio();return;}
         curA=new Audio(AUD+f);
         curA.onended=next;
-        curA.play().catch(stopAudio); /* autoplay לפני מגע ראשון — נכשל בשקט */
+        curA.play().catch(function(){
+          /* autoplay לפני מגע ראשון נחסם ע"י הדפדפן — נשמיע במגע הראשון */
+          pendingScreen=id;stopAudio();
+        });
       })();
     }
+    /* מגע ראשון בעמוד = רשות להשמיע — מנגן את מה שנחסם (בלי לדרוס ניווט/רמקול) */
+    document.addEventListener('pointerdown',function(e){
+      if(!pendingScreen)return;
+      if(e.target.closest('[data-go],[data-spk],.opt'))return;
+      var id=pendingScreen;pendingScreen=null;
+      var scr=document.getElementById(id);
+      if(scr&&scr.classList.contains('on'))playFor(id);
+    },true);
     document.addEventListener('click',function(e){
       var spk=e.target.closest('[data-spk]');
       if(spk){var scr=spk.closest('.screen');playFor(scr?scr.id:'');return;}
