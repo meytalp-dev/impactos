@@ -3,6 +3,19 @@
 שכבת הדאטה כותבת ל-`localStorage` בלבד; cloud-sync היא שכבה תוספתית (no-op במצב דמו
 `?presentation=1`/`?guest=1`). אל תשבור את ה-dual-mode.
 
+## 🔴 פתיחה מ-file:// (בלי שרת) — תוכן צרוב (6.7.2026)
+
+מיטל פותחת את הדמו/משחקונים ישירות מהקובץ; שם הדפדפן חוסם fetch/XHR של JSON מקומי.
+הפתרון: `js/shared/file-protocol-shim.js` (בכל דפי ה-HTML, מיד אחרי `<meta charset>`)
+מזהה `file:` וטוען `js/shared/embedded-data.js` — צריבה של כל קבצי התוכן, נוצרת ע"י
+`node scripts/build-embedded-data.js`. ב-http אין שום השפעה (ה-JSON = המקור).
+
+- **אחרי כל עריכה של JSON תוכן** (data/ · interventions/ · ../curriculum/questions ·
+  packs · yearly-plan · vocab manifest) → להריץ מחדש את הסקריפט ולקמט את שני הקבצים יחד.
+- **דף HTML חדש** → להוסיף `<script src="js/shared/file-protocol-shim.js"></script>`
+  אחרי ה-charset.
+- `cloud-client.js` (module) עדיין חסום ב-file:// — זה בסדר, שכבה תוספתית.
+
 ## EPA — מפתח-יחידה גנרי (G4 סגור · 30.6.2026)
 
 `js/shared/epa.js` סופר טעויות פר **יחידה**, לא פר-אות:
