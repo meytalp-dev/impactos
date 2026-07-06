@@ -11,7 +11,8 @@
 //
 // תלות:
 //   AvneiOralSkillAdapter — getRandomBatch(level) · recordAttempt
-//   speechSynthesis — לקרוא passage
+//   AvneiAudio — הקראת passage מ-MP3 (passage_audio_key, DNA אודיו)
+//   speechSynthesis — fallback בלבד כשאין MP3
 //
 // אסטרטגיה: passage_text מפוצל ל-sentences (".") — sentences ה-original = הסדר הנכון.
 //   רק רמות 2-3 רלוונטיות (≥ 4 משפטים). רמה 1 (3-4 משפטים) — לפעמים גם מתאים.
@@ -38,6 +39,19 @@
     if (typeof speechSynthesis !== 'undefined') {
       try { speechSynthesis.cancel(); } catch (e) {}
     }
+  }
+
+  // מנגן audioKey דרך AvneiAudio (MP3 מוקלט מראש) אם קיים; Web Speech = fallback
+  // בלבד — כמו mechanic-listen-mcq (checklist §4: אודיו מוקלט, לא קול-דפדפן).
+  // playAndWait — ההבטחה נפתרת בסוף ההשמעה, לא בתחילתה.
+  function playText(audioKey, text) {
+    if (audioKey && typeof window !== 'undefined' && window.AvneiAudio) {
+      if (typeof window.AvneiAudio.playAndWait === 'function') {
+        return window.AvneiAudio.playAndWait(audioKey);
+      }
+      try { window.AvneiAudio.play(audioKey); return Promise.resolve(true); } catch (e) {}
+    }
+    return speakHebrew(text);
   }
 
   function speakHebrew(text) {
@@ -107,8 +121,8 @@
         <div class="mss-feedback" id="mssFeedback" aria-live="polite"></div>
 
         <div class="mss-actions">
-          <button class="mss-btn mss-btn--ghost" id="mssResetBtn" type="button">לאפס סדר</button>
-          <button class="mss-btn" id="mssCheckBtn" type="button" disabled>בודקת תשובה</button>
+          <button class="mss-btn mss-btn--ghost" id="mssResetBtn" type="button">לְאַפֵּס סֵדֶר</button>
+          <button class="mss-btn" id="mssCheckBtn" type="button" disabled>לִבְדֹּק תְּשׁוּבָה</button>
         </div>
       </section>
     `;
@@ -262,7 +276,7 @@
 
     const feedbackEl = document.getElementById('mssFeedback');
     if (feedbackEl) {
-      feedbackEl.textContent = isCorrect ? 'יופי! בדיוק הסדר הנכון.' : 'התשובה הנכונה: ' + expected.join(' ');
+      feedbackEl.textContent = isCorrect ? 'מְצֻיָּן! בְּדִיּוּק הַסֵּדֶר הַנָּכוֹן.' : 'הַסֵּדֶר הַנָּכוֹן: ' + expected.join(' ');
       feedbackEl.className = 'mss-feedback ' + (isCorrect ? 'mss-feedback--ok' : 'mss-feedback--miss');
     }
 
@@ -278,7 +292,7 @@
     _state.idx++;
     if (loadNextItem()) {
       renderItem();
-      speakHebrew(_state.currentItem.passage_text || '');
+      playText(_state.currentItem.passage_audio_key, _state.currentItem.passage_text || '');
     } else {
       complete();
     }
@@ -322,7 +336,9 @@
     const playBtn  = document.getElementById('mssPlayPassage');
     const resetBtn = document.getElementById('mssResetBtn');
     const checkBtn = document.getElementById('mssCheckBtn');
-    if (playBtn)  playBtn.addEventListener('click', () => speakHebrew(_state.currentItem && _state.currentItem.passage_text || ''));
+    if (playBtn)  playBtn.addEventListener('click', () => playText(
+      _state.currentItem && _state.currentItem.passage_audio_key,
+      _state.currentItem && _state.currentItem.passage_text || ''));
     if (resetBtn) resetBtn.addEventListener('click', onResetClick);
     if (checkBtn) checkBtn.addEventListener('click', onCheckClick);
   }
@@ -348,13 +364,13 @@
         _state.items = items;
         if (!loadNextItem()) throw new Error('no items with ≥ ' + MIN_SENTENCES + ' sentences');
         renderItem();
-        return speakHebrew(_state.currentItem.passage_text || '');
+        return playText(_state.currentItem.passage_audio_key, _state.currentItem.passage_text || '');
       })
       .catch(err => {
         console.error('mechanic-story-sequence start failed:', err);
         const root = _state && _state.mountRoot;
         if (root) {
-          root.innerHTML = '<div class="mss-error" lang="he">אופס, לא הצלחנו לטעון סיפורים. נסי שוב מאוחר יותר.</div>';
+          root.innerHTML = '<div class="mss-error" lang="he">אוֹפְּס, לֹא הִצְלַחְנוּ לִטְעֹן אֶת הַסִּפּוּרִים. נַסּוּ שׁוּב מְאֻחָר יוֹתֵר.</div>';
         }
       });
   }

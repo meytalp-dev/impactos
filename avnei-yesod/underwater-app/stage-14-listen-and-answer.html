@@ -4,41 +4,39 @@
   <meta charset="UTF-8">
   <script src="js/shared/file-protocol-shim.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#7CC4FF">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta name="theme-color" content="#A8E8FF">
   <title>אי 14 · להאזין ולענות</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/tokens.css">
-  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/tokens.css?v=2026-07-06">
 
   <style>
-    :root {
-      --isle14-indigo: #4F46E5;
-      --isle14-indigo-deep: #3730A3;
-      --isle14-violet: #8B5CF6;
-      --isle14-bg: linear-gradient(180deg, #C7E9FF 0%, #7CC4FF 60%, #4A9CE8 100%);
-      --isle14-card: #FFFFFF;
-      --isle14-text: #1E1B4B;
-      --isle14-text-soft: #475569;
-    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
     body {
       font-family: 'Heebo', sans-serif;
-      background: var(--isle14-bg);
-      color: var(--isle14-text);
+      color: var(--text-main, #26505C);
       line-height: 1.5;
       min-height: 100vh;
+      background: linear-gradient(180deg, #BFF1FF 0%, #A8E8FF 40%, #73D9D1 100%);
       -webkit-font-smoothing: antialiased;
     }
-    h1, h2 { font-family: 'Rubik', sans-serif; line-height: 1.2; }
+    .scene-bg {
+      position: fixed; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center bottom;
+      z-index: 0; pointer-events: none;
+    }
 
     .page-wrap {
+      position: relative; z-index: 1;
       max-width: 720px;
       margin: 0 auto;
-      padding: 80px 16px 60px;
+      padding: 92px 16px 170px;
     }
 
     /* Top bar */
@@ -53,22 +51,22 @@
       background: rgba(255,255,255,0.92); border: 1.5px solid rgba(255,255,255,0.95);
       box-shadow: 0 6px 16px rgba(38,80,92,0.15);
       display: flex; align-items: center; justify-content: center;
-      color: var(--isle14-text); text-decoration: none;
+      color: var(--text-main, #26505C); text-decoration: none;
     }
     .icon-btn:active { transform: scale(0.92); }
     .title-pill {
       background: rgba(255,255,255,0.92);
       padding: 8px 22px; border-radius: 999px;
-      font-weight: 900; font-size: 18px; color: var(--isle14-indigo-deep);
+      font-weight: 900; font-size: 18px; color: var(--deep, #1E3D47);
       box-shadow: 0 6px 16px rgba(38,80,92,0.15);
     }
 
     /* Level picker (intro) */
     .intro-card {
-      background: var(--isle14-card);
-      border-radius: 24px;
+      background: rgba(255,255,255,0.92);
+      border-radius: var(--radius-lg, 28px);
       padding: 28px 24px;
-      box-shadow: 0 20px 50px rgba(30,27,75,0.18);
+      box-shadow: 0 20px 50px rgba(38,80,92,0.18);
       text-align: center;
       animation: fade-up 600ms ease-out;
     }
@@ -76,74 +74,80 @@
       from { opacity: 0; transform: translateY(12px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-    .intro-title { font-size: 26px; color: var(--isle14-indigo-deep); margin-bottom: 8px; }
-    .intro-sub { color: var(--isle14-text-soft); font-size: 16px; margin-bottom: 22px; }
+    .intro-title { font-size: 26px; font-weight: 900; color: var(--deep, #1E3D47); margin-bottom: 8px; }
+    .intro-sub { color: var(--text-soft, #4D6F78); font-size: 17px; margin-bottom: 22px; }
     .level-grid {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px;
     }
     .level-card {
-      background: linear-gradient(135deg, var(--isle14-indigo), var(--isle14-violet));
-      color: #fff; border: none;
-      border-radius: 18px; padding: 18px 14px;
+      min-height: var(--touch-min, 56px);
+      background: var(--warm-white, #FFF9F4);
+      border: 2.5px solid var(--mint, #B8F2CF);
+      border-radius: var(--radius-md, 24px);
+      padding: 18px 14px;
       font-family: inherit; font-weight: 800; font-size: 17px;
-      cursor: pointer; box-shadow: 0 8px 20px rgba(139,92,246,0.32);
-      transition: transform 180ms ease;
+      color: var(--deep, #1E3D47);
+      cursor: pointer;
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
     }
-    .level-card:hover { transform: translateY(-2px); }
-    .level-card .lc-num { font-family: 'Rubik', sans-serif; font-size: 30px; display: block; margin-bottom: 4px; }
-    .level-card .lc-desc { font-weight: 500; font-size: 13px; opacity: 0.9; }
+    .level-card:hover { transform: translateY(-2px); border-color: var(--sea-green, #8ED9B8); background: #F2FBF6; }
+    .level-card .lc-num {
+      font-size: 30px; font-weight: 900; display: block; margin: 0 auto 6px;
+      width: 52px; height: 52px; line-height: 52px;
+      background: var(--mint, #B8F2CF); border-radius: 50%;
+    }
+    .level-card .lc-desc { font-weight: 600; font-size: 14px; color: var(--text-soft, #4D6F78); }
 
     /* Mechanic styles */
     .mechanic-listen-mcq { animation: fade-up 600ms ease-out; }
+    .mlmcq-wrap { display: flex; flex-direction: column; align-items: stretch; }
     .mlmcq-wrap > * + * { margin-top: 16px; }
 
     .mlmcq-progress {
-      font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 16px;
-      color: var(--isle14-indigo-deep); text-align: center;
-      background: rgba(255,255,255,0.85);
+      font-weight: 800; font-size: 16px;
+      color: var(--deep, #1E3D47); text-align: center;
+      background: rgba(255,255,255,0.88);
       padding: 6px 18px; border-radius: 999px; display: inline-block;
       box-shadow: 0 4px 12px rgba(38,80,92,0.1);
       margin: 0 auto 12px; align-self: center;
     }
-    .mlmcq-wrap { display: flex; flex-direction: column; align-items: stretch; }
-    .mlmcq-wrap .mlmcq-progress { align-self: center; }
 
     .mlmcq-passage-card, .mlmcq-question-card {
-      background: var(--isle14-card);
-      border-radius: 22px;
-      padding: 22px 22px;
-      box-shadow: 0 16px 40px rgba(30,27,75,0.14);
+      background: rgba(255,255,255,0.94);
+      border-radius: var(--radius-md, 24px);
+      padding: 22px;
+      box-shadow: 0 16px 40px rgba(38,80,92,0.14);
     }
 
     .mlmcq-passage-text {
-      font-family: 'Rubik', sans-serif;
-      font-size: clamp(20px, 4vw, 24px);
-      line-height: 1.85;
-      background: #fff7ed;
-      border: 2px solid #fdba74;
-      border-radius: 16px;
+      font-size: clamp(19px, 4vw, 24px);
+      font-weight: 600;
+      line-height: 1.9;
+      background: var(--warm-white, #FFF9F4);
+      border: 2px solid var(--sand, #F8E3D6);
+      border-radius: var(--radius-sm, 16px);
       padding: 18px 22px;
-      direction: rtl;
-      text-align: right;
+      direction: rtl; text-align: right;
+      color: var(--deep, #1E3D47);
     }
     .mlmcq-question-text {
-      font-family: 'Rubik', sans-serif;
       font-weight: 800;
       font-size: clamp(20px, 4vw, 24px);
-      color: var(--isle14-indigo-deep);
+      color: var(--deep, #1E3D47);
       margin-bottom: 6px;
-      direction: rtl;
-      text-align: right;
+      direction: rtl; text-align: right;
     }
     .mlmcq-audio-btn {
       display: inline-flex; align-items: center; gap: 10px;
-      background: linear-gradient(135deg, var(--isle14-indigo), var(--isle14-violet));
-      color: #fff; border: none;
-      padding: 12px 22px;
+      min-height: var(--touch-min, 56px);
+      background: var(--water-depth, #63CFE5);
+      color: var(--deep, #1E3D47); border: none;
+      padding: 12px 24px;
       border-radius: 999px;
-      font-family: inherit; font-weight: 800; font-size: 15px;
-      cursor: pointer; box-shadow: 0 6px 14px rgba(139,92,246,0.32);
+      font-family: inherit; font-weight: 800; font-size: 16px;
+      cursor: pointer; box-shadow: 0 6px 14px rgba(38,80,92,0.18);
       margin-top: 12px;
+      transition: transform 150ms ease;
     }
     .mlmcq-audio-btn:hover { transform: translateY(-1px); }
     .mlmcq-audio-btn .mlmcq-icon { font-size: 17px; }
@@ -153,73 +157,101 @@
       margin-top: 18px;
     }
     .mlmcq-option {
-      background: #f8fafc;
-      border: 2.5px solid #cbd5e1;
-      border-radius: 16px;
+      min-height: var(--touch-min, 56px);
+      background: var(--warm-white, #FFF9F4);
+      border: 2.5px solid var(--stone, #DAD6C9);
+      border-radius: var(--radius-sm, 16px);
       padding: 16px 22px;
-      font-family: 'Rubik', sans-serif; font-weight: 700;
+      font-family: inherit; font-weight: 700;
       font-size: clamp(18px, 3.5vw, 22px);
-      color: var(--isle14-text);
+      color: var(--deep, #1E3D47);
       cursor: pointer;
       transition: transform 150ms ease, border-color 180ms ease, background 180ms ease;
       direction: rtl; text-align: right;
     }
     .mlmcq-option:hover:not(:disabled) {
-      border-color: var(--isle14-violet);
-      background: #f5f3ff;
+      border-color: var(--sea-green, #8ED9B8);
+      background: #F2FBF6;
       transform: translateY(-1px);
     }
     .mlmcq-option:disabled { cursor: default; }
     .mlmcq-option--correct {
-      border-color: #16a34a; background: #dcfce7; color: #14532d;
+      border-color: var(--success, #7CE7B4); background: #E9FBF2;
+      box-shadow: var(--glow-success, 0 0 20px #7CE7B4);
     }
-    .mlmcq-option--wrong {
-      border-color: #dc2626; background: #fee2e2; color: #7f1d1d;
-    }
+    .mlmcq-option--wrong { border-color: var(--coral, #FFA98D); background: #FFF1EB; }
     .mlmcq-feedback {
       min-height: 22px;
-      font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 17px;
+      font-weight: 800; font-size: 17px;
       text-align: center; margin-top: 14px;
     }
-    .mlmcq-feedback--ok   { color: #15803d; }
-    .mlmcq-feedback--miss { color: #b45309; }
+    .mlmcq-feedback--ok   { color: #2E7A66; }
+    .mlmcq-feedback--miss { color: #B5611F; }
     .mlmcq-error {
-      background: #fef3c7; border: 1px dashed #f59e0b; border-radius: 12px;
-      padding: 16px; color: #92400e; text-align: center; font-weight: 600;
+      background: var(--hint, #FFE7A8); border: 1px dashed var(--peach, #FFC8AE); border-radius: 12px;
+      padding: 16px; color: var(--deep, #1E3D47); text-align: center; font-weight: 600;
     }
 
-    /* Summary card */
+    /* Summary */
     .summary-card {
-      background: var(--isle14-card);
-      border-radius: 24px;
+      background: rgba(255,255,255,0.94);
+      border-radius: var(--radius-lg, 28px);
       padding: 28px 22px;
       text-align: center;
-      box-shadow: 0 16px 40px rgba(30,27,75,0.14);
+      box-shadow: 0 16px 40px rgba(38,80,92,0.14);
       animation: fade-up 600ms ease-out;
     }
-    .summary-title { font-size: 24px; color: var(--isle14-indigo-deep); margin-bottom: 8px; }
-    .summary-score { font-family: 'Rubik', sans-serif; font-size: 48px; font-weight: 900; color: var(--isle14-violet); margin: 12px 0; }
+    .summary-title { font-size: 24px; font-weight: 900; color: var(--deep, #1E3D47); margin-bottom: 8px; }
+    .summary-score { font-size: 48px; font-weight: 900; color: var(--sea-green, #8ED9B8); margin: 12px 0; }
     .summary-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
     .summary-btn {
-      background: linear-gradient(135deg, var(--isle14-indigo), var(--isle14-violet));
-      color: #fff; border: none; padding: 14px 26px; border-radius: 999px;
+      min-height: var(--touch-min, 56px);
+      background: var(--sea-green, #8ED9B8);
+      color: var(--deep, #1E3D47); border: none; padding: 14px 26px; border-radius: 999px;
       font-family: inherit; font-weight: 800; font-size: 16px; cursor: pointer;
-      box-shadow: 0 8px 20px rgba(139,92,246,0.3);
-      text-decoration: none; display: inline-block;
+      box-shadow: 0 8px 20px rgba(38,80,92,0.18);
+      text-decoration: none; display: inline-flex; align-items: center;
     }
     .summary-btn--ghost {
-      background: transparent; color: var(--isle14-indigo-deep);
-      border: 2px solid var(--isle14-indigo);
+      background: transparent; color: var(--deep, #1E3D47);
+      border: 2px solid var(--sea-green, #8ED9B8);
       box-shadow: none;
     }
 
+    /* נוני */
+    .noni-fixed {
+      position: fixed; bottom: 18px; right: 14px;
+      width: clamp(84px, 18vw, 120px); height: auto;
+      animation: float-bob 3s ease-in-out infinite;
+      pointer-events: none; z-index: 10;
+      filter: drop-shadow(0 8px 14px rgba(38,80,92,0.25));
+    }
+    @keyframes float-bob {
+      0%, 100% { transform: translateY(-8px); }
+      50%      { transform: translateY(8px); }
+    }
+    .noni-bubble {
+      position: fixed; bottom: 150px; right: 16px;
+      background: #fff; border-radius: var(--radius-md, 24px);
+      padding: 14px 20px; max-width: 270px;
+      box-shadow: 0 6px 18px rgba(38,80,92,0.18);
+      z-index: 10;
+      font-weight: 700; font-size: 16px; color: var(--deep, #1E3D47);
+      transition: opacity 300ms ease;
+    }
+    .noni-bubble.hidden { opacity: 0; pointer-events: none; }
+
     @media (prefers-reduced-motion: reduce) {
       .intro-card, .mechanic-listen-mcq, .summary-card { animation: none !important; }
+      .noni-fixed { animation: none !important; }
     }
   </style>
 <script src="../../demo/journey.js" defer></script>
 </head>
 <body>
+
+<img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true"
+     onerror="this.style.display='none'">
 
 <header class="top-bar">
   <a href="stage-14-island.html" class="icon-btn" aria-label="חזרה לאי 14">
@@ -227,7 +259,7 @@
       <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   </a>
-  <div class="title-pill">להאזין ולענות</div>
+  <div class="title-pill">לְהַאֲזִין וְלַעֲנוֹת</div>
   <div style="width:52px;height:52px;" aria-hidden="true"></div>
 </header>
 
@@ -260,7 +292,7 @@
   <section id="summarySection" class="summary-card" style="display:none;">
     <h1 class="summary-title">סִיַּמְתֶּם אֶת הַסֵּבֶב!</h1>
     <div class="summary-score" id="summaryScore">— / —</div>
-    <p id="summaryMsg" style="color:var(--isle14-text-soft);">סֵבֶב חָזָק! רוֹצִים לְנַסּוֹת שׁוּב?</p>
+    <p id="summaryMsg" style="color:var(--text-soft, #4D6F78);">סֵבֶב חָזָק! רוֹצִים לְנַסּוֹת שׁוּב?</p>
     <div class="summary-actions">
       <button class="summary-btn" id="playAgainBtn" type="button">סֵבֶב חָדָשׁ</button>
       <a class="summary-btn summary-btn--ghost" href="stage-14-island.html">חֲזָרָה לְאִי 14</a>
@@ -269,9 +301,13 @@
 
 </main>
 
+<img class="noni-fixed" id="noniImg" src="assets/noni-idle.png" alt="נוני">
+<div class="noni-bubble" id="noniBubble">הַקְשִׁיבוּ טוֹב-טוֹב לַסִּפּוּר!</div>
+
 <!-- Scripts -->
 <script src="js/state.js"></script>
 <script src="js/shared/bkt.js"></script>
+<script src="js/shared/audio.js"></script>
 <script src="js/shared/oral-skill-adapter.js"></script>
 <script src="js/templates/mechanic-listen-mcq.js"></script>
 
@@ -284,8 +320,23 @@
     const score   = document.getElementById('summaryScore');
     const msg     = document.getElementById('summaryMsg');
     const again   = document.getElementById('playAgainBtn');
+    const noniImg = document.getElementById('noniImg');
+    const noniBub = document.getElementById('noniBubble');
 
     let currentLevel = null;
+    let noniTimer = null;
+
+    function noniSay(text) {
+      if (!noniBub) return;
+      noniBub.textContent = text;
+      noniBub.classList.remove('hidden');
+    }
+    function noniMood(src, ms) {
+      if (!noniImg) return;
+      noniImg.src = 'assets/noni-' + src + '.png';
+      if (noniTimer) clearTimeout(noniTimer);
+      if (ms) noniTimer = setTimeout(() => { noniImg.src = 'assets/noni-idle.png'; }, ms);
+    }
 
     // אם querystring כולל ?level=1 → דלג על picker.
     const params = new URLSearchParams(location.search);
@@ -304,21 +355,30 @@
       summary.style.display = 'none';
       root.style.display = '';
       root.innerHTML = '';
+      noniMood('idle');
+      noniSay('הַקְשִׁיבוּ טוֹב-טוֹב לַסִּפּוּר!');
 
       window.AvneiMechanicListenMCQ.init({
         studentId,
         level,
         batchSize: 5,
         mountRoot: root,
+        onProgress: (p) => {
+          if (p.isCorrect) noniMood('happy', 1400);
+          else noniMood('thinking', 1400);
+        },
         onComplete: (payload) => {
           root.style.display = 'none';
           summary.style.display = '';
           const pct = payload.total > 0 ? Math.round((payload.correct / payload.total) * 100) : 0;
           score.textContent = payload.correct + ' / ' + payload.total;
           if (pct >= 70) {
+            noniMood('happy', 4000);
             msg.textContent = 'כָּל הַכָּבוֹד! הִצְלַחְתֶּם בְּ-' + pct + '% מֵהַשְּׁאֵלוֹת.';
+            noniSay('אֵיזֶה כֵּיף! הִקְשַׁבְתֶּם מַמָּשׁ טוֹב!');
           } else {
             msg.textContent = 'עֲנִיתֶם עַל ' + pct + '% מֵהַשְּׁאֵלוֹת. נְנַסֶּה שׁוּב?';
+            noniSay('בּוֹאוּ נַקְשִׁיב שׁוּב בְּיַחַד.');
           }
         },
       });
@@ -326,6 +386,8 @@
     }
 
     again.addEventListener('click', () => {
+      noniMood('idle');
+      noniSay('הַקְשִׁיבוּ טוֹב-טוֹב לַסִּפּוּר!');
       if (currentLevel) startLevel(currentLevel);
       else {
         summary.style.display = 'none';

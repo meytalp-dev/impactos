@@ -4,37 +4,35 @@
   <meta charset="UTF-8">
   <script src="js/shared/file-protocol-shim.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#7CC4FF">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta name="theme-color" content="#A8E8FF">
   <title>אי 14 · הבנת הנשמע</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/tokens.css">
-  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/tokens.css?v=2026-07-06">
 
   <style>
-    :root {
-      --isle14-indigo: #4F46E5;
-      --isle14-indigo-deep: #3730A3;
-      --isle14-violet: #8B5CF6;
-      --isle14-bg: linear-gradient(180deg, #C7E9FF 0%, #7CC4FF 60%, #4A9CE8 100%);
-      --isle14-card: #FFFFFF;
-      --isle14-text: #1E1B4B;
-      --isle14-text-soft: #475569;
-    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
     body {
       font-family: 'Heebo', sans-serif;
-      background: var(--isle14-bg);
-      color: var(--isle14-text);
+      color: var(--text-main, #26505C);
       line-height: 1.5;
       min-height: 100vh;
+      background: linear-gradient(180deg, #BFF1FF 0%, #A8E8FF 40%, #73D9D1 100%);
       -webkit-font-smoothing: antialiased;
     }
-    h1, h2 { font-family: 'Rubik', sans-serif; line-height: 1.2; }
+    .scene-bg {
+      position: fixed; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center bottom;
+      z-index: 0; pointer-events: none;
+    }
 
+    /* Top bar */
     .top-bar {
       position: fixed; top: 0; left: 0; right: 0;
       padding: 16px;
@@ -46,119 +44,163 @@
       background: rgba(255,255,255,0.92); border: 1.5px solid rgba(255,255,255,0.95);
       box-shadow: 0 6px 16px rgba(38,80,92,0.15);
       display: flex; align-items: center; justify-content: center;
-      color: var(--isle14-text); text-decoration: none;
+      color: var(--text-main, #26505C); text-decoration: none;
     }
     .icon-btn:active { transform: scale(0.92); }
 
     .island-header {
-      padding: 90px 16px 24px;
+      position: relative; z-index: 1;
+      padding: 92px 16px 20px;
       text-align: center;
       animation: fade-down 700ms ease-out;
     }
     @keyframes fade-down { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
     .island-title {
-      font-size: clamp(28px, 6vw, 42px);
+      display: inline-block;
+      font-size: clamp(26px, 6vw, 38px);
       font-weight: 900;
-      color: #fff;
-      text-shadow: 0 4px 14px rgba(38,80,92,0.4);
-      margin-bottom: 6px;
+      color: var(--deep, #1E3D47);
+      background: rgba(255,255,255,0.9);
+      border-radius: 999px;
+      padding: 10px 30px;
+      box-shadow: 0 8px 22px rgba(38,80,92,0.16);
+      margin-bottom: 10px;
     }
     .island-subtitle {
       font-size: clamp(15px, 3vw, 19px);
-      color: rgba(255,255,255,0.92);
-      max-width: 50ch;
+      font-weight: 700;
+      color: var(--deep, #1E3D47);
+      background: rgba(255,255,255,0.78);
+      border-radius: 999px;
+      display: inline-block;
+      padding: 6px 20px;
+      max-width: 56ch;
       margin: 0 auto;
     }
 
-    .quests-wrap {
-      max-width: 920px;
-      margin: 0 auto;
-      padding: 0 16px 60px;
-    }
-    .quests-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 18px;
-    }
-
-    .quest-card {
-      background: var(--isle14-card);
-      border-radius: 22px;
-      padding: 24px 22px;
-      box-shadow: 0 14px 38px rgba(30,27,75,0.18);
-      text-decoration: none;
-      color: var(--isle14-text);
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      transition: transform 220ms ease, box-shadow 220ms ease;
-      border: 2px solid transparent;
+    /* Progress strip */
+    .progress-strip {
+      position: relative; z-index: 1;
+      max-width: 920px; margin: 0 auto 16px;
+      padding: 0 16px;
       animation: fade-up 700ms ease-out;
     }
     @keyframes fade-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .progress-strip-inner {
+      background: rgba(255,255,255,0.92);
+      border-radius: var(--radius-md, 24px);
+      padding: 14px 20px;
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      box-shadow: 0 8px 20px rgba(38,80,92,0.12);
+    }
+    .progress-strip-inner h3 {
+      font-weight: 800; font-size: 16px;
+      color: var(--deep, #1E3D47);
+    }
+    .skill-pill {
+      background: var(--warm-white, #FFF9F4); border: 2px solid var(--stone, #DAD6C9);
+      padding: 6px 14px; border-radius: 999px;
+      font-size: 14px; font-weight: 700; color: var(--text-soft, #4D6F78);
+    }
+    .skill-pill[data-mastered="true"] {
+      background: #E9FBF2; border-color: var(--success, #7CE7B4); color: #2E7A66;
+    }
+    .skill-pill[data-weak="true"] {
+      background: var(--hint, #FFE7A8); border-color: var(--peach, #FFC8AE); color: var(--deep, #1E3D47);
+    }
+
+    /* Quest cards */
+    .quests-wrap {
+      position: relative; z-index: 1;
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 0 16px 170px;
+    }
+    .quests-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .quest-card {
+      background: rgba(255,255,255,0.94);
+      border-radius: var(--radius-md, 24px);
+      padding: 24px 22px;
+      box-shadow: 0 14px 38px rgba(38,80,92,0.16);
+      text-decoration: none;
+      color: var(--text-main, #26505C);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+      border: 2.5px solid transparent;
+      animation: fade-up 700ms ease-out;
+    }
     .quest-card:hover {
       transform: translateY(-4px);
-      box-shadow: 0 22px 48px rgba(30,27,75,0.22);
-      border-color: var(--isle14-violet);
+      box-shadow: 0 22px 48px rgba(38,80,92,0.2);
+      border-color: var(--sea-green, #8ED9B8);
     }
     .quest-card:nth-of-type(2) { animation-delay: 120ms; }
+    .quest-card:nth-of-type(3) { animation-delay: 240ms; }
 
     .quest-card .qc-badge {
       display: inline-flex; align-items: center; justify-content: center;
       width: 64px; height: 64px; border-radius: 18px;
-      background: linear-gradient(135deg, var(--isle14-indigo), var(--isle14-violet));
-      color: #fff; font-size: 32px;
+      color: var(--deep, #1E3D47);
     }
+    .qc-badge--listen { background: var(--mint, #B8F2CF); }
+    .qc-badge--order  { background: var(--lavender, #D9D2FF); }
+    .qc-badge--read   { background: var(--sand, #F8E3D6); }
+
     .quest-card h2 {
       font-size: 22px; font-weight: 900;
-      color: var(--isle14-indigo-deep);
+      color: var(--deep, #1E3D47);
     }
     .quest-card p {
       font-size: 15px;
-      color: var(--isle14-text-soft);
+      color: var(--text-soft, #4D6F78);
     }
     .quest-card .qc-cta {
       align-self: flex-start;
-      background: linear-gradient(135deg, var(--isle14-indigo), var(--isle14-violet));
-      color: #fff; padding: 10px 18px;
-      border-radius: 999px; font-weight: 800; font-size: 15px;
-      box-shadow: 0 6px 14px rgba(139,92,246,0.3);
+      min-height: var(--touch-min, 56px);
+      display: inline-flex; align-items: center;
+      background: var(--sea-green, #8ED9B8);
+      color: var(--deep, #1E3D47); padding: 10px 24px;
+      border-radius: 999px; font-weight: 800; font-size: 16px;
+      box-shadow: 0 6px 14px rgba(38,80,92,0.18);
     }
 
-    .progress-strip {
-      max-width: 920px; margin: 0 auto 18px;
-      padding: 0 16px;
-      animation: fade-up 700ms ease-out;
+    /* נוני */
+    .noni-fixed {
+      position: fixed; bottom: 18px; right: 14px;
+      width: clamp(84px, 18vw, 120px); height: auto;
+      animation: float-bob 3s ease-in-out infinite;
+      pointer-events: none; z-index: 10;
+      filter: drop-shadow(0 8px 14px rgba(38,80,92,0.25));
     }
-    .progress-strip-inner {
-      background: rgba(255,255,255,0.92);
-      border-radius: 18px;
-      padding: 16px 20px;
-      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
-      box-shadow: 0 8px 20px rgba(30,27,75,0.1);
+    @keyframes float-bob {
+      0%, 100% { transform: translateY(-8px); }
+      50%      { transform: translateY(8px); }
     }
-    .progress-strip-inner h3 {
-      font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 16px;
-      color: var(--isle14-indigo-deep);
-    }
-    .skill-pill {
-      background: #f1f5f9; border: 2px solid #cbd5e1;
-      padding: 6px 14px; border-radius: 999px;
-      font-size: 14px; font-weight: 700; color: var(--isle14-text-soft);
-    }
-    .skill-pill[data-mastered="true"] {
-      background: #dcfce7; border-color: #16a34a; color: #14532d;
-    }
-    .skill-pill[data-weak="true"] {
-      background: #fef3c7; border-color: #f59e0b; color: #92400e;
+    .noni-bubble {
+      position: fixed; bottom: 150px; right: 16px;
+      background: #fff; border-radius: var(--radius-md, 24px);
+      padding: 14px 20px; max-width: 270px;
+      box-shadow: 0 6px 18px rgba(38,80,92,0.18);
+      z-index: 10;
+      font-weight: 700; font-size: 16px; color: var(--deep, #1E3D47);
     }
 
     @media (prefers-reduced-motion: reduce) {
       .island-header, .quest-card, .progress-strip { animation: none !important; }
+      .noni-fixed { animation: none !important; }
     }
   </style>
 </head>
 <body>
+
+<img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true"
+     onerror="this.style.display='none'">
 
 <header class="top-bar">
   <a href="map.html" class="icon-btn" aria-label="חזרה למפה">
@@ -170,7 +212,7 @@
 </header>
 
 <section class="island-header">
-  <h1 class="island-title">אי 14 · הבנת הנשמע</h1>
+  <h1 class="island-title">אִי 14 · מַקְשִׁיבִים וּמְבִינִים</h1>
   <p class="island-subtitle">לְהַאֲזִין לַסִּפּוּר · לַעֲנוֹת עַל שְׁאֵלָה · לְסַדֵּר אֵירוּעִים.</p>
 </section>
 
@@ -188,21 +230,39 @@
   <div class="quests-grid">
 
     <a class="quest-card" href="stage-14-listen-and-answer.html">
-      <div class="qc-badge" aria-hidden="true">🎧</div>
+      <div class="qc-badge qc-badge--listen" aria-hidden="true">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+          <path d="M4 13a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+          <rect x="3" y="13" width="4.5" height="7" rx="2" stroke="currentColor" stroke-width="2.2"/>
+          <rect x="16.5" y="13" width="4.5" height="7" rx="2" stroke="currentColor" stroke-width="2.2"/>
+        </svg>
+      </div>
       <h2>לְהַאֲזִין וְלַעֲנוֹת</h2>
       <p>לִחֲצוּ עַל הַכַּפְתּוֹר, הַקְשִׁיבוּ לַסִּפּוּר, וּבַחֲרוּ אֶת הַתְּשׁוּבָה הַנְּכוֹנָה מִתּוֹךְ שָׁלוֹשׁ.</p>
       <span class="qc-cta">לְהַתְחִיל</span>
     </a>
 
     <a class="quest-card" href="stage-14-story-sequence.html">
-      <div class="qc-badge" aria-hidden="true">🧩</div>
+      <div class="qc-badge qc-badge--order" aria-hidden="true">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+          <path d="M8 6h13M8 12h13M8 18h13" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+          <circle cx="4" cy="6" r="1.6" fill="currentColor"/>
+          <circle cx="4" cy="12" r="1.6" fill="currentColor"/>
+          <circle cx="4" cy="18" r="1.6" fill="currentColor"/>
+        </svg>
+      </div>
       <h2>סֵדֶר אֵירוּעִים</h2>
       <p>הַקְשִׁיבוּ לַסִּפּוּר וְאָז סַדְּרוּ אֶת הַמִּשְׁפָּטִים לְפִי הַסֵּדֶר שֶׁקָּרָה.</p>
       <span class="qc-cta">לְהַתְחִיל</span>
     </a>
 
     <a class="quest-card" href="stage-14-read-and-answer.html">
-      <div class="qc-badge" aria-hidden="true">📖</div>
+      <div class="qc-badge qc-badge--read" aria-hidden="true">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+          <path d="M12 6c-1.8-1.6-4.4-2-8-2v14c3.6 0 6.2.4 8 2 1.8-1.6 4.4-2 8-2V4c-3.6 0-6.2.4-8 2Z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
+          <path d="M12 6v14" stroke="currentColor" stroke-width="2.2"/>
+        </svg>
+      </div>
       <h2>לִקְרֹא וְלַעֲנוֹת</h2>
       <p>קִרְאוּ אֶת הַסִּפּוּר בְּעַצְמְכֶם, וּבַחֲרוּ אֶת הַתְּשׁוּבָה הַנְּכוֹנָה מִתּוֹךְ שָׁלוֹשׁ.</p>
       <span class="qc-cta">לְהַתְחִיל</span>
@@ -210,6 +270,9 @@
 
   </div>
 </main>
+
+<img class="noni-fixed" id="noniImg" src="assets/noni-idle.png" alt="נוני">
+<div class="noni-bubble" id="noniBubble">אֵיזֶה סִפּוּר נִשְׁמַע הַיּוֹם?</div>
 
 <script src="js/state.js"></script>
 <script src="js/shared/bkt.js"></script>

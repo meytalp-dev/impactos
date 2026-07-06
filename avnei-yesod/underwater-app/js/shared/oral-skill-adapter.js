@@ -109,6 +109,9 @@
             question_text: q.question_text,
             skill: q.skill,
             options: q.options,
+            // MP3 מוקלט מראש (DNA אודיו) — המכניקות נופלות ל-Web Speech כשחסר.
+            passage_audio_key: p.passage_audio_key || null,
+            question_audio_key: q.question_audio_key || null,
           });
         });
       });

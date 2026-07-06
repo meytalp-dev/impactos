@@ -2,9 +2,22 @@
 // js/read-aloud-logger.js — מיפוי verdict של שטף-קריאה → אירוע-תרגול שמור
 // ------------------------------------------------------------
 // כלי "נוני מקשיבה" (stage-read-aloud.html) מקבל verdict מהשרת בענן, מציג —
-// וכאן הופך אותו ל-event שמזין את הפרופיל האורייני (BKT) של התלמיד/ה.
-// אי-הקריאה = 15 · סטרנד 4 (קריאה+הבנה) — נבחר ע"י מיטל 1.7.2026.
+// וכאן הופך אותו ל-event שמור. אי-הקריאה = 15 · סטרנד 4 (קריאה+הבנה).
 // brief: _handoff/2026-06-30-read-aloud-save-to-profile-agent-brief.md
+//
+// 🔴 ניתוק דיוק מ-BKT (3.7.2026): בדיקת הזרקת-טעויות (error_injection_test.py)
+// הראתה שכלי ההקראה מפספס ~70% מטעויות-אמת מקצה-לקצה — עיוורון-תנועה מבני
+// (המנוע + ההשוואה מסירים ניקוד → 0/4 טעויות-תנועה) + שכבת-השוואה סלחנית
+// (REVIEW נספר כ"נכון"; זוגות-בלבול/אם-קריאה בחינם). לכן verdict-הדיוק **אינו
+// אמין** כאות-שליטה, ו**אסור שיזין את הפרופיל האורייני (BKT) שהוא מנוע ההצבה** —
+// אחרת כל טעות שדולפת מנפחת pKnown לכיוון "שולט/ת" שגוי.
+//   ⇒ toEvent משמיט primary_island_id / strand_id → resolveIslandId מחזיר null →
+//     event-logger מדלג על AvneiBKT.ingestEvent (בדיוק כמו אירועי island=null
+//     היסטוריים). האירוע עדיין נשמר ל-event log + מסונכרן לענן + מזין את
+//     שורת-המורָה (#teacherSummary, מסננת לפי activity_type='read_aloud', לא אי).
+//   ⇒ דיוק = דגל-למורה בלבד (המורה מכריעה). השטף אמין ואינו מושפע מכך.
+//   ⇒ החזרת הזנת-BKT בעתיד (אחרי corpus קול-ילד אמיתי + ניקוד פונמי אקוסטי):
+//     להחזיר primary_island_id: READ_ALOUD_ISLAND + strand_id: READ_ALOUD_STRAND.
 //
 // פרטיות: נשמרת רק **התוצאה** (decision + מילה), לא אודיו גולמי.
 // ============================================================
@@ -42,20 +55,19 @@
     return !!sid && sid !== 'local';
   }
 
-  // miscues של קריאה (החלפה/השמטה/תנועה) לא ממפים נקי לערכי-failure של EPA (brief §1),
-  // לכן **לא** מעבירים target_letter / characteristic_id / failure_type: epa.ingestEvent
-  // לא ימצא unitKey וידלג. ה-BKT עדיין מתעדכן מ-primary_island_id. תוצאה = correct/incorrect
-  // בלבד — כפי שאישרה מיטל. את זהות המילה שומרים ב-item_id (עובר דרך event-logger, לא מזין EPA).
+  // האירוע נשמר ל-event log בלבד — לא מזין BKT ולא EPA:
+  //   • BKT — משמיטים primary_island_id/strand_id → island=null → מדולג (ראו header 3.7.2026).
+  //   • EPA — לא מעבירים target_letter/characteristic_id/failure_type → epa.ingestEvent מדלג.
+  // is_correct נשמר לשורת-המורָה (#teacherSummary סופר correct/total) — משטח מודע-מורה,
+  // לא הצבה אוטומטית. read_aloud_decision שומר את ה-verdict הגולמי ל-corpus/ניתוח עתידי.
   function toEvent(v) {
-    // ACCEPT → correct · REVIEW → correct רך (נספר לטובת שליטה) · REJECT → incorrect.
-    var isCorrect = v.decision !== 'REJECT';
     return {
-      activity_type:     'read_aloud',
-      activity_variant:  v.mode || null,   // 'word' | 'sentence'
-      primary_island_id: READ_ALOUD_ISLAND,
-      strand_id:         READ_ALOUD_STRAND,
-      item_id:           v.target || null, // המילה/משפט — לתיעוד, אינו מזין EPA
-      is_correct:        isCorrect,
+      activity_type:       'read_aloud',
+      activity_variant:    v.mode || null,   // 'word' | 'sentence'
+      item_id:             v.target || null, // המילה/משפט — לתיעוד
+      read_aloud_decision: v.decision || null, // ACCEPT|REVIEW|REJECT — גולמי, ל-corpus עתידי
+      // ACCEPT/REVIEW→correct · REJECT→incorrect. לשורת-המורָה בלבד; אינו מזין BKT (אין island).
+      is_correct:          v.decision !== 'REJECT',
     };
   }
 
