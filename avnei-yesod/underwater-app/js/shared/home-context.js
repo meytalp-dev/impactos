@@ -59,7 +59,11 @@ window.AvneiHomeContext = (function () {
 
   function getContext() {
     try {
-      const p = new URLSearchParams(location.search).get('context');
+      const q = new URLSearchParams(location.search);
+      // מצב דמו/הצגה (presentation/guest) — תמיד 'school': בלי משימת-בית,
+      // בלי מכסת-זמן ובלי מעקב שימוש. חלון-השעות רלוונטי רק לשימוש אמיתי.
+      if (q.has('presentation') || q.has('guest')) return 'school';
+      const p = q.get('context');
       if (p === 'home' || p === 'school') {
         sessionStorage.setItem(OVERRIDE_KEY, p);
         return p;
