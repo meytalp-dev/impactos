@@ -151,7 +151,8 @@ const WORLD_RULES =
 '7. יעדי מגע ≥56px. אפשרויות-שמע = דפוס two-tap: נגיעה 1 משמיעה (לא נמדדת), נגיעה 2 בוחרת (רק היא ל-BKT). מסיח-שמע חייב להיות מובחן באוזן (QA תמלול חייב להצליח להבחין).\n' +
 '8. logging: להעביר primary_island_id מפורש ב-result (resolveIslandId מכבד אותו — אין צורך לגעת ב-event-logger). לפריטי בנק — characteristic_id ב-payload (EPA G4). לחקות את דפוס ה-logging של stage-14/stage-5.\n' +
 '9. dual-mode: כתיבה ל-localStorage בלבד; ?guest=1/?presentation=1 חייבים לעבוד. לקרוא את avnei-yesod/underwater-app/CLAUDE.md לפני נגיעה במנוע.\n' +
-'10. cache-bust בפיתוח (?v=). לבדוק גם ב-viewport טאבלט לרוחב.\n';
+'10. cache-bust בפיתוח (?v=). לבדוק גם ב-viewport טאבלט לרוחב.\n' +
+'11. file:// (6.7.2026): כל דף HTML חדש חייב תג script של js/shared/file-protocol-shim.js מיד אחרי <meta charset>. אם ערכת/הוספת JSON תוכן (data/ · interventions/ · curriculum) — אל תריץ את scripts/build-embedded-data.js ואל תיגע ב-embedded-data.js (קובץ מיוצר, סוכנים מקבילים יתנגשו בו) — רשום ב-notes של הדיווח שנדרש rebuild; סוכן התזמורת מריץ אותו באינטגרציה. פירוט: avnei-yesod/underwater-app/CLAUDE.md.\n';
 
 const FORBIDDEN =
 'אסור לגעת: map.html + לוח-המשימות (של סוכן התזמורת) · איים קיימים (stage-1/2/3/4/5/14-*) · js/state.js · js/shared/bkt.js · event-logger.js · קבצים של משימות אחרות בלוח.';
@@ -168,7 +169,7 @@ const ORCH_PROMPT =
 '2. לכל משימה שעברה ל-done מאז הסבב הקודם — אימות לפני אמון: הרם שרת מקומי (python -m http.server בתיקיית underwater-app), פתח את המסכים החדשים, ודא: קונסולה נקייה · סבב משחק מלא עובד · scene-bg PNG ולא gradient · נוני=תמנון PNG · טקסט ילד מנוקד ולשון רבים · יעדי מגע 56px · האירועים נכתבים עם primary_island_id הנכון (בדוק ב-localStorage או __avneiYesod.events() אם קיים). אם יש בדיקת E2E רלוונטית ב-scripts/e2e — הרץ אותה.\n' +
 '3. עבר אימות → חווט למפה: ב-map.html הוסף/עדכן את צומת האי (data-island-id, data-vs-open="true", מיקום % הגיוני ליד האיים הקרובים פדגוגית). אם משימת R1 כבר בוצעה — פשוט הפוך את הצומת מ-horizon לפתוח.\n' +
 '4. עדכן את הסטטוס הצרוב בלוח: באובייקט BAKED_STATUS בקובץ הלוח הוסף למשל C8:"done". 🔴 קרא את קובץ הלוח מחדש ממש לפני העריכה.\n' +
-'5. הוסף שורת סיכום ל-avnei-yesod/_handoff/agent-completion-log.md (תאריך · משימה · מה אומת · הערות).\n' +
+'5. הוסף שורת סיכום ל-avnei-yesod/_handoff/agent-completion-log.md (תאריך · משימה · מה אומת · הערות). אם המשימה הוסיפה/ערכה JSON תוכן — הרץ node scripts/build-embedded-data.js (בתיקיית underwater-app) וכלול את embedded-data.js המעודכן ב-commit שלך; הסוכנים מונחים לא להריץ אותו בעצמם, ובדוק שהדפים החדשים כוללים את file-protocol-shim.js אחרי ה-charset.\n' +
 '6. commit סלקטיבי (רק הקבצים שאתה נגעת בהם) עם הודעה בעברית, ואז push מיד.\n' +
 '7. נכשל אימות → החזר את המשימה ל-status:"doing" עם notes מפורטות מה נכשל, ודווח למיטל.\n' +
 '8. רכז למיטל בסוף כל סבב: רשימת ASK מכל הדיווחים (מילות אוצר חסרות, אישורים פדגוגיים, שמות-איים מוצעים) + המלצה מה המשימה הבאה למסירה לפי סדר: R1 → C8/C9/C12 (מקבילים, קבצים נפרדים) → C10/C11/C13 → N6/N15/N20 → N16 → H7/H19 → H21.\n\n' +
