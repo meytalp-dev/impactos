@@ -95,7 +95,7 @@
     'stage-4-cv-build.html': { back: '../../demo/student-avnei.html',
       note: 'התרגול הזה נבחר אישית לאיתי: יותר צירופים עם אותיות שהוא עוד לא רכש, ופחות ממה שהוא כבר שולט בו.' },
     'stage-4-cv-tap.html': { back: '../../demo/reading-journey.html', note: NOTE_TASTE },
-    'stage-1-merge-bubble.html': { back: '../../demo/reading-journey.html', note: NOTE_TASTE },
+    'stage-1-choir.html': { back: '../../demo/reading-journey.html', note: NOTE_TASTE },
     'stage-5-word-build.html': { back: '../../demo/reading-journey.html', note: NOTE_TASTE },
     'stage-14-listen-and-answer.html': { back: '../../demo/reading-journey.html', note: NOTE_TASTE },
     'stage-14-read-and-answer.html': { back: '../../demo/reading-journey.html', note: NOTE_TASTE },
@@ -204,8 +204,7 @@
   if (file === 'map.html') {
     css.textContent += [
       '.map-title{top:64px!important;}',
-      '.map-node.map-state-horizon{display:block!important;opacity:.45!important;pointer-events:none!important;}',
-      '.map-node.map-state-horizon .node-label{display:none!important;}',
+      '.map-node.map-state-horizon{display:block!important;opacity:.55!important;pointer-events:none!important;}',
       '.map-node.map-state-next-distant{opacity:.55!important;filter:blur(.4px)!important;}',
       '.map-node.map-state-next-distant .node-dot{color:#26505C!important;}'
     ].join('');
