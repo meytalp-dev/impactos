@@ -410,6 +410,13 @@ function dnaBadge(g){
   return iss.length? '<span class="badge b-warn" title="חסר/בעייתי: '+esc(iss.join(', '))+'">⚠ '+iss.length+'</span>'
                    : '<span class="badge b-ok">✓ DNA</span>';
 }
+// מסך-סיום — מסגור-ביצועים לילד (אחוזים / ניקוד X מתוך Y) פדגוגית לא רצוי
+function completionBadge(g){
+  const c=g.completion; if(!c) return '<span class="badge b-na">—</span>';
+  if(!c.showsScore) return '<span class="badge b-ok" title="בלי אחוזים/ציון — מסגור מעודד">✓</span>';
+  const what=[c.percent?'אחוזים':'',c.fraction?'X/Y':''].filter(Boolean).join('+');
+  return '<span class="badge b-fail" title="מציג לילד '+esc(what)+' במסך הסיום — מסגור-ביצועים לא מתאים לכיתה א׳. עדיף שבח לא-מספרי.">⚠ '+esc(what)+'</span>';
+}
 // סימון-מורה ידני (פדגוגי) — ניטרלי כברירת מחדל, נשמר ב-localStorage
 function manualBox(g,field,label,title){
   const cur=qaState(g,field), checked=(cur==='ok')?'checked':'';
@@ -438,15 +445,17 @@ function renderQA(){
   h+='<div class="qa-legend"><span class="dot d-ok"></span>תקין &nbsp; <span class="dot d-fail"></span>לא תקין &nbsp; <span class="dot d-na"></span>לא רלוונטי · '+
      '<b>קול:</b> 🎙️ נוני מוקלט = תקין · 🔊/מעורב ⚠ = Web Speech (עברית גרועה). '+
      '<b>ריצה:</b> '+(rm?'הורצה '+esc((rm.generatedAt||'').slice(0,16).replace('T',' ')):'טרם הורצה — <span class="mono">node admin/qa-runtime-check.js</span>')+'. '+
+     '<b>מסך-סיום:</b> ⚠ = מציג אחוזים/ניקוד לילד (לא מתאים לכיתה א׳). '+
      '<b>מורה:</b> סימונים פדגוגיים ידניים (תמלול/מסיח/fit/גרנולריות).</div>';
   h+='<div id="qa-summary" class="statrow"></div>';
-  h+='<div style="overflow-x:auto"><table><thead><tr><th>אי</th><th>משחקון</th><th>קול</th><th>ריצה</th><th>DNA</th><th>אודיו</th><th>תמונות</th><th>טעינה</th><th>בדיקת-מורה</th></tr></thead><tbody>';
+  h+='<div style="overflow-x:auto"><table><thead><tr><th>אי</th><th>משחקון</th><th>קול</th><th>ריצה</th><th>DNA</th><th>מסך-סיום</th><th>אודיו</th><th>תמונות</th><th>טעינה</th><th>בדיקת-מורה</th></tr></thead><tbody>';
   for(const g of G){
     h+='<tr data-file="'+esc(g.file)+'"><td>'+(g.island?'<span class="pill">'+g.island+'</span>':'<span class="chip">כלי</span>')+'</td>'+
        '<td><a class="link" href="'+esc(up(g.href))+'" target="_blank">'+esc(g.title)+'</a><div class="mono">'+esc(g.file)+'</div></td>'+
        '<td>'+voiceBadge(g.voice)+'</td>'+
        '<td>'+runtimeBadge(g)+'</td>'+
        '<td>'+dnaBadge(g)+'</td>'+
+       '<td>'+completionBadge(g)+'</td>'+
        qaCell(g,'audio')+qaCell(g,'images')+qaCell(g,'loading')+
        manualCell(g)+'</tr>';
   }

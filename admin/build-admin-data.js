@@ -228,7 +228,7 @@ function buildMinigames() {
     const referencesNoni = /noni/i.test(html);
     const noniAsSvg = /<svg[^>]*>[\s\S]{0,400}?(noni|תמנון)/i.test(html) && !/noni-\w+\.(png|webp)/i.test(html);
     const dna = {
-      scene_bg: /class="scene-bg"|scene[-\w]*bg\.(png|webp|jpg)/i.test(html), // רקע-סצנה PNG (לא gradient)
+      scene_bg: /-bg\.(png|webp|jpg)|scene[-\w]*\.(png|webp|jpg)|class="(scene|bay|reef)-bg"/i.test(html), // רקע-סצנה PNG (scene-bg/bay-bg/scene-storm וכו', לא gradient)
       noni_png: /noni-\w+\.(png|webp)/i.test(html),                          // נוני כ-PNG
       noni_not_svg: !noniAsSvg,                                              // נוני לא כ-SVG
       tokens: /tokens\.css/.test(html),                                      // מערכת טוקנים
@@ -247,6 +247,16 @@ function buildMinigames() {
       try { if (exists(abs) && fs.statSync(abs).size === 0) brokenAudio.push(r); } catch (e) {}
     }
     const usesOldVoice = /_old-hila|hila-backup/i.test(html);
+
+    // ── מסך-סיום: מסגור-ביצועים לילד (אחוזים / ניקוד X מתוך Y) — פדגוגית לא רצוי ──
+    // מדויק: רק כשהאחוז/שבר מוצג בהודעה לילד. "ניקוד" (=vowel niqqud) לא נספר.
+    const scorePercent = /(עֲנִיתֶם עַל|נָכוֹן עַל|מֵהַשְּׁאֵלוֹת|הִצְלַחְתֶּם בְּ| עַל )['"]?\s*\+\s*pct|pct\s*\+\s*['"]%|['"][^'"]*'\s*\+\s*pct\s*\+\s*['"]%/.test(html);
+    const scoreFraction = /\bcorrect\b\s*\+\s*['"]\s*\/\s*['"]|score\.textContent\s*=\s*[^;]*\btotal\b/.test(html);
+    const completion = {
+      showsScore: scorePercent || scoreFraction,
+      percent: scorePercent,
+      fraction: scoreFraction,
+    };
 
     // ── QA אוטומטי: איתור נכסים מקומיים חסרים ──
     const refs = [];
@@ -284,6 +294,7 @@ function buildMinigames() {
       dna,
       brokenAudio,
       usesOldVoice,
+      completion,
       href: 'avnei-yesod/underwater-app/' + f,
       qa,
     };
