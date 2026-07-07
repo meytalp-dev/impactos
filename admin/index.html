@@ -331,6 +331,22 @@ function renderIslands(){
 
 /* ═══════ רשימת משחקונים ═══════ */
 function mechLabel(m){return m.replace('mechanic-','');}
+// תגית קול: נוני מוקלט / הקראת-דפדפן(⚠) / מעורב(⚠) / ללא
+function voiceBadge(v){
+  if(v==='noni') return '<span class="badge b-ok" title="קול נוני מוקלט (ElevenLabs MP3)">🎙️ נוני מוקלט</span>';
+  if(v==='tts')  return '<span class="badge b-fail" title="הקראת דפדפן (Web Speech) — עברית גרועה/שקט. לבדוק!">🔊 הקראת דפדפן ⚠</span>';
+  if(v==='mixed')return '<span class="badge b-warn" title="נוני מוקלט + הקראת-דפדפן במקומות מסוימים — לוודא שאין נפילה ל-TTS">🎙️+🔊 מעורב ⚠</span>';
+  return '<span class="badge b-na">ללא קול</span>';
+}
+// תגית מנוע: BKT / EPA / בנק-שאלות
+function engineBadge(e){
+  if(!e) return '<span class="badge b-na">—</span>';
+  const b=[];
+  b.push(e.bkt?'<span class="badge b-ok" title="מזין את מנוע ה-BKT (פרופיל אורייני)">BKT</span>':'<span class="badge b-na" title="לא מזין BKT — משחקון מנותק מהמנוע">no-BKT</span>');
+  if(e.epa) b.push('<span class="pill" title="טוען epa.js — אבחון טעות פר-ציר">EPA</span>');
+  if(e.bank) b.push('<span class="chip" title="מושך מבנק השאלות — יורש EPA מהשאלות">בנק</span>');
+  return b.join(' ');
+}
 function renderGames(){
   const G=D.avnei.minigames.filter(g=>g.kind!=='hub');
   const islands=[...new Set(G.map(g=>g.island).filter(Boolean))].sort((a,b)=>a-b);
@@ -340,13 +356,14 @@ function renderGames(){
      '<option value="tool">כלים / חוצה-אי</option></select>'+
      '<input type="search" id="gsearch" placeholder="חיפוש משחקון…" oninput="filterGames()">'+
      '<span class="chip">'+G.length+' משחקונים</span></div>';
-  h+='<table><thead><tr><th>אי</th><th>משחקון</th><th>מכניקה</th><th>אודיו</th><th>קישור</th></tr></thead><tbody>';
+  h+='<table><thead><tr><th>אי</th><th>משחקון</th><th>מכניקה</th><th>קול</th><th>מנוע (BKT/EPA)</th><th>קישור</th></tr></thead><tbody>';
   for(const g of G){
-    h+='<tr data-isl="'+(g.island||'tool')+'" data-txt="'+esc((g.title+' '+g.file+' '+g.mechanics.join(' ')).toLowerCase())+'">'+
+    h+='<tr data-isl="'+(g.island||'tool')+'" data-txt="'+esc((g.title+' '+g.file+' '+g.mechanics.join(' ')+' '+(g.voice||'')).toLowerCase())+'">'+
        '<td>'+(g.island?'<span class="pill">אי '+g.island+'</span>':'<span class="chip">כלי</span>')+'</td>'+
        '<td><b>'+esc(g.title)+'</b><div class="mono">'+esc(g.file)+'</div></td>'+
        '<td>'+(g.mechanics.length?g.mechanics.map(m=>'<span class="chip">'+esc(mechLabel(m))+'</span>').join(' '):'<span style="color:var(--muted)">—</span>')+'</td>'+
-       '<td>'+(g.usesAudio?'<span class="badge b-ok">כן</span>':'<span class="badge b-na">—</span>')+'</td>'+
+       '<td>'+voiceBadge(g.voice)+'</td>'+
+       '<td>'+engineBadge(g.engine)+'</td>'+
        '<td><a class="link" href="'+esc(up(g.href))+'" target="_blank">פתיחה »</a></td></tr>';
   }
   h+='</tbody></table>';
@@ -373,12 +390,14 @@ function renderQA(){
   const G=D.avnei.minigames.filter(g=>g.kind!=='hub');
   let h='<h2 class="title">טבלת בדיקת תקינות (QA)</h2><div class="subtitle">בדיקה אוטומטית של נכסים חסרים = ברירת מחדל. סמני ✓ ידנית אחרי בדיקה בפועל — נשמר בדפדפן.</div>';
   h+='<div class="qa-legend"><span class="dot d-ok"></span>תקין &nbsp; <span class="dot d-fail"></span>נכס חסר / לא תקין &nbsp; <span class="dot d-na"></span>לא רלוונטי · '+
-     'ה-✓ שתסמני גובר על הבדיקה האוטומטית.</div>';
+     'ה-✓ שתסמני גובר על הבדיקה האוטומטית.<br>'+
+     '<b>קול:</b> 🎙️ נוני מוקלט = תקין · 🔊 הקראת דפדפן / מעורב ⚠ = משתמש ב-Web Speech (עברית גרועה/שקט) — חובה לבדוק שלא נופל לשם.</div>';
   h+='<div id="qa-summary" class="statrow"></div>';
-  h+='<table><thead><tr><th>אי</th><th>משחקון</th><th>אודיו</th><th>תמונות</th><th>טעינה</th><th>אוטו</th></tr></thead><tbody>';
+  h+='<table><thead><tr><th>אי</th><th>משחקון</th><th>קול</th><th>אודיו</th><th>תמונות</th><th>טעינה</th><th>אוטו</th></tr></thead><tbody>';
   for(const g of G){
     h+='<tr data-file="'+esc(g.file)+'"><td>'+(g.island?'<span class="pill">'+g.island+'</span>':'<span class="chip">כלי</span>')+'</td>'+
        '<td><a class="link" href="'+esc(up(g.href))+'" target="_blank">'+esc(g.title)+'</a><div class="mono">'+esc(g.file)+'</div></td>'+
+       '<td>'+voiceBadge(g.voice)+'</td>'+
        qaCell(g,'audio')+qaCell(g,'images')+qaCell(g,'loading')+
        '<td>'+autoBadge(g)+'</td></tr>';
   }

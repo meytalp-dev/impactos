@@ -211,6 +211,19 @@ function buildMinigames() {
     // האם טוען אודיו
     const usesAudio = /shared\/audio\.js/.test(html) || /\.mp3/.test(html);
 
+    // ── זיהוי הקול: נוני מוקלט (audio.js/mp3) מול הקראת-דפדפן (speechSynthesis) ──
+    const hasNoni = /shared\/audio\.js/.test(html) || /\.mp3/.test(html);
+    const hasTTS = /speechSynthesis|SpeechSynthesisUtterance/.test(html);
+    const voice = hasTTS && hasNoni ? 'mixed' : hasTTS ? 'tts' : hasNoni ? 'noni' : 'none';
+
+    // ── חיווט מנוע: BKT / EPA / adapter / בנק-שאלות (יורש EPA) ──
+    const engine = {
+      bkt: /shared\/bkt\.js/.test(html),
+      epa: /shared\/epa\.js/.test(html),
+      adapter: /adapter|oral-skill/.test(html),
+      bank: /questions-grade1|mechanic-mcq|stage-bank-play|question-bank/.test(html),
+    };
+
     // ── QA אוטומטי: איתור נכסים מקומיים חסרים ──
     const refs = [];
     // src="..." ו-href לסקריפטים/תמונות מקומיים
@@ -242,6 +255,8 @@ function buildMinigames() {
       kind,
       mechanics: uniqMech,
       usesAudio,
+      voice,
+      engine,
       href: 'avnei-yesod/underwater-app/' + f,
       qa,
     };
@@ -339,6 +354,12 @@ function main() {
   console.log('  משחקונים:', a.minigames.length);
   const qaFail = a.minigames.filter((g) => g.qa.loading === 'fail' || g.qa.images === 'fail' || g.qa.audio === 'fail');
   console.log('  QA — משחקונים עם נכס חסר:', qaFail.length);
+  const mg = a.minigames.filter((g) => g.kind === 'minigame');
+  const ttsFlag = mg.filter((g) => g.voice === 'tts' || g.voice === 'mixed');
+  console.log('  קול — נוני:', mg.filter((g) => g.voice === 'noni').length,
+    '· הקראת-דפדפן/מעורב:', ttsFlag.length, '(' + ttsFlag.map((g) => g.file).join(', ') + ')',
+    '· ללא:', mg.filter((g) => g.voice === 'none').length);
+  console.log('  מנוע — מזין BKT:', mg.filter((g) => g.engine.bkt).length, '/ ', mg.length, 'משחקונים');
   qaFail.slice(0, 12).forEach((g) => console.log('    ⚠', g.file, JSON.stringify(g.qa.missing)));
   console.log('  פולס: תלמיד', data.pulse.personas.student.length, '· מורה', data.pulse.personas.teacher.length, '· הורה', data.pulse.personas.parent.length);
 }
