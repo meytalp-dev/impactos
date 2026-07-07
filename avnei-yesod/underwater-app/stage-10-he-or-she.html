@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <script src="js/shared/file-protocol-shim.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>אי 10 · הוּא אוֹ הִיא? · מפרץ אבני הבנייה</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css?v=2026-07-07b">
+  <link rel="stylesheet" href="css/game-shell.css?v=2026-07-07b">
+
+  <!-- ============================================================================
+       stage-10-he-or-she.html — אי 10 · משחקון "הוּא אוֹ הִיא?" (זכר/נקבה · שם-תואר)
+       C10b · 7.7.2026 · אושר ע"י מיטל.
+       עצם מוכר (מין דקדוקי ידוע) + זוג צורות של תואר → בוחרים את הצורה שמַתְאִימה
+       למין העצם (הַכַּדּוּר גָּדוֹל / הָעֻגָּה גְּדוֹלָה). stem=טקסט (העצם נראֶה) +
+       אופציות טקסט → נגיעה יחידה. primary_island_id=10, characteristic_id=isl10-gender-adj,
+       EPA failure_type=GenderMismatch פר-מסיח. תוכן inline (js/shared/island10b-game.js) —
+       פריטי GenderMismatch בבנק הם הטיית פועל/כינוי, לא סבב-סיומות.
+       ============================================================================ -->
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; min-height: 100dvh;
+      font-family: 'Heebo', sans-serif;
+      background: linear-gradient(180deg, #BFF1FF 0%, #A8E8FF 40%, #73D9D1 100%);
+      color: var(--text-main); direction: rtl; overflow-x: hidden;
+    }
+    .scene-bg {
+      position: fixed; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; object-position: center bottom;
+      z-index: 0; pointer-events: none;
+    }
+    .top-bar {
+      position: sticky; top: 0; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 12px 18px;
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255,255,255,0.6);
+    }
+    .top-bar a.back {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: rgba(255,255,255,0.85); color: var(--text-main);
+      display: inline-flex; align-items: center; justify-content: center;
+      text-decoration: none; font-size: 20px; font-weight: 900;
+      box-shadow: 0 2px 10px rgba(38,80,92,0.15);
+    }
+    .top-bar .title { font-size: clamp(15px, 3.4vw, 19px); font-weight: 800; }
+    .top-bar .counter {
+      height: 40px; padding: 0 14px; border-radius: var(--radius-pill);
+      background: rgba(255,255,255,0.85); display: inline-flex; align-items: center;
+      font-size: 14px; font-weight: 700; box-shadow: 0 2px 10px rgba(38,80,92,0.15);
+    }
+    main {
+      position: relative; z-index: 2;
+      max-width: 760px; margin: 0 auto;
+      padding: 14px 18px 30px;
+    }
+    .pearls { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 4px auto 12px; }
+    .pearl {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: rgba(255,255,255,0.5); border: 2px solid rgba(255,255,255,0.7);
+      box-shadow: inset 0 -2px 4px rgba(38,80,92,0.12); transition: all 0.35s ease;
+    }
+    .pearl.filled {
+      background: radial-gradient(circle at 35% 30%, #FFF 0%, #CFEFF6 45%, #8FD6E6 100%);
+      border-color: #FFF; box-shadow: 0 0 10px rgba(143,214,230,0.8);
+    }
+    .pearl.just-added { transform: scale(1.6); box-shadow: 0 0 16px 4px rgba(255,231,168,0.9); }
+
+    .noni-row {
+      display: flex; align-items: flex-end; gap: 10px;
+      max-width: 620px; margin: 0 auto 10px; min-height: 64px;
+    }
+    .noni-row img { width: clamp(64px, 13vw, 96px); flex: 0 0 auto; filter: drop-shadow(0 6px 10px rgba(38,80,92,0.25)); }
+    .bubble {
+      position: relative; flex: 1;
+      background: rgba(255,255,255,0.92); border-radius: var(--radius-lg);
+      padding: 12px 16px; font-size: clamp(16px, 3.6vw, 20px); font-weight: 700;
+      line-height: 1.5; box-shadow: 0 4px 16px rgba(38,80,92,0.14);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .bubble::before {
+      content: ''; position: absolute; inset-inline-start: -8px; bottom: 16px;
+      border: 9px solid transparent; border-inline-end-color: rgba(255,255,255,0.92);
+    }
+    .noni-row[hidden] { display: none; }
+
+    #mountRoot { position: relative; min-height: 46vh; }
+
+    .start-veil {
+      position: fixed; inset: 0; z-index: 20;
+      background: rgba(38,80,92,0.35);
+      display: flex; align-items: center; justify-content: center; padding: 24px;
+    }
+    .start-veil[hidden] { display: none; }
+    .start-card {
+      background: #fff; border-radius: var(--radius-lg); max-width: 420px; width: 100%;
+      padding: 26px 24px; text-align: center; box-shadow: 0 18px 50px rgba(38,80,92,0.3);
+    }
+    .start-card img { width: 110px; }
+    .start-card h1 { font-size: clamp(20px, 5vw, 26px); font-weight: 900; margin: 8px 0 6px; }
+    .start-card p { font-size: 15px; color: var(--text-soft); margin: 0 0 18px; line-height: 1.55; }
+    .start-card button {
+      min-height: 60px; width: 100%; border: none; border-radius: var(--radius-pill);
+      background: var(--water-secondary); color: #fff; cursor: pointer;
+      font-family: inherit; font-size: 22px; font-weight: 900;
+      box-shadow: 0 8px 22px rgba(115,217,209,0.55);
+    }
+    .start-card button:active { transform: scale(0.97); }
+
+    .finish { text-align: center; padding: 30px 10px; }
+    .finish img { width: 140px; animation: finishBob 1.6s ease-in-out infinite; }
+    @keyframes finishBob { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+    .finish h2 { font-size: clamp(24px, 6vw, 32px); font-weight: 900; margin: 10px 0 4px; }
+    .finish p { font-size: 16px; color: var(--text-soft); margin: 0 0 20px; }
+    .finish .btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .finish button, .finish a {
+      min-height: 56px; padding: 0 26px; border: none; border-radius: var(--radius-pill);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: inherit; font-size: 18px; font-weight: 800; cursor: pointer;
+      text-decoration: none;
+    }
+    .finish .again { background: var(--water-secondary); color: #fff; box-shadow: 0 8px 22px rgba(115,217,209,0.55); }
+    .finish .home { background: rgba(255,255,255,0.9); color: var(--text-main); box-shadow: 0 4px 14px rgba(38,80,92,0.15); }
+
+    .empty-note {
+      max-width: 480px; margin: 40px auto; text-align: center;
+      background: rgba(255,255,255,0.92); border-radius: var(--radius-lg);
+      padding: 24px; font-size: 16px; font-weight: 700; color: var(--text-soft);
+    }
+    @media (max-width: 560px) {
+      .noni-row { min-height: 56px; }
+      .noni-row img { width: 58px; }
+    }
+  </style>
+</head>
+<body>
+  <img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true"
+       onerror="this.style.display='none'">
+
+  <div class="top-bar">
+    <a class="back" href="#" id="backBtn" aria-label="חזרה">→</a>
+    <span class="title">הוּא אוֹ הִיא? · אִי 10</span>
+    <span class="counter" id="counter">—</span>
+  </div>
+
+  <main>
+    <div class="pearls" id="pearls" aria-hidden="true"></div>
+    <div class="noni-row" id="noniRow" hidden>
+      <img id="noniImg" src="assets/noni-idle.png" alt="נוני" onerror="this.style.display='none'">
+      <div class="bubble"><span id="promptText" lang="he"></span></div>
+    </div>
+    <div id="mountRoot"></div>
+  </main>
+
+  <div class="start-veil" id="startVeil" hidden>
+    <div class="start-card">
+      <img src="assets/noni-thinking.png" alt="נוני" onerror="this.src='assets/noni-idle.png'">
+      <h1>הוּא אוֹ הִיא?</h1>
+      <p>לְעֶצֶם זָכָר מַתְאִים תֹּאַר זָכָר, וּלְעֶצֶם נְקֵבָה תֹּאַר נְקֵבָה.<br>בַּחֲרוּ אֶת הַמִּלָּה הַמַּתְאִימָה!</p>
+      <button id="startBtn">מַתְחִילִים!</button>
+    </div>
+  </div>
+
+  <!-- shared engine -->
+  <script src="js/state.js?v=2026-07-07b"></script>
+  <script src="js/shared/audio.js?v=2026-07-07b"></script>
+  <script src="js/shared/noni.js?v=2026-07-07b"></script>
+  <script src="js/shared/vowel-adapter.js?v=2026-07-07b"></script>
+  <script src="js/shared/epa.js?v=2026-07-07b"></script>
+  <script src="js/shared/bkt.js?v=2026-07-07b"></script>
+  <script src="js/shared/event-logger.js?v=2026-07-07b"></script>
+  <script src="js/templates/mechanic-mcq.js?v=2026-07-07b"></script>
+
+  <script src="js/shared/island10b-game.js?v=2026-07-07b"></script>
+  <script>
+    AvneiIsland10bGame.boot({
+      mode: 'gender',
+      missionKey: 'mission-isl10-gender',
+      theme: 'shells',
+      finishTitle: 'מְצֻיָּן!',
+      finishText: 'הִתְאַמְתֶּם כֹּל תֹּאַר לַמִּין הַנָּכוֹן — הוּא וְהִיא!',
+      completionKey: 'completion-isl10',
+    });
+  </script>
+</body>
+</html>
