@@ -126,6 +126,7 @@ kbd{background:var(--panel2);border:1px solid var(--line);border-radius:5px;padd
       <button class="subtab" data-sec="av-islands" onclick="sec('av',this)">האיים</button>
       <button class="subtab" data-sec="av-games" onclick="sec('av',this)">משחקונים</button>
       <button class="subtab" data-sec="av-qa" onclick="sec('av',this)">טבלת QA</button>
+      <button class="subtab" data-sec="av-pron" onclick="sec('av',this)">הגייה</button>
     </div>
 
     <section class="sec active" id="av-bank"></section>
@@ -133,6 +134,7 @@ kbd{background:var(--panel2);border:1px solid var(--line);border-radius:5px;padd
     <section class="sec" id="av-islands"></section>
     <section class="sec" id="av-games"></section>
     <section class="sec" id="av-qa"></section>
+    <section class="sec" id="av-pron"></section>
   </div>
 
   <!-- ══════════ פולס ══════════ -->
@@ -179,7 +181,7 @@ function applyHash(){
 window.addEventListener('hashchange',applyHash);
 
 function render(){
-  renderBank(); renderMastery(); renderIslands(); renderGames(); renderQA();
+  renderBank(); renderMastery(); renderIslands(); renderGames(); renderQA(); renderPronunciation();
   renderPulseTools(); renderPulseQuestions(); renderPulseResponses();
   document.getElementById('foot').innerHTML =
     'נבנה מהדאטה החי בקוד · '+esc(D.generatedAt.slice(0,16).replace('T',' '))+
@@ -483,6 +485,59 @@ function updateQaSummary(){
   G.forEach(g=>{['audio','images','loading'].forEach(f=>{const s=qaState(g,f);if(s==='ok')ok++;else if(s==='fail')fail++;});});
   const el=document.getElementById('qa-summary');
   if(el) el.innerHTML=stat(G.length,'משחקונים')+stat(ok,'בדיקות תקינות ✓')+stat(fail,'לבדיקה');
+}
+
+/* ═══════ הגייה — תמלול Whisper מול טקסט-יעד ═══════ */
+let pronFilter='suspects';
+function renderPronunciation(){
+  const P=D.avnei.pronunciation;
+  let h='<h2 class="title">בדיקת הגייה (תמלול Whisper)</h2><div class="subtitle">הסוכן לא שומע — משווים תמלול-Whisper לטקסט-היעד. Whisper בעברית לא מושלם → כלי-סינון: החשודים לאישור-אוזן שלך.</div>';
+  if(!P||!P.meta.ran){
+    h+='<div class="card resp-empty">טרם הורצה סריקת-הגייה.<br>הריצי: <kbd>PYTHONIOENCODING=utf-8 python avnei-yesod/underwater-app/scripts/qa-pronunciation-sweep.py</kbd><br>ואז <kbd>node admin/build-admin-data.js</kbd>.'+
+       (P&&P.meta.manifestCount?'<br><br>מניפסט טקסט-יעד מוכן: '+P.meta.manifestCount+' קליפי-ליבה.':'')+'</div>';
+    document.getElementById('av-pron').innerHTML=h; return;
+  }
+  const m=P.meta;
+  h+='<div class="statrow">'+stat(m.checked,'קליפים נבדקו')+
+     '<div class="stat"><b style="color:var(--fail)">'+m.suspects+'</b><span>חשודים</span></div>'+
+     stat(m.withIntended,'עם טקסט-יעד')+stat(m.model||'—','מודל')+'</div>';
+  h+='<div class="filters">'+
+     '<select id="pfilter" onchange="pronFilter=this.value;paintPron()">'+
+     '<option value="suspects">חשודים בלבד</option><option value="intended">עם טקסט-יעד</option><option value="all">הכל</option></select>'+
+     '<input type="search" id="psearch" placeholder="חיפוש מפתח/טקסט…" oninput="paintPron()">'+
+     '<span class="chip">✓ שתסמני = אושר/תוקן (נשמר)</span></div>';
+  h+='<div id="pron-body" style="overflow-x:auto"></div>';
+  document.getElementById('av-pron').innerHTML=h;
+  paintPron();
+}
+const PRON_KEY='admin-pron-reviewed-v1';
+function pronLoad(){try{return JSON.parse(localStorage.getItem(PRON_KEY))||{}}catch(e){return {}}}
+function pronSet(key,val){const o=pronLoad();if(val)o[key]=1;else delete o[key];localStorage.setItem(PRON_KEY,JSON.stringify(o));}
+function paintPron(){
+  const P=D.avnei.pronunciation, reviewed=pronLoad();
+  const term=(document.getElementById('psearch')?.value||'').toLowerCase().trim();
+  let clips=P.clips;
+  if(pronFilter==='suspects') clips=clips.filter(c=>c.suspect);
+  else if(pronFilter==='intended') clips=clips.filter(c=>c.hasIntended);
+  if(term) clips=clips.filter(c=>(c.key+' '+(c.intended||'')+' '+(c.heard||'')).toLowerCase().includes(term));
+  let h='<table><thead><tr><th>מפתח</th><th>טקסט-יעד</th><th>מה נשמע (Whisper)</th><th>דמיון</th><th>סטטוס</th><th>אושר/תוקן</th></tr></thead><tbody>';
+  for(const c of clips.slice(0,600)){
+    const rv=reviewed[c.key]?'checked':'';
+    const simTxt=c.sim==null?'—':Math.round(c.sim*100)+'%';
+    const simCls=c.sim==null?'':(c.sim<0.6?'b-fail':c.sim<0.85?'b-warn':'b-ok');
+    const status=c.suspect?'<span class="badge b-fail">⚠ חשוד</span>':(c.hasIntended?'<span class="badge b-ok">✓ תואם</span>':'<span class="badge b-na">אין יעד</span>');
+    h+='<tr'+(c.suspect?' style="background:#fdf0ee"':'')+'>'+
+       '<td class="mono">'+esc(c.key)+'</td>'+
+       '<td style="font-size:15px">'+esc(c.intended||'—')+'</td>'+
+       '<td style="font-size:15px;color:'+(c.suspect?'var(--fail)':'var(--dim)')+'">'+esc(c.heard||'(שקט)')+'</td>'+
+       '<td>'+(c.sim==null?'<span class="badge b-na">—</span>':'<span class="badge '+simCls+'">'+simTxt+'</span>')+'</td>'+
+       '<td>'+status+'</td>'+
+       '<td><input type="checkbox" class="qa-check" '+rv+' onchange="pronSet(\''+esc(c.key)+'\',this.checked)"></td></tr>';
+  }
+  h+='</tbody></table>';
+  if(clips.length>600) h+='<div class="subtitle">מוצגים 600 ראשונים מתוך '+clips.length+'.</div>';
+  if(!clips.length) h+='<div class="resp-empty">אין קליפים בסינון זה.</div>';
+  document.getElementById('pron-body').innerHTML=h;
 }
 
 /* ═══════ פולס — כלים ═══════ */

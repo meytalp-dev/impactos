@@ -392,6 +392,60 @@ function buildPulse() {
 }
 
 // ─────────────────────────────────────────────────────────
+// 6) הגייה — השוואת תמלול-Whisper לטקסט-היעד (מניפסט)
+// ─────────────────────────────────────────────────────────
+function stripNiqqud(s) {
+  return (s || '').normalize('NFD').replace(/[֑-ׇ]/g, '').replace(/[^א-ת0-9]/g, '');
+}
+function simRatio(a, b) {
+  a = stripNiqqud(a); b = stripNiqqud(b);
+  if (!a && !b) return 1;
+  if (!a || !b) return 0;
+  const la = a.length, lb = b.length;
+  const d = Array.from({ length: lb + 1 }, (_, i) => i);
+  for (let i = 1; i <= la; i++) {
+    let prev = d[0]; d[0] = i;
+    for (let j = 1; j <= lb; j++) {
+      const cur = d[j];
+      d[j] = Math.min(d[j] + 1, d[j - 1] + 1, prev + (a[i - 1] !== b[j - 1] ? 1 : 0));
+      prev = cur;
+    }
+  }
+  return 1 - d[lb] / Math.max(la, lb);
+}
+function buildPronunciation() {
+  let manifest = {}, trans = null;
+  try { manifest = readJSON(path.join(__dirname, 'audio-manifest.json')); } catch (e) {}
+  try { trans = readJSON(path.join(__dirname, 'qa-transcriptions.json')); } catch (e) {}
+  if (!trans) return { meta: { ran: false, manifestCount: Object.keys(manifest).length }, clips: [] };
+
+  const clips = [];
+  for (const [key, rec] of Object.entries(trans.results || {})) {
+    const heard = rec.heard || '';
+    const intended = manifest[key] || null;
+    let sim = null, suspect = false;
+    if (intended) {
+      sim = Math.round(simRatio(intended, heard) * 100) / 100;
+      suspect = sim < 0.6 || !stripNiqqud(heard);
+    } else {
+      suspect = !stripNiqqud(heard); // בלי טקסט-יעד: ריק/לא-עברי = חשוד
+    }
+    clips.push({ key, heard, intended, sim, suspect, hasIntended: !!intended });
+  }
+  // חשודים קודם, אז לפי דמיון עולה
+  clips.sort((a, b) => (b.suspect - a.suspect) || ((a.sim ?? 2) - (b.sim ?? 2)) || a.key.localeCompare(b.key));
+  return {
+    meta: {
+      ran: true, model: trans.model, generatedAt: trans.generatedAt || null,
+      checked: clips.length, manifestCount: Object.keys(manifest).length,
+      withIntended: clips.filter((c) => c.hasIntended).length,
+      suspects: clips.filter((c) => c.suspect).length,
+    },
+    clips,
+  };
+}
+
+// ─────────────────────────────────────────────────────────
 function main() {
   const minigames = buildMinigames();
   const data = {
@@ -403,6 +457,7 @@ function main() {
       minigames: minigames.list,
       audioHealth: minigames.audioHealth,
       runtimeMeta: minigames.runtimeMeta,
+      pronunciation: buildPronunciation(),
     },
     pulse: buildPulse(),
   };
