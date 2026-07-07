@@ -934,19 +934,14 @@
         noniSay(noniLine(mech.id, cv, r.letter));
       });
 
-      // ===== Audio (AvneiAudio MP3 + Web Speech fallback) =====
+      // ===== Audio (AvneiAudio MP3 — קול נוני מוקלט בלבד) =====
       function playCV(vowelIdLocal) {
         if (window.AvneiAudio && typeof window.AvneiAudio.play === 'function') {
           const key = VA.cvAudioKey(letter, vowelIdLocal);
           if (key) { window.AvneiAudio.play(key); return; }
         }
-        if (!('speechSynthesis' in window)) return;
-        try {
-          const u = new SpeechSynthesisUtterance(VA.buildCV(letter, vowelIdLocal));
-          u.lang = 'he-IL'; u.rate = 0.85;
-          window.speechSynthesis.cancel();
-          window.speechSynthesis.speak(u);
-        } catch (e) {}
+        // הוסר Web Speech fallback — קול נוני מוקלט בלבד. כל צירופי-הפיילוט מוקלטים;
+        // אם בכל זאת חסר קליפ CV → שקט (עדיף על קול-דפדפן לא-נוני).
       }
 
       // השמע narration MP3 (intro / completion / mission per mechanic)
