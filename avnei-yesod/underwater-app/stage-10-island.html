@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <script src="js/shared/file-protocol-shim.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>אי 10 · מפרץ אבני הבנייה · תחיליות וסיומות</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css?v=2026-07-07">
+
+  <!-- ============================================================================
+       stage-10-island.html — דף-אי 10 "מִפְרַץ אַבְנֵי הַבְּנִיָּה" (תחיליות וסיומות)
+       7.7.2026 · לוח בניית האיים C10 · דפוס דף-אי כמו stage-14 (כרטיסי quest).
+       נרטיב בעיה→פתרון: הזרם ניתק את אבני-הבנייה (תחיליות וסיומות) מהמילים.
+       2 כרטיסים: "אֶחָד אוֹ הַרְבֵּה" (סיומות רבים) · "הַהַתְחָלָה הַקְּטַנָּה" (תחיליות).
+       ============================================================================ -->
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Heebo', sans-serif;
+      color: var(--text-main, #26505C);
+      line-height: 1.5;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #BFF1FF 0%, #A8E8FF 40%, #73D9D1 100%);
+      -webkit-font-smoothing: antialiased;
+    }
+    .scene-bg {
+      position: fixed; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center bottom;
+      z-index: 0; pointer-events: none;
+    }
+    .top-bar {
+      position: fixed; top: 0; left: 0; right: 0;
+      padding: 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      z-index: 50;
+    }
+    .icon-btn {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: rgba(255,255,255,0.92); border: 1.5px solid rgba(255,255,255,0.95);
+      box-shadow: 0 6px 16px rgba(38,80,92,0.15);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-main, #26505C); text-decoration: none;
+    }
+    .icon-btn:active { transform: scale(0.92); }
+
+    .island-header {
+      position: relative; z-index: 1;
+      padding: 92px 16px 12px;
+      text-align: center;
+      animation: fade-down 700ms ease-out;
+    }
+    @keyframes fade-down { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+    .island-title {
+      display: inline-block;
+      font-size: clamp(24px, 6vw, 36px);
+      font-weight: 900;
+      color: var(--deep, #1E3D47);
+      background: rgba(255,255,255,0.9);
+      border-radius: 999px;
+      padding: 10px 28px;
+      box-shadow: 0 8px 22px rgba(38,80,92,0.16);
+      margin-bottom: 10px;
+    }
+    .island-subtitle {
+      font-size: clamp(15px, 3vw, 19px);
+      font-weight: 700;
+      color: var(--deep, #1E3D47);
+      background: rgba(255,255,255,0.78);
+      border-radius: 999px;
+      display: inline-block;
+      padding: 6px 20px;
+      max-width: 56ch;
+      margin: 0 auto;
+    }
+
+    /* Narrative card — בעיה→פתרון */
+    .narrative-wrap {
+      position: relative; z-index: 1;
+      max-width: 620px; margin: 0 auto 18px; padding: 0 16px;
+      animation: fade-up 700ms ease-out;
+    }
+    .narrative-card {
+      background: rgba(255,255,255,0.92);
+      border-radius: var(--radius-md, 24px);
+      padding: 20px 22px;
+      box-shadow: 0 10px 26px rgba(38,80,92,0.16);
+      text-align: center;
+    }
+    .narrative-card p {
+      margin: 0 0 10px;
+      font-size: clamp(16px, 3.4vw, 19px);
+      line-height: 1.55;
+      color: var(--deep, #1E3D47);
+    }
+    .narrative-card p:last-child { margin-bottom: 0; }
+    .narrative-card strong { font-weight: 800; }
+    .speaker-btn {
+      margin-top: 6px;
+      display: inline-flex; align-items: center; gap: 8px;
+      min-height: 48px; padding: 8px 20px;
+      border-radius: 999px; border: none; cursor: pointer;
+      background: var(--water-secondary, #73D9D1); color: #fff;
+      font-family: inherit; font-size: 16px; font-weight: 800;
+      box-shadow: 0 6px 16px rgba(115,217,209,0.5);
+    }
+    .speaker-btn:active { transform: scale(0.96); }
+
+    /* Quest cards */
+    .quests-wrap {
+      position: relative; z-index: 1;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 16px 170px;
+    }
+    .quests-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .quest-card {
+      background: rgba(255,255,255,0.94);
+      border-radius: var(--radius-md, 24px);
+      padding: 24px 22px;
+      box-shadow: 0 14px 38px rgba(38,80,92,0.16);
+      text-decoration: none;
+      color: var(--text-main, #26505C);
+      display: flex; flex-direction: column; gap: 12px;
+      transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+      border: 2.5px solid transparent;
+      animation: fade-up 700ms ease-out;
+    }
+    @keyframes fade-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .quest-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 22px 48px rgba(38,80,92,0.2);
+      border-color: var(--sea-green, #8ED9B8);
+    }
+    .quest-card:nth-of-type(2) { animation-delay: 120ms; }
+
+    .quest-card .qc-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 64px; height: 64px; border-radius: 18px;
+      color: var(--deep, #1E3D47);
+      font-size: 30px; font-weight: 900;
+    }
+    .qc-badge--suffix { background: var(--mint, #B8F2CF); }
+    .qc-badge--prefix { background: var(--lavender, #D9D2FF); }
+
+    .quest-card h2 { font-size: 22px; font-weight: 900; color: var(--deep, #1E3D47); }
+    .quest-card p { font-size: 15px; color: var(--text-soft, #4D6F78); }
+    .quest-card .qc-cta {
+      align-self: flex-start;
+      min-height: var(--touch-min, 56px);
+      display: inline-flex; align-items: center;
+      background: var(--sea-green, #8ED9B8);
+      color: var(--deep, #1E3D47); padding: 10px 24px;
+      border-radius: 999px; font-weight: 800; font-size: 16px;
+      box-shadow: 0 6px 14px rgba(38,80,92,0.18);
+    }
+
+    /* נוני */
+    .noni-fixed {
+      position: fixed; bottom: 18px; right: 14px;
+      width: clamp(84px, 18vw, 120px); height: auto;
+      animation: float-bob 3s ease-in-out infinite;
+      pointer-events: none; z-index: 10;
+      filter: drop-shadow(0 8px 14px rgba(38,80,92,0.25));
+    }
+    @keyframes float-bob {
+      0%, 100% { transform: translateY(-8px); }
+      50%      { transform: translateY(8px); }
+    }
+    .noni-bubble {
+      position: fixed; bottom: 150px; right: 16px;
+      background: #fff; border-radius: var(--radius-md, 24px);
+      padding: 14px 20px; max-width: 260px;
+      box-shadow: 0 6px 18px rgba(38,80,92,0.18);
+      z-index: 10;
+      font-weight: 700; font-size: 16px; color: var(--deep, #1E3D47);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .island-header, .quest-card, .narrative-wrap { animation: none !important; }
+      .noni-fixed { animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true"
+     onerror="this.style.display='none'">
+
+<header class="top-bar">
+  <a href="map.html" class="icon-btn" aria-label="חזרה למפה">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+  <div style="width:52px;height:52px;" aria-hidden="true"></div>
+</header>
+
+<section class="island-header">
+  <h1 class="island-title">אִי 10 · מִפְרַץ אַבְנֵי הַבְּנִיָּה</h1>
+  <p class="island-subtitle">אֲבָנִים קְטַנּוֹת נִדְבָּקוֹת לַמִּילָּה — בַּהַתְחָלָה וּבַסּוֹף.</p>
+</section>
+
+<section class="narrative-wrap">
+  <div class="narrative-card">
+    <p>
+      בְּמִפְרַץ נוּנִי הַמִּילִּים בְּנוּיוֹת מֵ<strong>אַבְנֵי בְּנִיָּה</strong> —
+      אוֹת קְטַנָּה בַּהַתְחָלָה (וְ · בְּ · לְ) וְסִיּוֹמֶת בַּסּוֹף (־ִים · ־וֹת).
+    </p>
+    <p>
+      אֲבָל <strong>זֶרֶם חָזָק נִתֵּק אֶת הָאֲבָנִים</strong> מֵהַמִּילִּים,
+      וְעַכְשָׁו קָשֶׁה לָדַעַת מָה אֶחָד וּמָה הַרְבֵּה.
+    </p>
+    <p>בּוֹאוּ נַחֲזִיר כֹּל אֶבֶן לַמָּקוֹם שֶׁלָּהּ!</p>
+    <button class="speaker-btn" id="speakBtn" aria-label="הַקְשִׁיבוּ לַסִּפּוּר">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      הַקְשִׁיבוּ לַסִּפּוּר
+    </button>
+  </div>
+</section>
+
+<main class="quests-wrap">
+  <div class="quests-grid">
+
+    <a class="quest-card" href="stage-10-one-or-many.html">
+      <div class="qc-badge qc-badge--suffix" aria-hidden="true">‏־ִים</div>
+      <h2>אֶחָד אוֹ הַרְבֵּה</h2>
+      <p>מִילָּה אַחַת מוּל הַרְבֵּה. בַּחֲרוּ אֶת צוּרַת הָרַבִּים הַנְּכוֹנָה — הַסִּיּוֹמֶת שֶׁנִּדְבֶּקֶת בַּסּוֹף.</p>
+      <span class="qc-cta">לְהַתְחִיל</span>
+    </a>
+
+    <a class="quest-card" href="stage-10-little-start.html">
+      <div class="qc-badge qc-badge--prefix" aria-hidden="true">בְּ</div>
+      <h2>הַהַתְחָלָה הַקְּטַנָּה</h2>
+      <p>אוֹת קְטַנָּה — לְ · וְ · בְּ — נִדְבֶּקֶת בַּהַתְחָלָה. הַקְשִׁיבוּ וּבַחֲרוּ אֶת הַכְּתִיב הַנָּכוֹן.</p>
+      <span class="qc-cta">לְהַתְחִיל</span>
+    </a>
+
+  </div>
+</main>
+
+<img class="noni-fixed" id="noniImg" src="assets/noni-idle.png" alt="נוני">
+<div class="noni-bubble" id="noniBubble">אֵיזוֹ אֶבֶן נַחֲזִיר הַיּוֹם?</div>
+
+<!-- Audio + state -->
+<script src="js/shared/audio.js" onerror="window._audioMissing=true"></script>
+<script src="js/state.js" onerror="window._stateMissing=true"></script>
+<script>
+  (function () {
+    'use strict';
+
+    function playIntro() {
+      if (window.AvneiAudio && typeof window.AvneiAudio.play === 'function') {
+        window.AvneiAudio.play('intro-isl10');
+      }
+    }
+
+    document.getElementById('speakBtn').addEventListener('click', function () {
+      if (window.AvneiAudio && typeof window.AvneiAudio.unlock === 'function') {
+        try { window.AvneiAudio.unlock(); } catch (e) {}
+      }
+      playIntro();
+    });
+
+    // Auto-unlock audio on first interaction (iOS)
+    document.addEventListener('click', function unlock() {
+      if (window.AvneiAudio && typeof window.AvneiAudio.unlock === 'function') {
+        try { window.AvneiAudio.unlock(); } catch (e) {}
+      }
+      document.removeEventListener('click', unlock);
+    }, { once: true });
+
+    // Auto-play intro after 600ms — פעם אחת פר session
+    try {
+      var flag = 'isl10-intro-played';
+      if (!sessionStorage.getItem(flag)) {
+        setTimeout(function () {
+          playIntro();
+          try { sessionStorage.setItem(flag, '1'); } catch (e) {}
+        }, 600);
+      }
+    } catch (e) {}
+  })();
+</script>
+
+</body>
+</html>
