@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מערכת אדמין · אבני יסוד + פולס</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F6F9; --panel:#FFFFFF; --panel2:#F0F3F7; --line:#E2E7EE;
+  --ink:#1F2A37; --dim:#54636F; --muted:#8592A0;
+  --av:#1E8E86; --av-soft:#E2F3F1; --pulse:#7C6BC0; --pulse-soft:#EFEBF9;
+  --ok:#2E9E72; --warn:#C68A1E; --fail:#D2543F; --na:#9AA7B4;
+  --chip:#EEF2F6;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Heebo',system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5}
+a{color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 18px 80px}
+
+/* header */
+header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.head-in{max-width:1180px;margin:0 auto;padding:14px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{font-weight:900;font-size:19px;letter-spacing:-.3px}
+.brand small{display:block;font-weight:500;font-size:11px;color:var(--muted);letter-spacing:0}
+.maintabs{display:flex;gap:8px;margin-inline-start:auto}
+.maintab{padding:9px 20px;border-radius:11px;border:1px solid var(--line);background:var(--panel);color:var(--dim);font-weight:800;font-size:15px;cursor:pointer;transition:.15s}
+.maintab:hover{color:var(--ink)}
+.maintab.active[data-main="avnei"]{background:var(--av-soft);border-color:var(--av);color:#146b64}
+.maintab.active[data-main="pulse"]{background:var(--pulse-soft);border-color:var(--pulse);color:#5a4a94}
+
+/* sub nav */
+.subnav{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0 14px}
+.subtab{padding:7px 14px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--dim);font-weight:600;font-size:13px;cursor:pointer}
+.subtab.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+.view{display:none}.view.active{display:block}
+.sec{display:none}.sec.active{display:block;animation:fade .2s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* generic */
+h2.title{font-size:20px;font-weight:800;margin:4px 0 2px}
+.subtitle{color:var(--muted);font-size:13px;margin-bottom:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.statrow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 16px;min-width:110px}
+.stat b{display:block;font-size:24px;font-weight:900}
+.stat span{font-size:12px;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:5px;background:var(--chip);border:1px solid var(--line);border-radius:99px;padding:3px 10px;font-size:12px;color:var(--dim);font-weight:600}
+.badge{font-size:11px;font-weight:800;padding:3px 9px;border-radius:7px}
+.b-ok{background:#DCF3E9;color:#1F7A56}.b-warn{background:#FBEED0;color:#8A6410}.b-fail{background:#FBE0DB;color:#9A3B2C}.b-na{background:#E8ECF1;color:#5F6E7D}
+.b-oos{background:#EDE7F7;color:#5E4A8A}
+.pill{font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;background:var(--av-soft);color:#146b64}
+
+table{width:100%;border-collapse:collapse}
+th,td{text-align:right;padding:9px 10px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:top}
+th{color:var(--muted);font-weight:700;font-size:12px;position:sticky;top:64px;background:var(--bg)}
+tr:hover td{background:#F2F5F8}
+.mono{font-family:ui-monospace,monospace;font-size:12px;color:var(--dim)}
+.link{color:#1E6FB8;text-decoration:none;font-weight:600}.link:hover{text-decoration:underline}
+
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+select,input[type=search]{background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:9px;padding:8px 12px;font-family:inherit;font-size:13px}
+
+/* accordion */
+details{border:1px solid var(--line);border-radius:11px;margin-bottom:8px;background:var(--panel);overflow:hidden}
+details>summary{cursor:pointer;padding:12px 14px;font-weight:700;list-style:none;display:flex;align-items:center;gap:10px}
+details>summary::-webkit-details-marker{display:none}
+details>summary::before{content:'▸';color:var(--muted);transition:.15s}
+details[open]>summary::before{transform:rotate(-90deg)}
+details .body{padding:2px 14px 12px}
+.cnt{margin-inline-start:auto;color:var(--muted);font-size:12px;font-weight:600}
+details details{background:var(--panel2)}
+
+.q{border-inline-start:3px solid var(--line);padding:8px 12px;margin:8px 0;background:#FAFBFC}
+.q .qt{font-weight:600}
+.q .opts{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.q .opt{font-size:12px;padding:3px 9px;border-radius:7px;background:#EEF2F6;border:1px solid var(--line)}
+.q .opt.ok{background:#DCF3E9;border-color:#9DD9BE;color:#1F7A56}
+.lv{font-size:11px;font-weight:800;border-radius:5px;padding:1px 6px}
+.lv1{background:#DBF2E5;color:#1F7A52}.lv2{background:#FAF0D2;color:#8A6410}.lv3{background:#FBE2DA;color:#A24632}
+
+/* islands */
+.island{display:grid;grid-template-columns:52px 1fr;gap:14px;align-items:start}
+.inum{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-weight:900;font-size:22px;background:var(--av-soft);color:#8fe6df;border:1px solid var(--av)}
+.island.oos .inum{background:#EDE7F7;color:#6A55A0;border-color:#C9BCE6;opacity:.85}
+.island.unbuilt .inum{background:var(--panel2);color:var(--muted);border-color:var(--line)}
+.gamelist{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+
+/* qa */
+.qa-check{width:20px;height:20px;accent-color:var(--ok);cursor:pointer}
+.dot{display:inline-block;width:9px;height:9px;border-radius:99px;margin-inline-end:5px}
+.d-ok{background:var(--ok)}.d-fail{background:var(--fail)}.d-na{background:var(--na)}
+.qa-legend{font-size:12px;color:var(--muted);margin-bottom:10px}
+
+/* pulse */
+.persona-tabs{display:flex;gap:6px;margin-bottom:12px}
+.dimhead{display:inline-block;font-weight:800;padding:3px 10px;border-radius:8px;font-size:13px;margin:14px 0 6px}
+.resp-empty{color:var(--muted);padding:20px;text-align:center}
+.bar{height:8px;border-radius:99px;background:#E6EAEF;overflow:hidden;margin-top:4px}
+.bar>i{display:block;height:100%;border-radius:99px}
+.foot{color:var(--muted);font-size:11px;margin-top:30px;text-align:center}
+kbd{background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:ui-monospace,monospace;font-size:11px}
+</style>
+</head>
+<body>
+<header>
+  <div class="head-in">
+    <div class="brand">מערכת אדמין <small>אבני יסוד · פולס — כל הדאטה במקום אחד</small></div>
+    <div class="maintabs">
+      <button class="maintab active" data-main="avnei" onclick="mainTab('avnei')">🌊 אבני יסוד</button>
+      <button class="maintab" data-main="pulse" onclick="mainTab('pulse')">💜 פולס</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ══════════ אבני יסוד ══════════ -->
+  <div class="view active" id="view-avnei">
+    <div class="subnav">
+      <button class="subtab active" data-sec="av-bank" onclick="sec('av',this)">בנק שאלות</button>
+      <button class="subtab" data-sec="av-mastery" onclick="sec('av',this)">מאגר מאפיינים</button>
+      <button class="subtab" data-sec="av-islands" onclick="sec('av',this)">האיים</button>
+      <button class="subtab" data-sec="av-games" onclick="sec('av',this)">משחקונים</button>
+      <button class="subtab" data-sec="av-qa" onclick="sec('av',this)">טבלת QA</button>
+    </div>
+
+    <section class="sec active" id="av-bank"></section>
+    <section class="sec" id="av-mastery"></section>
+    <section class="sec" id="av-islands"></section>
+    <section class="sec" id="av-games"></section>
+    <section class="sec" id="av-qa"></section>
+  </div>
+
+  <!-- ══════════ פולס ══════════ -->
+  <div class="view" id="view-pulse">
+    <div class="subnav">
+      <button class="subtab active" data-sec="pl-tools" onclick="sec('pl',this)">כלי הפולס</button>
+      <button class="subtab" data-sec="pl-questions" onclick="sec('pl',this)">שאלות (תלמיד/מורה/הורה)</button>
+      <button class="subtab" data-sec="pl-responses" onclick="sec('pl',this)">תשובות תלמידים</button>
+    </div>
+    <section class="sec active" id="pl-tools"></section>
+    <section class="sec" id="pl-questions"></section>
+    <section class="sec" id="pl-responses"></section>
+  </div>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<script src="admin-data.js"></script>
+<script>
+const D = window.ADMIN_DATA || null;
+const esc = s => (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const up = h => '../' + h; // הקישורים נשמרים יחסית לשורש; admin/ צריך ../
+
+/* ─── ניווט (עם ראוטר-hash לקישור-עומק) ─── */
+function mainTab(m,keepHash){
+  document.querySelectorAll('.maintab').forEach(b=>b.classList.toggle('active',b.dataset.main===m));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+m));
+  if(!keepHash) location.hash=m;
+}
+function sec(group,btn){
+  const id=btn.dataset.sec;
+  const view='#view-'+(group==='av'?'avnei':'pulse');
+  document.querySelectorAll(view+' .subtab').forEach(b=>b.classList.toggle('active',b===btn));
+  document.querySelectorAll(view+' .sec').forEach(s=>s.classList.toggle('active',s.id===id));
+  location.hash=(group==='av'?'avnei':'pulse')+'/'+id;
+}
+function applyHash(){
+  const raw=(location.hash||'').replace('#','');
+  if(!raw) return;
+  const [m,secId]=raw.split('/');
+  if(m==='avnei'||m==='pulse') mainTab(m,true);
+  if(secId){const btn=document.querySelector('[data-sec="'+secId+'"]'); if(btn) sec(btn.closest('#view-avnei')?'av':'pl',btn);}
+}
+window.addEventListener('hashchange',applyHash);
+
+function render(){
+  renderBank(); renderMastery(); renderIslands(); renderGames(); renderQA();
+  renderPulseTools(); renderPulseQuestions(); renderPulseResponses();
+  document.getElementById('foot').innerHTML =
+    'נבנה מהדאטה החי בקוד · '+esc(D.generatedAt.slice(0,16).replace('T',' '))+
+    ' · לרענון: <kbd>node admin/build-admin-data.js</kbd>';
+}
+
+/* ═══════ בנק שאלות ═══════ */
+function renderBank(){
+  const B=D.avnei.questionBank, m=B.meta, st=m.stats;
+  let h='<h2 class="title">'+esc(m.title)+'</h2><div class="subtitle">'+esc(m.subtitle)+'</div>';
+  h+='<div class="statrow">'+
+     stat(st.questions,'שאלות')+stat(st.characteristics_covered,'מאפיינים נמדדים')+
+     stat(B.strands.length,'תחומים (strands)')+
+     stat(Object.keys(st.by_month).length,'חודשי לימוד')+'</div>';
+  // מסננים
+  h+='<div class="filters">'+
+     '<input type="search" id="qsearch" placeholder="חיפוש בשאלות / נושאים…" oninput="filterBank()">'+
+     '<select id="qlevel" onchange="filterBank()"><option value="">כל הרמות</option>'+
+     '<option value="1">רמה 1 — קל</option><option value="2">רמה 2 — בינוני</option><option value="3">רמה 3 — מאתגר</option></select>'+
+     '<span class="chip">3 אופציות · מסיחים נגזרי-EPA</span></div>';
+  // strands → נושאים → תתי-נושאים → שאלות
+  for(const s of B.strands){
+    h+='<details><summary>'+esc(s.name)+'<span class="cnt">'+s.count+' שאלות · '+s.topics.length+' נושאים</span></summary><div class="body">';
+    for(const t of s.topics){
+      h+='<details data-topic="1"><summary style="font-size:13px">'+esc(t.name)+
+         '<span class="cnt">'+t.count+' שאלות'+(t.month?' · '+esc(t.month):'')+'</span></summary><div class="body">';
+      for(const sub of t.subtopics){
+        h+='<details data-sub="1"><summary style="font-size:12px;color:var(--dim)"><span class="mono">'+esc(sub.id)+'</span>'+
+           (sub.day?' · '+esc(sub.day):'')+'<span class="cnt">'+sub.questions.length+' שאלות</span></summary><div class="body">';
+        for(const q of sub.questions){
+          h+='<div class="q" data-q="1" data-level="'+q.level+'" data-txt="'+esc((q.task_he||'')+' '+(q.char_label||'')+' '+(q.stem_he||'')).toLowerCase()+'">'+
+             '<span class="lv lv'+q.level+'">רמה '+q.level+'</span> <span class="qt">'+esc(q.task_he||q.char_label||q.q_id)+'</span>'+
+             (q.stem_he?' <span style="color:var(--dim)">— '+esc(q.stem_he)+'</span>':'')+
+             '<div class="opts">'+(q.options||[]).map(o=>'<span class="opt'+(o.ok?' ok':'')+'">'+esc(o.t)+(o.ok?' ✓':'')+'</span>').join('')+'</div></div>';
+        }
+        h+='</div></details>';
+      }
+      h+='</div></details>';
+    }
+    h+='</div></details>';
+  }
+  document.getElementById('av-bank').innerHTML=h;
+}
+function filterBank(){
+  const term=(document.getElementById('qsearch').value||'').toLowerCase().trim();
+  const lv=document.getElementById('qlevel').value;
+  document.querySelectorAll('#av-bank .q').forEach(q=>{
+    const okL=!lv||q.dataset.level===lv;
+    const okT=!term||q.dataset.txt.includes(term);
+    q.style.display=(okL&&okT)?'':'none';
+  });
+  // פתיחת אקורדיונים שיש בהם התאמה, וכיווץ ריקים
+  document.querySelectorAll('#av-bank details[data-sub]').forEach(d=>{
+    const any=[...d.querySelectorAll('.q')].some(q=>q.style.display!=='none');
+    d.style.display=any?'':'none'; if((term||lv)&&any) d.open=true;
+  });
+  document.querySelectorAll('#av-bank details[data-topic]').forEach(d=>{
+    const any=[...d.querySelectorAll('details[data-sub]')].some(x=>x.style.display!=='none');
+    d.style.display=any?'':'none'; if((term||lv)&&any) d.open=true;
+  });
+  document.querySelectorAll('#av-bank > details').forEach(d=>{
+    const any=[...d.querySelectorAll('details[data-topic]')].some(x=>x.style.display!=='none');
+    d.style.display=any?'':'none'; if((term||lv)&&any) d.open=true;
+  });
+}
+function stat(n,l){return '<div class="stat"><b>'+n+'</b><span>'+l+'</span></div>';}
+
+/* ═══════ מאגר מאפייני רכישה (446) ═══════ */
+const STRAND_COLORS={phonology:'#2FA8A0',morphology:'#E0A83C',oral_language:'#7C6BC0',reading_comprehension:'#4A90D9',writing:'#E0768C'};
+function renderMastery(){
+  const M=D.avnei.mastery, m=M.meta;
+  let h='<h2 class="title">'+esc(m.title)+'</h2><div class="subtitle">מאפייני רכישה נצפים ומדידים (can-do) — הבסיס הפדגוגי שממנו נגזר בנק השאלות. כל מאפיין מקושר למספר השאלות שמכוונות אליו.</div>';
+  h+='<div class="statrow">'+stat(m.char_count,'מאפיינים')+stat(m.subtopic_count,'תתי-נושא')+
+     Object.entries(m.by_strand).map(([s,n])=>'<div class="stat"><b style="color:'+(STRAND_COLORS[s]||'#ccc')+'">'+n+'</b><span>'+esc(m.strand_he[s]||s)+'</span></div>').join('')+'</div>';
+  h+='<div class="filters">'+
+     '<input type="search" id="msearch" placeholder="חיפוש מאפיין / התנהגות נצפית…" oninput="filterMastery()">'+
+     '<select id="mstrand" onchange="filterMastery()"><option value="">כל התחומים</option>'+
+     Object.keys(m.by_strand).map(s=>'<option value="'+s+'">'+esc(m.strand_he[s]||s)+'</option>').join('')+'</select>'+
+     '<label style="display:flex;align-items:center;gap:5px;color:var(--dim);font-size:13px"><input type="checkbox" id="mbkt" onchange="filterMastery()"> רק נמדדים ב-BKT</label></div>';
+  for(const s of M.sub_topics){
+    if(!s.chars.length) continue;
+    h+='<details><summary style="font-size:13px"><span class="mono">'+esc(s.id)+'</span> · '+esc(s.topic)+
+       '<span class="cnt">'+s.chars.length+' מאפיינים'+(s.month?' · '+esc(s.month):'')+'</span></summary><div class="body">';
+    for(const c of s.chars){
+      const col=STRAND_COLORS[c.strand]||'#888';
+      h+='<div class="q" data-mchar="1" data-strand="'+esc(c.strand)+'" data-bkt="'+(c.bkt?1:0)+'" '+
+         'data-txt="'+esc(((c.teacher_label||'')+' '+(c.observable||'')+' '+(c.success||'')+' '+c.id).toLowerCase())+'" style="border-inline-start-color:'+col+'">'+
+         '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b class="qt">'+esc(c.teacher_label)+'</b>'+
+         (c.level?'<span class="lv lv'+c.level+'">רמה '+c.level+'</span>':'')+
+         (c.task_type?'<span class="chip">'+esc(c.task_type)+(c.unit?' · '+esc(c.unit):'')+'</span>':'')+
+         (c.bkt?'<span class="badge b-ok">BKT</span>':'<span class="badge b-na">לא נמדד</span>')+
+         (c.q_count?'<span class="pill">'+c.q_count+' שאלות</span>':'<span class="badge b-warn">0 שאלות</span>')+'</div>';
+      if(c.observable) h+='<div style="font-size:12px;color:var(--dim);margin-top:4px"><b>נצפה:</b> '+esc(c.observable)+'</div>';
+      if(c.success) h+='<div style="font-size:12px;color:var(--muted);margin-top:2px"><b>הצלחה:</b> '+esc(c.success)+'</div>';
+      if(c.epa&&c.epa.length) h+='<div class="opts">'+c.epa.map(e=>'<span class="opt" title="'+esc(e.detail||'')+'">⚠ '+esc(e.what)+'/'+esc(e.where)+'/'+esc(e.task)+'</span>').join('')+'</div>';
+      h+='</div>';
+    }
+    h+='</div></details>';
+  }
+  document.getElementById('av-mastery').innerHTML=h;
+}
+function filterMastery(){
+  const term=(document.getElementById('msearch').value||'').toLowerCase().trim();
+  const strand=document.getElementById('mstrand').value;
+  const bkt=document.getElementById('mbkt').checked;
+  document.querySelectorAll('#av-mastery .q').forEach(c=>{
+    const ok=(!term||c.dataset.txt.includes(term))&&(!strand||c.dataset.strand===strand)&&(!bkt||c.dataset.bkt==='1');
+    c.style.display=ok?'':'none';
+  });
+  document.querySelectorAll('#av-mastery > details').forEach(d=>{
+    const any=[...d.querySelectorAll('.q')].some(c=>c.style.display!=='none');
+    d.style.display=any?'':'none'; if((term||strand||bkt)&&any) d.open=true;
+  });
+}
+
+/* ═══════ איים ═══════ */
+function renderIslands(){
+  const I=D.avnei.islands;
+  let h='<h2 class="title">האיים לפי הסדר</h2><div class="subtitle">מה קיים בכל אי — מה נבדק, כמה משחקונים, אילו סוגים, וקישורים.</div>';
+  h+='<div class="statrow">'+stat(I.length,'איים')+stat(I.filter(i=>i.built).length,'בנויים')+
+     stat(I.reduce((a,i)=>a+i.built_game_count,0),'משחקונים באיים')+'</div>';
+  for(const i of I){
+    const cls=i.out_of_scope?'oos':(i.built?'':'unbuilt');
+    let badge=i.out_of_scope?'<span class="badge b-oos">מחוץ לסקופ MVP</span>':
+             (i.built?'<span class="badge b-ok">בנוי</span>':'<span class="badge b-na">טרם נבנה</span>');
+    h+='<div class="card"><div class="island '+cls+'">'+
+       '<div class="inum">'+i.id+'</div><div>'+
+       '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b style="font-size:16px">'+esc(i.name_visual)+'</b>'+badge+
+       (i.month?'<span class="chip">'+esc(i.month)+'</span>':'')+'</div>';
+    if(i.name_pedagogical) h+='<div style="color:var(--dim);font-size:13px;margin-top:2px">'+esc(i.name_pedagogical)+'</div>';
+    if(i.pedagogical_skill) h+='<div style="margin-top:8px;font-size:13px"><b style="color:var(--av)">מה נבדק:</b> '+esc(i.pedagogical_skill)+'</div>';
+    if(i.child_goal) h+='<div style="margin-top:6px;font-size:13px;color:var(--muted)">🎯 '+esc(i.child_goal)+'</div>';
+    // ספירות
+    h+='<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">'+
+       '<span class="pill">'+i.built_game_count+' משחקונים בקוד</span>'+
+       (i.planned_game_count?'<span class="chip">'+i.planned_game_count+' תוכננו ב-blueprint</span>':'')+
+       (i.hub_href?'<a class="link" href="'+esc(up('avnei-yesod/underwater-app/'+i.hub_href))+'" target="_blank">🌐 פתיחת האי »</a>':'')+'</div>';
+    // משחקונים בפועל
+    if(i.built_games.length){
+      h+='<div class="gamelist">'+i.built_games.map(g=>
+        '<a class="chip link" href="'+esc(up('avnei-yesod/underwater-app/'+g.file))+'" target="_blank">🎮 '+esc(g.title)+
+        (g.mechanics.length?' <span style="color:var(--muted)">· '+esc(g.mechanics[0].replace('mechanic-',''))+'</span>':'')+'</a>').join('')+'</div>';
+    }
+    if(i.out_of_scope) h+='<div style="margin-top:8px;font-size:12px;color:var(--muted)">סיבה: '+esc(i.out_of_scope)+'</div>';
+    h+='</div></div></div>';
+  }
+  document.getElementById('av-islands').innerHTML=h;
+}
+
+/* ═══════ רשימת משחקונים ═══════ */
+function mechLabel(m){return m.replace('mechanic-','');}
+function renderGames(){
+  const G=D.avnei.minigames.filter(g=>g.kind!=='hub');
+  const islands=[...new Set(G.map(g=>g.island).filter(Boolean))].sort((a,b)=>a-b);
+  let h='<h2 class="title">כל המשחקונים</h2><div class="subtitle">רשימת המשחקונים הקיימים בקוד, המכניקה של כל אחד, וקישור לפתיחה.</div>';
+  h+='<div class="filters"><select id="gisl" onchange="filterGames()"><option value="">כל האיים</option>'+
+     islands.map(n=>'<option value="'+n+'">אי '+n+'</option>').join('')+
+     '<option value="tool">כלים / חוצה-אי</option></select>'+
+     '<input type="search" id="gsearch" placeholder="חיפוש משחקון…" oninput="filterGames()">'+
+     '<span class="chip">'+G.length+' משחקונים</span></div>';
+  h+='<table><thead><tr><th>אי</th><th>משחקון</th><th>מכניקה</th><th>אודיו</th><th>קישור</th></tr></thead><tbody>';
+  for(const g of G){
+    h+='<tr data-isl="'+(g.island||'tool')+'" data-txt="'+esc((g.title+' '+g.file+' '+g.mechanics.join(' ')).toLowerCase())+'">'+
+       '<td>'+(g.island?'<span class="pill">אי '+g.island+'</span>':'<span class="chip">כלי</span>')+'</td>'+
+       '<td><b>'+esc(g.title)+'</b><div class="mono">'+esc(g.file)+'</div></td>'+
+       '<td>'+(g.mechanics.length?g.mechanics.map(m=>'<span class="chip">'+esc(mechLabel(m))+'</span>').join(' '):'<span style="color:var(--muted)">—</span>')+'</td>'+
+       '<td>'+(g.usesAudio?'<span class="badge b-ok">כן</span>':'<span class="badge b-na">—</span>')+'</td>'+
+       '<td><a class="link" href="'+esc(up(g.href))+'" target="_blank">פתיחה »</a></td></tr>';
+  }
+  h+='</tbody></table>';
+  document.getElementById('av-games').innerHTML=h;
+}
+function filterGames(){
+  const isl=document.getElementById('gisl').value, term=(document.getElementById('gsearch').value||'').toLowerCase().trim();
+  document.querySelectorAll('#av-games tbody tr').forEach(tr=>{
+    const okI=!isl||tr.dataset.isl===isl, okT=!term||tr.dataset.txt.includes(term);
+    tr.style.display=(okI&&okT)?'':'none';
+  });
+}
+
+/* ═══════ טבלת QA ═══════ */
+const QA_KEY='admin-qa-overrides-v1';
+function qaLoad(){try{return JSON.parse(localStorage.getItem(QA_KEY))||{}}catch(e){return {}}}
+function qaSave(o){localStorage.setItem(QA_KEY,JSON.stringify(o));}
+function qaSet(file,field,val){const o=qaLoad();o[file]=o[file]||{};o[file][field]=val;qaSave(o);updateQaSummary();}
+function qaState(g,field){ // ידני גובר על אוטומטי
+  const o=qaLoad(); if(o[g.file]&&o[g.file][field]!=null) return o[g.file][field];
+  return g.qa[field]; // 'ok' | 'fail' | 'na'
+}
+function renderQA(){
+  const G=D.avnei.minigames.filter(g=>g.kind!=='hub');
+  let h='<h2 class="title">טבלת בדיקת תקינות (QA)</h2><div class="subtitle">בדיקה אוטומטית של נכסים חסרים = ברירת מחדל. סמני ✓ ידנית אחרי בדיקה בפועל — נשמר בדפדפן.</div>';
+  h+='<div class="qa-legend"><span class="dot d-ok"></span>תקין &nbsp; <span class="dot d-fail"></span>נכס חסר / לא תקין &nbsp; <span class="dot d-na"></span>לא רלוונטי · '+
+     'ה-✓ שתסמני גובר על הבדיקה האוטומטית.</div>';
+  h+='<div id="qa-summary" class="statrow"></div>';
+  h+='<table><thead><tr><th>אי</th><th>משחקון</th><th>אודיו</th><th>תמונות</th><th>טעינה</th><th>אוטו</th></tr></thead><tbody>';
+  for(const g of G){
+    h+='<tr data-file="'+esc(g.file)+'"><td>'+(g.island?'<span class="pill">'+g.island+'</span>':'<span class="chip">כלי</span>')+'</td>'+
+       '<td><a class="link" href="'+esc(up(g.href))+'" target="_blank">'+esc(g.title)+'</a><div class="mono">'+esc(g.file)+'</div></td>'+
+       qaCell(g,'audio')+qaCell(g,'images')+qaCell(g,'loading')+
+       '<td>'+autoBadge(g)+'</td></tr>';
+  }
+  h+='</tbody></table>';
+  document.getElementById('av-qa').innerHTML=h;
+  updateQaSummary();
+}
+function qaCell(g,field){
+  const auto=g.qa[field];
+  if(auto==='na') return '<td><span class="badge b-na">—</span></td>';
+  const cur=qaState(g,field);
+  const checked=cur==='ok'?'checked':'';
+  return '<td><label style="display:flex;align-items:center;gap:6px;cursor:pointer">'+
+    '<input type="checkbox" class="qa-check" '+checked+' onchange="qaSet(\''+g.file+'\',\''+field+'\',this.checked?\'ok\':\'fail\')">'+
+    '<span class="dot '+(cur==='ok'?'d-ok':'d-fail')+'"></span></label></td>';
+}
+function autoBadge(g){
+  const miss=g.qa.missing, n=(miss.js.length+miss.img.length+miss.audio.length);
+  if(n===0) return '<span class="badge b-ok">נקי</span>';
+  return '<span class="badge b-fail" title="'+esc([...miss.js,...miss.img,...miss.audio].join(', '))+'">'+n+' חסרים</span>';
+}
+function updateQaSummary(){
+  const G=D.avnei.minigames.filter(g=>g.kind!=='hub');
+  let ok=0,fail=0;
+  G.forEach(g=>{['audio','images','loading'].forEach(f=>{const s=qaState(g,f);if(s==='ok')ok++;else if(s==='fail')fail++;});});
+  const el=document.getElementById('qa-summary');
+  if(el) el.innerHTML=stat(G.length,'משחקונים')+stat(ok,'בדיקות תקינות ✓')+stat(fail,'לבדיקה');
+}
+
+/* ═══════ פולס — כלים ═══════ */
+function renderPulseTools(){
+  const P=D.pulse;
+  let h='<h2 class="title">כלי הפולס</h2><div class="subtitle">הפולסים הקיימים — שאלונים, דשבורדים וקטלוג התערבויות.</div>';
+  h+='<div class="statrow">'+stat(P.dimensions.length,'ממדים')+
+     stat(P.personas.student.length,'שאלות תלמיד')+stat(P.personas.teacher.length,'שאלות מורה')+
+     stat(P.personas.parent.length,'שאלות הורה')+'</div>';
+  h+='<div style="margin-bottom:12px">'+P.dimensions.map(d=>'<span class="chip">'+esc(d.name)+'</span>').join(' ')+'</div>';
+  h+='<table><thead><tr><th>כלי</th><th>תפקיד</th><th>קישור</th></tr></thead><tbody>';
+  const roleHe={student:'תלמיד.ה',teacher:'מורה',parent:'הורה',dashboard:'דשבורד',tool:'כלי'};
+  for(const t of P.tools){
+    h+='<tr><td><b>'+esc(t.label)+'</b><div class="mono">'+esc(t.file)+'</div></td>'+
+       '<td><span class="chip">'+esc(roleHe[t.role]||t.role)+'</span></td>'+
+       '<td><a class="link" href="'+esc(up(t.href))+'" target="_blank">פתיחה »</a></td></tr>';
+  }
+  h+='</tbody></table>';
+  document.getElementById('pl-tools').innerHTML=h;
+}
+
+/* ═══════ פולס — שאלות פר פרסונה ═══════ */
+let plPersona='student';
+function renderPulseQuestions(){
+  let h='<h2 class="title">שאלות הפולס</h2><div class="subtitle">אותם 4 ממדים, מנוסחים לכל פרסונה בנפרד.</div>';
+  h+='<div class="persona-tabs">'+
+     ['student|תלמיד.ה','teacher|מורה','parent|הורה'].map(p=>{const[k,l]=p.split('|');
+       return '<button class="subtab'+(k==='student'?' active':'')+'" data-p="'+k+'" onclick="setPersona(\''+k+'\')">'+l+'</button>';}).join('')+'</div>';
+  h+='<div id="pl-qbody"></div>';
+  document.getElementById('pl-questions').innerHTML=h;
+  paintPersona();
+}
+function setPersona(k){plPersona=k;document.querySelectorAll('#pl-questions .persona-tabs .subtab').forEach(b=>b.classList.toggle('active',b.dataset.p===k));paintPersona();}
+function paintPersona(){
+  const P=D.pulse, dimColor={adjust:'#F2B844',friend:'#E08FAF',emotion:'#8B6BC0',joy:'#5BC0A8'};
+  const qs=P.personas[plPersona]||[];
+  let h='';
+  if(!qs.length){h='<div class="resp-empty">אין שאלות מחולצות לפרסונה זו.</div>';}
+  else if(plPersona==='parent'){
+    h+='<div class="card"><ol style="padding-inline-start:20px;line-height:2">'+qs.map(q=>'<li>'+esc(q.text)+'</li>').join('')+'</ol></div>';
+  } else {
+    // קיבוץ לפי ממד
+    const byDim={};
+    qs.forEach(q=>{(byDim[q.dim]=byDim[q.dim]||{name:q.dimName,items:[]}).items.push(q.text);});
+    for(const [dim,g] of Object.entries(byDim)){
+      h+='<span class="dimhead" style="background:'+(dimColor[dim]||'#333')+'22;color:'+(dimColor[dim]||'#ccc')+'">'+esc(g.name)+'</span>';
+      h+='<div class="card"><ol style="padding-inline-start:20px;line-height:2">'+g.items.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ol></div>';
+    }
+  }
+  document.getElementById('pl-qbody').innerHTML=h;
+}
+
+/* ═══════ פולס — תשובות תלמידים (localStorage) ═══════ */
+function renderPulseResponses(){
+  const P=D.pulse, dimColor={adjust:'#F2B844',friend:'#E08FAF',emotion:'#8B6BC0',joy:'#5BC0A8'};
+  const dimName={}; P.dimensions.forEach(d=>dimName[d.id]=d.name);
+  let subs=[]; try{subs=JSON.parse(localStorage.getItem(P.responseKey))||[]}catch(e){}
+  // השאלון שומר מערך של submissions: {school,class,sid,submittedAt,responses:[{dim,score,ts}]}
+  // (תמיכה גם בפורמט-שטוח ישן, למקרה שנשמר {dim,score} ברמה העליונה)
+  const flat=[];
+  subs.forEach(s=>{
+    if(Array.isArray(s.responses)) s.responses.forEach(r=>flat.push({...r, sid:s.sid, cls:s.class, at:s.submittedAt}));
+    else if(s.dim!=null) flat.push(s);
+  });
+  let h='<h2 class="title">תשובות תלמידים</h2><div class="subtitle">כשתלמיד.ה משלים.ה את שאלון הפולס — התשובות נשמרות בדפדפן ומופיעות כאן. מפתח: <span class="mono">'+esc(P.responseKey)+'</span></div>';
+  h+='<div style="margin-bottom:12px"><a class="link" href="'+esc(up('pulse-grade1/pulse-questionnaire.html'))+'" target="_blank">▶ פתיחת שאלון התלמיד למילוי</a>'+
+     ' &nbsp;·&nbsp; <button class="subtab" onclick="renderPulseResponses()">רענון</button>'+
+     ' &nbsp;·&nbsp; <button class="subtab" onclick="if(confirm(\'למחוק את כל התשובות המקומיות?\')){localStorage.removeItem(D.pulse.responseKey);renderPulseResponses();}">ניקוי</button></div>';
+  if(!flat.length){
+    h+='<div class="card resp-empty">אין עדיין תשובות. פתחי את שאלון התלמיד, ענני, וחזרי לכאן (רענון).</div>';
+    document.getElementById('pl-responses').innerHTML=h; return;
+  }
+  // צבירה פר ממד
+  const agg={};
+  flat.forEach(r=>{const d=r.dim||'?';(agg[d]=agg[d]||{sum:0,n:0});agg[d].sum+=(+r.score||0);agg[d].n++;});
+  h+='<div class="statrow">'+stat(subs.length,'מילויים (תלמידים)')+stat(flat.length,'תשובות סה״כ')+stat(Object.keys(agg).length,'ממדים שנענו')+'</div>';
+  for(const [dim,a] of Object.entries(agg)){
+    const avg=a.n?(a.sum/a.n):0, pct=Math.round((avg/3)*100);
+    h+='<div class="card"><div style="display:flex;justify-content:space-between"><b style="color:'+(dimColor[dim]||'#ccc')+'">'+esc(dimName[dim]||dim)+'</b>'+
+       '<span class="chip">'+a.n+' תשובות · ממוצע '+avg.toFixed(1)+'/3</span></div>'+
+       '<div class="bar"><i style="width:'+pct+'%;background:'+(dimColor[dim]||'#888')+'"></i></div></div>';
+  }
+  // טבלה גולמית
+  h+='<div class="card"><b>תשובות גולמיות</b><table style="margin-top:8px"><thead><tr><th>תלמיד.ה</th><th>ממד</th><th>ציון</th><th>זמן</th></tr></thead><tbody>'+
+     flat.slice().reverse().map(r=>'<tr><td class="mono">'+esc(r.sid||'—')+'</td><td>'+esc(dimName[r.dim]||r.dim||'—')+'</td><td>'+esc(r.score)+'</td><td class="mono">'+esc((r.at||r.ts||'').slice(0,16).replace('T',' '))+'</td></tr>').join('')+
+     '</tbody></table></div>';
+  document.getElementById('pl-responses').innerHTML=h;
+}
+
+/* ── הפעלה: אחרי שכל ה-const/let ברמת-המודול אותחלו (מונע TDZ) ── */
+if(!D){
+  document.querySelector('.wrap').innerHTML='<div class="card" style="margin-top:30px"><b>⚠ admin-data.js לא נטען.</b><br>הריצי <kbd>node admin/build-admin-data.js</kbd> ואז רענני.</div>';
+} else { render(); applyHash(); }
+</script>
+</body>
+</html>
