@@ -71,7 +71,7 @@ test.describe('אי 15 · מפרץ התמונות', () => {
     }
   });
 
-  test('image mode: sentence shown (not auto-read), full 6-round run, primary=15 + bank char', async ({ page }) => {
+  test('image mode: sentence shown (not auto-read), full 7-round run, primary=15 + bank char', async ({ page }) => {
     test.setTimeout(120_000);
     await page.goto('/underwater-app/stage-15-sentence.html?mode=image');
     await startAndWaitFirstRound(page);
@@ -85,7 +85,7 @@ test.describe('אי 15 · מפרץ התמונות', () => {
       (imgs) => imgs.length > 0 && imgs.every((i) => i.complete && i.naturalWidth > 0));
     expect(imgsOk).toBe(true);
 
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 7; i++) {
       await clickCorrect(page);
       await page.waitForTimeout(1400);
     }
@@ -93,7 +93,7 @@ test.describe('אי 15 · מפרץ התמונות', () => {
 
     const events = (await readEvents(page)) || [];
     const mine = events.filter((e) => e.activity_type === 'mcq');
-    expect(mine.length).toBe(6);
+    expect(mine.length).toBe(7);
     for (const e of mine) {
       expect(e.primary_island_id).toBe(15);
       expect(e.strand_id).toBe(4);

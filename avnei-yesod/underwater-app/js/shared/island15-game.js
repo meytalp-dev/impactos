@@ -91,6 +91,18 @@
         { label: 'יַלְדָּה יוֹשֶׁבֶת עַל כִּסֵּא',  file: 'yldh-yvshbt-l-ks.png',
           epa: { what: 'Comprehension', where: 'isolation', task: 'recognition' } },
       ] },
+    // סבב שביעי (הוספת מיטל 7.7) — apr-w4-d4-c2-L1. פריט-בנק זה הוא story_picture_match
+    // (stem_mode:audio) אך באי 15 המשפט מוצג כטקסט ואינו מוקרא (הפואנטה נשמרת) —
+    // משפט בודד קריא + מסיחים "רחוקים" (ישן / מחזיק-כדור). התמונות ב-assets/vocab/.
+    { q_id: 'apr-w4-d4-c2-L1', char: 'apr-w4-d4-c2', variant: 'sentence_picture_match',
+      sentence: 'הַיֶּלֶד רָץ אֶל הַיָּם וְקָפַץ פְּנִימָה.',
+      options: [
+        { label: 'יֶלֶד קוֹפֵץ לַיָּם',   file: 'yld-kvpts-lym.png', correct: true },
+        { label: 'יֶלֶד יָשֵׁן בַּמִּטָּה', file: 'yld-yshn-bmth.png',
+          epa: { what: 'Comprehension', where: 'isolation', task: 'recognition' } },
+        { label: 'יֶלֶד מַחֲזִיק כַּדּוּר', file: 'yld-mchzyk-kdvr.png',
+          epa: { what: 'Comprehension', where: 'isolation', task: 'recognition' } },
+      ] },
   ];
 
   // ── סוג (ב): משפט → שאלה קצרה (literal מי/מה/איפה). המשפט נשאר על המסך ──
