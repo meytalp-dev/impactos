@@ -415,7 +415,9 @@ function simRatio(a, b) {
 }
 function buildPronunciation() {
   let manifest = {}, trans = null;
-  try { manifest = readJSON(path.join(__dirname, 'audio-manifest.json')); } catch (e) {}
+  // מילים+נרטיב תחילה, ליבה פונטית אחרונה (גוברת בהתנגשות) — תואם ל-qa-pronunciation-sweep
+  try { Object.assign(manifest, readJSON(path.join(__dirname, 'audio-manifest-words.json'))); } catch (e) {}
+  try { Object.assign(manifest, readJSON(path.join(__dirname, 'audio-manifest.json'))); } catch (e) {}
   try { trans = readJSON(path.join(__dirname, 'qa-transcriptions.json')); } catch (e) {}
   if (!trans) return { meta: { ran: false, manifestCount: Object.keys(manifest).length }, clips: [] };
 
