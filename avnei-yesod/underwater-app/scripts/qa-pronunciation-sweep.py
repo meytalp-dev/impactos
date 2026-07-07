@@ -65,46 +65,90 @@ def collect_files(args):
     return files
 
 
+RELOAD_EVERY = 120   # טעינה-מחדש של המודל כל N קליפים — משחרר זיכרון (מונע mkl_malloc OOM)
+SAVE_EVERY = 20      # שמירה אינקרמנטלית — עמיד להפסקות/OOM, וניתן להמשך
+
+
+def load_results():
+    """טוען תוצאות קיימות (להמשך ריצה שנקטעה)."""
+    if OUT.exists():
+        try:
+            return json.loads(OUT.read_text(encoding="utf-8")).get("results", {})
+        except Exception:
+            return {}
+    return {}
+
+
+def save(results, model_size, done, total):
+    payload = {
+        "model": model_size,
+        "generatedAt": None,   # מוטבע אחרי סיום (Date לא זמין ב-build; נשאר null)
+        "checked": len(results),
+        "progress": f"{done}/{total}",
+        "with_intended": sum(1 for r in results.values() if "intended" in r),
+        "suspects": sum(1 for r in results.values() if r.get("suspect")),
+        "results": results,
+    }
+    OUT.write_text(json.dumps(payload, ensure_ascii=False, indent=1), encoding="utf-8")
+
+
 def main():
     manifest = {}
     if MANIFEST.exists():
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
     files = collect_files(sys.argv[1:])
+    n = len(files)
+
+    results = load_results()
+    todo = [f for f in files if f.stem not in results]
+    print(f"סה\"כ {n} · כבר תומללו {len(results)} · נותרו {len(todo)}", flush=True)
+
     print(f"loading faster-whisper ({MODEL_SIZE})...", flush=True)
     model = WhisperModel(MODEL_SIZE, device="cpu", compute_type="int8")
 
-    results = {}
-    n = len(files)
-    for i, f in enumerate(files, 1):
+    since_reload = 0
+    for i, f in enumerate(todo, 1):
         key = f.stem
         try:
             segs, _ = model.transcribe(str(f), language="he", beam_size=1)
             heard = "".join(s.text for s in segs).strip()
         except Exception as e:
             heard = ""
-            print(f"[{i}/{n}] ERR {key}: {e}", flush=True)
+            print(f"[{i}/{len(todo)}] ERR {key}: {e}", flush=True)
+            # OOM? טען מודל מחדש והמשך
+            if "malloc" in str(e).lower() or "memory" in str(e).lower():
+                try:
+                    del model
+                    import gc; gc.collect()
+                    model = WhisperModel(MODEL_SIZE, device="cpu", compute_type="int8")
+                    since_reload = 0
+                except Exception:
+                    pass
         rec = {"heard": heard}
         intended = manifest.get(key)
         if intended:
-            sim = round(similarity(intended, heard), 2)
             rec["intended"] = intended
-            rec["sim"] = sim
-            rec["suspect"] = sim < 0.6 or not strip_niqqud(heard)
+            rec["sim"] = round(similarity(intended, heard), 2)
+            rec["suspect"] = rec["sim"] < 0.6 or not strip_niqqud(heard)
         else:
-            rec["suspect"] = not strip_niqqud(heard)  # ריק/לא-עברי = חשוד
+            rec["suspect"] = not strip_niqqud(heard)
         results[key] = rec
-        if i % 25 == 0 or i == n:
-            print(f"[{i}/{n}] {key}: '{heard}'" + (f" (sim={rec.get('sim')})" if "sim" in rec else ""), flush=True)
 
-    payload = {
-        "model": MODEL_SIZE,
-        "checked": n,
-        "with_intended": sum(1 for r in results.values() if "intended" in r),
-        "suspects": sum(1 for r in results.values() if r.get("suspect")),
-        "results": results,
-    }
-    OUT.write_text(json.dumps(payload, ensure_ascii=False, indent=1), encoding="utf-8")
-    print(f"\n✓ {OUT} — {n} clips · {payload['suspects']} suspects · {payload['with_intended']} with intended-text")
+        since_reload += 1
+        if i % 25 == 0:
+            print(f"[{i}/{len(todo)}] {key}: '{heard}'" + (f" (sim={rec.get('sim')})" if "sim" in rec else ""), flush=True)
+        if i % SAVE_EVERY == 0:
+            save(results, MODEL_SIZE, len(results), n)
+        if since_reload >= RELOAD_EVERY:   # שחרור זיכרון יזום
+            del model
+            import gc; gc.collect()
+            model = WhisperModel(MODEL_SIZE, device="cpu", compute_type="int8")
+            since_reload = 0
+
+    save(results, MODEL_SIZE, len(results), n)
+    suspects = sum(1 for r in results.values() if r.get("suspect"))
+    with_int = sum(1 for r in results.values() if "intended" in r)
+    print(f"\n✓ {OUT} — {len(results)}/{n} clips · {suspects} suspects · {with_int} with intended-text")
 
 
 if __name__ == "__main__":
