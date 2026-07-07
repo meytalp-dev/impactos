@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <script src="js/shared/file-protocol-shim.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>אי 16 · שרשרת האלמוגים</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css?v=2026-07-07">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Heebo', sans-serif;
+      color: var(--text-main, #26505C);
+      line-height: 1.5;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #BFF1FF 0%, #A8E8FF 40%, #73D9D1 100%);
+      -webkit-font-smoothing: antialiased;
+    }
+    .scene-bg {
+      position: fixed; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center bottom;
+      z-index: 0; pointer-events: none;
+    }
+
+    /* Top bar */
+    .top-bar {
+      position: fixed; top: 0; left: 0; right: 0;
+      padding: 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      z-index: 50;
+    }
+    .icon-btn {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: rgba(255,255,255,0.92); border: 1.5px solid rgba(255,255,255,0.95);
+      box-shadow: 0 6px 16px rgba(38,80,92,0.15);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-main, #26505C); text-decoration: none;
+    }
+    .icon-btn:active { transform: scale(0.92); }
+
+    .island-header {
+      position: relative; z-index: 1;
+      padding: 92px 16px 20px;
+      text-align: center;
+      animation: fade-down 700ms ease-out;
+    }
+    @keyframes fade-down { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+    .island-title {
+      display: inline-block;
+      font-size: clamp(26px, 6vw, 38px);
+      font-weight: 900;
+      color: var(--deep, #1E3D47);
+      background: rgba(255,255,255,0.9);
+      border-radius: 999px;
+      padding: 10px 30px;
+      box-shadow: 0 8px 22px rgba(38,80,92,0.16);
+      margin-bottom: 10px;
+    }
+    .island-subtitle {
+      font-size: clamp(15px, 3vw, 19px);
+      font-weight: 700;
+      color: var(--deep, #1E3D47);
+      background: rgba(255,255,255,0.78);
+      border-radius: 999px;
+      display: inline-block;
+      padding: 6px 20px;
+      max-width: 56ch;
+      margin: 0 auto;
+    }
+
+    .quests-wrap {
+      position: relative; z-index: 1;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 8px 16px 170px;
+    }
+
+    /* Story card — נרטיב בעיה→פתרון + כפתור הקראה של הסיפור (לא של המשפטים לתרגול) */
+    .story-card {
+      background: rgba(255,255,255,0.94);
+      border-radius: var(--radius-md, 24px);
+      padding: 22px 22px 20px;
+      box-shadow: 0 14px 38px rgba(38,80,92,0.16);
+      margin-bottom: 18px;
+      animation: fade-up 700ms ease-out;
+    }
+    @keyframes fade-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .story-card h2 { font-size: 21px; font-weight: 900; color: var(--deep, #1E3D47); margin-bottom: 8px; }
+    .story-card p { font-size: 16px; color: var(--text-soft, #4D6F78); margin-bottom: 14px; }
+    .story-audio-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      min-height: var(--touch-min, 56px);
+      background: var(--water-depth, #63CFE5);
+      color: var(--deep, #1E3D47); border: none; padding: 12px 24px; border-radius: 999px;
+      font-family: inherit; font-weight: 800; font-size: 16px;
+      cursor: pointer; box-shadow: 0 6px 14px rgba(38,80,92,0.18);
+      transition: transform 150ms ease;
+    }
+    .story-audio-btn:hover { transform: translateY(-1px); }
+    .story-audio-btn:active { transform: scale(0.96); }
+
+    /* Quest card */
+    .quest-card {
+      background: rgba(255,255,255,0.94);
+      border-radius: var(--radius-md, 24px);
+      padding: 24px 22px;
+      box-shadow: 0 14px 38px rgba(38,80,92,0.16);
+      text-decoration: none;
+      color: var(--text-main, #26505C);
+      display: flex; flex-direction: column; gap: 14px;
+      transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+      border: 2.5px solid transparent;
+      animation: fade-up 700ms ease-out;
+    }
+    .quest-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 22px 48px rgba(38,80,92,0.2);
+      border-color: var(--sea-green, #8ED9B8);
+    }
+    .quest-card .qc-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 64px; height: 64px; border-radius: 18px;
+      background: var(--lavender, #D9D2FF);
+      color: var(--deep, #1E3D47);
+    }
+    .quest-card h2 { font-size: 22px; font-weight: 900; color: var(--deep, #1E3D47); }
+    .quest-card p { font-size: 15px; color: var(--text-soft, #4D6F78); }
+    .quest-card .qc-cta {
+      align-self: flex-start;
+      min-height: var(--touch-min, 56px);
+      display: inline-flex; align-items: center;
+      background: var(--sea-green, #8ED9B8);
+      color: var(--deep, #1E3D47); padding: 10px 24px;
+      border-radius: 999px; font-weight: 800; font-size: 16px;
+      box-shadow: 0 6px 14px rgba(38,80,92,0.18);
+    }
+
+    /* נוני */
+    .noni-fixed {
+      position: fixed; bottom: 18px; right: 14px;
+      width: clamp(84px, 18vw, 120px); height: auto;
+      animation: float-bob 3s ease-in-out infinite;
+      pointer-events: none; z-index: 10;
+      filter: drop-shadow(0 8px 14px rgba(38,80,92,0.25));
+    }
+    @keyframes float-bob { 0%, 100% { transform: translateY(-8px); } 50% { transform: translateY(8px); } }
+    .noni-bubble {
+      position: fixed; bottom: 150px; right: 16px;
+      background: #fff; border-radius: var(--radius-md, 24px);
+      padding: 14px 20px; max-width: 270px;
+      box-shadow: 0 6px 18px rgba(38,80,92,0.18);
+      z-index: 10;
+      font-weight: 700; font-size: 16px; color: var(--deep, #1E3D47);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .island-header, .quest-card, .story-card { animation: none !important; }
+      .noni-fixed { animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true"
+     onerror="this.style.display='none'">
+
+<header class="top-bar">
+  <a href="map.html" class="icon-btn" aria-label="חזרה למפה">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+  <div style="width:52px;height:52px;" aria-hidden="true"></div>
+</header>
+
+<section class="island-header">
+  <h1 class="island-title">אִי 16 · שַׁרְשֶׁרֶת הָאַלְמוֹגִים</h1>
+  <p class="island-subtitle">כֹּל מִשְׁפָּט הוּא אַלְמוֹג. מְשַׁרְשְׁרִים אוֹתָם בַּסֵּדֶר הַנָּכוֹן — וּמְקַבְּלִים פִּסְקָה!</p>
+</section>
+
+<main class="quests-wrap">
+
+  <section class="story-card">
+    <h2>מָה קָרָה בַּשּׁוּנִית?</h2>
+    <p>הַזֶּרֶם פִּזֵּר אֶת אַלְמוֹגֵי הַסִּפּוּר, וְהַמִּשְׁפָּטִים הִתְעַרְבְּבוּ! נוּנִי צְרִיכָה עֶזְרָה לְחַבֵּר אוֹתָם שׁוּב בַּסֵּדֶר הַנָּכוֹן — עַד שֶׁתֵּצֵא פִּסְקָה שֶׁמְּסַפֶּרֶת אֶת כֹּל הַסִּפּוּר.</p>
+    <button class="story-audio-btn" id="storyBtn" type="button">
+      <span aria-hidden="true">🔊</span>
+      <span>לִשְׁמֹעַ אֶת נוּנִי</span>
+    </button>
+  </section>
+
+  <a class="quest-card" href="stage-16-paragraph.html">
+    <div class="qc-badge" aria-hidden="true">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+        <path d="M8 6h13M8 12h13M8 18h13" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        <circle cx="4" cy="6" r="1.6" fill="currentColor"/>
+        <circle cx="4" cy="12" r="1.6" fill="currentColor"/>
+        <circle cx="4" cy="18" r="1.6" fill="currentColor"/>
+      </svg>
+    </div>
+    <h2>לְשַׁרְשֵׁר פִּסְקָה</h2>
+    <p>קִרְאוּ אֶת שְׁלוֹשֶׁת הַמִּשְׁפָּטִים בְּעַצְמְכֶם, וְסַדְּרוּ אוֹתָם לְפִי הַסֵּדֶר הַהֶגְיוֹנִי.</p>
+    <span class="qc-cta">לְהַתְחִיל</span>
+  </a>
+
+</main>
+
+<img class="noni-fixed" id="noniImg" src="assets/noni-idle.png" alt="נוני"
+     onerror="this.style.display='none'">
+<div class="noni-bubble" id="noniBubble">אֵיזֶה מִשְׁפָּט בָּא קֹדֶם, וְאֵיזֶה אַחֲרָיו?</div>
+
+<script src="js/state.js"></script>
+<script src="js/shared/audio.js"></script>
+<script>
+  (function () {
+    // הקראת נרטיב נוני של האי — ידני בלבד (כפתור), פעם אחת ללחיצה.
+    var btn = document.getElementById('storyBtn');
+    if (btn) {
+      btn.addEventListener('click', function () {
+        try { if (window.AvneiAudio && window.AvneiAudio.unlock) window.AvneiAudio.unlock(); } catch (e) {}
+        if (window.AvneiAudio && typeof window.AvneiAudio.play === 'function') {
+          try { window.AvneiAudio.play('intro-isl16'); return; } catch (e) {}
+        }
+        // fallback ישיר לקובץ (למקרה ש-AvneiAudio לא זמין)
+        try { new Audio('assets/audio/intro-isl16.mp3').play().catch(function () {}); } catch (e) {}
+      });
+    }
+  })();
+</script>
+
+</body>
+</html>
