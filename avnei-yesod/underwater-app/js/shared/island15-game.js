@@ -182,7 +182,12 @@
       characteristic_id: round.char,
       primary_island_id: ISLAND_ID,
       theme: 'shells',
+      // promptLine = השאלה → aria-label של קבוצת-התשובות (נגישות). היא מוצגת
+      // חזותית פעם אחת בלבד, בכרטיס-השאלה הצהוב (mcq-stem-card--text) עם רמקול-העזרה.
       promptLine: round.question,
+      // בועת-נוני העליונה = הנחיה גנרית (לא חזרה על השאלה) — מסירים כפילות
+      // (החלטת מיטל 7.7). מקבילה לבועה במצב image.
+      bubbleLine: 'קִרְאוּ אֶת הַמִּשְׁפָּט — וְעֲנוּ עַל הַשְּׁאֵלָה.',
       layout: 'passage',
       // passage_he = המשפט (נשאר, בלי passage_audio_key → לא מוקרא);
       // stem text = השאלה. אין audio_key → אין השמעה אוטומטית של דבר.
@@ -241,7 +246,9 @@
       var cfg = queue[idx];
       $('counter').textContent = (idx + 1) + ' / ' + queue.length;
       $('noniRow').hidden = false;
-      $('promptText').textContent = cfg.promptLine;
+      // בבועה: הנחיה גנרית אם הוגדרה (mode=question — מונע כפילות עם כרטיס-השאלה),
+      // אחרת ה-promptLine עצמו (mode=image — המשפט הוא ה-stem, הבועה = הנחיה).
+      $('promptText').textContent = cfg.bubbleLine || cfg.promptLine;
 
       cfg.onComplete = function () {
         idx++;

@@ -117,6 +117,14 @@ test.describe('אי 15 · מפרץ התמונות', () => {
     // רמקול-עזרה לשאלה קיים; אין השמעה אוטומטית (הכפתור ידני)
     await expect(page.locator('.q-help-spk')).toBeVisible();
     expect(await page.locator('.mcq-stem-audio').count()).toBe(0);
+
+    // בלי כפילות (החלטת מיטל 7.7): השאלה מוצגת פעם אחת בלבד — בכרטיס הצהוב
+    // (מסתיימת ב-"?"); בועת-נוני = הנחיה גנרית, לא חזרה על השאלה.
+    const questionText = (await page.locator('.mcq-stem-card--text').innerText()).trim();
+    const bubbleText = (await page.locator('#promptText').innerText()).trim();
+    expect(questionText).toContain('?');            // השאלה חיה בכרטיס הצהוב
+    expect(bubbleText.length).toBeGreaterThan(0);   // נוני עדיין נוכחת עם בועה
+    expect(bubbleText).not.toContain('?');          // הבועה = הנחיה, לא השאלה
   });
 
   test('question mode: wrong pick logs EPA (failure_type), primary=15 + bank char', async ({ page }) => {
