@@ -386,22 +386,71 @@ function qaState(g,field){ // ידני גובר על אוטומטי
   const o=qaLoad(); if(o[g.file]&&o[g.file][field]!=null) return o[g.file][field];
   return g.qa[field]; // 'ok' | 'fail' | 'na'
 }
+// ריצה בפועל (Playwright): נטען בלי שגיאות JS ובלי נכס שנכשל
+function runtimeBadge(g){
+  const r=g.runtime;
+  if(!r) return '<span class="badge b-na" title="טרם הורץ. הריצי: node admin/qa-runtime-check.js">טרם נבדק</span>';
+  if(r.ok) return '<span class="badge b-ok">✓ נטען</span>';
+  const msg=[r.loadError,...(r.jsErrors||[]),...(r.failedAssets||[])].filter(Boolean).join(' · ');
+  const kind=(r.failedAssets&&r.failedAssets.length)?'נכס נכשל':'שגיאת JS';
+  return '<span class="badge b-fail" title="'+esc(msg)+'">✗ '+kind+'</span>';
+}
+// DNA ויזואלי — ✓ אם הכל תקין, אחרת רשימת ליקויים ב-tooltip
+function dnaBadge(g){
+  const d=g.dna; if(!d) return '<span class="badge b-na">—</span>';
+  const iss=[];
+  if(!d.scene_bg)iss.push('scene-bg PNG');
+  if(!d.noni_png)iss.push('נוני-PNG');
+  if(!d.noni_not_svg)iss.push('נוני כ-SVG!');
+  if(!d.tokens)iss.push('tokens.css');
+  if(!d.heebo)iss.push('Heebo');
+  if(!d.shim)iss.push('file-shim');
+  if(!d.no_forbidden_color)iss.push('צבע אסור #2E7D8C!');
+  if(!d.plural_ok)iss.push('לשון-יחיד?');
+  return iss.length? '<span class="badge b-warn" title="חסר/בעייתי: '+esc(iss.join(', '))+'">⚠ '+iss.length+'</span>'
+                   : '<span class="badge b-ok">✓ DNA</span>';
+}
+// סימון-מורה ידני (פדגוגי) — ניטרלי כברירת מחדל, נשמר ב-localStorage
+function manualBox(g,field,label,title){
+  const cur=qaState(g,field), checked=(cur==='ok')?'checked':'';
+  return '<label title="'+esc(title)+'" style="display:inline-flex;align-items:center;gap:3px;margin:0 0 3px 8px;cursor:pointer;font-size:11px;white-space:nowrap">'+
+    '<input type="checkbox" class="qa-check" style="width:15px;height:15px" '+checked+' onchange="qaSet(\''+g.file+'\',\''+field+'\',this.checked?\'ok\':\'todo\')">'+esc(label)+'</label>';
+}
+function manualCell(g){
+  return '<td style="min-width:150px">'+
+    manualBox(g,'transcription','תמלול','האודיו שנשמע = מה שכתוב (בדיקת Whisper/אוזן)')+
+    manualBox(g,'distractor','מסיח','המסיח מובחן באוזן (יָשׁ≠יֵשׁ לא מספיק)')+
+    manualBox(g,'fit','fit','מודד את המיומנות שהאי מצהיר')+
+    manualBox(g,'granularity','גרנול׳','מדידה בגרנולריות נכונה (פר-צירוף)')+'</td>';
+}
 function renderQA(){
   const G=D.avnei.minigames.filter(g=>g.kind!=='hub');
-  let h='<h2 class="title">טבלת בדיקת תקינות (QA)</h2><div class="subtitle">בדיקה אוטומטית של נכסים חסרים = ברירת מחדל. סמני ✓ ידנית אחרי בדיקה בפועל — נשמר בדפדפן.</div>';
-  h+='<div class="qa-legend"><span class="dot d-ok"></span>תקין &nbsp; <span class="dot d-fail"></span>נכס חסר / לא תקין &nbsp; <span class="dot d-na"></span>לא רלוונטי · '+
-     'ה-✓ שתסמני גובר על הבדיקה האוטומטית.<br>'+
-     '<b>קול:</b> 🎙️ נוני מוקלט = תקין · 🔊 הקראת דפדפן / מעורב ⚠ = משתמש ב-Web Speech (עברית גרועה/שקט) — חובה לבדוק שלא נופל לשם.</div>';
+  const ah=D.avnei.audioHealth, rm=D.avnei.runtimeMeta;
+  let h='<h2 class="title">טבלת בדיקת תקינות (QA)</h2><div class="subtitle">אוטומטי (נכסים+DNA+ריצה) = ברירת מחדל · הסימונים הידניים (מורה) נשמרים בדפדפן.</div>';
+  // באנר בריאות-אודיו + סטטוס-ריצה
+  if(ah){
+    h+='<div class="card" style="padding:10px 14px">';
+    if(ah.broken&&ah.broken.length) h+='<div><span class="badge b-fail">🔇 '+ah.broken.length+' קבצי אודיו שבורים (0 בייט)</span> <span class="mono">'+esc(ah.broken.join(', '))+'</span> — הקראה שקטה!</div>';
+    else h+='<div><span class="badge b-ok">✓ אין קבצי אודיו שבורים</span> ('+ah.total+' קבצים במאגר)</div>';
+    if(ah.oldVoiceFolder) h+='<div style="margin-top:5px"><span class="badge b-warn">⚠ קיימת תיקיית קול-ישן (_old-hila)</span> — לוודא שאף משחקון לא מפנה אליה.</div>';
+    h+='</div>';
+  }
+  h+='<div class="qa-legend"><span class="dot d-ok"></span>תקין &nbsp; <span class="dot d-fail"></span>לא תקין &nbsp; <span class="dot d-na"></span>לא רלוונטי · '+
+     '<b>קול:</b> 🎙️ נוני מוקלט = תקין · 🔊/מעורב ⚠ = Web Speech (עברית גרועה). '+
+     '<b>ריצה:</b> '+(rm?'הורצה '+esc((rm.generatedAt||'').slice(0,16).replace('T',' ')):'טרם הורצה — <span class="mono">node admin/qa-runtime-check.js</span>')+'. '+
+     '<b>מורה:</b> סימונים פדגוגיים ידניים (תמלול/מסיח/fit/גרנולריות).</div>';
   h+='<div id="qa-summary" class="statrow"></div>';
-  h+='<table><thead><tr><th>אי</th><th>משחקון</th><th>קול</th><th>אודיו</th><th>תמונות</th><th>טעינה</th><th>אוטו</th></tr></thead><tbody>';
+  h+='<div style="overflow-x:auto"><table><thead><tr><th>אי</th><th>משחקון</th><th>קול</th><th>ריצה</th><th>DNA</th><th>אודיו</th><th>תמונות</th><th>טעינה</th><th>בדיקת-מורה</th></tr></thead><tbody>';
   for(const g of G){
     h+='<tr data-file="'+esc(g.file)+'"><td>'+(g.island?'<span class="pill">'+g.island+'</span>':'<span class="chip">כלי</span>')+'</td>'+
        '<td><a class="link" href="'+esc(up(g.href))+'" target="_blank">'+esc(g.title)+'</a><div class="mono">'+esc(g.file)+'</div></td>'+
        '<td>'+voiceBadge(g.voice)+'</td>'+
+       '<td>'+runtimeBadge(g)+'</td>'+
+       '<td>'+dnaBadge(g)+'</td>'+
        qaCell(g,'audio')+qaCell(g,'images')+qaCell(g,'loading')+
-       '<td>'+autoBadge(g)+'</td></tr>';
+       manualCell(g)+'</tr>';
   }
-  h+='</tbody></table>';
+  h+='</tbody></table></div>';
   document.getElementById('av-qa').innerHTML=h;
   updateQaSummary();
 }

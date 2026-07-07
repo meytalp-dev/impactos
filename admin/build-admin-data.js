@@ -224,6 +224,30 @@ function buildMinigames() {
       bank: /questions-grade1|mechanic-mcq|stage-bank-play|question-bank/.test(html),
     };
 
+    // ── DNA ויזואלי (מזוהה מהקוד) — רק לדפי-משחקון/אי, לא לכלים ──
+    const referencesNoni = /noni/i.test(html);
+    const noniAsSvg = /<svg[^>]*>[\s\S]{0,400}?(noni|תמנון)/i.test(html) && !/noni-\w+\.(png|webp)/i.test(html);
+    const dna = {
+      scene_bg: /class="scene-bg"|scene[-\w]*bg\.(png|webp|jpg)/i.test(html), // רקע-סצנה PNG (לא gradient)
+      noni_png: /noni-\w+\.(png|webp)/i.test(html),                          // נוני כ-PNG
+      noni_not_svg: !noniAsSvg,                                              // נוני לא כ-SVG
+      tokens: /tokens\.css/.test(html),                                      // מערכת טוקנים
+      heebo: /Heebo/.test(html),                                            // פונט Heebo
+      shim: /file-protocol-shim/.test(html),                               // עובד file://
+      no_forbidden_color: !/#2E7D8C/i.test(html),                          // אסור הצבע הישן
+      plural_ok: !/\b(נְגַע\b|הַקְשֵׁב\b|בְּחַר\b|גַּע\b)(?!\.י|ו)/.test(html), // פנייה לילד בלשון רבים (זיהוי גס)
+    };
+
+    // ── תקינות אודיו: קבצי MP3 מקומיים ריקים (0 בייט) / נתיב-קול-ישן ──
+    const mp3refs = [...html.matchAll(/(?:src|["'(])\s*([\w./-]+\.mp3)/gi)].map((x) => x[1]);
+    const brokenAudio = [];
+    for (const r of [...new Set(mp3refs)]) {
+      if (/^https?:/.test(r)) continue;
+      const abs = path.resolve(dir, r);
+      try { if (exists(abs) && fs.statSync(abs).size === 0) brokenAudio.push(r); } catch (e) {}
+    }
+    const usesOldVoice = /_old-hila|hila-backup/i.test(html);
+
     // ── QA אוטומטי: איתור נכסים מקומיים חסרים ──
     const refs = [];
     // src="..." ו-href לסקריפטים/תמונות מקומיים
@@ -257,6 +281,9 @@ function buildMinigames() {
       usesAudio,
       voice,
       engine,
+      dna,
+      brokenAudio,
+      usesOldVoice,
       href: 'avnei-yesod/underwater-app/' + f,
       qa,
     };
@@ -266,7 +293,33 @@ function buildMinigames() {
     }
   }
   list.sort((a, b) => (a.island || 99) - (b.island || 99) || a.file.localeCompare(b.file));
-  return { list, byIsland };
+
+  // ── מיזוג תוצאות בדיקת-הריצה (admin/qa-runtime.json) אם קיימות ──
+  let runtimeMeta = null;
+  try {
+    const rt = readJSON(path.join(__dirname, 'qa-runtime.json'));
+    runtimeMeta = { generatedAt: rt.generatedAt, checked: rt.checked };
+    for (const g of list) {
+      const r = rt.results[g.file];
+      if (r) g.runtime = { ok: r.ok, loadError: r.loadError, jsErrors: r.jsErrors || [], failedAssets: r.failedAssets || [] };
+    }
+  } catch (e) { /* טרם הורץ — עמודת הריצה תציג "טרם נבדק" */ }
+
+  // ── בריאות מאגר האודיו הגלובלי (כולל קבצים שנטענים דינמית ע"י audio.js) ──
+  const audioHealth = { total: 0, broken: [], oldVoiceFolder: false };
+  try {
+    const adir = path.join(APP, 'assets', 'audio');
+    for (const af of fs.readdirSync(adir)) {
+      const full = path.join(adir, af);
+      const st = fs.statSync(full);
+      if (st.isDirectory()) { if (/hila|_old/i.test(af)) audioHealth.oldVoiceFolder = true; continue; }
+      if (!/\.mp3$/i.test(af)) continue;
+      audioHealth.total++;
+      if (st.size === 0) audioHealth.broken.push(af);
+    }
+  } catch (e) {}
+
+  return { list, byIsland, audioHealth, runtimeMeta };
 }
 
 // ─────────────────────────────────────────────────────────
@@ -337,6 +390,8 @@ function main() {
       mastery: buildMastery(),
       islands: buildIslands(minigames.byIsland),
       minigames: minigames.list,
+      audioHealth: minigames.audioHealth,
+      runtimeMeta: minigames.runtimeMeta,
     },
     pulse: buildPulse(),
   };
@@ -360,6 +415,10 @@ function main() {
     '· הקראת-דפדפן/מעורב:', ttsFlag.length, '(' + ttsFlag.map((g) => g.file).join(', ') + ')',
     '· ללא:', mg.filter((g) => g.voice === 'none').length);
   console.log('  מנוע — מזין BKT:', mg.filter((g) => g.engine.bkt).length, '/ ', mg.length, 'משחקונים');
+  const dnaFail = mg.filter((g) => !g.dna.scene_bg || !g.dna.noni_png || !g.dna.tokens || !g.dna.heebo || !g.dna.shim || !g.dna.no_forbidden_color);
+  console.log('  DNA — משחקונים עם ליקוי:', dnaFail.length, '/ ', mg.length);
+  const ah = a.audioHealth;
+  console.log('  אודיו — מאגר:', ah.total, 'קבצים · שבורים(0B):', ah.broken.length, ah.broken.length ? '(' + ah.broken.join(', ') + ')' : '', '· תיקיית-קול-ישן:', ah.oldVoiceFolder ? 'קיימת' : 'אין');
   qaFail.slice(0, 12).forEach((g) => console.log('    ⚠', g.file, JSON.stringify(g.qa.missing)));
   console.log('  פולס: תלמיד', data.pulse.personas.student.length, '· מורה', data.pulse.personas.teacher.length, '· הורה', data.pulse.personas.parent.length);
 }

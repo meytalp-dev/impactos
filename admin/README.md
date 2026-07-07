@@ -10,10 +10,15 @@
 במאפיינים / באיים / במשחקונים / בשאלוני הפולס — מריצים מחדש:
 
 ```
-node admin/build-admin-data.js
+node admin/qa-runtime-check.js     # (אופציונלי) בדיקת-ריצה אמיתית → qa-runtime.json
+node admin/build-admin-data.js     # מחלץ הכל (בולע גם את qa-runtime.json)
+git push origin HEAD:main          # מפרסם ל-impact-os.app/admin/
 ```
 
-ואז מרעננים את הדף.
+**בדיקת-ריצה (`qa-runtime-check.js`)** מריצה כל `stage-*.html` ב-Chromium (Playwright) מעל
+שרת-HTTP מקומי ומתעדת שגיאות-JS + נכסים שנכשלו (כולל MP3/PNG שבורים). דורשת את Chromium
+של Playwright (מותקן תחת `avnei-yesod/scripts/e2e`). מריצים אותה **לפני** build כדי לרענן
+את עמודת "ריצה". אם לא הורצה — העמודה מציגה "טרם נבדק".
 
 ## מה יש בפנים
 
