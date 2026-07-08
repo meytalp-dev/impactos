@@ -165,18 +165,18 @@
     const promptBar = document.createElement('div');
     promptBar.className = 'tap-cv-prompt';
     if (hasSisters) {
-      // chalupa B: מציג את שתי הצורות. "מצאי את מַ או מָ — שניהם /ma/".
+      // chalupa B: מציג את שתי הצורות. "מצאו את מַ או מָ — שניהם /ma/".
       const sister = sisterVowels[0];
       const sisterCV = VA.buildCV(letter, sister.id);
       promptBar.innerHTML =
-        '<span class="tap-cv-prompt__label">מצאי את </span>' +
-        '<button type="button" class="tap-cv-prompt__cv" aria-label="הקש לשמוע">' + targetCV + '</button>' +
+        '<span class="tap-cv-prompt__label">מצאו את </span>' +
+        '<button type="button" class="tap-cv-prompt__cv" aria-label="הקישו לשמוע">' + targetCV + '</button>' +
         '<span class="tap-cv-prompt__label tap-cv-prompt__or">או</span>' +
-        '<button type="button" class="tap-cv-prompt__cv tap-cv-prompt__cv--sister" aria-label="הקש לשמוע">' + sisterCV + '</button>';
+        '<button type="button" class="tap-cv-prompt__cv tap-cv-prompt__cv--sister" aria-label="הקישו לשמוע">' + sisterCV + '</button>';
     } else {
       promptBar.innerHTML =
-        '<span class="tap-cv-prompt__label">מצאי את </span>' +
-        '<button type="button" class="tap-cv-prompt__cv" aria-label="הקש לשמוע">' + targetCV + '</button>';
+        '<span class="tap-cv-prompt__label">מצאו את </span>' +
+        '<button type="button" class="tap-cv-prompt__cv" aria-label="הקישו לשמוע">' + targetCV + '</button>';
     }
     root.appendChild(promptBar);
 

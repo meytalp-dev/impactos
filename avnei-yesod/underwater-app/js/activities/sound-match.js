@@ -194,7 +194,7 @@ window.AvneiSoundMatch = (function() {
       setTimeout(() => AvneiAudio.playLetterSound(item.letter_in_focus || _letter), 300);
     } else if (_attempts >= 3) {
       AvneiNoni.setState('hint');
-      AvneiFeedback.show('זאת התשובה — הקש/י עליה');
+      AvneiFeedback.show('זאת התשובה — הקישו עליה');
       _noniGuidanceUsed = true;
       document.querySelectorAll('#smOptionsGrid .shell-option').forEach(c => {
         if (c.dataset.correct === 'true') {
@@ -219,8 +219,8 @@ window.AvneiSoundMatch = (function() {
 
     const feedbackOptions = [
       { text: 'מצאנו יחד!', audio: 'great' },
-      { text: 'יופי!', audio: 'exactly' },
-      { text: 'יופי, האות מתחילה לזהור', audio: 'right' },
+      { text: 'מצוין!', audio: 'exactly' },
+      { text: 'מצוין, האות מתחילה לזהור', audio: 'right' },
     ];
     const fb = feedbackOptions[Math.floor(Math.random() * feedbackOptions.length)];
     AvneiFeedback.show(fb.text);

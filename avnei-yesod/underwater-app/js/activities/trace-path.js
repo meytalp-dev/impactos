@@ -113,7 +113,7 @@ window.AvneiTracePath = (function() {
       AvneiNoni.setState('cheer');
       AvneiFeedback.show(remaining === 1
         ? 'מצוין! עוד פעם אחת'
-        : 'יופי! ננסה שוב');
+        : 'מצוין! ננסה שוב');
       setTimeout(() => startTrial(_trialIdx + 1), 1800);
     } else {
       AvneiNoni.setState('cheer');
@@ -522,7 +522,7 @@ window.AvneiTracePath = (function() {
 
     if (_attempts === 1) {
       AvneiNoni.setState('help');
-      AvneiFeedback.show('בואי נחזור לנקודת ההתחלה');
+      AvneiFeedback.show('בואו נחזור לנקודת ההתחלה');
     } else if (_attempts === 2) {
       AvneiNoni.setState('hint');
       AvneiFeedback.show('נראה את הדרך יחד');

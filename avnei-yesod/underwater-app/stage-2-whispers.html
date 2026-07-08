@@ -73,7 +73,7 @@
         <div class="whispers-hint-text" id="hintText">
           בחרו שתי קונכיות שהמילה שלהן נשמעת באותו צליל בסוף
         </div>
-        <button class="whispers-hint-speaker" id="hintSpeaker" aria-label="הקש לשמוע שוב את ההנחיה">
+        <button class="whispers-hint-speaker" id="hintSpeaker" aria-label="הקישו לשמוע שוב את ההנחיה">
           <svg viewBox="0 0 24 24" fill="none">
             <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
             <path d="M15.5 8.5a4 4 0 0 1 0 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
@@ -209,6 +209,7 @@
     const wordsData = state.data.words;
     const cards = round.cards.map(w => ({
       word: w,
+      display: wordsData[w].display || w,
       phoneme_end: wordsData[w].phoneme_end,
       audio: wordsData[w].audio,
       flipped: false,
@@ -227,6 +228,7 @@
     state.selection = [];
     state.mistakesInRound = 0;
     state.matchedInRound = 0;
+    state.seen = new Set();   // קלפים שכבר נחשפו פעם בסיבוב — לזיהוי חשיפה ראשונית
     state.busy = false;
 
     elGrid.dataset.count = round.card_count;
@@ -238,7 +240,7 @@
       cardEl.dataset.idx = idx;
       cardEl.style.animationDelay = (idx * 70) + 'ms';
       cardEl.setAttribute('role', 'button');
-      cardEl.setAttribute('aria-label', `קונכייה ${idx + 1} — הקש לחשוף מילה`);
+      cardEl.setAttribute('aria-label', `קונכייה ${idx + 1} — הקישו לחשוף מילה`);
       cardEl.innerHTML = `
         <div class="shell-card-inner">
           <div class="shell-face shell-face-back">
@@ -247,7 +249,7 @@
             </svg>
           </div>
           <div class="shell-face shell-face-front">
-            <div class="shell-word">${card.word}</div>
+            <div class="shell-word">${card.display}</div>
           </div>
         </div>
       `;
@@ -271,6 +273,8 @@
 
     AvneiAudio.unlock();
     card.flipped = true;
+    card.wasSeenBeforeTap = state.seen.has(idx);  // האם הקלף כבר נחשף קודם בסיבוב
+    state.seen.add(idx);
     state.selection.push(idx);
     const el = getCardEl(idx);
     el.classList.add('flipped');
@@ -286,10 +290,13 @@
       const c2 = state.cards[i2];
       const isMatch = c1.phoneme_end === c2.phoneme_end;
 
+      // חשיפה ראשונית (לפחות קלף אחד נחשף עכשיו לראשונה) = ניחוש-חקירה, לא טעות
+      const exploratory = !c1.wasSeenBeforeTap || !c2.wasSeenBeforeTap;
+
       // Wait briefly so child hears the 2 words before feedback
       setTimeout(() => {
         if (isMatch) handleMatch(i1, i2);
-        else handleMismatch(i1, i2);
+        else handleMismatch(i1, i2, exploratory);
       }, 1100);
     }
   }
@@ -342,9 +349,9 @@
   }
 
   // ===== Mismatch (wrong pair) =====
-  function handleMismatch(i1, i2) {
-    state.mistakesInRound++;
-    state.totalMistakes++;
+  // exploratory=true → לפחות קלף אחד נחשף עכשיו לראשונה. במשחק זיכרון זה
+  // ניחוש-חקירה לגיטימי, לא טעות: לא נספר למדידה ולא מסלים רמזים.
+  function handleMismatch(i1, i2, exploratory) {
     const c1 = state.cards[i1];
     const c2 = state.cards[i2];
 
@@ -358,10 +365,22 @@
 
     logEvent('pair_wrong', {
       is_correct: false,
+      exploratory: !!exploratory,
+      measured: !exploratory,
       pair: [c1.word, c2.word],
       phonemes: [c1.phoneme_end, c2.phoneme_end],
       mistakes_in_round: state.mistakesInRound,
     });
+
+    if (exploratory) {
+      // חשיפה ראשונית — הודעה ניטרלית, בלי ספירת-טעות ובלי הסלמה
+      showNoniBubble('צלילֵי הסוף שונים — נסו זוג אחר!');
+      setTimeout(() => revertSelection(), 1500);
+      return;
+    }
+
+    state.mistakesInRound++;
+    state.totalMistakes++;
 
     if (state.mistakesInRound === 1) {
       // Mistake 1: gentle shake + revert

@@ -45,7 +45,7 @@ SHIN_WORD_POOL = {
 # האודיו של 5 הקיימים (finale-found-treasure, finale-rescue-saved וכו') לא מתחבר
 # לסיפור של בועות. כל נושא ב-D.15 צריך finale משלו.
 BUBBLES_FINALE = {
-    "finale-bubbles-found": "מָצָאתֶם אֶת כֹּל הַבּוּעוֹת! יוֹפִי!",
+    "finale-bubbles-found": "מָצָאתֶם אֶת כֹּל הַבּוּעוֹת! מְעֻלֶּה!",
 }
 
 ALL_LINES = {**PRAISE_POOL, **SHIN_WORD_POOL, **BUBBLES_FINALE}

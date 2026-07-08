@@ -69,13 +69,13 @@
     promptBar.className = 'tap-cv-prompt';
     promptBar.innerHTML =
       '<span class="tap-cv-prompt__label">איזה הגיע ללא תמונה? </span>' +
-      '<button type="button" class="tap-cv-prompt__cv listen-speaker" aria-label="הקש לשמוע שוב">' +
+      '<button type="button" class="tap-cv-prompt__cv listen-speaker" aria-label="הקישו לשמוע שוב">' +
       '🔊</button>';
     root.appendChild(promptBar);
 
     const subtitle = document.createElement('div');
     subtitle.className = 'tap-cv-subtitle';
-    subtitle.textContent = 'הקשיבי וגעי בצורה הנכונה';
+    subtitle.textContent = 'הקשיבו וגעו בצורה הנכונה';
     root.appendChild(subtitle);
 
     const field = document.createElement('div');

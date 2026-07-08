@@ -63,7 +63,7 @@ window.AvneiFindLetter = (function() {
     // ניקוי + בועת הוראה
     _root.innerHTML = '';
     AvneiInstruction.mount(_root, {
-      text: `מצאי את ${_letter} בתוך המילה`,
+      text: `מצאו את ${_letter} בתוך המילה`,
       onAudio: () => {
         _hintUsed = true;
         AvneiAudio.playSequence([item.prompt_audio_key, item.word_audio_key], 600);
@@ -137,7 +137,7 @@ window.AvneiFindLetter = (function() {
 
     if (_attempts === 1) {
       AvneiNoni.setState('help');
-      AvneiFeedback.show('בואי נחפש את הצורה של מ');
+      AvneiFeedback.show('בואו נחפש את הצורה של מ');
       AvneiAudio.playSequence([item.prompt_audio_key, 'trywithme'], 600);
     } else if (_attempts === 2) {
       AvneiNoni.setState('hint');
@@ -149,7 +149,7 @@ window.AvneiFindLetter = (function() {
       setTimeout(() => AvneiAudio.play('name-' + letterEnNameMap(_letter)), 300);
     } else if (_attempts >= 3) {
       AvneiNoni.setState('hint');
-      AvneiFeedback.show('זאת היא — הקש/י עליה');
+      AvneiFeedback.show('זאת היא — הקישו עליה');
       _noniGuidanceUsed = true;
       document.querySelectorAll('#flWord .word-frame__letter').forEach(c => {
         if (c.dataset.correct === 'true') {
@@ -187,7 +187,7 @@ window.AvneiFindLetter = (function() {
 
     const feedbackOptions = [
       { text: 'מצאת את מ ב' + item.word + '!', audio: 'great' },
-      { text: 'יופי! מצאנו יחד', audio: 'exactly' },
+      { text: 'מצוין! מצאנו יחד', audio: 'exactly' },
       { text: 'בדיוק', audio: 'right' },
     ];
     const fb = feedbackOptions[Math.floor(Math.random() * feedbackOptions.length)];

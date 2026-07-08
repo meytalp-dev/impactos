@@ -1,7 +1,7 @@
 // ============================================================
 // activities/letter-shape.js — הכרת צורת אות דפוס
 //
-// Variant A (רצפטיבי): שומע "מצאי את מ" → בוחר אות מ-3 אפשרויות
+// Variant A (רצפטיבי): שומע "מצאו את מ" → בוחר אות מ-3 אפשרויות
 // Variant B (פרודוקטיבי): רואה אות → בוחר בועה ששמה מתאים
 //
 // פדגוגיה: primary_island_id=3, secondary=[]
@@ -80,7 +80,7 @@ window.AvneiLetterShape = (function() {
   function renderVariantA(item, cfg) {
     _root.innerHTML = '';
     AvneiInstruction.mount(_root, {
-      text: `מצאי את ${_letter}`,
+      text: `מצאו את ${_letter}`,
       onAudio: () => {
         _hintUsed = true;
         AvneiAudio.play(item.prompt_audio_key);
@@ -215,7 +215,7 @@ window.AvneiLetterShape = (function() {
 
     if (_attempts === 1) {
       AvneiNoni.setState('help');
-      AvneiFeedback.show('בואי ננסה יחד');
+      AvneiFeedback.show('בואו ננסה יחד');
       AvneiAudio.playSequence([item.prompt_audio_key, 'trywithme'], 600);
     } else if (_attempts === 2) {
       AvneiNoni.setState('hint');
@@ -226,7 +226,7 @@ window.AvneiLetterShape = (function() {
       setTimeout(() => AvneiAudio.play(item.letter_name_audio_key), 300);
     } else if (_attempts >= 3) {
       AvneiNoni.setState('hint');
-      AvneiFeedback.show('זאת התשובה — הקש/י עליה');
+      AvneiFeedback.show('זאת התשובה — הקישו עליה');
       _noniGuidanceUsed = true;
       highlightCorrect(true);
       AvneiAudio.play('press-here');
@@ -270,7 +270,7 @@ window.AvneiLetterShape = (function() {
     const feedbackOptions = [
       { text: 'מצאנו יחד!', audio: 'great' },
       { text: 'האות מתחילה לזהור', audio: 'exactly' },
-      { text: 'יופי', audio: 'right' },
+      { text: 'מצוין', audio: 'right' },
     ];
     const fb = feedbackOptions[Math.floor(Math.random() * feedbackOptions.length)];
     AvneiFeedback.show(fb.text);

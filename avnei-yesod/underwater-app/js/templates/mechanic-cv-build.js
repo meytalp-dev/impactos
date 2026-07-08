@@ -115,7 +115,7 @@
     prompt.className = 'cv-build-prompt';
     prompt.innerHTML =
       '<div class="cv-build-prompt__label">בְּנוּ אֶת הַצְּלִיל:</div>' +
-      '<button class="cv-build-prompt__target" id="cvBuildTarget" type="button" aria-label="הקש לשמוע">🔊</button>' +
+      '<button class="cv-build-prompt__target" id="cvBuildTarget" type="button" aria-label="הקישו לשמוע">🔊</button>' +
       '<div class="cv-build-prompt__counter" id="cvBuildCounter">0/' + numTrials + '</div>';
     root.appendChild(prompt);
 

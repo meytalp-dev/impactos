@@ -59,12 +59,12 @@
     promptBar.className = 'tap-cv-prompt';
     promptBar.innerHTML =
       '<span class="tap-cv-prompt__label">איזה צליל שמעת? </span>' +
-      '<button type="button" class="tap-cv-prompt__cv listen-speaker" aria-label="הקש לשמוע">🔊</button>';
+      '<button type="button" class="tap-cv-prompt__cv listen-speaker" aria-label="הקישו לשמוע">🔊</button>';
     root.appendChild(promptBar);
 
     const subtitle = document.createElement('div');
     subtitle.className = 'tap-cv-subtitle';
-    subtitle.textContent = 'בחרי בין שתי האפשרויות';
+    subtitle.textContent = 'בחרו בין שתי האפשרויות';
     root.appendChild(subtitle);
 
     const field = document.createElement('div');

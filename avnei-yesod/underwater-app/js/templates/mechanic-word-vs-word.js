@@ -70,7 +70,7 @@
     const prompt = document.createElement('div');
     prompt.className = 'word-vs-prompt';
     prompt.innerHTML =
-      '<button type="button" class="word-vs-speaker" aria-label="הקש לשמוע">🔊</button>' +
+      '<button type="button" class="word-vs-speaker" aria-label="הקישו לשמוע">🔊</button>' +
       '<span class="word-vs-label">בְּאֵיזוֹ מִילָּה שָׁמַעְתֶּם?</span>';
     root.appendChild(prompt);
 

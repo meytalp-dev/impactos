@@ -63,7 +63,7 @@
     const prompt = document.createElement('div');
     prompt.className = 'tap-word-prompt';
     prompt.innerHTML =
-      '<button type="button" class="tap-word-prompt__speaker" aria-label="הקש לשמוע מילה">🔊</button>' +
+      '<button type="button" class="tap-word-prompt__speaker" aria-label="הקישו לשמוע מילה">🔊</button>' +
       '<span class="tap-word-prompt__label">בְּאֵיזוֹ מִילָּה שָׁמַעְתֶּם?</span>';
     root.appendChild(prompt);
 

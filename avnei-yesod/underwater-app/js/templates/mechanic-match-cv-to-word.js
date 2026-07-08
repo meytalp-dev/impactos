@@ -103,13 +103,13 @@
     promptBar.className = 'tap-cv-prompt';
     promptBar.innerHTML =
       '<span class="tap-cv-prompt__label">איזו מילה מתחילה ב-</span>' +
-      '<button type="button" class="tap-cv-prompt__cv" aria-label="הקש לשמוע">' + targetCV + '</button>' +
+      '<button type="button" class="tap-cv-prompt__cv" aria-label="הקישו לשמוע">' + targetCV + '</button>' +
       '<span class="tap-cv-prompt__label">?</span>';
     root.appendChild(promptBar);
 
     const subtitle = document.createElement('div');
     subtitle.className = 'tap-cv-subtitle';
-    subtitle.textContent = 'הקשי על כל מילה כדי לשמוע אותה';
+    subtitle.textContent = 'הקישו על כל מילה כדי לשמוע אותה';
     root.appendChild(subtitle);
 
     const field = document.createElement('div');

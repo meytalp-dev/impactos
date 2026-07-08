@@ -157,7 +157,7 @@
     prompt.className = 'word-merge-prompt';
     prompt.innerHTML =
       '<span class="word-merge-prompt__label">בִּנּוּ אֶת הַמִּילָּה</span>' +
-      '<button type="button" class="word-merge-prompt__word" aria-label="הקש לשמוע">' + word.text + '</button>';
+      '<button type="button" class="word-merge-prompt__word" aria-label="הקישו לשמוע">' + word.text + '</button>';
     root.appendChild(prompt);
 
     const buildArea = document.createElement('div');

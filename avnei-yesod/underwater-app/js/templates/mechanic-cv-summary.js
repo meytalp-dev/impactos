@@ -237,7 +237,7 @@
     const prompt = document.createElement('div');
     prompt.className = 'cv-summary-prompt';
     prompt.innerHTML =
-      '<button class="cv-summary-target" id="cvSumTarget" type="button" aria-label="הקש לשמוע"></button>' +
+      '<button class="cv-summary-target" id="cvSumTarget" type="button" aria-label="הקישו לשמוע"></button>' +
       '<div class="cv-summary-hint" id="cvSumHint"></div>';
     root.appendChild(prompt);
 

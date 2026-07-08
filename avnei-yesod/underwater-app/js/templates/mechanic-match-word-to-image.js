@@ -231,7 +231,7 @@
     prompt.className = 'match-image-prompt';
     prompt.innerHTML =
       '<span class="match-image-label">מָה הַמִּילָּה</span>' +
-      '<button type="button" class="match-image-word" aria-label="הקש לשמוע">' + word.text + '</button>';
+      '<button type="button" class="match-image-word" aria-label="הקישו לשמוע">' + word.text + '</button>';
     root.appendChild(prompt);
 
     const field = document.createElement('div');
