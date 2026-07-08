@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <script src="js/shared/file-protocol-shim.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>מעלית הצ׳אנקים · אי 7</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css?v=2026-07-07a">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+
+  <style>
+    :root {
+      --accent: var(--text-main);
+      --accent-2: #4FB8C9;
+      --tile-bg: #FFFFFF;
+      --tile-border: rgba(38,80,92,0.18);
+      --tile-shadow: 0 2px 10px rgba(38,80,92,0.15);
+      --coral: #F79E7A;
+      --coral-lit: #FFD36B;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; min-height: 100dvh;
+      font-family: 'Heebo', sans-serif;
+      background: linear-gradient(180deg, #BFF1FF 0%, #A8E8FF 40%, #73D9D1 100%);
+      color: var(--text-main);
+      direction: rtl;
+      overflow-x: hidden;
+    }
+    .scene-bg {
+      position: fixed; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; object-position: center bottom;
+      z-index: 0; pointer-events: none;
+    }
+    .top-bar {
+      position: sticky; top: 0; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px;
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .top-bar a {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: rgba(255,255,255,0.85);
+      color: var(--text-main);
+      display: inline-flex; align-items: center; justify-content: center;
+      text-decoration: none;
+      box-shadow: 0 2px 10px rgba(38,80,92,0.15);
+    }
+    .top-bar .title {
+      font-weight: 800; font-size: 16px;
+      background: rgba(255,255,255,0.85);
+      padding: 8px 18px; border-radius: var(--radius-pill);
+    }
+    main {
+      padding: 16px; max-width: 760px; margin: 0 auto;
+      position: relative; z-index: 2;
+    }
+
+    /* === chunk-elevator === */
+    .chunk-prompt {
+      text-align: center;
+      font-size: clamp(17px, 3.8vw, 23px);
+      font-weight: 700;
+      margin: 12px 0 16px;
+      color: var(--accent);
+    }
+    .chunk-stage {
+      display: flex; flex-direction: row; align-items: center; justify-content: center;
+      gap: clamp(12px, 4vw, 34px);
+      margin: 0 auto 10px;
+      max-width: 640px;
+    }
+    /* מגדל האלמוגים — 3 קומות שנדלקות מלמטה למעלה */
+    .chunk-tower {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      flex: 0 0 auto;
+    }
+    .tower-floor {
+      width: clamp(64px, 15vw, 92px);
+      min-height: clamp(46px, 10vw, 62px);
+      display: flex; align-items: center; justify-content: center;
+      font-size: clamp(24px, 5.5vw, 38px);
+      font-weight: 900;
+      color: #cbe7ee;
+      background: rgba(255,255,255,0.55);
+      border: 3px dashed rgba(38,80,92,0.22);
+      border-radius: 14px;
+      transition: transform 0.25s ease, background 0.25s ease;
+    }
+    .tower-floor.lit {
+      color: #7a4a1f;
+      background: linear-gradient(180deg, #FFE39A 0%, var(--coral-lit) 100%);
+      border-style: solid; border-color: #E8A94B;
+      box-shadow: 0 6px 16px rgba(247, 158, 122, 0.4);
+    }
+    .tower-floor.just-lit { animation: floorPop 0.5s ease; }
+    @keyframes floorPop {
+      0% { transform: scale(1); }
+      45% { transform: scale(1.16); }
+      100% { transform: scale(1); }
+    }
+    .tower-base {
+      width: clamp(80px, 18vw, 110px);
+      font-size: clamp(30px, 7vw, 44px);
+      text-align: center;
+      margin-top: 2px;
+      filter: drop-shadow(0 4px 8px rgba(38,80,92,0.25));
+    }
+    .chunk-tower.complete .tower-floor.lit {
+      background: linear-gradient(180deg, #B8F2CF 0%, #7ee0a8 100%);
+      border-color: #56b981;
+    }
+
+    .chunk-word-col { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .chunk-word-target {
+      display: flex; flex-direction: row-reverse; justify-content: center; align-items: center;
+      gap: 4px;
+      font-size: clamp(40px, 9vw, 64px);
+      font-weight: 900;
+      color: var(--accent);
+      background: rgba(255,255,255,0.9);
+      border-radius: var(--radius-md);
+      min-width: clamp(180px, 44vw, 300px);
+      padding: 12px 22px;
+      box-shadow: var(--tile-shadow);
+      transition: transform 0.3s ease, background 0.3s ease;
+    }
+    .chunk-word-target.celebrate { transform: scale(1.1); background: var(--mint, #B8F2CF); }
+    .chunk-piece { display: inline-block; }
+    .chunk-piece.slot { color: #c8d8de; }
+    .chunk-piece.filled { animation: piecePop 0.4s ease-out; }
+    @keyframes piecePop {
+      0% { transform: scale(0.6); opacity: 0.3; }
+      55% { transform: scale(1.2); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .chunk-hear-btn {
+      min-height: 48px; padding: 0 22px;
+      font-family: inherit; font-size: 15px; font-weight: 700;
+      border-radius: var(--radius-pill);
+      background: var(--accent-2); color: #fff;
+      border: none; cursor: pointer;
+      box-shadow: var(--tile-shadow);
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+
+    /* מגש הצ׳אנקים */
+    .chunk-tray {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 12px;
+      margin: 18px auto 0;
+      max-width: 560px;
+    }
+    .chunk-tile {
+      min-width: clamp(72px, 17vw, 104px);
+      min-height: clamp(64px, 14vw, 84px);
+      padding: 6px 14px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--tile-bg);
+      border: 2px solid var(--tile-border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--tile-shadow);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: clamp(30px, 6.5vw, 44px);
+      font-weight: 900;
+      color: var(--accent);
+      transition: transform 0.15s ease;
+    }
+    .chunk-tile:hover { transform: scale(1.04); }
+    .chunk-tile:active { transform: scale(0.95); }
+    .chunk-tile.used { opacity: 0.32; cursor: default; }
+    .chunk-tile.shake { animation: tileShake 0.4s ease; }
+    @keyframes tileShake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+    .chunk-progress {
+      text-align: center; margin-top: 16px;
+      font-weight: 700; color: var(--text-soft); font-size: 15px;
+    }
+
+    /* overlay פתיחה */
+    .start-overlay {
+      position: fixed; inset: 0; z-index: 50;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 14px; padding: 24px; text-align: center;
+      background: rgba(191,241,255,0.65);
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    }
+    .start-overlay.hidden { display: none; }
+    .start-overlay .card {
+      background: rgba(255,255,255,0.95);
+      border-radius: var(--radius-md);
+      box-shadow: 0 20px 50px rgba(38,80,92,0.2);
+      padding: 26px 24px; max-width: 480px;
+    }
+    .start-overlay img.noni { width: 130px; height: 130px; object-fit: contain; margin-bottom: 4px; }
+    .start-overlay h2 { margin: 0 0 10px; font-size: 25px; font-weight: 900; color: var(--text-main); }
+    .start-overlay p { margin: 0 0 18px; font-size: 17px; line-height: 1.7; }
+    .start-overlay .btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .start-overlay button {
+      min-height: 56px; padding: 0 26px;
+      font-family: inherit; font-size: 17px; font-weight: 800;
+      border-radius: var(--radius-pill); cursor: pointer;
+      border: 2px solid var(--accent-2);
+      background: var(--accent-2); color: #fff;
+      box-shadow: var(--tile-shadow);
+    }
+    .start-overlay button.secondary { background: #fff; color: var(--accent); }
+
+    .noni-hint {
+      text-align: center; margin: 20px auto 0; max-width: 480px;
+      font-size: 14px; color: var(--text-soft);
+      background: rgba(255,255,255,0.7);
+      border-radius: var(--radius-md); padding: 10px 16px;
+    }
+
+    @media (max-width: 380px) {
+      .chunk-stage { gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+  <img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true"
+       onerror="this.style.display='none'">
+
+  <header class="top-bar">
+    <a href="stage-7-island.html" aria-label="חזרה לאי" id="backBtn">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+    <div class="title">מַעֲלִית הַצְּ׳אנְקִים</div>
+    <div style="width:44px"></div>
+  </header>
+
+  <main>
+    <div id="gameRoot"></div>
+    <p class="noni-hint">
+      כֹּל מִלָּה בְּנוּיָה מֵחֲלָקִים. הַרְכִּיבוּ אוֹתָם בַּמִּגְדָּל — מִיָּמִין לִשְׂמֹאל.
+    </p>
+  </main>
+
+  <!-- overlay פתיחה: הסבר קצר + הנחיה קולית -->
+  <div class="start-overlay" id="startOverlay">
+    <div class="card">
+      <img class="noni" src="assets/noni-hero-transparent.png" alt="נוני" onerror="this.src='assets/noni-idle.png'">
+      <h2>מַעֲלִית הַצְּ׳אנְקִים</h2>
+      <p>הַזְּרָמִים פֵּרְקוּ מִלִּים אֲרֻכּוֹת לַחֲלָקִים.<br>
+         <strong>הַרְכִּיבוּ כֹּל חֵלֶק בַּמִּגְדָּל, לְפִי הַסֵּדֶר — וְהַמִּלָּה תֵּאוֹר!</strong></p>
+      <div class="btns">
+        <button id="startBtn">בּוֹאוּ נַתְחִיל!</button>
+        <button class="secondary" id="introSpeakBtn">🔊 הַקְשִׁיבוּ לַהֶסְבֵּר</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/state.js?v=2026-07-07a" onerror="window._stateMissing=true"></script>
+  <script src="js/shared/audio.js?v=2026-07-07a" onerror="window._audioMissing=true"></script>
+  <script src="js/shared/epa.js?v=2026-07-07a"></script>
+  <script src="js/shared/bkt.js?v=2026-07-07a"></script>
+  <script src="js/shared/event-logger.js?v=2026-07-07a"></script>
+  <script src="js/templates/mechanic-chunk-elevator.js?v=2026-07-07a"></script>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // ── נתוני אי 7: 14 מילים בנות 3 צ׳אנקים (אושר ע"י מיטל 7.7.2026) ──
+      // אילוץ-תנועות לפי לוח התוכנית: ליבה=קמץ/פתח/שווא/חיריק (ינואר);
+      // חולם=פברואר+; צירי/סגול=מרץ+. פירוט: _handoff/2026-07-07-island-7-word-candidates.md
+      // audioKey למילה = word-isl07-<slug>; לצ׳אנק = chunk-isl07-<slug>-<i>.
+      const WORDS = [
+        { text: 'מַתָּנָה',   slug: 'matana',   chunks: ['מַ', 'תָּ', 'נָה'] },
+        { text: 'בָּנָנָה',   slug: 'banana',   chunks: ['בָּ', 'נָ', 'נָה'] },
+        { text: 'אֲנָנָס',    slug: 'ananas',   chunks: ['אֲ', 'נָ', 'נָס'] },
+        { text: 'אַיָּלָה',   slug: 'ayala',    chunks: ['אַ', 'יָּ', 'לָה'] },
+        { text: 'נְמָלָה',    slug: 'nemala',   chunks: ['נְ', 'מָ', 'לָה'] },
+        { text: 'מַמְתַּקִּים', slug: 'mamtakim', chunks: ['מַמְ', 'תַּ', 'קִּים'] },
+        { text: 'חֲצָאִית',   slug: 'chatzait',  chunks: ['חֲ', 'צָ', 'אִית'] },
+        { text: 'מִטְרִיָּה',  slug: 'mitriya',  chunks: ['מִטְ', 'רִ', 'יָּה'] },
+        { text: 'פִּטְרִיָּה', slug: 'pitriya',  chunks: ['פִּטְ', 'רִ', 'יָּה'] },
+        { text: 'מְנוֹרָה',   slug: 'menora',   chunks: ['מְ', 'נוֹ', 'רָה'] },
+        { text: 'עִפָּרוֹן',  slug: 'iparon',   chunks: ['עִ', 'פָּ', 'רוֹן'] },
+        { text: 'לְבֵנָה',    slug: 'levena',   chunks: ['לְ', 'בֵ', 'נָה'] },
+        { text: 'מַפְתֵּחַ',  slug: 'mafteach',  chunks: ['מַפְ', 'תֵּ', 'חַ'] },
+        { text: 'רַכֶּבֶת',   slug: 'rakevet',  chunks: ['רַ', 'כֶּ', 'בֶת'] },
+      ].map(function (w) {
+        return {
+          text: w.text,
+          chunks: w.chunks,
+          wordAudioKey: 'word-isl07-' + w.slug,
+          chunkAudioKeys: w.chunks.map(function (_, i) { return 'chunk-isl07-' + w.slug + '-' + (i + 1); }),
+        };
+      });
+
+      const INTRO_KEY = 'mission-isl07-chunks';
+
+      // Auto-unlock audio (iOS) — נגיעה ראשונה
+      document.addEventListener('click', function unlock() {
+        if (window.AvneiAudio && typeof window.AvneiAudio.unlock === 'function') {
+          try { window.AvneiAudio.unlock(); } catch (e) {}
+        }
+        document.removeEventListener('click', unlock);
+      }, { once: true });
+
+      document.getElementById('backBtn').addEventListener('click', function (e) {
+        if (history.length > 1) { e.preventDefault(); history.back(); }
+      });
+
+      const impl = window.AvneiMechanics && window.AvneiMechanics['chunk-elevator'];
+      if (!impl) {
+        document.getElementById('gameRoot').textContent = 'mechanic-chunk-elevator לא נטען';
+        return;
+      }
+
+      // logging: primary_island_id=7 + target_word בכל השלמת מילה (BKT אי 7).
+      function logWord(text, stats) {
+        if (!window.AvneiEventLogger) return;
+        try {
+          window.AvneiEventLogger.logActivityResult({
+            activity_type: 'chunk-decode',
+            activity_variant: 'chunk-elevator',
+            item_id: text,
+            target_word: text,
+            primary_island_id: 7,
+            is_correct: true,
+            attempts: (stats && stats.attempts) || 0,
+          });
+        } catch (e) {}
+      }
+
+      function start() {
+        document.getElementById('startOverlay').classList.add('hidden');
+        impl.mount(document.getElementById('gameRoot'), {
+          words: WORDS,
+          introKey: INTRO_KEY,
+          distractors: 0,
+          onWordComplete: logWord,
+        });
+      }
+
+      document.getElementById('startBtn').addEventListener('click', function () {
+        if (window.AvneiAudio) try { window.AvneiAudio.unlock(); } catch (e) {}
+        start();
+      });
+      document.getElementById('introSpeakBtn').addEventListener('click', function () {
+        if (window.AvneiAudio) {
+          try { window.AvneiAudio.unlock(); } catch (e) {}
+          window.AvneiAudio.play(INTRO_KEY);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
