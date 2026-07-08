@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <script src="js/shared/file-protocol-shim.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>מתיחת המילה · אי 1 · עומק הים המואר</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/stage-1.css">
+  <link rel="stylesheet" href="css/stretch-guess.css">
+  <script src="../../demo/journey.js" defer></script>
+</head>
+<body>
+
+  <main class="stage-1-scene">
+    <img class="bay-bg" src="assets/island-01/bay-bg.png" alt="" aria-hidden="true">
+
+    <div class="ambient-bubble" style="left: 12%; width: 28px; height: 28px; animation-duration: 14s; --drift: 20px;"></div>
+    <div class="ambient-bubble" style="left: 78%; width: 22px; height: 22px; animation-duration: 18s; animation-delay: 3s; --drift: -15px;"></div>
+    <div class="ambient-bubble" style="left: 30%; width: 18px; height: 18px; animation-duration: 12s; animation-delay: 6s; --drift: 10px;"></div>
+    <div class="ambient-bubble" style="left: 88%; width: 32px; height: 32px; animation-duration: 20s; animation-delay: 9s; --drift: -25px;"></div>
+
+    <div class="bg-stage">
+      <img class="noni-center" id="noniImg" src="assets/noni-thinking.png" alt="נוני">
+
+      <div class="bg-prompt" id="prompt">
+        <span id="promptText">הַקִּישׁוּ עַל הָאֲבָנִים לְפִי הַסֵּדֶר</span>
+        <span class="wave" id="wave"><span></span><span></span><span></span><span></span><span></span></span>
+      </div>
+
+      <div class="stones" id="stones"></div>
+
+      <button class="stretch-btn" id="stretchBtn" disabled>חַבְּרוּ מַהֵר! ✨</button>
+
+      <div class="pick-options" id="options" hidden></div>
+
+      <div class="reveal-word" id="reveal">
+        <img id="revealImg" src="" alt="">
+        <div class="w" id="revealWord"></div>
+      </div>
+    </div>
+
+    <img class="noni-bay" id="noniCorner" src="assets/noni-idle.png" alt="" aria-hidden="true" style="opacity:0">
+  </main>
+
+  <header class="stage-1-topbar">
+    <a href="stage-1-island.html" class="icon-btn" aria-label="חזרה לתפריט האי">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+    <div style="flex:1"></div>
+    <button class="replay-btn" id="replayBtn" aria-label="השמע שוב">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+    </button>
+  </header>
+
+  <div class="tap-to-start" id="tapToStart">
+    <h2>מְתִיחַת הַמִּלָּה</h2>
+    <button class="intro-speaker" id="introSpeaker" aria-label="הקישו לשמיעה">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>הַקִּישׁוּ לִשְׁמֹעַ</span>
+    </button>
+    <p>נִמְתַּח אֶת הַמִּלָּה — חֵלֶק, חֵלֶק — וְאָז נְחַבֵּר מַהֵר.</p>
+    <p><strong>הַקִּישׁוּ עַל הָאֲבָנִים, וְאָז לִחְצוּ "חַבְּרוּ מַהֵר"!</strong></p>
+    <button class="start-btn" id="startBtn">בּוֹאוּ נַתְחִיל!</button>
+  </div>
+
+  <div class="completion" id="completion">
+    <h2>תָּפַסְתֶּם אֶת הַמִּלָּה!</h2>
+    <button class="intro-speaker" id="completionSpeaker" aria-label="השמיעו">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>הַקִּישׁוּ לִשְׁמֹעַ</span>
+    </button>
+    <p id="completionMsg">מָתַחְנוּ אֶת הַמִּלָּה וְחִבַּרְנוּ אוֹתָהּ!</p>
+    <div>
+      <button class="btn-primary" id="nextWordBtn">מִלָּה נוֹסֶפֶת</button>
+      <a href="stage-1-island.html" class="btn-primary btn-secondary">חֲזָרָה לָאִי</a>
+    </div>
+  </div>
+
+  <div class="feedback-toast" id="feedbackToast"></div>
+  <div class="celebrate-particles" id="celebrateParticles" aria-hidden="true"></div>
+
+  <audio id="audioPlayer" preload="auto"></audio>
+
+  <script src="js/state.js"></script>
+  <script src="js/shared/bkt.js" onerror="window.AvneiBKT = null"></script>
+  <script src="js/shared/event-logger.js" onerror="window.AvneiEventLogger = { logActivityResult: function(){} }"></script>
+  <script src="js/shared/mastery.js"></script>
+  <script>
+  // ============================================================
+  // StretchGame — "מתיחת המילה" (הפקה → זיהוי)
+  // הילד.ה מותח.ת את המילה חֵלֶק-חֵלֶק (בשליטת קצב), מחבר.ת מהר
+  // (אַט→מהר→שלם — טכניקת המיזוג), ואז תופס.ת את התמונה הנכונה
+  // מתוך 3. מודד: תפיסת התמונה (ניסיון ראשון).
+  // ============================================================
+  const GAME_ID = 'stretchGame';
+  const ISLAND_ID = 1;
+  const ACTIVITY_TYPE = 'syllable-blend-stretch';
+  const EXCLUDE = new Set(['barvaz', 'avtiach']);  // avtiach: הוסר 8.7 (מיטל, QA אודיו)
+
+  function logIsland1Result(isCorrect) {
+    try {
+      if (window.AvneiEventLogger && AvneiEventLogger.logActivityResult) {
+        AvneiEventLogger.logActivityResult({
+          activity_type: ACTIVITY_TYPE,
+          primary_island_id: ISLAND_ID,
+          item_id: currentWord ? currentWord.id : null,
+          is_correct: isCorrect,
+          attempts: isCorrect ? 1 : (mistakeCount || 1),
+        });
+      }
+    } catch (e) { /* fail-safe */ }
+  }
+
+  const AUDIO_BASE = 'assets/audio/island-01';
+  const audio = document.getElementById('audioPlayer');
+  const wave = document.getElementById('wave');
+
+  let WORDS = [];
+  let currentWordIndex = 0;
+  let currentWord = null;
+  let tapped = 0;
+  let mistakeCount = 0;
+  let scored = false;
+  let started = false;
+
+  function playAudio(filename, onEnd) {
+    try { audio.pause(); audio.currentTime = 0; } catch (e) {}
+    let done = false;
+    const finish = () => { if (done) return; done = true; onEnd && onEnd(); };
+    audio.onended = finish;
+    audio.onerror = () => { console.warn('audio error:', filename); finish(); };
+    audio.src = `${AUDIO_BASE}/${filename}.mp3`;
+    audio.play().catch(err => { console.warn('audio blocked:', filename, err); setTimeout(finish, 800); });
+  }
+  function keyOf(path) { return path.split('/').pop().replace('.mp3', ''); }
+  function setPrompt(t) { document.getElementById('promptText').textContent = t; }
+
+  async function loadWords() {
+    try {
+      const res = await fetch('data/island-01-words.json');
+      const data = await res.json();
+      WORDS = data.words.filter(w => !EXCLUDE.has(w.id))
+        .sort((a, b) => a.syllable_count - b.syllable_count);
+    } catch (err) { console.error(err); }
+  }
+
+  // אבנים = ההברות בסדר הקריאה (מותחים את המילה כמות שהיא)
+  function buildStones() {
+    const el = document.getElementById('stones');
+    el.innerHTML = '';
+    currentWord.syllables.forEach((syl, i) => {
+      const b = document.createElement('button');
+      b.className = 'stone';
+      b.innerHTML = `${syl}<small>הַקִּישׁוּ</small>`;
+      b.dataset.audio = keyOf(currentWord.syllable_audios[i]);
+      b.addEventListener('click', () => tapStone(b));
+      el.appendChild(b);
+    });
+  }
+
+  function tapStone(b) {
+    b.classList.add('hop');
+    const noni = document.getElementById('noniImg');
+    noni.classList.add('talking'); wave.classList.add('on');
+    playAudio(b.dataset.audio, () => { noni.classList.remove('talking'); wave.classList.remove('on'); });
+    setTimeout(() => b.classList.remove('hop'), 160);
+    if (!b.classList.contains('lit')) {
+      b.classList.add('lit');
+      b.querySelector('small').textContent = '✓';
+      tapped++;
+    }
+    if (tapped >= currentWord.syllable_count) {
+      const btn = document.getElementById('stretchBtn');
+      btn.disabled = false;
+      setPrompt('עַכְשָׁו חַבְּרוּ מַהֵר!');
+    }
+  }
+
+  // מיזוג: אַט→מהר, ואז שאלת התפיסה
+  function stretchNow() {
+    document.getElementById('stretchBtn').disabled = true;
+    const keys = currentWord.syllable_audios.map(keyOf);
+    const noni = document.getElementById('noniImg');
+    noni.classList.add('talking'); wave.classList.add('on');
+    (function fast(i) {
+      if (i >= keys.length) {
+        noni.classList.remove('talking'); wave.classList.remove('on');
+        buildCatch();
+        return;
+      }
+      playAudio(keys[i], () => setTimeout(() => fast(i + 1), 80));
+    })(0);
+  }
+
+  function pickDistractorImages(word, count) {
+    const pool = WORDS.filter(w => w.id !== word.id);
+    const same = pool.filter(w => w.syllable_count === word.syllable_count);
+    const rest = pool.filter(w => w.syllable_count !== word.syllable_count);
+    return same.sort(() => Math.random() - 0.5).concat(rest.sort(() => Math.random() - 0.5)).slice(0, count);
+  }
+
+  function buildCatch() {
+    document.getElementById('stones').style.display = 'none';
+    document.getElementById('stretchBtn').style.display = 'none';
+    setPrompt('אֵיזוֹ מִלָּה יָצַרְנוּ? מִצְאוּ אֶת הַתְּמוּנָה!');
+    playAudio('ui-catch-question');
+    const wrap = document.getElementById('options');
+    wrap.hidden = false;
+    wrap.innerHTML = '';
+    const distractors = pickDistractorImages(currentWord, 2);
+    const items = [
+      { img: currentWord.image, correct: true },
+      ...distractors.map(d => ({ img: d.image, correct: false })),
+    ].sort(() => Math.random() - 0.5);
+    items.forEach(it => {
+      const b = document.createElement('button');
+      b.className = 'pick-opt';
+      b.innerHTML = `<img src="${it.img}" alt="">`;
+      b.addEventListener('click', () => choose(b, it));
+      wrap.appendChild(b);
+    });
+  }
+
+  function choose(btn, it) {
+    if (!scored) { scored = true; logIsland1Result(it.correct); }   // נמדד: ניסיון ראשון
+    if (it.correct) {
+      btn.classList.add('correct');
+      document.querySelectorAll('.pick-opt').forEach(c => { if (c !== btn) c.classList.add('dim'); });
+      const rev = document.getElementById('reveal');
+      document.getElementById('revealImg').src = currentWord.image;
+      document.getElementById('revealWord').textContent = currentWord.display;
+      rev.classList.add('show');
+      document.getElementById('noniImg').src = 'assets/noni-happy.png';
+      playAudio(`word-${currentWord.id}`, () => setTimeout(celebrate, 450));
+    } else {
+      mistakeCount++;
+      btn.classList.add('miss');
+      setTimeout(() => btn.classList.remove('miss'), 460);
+      document.getElementById('noniImg').src = 'assets/noni-thinking.png';
+      setPrompt('נוֹנִי מַרְאָה שׁוּב: אַט… אַט… וְאָז מַהֵר');
+      const keys = currentWord.syllable_audios.map(keyOf);
+      (function demo(i, gap) {
+        if (i >= keys.length) {
+          if (gap > 200) { setTimeout(() => demoFast(), 250); return; }
+          document.getElementById('noniImg').src = 'assets/noni-happy.png';
+          setPrompt('נַסּוּ שׁוּב — אֵיזוֹ מִלָּה זֹאת?');
+          return;
+        }
+        playAudio(keys[i], () => setTimeout(() => demo(i + 1, gap), gap));
+      })(0, 420);
+      function demoFast() {
+        (function f(i) {
+          if (i >= keys.length) {
+            document.getElementById('noniImg').src = 'assets/noni-happy.png';
+            setPrompt('נַסּוּ שׁוּב — אֵיזוֹ מִלָּה זֹאת?');
+            return;
+          }
+          playAudio(keys[i], () => setTimeout(() => f(i + 1), 70));
+        })(0);
+      }
+    }
+  }
+
+  function celebrate() {
+    if (window.AvneiMastery) window.AvneiMastery.recordResult(currentWord.id, GAME_ID, mistakeCount);
+    burstParticles();
+    setTimeout(showCompletion, 850);
+  }
+
+  function burstParticles() {
+    const container = document.getElementById('celebrateParticles');
+    container.innerHTML = '';
+    const colors = ['#FFF7C8', '#FFA98D', '#B981FF', '#A8E8FF', '#73D9D1'];
+    for (let i = 0; i < 28; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const angle = (i / 28) * Math.PI * 2;
+      const dist = 200 + Math.random() * 120;
+      p.style.left = `${50 + (Math.random() - 0.5) * 10}%`;
+      p.style.top = `${50 + (Math.random() - 0.5) * 10}%`;
+      p.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
+      p.style.setProperty('--dy', `${Math.sin(angle) * dist - 80}px`);
+      p.style.background = colors[i % colors.length];
+      p.style.boxShadow = `0 0 12px ${colors[i % colors.length]}`;
+      p.style.animationDelay = `${(i % 6) * 0.06}s`;
+      container.appendChild(p);
+    }
+    setTimeout(() => { container.innerHTML = ''; }, 3000);
+  }
+
+  function showCompletion() {
+    document.getElementById('completion').classList.add('visible');
+    setTimeout(() => playAudio('ui-stretch-complete'), 350);
+  }
+
+  function loadWord(idx) {
+    currentWordIndex = (idx + WORDS.length) % WORDS.length;
+    currentWord = WORDS[currentWordIndex];
+    tapped = 0;
+    mistakeCount = 0;
+    scored = false;
+
+    document.getElementById('noniImg').src = 'assets/noni-thinking.png';
+    document.getElementById('completion').classList.remove('visible');
+    const rev = document.getElementById('reveal');
+    rev.classList.remove('show');
+    document.getElementById('stones').style.display = '';
+    const sBtn = document.getElementById('stretchBtn');
+    sBtn.style.display = ''; sBtn.disabled = true;
+    document.getElementById('options').hidden = true;
+    setPrompt('הַקִּישׁוּ עַל הָאֲבָנִים לְפִי הַסֵּדֶר');
+
+    buildStones();
+    // הנחיה מדוברת בפתיחת הסבב (קודם היה שקט — QA מיטל 8.7)
+    setTimeout(() => playAudio('ui-stretch-guide'), 400);
+  }
+
+  function nextWord() {
+    const w = window.AvneiMastery ? window.AvneiMastery.pickWord(GAME_ID, WORDS) : null;
+    const idx = w ? WORDS.indexOf(w) : (currentWordIndex + 1);
+    loadWord(idx);
+  }
+
+  async function start() {
+    if (started) return;
+    started = true;
+    document.getElementById('tapToStart').classList.add('hidden');
+    if (!WORDS.length) await loadWords();
+    if (!WORDS.length) { console.error('failed to load words'); return; }
+    const w = window.AvneiMastery ? window.AvneiMastery.pickWord(GAME_ID, WORDS) : null;
+    const idx = w ? WORDS.indexOf(w) : 0;
+    loadWord(idx);
+  }
+
+  document.getElementById('startBtn').addEventListener('click', start);
+  document.getElementById('introSpeaker').addEventListener('click', (e) => { e.stopPropagation(); playAudio('ui-stretch-story'); });
+  document.getElementById('stretchBtn').addEventListener('click', stretchNow);
+  document.getElementById('replayBtn').addEventListener('click', () => {
+    if (!currentWord) return;
+    const keys = currentWord.syllable_audios.map(keyOf);
+    (function step(i) { if (i >= keys.length) return; playAudio(keys[i], () => setTimeout(() => step(i + 1), 340)); })(0);
+  });
+  document.getElementById('nextWordBtn').addEventListener('click', nextWord);
+  document.getElementById('completionSpeaker').addEventListener('click', (e) => { e.stopPropagation(); playAudio('ui-stretch-complete'); });
+
+  (async function init() {
+    await loadWords();
+    audio.src = `${AUDIO_BASE}/ui-stretch-story.mp3`;
+  })();
+  </script>
+</body>
+</html>

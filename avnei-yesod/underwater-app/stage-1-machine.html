@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <script src="js/shared/file-protocol-shim.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#A8E8FF">
+  <title>המכונה של נוני · אי 1 · עומק הים המואר</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/stage-1.css">
+  <link rel="stylesheet" href="css/machine.css">
+  <script src="../../demo/journey.js" defer></script>
+</head>
+<body>
+
+  <main class="stage-1-scene">
+    <img class="bay-bg" src="assets/island-01/bay-bg.png" alt="" aria-hidden="true">
+
+    <div class="ambient-bubble" style="left: 12%; width: 28px; height: 28px; animation-duration: 14s; --drift: 20px;"></div>
+    <div class="ambient-bubble" style="left: 78%; width: 22px; height: 22px; animation-duration: 18s; animation-delay: 3s; --drift: -15px;"></div>
+    <div class="ambient-bubble" style="left: 30%; width: 18px; height: 18px; animation-duration: 12s; animation-delay: 6s; --drift: 10px;"></div>
+    <div class="ambient-bubble" style="left: 88%; width: 32px; height: 32px; animation-duration: 20s; animation-delay: 9s; --drift: -25px;"></div>
+
+    <div class="machine-stage">
+      <!-- היעד: צללית שמתעוררת -->
+      <div class="machine-target" id="target">
+        <img id="targetImg" src="assets/island-01/kadur.png" alt="">
+      </div>
+
+      <!-- שקעים -->
+      <div class="machine-slots" id="slots"></div>
+      <!-- המילה השלמה שנוצרת מהמיזוג -->
+      <div class="merged-word" id="mergedWord" hidden></div>
+
+      <!-- הנחיה קטנה -->
+      <div class="machine-caption" id="caption"></div>
+
+      <!-- אריחי-הברות -->
+      <div class="machine-tiles" id="tiles"></div>
+    </div>
+
+    <img class="noni-bay" id="noniImg" src="assets/noni-idle.png" alt="נוני">
+  </main>
+
+  <header class="stage-1-topbar">
+    <a href="stage-1-island.html" class="icon-btn" aria-label="חזרה לתפריט האי">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+
+    <div class="word-pill" id="wordPill">
+      <img class="pill-img" id="pillImg" src="assets/island-01/kadur.png" alt="">
+      <span id="wordPillText">כַּדּוּר</span>
+    </div>
+
+    <button class="replay-btn" id="replayBtn" aria-label="השמע שוב">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+    </button>
+  </header>
+
+  <div class="tap-to-start" id="tapToStart">
+    <h2>הַמְּכוֹנָה שֶׁל נוּנִי</h2>
+    <button class="intro-speaker" id="introSpeaker" aria-label="הקישו לשמיעה">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>הַקִּישׁוּ לִשְׁמֹעַ</span>
+    </button>
+    <p>לְנוּנִי יֵשׁ מְכוֹנָה שֶׁמַּרְכִּיבָה מִלִּים מֵחֲלָקִים.</p>
+    <p><strong>הַרְכִּיבוּ אֶת הַחֲלָקִים לְפִי הַסֵּדֶר — וְהַתְּמוּנָה תִּתְעוֹרֵר!</strong></p>
+    <button class="start-btn" id="startBtn">בּוֹאוּ נַתְחִיל!</button>
+  </div>
+
+  <div class="completion" id="completion">
+    <h2>הַתְּמוּנָה הִתְעוֹרְרָה!</h2>
+    <button class="intro-speaker" id="completionSpeaker" aria-label="השמיעו">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
+        <path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>הַקִּישׁוּ לִשְׁמֹעַ</span>
+    </button>
+    <p id="completionMsg">אָסַפְנוּ אֶת כֹּל הַחֲלָקִים וְהַמִּלָּה שְׁלֵמָה!</p>
+    <div>
+      <button class="btn-primary" id="nextWordBtn">מִלָּה נוֹסֶפֶת</button>
+      <a href="stage-1-island.html" class="btn-primary btn-secondary">חֲזָרָה לָאִי</a>
+    </div>
+  </div>
+
+  <div class="feedback-toast" id="feedbackToast"></div>
+  <div class="celebrate-particles" id="celebrateParticles" aria-hidden="true"></div>
+
+  <audio id="audioPlayer" preload="auto"></audio>
+
+  <script src="js/state.js"></script>
+  <script src="js/shared/bkt.js" onerror="window.AvneiBKT = null"></script>
+  <script src="js/shared/event-logger.js" onerror="window.AvneiEventLogger = { logActivityResult: function(){} }"></script>
+  <script src="js/shared/mastery.js"></script>
+  <script>
+  // ============================================================
+  // MachineGame — "המכונה של נוני"
+  // הילד.ה מרכיב.ה הברות לפי הסדר אל תוך צללית-היעד.
+  // כל חלק נכון צובע חלק מהתמונה; בסוף היא מתעוררת ונוני שרה
+  // את המילה השלמה. מודד: סדר ההרכבה (מיזוג/מניפולציה הברתית).
+  // מראה בכוונה את היעד → אין ניחוש עיוור, אין false-negative של מיקום.
+  // ============================================================
+  const GAME_ID = 'machineGame';
+  const ISLAND_ID = 1;
+  const ACTIVITY_TYPE = 'syllable-machine';
+
+  // דיווח תוצאה לאי 1 → BKT (מודעות פונולוגית · סטרנד 1).
+  // אי 1 = הברות שמיעתי, בלי אות-יעד/CV → EPA מדולג. תוספתי ל-AvneiMastery.
+  function logIsland1Result(isCorrect) {
+    try {
+      if (window.AvneiEventLogger && AvneiEventLogger.logActivityResult) {
+        AvneiEventLogger.logActivityResult({
+          activity_type: ACTIVITY_TYPE,
+          primary_island_id: ISLAND_ID,
+          item_id: currentWord ? currentWord.id : null,
+          is_correct: isCorrect,
+          attempts: isCorrect ? 1 : (mistakeCount || 1),
+        });
+      }
+    } catch (e) { /* fail-safe */ }
+  }
+
+  const AUDIO_BASE = 'assets/audio/island-01';
+  const audio = document.getElementById('audioPlayer');
+
+  let WORDS = [];
+  let currentWordIndex = 0;
+  let currentWord = null;
+  let placed = 0;             // כמה חלקים כבר הורכבו
+  let mistakeCount = 0;
+  let wordMistakeTotal = 0;
+  let scoredThisSlot = false; // נמדד רק ניסיון ראשון לכל שקע
+  let started = false;
+  let accepting = false;
+  let hintTimer = null;
+
+  // ----- Audio helpers (single-fire onEnd) -----
+  function playAudio(filename, onEnd) {
+    try { audio.pause(); audio.currentTime = 0; } catch (e) {}
+    let done = false;
+    const finish = () => { if (done) return; done = true; onEnd && onEnd(); };
+    audio.onended = finish;
+    audio.onerror = () => { console.warn('audio error:', filename); finish(); };
+    audio.src = `${AUDIO_BASE}/${filename}.mp3`;
+    audio.play().catch(err => { console.warn('audio blocked:', filename, err); setTimeout(finish, 800); });
+  }
+  function keyOf(path) { return path.split('/').pop().replace('.mp3', ''); }
+  function playSplitWord(onDone) {
+    const keys = currentWord.syllable_audios.map(keyOf);
+    (function step(i) {
+      if (i >= keys.length) { setTimeout(() => playAudio(`word-${currentWord.id}`, onDone), 450); return; }
+      playAudio(keys[i], () => setTimeout(() => step(i + 1), 340));
+    })(0);
+  }
+
+  // מילים שהוסרו מהמשחקון (בעיית תמונה/אודיו — החלטת מיטל 7.7)
+  // avtiach: הוסר 8.7 — "זה לא נכון" (מיטל, QA אודיו אי 1)
+  const EXCLUDE = new Set(['barvaz', 'avtiach']);
+
+  async function loadWords() {
+    try {
+      const res = await fetch('data/island-01-words.json');
+      const data = await res.json();
+      // תחנה 1 = הקלה: דו-הברתיות תחילה; מסננים מילים מוחרגות
+      WORDS = data.words
+        .filter(w => !EXCLUDE.has(w.id))
+        .sort((a, b) => a.syllable_count - b.syllable_count);
+    } catch (err) { console.error(err); }
+  }
+
+  // ----- Build the machine for the current word -----
+  function buildMachine() {
+    const slotsEl = document.getElementById('slots');
+    const tilesEl = document.getElementById('tiles');
+    slotsEl.className = 'machine-slots';   // איפוס מצב מיזוג
+    slotsEl.innerHTML = '';
+    tilesEl.innerHTML = '';
+    const merged = document.getElementById('mergedWord');
+    merged.hidden = true; merged.classList.remove('show'); merged.textContent = '';
+
+    // שקעים ריקים (סדר קריאה RTL טבעי)
+    currentWord.syllables.forEach(() => {
+      const slot = document.createElement('div');
+      slot.className = 'machine-slot';
+      slotsEl.appendChild(slot);
+    });
+
+    // אריחים = ההברות האמיתיות בערבוב
+    const order = currentWord.syllables.map((_, i) => i).sort(() => Math.random() - 0.5);
+    order.forEach(origIdx => {
+      const btn = document.createElement('button');
+      btn.className = 'machine-tile';
+      btn.textContent = currentWord.syllables[origIdx];
+      btn.dataset.sylId = currentWord.syllable_ids[origIdx];
+      btn.dataset.audio = keyOf(currentWord.syllable_audios[origIdx]);
+      btn.addEventListener('click', () => handleTileClick(btn));
+      tilesEl.appendChild(btn);
+    });
+  }
+
+  function revealTarget() {
+    const img = document.getElementById('targetImg');
+    const total = currentWord.syllable_count;
+    const t = placed / total;
+    img.style.filter = `grayscale(${1 - t}) brightness(${1 + 0.7 * (1 - t)}) opacity(${0.32 + 0.68 * t})`;
+  }
+
+  function handleTileClick(btn) {
+    if (!accepting || btn.classList.contains('used')) return;
+    clearTimeout(hintTimer);
+
+    const expectedSylId = currentWord.syllable_ids[placed];
+    const isNext = btn.dataset.sylId === expectedSylId;
+
+    playAudio(btn.dataset.audio);   // נגיעה = שומעים את החלק (לא ניחוש)
+
+    if (isNext) {
+      // ---- חלק נכון בסדר הנכון ----
+      if (!scoredThisSlot) { logIsland1Result(true); }
+      scoredThisSlot = false;
+      mistakeCount = 0;
+
+      const slot = document.getElementById('slots').children[placed];
+      slot.textContent = btn.textContent;
+      slot.classList.add('filled');
+      btn.classList.add('used');
+      placed++;
+      revealTarget();
+
+      if (placed >= currentWord.syllable_count) {
+        accepting = false;
+        setTimeout(finale, 700);
+      } else {
+        // רמז עדין: החלק הבא הנכון קופץ אחרי שהיה
+        hintTimer = setTimeout(hintNext, 9000);
+      }
+      return;
+    }
+
+    // ---- סדר שגוי ----
+    if (!scoredThisSlot) { logIsland1Result(false); scoredThisSlot = true; }
+    mistakeCount++;
+    wordMistakeTotal++;
+    btn.classList.add('wobble');
+    setTimeout(() => btn.classList.remove('wobble'), 460);
+    setCaption('לְפִי הַסֵּדֶר — נַתְחִיל מֵהַחֵלֶק הָרִאשׁוֹן');
+    playAudio(btn.dataset.audio, () => setTimeout(() => playAudio('support-order'), 200));
+    hintNext();
+  }
+
+  function hintNext() {
+    const expectedSylId = currentWord.syllable_ids[placed];
+    const tile = Array.from(document.querySelectorAll('.machine-tile:not(.used)'))
+      .find(t => t.dataset.sylId === expectedSylId);
+    if (tile) { tile.classList.add('hint'); setTimeout(() => tile.classList.remove('hint'), 3200); }
+  }
+
+  function setCaption(text) { document.getElementById('caption').textContent = text || ''; }
+
+  // נגן רצף מהיר (רגע המיזוג — accelerando)
+  function playFast(keys, gap, onDone) {
+    (function step(i) {
+      if (i >= keys.length) { onDone && onDone(); return; }
+      playAudio(keys[i], () => setTimeout(() => step(i + 1), gap));
+    })(0);
+  }
+
+  // ----- Finale: שתי ההברות מתחברות למילה שלמה (מיזוג) -----
+  function finale() {
+    setCaption('חַבְּרוּ אֶת הַחֲלָקִים...');
+    const slotsEl = document.getElementById('slots');
+    const keys = currentWord.syllable_audios.map(keyOf);
+
+    // 1) ההברות נעות זו אל זו ונוגעות
+    slotsEl.classList.add('merging');
+    // 2) אודיו מאיץ — אַט→מהר (רגע הבלנדינג)
+    setTimeout(() => {
+      playFast(keys, 70, () => {
+        // 3) התחברו → המילה השלמה מופיעה במקומן
+        slotsEl.classList.add('hide');
+        const merged = document.getElementById('mergedWord');
+        merged.textContent = currentWord.display;
+        merged.hidden = false;
+        requestAnimationFrame(() => merged.classList.add('show'));
+        document.getElementById('target').classList.add('done');
+        document.getElementById('targetImg').style.filter = '';
+        setCaption('');
+        // 4) המילה השלמה נשמעת בקול נוני, ואז חגיגה
+        playAudio(`word-${currentWord.id}`, () => setTimeout(celebrate, 450));
+      });
+    }, 450);
+  }
+
+  function celebrate() {
+    if (window.AvneiMastery) {
+      window.AvneiMastery.recordResult(currentWord.id, GAME_ID, wordMistakeTotal);
+    }
+    const noni = document.getElementById('noniImg');
+    noni.src = 'assets/noni-happy.png';
+    noni.classList.add('celebrating');
+    burstParticles();
+    setTimeout(showCompletion, 850);
+  }
+
+  function burstParticles() {
+    const container = document.getElementById('celebrateParticles');
+    container.innerHTML = '';
+    const colors = ['#FFF7C8', '#FFA98D', '#B981FF', '#A8E8FF', '#73D9D1'];
+    for (let i = 0; i < 28; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const angle = (i / 28) * Math.PI * 2;
+      const dist = 200 + Math.random() * 120;
+      p.style.left = `${50 + (Math.random() - 0.5) * 10}%`;
+      p.style.top = `${50 + (Math.random() - 0.5) * 10}%`;
+      p.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
+      p.style.setProperty('--dy', `${Math.sin(angle) * dist - 80}px`);
+      p.style.background = colors[i % colors.length];
+      p.style.boxShadow = `0 0 12px ${colors[i % colors.length]}`;
+      p.style.animationDelay = `${(i % 6) * 0.06}s`;
+      container.appendChild(p);
+    }
+    setTimeout(() => { container.innerHTML = ''; }, 3000);
+  }
+
+  function showCompletion() {
+    document.getElementById('completion').classList.add('visible');
+    setTimeout(() => playAudio('ui-machine-complete'), 350);
+  }
+
+  function loadWord(idx) {
+    currentWordIndex = (idx + WORDS.length) % WORDS.length;
+    currentWord = WORDS[currentWordIndex];
+    placed = 0;
+    mistakeCount = 0;
+    wordMistakeTotal = 0;
+    scoredThisSlot = false;
+    accepting = false;
+
+    document.getElementById('targetImg').src = currentWord.image;
+    document.getElementById('targetImg').style.filter = '';
+    document.getElementById('target').classList.remove('done');
+    document.getElementById('pillImg').src = currentWord.image;
+    document.getElementById('wordPillText').textContent = currentWord.display;
+
+    const noni = document.getElementById('noniImg');
+    noni.src = 'assets/noni-idle.png';
+    noni.classList.remove('celebrating');
+    document.getElementById('completion').classList.remove('visible');
+
+    buildMachine();
+    revealTarget();
+    setCaption('הַקְשִׁיבוּ לַחֲלָקִים...');
+
+    setTimeout(() => {
+      playSplitWord(() => {
+        setCaption('הַרְכִּיבוּ לְפִי הַסֵּדֶר');
+        accepting = true;
+        hintTimer = setTimeout(hintNext, 9000);
+      });
+    }, 450);
+  }
+
+  function nextWord() {
+    const w = window.AvneiMastery ? window.AvneiMastery.pickWord(GAME_ID, WORDS) : null;
+    const idx = w ? WORDS.indexOf(w) : (currentWordIndex + 1);
+    loadWord(idx);
+  }
+
+  async function start() {
+    if (started) return;
+    started = true;
+    document.getElementById('tapToStart').classList.add('hidden');
+    if (!WORDS.length) await loadWords();
+    if (!WORDS.length) { console.error('failed to load words'); return; }
+    const w = window.AvneiMastery ? window.AvneiMastery.pickWord(GAME_ID, WORDS) : null;
+    const idx = w ? WORDS.indexOf(w) : 0;
+    loadWord(idx);
+  }
+
+  document.getElementById('startBtn').addEventListener('click', start);
+  document.getElementById('introSpeaker').addEventListener('click', (e) => {
+    e.stopPropagation();
+    playAudio('ui-machine-story');
+  });
+  document.getElementById('replayBtn').addEventListener('click', () => { if (currentWord) playSplitWord(); });
+  document.getElementById('nextWordBtn').addEventListener('click', nextWord);
+  document.getElementById('completionSpeaker').addEventListener('click', (e) => {
+    e.stopPropagation();
+    playAudio('ui-machine-complete');
+  });
+
+  (async function init() {
+    await loadWords();
+    audio.src = `${AUDIO_BASE}/ui-bubble-story.mp3`;
+  })();
+  </script>
+</body>
+</html>

@@ -83,12 +83,12 @@
       <span>הַקִּישׁוּ לִשְׁמֹעַ</span>
     </button>
     <p>הַמַּקְהֵלָה נִרְדְּמָה וְשׁוֹכֶבֶת בַּיָּם.</p>
-    <p><strong>הָעִירוּ אֶת הַבּוּעוֹת בְּסֵדֶר — וְהֵן יָשִׁירוּ לָכֶם אֶת הַמִּלָּה!</strong></p>
+    <p><strong>הָעִירוּ אֶת הַבּוּעוֹת שֶׁשָּׁרוֹת חֶלְקֵי הַמִּלָּה — וְהֵן יָשִׁירוּ אוֹתָהּ יַחַד!</strong></p>
     <button class="start-btn" id="startBtn">בּוֹאוּ נַתְחִיל!</button>
   </div>
 
   <div class="completion" id="completion">
-    <h2>הַמַּקְהֵלָה שָׁרָה!</h2>
+    <h2>הַמַּקְהֵלָה הִתְעוֹרְרָה!</h2>
     <button class="intro-speaker" id="completionSpeaker" aria-label="השמיעו">
       <svg viewBox="0 0 24 24" fill="none">
         <path d="M11 5L6 9H3v6h3l5 4V5z" fill="#FFFFFF"/>
@@ -145,7 +145,8 @@
   let WORDS = [];
   let currentWordIndex = 0;
   let currentWord = null;
-  let nextExpectedOrder = 0;
+  let wokenCount = 0;        // כמה הברות-מטרה הוערו (בכל סדר)
+  let primedEl = null;       // בועה שנגעו בה פעם אחת (שרה) וממתינה לבחירה (two-tap)
   let mistakeCount = 0;
   let wordMistakeTotal = 0;
   let started = false;
@@ -178,7 +179,9 @@
     try {
       const res = await fetch('data/island-01-words.json');
       const data = await res.json();
-      WORDS = data.words;
+      // מילים מוחרגות (בעיית תמונה/אודיו — החלטת מיטל): ברווז, אבטיח
+      const EXCLUDE = new Set(['barvaz', 'avtiach']);
+      WORDS = data.words.filter(w => !EXCLUDE.has(w.id));
     } catch (err) { console.error(err); }
   }
 
@@ -220,7 +223,7 @@
       correct: true,
       order: i,
     }));
-    const distractorCount = 2;
+    const distractorCount = 1;   // הקלה: מסיח אחד בלבד (פחות עומס-זיהוי לתחילת שנה)
     const distractors = pickDistractors(currentWord, distractorCount).map(d => ({
       syllable_id: d.syllable_id,
       audio: d.audio,
@@ -249,108 +252,78 @@
     });
   }
 
+  // two-tap: נגיעה 1 = הבועה שרה (חקירה, לא נמדד); נגיעה 2 = בוחרים אותה (נמדד).
+  // המטרה: להעיר את הבועות ששרות חלקים של המילה — בכל סדר; מתעלמים ממסיחים.
   function handleSingerClick(s, c) {
     if (!acceptingClicks) return;
-    if (s.classList.contains('awake')) return; // already awake — ignore
+    if (s.classList.contains('awake')) return;
     clearTimeout(hintTimer);
 
-    const isCorrectSyl = c.correct;
-    const expectedSylId = currentWord.syllable_ids[nextExpectedOrder];
-    const fragSylId = c.order >= 0 ? currentWord.syllable_ids[c.order] : null;
-    const isIdenticalToExpected = isCorrectSyl && fragSylId === expectedSylId;
+    // --- נגיעה ראשונה על בועה חדשה = השמעה בלבד ---
+    if (primedEl !== s) {
+      if (primedEl) primedEl.classList.remove('primed');
+      primedEl = s;
+      s.classList.add('primed', 'singing');
+      setTimeout(() => s.classList.remove('singing'), 650);
+      playAudio(c.audio);
+      return;
+    }
 
-    // CASE A: correct order OR identical syllable
-    if (isCorrectSyl && (c.order === nextExpectedOrder || isIdenticalToExpected)) {
+    // --- נגיעה שנייה על אותה בועה = בחירה (נמדד) ---
+    primedEl = null;
+    s.classList.remove('primed');
+
+    if (c.correct) {
       logIsland1Result(true);
       s.classList.add('awake', 'singing');
       setTimeout(() => s.classList.remove('singing'), 700);
       playAudio(c.audio);
-
-      nextExpectedOrder++;
+      wokenCount++;
       mistakeCount = 0;
-
-      if (nextExpectedOrder === currentWord.syllable_count) {
+      if (wokenCount >= currentWord.syllable_count) {
         acceptingClicks = false;
         setTimeout(performChoirFinale, 900);
-      } else {
-        // glow on the next expected singer
-        setTimeout(() => {
-          const nextExp = currentWord.syllable_ids[nextExpectedOrder];
-          const candidates = document.querySelectorAll('.choir-singer:not(.awake)');
-          // hint: glow ANY correct non-awake singer that matches the next expected syllable
-          for (const el of candidates) {
-            if (el.dataset.correct === '1' && parseInt(el.dataset.order) === nextExpectedOrder) {
-              el.classList.add('hint');
-              setTimeout(() => el.classList.remove('hint'), 3500);
-              break;
-            }
-          }
-        }, 900);
       }
-      return;
-    }
-
-    // CASE B: correct syllable but wrong order
-    if (isCorrectSyl && c.order !== nextExpectedOrder && !isIdenticalToExpected) {
+    } else {
+      // מסיח — טעות (נמדד), הדגמה עדינה, לא מעירים
       mistakeCount++;
       wordMistakeTotal++;
       logIsland1Result(false);
       s.classList.add('wobble');
       setTimeout(() => s.classList.remove('wobble'), 600);
-      playAudio(c.audio, () => {
-        setTimeout(() => playAudio('support-order'), 250);
-        const correctBtn = document.querySelector(`.choir-singer:not(.awake)[data-order="${nextExpectedOrder}"]`);
-        if (correctBtn) {
-          correctBtn.classList.add('hint');
-          setTimeout(() => correctBtn.classList.remove('hint'), 3500);
-        }
-      });
-      return;
+      playAudio(c.audio, () => setTimeout(() => playAudio('support-mistake-1'), 250));
     }
-
-    // CASE C: distractor
-    mistakeCount++;
-    wordMistakeTotal++;
-    logIsland1Result(false);
-    s.classList.add('wobble');
-    setTimeout(() => s.classList.remove('wobble'), 600);
-    playAudio(c.audio, () => {
-      if (mistakeCount === 1) {
-        setTimeout(() => playAudio('support-mistake-1'), 250);
-      } else {
-        const correctBtn = document.querySelector(`.choir-singer:not(.awake)[data-order="${nextExpectedOrder}"]`);
-        if (correctBtn) correctBtn.classList.add('hint');
-        setTimeout(() => playAudio('support-mistake-2'), 250);
-      }
-    });
   }
 
   // ----- Finale: choir sings each syllable in order, then the whole word -----
   function performChoirFinale() {
     document.getElementById('wordBubble').classList.add('singing');
 
-    // Each awake singer sings in order
+    // המסיחים שלא הוערו נעלמים; הבועות הערות מתקבצות (מיזוג)
+    document.querySelectorAll('.choir-singer:not(.awake)').forEach(el => el.classList.add('fade-out'));
+    const row = document.getElementById('choirRow');
+    setTimeout(() => row.classList.add('merging'), 300);
+
+    // הבועות הערות שרות בסדר הנכון (לפי dataset.order) — בלי קשר לסדר ההערה
     const awakeSorted = Array.from(document.querySelectorAll('.choir-singer.awake'))
       .sort((a, b) => parseInt(a.dataset.order) - parseInt(b.dataset.order));
 
     function singStep(i) {
       if (i >= awakeSorted.length) {
-        // all sang — now play the whole word
+        // מיזוג → המילה השלמה
         setTimeout(() => {
-          playAudio(`word-${currentWord.id}`, () => {
-            setTimeout(celebrate, 500);
-          });
-        }, 400);
+          playAudio(`word-${currentWord.id}`, () => setTimeout(celebrate, 500));
+        }, 350);
         return;
       }
       const s = awakeSorted[i];
       s.classList.add('singing');
       playAudio(s.dataset.audio, () => {
         s.classList.remove('singing');
-        setTimeout(() => singStep(i + 1), 200);
+        setTimeout(() => singStep(i + 1), 150);
       });
     }
-    singStep(0);
+    setTimeout(() => singStep(0), 550);
   }
 
   function celebrate() {
@@ -387,7 +360,7 @@
 
   function showCompletion() {
     document.getElementById('completion').classList.add('visible');
-    setTimeout(() => playAudio('ui-complete-choir'), 400);
+    setTimeout(() => playAudio('ui-choir-complete'), 400);
   }
 
   function showInstruction(text) {
@@ -411,7 +384,8 @@
   function loadWord(idx) {
     currentWordIndex = (idx + WORDS.length) % WORDS.length;
     currentWord = WORDS[currentWordIndex];
-    nextExpectedOrder = 0;
+    wokenCount = 0;
+    primedEl = null;
     mistakeCount = 0;
     wordMistakeTotal = 0;
     acceptingClicks = false;
@@ -424,6 +398,8 @@
     noni.src = 'assets/noni-idle.png';
     noni.classList.remove('celebrating');
 
+    const row = document.getElementById('choirRow');
+    row.classList.remove('merging');
     document.getElementById('wordBubble').classList.remove('singing');
     document.getElementById('completion').classList.remove('visible');
 
@@ -432,13 +408,13 @@
 
     setTimeout(() => {
       playSplitWord(() => {
-        showInstruction('הָעִירוּ אֶת הַבּוּעוֹת בְּסֵדֶר!');
+        showInstruction('גְּעוּ לִשְׁמֹעַ, וְאָז שׁוּב לְהָעִיר — אֵילוּ בּוּעוֹת שָׁרוֹת חֶלְקֵי הַמִּלָּה?');
         playAudio('ui-choir-wake', () => {
           acceptingClicks = true;
           hintTimer = setTimeout(() => {
-            const correctBtn = document.querySelector(`.choir-singer:not(.awake)[data-order="${nextExpectedOrder}"]`);
-            if (correctBtn) correctBtn.classList.add('hint');
-          }, 10000);
+            const c = document.querySelector('.choir-singer:not(.awake)[data-correct="1"]');
+            if (c) c.classList.add('hint');
+          }, 12000);
         });
       });
     }, 500);
@@ -464,7 +440,7 @@
   document.getElementById('startBtn').addEventListener('click', start);
   document.getElementById('introSpeaker').addEventListener('click', (e) => {
     e.stopPropagation();
-    playAudio('ui-bubble-story');
+    playAudio('ui-choir-story');
   });
   document.getElementById('replayBtn').addEventListener('click', () => {
     if (!currentWord) return;
@@ -477,12 +453,12 @@
   document.getElementById('nextWordBtn').addEventListener('click', nextWord);
   document.getElementById('completionSpeaker').addEventListener('click', (e) => {
     e.stopPropagation();
-    playAudio('ui-complete-choir');
+    playAudio('ui-choir-complete');
   });
 
   (async function init() {
     await loadWords();
-    audio.src = `${AUDIO_BASE}/ui-bubble-story.mp3`;
+    audio.src = `${AUDIO_BASE}/ui-choir-story.mp3`;
   })();
   </script>
 </body>
