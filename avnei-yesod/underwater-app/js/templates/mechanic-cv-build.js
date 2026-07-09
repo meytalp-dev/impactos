@@ -83,6 +83,9 @@
     const options = opts || {};
     const numTrials = (options.numTrials && options.numTrials > 0) ? options.numTrials : 5;
     const sid = options.studentId || 'local';
+    // הנחיה קולית של נוני (מה צריך לעשות) — מתנגנת פעם אחת בתחילת הסבב הראשון,
+    // ואז מושמע הצליל-היעד. בלי המפתח — התנהגות ישנה (רק הצליל-היעד). מיטל 9.7.
+    const introAudioKey = options.introAudioKey || null;
     const targets = buildTargetList(sid, numTrials);
 
     const letters = VA.ALL_HEBREW_LETTERS_22.slice();
@@ -125,7 +128,8 @@
     stage.innerHTML =
       '<div class="cv-build-display" id="cvBuildDisplay" aria-live="polite">' +
         '<div class="cv-build-fish" aria-hidden="true">' +
-          '<svg viewBox="0 0 100 70"><use href="#fishIcon"/></svg>' +
+          '<img class="cv-build-fish__img" src="assets/fish-cv-color.png" alt="" ' +
+            'onerror="this.style.display=\'none\'">' +
         '</div>' +
         '<div class="cv-build-result" id="cvBuildResult">— —</div>' +
         '<div class="cv-build-anchor" id="cvBuildAnchor"></div>' +
@@ -187,6 +191,7 @@
       attempts: 0,
       scaffoldLevel: 0,   // 0=audio-only · 1=letter shown · 2=full CV shown
       locked: false,
+      introPlayed: false, // הנחיית נוני מתנגנת פעם אחת בלבד
     };
 
     function currentTarget() {
@@ -249,11 +254,23 @@
       }
 
       document.getElementById('cvBuildCounter').textContent = state.trial + '/' + numTrials;
-      // השמע את ה-target audio (פעם אחת בתחילת trial)
-      setTimeout(function () {
-        const k = VA.cvAudioKey(t.letter, t.vowelId);
-        if (k) playKey(k);
-      }, 350);
+      // בסבב הראשון: קודם הנחיית נוני ("הקשיבו והרכיבו"), ואז הצליל-היעד.
+      // בשאר הסבבים: רק הצליל-היעד (פעם אחת בתחילת trial).
+      const k = VA.cvAudioKey(t.letter, t.vowelId);
+      if (introAudioKey && !state.introPlayed) {
+        state.introPlayed = true;
+        const A = window.AvneiAudio;
+        if (A && typeof A.playAndWait === 'function') {
+          A.playAndWait(introAudioKey).then(function () {
+            setTimeout(function () { if (k) playKey(k); }, 250);
+          });
+        } else {
+          playKey(introAudioKey);
+          setTimeout(function () { if (k) playKey(k); }, 2600);
+        }
+      } else {
+        setTimeout(function () { if (k) playKey(k); }, 350);
+      }
     }
 
     function clearSelection() {
