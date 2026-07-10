@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#FFFFFF">
+  <title>דף הבית · מורה · אבני יסוד</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Approved mint design system (single source of truth, DESIGN-LOCK) -->
+  <link rel="stylesheet" href="../../demo/demo.css">
+  <script src="../../demo/demo-icons.js" defer></script>
+  <!-- Real runtime: demo (seed) vs cloud (Supabase). Additive, does not touch the engine. -->
+  <script src="js/shared/runtime-mode.js"></script>
+  <script src="js/shared/teacher-cloud.js"></script>
+  <!-- Rich per-student cards for demo mode (must load before the main script) -->
+  <script src="teacher-home-seed.js"></script>
+  <style>
+    .rail .logo .gm{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:#DDF3EC;}
+    .rail .logo .gm svg{width:22px;height:22px;}
+
+    .hero{background:#FFFFFF;border:1px solid #ECF0F0;border-radius:var(--radius-lg);padding:20px 24px;
+      box-shadow:0 1px 3px rgba(38,80,92,.05);margin-bottom:20px;border-right:8px solid var(--sea-green);}
+    .hero .q{font-size:12px;font-weight:800;color:#3E8C78;background:#EFF6F3;display:inline-block;padding:4px 13px;border-radius:var(--pill);margin-bottom:10px;}
+    .hero h1{font-size:clamp(20px,2.4vw,25px);font-weight:800;color:var(--deep);}
+    .hero p{font-size:13.5px;color:var(--text-soft);margin-top:7px;max-width:62ch;line-height:1.5;}
+    .lessonbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:18px;
+      background:#F8FBFA;border-radius:18px;padding:14px 18px;border:1px solid #EDF2F1;}
+    .lessonbar .letter{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;font-size:25px;font-weight:900;
+      color:#0F7E72;background:#DDF3EC;flex:0 0 auto;font-family:'Heebo',sans-serif;}
+    .lessonbar .lt{flex:1;min-width:180px;}
+    .lessonbar .lt .k{font-size:12.5px;font-weight:800;color:#1f7a6b;}
+    .lessonbar .lt h2{font-size:16.5px;font-weight:800;color:var(--deep);line-height:1.25;}
+    .lessonbar .lacts{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+    .lessonbar .lacts .btn{border-radius:var(--pill);font-weight:800;line-height:1;
+      display:inline-flex;align-items:center;justify-content:center;text-decoration:none;min-height:44px;}
+    .lessonbar .lacts .btn .tic{margin-inline-end:6px;}
+    .btn-topic,.btn-materials{background:#F4F7F8;color:#48707C;box-shadow:inset 0 0 0 1px #E3EAEB;}
+    .btn-topic:hover,.btn-materials:hover{background:#EDF2F3;}
+
+    .snapline{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:15px 20px;}
+    .snapline .sn-h{font-size:14px;font-weight:800;color:var(--deep);display:flex;align-items:center;gap:8px;flex:0 0 auto;}
+    .snapline .sn-h .tic{color:#3E8C78;}
+    .snapline .sn-chips{display:flex;gap:8px;flex-wrap:wrap;flex:1;min-width:0;}
+    .sn-chip{font-size:12.5px;font-weight:700;padding:6px 12px;border-radius:var(--pill);display:inline-flex;align-items:center;gap:6px;background:#F1F5F6;color:var(--text-soft);white-space:nowrap;}
+    .sn-chip b{font-weight:900;}
+    .sn-chip.ok{background:var(--okbg);color:#0d6b54;} .sn-chip.watch{background:var(--watchbg);color:#9c6212;}
+    .sn-chip.care{background:var(--carebg);color:#a23d3d;} .sn-chip.new{background:#EAF0F7;color:#41689a;}
+    .snapline .sn-link{font-size:13px;font-weight:800;color:#2E7A66;text-decoration:none;white-space:nowrap;flex:0 0 auto;}
+    .snapline .sn-link:hover{text-decoration:underline;}
+
+    .practice{border-top:1px solid #ECF0F0;}
+    .practice .ph{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px;}
+    .practice .phl{display:flex;align-items:flex-start;gap:13px;min-width:0;}
+    .practice .ptile{width:46px;height:46px;border-radius:13px;background:#DDF3EC;color:#0F7E72;display:grid;place-items:center;flex:0 0 auto;}
+    .practice .ptile .tic svg{width:23px;height:23px;}
+    .practice .ph h3{font-size:17px;font-weight:800;color:var(--deep);}
+    .practice .ph p{font-size:13px;color:var(--text-soft);margin-top:4px;max-width:60ch;}
+    .pstate{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:800;padding:7px 15px;border-radius:var(--pill);background:#EEF2F3;color:var(--text-soft);}
+    .pstate .dot{width:10px;height:10px;border-radius:50%;background:#B6C4C8;}
+    .pstate.live{background:var(--okbg);color:#0d6b54;}
+    .pstate.live .dot{background:var(--ok);animation:ping 1.4s ease-in-out infinite;}
+    @keyframes ping{0%,100%{box-shadow:0 0 0 0 rgba(79,191,139,.5);}50%{box-shadow:0 0 0 7px rgba(79,191,139,0);}}
+    .pbtns{display:flex;gap:14px;flex-wrap:wrap;margin-top:16px;}
+    .pbtn{flex:1;min-width:210px;min-height:56px;display:flex;align-items:center;justify-content:center;gap:10px;
+      border:none;cursor:pointer;font-family:inherit;font-weight:800;font-size:16px;border-radius:14px;
+      box-shadow:0 2px 6px rgba(38,80,92,.07);transition:transform .15s,box-shadow .15s,opacity .2s;}
+    .pbtn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(38,80,92,.10);}
+    .pbtn .pi{width:23px;height:23px;flex:0 0 auto;}
+    .pbtn-open{background:#5FBFA4;color:#fff;}
+    .pbtn-end{background:#FFFFFF;color:#A23D3D;box-shadow:inset 0 0 0 1px #FBE6E6,0 2px 6px rgba(38,80,92,.05);}
+    .pbtn[disabled]{opacity:.45;pointer-events:none;filter:grayscale(.3);}
+    .passigned{margin-top:14px;font-size:12.5px;color:#0d6b54;background:var(--okbg);border-radius:14px;padding:12px 16px;line-height:1.5;display:none;}
+    .passigned.show{display:block;animation:fadein .4s both;}
+    .passigned b{color:#0D6B54;}
+    @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+    .board{border-top:1px solid #ECF0F0;}
+    .board .bhead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+    .board .bhl{display:flex;align-items:flex-start;gap:13px;min-width:0;}
+    .board .btile{width:46px;height:46px;border-radius:13px;background:var(--acc-pink-bg);color:var(--acc-pink-tx);display:grid;place-items:center;flex:0 0 auto;}
+    .board .btile .tic svg{width:23px;height:23px;}
+    .board .bhead h3{font-size:17px;font-weight:800;color:var(--deep);}
+    .board .bhead p{font-size:13.5px;color:var(--text-soft);margin-top:4px;max-width:64ch;line-height:1.5;}
+    .livepill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:800;padding:7px 14px;border-radius:var(--pill);background:var(--okbg);color:#0d6b54;white-space:nowrap;flex:0 0 auto;}
+    .livepill .d{width:9px;height:9px;border-radius:50%;background:var(--ok);animation:ping 1.4s ease-in-out infinite;}
+    .snapsum{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+    .snapsum .sp{font-size:12.5px;font-weight:800;padding:6px 12px;border-radius:var(--pill);display:flex;align-items:center;gap:6px;background:#F1F5F6;color:var(--text-soft);}
+    .snapsum .sp .d{width:8px;height:8px;border-radius:50%;background:currentColor;}
+    .lgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;}
+    .lcard{position:relative;background:#fff;border:1px solid #ECF0F0;border-radius:18px;padding:18px 18px 15px;
+      box-shadow:0 1px 3px rgba(38,80,92,.05);cursor:pointer;display:flex;flex-direction:column;gap:11px;
+      transition:transform .5s cubic-bezier(.32,.72,0,1),box-shadow .5s cubic-bezier(.32,.72,0,1),border-color .3s;}
+    .lcard:hover{transform:translateY(-6px);box-shadow:0 12px 28px rgba(38,80,92,.11);border-color:#DCE4E5;}
+    .lcard .lc-tile{width:56px;height:56px;border-radius:15px;display:grid;place-items:center;font-weight:800;font-size:23px;font-family:'Heebo',sans-serif;flex:0 0 auto;transition:transform .4s cubic-bezier(.32,.72,0,1);}
+    .lcard:hover .lc-tile{transform:translateY(-2px) scale(1.04);}
+    .lcard .lc-nm{font-size:19px;font-weight:800;color:var(--deep);line-height:1.15;}
+    .lcard .lc-pill{position:absolute;top:14px;left:14px;font-size:10.5px;font-weight:800;padding:4px 10px;border-radius:var(--pill);display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
+    .lcard .lc-pill .d{width:6px;height:6px;border-radius:50%;background:currentColor;}
+    .lcard .ls-help .d,.lcard .ls-stuck .d{animation:ping 1.4s ease-in-out infinite;}
+    .lcard .lc-ds{font-size:13.5px;color:var(--text-soft);line-height:1.5;flex:1;}
+    .lcard .lc-prog-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:7px;}
+    .lcard .lc-prog-lbl{font-size:11px;color:var(--text-soft);font-weight:600;line-height:1.35;}
+    .lcard .lc-prog-pct{font-size:13px;font-weight:800;color:var(--deep);flex:0 0 auto;}
+    .lcard .lc-bar{height:7px;border-radius:6px;background:#EDF2F2;overflow:hidden;}
+    .lcard .lc-bar i{display:block;height:100%;border-radius:6px;background:var(--c,var(--ok));transition:width .5s ease;}
+    .lcard .lc-go{display:inline-flex;align-items:center;gap:6px;margin-top:2px;font-size:14px;font-weight:700;color:#0F7E72;}
+    .lcard .lc-go .chev{font-weight:900;font-size:16px;line-height:0;transition:transform .4s;}
+    .lcard:hover .lc-go .chev{transform:translateX(-4px);}
+    .ls-flow{background:var(--okbg);color:#0d6b54;} .ls-done{background:#EAF0F7;color:#41689A;}
+    .ls-help{background:var(--carebg);color:#a23d3d;} .ls-stuck{background:var(--watchbg);color:#9c6212;}
+    .ls-idle{background:#EEF1F2;color:#6b7a7f;}
+    .board.idle .livesum,.board.idle .lgrid,.board.idle .livepill{display:none;}
+    .board:not(.idle) .bidle{display:none;}
+    .bidle{text-align:center;padding:32px 20px 10px;}
+    .bidle-ic{width:56px;height:56px;border-radius:15px;background:#EFF6F3;color:#5FBFA4;display:grid;place-items:center;margin:0 auto 14px;}
+    .bidle-ic .tic svg{width:28px;height:28px;}
+    .bidle-t{font-size:18px;font-weight:900;color:var(--deep);margin-bottom:6px;}
+    .bidle-s{font-size:14px;color:var(--text-soft);line-height:1.6;max-width:48ch;margin:0 auto;}
+
+    /* runtime badge — shows whether we're on seed or live cloud data */
+    .rt-badge{position:fixed;bottom:14px;left:14px;z-index:30;font-size:11.5px;font-weight:800;
+      padding:6px 12px;border-radius:999px;box-shadow:0 2px 8px rgba(38,80,92,.14);display:flex;align-items:center;gap:6px;}
+    .rt-badge .d{width:7px;height:7px;border-radius:50%;}
+    .rt-demo{background:#FCEFD9;color:#9c6212;} .rt-demo .d{background:#9c6212;}
+    .rt-cloud{background:var(--okbg);color:#0d6b54;} .rt-cloud .d{background:var(--ok);}
+
+    body{background:#FFFFFF;font-family:'Rubik',sans-serif;letter-spacing:-.01em;}
+    .tic{display:inline-flex;align-items:center;vertical-align:-.16em;line-height:0;color:inherit;}
+    .tic svg{width:1.08em;height:1.08em;display:block;}
+    .btn .tic,.passigned>.tic{margin-inline-end:6px;}
+    .scene-bg,.veil{display:none;}
+    .rail{background:#FBFDFD;backdrop-filter:none;border-left:1px solid #EEF2F2;}
+    .topbar .date{background:#F4F7F7;box-shadow:none;}
+    .card{background:#FFFFFF;backdrop-filter:none;border:1px solid #ECF0F0;box-shadow:0 1px 3px rgba(38,80,92,.05);}
+    .btn-primary{background:#5FBFA4;color:#fff;} .btn-chip{background:#F0F5F6;color:#48707C;}
+
+    /* student summary modal */
+    .sc-scrim{position:fixed;inset:0;background:rgba(20,50,58,.42);z-index:60;opacity:0;pointer-events:none;transition:opacity .28s;}
+    .sc-scrim.on{opacity:1;pointer-events:auto;}
+    .sc-modal{position:fixed;z-index:70;top:50%;right:50%;transform:translate(50%,-46%) scale(.98);opacity:0;pointer-events:none;
+      width:min(680px,94vw);max-height:92dvh;background:#fff;border-radius:24px;box-shadow:0 30px 80px -30px rgba(20,50,58,.5);display:flex;flex-direction:column;transition:opacity .28s,transform .28s cubic-bezier(.32,.72,0,1);}
+    .sc-modal.on{opacity:1;pointer-events:auto;transform:translate(50%,-50%) scale(1);}
+    .sc-x{position:absolute;top:16px;left:16px;width:38px;height:38px;border-radius:50%;border:1px solid #E5EBEC;background:#fff;cursor:pointer;font-size:17px;color:var(--text-soft);z-index:2;line-height:1;}
+    .sc-x:hover{background:#F4F7F7;}
+    .sc-scroll{overflow-y:auto;padding:26px 28px 30px;}
+    .sc-head{display:flex;align-items:center;gap:14px;margin-bottom:14px;padding-inline-start:44px;}
+    .sc-av{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-size:24px;font-weight:800;flex:0 0 auto;font-family:'Heebo',sans-serif;}
+    .sc-id h2{font-size:23px;font-weight:900;color:var(--deep);line-height:1.1;}
+    .sc-id .sc-meta{font-size:13.5px;color:var(--text-soft);font-weight:600;margin-top:3px;}
+    .sc-badge{margin-inline-start:auto;font-size:12.5px;font-weight:800;padding:6px 14px;border-radius:var(--pill);white-space:nowrap;}
+    .sc-badge.care{background:var(--carebg);color:#a23d3d;} .sc-badge.watch{background:var(--watchbg);color:#9c6212;}
+    .sc-badge.new{background:#EAF0F7;color:#41689a;} .sc-badge.ok{background:var(--okbg);color:#0d6b54;}
+    .sc-bottom{font-size:16px;line-height:1.55;color:var(--text-main);background:#F8FBFA;border:1px solid #EDF2F1;border-radius:16px;padding:14px 16px;margin-bottom:16px;}
+    .sc-next{background:linear-gradient(135deg,#EFFAF6,#E4F5EE);border:1px solid #CBEBDD;border-radius:20px;padding:18px 20px;margin-bottom:16px;}
+    .sc-next-h{font-size:13px;font-weight:900;color:#1f7a6b;display:flex;align-items:center;gap:7px;margin-bottom:8px;}
+    .sc-next h3{font-size:19px;font-weight:900;color:var(--deep);line-height:1.25;}
+    .sc-next p{font-size:14.5px;color:var(--text-main);line-height:1.55;margin-top:6px;}
+    .sc-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px;}
+    .sc-why{border-inline-start:4px solid #9B8FD6;background:#EEEBF8;border-radius:14px;padding:13px 16px;margin-bottom:18px;}
+    .sc-why-h{font-size:13px;font-weight:900;color:#6A59B8;display:flex;align-items:center;gap:7px;margin-bottom:5px;}
+    .sc-why p{font-size:14px;color:var(--text-main);line-height:1.55;}
+    .sc-ev{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;}
+    .sc-block{border:1px solid #ECF0F0;border-radius:16px;padding:15px 16px;}
+    .sc-block.wide{grid-column:1/-1;}
+    .sc-block h4{font-size:14.5px;font-weight:900;color:var(--deep);display:flex;align-items:center;gap:7px;margin-bottom:11px;}
+    @media (max-width:560px){.sc-ev{grid-template-columns:1fr;}}
+    .sc-skill{margin-bottom:11px;} .sc-skill:last-child{margin-bottom:0;}
+    .sc-skill .sk-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;}
+    .sc-skill .sk-nm{font-size:13.5px;font-weight:700;color:var(--text-main);}
+    .sc-skill .sk-lv{font-size:11.5px;font-weight:800;}
+    .sc-skill .sk-track{height:8px;border-radius:6px;background:#EDF2F2;overflow:hidden;}
+    .sc-skill .sk-track i{display:block;height:100%;border-radius:6px;}
+    .lv-ok{color:#0d6b54;} .lv-ok i{background:var(--ok);}
+    .lv-watch{color:#9c6212;} .lv-watch i{background:var(--watch);}
+    .lv-care{color:#a23d3d;} .lv-care i{background:var(--care);}
+    .sc-line{font-size:13.5px;color:var(--text-soft);line-height:1.6;} .sc-line b{color:var(--text-main);}
+    .sc-stat{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+    .sc-stat .sc-num{font-size:22px;font-weight:900;color:var(--deep);}
+    .sc-trend{font-size:12px;font-weight:800;padding:3px 10px;border-radius:var(--pill);}
+    .tr-up{background:var(--okbg);color:#0d6b54;} .tr-down{background:var(--carebg);color:#a23d3d;} .tr-flat{background:#EEF2F3;color:#6b7a7f;}
+    .sc-tl h4{font-size:14.5px;font-weight:900;color:var(--deep);display:flex;align-items:center;gap:7px;margin-bottom:12px;}
+    .sc-tlrow{display:flex;gap:12px;align-items:flex-start;padding-bottom:14px;position:relative;}
+    .sc-tlrow:not(:last-child)::before{content:"";position:absolute;top:26px;inset-inline-end:12px;bottom:0;width:2px;background:#EAEFEF;}
+    .sc-tlrow .sc-tic{width:26px;height:26px;border-radius:50%;background:#F0F5F6;color:#41689A;display:grid;place-items:center;flex:0 0 auto;z-index:1;}
+    .sc-tlrow .sc-tic svg{width:15px;height:15px;}
+    .sc-tlrow .sc-tx{font-size:13.5px;color:var(--text-main);line-height:1.4;}
+    .sc-tlrow .sc-when{font-size:11.5px;color:var(--text-soft);font-weight:700;margin-bottom:2px;}
+    .sc-empty{font-size:13.5px;color:var(--text-soft);line-height:1.55;background:#F8FBFA;border:1px dashed #DCE6E6;border-radius:12px;padding:12px 14px;}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <nav class="rail" aria-label="ניווט">
+      <a class="logo" href="teacher-home.html"><span class="gm"><svg viewBox="0 0 24 24" fill="none" stroke="#0F7E72" stroke-width="2.3" stroke-linecap="round"><path d="M6 18v-5"/><path d="M12 18V7"/><path d="M18 18v-8"/></svg></span><b>אבני<br>יסוד</b></a>
+      <a class="item active" href="teacher-home.html"><span class="ic" data-ic="home"></span><span class="t">דף הבית</span></a>
+      <a class="item" href="teacher-my-class.html"><span class="ic" data-ic="people"></span><span class="t">הכיתה שלי</span></a>
+      <a class="item" href="teacher-literacy-profile.html"><span class="ic" data-ic="learn"></span><span class="t">פרופיל אורייני</span></a>
+      <a class="item" href="#"><span class="ic" data-ic="pulse"></span><span class="t">פולס</span></a>
+      <a class="item" href="teacher-reports.html"><span class="ic" data-ic="report"></span><span class="t">דוחות</span></a>
+      <a class="item" href="teacher-curriculum.html"><span class="ic" data-ic="calendar"></span><span class="t">תוכנית שנתית</span></a>
+      <a class="item" href="teacher-settings.html"><span class="ic" data-ic="settings"></span><span class="t">הגדרות</span></a>
+      <div class="me"><div class="av" id="meAv">מ</div><small id="meNm">מיטל פלג<span id="meCls">מורה · א׳1</span></small></div>
+    </nav>
+
+    <main class="main"><div class="main-inner">
+      <div class="topbar">
+        <div class="crumbs">אבני יסוד · <span id="crumbClass">כיתה א׳1</span></div>
+        <div class="date" id="todayDate">היום</div>
+      </div>
+
+      <div class="hero">
+        <span class="q">מה עושים הבוקר?</span>
+        <h1 id="greet">בוקר טוב</h1>
+        <p id="heroLine">תמונת הכיתה מוכנה. אפשר לפתוח תרגול כיתתי קצר — המשימות יוקצו לכל תלמיד.ה לפי הרמה.</p>
+        <div class="lessonbar">
+          <div class="letter" id="lessonLetter">ל</div>
+          <div class="lt">
+            <div class="k">נושא השיעור היום</div>
+            <h2 id="lessonTopic">זיהוי האות ל וקריאת לַ · לָ · לִ</h2>
+          </div>
+          <div class="lacts">
+            <button class="btn btn-sm btn-topic" id="topicBtn"><span class="tic" data-ic="edit"></span>שינוי נושא</button>
+            <a class="btn btn-sm btn-materials" href="#"><span class="tic" data-ic="upload"></span>חומרי למידה</a>
+          </div>
+        </div>
+      </div>
+
+      <section class="sec">
+        <div class="card snapline">
+          <span class="sn-h"><span class="tic" data-ic="people"></span>תמונת מצב כיתתית</span>
+          <div class="sn-chips" id="snapChips"></div>
+          <a class="sn-link" href="teacher-dashboard.html">לתמונה המלאה ‹</a>
+        </div>
+      </section>
+
+      <section class="sec">
+        <div class="card practice">
+          <div class="ph">
+            <div class="phl">
+              <span class="ptile"><span class="tic" data-ic="playcircle"></span></span>
+              <div>
+                <h3>תרגול כיתתי</h3>
+                <p>בלחיצה אחת — המשימות מוקצות אוטומטית לכל תלמיד.ה לפי הרמה שלו.ה. אין צורך לבחור ידנית.</p>
+              </div>
+            </div>
+            <div class="pstate" id="pstate"><span class="dot"></span><span id="pstateTx">לא פעיל</span></div>
+          </div>
+          <div class="pbtns">
+            <button class="pbtn pbtn-open" id="btnOpen">
+              <span class="pi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.8v14.4l13-7.2z"/></svg></span>
+              פתיחת תרגול כיתתי
+            </button>
+            <button class="pbtn pbtn-end" id="btnEnd" disabled>
+              <span class="pi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2.2"/></svg></span>
+              סיום תרגול כיתתי
+            </button>
+          </div>
+          <div class="passigned" id="passigned">
+            <span class="tic" data-ic="checkcircle"></span><b>המשימות הוקצו אוטומטית לכל תלמידי הכיתה</b> לפי רמתם. <b>הלוח הכיתתי החי</b> מתעדכן עכשיו בזמן אמת — מי זורם.ת, מי נתקע.ת ומי צריך.ה עזרה.
+          </div>
+        </div>
+      </section>
+
+      <section class="sec">
+        <div class="card board idle" id="board">
+          <div class="bhead">
+            <div class="bhl">
+              <span class="btile"><span class="tic" data-ic="pulse"></span></span>
+              <div>
+                <h3>הלוח הכיתתי החי</h3>
+                <p>תמונה אמיתית של מה שקורה בשיעור עכשיו — מי התחיל.ה, מי זורם.ת, מי נתקע.ת, ומי צריך.ה עזרה. לחיצה על כרטיס פותחת את פרטי התלמיד.ה.</p>
+              </div>
+            </div>
+            <span class="livepill"><span class="d"></span>מתעדכן בזמן אמת</span>
+          </div>
+          <div class="bidle">
+            <span class="bidle-ic"><span class="tic" data-ic="playcircle"></span></span>
+            <div class="bidle-t">התרגול עדיין לא התחיל</div>
+            <div class="bidle-s">לחצי על <b>״פתיחת תרגול כיתתי״</b> למעלה — והלוח יתחיל להראות בזמן אמת איפה כל תלמיד.ה נמצא.ת.</div>
+          </div>
+          <div class="snapsum livesum" id="liveSum"></div>
+          <div class="lgrid" id="liveBoard"></div>
+        </div>
+      </section>
+
+    </div></main>
+  </div>
+
+  <div class="sc-scrim" id="scScrim"></div>
+  <div class="sc-modal" id="scModal" role="dialog" aria-modal="true" aria-label="כרטיס תלמיד">
+    <button class="sc-x" id="scClose" aria-label="סגירה">✕</button>
+    <div class="sc-scroll" id="scBody"></div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="rt-badge rt-demo" id="rtBadge"><span class="d"></span><span id="rtTx">נתוני דמו</span></div>
+
+  <script>
+    /* =====================================================================
+       teacher-home — approved mint design on the real engine.
+       Data layer: demo mode → seed roster; cloud mode → Supabase (step 2).
+       The design/markup is final; only loadRoster() changes between modes.
+       ===================================================================== */
+    var MODE = (window.AvneiRuntimeMode && window.AvneiRuntimeMode.current) || 'cloud';
+
+    function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},2600);}
+    function initial(n){return (n||'').replace(/[^א-ת]/g,'').charAt(0)||'·';}
+    var cmap={care:{bg:'var(--carebg)',fg:'#a23d3d'},watch:{bg:'var(--watchbg)',fg:'#9c6212'},'new':{bg:'#EAF0F7',fg:'#41689A'},ok:{bg:'var(--okbg)',fg:'#0d6b54'}};
+    var LSTAT={flow:{c:'ls-flow',t:'זורמ.ת',col:'var(--ok)'},done:{c:'ls-done',t:'השלים.ה ✓',col:'var(--ok)'},help:{c:'ls-help',t:'מבקש.ת עזרה',col:'var(--care)'},stuck:{c:'ls-stuck',t:'נתקע.ת',col:'var(--watch)'},idle:{c:'ls-idle',t:'עוד לא התחיל.ה',col:'#9aa8ad'}};
+
+    /* ---------- SEED (demo mode) — mirrors the approved demo dataset ---------- */
+    var SEED_STUDENTS=[
+      {nm:'נועה כ.',s:'ok',   isle:'האות ל · קריאת מילים שלמות',act:'קוראת מילים חדשות עם ל', live:'flow', p:80, reinforce:''},
+      {nm:'מאיה ד.',s:'watch',isle:'האות ל · שטף וקריאה חוזרת', act:'קוראת לַ לָ לִ בקצב איטי', live:'flow', p:55, reinforce:'שטף קריאה'},
+      {nm:'איתי כ.',s:'care', isle:'האות ל · חיזוק הצליל',      act:'התבלבל בצליל וביקש עזרה', live:'help', p:35, reinforce:'הבחנת ד׳/ר׳'},
+      {nm:'דני ר.', s:'care', isle:'האות ל · הברות לַ לָ לִ',    act:'נתקע בהברה לִ',          live:'stuck',p:40, reinforce:'הבחנת ד׳/ר׳'},
+      {nm:'שירה ל.',s:'ok',   isle:'האות ל · תרגול מתקדם',      act:'סיימה את כל המילים',     live:'done', p:100,reinforce:''},
+      {nm:'יעל',    s:'new',  isle:'האות ל · הכרה ראשונית',     act:'טרם התחילה',            live:'idle', p:0,  reinforce:''}
+    ];
+    /* rich per-student cards for the modal (seed). Cloud builds a lighter version from real data. */
+    var SEED_CARDS=window.__SEED_CARDS__||{};
+
+    var STUDENTS=[], CARDS={};
+
+    /* ---------- data adapter ---------- */
+    async function loadRoster(){
+      if(MODE==='demo'){ STUDENTS=SEED_STUDENTS; CARDS=SEED_CARDS; setRtBadge('demo'); return; }
+      // CLOUD (step 2): query Supabase → map into the STUDENTS/CARDS shape.
+      // Queries are ready (classes/students/events/bkt_state); wiring lands next iteration.
+      try{
+        STUDENTS = await loadCloudRoster();
+        setRtBadge('cloud');
+      }catch(e){
+        console.warn('[teacher-home] cloud load failed, showing seed:',e&&e.message);
+        STUDENTS=SEED_STUDENTS; CARDS=SEED_CARDS; setRtBadge('demo');
+        toast('לא הצלחנו לטעון נתוני ענן — מוצגת תצוגת דמו');
+      }
+    }
+    async function loadCloudRoster(){
+      // ענן אמיתי: TeacherCloud טוען class/students/events/bkt → ממפים לצורת STUDENTS.
+      var st = await TeacherCloud.init();
+      var cc = document.getElementById('crumbClass');
+      if (cc) cc.textContent = st.klass.name;
+      var S2 = {lead:'ok', ontrack:'ok', more:'watch', support:'care', 'new':'new'};
+      return st.students.map(function(s){
+        var p = st.profiles[s.id] || {};
+        var r = TeacherCloud.rama(p);
+        var k = TeacherCloud.knownRatio(p);
+        var mastered = (p.mastered||[]).length, inprog = (p.inProgress||[]).length;
+        return {
+          nm: s.name,
+          s: S2[r.cls] || 'new',
+          isle: (k!=null) ? ('שליטה · ' + Math.round(k*100) + '%') : 'טרם נאספה נקודת פתיחה',
+          act: (k!=null) ? (mastered + ' אותיות בשליטה · ' + inprog + ' בתהליך')
+                         : (p.last ? 'תרגלה — אוספים נתונים' : 'טרם התחילה'),
+          live: TeacherCloud.isLive(p.last) ? 'flow' : 'idle',
+          p: (k!=null ? Math.round(k*100) : 0),
+          reinforce: (p.errorLetters && p.errorLetters.length) ? p.errorLetters.slice(0,2).join(' / ') : ''
+        };
+      });
+    }
+    function setRtBadge(mode){
+      var b=document.getElementById('rtBadge');
+      if(mode==='cloud'){b.className='rt-badge rt-cloud';document.getElementById('rtTx').textContent='נתונים חיים · ענן';}
+      else{b.className='rt-badge rt-demo';document.getElementById('rtTx').textContent='נתוני דמו';}
+    }
+
+    /* ---------- render ---------- */
+    function renderSnapshot(){
+      var c={ok:0,watch:0,care:0,'new':0};STUDENTS.forEach(function(x){if(c[x.s]!=null)c[x.s]++;});
+      document.getElementById('snapChips').innerHTML=
+        '<span class="sn-chip ok"><b>'+c.ok+'</b> מצטיינים / בדרך הנכונה</span>'+
+        '<span class="sn-chip watch"><b>'+c.watch+'</b> לתרגול נוסף</span>'+
+        '<span class="sn-chip care"><b>'+c.care+'</b> זקוקים לחיזוק</span>'+
+        (c['new']?'<span class="sn-chip new"><b>'+c['new']+'</b> תלמידה חדשה</span>':'');
+    }
+    function buildLiveBoard(){
+      var wrap=document.getElementById('liveBoard');wrap.innerHTML='';
+      STUDENTS.forEach(function(x){
+        var st=LSTAT[x.live]||LSTAT.idle;var d=document.createElement('div');d.className='lcard';
+        d.style.setProperty('--c',st.col);d.setAttribute('data-card',x.nm);
+        d.innerHTML='<span class="lc-pill '+st.c+'"><span class="d"></span>'+st.t+'</span>'+
+          '<div class="lc-tile '+st.c+'">'+initial(x.nm)+'</div>'+
+          '<div class="lc-nm">'+x.nm+'</div>'+
+          '<div class="lc-ds">'+x.act+'</div>'+
+          '<div class="lc-prog"><div class="lc-prog-top"><span class="lc-prog-lbl">'+x.isle+'</span>'+
+            '<span class="lc-prog-pct">'+x.p+'%</span></div>'+
+            '<div class="lc-bar"><i style="width:'+x.p+'%"></i></div></div>'+
+          '<div class="lc-go">פרופיל מלא <span class="chev">‹</span></div>';
+        wrap.appendChild(d);
+      });
+    }
+    function buildLiveSum(){
+      var c={flow:0,done:0,help:0,stuck:0,idle:0};STUDENTS.forEach(function(x){if(c[x.live]!=null)c[x.live]++;});
+      var reinf=STUDENTS.filter(function(x){return x.reinforce;}).length;
+      document.getElementById('liveSum').innerHTML=
+        '<span class="sp" style="color:#0d6b54;background:var(--okbg)"><span class="d"></span>'+(c.flow+c.done)+' זורמים / סיימו</span>'+
+        '<span class="sp" style="color:#a23d3d;background:var(--carebg)"><span class="d"></span>'+(c.help+c.stuck)+' צריכים עזרה עכשיו</span>'+
+        '<span class="sp" style="color:#9c6212;background:var(--watchbg)"><span class="d"></span>'+reinf+' בתוכנית החיזוק השבועית</span>'+
+        '<span class="sp"><span class="d"></span>'+c.idle+' טרם התחילו</span>';
+    }
+    function renderAll(){renderSnapshot();buildLiveBoard();buildLiveSum();fillTics();}
+
+    /* ---------- practice open/close ---------- */
+    function wirePractice(){
+      var open=document.getElementById('btnOpen'),end=document.getElementById('btnEnd');
+      var pstate=document.getElementById('pstate'),pstateTx=document.getElementById('pstateTx');
+      var assigned=document.getElementById('passigned'),board=document.getElementById('board');
+      function setActive(on){
+        open.disabled=on;end.disabled=!on;pstate.classList.toggle('live',on);
+        pstateTx.textContent=on?'פעיל · הכיתה מחוברת':'לא פעיל';
+        assigned.classList.toggle('show',on);board.classList.toggle('idle',!on);
+        if(on){fillTics();board.scrollIntoView({behavior:'smooth',block:'nearest'});}
+      }
+      open.addEventListener('click',function(){setActive(true);toast('תרגול כיתתי נפתח · המשימות הוקצו לפי רמה');});
+      end.addEventListener('click',function(){setActive(false);toast('תרגול כיתתי הסתיים · הנתונים נשמרו');});
+    }
+
+    /* ---------- student modal ---------- */
+    function lvWord(lv){return lv==='ok'?'טוב':lv==='watch'?'באמצע':'לחיזוק';}
+    function openCard(name){
+      var c=CARDS[name];
+      if(!c){toast('פרופיל מלא ל'+name+' — מתחבר לענן בשלב הבא');return;}
+      var lit=(c.literacy&&c.literacy.length)?c.literacy.map(function(s){
+        return '<div class="sc-skill"><div class="sk-top"><span class="sk-nm">'+s.nm+'</span><span class="sk-lv lv-'+s.lv+'">'+lvWord(s.lv)+'</span></div><div class="sk-track"><i class="lv-'+s.lv+'" style="width:'+s.p+'%"></i></div></div>';
+      }).join(''):'<div class="sc-empty">עוד אין מספיק נתונים לפרופיל. אחרי 2-3 תרגולים תופיע כאן תמונה.</div>';
+      var fl=c.fluency?('<div class="sc-stat"><span class="sc-num">'+c.fluency.num+'</span><span class="sc-trend tr-'+c.fluency.trend+'">'+c.fluency.trendTx+'</span></div><div class="sc-line" style="margin-bottom:6px">'+c.fluency.cap+'</div><div class="sc-line">'+c.fluency.note+'</div>'):'<div class="sc-empty">אין עדיין הקלטות הקראה.</div>';
+      var pl=c.pulse?('<div class="sc-stat"><span class="sc-num" style="font-size:18px">'+c.pulse.num+'</span><span class="sc-trend tr-'+c.pulse.trend+'">'+c.pulse.trendTx+'</span></div><div class="sc-line" style="margin-bottom:6px">'+c.pulse.cap+'</div><div class="sc-line">'+c.pulse.note+'</div>'):'<div class="sc-empty">בתהליך היכרות.</div>';
+      var acts=(c.next.actions||[]).map(function(a){var attr=a.send?(' data-send="'+a.send+'"'):(' data-toast="'+(a.toast||'')+'"');var cls=a.send?'btn btn-primary btn-sm':'btn btn-chip btn-sm';return '<button class="'+cls+'"'+attr+'>'+a.label+'</button>';}).join('');
+      var tl=(c.tl||[]).map(function(t){return '<div class="sc-tlrow"><span class="sc-tic"><span class="tic" data-ic="'+t.ic+'"></span></span><div><div class="sc-when">'+t.when+'</div><div class="sc-tx">'+t.tx+'</div></div></div>';}).join('');
+      document.getElementById('scBody').innerHTML=
+        '<div class="sc-head"><div class="sc-av" style="background:'+cmap[c.status].bg+';color:'+cmap[c.status].fg+'">'+initial(name)+'</div><div class="sc-id"><h2>'+name+'</h2><div class="sc-meta">אבני יסוד</div></div><span class="sc-badge '+c.status+'">'+c.statusLabel+'</span></div>'+
+        '<div class="sc-bottom">'+c.bottom+'</div>'+
+        '<section class="sc-next"><div class="sc-next-h"><span class="tic" data-ic="target"></span>הצעד הבא</div><h3>'+c.next.title+'</h3><p>'+c.next.detail+'</p><div class="sc-actions">'+acts+'</div></section>'+
+        (c.why?'<section class="sc-why"><div class="sc-why-h"><span class="tic" data-ic="link"></span>למה הצעד הזה?</div><p>'+c.why+'</p></section>':'')+
+        '<div class="sc-ev"><div class="sc-block"><h4><span class="tic" data-ic="learn"></span>הפרופיל האורייני</h4>'+lit+'</div><div class="sc-block"><h4><span class="tic" data-ic="sound"></span>שטף קריאה</h4>'+fl+'</div><div class="sc-block wide"><h4><span class="tic" data-ic="heart"></span>מצב רגשי-חברתי (פולס)</h4>'+pl+'</div></div>'+
+        '<section class="sc-tl"><h4><span class="tic" data-ic="refresh"></span>פעילות אחרונה</h4>'+tl+'</section>';
+      fillTics();
+      document.getElementById('scScrim').classList.add('on');document.getElementById('scModal').classList.add('on');
+    }
+    function closeCard(){document.getElementById('scScrim').classList.remove('on');document.getElementById('scModal').classList.remove('on');}
+
+    function fillTics(){if(!window.DemoIcons)return;document.querySelectorAll('.tic[data-ic]').forEach(function(el){if(!el.firstChild&&DemoIcons[el.dataset.ic])el.innerHTML=DemoIcons[el.dataset.ic];});}
+
+    /* ---------- global clicks ---------- */
+    document.addEventListener('click',function(e){
+      var cd=e.target.closest('[data-card]');if(cd){openCard(cd.dataset.card);return;}
+      var snd=e.target.closest('[data-send]');if(snd){toast('נבחרה התערבות: '+snd.dataset.send);return;}
+      var b=e.target.closest('button');if(b&&b.dataset.toast){toast(b.dataset.toast);}
+    });
+
+    /* ---------- boot ---------- */
+    (async function boot(){
+      await loadRoster();
+      renderAll();wirePractice();
+      // convenience: ?open=1 opens the live board immediately (demos/screenshots)
+      try{if(new URLSearchParams(location.search).has('open'))document.getElementById('btnOpen').click();}catch(e){}
+      document.getElementById('scClose').addEventListener('click',closeCard);
+      document.getElementById('scScrim').addEventListener('click',closeCard);
+      document.addEventListener('keydown',function(e){if(e.key==='Escape')closeCard();});
+      document.getElementById('topicBtn').addEventListener('click',function(){toast('בחירת נושא מהתוכנית השנתית — בקרוב');});
+      // icons may load after this script
+      window.addEventListener('load',fillTics);
+      if(window.DemoIcons)fillTics();else setTimeout(fillTics,400);
+    })();
+  </script>
+</body>
+</html>

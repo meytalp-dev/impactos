@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#FFFFFF">
+  <title>הכיתה שלי · מורה · אבני יסוד</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../demo/demo.css">
+  <script src="../../demo/demo-icons.js" defer></script>
+  <script src="js/shared/runtime-mode.js"></script>
+  <script src="js/shared/teacher-cloud.js"></script>
+  <style>
+    body{background:#FFFFFF;font-family:'Rubik',sans-serif;letter-spacing:-.01em;}
+    .rail{background:#FBFDFD;backdrop-filter:none;border-left:1px solid #EEF2F2;}
+    .rail .logo .gm{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:#DDF3EC;}
+    .rail .logo .gm svg{width:22px;height:22px;}
+    .card{background:#fff;border:1px solid #ECF0F0;box-shadow:0 1px 3px rgba(38,80,92,.05);}
+    .btn-primary{background:#5FBFA4;color:#fff;} .btn-chip{background:#F0F5F6;color:#48707C;}
+    .tic{display:inline-flex;align-items:center;vertical-align:-.16em;line-height:0;color:inherit;}
+    .tic svg{width:1.08em;height:1.08em;display:block;}
+
+    .page-h{margin-bottom:18px;}
+    .page-h h1{font-size:clamp(20px,2.4vw,25px);font-weight:800;color:var(--deep);}
+    .page-h p{font-size:13.5px;color:var(--text-soft);margin-top:7px;max-width:70ch;line-height:1.5;}
+
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+    .tab{border:1px solid #E3EAEB;background:#fff;color:#48707C;font-family:inherit;font-size:14px;font-weight:800;
+      padding:10px 18px;border-radius:var(--pill);cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background .15s,color .15s,border-color .15s;}
+    .tab:hover{background:#F4F7F8;}
+    .tab.on{background:#DDF3EC;color:#0F7E72;border-color:#C4E8DD;}
+    .tab .tic svg{width:17px;height:17px;}
+    .tabpane{display:none;} .tabpane.on{display:block;animation:tfade .3s both;}
+    @keyframes tfade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+    .pane-note{font-size:13.5px;color:var(--text-soft);line-height:1.55;margin-bottom:16px;max-width:75ch;} .pane-note b{color:var(--text-main);}
+
+    .ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(262px,1fr));gap:16px;}
+    .gpcard{background:#fff;border:1px solid #ECF0F0;border-radius:18px;padding:18px;box-shadow:0 1px 3px rgba(38,80,92,.05);display:flex;flex-direction:column;gap:10px;}
+    .gpcard .gp-tile{width:48px;height:48px;border-radius:13px;display:grid;place-items:center;flex:0 0 auto;background:var(--gb,#EAF0F7);color:var(--gc,#41689A);}
+    .gpcard .gp-tile .tic svg{width:24px;height:24px;}
+    .gpcard h3{font-size:17px;font-weight:800;color:var(--deep);line-height:1.2;}
+    .gpcard .gp-kids{font-size:14px;color:var(--text-main);line-height:1.5;} .gpcard .gp-kids b{color:var(--deep);}
+    .gpcard .gp-meta{display:flex;gap:8px;flex-wrap:wrap;}
+    .gpcard .gp-meta span{font-size:12px;font-weight:700;color:#48707C;background:#F0F5F6;border-radius:999px;padding:4px 11px;}
+    .gpcard .gp-why{font-size:13px;color:var(--text-soft);line-height:1.55;flex:1;} .gpcard .gp-why b{color:#48707C;}
+    .gpcard .gp-btns{display:flex;gap:8px;flex-wrap:wrap;}
+
+    .recipe{background:#fff;border:1px solid #ECF0F0;border-radius:16px;padding:14px 16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(38,80,92,.05);transition:border-color .15s;}
+    .recipe.open{border-color:#CFE0EC;}
+    .recipe .rh{display:flex;align-items:center;gap:10px;cursor:pointer;}
+    .recipe .rh .ric{width:36px;height:36px;border-radius:11px;background:#EAF0F7;color:#41689A;display:grid;place-items:center;flex:0 0 auto;}
+    .recipe .rh .ric svg{width:20px;height:20px;}
+    .recipe .rh .rt{flex:1;}
+    .recipe .rh h4{font-size:16px;font-weight:800;color:var(--deep);}
+    .recipe .rh .rmeta{font-size:12.5px;color:var(--text-soft);margin-top:1px;}
+    .recipe .rh .chev{color:#9bb0b8;font-weight:900;transition:transform .25s;}
+    .recipe.open .rh .chev{transform:rotate(180deg);}
+    .recipe .rbody{max-height:0;overflow:hidden;transition:max-height .3s ease;}
+    .recipe.open .rbody{max-height:460px;}
+    .recipe .rin{padding-top:12px;font-size:14px;color:var(--text-main);line-height:1.6;}
+    .recipe .rin .line{margin-bottom:7px;} .recipe .rin .lab{font-weight:800;color:#48707C;}
+    .recipe .rsel{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;}
+    .rtag{font-size:10.5px;font-weight:800;color:#0d6b54;background:var(--okbg);border-radius:var(--pill);padding:3px 10px;white-space:nowrap;flex:0 0 auto;}
+
+    .st-exc,.st-good{background:var(--okbg);color:#0d6b54;} .st-part{background:var(--watchbg);color:#9c6212;}
+    .st-gap{background:var(--carebg);color:#a23d3d;} .st-new{background:#EAF0F7;color:#41689a;}
+
+    .csum{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:22px;}
+    .csum .cs{flex:1;min-width:158px;background:#fff;border:1px solid #ECF0F0;border-radius:16px;padding:13px 15px;box-shadow:0 1px 3px rgba(38,80,92,.05);display:flex;align-items:center;gap:12px;}
+    .csum .cs .cic{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;flex:0 0 auto;}
+    .csum .cs .cic .tic svg{width:20px;height:20px;}
+    .csum .cs .cnum{font-size:22px;font-weight:800;color:var(--deep);line-height:1;}
+    .csum .cs .clab{font-size:12px;color:var(--text-soft);font-weight:600;margin-top:3px;}
+
+    .kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;}
+    .kcard{position:relative;background:#fff;border:1px solid #ECF0F0;border-radius:18px;padding:18px 18px 15px;box-shadow:0 1px 3px rgba(38,80,92,.05);cursor:pointer;display:flex;flex-direction:column;gap:11px;min-height:188px;transition:transform .5s cubic-bezier(.32,.72,0,1),box-shadow .5s cubic-bezier(.32,.72,0,1),border-color .3s;}
+    .kcard:hover{transform:translateY(-6px);box-shadow:0 12px 28px rgba(38,80,92,.11);border-color:#DCE4E5;}
+    .kc-tile{width:56px;height:56px;border-radius:15px;display:grid;place-items:center;font-weight:800;font-size:23px;font-family:'Heebo',sans-serif;flex:0 0 auto;transition:transform .4s cubic-bezier(.32,.72,0,1);}
+    .kcard:hover .kc-tile{transform:translateY(-2px) scale(1.04);}
+    .kc-nm{font-size:19px;font-weight:800;color:var(--deep);line-height:1.15;}
+    .kc-pill{position:absolute;top:14px;left:14px;font-size:10.5px;font-weight:800;padding:4px 10px;border-radius:var(--pill);white-space:nowrap;}
+    .kc-ds{font-size:13.5px;color:var(--text-soft);line-height:1.5;flex:1;} .kc-ds b{color:var(--deep);font-weight:700;}
+    .kc-prog-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:7px;}
+    .kc-prog-lbl{font-size:11px;color:var(--text-soft);font-weight:600;line-height:1.35;} .kc-prog-lbl b{color:var(--text-main);font-weight:800;}
+    .kc-prog-pct{font-size:13px;font-weight:800;color:var(--deep);flex:0 0 auto;}
+    .kc-bar{height:7px;border-radius:6px;background:#EDF2F2;overflow:hidden;} .kc-bar i{display:block;height:100%;border-radius:6px;background:var(--c,var(--ok));}
+    .kc-go{display:inline-flex;align-items:center;gap:6px;margin-top:2px;font-size:14px;font-weight:700;color:#0F7E72;}
+    .kc-go .chev{font-weight:900;font-size:16px;line-height:0;transition:transform .4s;} .kcard:hover .kc-go .chev{transform:translateX(-4px);}
+
+    .scrim{position:fixed;inset:0;background:rgba(20,50,58,.4);z-index:40;opacity:0;pointer-events:none;transition:opacity .3s;} .scrim.on{opacity:1;pointer-events:auto;}
+    .drawer{position:fixed;top:0;right:0;height:100dvh;width:min(500px,96vw);background:#fff;z-index:50;box-shadow:-20px 0 50px -20px rgba(20,50,58,.4);transform:translateX(100%);transition:transform .4s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column;}
+    .drawer.on{transform:translateX(0);}
+    .dr-head{padding:20px 22px;border-bottom:1px solid #EDF1F1;display:flex;align-items:center;gap:13px;}
+    .dr-head .av{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:19px;flex:0 0 auto;font-family:'Heebo',sans-serif;}
+    .dr-head .nm{font-size:19px;font-weight:800;color:var(--deep);line-height:1.1;}
+    .dr-head .pchip{font-size:11.5px;font-weight:800;padding:3px 11px;border-radius:var(--pill);margin-top:5px;display:inline-block;}
+    .dr-x{margin-inline-start:auto;width:36px;height:36px;border-radius:50%;border:1px solid #E5EBEC;background:#fff;cursor:pointer;font-size:17px;color:var(--text-soft);flex:0 0 auto;}
+    .dr-body{padding:20px 22px 30px;overflow-y:auto;}
+    .dsum{font-size:14px;color:var(--text-main);line-height:1.55;background:#F8FBFA;border:1px solid #EDF2F1;border-radius:14px;padding:13px 15px;margin-bottom:20px;}
+    .dsec{margin-bottom:22px;} .dsec-h{font-size:12.5px;font-weight:900;color:var(--text-soft);margin-bottom:12px;display:flex;align-items:center;gap:7px;} .dsec-h .tic{color:#3E8C78;}
+    .pace{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #ECF0F0;border-radius:14px;padding:13px 15px;}
+    .pace .pic{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;flex:0 0 auto;}
+    .pace .pt{font-size:13.5px;color:var(--text-main);font-weight:700;line-height:1.4;flex:1;}
+    .trend{font-size:11.5px;font-weight:800;padding:3px 10px;border-radius:var(--pill);white-space:nowrap;flex:0 0 auto;}
+    .tr-up{background:var(--okbg);color:#0d6b54;} .tr-flat{background:#EEF2F3;color:#6b7a7f;} .tr-down{background:var(--carebg);color:#a23d3d;}
+    .jrn .jrow{display:flex;align-items:center;gap:11px;padding-bottom:15px;position:relative;}
+    .jrn .jrow:not(:last-child)::before{content:"";position:absolute;top:22px;inset-inline-end:10px;bottom:0;width:2px;background:#EAEFEF;}
+    .jrn .jdot{width:22px;height:22px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;z-index:1;font-size:11px;font-weight:900;color:#fff;background:#EEF2F3;}
+    .jrn .jrow.done .jdot{background:var(--ok);} .jrn .jrow.now .jdot{background:#fff;border:2px solid #5FBFA4;box-shadow:0 0 0 3px #E7F4EF;}
+    .jrn .jrow.next .jdot{background:#DCE6E6;} .jrn .jrow.locked .jdot{background:#F0F3F3;}
+    .jrn .jt{font-size:14px;color:var(--text-main);} .jrn .jrow.now .jt{font-weight:800;color:var(--deep);} .jrn .jrow.locked .jt{color:#AEBABE;}
+    .jrn .jbadge{margin-inline-start:auto;font-size:10.5px;font-weight:800;padding:3px 10px;border-radius:var(--pill);}
+    .jb-now{background:#E7F4EF;color:#1f7a6b;} .jb-done{background:#EEF2F3;color:#6b7a7f;}
+    .ivcard{border:1px solid #ECF0F0;border-radius:14px;padding:13px 14px;margin-bottom:10px;}
+    .ivcard .ivh{display:flex;align-items:center;gap:10px;}
+    .ivcard .ivi{width:34px;height:34px;border-radius:10px;background:#EAF0F7;color:#41689A;display:grid;place-items:center;flex:0 0 auto;}
+    .ivcard .ivi .tic svg{width:18px;height:18px;}
+    .ivcard .ivnm{font-size:14px;font-weight:800;color:var(--deep);line-height:1.25;}
+    .ivcard .ivwhy{font-size:12.5px;color:var(--text-soft);line-height:1.55;margin-top:8px;}
+    .ivcard .ivbtns{margin-top:11px;display:flex;gap:8px;flex-wrap:wrap;}
+    .dlink{display:flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;font-size:13px;font-weight:800;color:#2E7A66;background:#F1F9F6;border:1px solid #D6ECE3;border-radius:12px;padding:12px;} .dlink:hover{background:#E8F4EF;}
+    .kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(198px,1fr));gap:14px;margin-bottom:26px;}
+    .kpi{background:#fff;border:1px solid #ECF0F0;border-radius:16px;padding:15px 16px 14px;box-shadow:0 1px 3px rgba(38,80,92,.05);}
+    .kpi-top{display:flex;align-items:center;gap:10px;margin-bottom:11px;}
+    .kpi-tile{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;flex:0 0 auto;background:var(--tb,#EAF0F7);color:var(--tc,#41689A);}
+    .kpi-tile .tic svg{width:19px;height:19px;} .kpi-top .trend{margin-inline-start:auto;}
+    .kpi-num{font-size:27px;font-weight:800;color:var(--deep);line-height:1;} .kpi-lab{font-size:12.5px;color:var(--text-soft);font-weight:600;margin-top:7px;line-height:1.45;}
+    .trgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(228px,1fr));gap:16px;}
+    .trmini{background:#fff;border:1px solid #ECF0F0;border-radius:18px;padding:16px 18px 15px;box-shadow:0 1px 3px rgba(38,80,92,.05);}
+    .trmini-head{display:flex;align-items:center;gap:9px;margin-bottom:2px;}
+    .trmini-tile{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;flex:0 0 auto;background:var(--tb,#EAF0F7);color:var(--tc,#41689A);}
+    .trmini-tile .tic svg{width:18px;height:18px;}
+    .trmini-nm{font-size:14.5px;font-weight:800;color:var(--deep);line-height:1.2;flex:1;} .trmini-pct{font-size:17px;font-weight:800;color:var(--deep);flex:0 0 auto;}
+    .trmini-chart{display:flex;align-items:flex-end;gap:7px;height:50px;margin:14px 0 9px;}
+    .trmini-bar{flex:1;min-height:6px;border-radius:5px 5px 0 0;background:var(--tc,#41689A);opacity:.30;} .trmini-bar:last-child{opacity:1;}
+    .trmini-delta{font-size:12px;font-weight:800;} .d-up{color:#0d6b54;} .d-flat{color:#6b7a7f;} .d-down{color:#a23d3d;}
+    .movers{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;}
+    .mover{display:flex;gap:13px;align-items:flex-start;background:#fff;border:1px solid #ECF0F0;border-radius:16px;padding:15px 16px;box-shadow:0 1px 3px rgba(38,80,92,.05);border-inline-start:5px solid var(--mc,var(--ok));}
+    .mover .mav{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-weight:800;font-size:18px;font-family:'Heebo',sans-serif;flex:0 0 auto;}
+    .mover .mbody{flex:1;min-width:0;} .mover .mtop{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+    .mover .mnm{font-size:15px;font-weight:800;color:var(--deep);} .mover .mtop .trend{margin-inline-start:auto;}
+    .mover .mtx{font-size:13px;color:var(--text-soft);line-height:1.55;} .mover .mtx b{color:var(--deep);font-weight:800;}
+
+    .rt-badge{position:fixed;bottom:14px;left:14px;z-index:30;font-size:11.5px;font-weight:800;padding:6px 12px;border-radius:999px;box-shadow:0 2px 8px rgba(38,80,92,.14);display:flex;align-items:center;gap:6px;}
+    .rt-badge .d{width:7px;height:7px;border-radius:50%;}
+    .rt-demo{background:#FCEFD9;color:#9c6212;} .rt-demo .d{background:#9c6212;}
+    .rt-cloud{background:var(--okbg);color:#0d6b54;} .rt-cloud .d{background:var(--ok);}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <nav class="rail" aria-label="ניווט">
+      <a class="logo" href="teacher-home.html"><span class="gm"><svg viewBox="0 0 24 24" fill="none" stroke="#0F7E72" stroke-width="2.3" stroke-linecap="round"><path d="M6 18v-5"/><path d="M12 18V7"/><path d="M18 18v-8"/></svg></span><b>אבני<br>יסוד</b></a>
+      <a class="item" href="teacher-home.html"><span class="ic" data-ic="home"></span><span class="t">דף הבית</span></a>
+      <a class="item active" href="teacher-my-class.html"><span class="ic" data-ic="people"></span><span class="t">הכיתה שלי</span></a>
+      <a class="item" href="teacher-literacy-profile.html"><span class="ic" data-ic="learn"></span><span class="t">פרופיל אורייני</span></a>
+      <a class="item" href="#"><span class="ic" data-ic="pulse"></span><span class="t">פולס</span></a>
+      <a class="item" href="teacher-reports.html"><span class="ic" data-ic="report"></span><span class="t">דוחות</span></a>
+      <a class="item" href="teacher-curriculum.html"><span class="ic" data-ic="calendar"></span><span class="t">תוכנית שנתית</span></a>
+      <a class="item" href="teacher-settings.html"><span class="ic" data-ic="settings"></span><span class="t">הגדרות</span></a>
+      <div class="me"><div class="av">מ</div><small>מורה<span>אבני יסוד</span></small></div>
+    </nav>
+
+    <main class="main"><div class="main-inner">
+      <div class="topbar"><div class="crumbs">אבני יסוד · הכיתה שלי</div><div class="date" id="todayDate">היום</div></div>
+
+      <div class="page-h">
+        <h1>הכיתה שלי</h1>
+        <p>תמונה מלאה לכל תלמיד.ה — ולצידה ההצעות של המערכת: קבוצות קטנות לפי צורך משותף, והתערבויות הוראה קצרות לפי הקושי שזוהה.</p>
+      </div>
+
+      <div class="tabs" role="tablist">
+        <button class="tab on" data-tab="kids" role="tab"><span class="tic" data-ic="people"></span>התלמידים</button>
+        <button class="tab" data-tab="trends" role="tab"><span class="tic" data-ic="trend"></span>מגמות</button>
+        <button class="tab" data-tab="groups" role="tab"><span class="tic" data-ic="target"></span>הצעות לקבוצות</button>
+        <button class="tab" data-tab="interv" role="tab"><span class="tic" data-ic="tools"></span>הצעות להתערבויות</button>
+      </div>
+
+      <div class="tabpane on" id="pane-kids" role="tabpanel">
+        <div class="csum" id="csum"></div>
+        <div class="sec-title">רשימת הכיתה</div>
+        <div class="kgrid" id="kgrid"></div>
+      </div>
+
+      <div class="tabpane" id="pane-trends" role="tabpanel">
+        <p class="pane-note">מה השתנה מאז התרגולים הקודמים. הכול <b>ברמת הכיתה</b> ולא במקום נקודתי — כדי לראות לאן הלמידה זזה ומה כבר עובד.</p>
+        <div class="kpis" id="kpis"></div>
+        <div class="sec-title">מגמה לפי מיומנות</div>
+        <p class="pane-note" style="margin-top:6px">עמודה לכל שבוע תרגול, הכהה = השבוע. הפער מראה כמה התקדמה הכיתה מאז תחילת החודש.</p>
+        <div class="trgrid" id="trgrid"></div>
+        <div class="sec-title" style="margin-top:26px">מי התקדם · שינוי אישי</div>
+        <p class="pane-note" style="margin-top:6px">ילדים שהמגמה שלהם בלטה מאז התרגול הקודם — לטובה, או לתשומת לב.</p>
+        <div class="movers" id="movers"></div>
+      </div>
+
+      <div class="tabpane" id="pane-groups" role="tabpanel">
+        <p class="pane-note">המערכת מזהה ילדים עם <b>צורך משותף</b> ומציעה קבוצת בוקר קטנה — במקום עוד תרגול לבד. את מחליטה: לפתוח, לשנות הרכב, או לדחות.</p>
+        <div class="ggrid" id="ggrid"></div>
+      </div>
+
+      <div class="tabpane" id="pane-interv" role="tabpanel">
+        <p class="pane-note">פעולות הוראה קצרות וממוקדות מתוך <b>קטלוג ההתערבויות</b>. המערכת מסמנת מה מותאם לקשיי הכיתה השבוע — ואת בוחרת מה לפתוח.</p>
+        <div id="recipes"></div>
+      </div>
+    </div></main>
+  </div>
+
+  <div class="scrim" id="scrim"></div>
+  <aside class="drawer" id="drawer" aria-label="פרופיל תלמיד"></aside>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="rt-badge rt-demo" id="rtBadge"><span class="d"></span><span id="rtTx">נתוני דמו</span></div>
+
+  <script>
+    /* הכיתה שלי — approved mint design on the real engine.
+       demo mode → seed dataset; cloud mode → Supabase mapping (step 2). */
+    var MODE=(window.AvneiRuntimeMode&&window.AvneiRuntimeMode.current)||'cloud';
+    (function setRt(){var b=document.getElementById('rtBadge');
+      if(MODE==='cloud'){b.className='rt-badge rt-cloud';document.getElementById('rtTx').textContent='נתונים חיים · ענן';}
+    })();
+
+    function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},2600);}
+    function initial(n){return (n||'').replace(/[^א-ת]/g,'').charAt(0)||'·';}
+
+    var ISLANDS=['אי הפתיחה','אי האותיות','אי הצלילים','אי ההברות','אי השטף','אי המילים','אי המשפט'];
+    var TOTAL=12;
+    var LVL={
+      exc :{f:'מצטיינת',m:'מצטיין',cls:'st-exc',c:'var(--ok)'},
+      good:{f:'בדרך הנכונה',m:'בדרך הנכונה',cls:'st-good',c:'var(--ok)'},
+      part:{f:'לתרגול נוסף',m:'לתרגול נוסף',cls:'st-part',c:'var(--watch)'},
+      gap :{f:'זקוקה לחיזוק',m:'זקוק לחיזוק',cls:'st-gap',c:'var(--care)'},
+      'new':{f:'תלמידה חדשה',m:'תלמיד חדש',cls:'st-new',c:'#8AA8C8'}
+    };
+    var TREND={up:{cls:'tr-up',ic:'trend',t:'עולה'},flat:{cls:'tr-flat',ic:'refresh',t:'יציב'},down:{cls:'tr-down',ic:'alert',t:'לתשומת לב'}};
+
+    /* SEED (demo) — mirrors the approved demo dataset. Cloud maps real students into the same shape. */
+    var KIDS=[
+      {nm:'נועה כ.',g:'f',lvl:'exc',cur:4,p:88,pace:{dir:'up',t:'קצב מהיר — פותחת איים קדימה כמעט בלי פיגומים.'},
+        summary:'זורמת ומתקדמת בביטחון. שולטת בחומר הנוכחי ומוכנה לאתגר מתקדם.',
+        ivs:[{ic:'star',nm:'תרגול העשרה — מילים שלמות עם ל',why:'שולטת בהברות — צריכה אתגר כדי לשמור על מעורבות.'}]},
+      {nm:'שירה ל.',g:'f',lvl:'good',cur:4,p:96,pace:{dir:'up',t:'קצב טוב ויציב — מדייקת ומשלימה משימות במלואן.'},
+        summary:'סיימה את תרגול האות ל במלואו ומדייקת. מוכנה לצעד הבא — ויכולה לחנוך חברים.',
+        ivs:[{ic:'star',nm:'תרגול מתקדם + תפקיד חונכת',why:'סיימה ומדייקת — תפקיד חונכת מחזק גם אותה וגם את הכיתה.'}]},
+      {nm:'מאיה ד.',g:'f',lvl:'part',cur:3,p:62,pace:{dir:'flat',t:'מדייקת אך קוראת לאט — משתפרת לאט. קצב הוא הצוואר.'},
+        summary:'מזהה נכון אבל קוראת לאט (שטף), ויש קושי חברתי מתמשך. לא כדאי להעמיס תרגול לבד.',
+        ivs:[{ic:'pulse',nm:'קבוצת שטף — קצב והברה',why:'תרגול קצב + חיבור חברתי באותה פעולה.'},{ic:'heart',nm:'תיווך חברתי',why:'קושי חברתי מתמשך — שילוב בקבוצה קטנה עדיף על תרגול עצמאי.'}]},
+      {nm:'דני ר.',g:'m',lvl:'gap',cur:2,p:55,pace:{dir:'flat',t:'יציב ומשתף פעולה — הקושי טכני, לא רגשי. חלון טוב.'},
+        summary:'מחליף בין ד׳ ל-ר׳ בקריאה ובכתיבה — אבל רגוע, מחובר ופנוי רגשית. זה הזמן להתערבות.',
+        ivs:[{ic:'scale',nm:'קבוצת הבחנה ד׳/ר׳ — תאומות עם תנועה',why:'הקושי טכני ולא רגשי — תרגול הבחנה ישיר ומהנה עובד מהר.'}]},
+      {nm:'איתי כ.',g:'m',lvl:'gap',cur:2,p:48,pace:{dir:'down',t:'מצב-הרוח יורד בשבועיים האחרונים — לתשומת לב.'},
+        summary:'מזהה אותיות אך מתבלבל בצלילים דומים (ד׳/ר׳), ופחות שמח ללמוד לאחרונה — נמנע ממשימות קריאה.',
+        ivs:[{ic:'sound',nm:'חיזוק צליל — מי אני, מה השם, מה הצליל',why:'מבלבל שם/צליל — חיזוק קצר ומחזק לפני עבודה עצמאית.'},{ic:'heart',nm:'שיחה קצרה',why:'ההימנעות גדֵלה עם הקושי — לבדוק אם נמנע כי קשה או כי לא נעים.'}]},
+      {nm:'יעל',g:'f',lvl:'new',cur:0,p:12,pace:{dir:'flat',t:'בתהליך היכרות — אוספים נקודת פתיחה לפני החלטה.'},
+        summary:'חדשה בכיתה — עוד אין מספיק נתונים לזהות דפוס. הצעד הראשון: לאסוף נקודת התחלה.',
+        ivs:[{ic:'userplus',nm:'תרגול פתיחה — 2-3 משימות קצרות',why:'אין היסטוריה — אוספים נקודת התחלה מזמינה. בדקי שוב מחר.'}]}
+    ];
+    function lvlName(k){return LVL[k.lvl][k.g==='m'?'m':'f'];}
+
+    function renderRoster(){
+      var c={exc:0,good:0,part:0,gap:0,'new':0};KIDS.forEach(function(k){c[k.lvl]++;});
+      var CS=[
+        {n:c.exc+c.good,lab:'מצטיינים / בדרך הנכונה',ic:'checkcircle',cls:'st-good'},
+        {n:c.part,lab:'לתרגול נוסף',ic:'book',cls:'st-part'},
+        {n:c.gap,lab:'זקוקים לחיזוק',ic:'heart',cls:'st-gap'},
+        {n:c['new'],lab:'תלמידים חדשים',ic:'userplus',cls:'st-new'}
+      ];
+      var csum=document.getElementById('csum');csum.innerHTML='';
+      CS.forEach(function(s){var el=document.createElement('div');el.className='cs';
+        el.innerHTML='<span class="cic '+s.cls+'"><span class="tic" data-ic="'+s.ic+'"></span></span><div><div class="cnum">'+s.n+'</div><div class="clab">'+s.lab+'</div></div>';
+        csum.appendChild(el);});
+
+      var grid=document.getElementById('kgrid');grid.innerHTML='';
+      KIDS.forEach(function(k,i){var L=LVL[k.lvl];var el=document.createElement('div');el.className='kcard';
+        el.style.setProperty('--c',L.c);el.setAttribute('data-i',i);
+        var frac=(k.progFrac!=null)?k.progFrac:(k.cur/TOTAL);
+        var plbl=(k.progLbl!=null)?k.progLbl:('המסע · <b>'+ISLANDS[k.cur]+'</b>');
+        var ppct=(k.progPct!=null)?k.progPct:(k.cur+'/'+TOTAL+' איים');
+        el.innerHTML='<span class="kc-pill '+L.cls+'">'+lvlName(k)+'</span><span class="kc-tile '+L.cls+'">'+initial(k.nm)+'</span>'+
+          '<div class="kc-nm">'+k.nm+'</div><div class="kc-ds"><b>מומלץ:</b> '+(k.ivs[0]?k.ivs[0].nm:'—')+'</div>'+
+          '<div class="kc-prog"><div class="kc-prog-top"><span class="kc-prog-lbl">'+plbl+'</span>'+
+          '<span class="kc-prog-pct">'+ppct+'</span></div><div class="kc-bar"><i style="width:'+Math.round(frac*100)+'%"></i></div></div>'+
+          '<div class="kc-go">פרופיל מלא <span class="chev">‹</span></div>';
+        el.addEventListener('click',function(){openDrawer(i);});grid.appendChild(el);});
+      if(window.fillTics)fillTics();
+    }
+
+    // ---- מיפוי profiles אמיתיים מהענן → צורת KID ----
+    var LVL_FROM_RAMA={lead:'exc',ontrack:'good',more:'part',support:'gap','new':'new'};
+    function mapToKids(students,profiles){
+      return students.map(function(s){
+        var p=profiles[s.id]||{};
+        var r=TeacherCloud.rama(p);
+        var lvl=LVL_FROM_RAMA[r.cls]||'new';
+        var k=TeacherCloud.knownRatio(p);
+        var mastered=(p.mastered||[]).length, inprog=(p.inProgress||[]).length;
+        var rec, why;
+        if(k==null){rec='תרגול פתיחה — לאסוף נקודת התחלה';why='אין עדיין מספיק נתונים — בדקי שוב אחרי תרגול.';}
+        else if(r.cls==='support'||r.cls==='more'){rec=(p.errorLetters&&p.errorLetters.length)?('חיזוק אותיות: '+p.errorLetters.slice(0,3).join(' · ')):'חיזוק ממוקד לפי הקושי';why='זוהו נקודות לחיזוק מתוך התרגול.';}
+        else{rec='תרגול העשרה — לשמור על אתגר';why='שולטת יפה — אתגר שומר על מעורבות.';}
+        return {
+          nm:s.name, g:'f', lvl:lvl,
+          cur:Math.min(ISLANDS.length-1,Math.round((k!=null?k:0)*(ISLANDS.length-1))),
+          progFrac:(k!=null?k:0), progLbl:'שליטה', progPct:(k!=null?Math.round(k*100)+'%':'—'),
+          pace:{dir:'flat',t:TeacherCloud.formatLast(p.last)+' · '+(p.weekCount||0)+' תרגולים השבוע'},
+          summary:(k==null)?'תלמידה חדשה — עוד אין מספיק נתונים לזהות דפוס. הצעד הראשון: לאסוף נקודת התחלה.'
+                 :(mastered+' אותיות בשליטה · '+inprog+' בתהליך. '+TeacherCloud.formatLast(p.last)+'.'),
+          ivs:[{ic:'star',nm:rec,why:why}]
+        };
+      });
+    }
+
+    // ---- bootstrap: ענן אם זמין, אחרת SEED (דמו/file) ----
+    (function boot(){
+      renderRoster();  // SEED מיידי — עד שהענן עונה
+      if(location.protocol==='file:')return;
+      TeacherCloud.init().then(function(st){
+        KIDS=mapToKids(st.students,st.profiles);
+        renderRoster();
+        var cr=document.querySelector('.topbar .crumbs');
+        if(cr)cr.textContent='אבני יסוד · הכיתה שלי · '+st.klass.name;
+      }).catch(function(e){ if(e&&e.message&&/no-session|no-class/.test(e.message))return; console.warn('[my-class] cloud',e); });
+    })();
+
+    function openDrawer(i){
+      var k=KIDS[i],L=LVL[k.lvl],tr=TREND[k.pace.dir];var journey='';
+      ISLANDS.forEach(function(isle,idx){var st=idx<k.cur?'done':(idx===k.cur?'now':(idx===k.cur+1?'next':'locked'));
+        var badge=st==='now'?'<span class="jbadge jb-now">כאן עכשיו</span>':(st==='done'?'<span class="jbadge jb-done">הושלם</span>':'');
+        journey+='<div class="jrow '+st+'"><span class="jdot">'+(st==='done'?'✓':'')+'</span><span class="jt">'+isle+'</span>'+badge+'</div>';});
+      var ivs=k.ivs.map(function(v){return '<div class="ivcard"><div class="ivh"><span class="ivi"><span class="tic" data-ic="'+v.ic+'"></span></span><div class="ivnm">'+v.nm+'</div></div><div class="ivwhy"><b>למה:</b> '+v.why+'</div><div class="ivbtns"><button class="btn btn-primary btn-sm" data-toast="נפתחה התערבות: '+v.nm+'">פתחי לקבוצה</button><button class="btn btn-chip btn-sm" data-toast="נשלח ל'+k.nm+': '+v.nm+'">שלחי לתלמיד.ה</button></div></div>';}).join('');
+      var d=document.getElementById('drawer');d.className='drawer on';
+      d.innerHTML='<div class="dr-head"><div class="av '+L.cls+'">'+initial(k.nm)+'</div><div><div class="nm">'+k.nm+'</div><span class="pchip '+L.cls+'">'+lvlName(k)+'</span></div><button class="dr-x" onclick="closeDrawer()" aria-label="סגירה">✕</button></div>'+
+        '<div class="dr-body"><div class="dsum">'+k.summary+'</div>'+
+        '<div class="dsec"><div class="dsec-h"><span class="tic" data-ic="trend"></span>קצב התקדמות</div><div class="pace"><span class="pic '+L.cls+'"><span class="tic" data-ic="'+tr.ic+'"></span></span><span class="pt">'+k.pace.t+'</span><span class="trend '+tr.cls+'">'+tr.t+'</span></div></div>'+
+        '<div class="dsec"><div class="dsec-h"><span class="tic" data-ic="waves"></span>המסע במפת האיים · '+k.cur+' מתוך '+TOTAL+'</div><div class="jrn">'+journey+'</div></div>'+
+        '<div class="dsec"><div class="dsec-h"><span class="tic" data-ic="tools"></span>התערבויות מוצעות</div>'+ivs+'</div>'+
+        '<a class="dlink" href="teacher-rama.html"><span class="tic" data-ic="learn"></span>לצפייה בפרופיל האורייני המלא <span style="font-weight:900">‹</span></a></div>';
+      document.getElementById('scrim').classList.add('on');fillTics();
+    }
+    function closeDrawer(){document.getElementById('drawer').classList.remove('on');document.getElementById('scrim').classList.remove('on');}
+    document.getElementById('scrim').addEventListener('click',closeDrawer);
+    document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDrawer();});
+    document.addEventListener('click',function(e){var b=e.target.closest('button[data-toast]');if(b){e.stopPropagation();toast(b.dataset.toast);}});
+
+    function showTab(name){document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('on',t.dataset.tab===name);});
+      document.querySelectorAll('.tabpane').forEach(function(p){p.classList.toggle('on',p.id==='pane-'+name);});fillTics();}
+    document.querySelectorAll('.tab').forEach(function(t){t.addEventListener('click',function(){showTab(t.dataset.tab);});});
+
+    var GROUPS=[
+      {nm:'קבוצת הבחנה ד׳/ר׳',ic:'scale',gb:'#EEEBF8',gc:'#6A59B8',kids:'איתי כ. · דני ר.',iv:'twins',ivnm:'תאומות עם תנועה',time:'8 דק׳',size:'2 ילדים',
+        why:'שניהם מתבלבלים בין ד׳ ל-ר׳. דני פנוי רגשית — חלון טוב להתערבות; לאיתי כדאי לצרף שיחה קצרה ומחזקת.'},
+      {nm:'קבוצת שטף וקריאה חוזרת',ic:'pulse',gb:'#DDF3EC',gc:'#0F7E72',kids:'מאיה ד. · שירה ל. <b>(חונכת)</b>',iv:'rhythm',ivnm:'קצב והברה',time:'6 דק׳',size:'2-3 ילדים',
+        why:'מאיה מדייקת אך קוראת לאט, וזקוקה גם לחיבור חברתי. שירה סיימה ומדייקת — תפקיד חונכת מחזק את שתיהן.'},
+      {nm:'תרגול פתיחה — היכרות',ic:'userplus',gb:'#EAF0F7',gc:'#41689A',kids:'יעל',iv:'',ivnm:'2-3 משימות קצרות ומזמינות',time:'5 דק׳',size:'יחיד',
+        why:'ליעל אין עדיין היסטוריית תרגול — אוספים נקודת התחלה לפני כל החלטה. בדקי שוב מחר.'}
+    ];
+    var gg=document.getElementById('ggrid');
+    GROUPS.forEach(function(g){var d=document.createElement('div');d.className='gpcard';
+      d.style.setProperty('--gb',g.gb);d.style.setProperty('--gc',g.gc);
+      d.innerHTML='<span class="gp-tile"><span class="tic" data-ic="'+g.ic+'"></span></span><h3>'+g.nm+'</h3>'+
+        '<div class="gp-kids"><b>מי בקבוצה:</b> '+g.kids+'</div>'+
+        '<div class="gp-meta"><span>'+g.ivnm+'</span><span>'+g.time+'</span><span>'+g.size+'</span></div>'+
+        '<div class="gp-why"><b>למה:</b> '+g.why+'</div>'+
+        '<div class="gp-btns"><button class="btn btn-primary btn-sm" data-toast="נפתחה '+g.nm+' · המשימות הוקצו לקבוצה">פתחי לקבוצה</button>'+
+        (g.iv?'<button class="btn btn-chip btn-sm" data-goiv="'+g.iv+'">צפי בהתערבות</button>':'')+'</div>';
+      gg.appendChild(d);});
+
+    var INTERV=[
+      {id:'twins',ic:'scale',col:'#6A59B8',colbg:'#EEEBF8',nm:'תאומות עם תנועה',matched:true,when:'בלבול בין אותיות שנראות דומות (ד׳/ר׳, ב׳/כ׳, ג׳/נ׳, ע׳/א׳).',how:'מציגים את שתי "התאומות" זו לצד זו, מראים מה שונה ביניהן, מוסיפים תנועה (בָּ / כָּ) ומשחקים "על איזו שמעת?".',mat:'כרטיסי זוגות — עם ניקוד ובלי.',time:'8 דק׳',grp:'2-3 ילדים'},
+      {id:'sound3',ic:'sound',col:'#41689A',colbg:'#EAF0F7',nm:'מי אני, מה השם, מה הצליל',matched:true,when:'מכיר.ה את שם האות אבל מתבלבל.ת בצליל שלה (או הפוך).',how:'על כל אות שואלים שלוש שאלות — מי אני? מה השם שלי? מה הצליל שלי? — ומתקנים בעדינות את מה שהתבלבל.',mat:'כרטיס אות (לא חובה).',time:'6 דק׳',grp:'יחיד או זוג'},
+      {id:'rhythm',ic:'pulse',col:'#0F7E72',colbg:'#DDF3EC',nm:'קצב והברה',matched:true,when:'מזהה את האות אבל "נתקע.ת" כשצריך להגיד את הצליל בקול.',how:'עומדים במעגל, אומרים הברה ומוחאים כף (בָּ! מָ!), עוברים למילים, ואז לצליל לבד.',mat:'ללא — אפשר תוף קטן לקצב.',time:'6 דק׳',grp:'4-6 ילדים'},
+      {id:'hunt',ic:'eye',col:'#B5611F',colbg:'#FBF0E4',nm:'ציד אות במילה',matched:false,when:'מזהה אות לבד, אבל מתקשה למצוא אותה באמצע או בסוף מילה.',how:'נותנים שלוש מילים שיש בהן האות, והילדים מחפשים איפה היא מתחבאת — בהתחלה, באמצע, בסוף.',mat:'כרטיסי מילים או מסך "ציד אות".',time:'7 דק׳',grp:'2-4 ילדים'},
+      {id:'build',ic:'tools',col:'#B5611F',colbg:'#FBF0E4',nm:'בנייה ביד ובחומר',matched:false,when:'כותב.ת אות בכיוון הפוך (אות-מראה) או מתבלבל.ת בצורת האות.',how:'בונים את האות בידיים — קודם בחימר, אחר כך באצבע בחול, ולבסוף באוויר — תמיד באותו כיוון כתיבה.',mat:'חימר, מגש חול, כרטיס אות עם חץ כיוון.',time:'10 דק׳',grp:'2-4 ילדים'}
+    ];
+    var rc=document.getElementById('recipes');
+    INTERV.forEach(function(x){var r=document.createElement('div');r.className='recipe';r.setAttribute('data-id',x.id);
+      r.innerHTML='<div class="rh"><span class="ric" style="background:'+x.colbg+';color:'+x.col+'"><span class="tic" data-ic="'+x.ic+'"></span></span><div class="rt"><h4>'+x.nm+'</h4><div class="rmeta">'+x.time+' · '+x.grp+'</div></div>'+
+        (x.matched?'<span class="rtag">מותאם לכיתה השבוע</span>':'')+'<span class="chev">⌄</span></div>'+
+        '<div class="rbody"><div class="rin"><div class="line"><span class="lab">מתי משתמשים:</span> '+x.when+'</div><div class="line"><span class="lab">איך עושים:</span> '+x.how+'</div><div class="line"><span class="lab">חומרי עזר:</span> '+x.mat+'</div>'+
+        '<div class="rsel"><button class="btn btn-primary btn-sm" data-toast="נבחרה התערבות: '+x.nm+' · נוספה לקבוצת בוקר">בחרי לקבוצת בוקר</button></div></div></div>';
+      rc.appendChild(r);});
+    rc.addEventListener('click',function(e){var h=e.target.closest('.rh');if(h&&!e.target.closest('button')){h.parentElement.classList.toggle('open');}});
+    document.addEventListener('click',function(e){var b=e.target.closest('button[data-goiv]');if(!b)return;showTab('interv');
+      document.querySelectorAll('#recipes .recipe').forEach(function(r){r.classList.remove('open');});
+      var t=document.querySelector('#recipes .recipe[data-id="'+b.dataset.goiv+'"]');if(t){t.classList.add('open');setTimeout(function(){t.scrollIntoView({behavior:'smooth',block:'center'});},150);}});
+
+    var KPIS=[
+      {num:'+12%',lab:'שיפור ממוצע בכיתה · לעומת התרגולים שבוע שעבר',ic:'trend',tb:'#DDF3EC',tc:'#0F7E72',tr:'up'},
+      {num:'4',lab:'ילדים התקדמו · עלו רמה או השלימו אי',ic:'sparkle',tb:'#EEEBF8',tc:'#6A59B8',tr:'up'},
+      {num:'6/6',lab:'השתתפות · כל הכיתה תרגלה השבוע',ic:'checkcircle',tb:'#EAF0F7',tc:'#41689A',tr:'flat'},
+      {num:'128',lab:'משימות הושלמו · לעומת 96 בשבוע שעבר',ic:'star',tb:'#FBF0E4',tc:'#B5611F',tr:'up'}
+    ];
+    var kpisEl=document.getElementById('kpis');
+    KPIS.forEach(function(k){var tr=TREND[k.tr];var el=document.createElement('div');el.className='kpi';
+      el.style.setProperty('--tb',k.tb);el.style.setProperty('--tc',k.tc);
+      el.innerHTML='<div class="kpi-top"><span class="kpi-tile"><span class="tic" data-ic="'+k.ic+'"></span></span><span class="trend '+tr.cls+'">'+tr.t+'</span></div><div class="kpi-num">'+k.num+'</div><div class="kpi-lab">'+k.lab+'</div>';
+      kpisEl.appendChild(el);});
+
+    var SKILLS=[
+      {nm:'זיהוי אותיות',ic:'book',tb:'#DDF3EC',tc:'#0F7E72',series:[58,64,70,74,79]},
+      {nm:'הבחנת צלילים',ic:'sound',tb:'#EEEBF8',tc:'#6A59B8',series:[44,47,49,54,62]},
+      {nm:'הברות וצירופים',ic:'waves',tb:'#FBF0E4',tc:'#B5611F',series:[38,43,46,52,61]},
+      {nm:'שטף קריאה',ic:'playcircle',tb:'#EAF0F7',tc:'#41689A',series:[50,52,51,53,55]}
+    ];
+    var trgrid=document.getElementById('trgrid');
+    SKILLS.forEach(function(s){var last=s.series[s.series.length-1],first=s.series[0],dd=last-first;
+      var dcls=dd>6?'d-up':(dd<-6?'d-down':'d-flat');
+      var dtxt=dd>6?('↑ עלתה '+dd+' נק׳ מאז תחילת החודש'):(dd<-6?('↓ ירדה '+Math.abs(dd)+' נק׳ מאז תחילת החודש'):'→ כמעט ללא שינוי · יציב');
+      var bars=s.series.map(function(v){return '<div class="trmini-bar" style="height:'+v+'%" title="'+v+'%"></div>';}).join('');
+      var el=document.createElement('div');el.className='trmini';el.style.setProperty('--tb',s.tb);el.style.setProperty('--tc',s.tc);
+      el.innerHTML='<div class="trmini-head"><span class="trmini-tile"><span class="tic" data-ic="'+s.ic+'"></span></span><span class="trmini-nm">'+s.nm+'</span><span class="trmini-pct">'+last+'%</span></div><div class="trmini-chart">'+bars+'</div><div class="trmini-delta '+dcls+'">'+dtxt+'</div>';
+      trgrid.appendChild(el);});
+
+    var MOVERS=[
+      {nm:'דני ר.',cls:'st-good',mc:'var(--ok)',tr:'up',tx:'הבחנת ד׳/ר׳ עלתה מ-<b>40%</b> ל-<b>58%</b> אחרי קבוצת ההבחנה. הקושי טכני — ומתמוסס.'},
+      {nm:'נועה כ.',cls:'st-good',mc:'var(--ok)',tr:'up',tx:'השלימה את <b>אי ההברות</b> ופתחה את <b>אי השטף</b> — קצב מהיר ויציב.'},
+      {nm:'שירה ל.',cls:'st-good',mc:'var(--ok)',tr:'up',tx:'סיימה את האות <b>ל</b> במלואה ומדייקת. מוכנה לתפקיד חונכת.'},
+      {nm:'מאיה ד.',cls:'st-part',mc:'var(--watch)',tr:'flat',tx:'מדייקת, אך <b>שטף הקריאה</b> משתפר לאט. כדאי להמשיך בקבוצת הקצב.'},
+      {nm:'איתי כ.',cls:'st-gap',mc:'var(--care)',tr:'down',tx:'ירידה במעורבות בשבועיים האחרונים — פחות משימות הושלמו. שיחה קצרה יכולה לעזור.'}
+    ];
+    var moversEl=document.getElementById('movers');
+    MOVERS.forEach(function(m){var tr=TREND[m.tr];var el=document.createElement('div');el.className='mover';el.style.setProperty('--mc',m.mc);
+      el.innerHTML='<span class="mav '+m.cls+'">'+initial(m.nm)+'</span><div class="mbody"><div class="mtop"><span class="mnm">'+m.nm+'</span><span class="trend '+tr.cls+'">'+tr.t+'</span></div><div class="mtx">'+m.tx+'</div></div>';
+      moversEl.appendChild(el);});
+
+    function fillTics(){if(!window.DemoIcons)return;document.querySelectorAll('.tic[data-ic]').forEach(function(el){if(!el.firstChild&&DemoIcons[el.dataset.ic])el.innerHTML=DemoIcons[el.dataset.ic];});}
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fillTics);else fillTics();
+    window.addEventListener('load',fillTics);
+  </script>
+</body>
+</html>

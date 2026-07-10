@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#FFFFFF">
+  <title>תוכנית שנתית · מורה · אבני יסוד</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../demo/demo.css">
+  <script src="../../demo/demo-icons.js" defer></script>
+  <script src="js/shared/runtime-mode.js"></script>
+  <script src="js/shared/teacher-cloud.js"></script>
+  <style>
+    body{background:#FFFFFF;font-family:'Rubik',sans-serif;letter-spacing:-.01em;}
+    .rail{background:#FBFDFD;backdrop-filter:none;border-left:1px solid #EEF2F2;}
+    .rail .logo .gm{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:#DDF3EC;}
+    .rail .logo .gm svg{width:22px;height:22px;}
+    .card{background:#fff;border:1px solid #ECF0F0;box-shadow:0 1px 3px rgba(38,80,92,.05);}
+    .tic{display:inline-flex;align-items:center;vertical-align:-.16em;line-height:0;color:inherit;}
+    .tic svg{width:1.08em;height:1.08em;display:block;}
+    .btn-primary{background:#5FBFA4;color:#fff;} .btn-soft{background:#fff;color:#48707C;border:1px solid #E3EAEB;}
+
+    .page-h{margin-bottom:22px;} .page-h h1{font-size:clamp(20px,2.4vw,25px);font-weight:800;color:var(--deep);}
+    .page-h p{font-size:13.5px;color:var(--text-soft);margin-top:7px;line-height:1.5;}
+    .now{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center;border-right:6px solid #5FBFA4;margin-bottom:26px;}
+    .now .big{width:78px;height:78px;border-radius:20px;display:grid;place-items:center;font-size:42px;font-weight:900;background:#DDF3EC;color:#0F7E72;font-family:'Heebo',sans-serif;}
+    .now h2{font-size:21px;font-weight:900;color:var(--deep);} .now .lab{font-size:13px;font-weight:700;color:#1f7a6b;background:#EFF6F3;display:inline-block;padding:3px 12px;border-radius:999px;margin-bottom:6px;}
+    .now p{font-size:15px;color:var(--text-soft);margin-top:6px;} .now .btns{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;}
+
+    .calbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;}
+    .calnav{display:flex;align-items:center;gap:8px;}
+    .calnav button{width:40px;height:40px;border-radius:11px;border:1px solid #ECF0F0;background:#fff;cursor:pointer;color:#48707C;display:grid;place-items:center;}
+    .calnav button:hover{background:#F6F9F9;color:#1f7a6b;} .calnav button[disabled]{opacity:.35;pointer-events:none;}
+    .calnav button .tic svg{width:20px;height:20px;}
+    .calnav .mname{font-size:21px;font-weight:900;color:var(--deep);min-width:120px;text-align:center;}
+    .calfocus{font-size:13.5px;color:var(--text-soft);background:#F8FBFA;border:1px solid #EDF2F1;border-radius:12px;padding:10px 15px;margin-bottom:16px;line-height:1.55;} .calfocus b{color:#1f7a6b;}
+    .wkgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:11px;margin-bottom:18px;}
+    .wklabel{font-size:11.5px;font-weight:800;color:#aeb9bd;margin:2px 3px 8px;letter-spacing:.03em;}
+    .daycard{position:relative;display:flex;flex-direction:column;gap:8px;background:#fff;border:1px solid #ECF0F0;border-radius:15px;padding:13px 14px 12px;min-height:158px;box-shadow:0 1px 2px rgba(38,80,92,.04);transition:box-shadow .15s;}
+    .daycard:hover{box-shadow:0 6px 18px rgba(38,80,92,.10);}
+    .daycard.today{border-color:#5FBFA4;box-shadow:0 2px 14px rgba(95,191,164,.22);}
+    .dchead{display:flex;align-items:baseline;gap:7px;} .dchead .dn{font-size:12px;font-weight:800;color:#7C9BD0;} .dchead .dd{font-size:16.5px;font-weight:900;color:var(--deep);}
+    .daycard.today .dchead .dn{color:#1f7a6b;} .dchead .nowtag{font-size:10px;font-weight:800;background:#DDF3EC;color:#0F7E72;border-radius:999px;padding:1px 8px;margin-inline-start:auto;}
+    .dcbody{flex:1;min-width:0;} .dcbody .ttext{display:block;font-size:13.8px;color:var(--text-main);font-weight:600;line-height:1.45;}
+    .dcbody .ed{font-family:inherit;font-size:13.5px;color:var(--text-main);border:1px solid #E1E9EA;border-radius:8px;padding:6px 9px;width:100%;outline:none;margin-bottom:4px;}
+    .dcbody .ed:focus{border-color:#5FBFA4;box-shadow:0 0 0 3px rgba(95,191,164,.15);}
+    .xtopic{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#2E7A66;background:#EFF6F3;border-radius:8px;padding:4px 9px;margin-top:6px;margin-inline-end:5px;}
+    .xtopic .rm{cursor:pointer;color:#8bb3a8;font-weight:900;font-size:11px;} .xtopic .rm:hover{color:#E07B7B;}
+    .dcfoot{margin-top:auto;}
+    .dayacts{position:absolute;top:9px;left:9px;display:flex;gap:5px;opacity:0;transition:opacity .15s;}
+    .daycard:hover .dayacts,.daycard:focus-within .dayacts{opacity:1;}
+    .dayacts button{width:29px;height:29px;border-radius:8px;border:1px solid #ECF0F0;background:#fff;cursor:pointer;color:#48707C;display:grid;place-items:center;}
+    .dayacts button:hover{background:#F6F9F9;color:#1f7a6b;} .dayacts button .tic svg{width:14px;height:14px;}
+    @media (hover:none) and (pointer:coarse){.dayacts{opacity:1;}.dayacts button{width:44px;height:44px;}.dayacts button .tic svg{width:18px;height:18px;}}
+    @media (max-width:1100px){.wkgrid{grid-template-columns:repeat(3,minmax(0,1fr));}}
+    @media (max-width:640px){.wkgrid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+
+    .prac{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;border-radius:9px;padding:5px 10px;cursor:pointer;border:1px solid transparent;text-decoration:none;transition:background .15s,border-color .15s;max-width:100%;}
+    .prac .tic{display:inline-flex;flex:0 0 auto;} .prac .tic svg{width:14px;height:14px;} .prac .pt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .prac.c-letter{color:#41689A;background:#EAF0F7;border-color:#D9E2F2;} .prac.c-syll{color:#2E7A66;background:#EFF6F3;border-color:#D6ECE3;}
+    .prac.c-word{color:#6A59B8;background:#EEEBF8;border-color:#DDD5F0;} .prac.c-listen{color:#B05A86;background:#FBEBF2;border-color:#F2D7E4;}
+    .prac.c-read{color:#3D7A8C;background:#EAF5F8;border-color:#D5E9EE;} .prac.c-fluency{color:#B5611F;background:#FBF0E4;border-color:#F0DFC8;}
+    .prac.c-test{color:#48707C;background:#F0F5F6;border-color:#DDE5E6;} .prac.ok:hover{filter:brightness(.965);}
+    .prac.sum{color:#2E7A66;background:#DDF3EC;border-color:#C6E6DC;} .prac.sum:hover{filter:brightness(.965);}
+    .prac.offline{color:#7C8E94;background:#F2F5F5;border-color:#E3EAEB;cursor:default;} .prac.oral{color:#7C8E94;background:#F2F5F5;border-color:#E3EAEB;cursor:default;}
+    .prac.gap{color:#9c6212;background:#FCEFD9;border-color:#F2E4C6;border-style:dashed;cursor:help;}
+    .praccov{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--text-soft);background:#F8FBFA;border:1px solid #EDF2F1;border-radius:12px;padding:9px 15px;margin-bottom:14px;}
+    .praccov span{display:inline-flex;align-items:center;gap:6px;} .praccov b{font-weight:800;} .praccov .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+    .praccov .cok{color:#41689A;} .praccov .cok .dot{background:#7C9BD0;} .praccov .cgap{color:#9c6212;} .praccov .cgap .dot{background:#E8A24A;}
+    .praccov .coff{color:#7C8E94;} .praccov .coff .dot{background:#C8D3D6;} .praccov .csum{color:#2E7A66;} .praccov .csum .dot{background:#5FBFA4;}
+    .praccov .coral{color:#5A7480;} .praccov .coral .dot{background:#9FB3BC;}
+
+    .rt-badge{position:fixed;bottom:14px;left:14px;z-index:30;font-size:11.5px;font-weight:800;padding:6px 12px;border-radius:999px;box-shadow:0 2px 8px rgba(38,80,92,.14);display:flex;align-items:center;gap:6px;}
+    .rt-badge .d{width:7px;height:7px;border-radius:50%;} .rt-demo{background:#FCEFD9;color:#9c6212;} .rt-demo .d{background:#9c6212;} .rt-cloud{background:var(--okbg);color:#0d6b54;} .rt-cloud .d{background:var(--ok);}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <nav class="rail" aria-label="ניווט">
+      <a class="logo" href="teacher-home.html"><span class="gm"><svg viewBox="0 0 24 24" fill="none" stroke="#0F7E72" stroke-width="2.3" stroke-linecap="round"><path d="M6 18v-5"/><path d="M12 18V7"/><path d="M18 18v-8"/></svg></span><b>אבני<br>יסוד</b></a>
+      <a class="item" href="teacher-home.html"><span class="ic" data-ic="home"></span><span class="t">דף הבית</span></a>
+      <a class="item" href="teacher-my-class.html"><span class="ic" data-ic="people"></span><span class="t">הכיתה שלי</span></a>
+      <a class="item" href="teacher-literacy-profile.html"><span class="ic" data-ic="learn"></span><span class="t">פרופיל אורייני</span></a>
+      <a class="item" href="#"><span class="ic" data-ic="pulse"></span><span class="t">פולס</span></a>
+      <a class="item" href="teacher-reports.html"><span class="ic" data-ic="report"></span><span class="t">דוחות</span></a>
+      <a class="item active" href="teacher-curriculum.html"><span class="ic" data-ic="calendar"></span><span class="t">תוכנית שנתית</span></a>
+      <a class="item" href="teacher-settings.html"><span class="ic" data-ic="settings"></span><span class="t">הגדרות</span></a>
+      <div class="me"><div class="av">מ</div><small>מורה<span>אבני יסוד</span></small></div>
+    </nav>
+
+    <main class="main"><div class="main-inner">
+      <div class="topbar"><div class="crumbs">אבני יסוד · תוכנית שנתית</div><div class="date">תשפ״ז</div></div>
+
+      <div class="page-h">
+        <h1>התוכנית השנתית</h1>
+        <p>לוח שנה לכל ימי הלימוד — שיעור אחד בכל יום, כרטיס לכל יום. אפשר לשנות את נושא היום או להוסיף נושא, ישירות על הכרטיס. לכל נושא — קישור לתרגול הדיגיטלי המתאים.</p>
+      </div>
+
+      <div class="card now" id="nowCard"></div>
+
+      <div class="calbar">
+        <div class="calnav">
+          <button id="prevM" aria-label="חודש קודם"><span class="tic" data-ic="chevright"></span></button>
+          <span class="mname" id="mname"></span>
+          <button id="nextM" aria-label="חודש הבא"><span class="tic" data-ic="chevleft"></span></button>
+        </div>
+        <button class="btn btn-soft btn-sm" id="todayBtn"><span class="tic" data-ic="calendar"></span>היום</button>
+      </div>
+      <div class="calfocus" id="calfocus"></div>
+      <div class="praccov" id="praccov"></div>
+      <div id="caldays"></div>
+    </div></main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="rt-badge rt-demo" id="rtBadge"><span class="d"></span><span id="rtTx">נתוני דמו</span></div>
+
+  <script>
+    var MODE=(window.AvneiRuntimeMode&&window.AvneiRuntimeMode.current)||'cloud';
+    (function(){var b=document.getElementById('rtBadge');if(MODE==='cloud'){b.className='rt-badge rt-cloud';document.getElementById('rtTx').textContent='נתונים חיים · ענן';}})();
+    (function(){ if(location.protocol==='file:'||!window.TeacherCloud)return;
+      TeacherCloud.init().then(function(st){var cr=document.querySelector('.crumbs');
+        if(cr&&st.klass)cr.textContent='אבני יסוד · תוכנית שנתית · כיתת '+st.klass.name;})
+        .catch(function(e){if(e&&/no-session|no-class/.test(e.message||''))return;}); })();
+
+    var WD=['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
+    var SCHOOL=[
+      {y:2026,m:8,name:'ספטמבר',tag:'פתיחת שנה',focus:'הכרת האותיות הראשונות, קשר אות–צליל, וראשית הכתיבה',
+        days:['האות ת — צורה וצליל','האות מ — צורה וצליל','האות ר — צורה וצליל (הבחנה ת/ר)','האזנה לסיפור + אוצר מילים','כתיבת ת/מ/ר + סיכום שבועי',
+              'האות ב','האות ק (הבחנה ב/כ)','תרגול חמש האותיות שנלמדו','הצליל הראשון והאחרון במילה','כתיבת ב/ק + מבדק קצר',
+              'האות א','האות י','הבחנה בין אותיות דומות','תיאור תמונה + משחקי הברות','כתיבת א/י + סיכום',
+              'האות ל','האות ש','האות ח','האות נ','סיכום 11 אותיות + כתיבה']},
+      {y:2026,m:9,name:'אוקטובר',focus:'השלמת כל האותיות והתנועה הראשונה (אַ), קריאת הברה',
+        days:['האות ד (הבחנה ד/ר)','האות פ','האות ה (הבחנה ה/ח)','האות ס','כתיבה + מבדק זיהוי',
+              'האות ג','האות ע','האות כ (הבחנה כ/ב)','האות צ','כתיבה + הבחנת אותיות',
+              'האות ט','האות ז','האות ו — כל 22 האותיות!','משחק זיהוי מהיר של כל הא״ב','כתיבה + מבדק 22 אותיות',
+              'התנועה אַ — "איזה צליל שומעים?"','קריאת הברה: מָ רָ תָ בָ קָ','אותיות סופיות בתוך מילים','שפה דבורה + אוצר מילים','כתיבת הברות + מבדק קצר']},
+      {y:2026,m:10,name:'נובמבר',tag:'אנחנו כאן',focus:'קריאת מילים שלמות ודיוק בצלילים',
+        days:['הבנת משפט כן/לא','קריאת הברה סגורה: קַר מַר רַק בַּת','הבחנת תנועות באות א','שאלות מי/מה על הנשמע','כתיבת מילים קצרות + סיכום',
+              'בניית מילה מהברות','תרגול קריאת מילים סגורות','קריאת פעלים בעבר (תָּלָה, קָרָה)','משמעות פעלים + אוצר','כתיבת פועל קצר + סיכום',
+              'מילים קטנות: שֶׁל, אֶת, לֹא, כֵּן','קריאת משפט קצר','הבחנה בין מילים דומות (בָּרָק/מָרָק)','"איזו מילה שמעת?"','כתיבת זוג מילים + סיכום',
+              'סיכום צלילים + חיבור תמונה-מילה','קריאת מילים שלמות','חזרה ותחזוקה','הקראה + הבנת הנשמע','מבדק חודשי + כתיבה']},
+      {y:2026,m:11,name:'דצמבר',focus:'השווא (תנועה שנעלמת), זכר/נקבה, והתנועה אִי',
+        days:['השווא — "איפה שומעים בְּ/שְׁ/תְּ?"','קריאת הברה עם שווא','התחילית לְ (לְנָדָב)','התאמת מילה לאיור','כתיבת מילה עם שווא + סיכום',
+              'זוגות זכר/נקבה (רָכַב/רָכְבָה)','קריאת שווא נח באמצע מילה','השווא שמסמן נקבה','זכר/נקבה בדיבור','כתיבת זוג זכר/נקבה + סיכום',
+              'הרכבת משפט מסדר מילים','קריאת משפט שלם','התחיליות וְ, בְּ, לְ','מילות מקום בדיבור','כתיבת משפט + סיכום',
+              'התנועה אִי — הצגת הצליל','קריאת הברה: מִי, שִׁי','בחירת משפט לאיור','מילים עם חיריק','כתיבת הברת חיריק + סיכום']},
+      {y:2027,m:0,name:'ינואר',tag:'מבדק אמצע שנה',focus:'יחיד/רבים, מילים ארוכות, כינויי גוף',
+        days:['יחיד/רבים (שִׁיר/שִׁירִים)','קריאת מילה ארוכה','ריבוי מיוחד (אִישׁ/אֲנָשִׁים)','"מה יוצא דופן?" + יש/אין','כתיבת זוג יחיד/רבים',
+              'הָיָה/הָיְתָה','קריאת משפט עם פועל עבר','אַתְּ/אַתָּה (עבר)','מי עשה מה? (הבנה)','כתיבת היה/הייתה',
+              'אֲנִי/אַתָּה/אַתְּ + פעלים','מהברה למילה','משחק התאמת חיריק','הרחבת אוצר','משפט קצר עצמאי',
+              'הבחנת צ/ץ','"מילים אמיתיות או בדויות?"','חזרה — חיריק','מבדק אמצע שנה — משימות דבורות','כתיבה + סיכום אמצע שנה']},
+      {y:2027,m:1,name:'פברואר',focus:'האותיות שׁ/שׂ והתנועה אוֹ, מיון מילים',
+        days:['שׁ ימנית מול שׂ שמאלית (שָׁר/שָׂר)','קריאת מילים עם שׁ/שׂ','בחירת משפט לתמונה','אבחנה שמיעתית שׁ/שׂ','כתיבת שׁ/שׂ + סיכום',
+              'התנועה אוֹ + מילות מקום עַל/לְיַד','קריאת הברה: מוֹ, בּוֹ','בניית מילים מהברות','מיקום ומרחב בדיבור','כתיבת הברת חולם',
+              'מיון מילים לקבוצות','קריאת מילים מהקבוצות','חיפוש פריטים + צבעים','שדות סמנטיים (אוצר)','כתיבת מילה עם חולם חסר',
+              'חריזה','השלמת מילה (חולם)','אסוציאציות וקטגוריות','הבנת הנשמע — סיפור קצר','מבדק חודשי + כתיבה']},
+      {y:2027,m:2,name:'מרץ',focus:'התנועה אֶה וקריאת הבנה ראשונה, מילות שאלה',
+        days:['קריאת תיאור + התאמה לדמות','קריאת תיאור ארוך','השלמת הברה חסרה','תיאור דמות (אוצר)','כתיבת תיאור קצר',
+              'התאמת מילה לתמונה (מהירות)','קריאה מהירה (תחילת שטף)','מילות שאלה: מָה/מִי/אֵיפֹה/לָמָה','שאלות ותשובות (דיאלוג)','כתיבת שאלה',
+              'בחירת משפט לאיור','התנועה אֶה (צירי-סגול)','פעלים בהווה (הוֹלֵךְ/הוֹלֶכֶת)','התאמת מין בדיבור','כתיבת הברת צירי-סגול',
+              'טקסט מידע + ארבע שאלות','קריאה חוזרת (שטף)','שאלות מי/מה/איפה','שאלות למה/מה יקרה','כתיבת תשובה במשפט']},
+      {y:2027,m:3,name:'אפריל',focus:'התנועה אוּ — מערכת התנועות שלמה, שטף',
+        days:['קריאת מילים ארוכות','קריאה חוזרת (שטף)','השלמת משפט בחריזה','זיהוי חרוזים (אוצר)','כתיבת מילה חורזת',
+              'התנועה אוּ — הצגת הצליל','קריאת הברה: מֻ, בּוּ','בחירת מילה עם אוּ','מילים עם אוּ (אוצר)','מערכת התנועות שלמה — כתיבת הברה',
+              'כינוי גוף (נושא-נשוא)','קריאת משפט עם כינוי גוף','שמות תואר + עַל','תיאור בעזרת תארים','כתיבת משפט עם תואר',
+              'יֵשׁ/אֵין — מה בתמונה','קריאת משפט יֵשׁ/אֵין','חזרה — כל התנועות','הבנת הנשמע — סיפור','מבדק חודשי + כתיבה']},
+      {y:2027,m:4,name:'מאי',tag:'מבדק סוף שנה',focus:'קריאת טקסטים שלמים והבנת הנקרא',
+        days:['קריאת סיפור "יום שוק בגינה"','קריאה חוזרת (שטף)','רצף אירועים בסיפור','שאלות הבנה על הסיפור','סיכום הסיפור במשפט',
+              'מילת הדימוי כְּמוֹ','קריאת טקסט מידע (לווייתנים)','מבנה טקסט מידע','איתור מידע בטקסט','כתיבת משפט דימוי',
+              'טקסט מידע על דבורים','קריאה חוזרת (שטף)','משחק יחיד/רבים','שני תרגילי הבנה','כתיבת משפט מידע',
+              'טקסט הוראות (קֹדֶם/אַחַר כָּךְ)','טקסט סיפורי + ציטוט','מבדק סוף שנה — קריאה','מבדק סוף שנה — הבנה וכתיבה','כתיבת רצף הוראות']},
+      {y:2027,m:5,name:'יוני',focus:'שטף, הבנת פסקה וסיכום שנה',
+        days:['קריאה חוזרת של טקסט מוכר','מדידת מילים לדקה','קריאה בזוגות','הבנת הנשמע + אוצר','כתיבה חופשית',
+              'קריאת פסקה עצמית','שאלות הבנה (מי/מה/איפה)','שאלות חשיבה (למה/מה יקרה)','השוואה בין שני טקסטים','כתיבת תשובה מנומקת',
+              'הכתבת מילים שכיחות','כתיבת "אני ___"','מבדק סיום שנה','פרופיל אורייני לכל ילד','חגיגת סיום + קריאה משותפת']}
+    ];
+    var cur=2;
+    var TODAY={mi:2,di:1};
+    var EXTRAS={};
+
+    var APP='./';
+    var LETTERS={
+      'א':'stage-3-alef.html','ג':'stage-3-gimel.html','ד':'stage-3-dalet.html','ה':'stage-3-hey.html',
+      'ו':'stage-3-vav.html','ז':'stage-3-zayin.html','ח':'stage-3-het.html','ט':'stage-3-tet.html',
+      'י':'stage-3-yud.html','כ':'stage-3-kaf.html','ל':'stage-3-lamed.html','נ':'stage-3-nun.html',
+      'ס':'stage-3-samekh.html','ע':'stage-3-ayin.html','פ':'stage-3-pey.html','צ':'stage-3-tzadi.html',
+      'ר':'stage-3-trail-resh.html','ב':'stage-3-bet.html','מ':'stage-3-mem.html','ק':'stage-3-kuf.html',
+      'ש':'stage-3-shin.html','ת':'stage-3-tav.html'
+    };
+    function normFinal(c){return {'ך':'כ','ם':'מ','ן':'נ','ף':'פ','ץ':'צ'}[c]||c;}
+    function lettersLearnedUpTo(mi,di){
+      var seen=[];
+      for(var m=0;m<=mi&&m<SCHOOL.length;m++){
+        var days=SCHOOL[m].days, lim=(m===mi)?di:days.length;
+        for(var d=0;d<lim;d++){var lm=(days[d]||'').match(/האות\s+([א-ת])/);if(lm){var L=normFinal(lm[1]);if(seen.indexOf(L)<0)seen.push(L);}}
+      }
+      return seen;
+    }
+    function resolvePractice(topic,mi,di){
+      var t=topic;
+      if(/תרגול\s+חמש\s+האותיות|סיכום\s+\S*\s*אותיות|זיהוי מהיר של כל הא|חזרה ותחזוקה|חזרה, תרגול והעמקה/.test(t)){
+        var learned=lettersLearnedUpTo(mi,di);
+        if(learned.length>0){return {state:'sum',href:APP+'stage-summary-cv.html?letters='+encodeURIComponent(learned.join(',')),tag:learned.length<=5?'סיכום · '+learned.join(' '):'סיכום '+learned.length+' אותיות'};}
+      }
+      var lm=t.match(/האות\s+([א-ת])/);
+      if(lm){var L=normFinal(lm[1]);return LETTERS[L] ? {state:'ok',cat:'letter',href:APP+LETTERS[L],tag:'אות '+lm[1]} : {state:'gap',tag:'אות '+lm[1]};}
+      if(/מבדק/.test(t))                                    return {state:'ok',cat:'test',href:'../engine/screener.html',tag:'מבדק'};
+      if(/הכתבת מילים שכיחות/.test(t))                      return {state:'ok',cat:'word',href:APP+'stage-8-word-write.html',tag:'איך כותבים · אי 8'};
+      if(/כתיבת מילים קצרות/.test(t))                       return {state:'ok',cat:'word',href:APP+'stage-20-spell.html',tag:'בּוֹנִים מִלִּים · אי 20'};
+      if(/כתיב|הכתב/.test(t))                               return {state:'offline',tag:'כתיבה'};
+      if(/חריזה|חרוז/.test(t)){var rcid=/זיהוי חרוזים/.test(t)?'apr-w1-d4-c1':'feb-w4-d1-c2';return {state:'ok',cat:'syll',href:APP+'stage-rhyme.html?cid='+rcid,tag:'חריזה'};}
+      if(/פרופיל אורייני/.test(t))                          return {state:'ok',cat:'test',href:'teacher-literacy-profile.html',tag:'כלי מורה'};
+      if(/חגיגת סיום/.test(t))                              return {state:'oral',tag:'אירוע כיתתי'};
+      if(/בדיבור|דיאלוג|שפה דבורה|תיאור דמות|תיאור בעזרת תארים/.test(t)) return {state:'oral',tag:'שיח בכיתה'};
+      if(/שטף|קריאה חוזרת|מילים לדקה|הקראה|בזוגות/.test(t)) return {state:'ok',cat:'fluency',href:APP+'stage-read-aloud.html',tag:'שטף קריאה'};
+      if(/^קריאת\s+(סיפור|טקסט|תיאור|פסקה)|^טקסט\s+מידע|איתור מידע בטקסט|מבנה טקסט מידע/.test(t)){var rtxt=/שוק/.test(t)?'shuk':/לוו?יי?ת[נן]/.test(t)?'whales':/דבור/.test(t)?'bees':null;return {state:'ok',cat:'read',href:APP+'stage-14-read-and-answer.html'+(rtxt?'?text='+rtxt:''),tag:'הבנת הנקרא'};}
+      if(/רצף אירועים בסיפור/.test(t))                      return {state:'ok',cat:'read',href:APP+'stage-16-paragraph.html',tag:'שרשרת משפטים · אי 16'};
+      if(/שאלות (הבנה )?\(?מי\/מה\/איפה\)?/.test(t))        return {state:'ok',cat:'read',href:APP+'stage-14-read-and-answer.html',tag:'הבנת הנקרא'};
+      if(/סיפור|רצף אירועים/.test(t))                       return {state:'ok',cat:'listen',href:APP+'stage-14-story-sequence.html',tag:'הבנת הנשמע'};
+      if(/הנשמע|האזנה|טקסט|הבנה|שאלות/.test(t))             return {state:'ok',cat:'listen',href:APP+'stage-14-listen-and-answer.html',tag:'הבנת הנשמע'};
+      if(/חיריק/.test(t))                                   return {state:'ok',cat:'syll',href:APP+'stage-4-cv-build.html?vowel=hiriq',tag:'חיריק'};
+      if(/שווא/.test(t))                                    return {state:'ok',cat:'syll',href:APP+'stage-4-cv-build.html?vowel=shva',tag:'שווא'};
+      if(/חולם/.test(t))                                    return {state:'ok',cat:'syll',href:APP+'stage-4-cv-build.html?vowel=holam',tag:'חולם'};
+      if(/צירי|סגול/.test(t))                               return {state:'ok',cat:'syll',href:APP+'stage-4-cv-build.html?vowel=tzere',tag:'צירי-סגול'};
+      function bank(key,tag){return {state:'ok',cat:'word',href:APP+'stage-bank-play.html?unitKey='+key+'&tag='+encodeURIComponent(tag),tag:tag};}
+      if(/יוצא דופן/.test(t))                               return bank('jan-w1-d4','מָה יוֹצֵא דֹּפֶן? + יֵשׁ/אֵין');
+      if(/שמות תואר/.test(t))                               return bank('apr-w3-d3','שְׁמוֹת תֹּאַר + עַל');
+      if(/התחילית לְ|התחילית ל\b|התחיליות/.test(t))         return {state:'ok',cat:'word',href:APP+'stage-10-little-start.html',tag:'הַהַתְחָלָה הַקְּטַנָּה · אי 10'};
+      if(/אֲנִי\/אַתָּה\/אַתְּ/.test(t))                     return bank('jan-w3-d1','כִּנּוּיֵי גּוּף');
+      if(/הָיָה\/הָיְתָה|היה\/הי?יתה/.test(t))               return bank('jan-w2-d1','הָיָה/הָיְתָה');
+      if(/אַתְּ\/אַתָּה|אַתָּה\/אַתְּ/.test(t))               return bank('jan-w2-d3','אַתְּ/אַתָּה');
+      if(/מילות שאלה/.test(t))                              return bank('mar-w2-d3','מִלּוֹת שְׁאֵלָה');
+      if(/יֵשׁ\/אֵין/.test(t))                               return bank('apr-w4-d1-c2,apr-w4-d2-c1,apr-w4-d2-c2','יֵשׁ/אֵין');
+      if(/מילת הדימוי|כְּמוֹ/.test(t))                       return bank('may-w2-d1','מִלַּת הַדִּמּוּי כְּמוֹ');
+      if(/יחיד\/רבים|ריבוי מיוחד/.test(t))                  return {state:'ok',cat:'word',href:APP+'stage-10-one-or-many.html',tag:'אֶחָד אוֹ הַרְבֵּה · אי 10'};
+      function disc(pair,tag){return {state:'ok',cat:'syll',href:APP+'stage-discrimination.html?pair='+pair+'&tag='+encodeURIComponent(tag),tag:tag};}
+      if(/הבחנה בין אותיות דומות/.test(t))                  return disc('tav-resh,bet-kaf,hey-het','אוֹתִיּוֹת דּוֹמוֹת');
+      if(/הבחנת צ\/ץ/.test(t))                              return disc('tzadi-final','צ / ץ');
+      if(/ימנית מול/.test(t))                               return disc('shin-sin','שׁ / שׂ');
+      if(/אבחנה שמיעתית/.test(t))                           return disc('shin-sin-listen','הַאֲזָנָה שׁ / שׂ');
+      if(/קריאת מילים עם/.test(t))                          return disc('shin-sin-words','מִלִּים עִם שׁ / שׂ');
+      if(/משמעות פעלים/.test(t))                            return {state:'ok',cat:'word',href:APP+'stage-9-island.html',tag:'משפחות מילים · אי 9'};
+      if(/מילים קטנות/.test(t))                             return {state:'ok',cat:'word',href:APP+'stage-8-flash-words.html',tag:'מילים שכיחות · אי 8'};
+      if(/קריאת משפט קצר/.test(t))                          return {state:'ok',cat:'word',href:APP+'stage-8-sentence-catch.html',tag:'המשפט של נוני · אי 8'};
+      if(/שדות סמנטיים|אסוציאציות וקטגוריות/.test(t))       return {state:'ok',cat:'word',href:APP+'stage-vocab-match.html?mode=sort&island=12',tag:'אוצר מילים · אי 12'};
+      if(/חיפוש פריטים/.test(t))                            return {state:'ok',cat:'word',href:APP+'stage-vocab-match.html?mode=word&island=12',tag:'אוצר מילים · אי 12'};
+      if(/הרחבת אוצר/.test(t))                              return {state:'ok',cat:'word',href:APP+'stage-vocab-match.html?island=12',tag:'אוצר מילים · אי 12'};
+      if(/בחירת משפט ל(איור|תמונה)/.test(t))                return {state:'ok',cat:'read',href:APP+'stage-15-sentence.html?mode=image',tag:'משפט ותמונה · אי 15'};
+      if(/הבנת משפט כן\/לא/.test(t))                        return {state:'ok',cat:'read',href:APP+'stage-15-sentence.html?mode=question',tag:'קוראים ועונים · אי 15'};
+      if(/זוגות זכר\/נקבה/.test(t))                         return {state:'ok',cat:'word',href:APP+'stage-10-he-or-she.html',tag:'הוּא אוֹ הִיא · אי 10'};
+      if(/קריאת מיל(ה|ים) ארוכ/.test(t))                    return {state:'ok',cat:'word',href:APP+'stage-7-chunks.html',tag:'מעלית הצ׳אנקים · אי 7'};
+      if(/קריאת מילים שלמות|התאמת מילה לתמונה \(מהירות\)/.test(t)) return {state:'ok',cat:'fluency',href:APP+'stage-6-fast-fish.html',tag:'דָּג מָהִיר · אי 6'};
+      if(/מילות מקום/.test(t))                              return {state:'ok',cat:'word',href:APP+'stage-11-island.html',tag:'מילות מקום · אי 11'};
+      if(/משחקי הברות/.test(t))                             return {state:'ok',cat:'syll',href:APP+'stage-1-island.html',tag:'משחקי הברות · אי 1'};
+      if(/הרכבת משפט/.test(t))                              return {state:'ok',cat:'word',href:APP+'stage-21-dictation.html',tag:'דיקטה בבנייה · אי 21'};
+      if(/מהברות|מהברה|בניית מילה|הרכבת|מיזוג/.test(t))     return {state:'ok',cat:'word',href:APP+'stage-5-word-merge.html',tag:'הרכבת מילה'};
+      if(/הברה|הברות|תנוע/.test(t))                         return {state:'ok',cat:'syll',href:APP+'stage-4-cv-build.html',tag:'הברה'};
+      if(/צליל הראשון|צליל האחרון/.test(t))                 return {state:'ok',cat:'syll',href:APP+'stage-2-island.html',tag:'צלילים · אי 2'};
+      if(/מילה|מילים|משפט|פועל|פעלים|זכר|נקבה|רבים|יחיד|ריבוי|כינוי/.test(t)) return {state:'ok',cat:'word',href:APP+'stage-5-word-build.html',tag:'קריאת מילים'};
+      return {state:'gap',tag:''};
+    }
+    function pracHTML(pr){
+      if(pr.state==='ok')      return '<a class="prac ok c-'+(pr.cat||'word')+'" href="'+pr.href+'" target="_blank" rel="noopener"><span class="tic" data-ic="playcircle"></span><span class="pt">פתח תרגול · '+pr.tag+'</span></a>';
+      if(pr.state==='sum')     return '<a class="prac sum" href="'+pr.href+'" target="_blank" rel="noopener"><span class="tic" data-ic="star"></span><span class="pt">תרגול '+pr.tag+'</span></a>';
+      if(pr.state==='offline') return '<span class="prac offline"><span class="tic" data-ic="edit"></span><span class="pt">כתיבה במחברת</span></span>';
+      if(pr.state==='oral')    return '<span class="prac oral"><span class="tic" data-ic="people"></span><span class="pt">'+pr.tag+'</span></span>';
+      return '<span class="prac gap" title="עדיין אין תרגול דיגיטלי לנושא הזה — מסומן כחסר לבנייה"><span class="tic" data-ic="alert"></span><span class="pt">חסר תרגול'+(pr.tag?' · '+pr.tag:'')+'</span></span>';
+    }
+    function schoolDays(y,m){var out=[];var last=new Date(y,m+1,0).getDate();for(var d=1;d<=last;d++){var wd=new Date(y,m,d).getDay();if(wd>=0&&wd<=4)out.push({d:d,wd:wd});}return out;}
+    function fillTics(){if(!window.DemoIcons)return;document.querySelectorAll('.tic[data-ic]').forEach(function(el){if(!el.firstChild&&DemoIcons[el.dataset.ic])el.innerHTML=DemoIcons[el.dataset.ic];});}
+
+    function renderNow(){
+      var M=SCHOOL[TODAY.mi],topic=M.days[TODAY.di]||'';
+      var nextM=SCHOOL[TODAY.mi+1];
+      var tomorrow=M.days[TODAY.di+1]||(nextM?nextM.days[0]:'');
+      var pr=resolvePractice(topic,TODAY.mi,TODAY.di);
+      var big,ml=topic.match(/האות\s+(\S)/);
+      if(ml){big=ml[1];}
+      else if(topic.indexOf(':')>=0){big=topic.split(':')[1].trim().split(/\s+/)[0];}
+      else {big='◆';}
+      var btn=(pr.state==='ok'||pr.state==='sum')?'<a class="btn btn-primary btn-sm" href="'+pr.href+'" target="_blank" rel="noopener">פתיחת תרגול לכיתה'+(pr.tag?' · '+pr.tag:'')+'</a>':'';
+      document.getElementById('nowCard').innerHTML='<div class="big">'+big+'</div><div><span class="lab">היום בכיתה</span><h2>'+topic+'</h2>'+(tomorrow?'<p>מחר: '+tomorrow+'</p>':'')+'<div class="btns">'+btn+'</div></div>';
+    }
+    function render(){
+      var M=SCHOOL[cur];
+      document.getElementById('mname').textContent=M.name;
+      document.getElementById('calfocus').innerHTML='<b>מוקד החודש:</b> '+M.focus+(M.tag?' · <b>'+M.tag+'</b>':'');
+      document.getElementById('prevM').disabled=(cur===0);
+      document.getElementById('nextM').disabled=(cur===SCHOOL.length-1);
+      var days=schoolDays(M.y,M.m),html='',wk=0,grid=false,cov={ok:0,gap:0,off:0,sum:0,oral:0};
+      days.forEach(function(day,i){
+        if(day.wd===0){wk++;if(grid)html+='</div>';html+='<div class="wklabel">שבוע '+wk+'</div><div class="wkgrid">';grid=true;}
+        if(!grid){html+='<div class="wkgrid">';grid=true;}
+        var topic=M.days[i]||'חזרה, תרגול והעמקה';
+        var isToday=(cur===TODAY.mi&&i===TODAY.di);
+        var key=cur+'-'+i;
+        var extras=(EXTRAS[key]||[]).map(function(x,xi){return '<span class="xtopic">'+x+'<span class="rm" data-rm="'+key+'|'+xi+'">✕</span></span>';}).join('');
+        var pr=resolvePractice(topic,cur,i);
+        cov[pr.state==='ok'?'ok':pr.state==='sum'?'sum':pr.state==='offline'?'off':pr.state==='oral'?'oral':'gap']++;
+        html+='<div class="daycard'+(isToday?' today':'')+'" data-key="'+key+'"><div class="dchead"><span class="dn">יום '+WD[day.wd]+'</span><span class="dd">'+day.d+'.'+(M.m+1)+'</span>'+(isToday?'<span class="nowtag">היום</span>':'')+'</div><div class="dcbody"><span class="ttext">'+topic+'</span>'+extras+'</div><div class="dcfoot">'+pracHTML(pr)+'</div><div class="dayacts"><button data-edit="'+key+'" title="שינוי נושא"><span class="tic" data-ic="edit"></span></button><button data-add="'+key+'" title="הוספת נושא"><span class="tic" data-ic="plus"></span></button></div></div>';
+      });
+      if(grid)html+='</div>';
+      document.getElementById('caldays').innerHTML=html;
+      document.getElementById('praccov').innerHTML='<span class="cok"><span class="dot"></span>יש תרגול דיגיטלי: <b>'+cov.ok+'</b></span>'+(cov.sum?'<span class="csum"><span class="dot"></span>תרגול סיכום: <b>'+cov.sum+'</b></span>':'')+'<span class="cgap"><span class="dot"></span>חסר תרגול: <b>'+cov.gap+'</b></span>'+'<span class="coff"><span class="dot"></span>כתיבה במחברת: <b>'+cov.off+'</b></span>'+(cov.oral?'<span class="coral"><span class="dot"></span>שיח בכיתה: <b>'+cov.oral+'</b></span>':'');
+      fillTics();
+    }
+    function cardOf(key){return document.querySelector('.daycard[data-key="'+key+'"]');}
+    function beginEdit(key){
+      var i=+key.split('-')[1],card=cardOf(key),mid=card.querySelector('.dcbody'),t=card.querySelector('.ttext'),done=false;
+      var inp=document.createElement('input');inp.className='ed';inp.value=t.textContent;mid.insertBefore(inp,t);t.style.display='none';inp.focus();inp.select();
+      function commit(save){if(done)return;done=true;if(save){var v=inp.value.trim();if(v)SCHOOL[cur].days[i]=v;}render();}
+      inp.addEventListener('keydown',function(ev){if(ev.key==='Enter')commit(true);else if(ev.key==='Escape')commit(false);});
+      inp.addEventListener('blur',function(){commit(true);});
+    }
+    function beginAdd(key){
+      var card=cardOf(key),mid=card.querySelector('.dcbody'),done=false;
+      var inp=document.createElement('input');inp.className='ed';inp.placeholder='נושא נוסף לאותו יום…';mid.appendChild(inp);inp.focus();
+      function commit(save){if(done)return;done=true;if(save){var v=inp.value.trim();if(v){(EXTRAS[key]=EXTRAS[key]||[]).push(v);}}render();}
+      inp.addEventListener('keydown',function(ev){if(ev.key==='Enter')commit(true);else if(ev.key==='Escape')commit(false);});
+      inp.addEventListener('blur',function(){commit(true);});
+    }
+    document.getElementById('caldays').addEventListener('click',function(e){
+      var ed=e.target.closest('[data-edit]');if(ed){beginEdit(ed.dataset.edit);return;}
+      var ad=e.target.closest('[data-add]');if(ad){beginAdd(ad.dataset.add);return;}
+      var rm=e.target.closest('[data-rm]');if(rm){var p=rm.dataset.rm.split('|');if(EXTRAS[p[0]]){EXTRAS[p[0]].splice(+p[1],1);}render();return;}
+    });
+    document.getElementById('prevM').addEventListener('click',function(){if(cur>0){cur--;render();}});
+    document.getElementById('nextM').addEventListener('click',function(){if(cur<SCHOOL.length-1){cur++;render();}});
+    document.getElementById('todayBtn').addEventListener('click',function(){cur=TODAY.mi;render();var t=document.querySelector('.daycard.today');if(t)t.scrollIntoView({behavior:'smooth',block:'center'});});
+
+    renderNow();render();
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fillTics);else fillTics();
+    window.addEventListener('load',fillTics);
+    function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},2600);}
+    document.addEventListener('click',function(e){var b=e.target.closest('button[data-toast]');if(b)toast(b.dataset.toast);});
+  </script>
+</body>
+</html>
