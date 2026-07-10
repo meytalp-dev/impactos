@@ -250,6 +250,15 @@
   // student_id from cloud is a UUID; existing localStorage assumed string id — that's fine
   window.localStorage.setItem('avnei-yesod-current-student', profile.student_id);
 
+  // אי-הפתיחה שהמורה אישרה בפרופיל האורייני (students.start_island · מיגרציות 0005/0006)
+  // → מזריק currentStageId על מצב טרי בלבד (applyPlacement שומר על התקדמות קיימת).
+  try {
+    if (profile.placement_confirmed && profile.start_island &&
+        typeof window.applyPlacement === 'function') {
+      window.applyPlacement(profile.start_island, profile.student_id);
+    }
+  } catch (e) { console.warn('[student] placement apply failed:', e); }
+
   // Pull latest BKT state from cloud (best-effort — failures don't block start)
   try {
     const { data: bktData } = await client.supabase.rpc('get_student_bkt', { p_token: token });
