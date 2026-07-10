@@ -363,15 +363,21 @@ body {
   /* flex:1 ולא height:100% — ההורה מקבל גובה מ-flex:1 ולכן אחוז
      קורס ל-auto והבר מתכווץ לגובה התוכן (הפנים נדבקות זו לזו) */
   flex: 1 1 auto;
-  max-height: 420px;
+  max-height: 430px;
   display: flex; flex-direction: column;
   justify-content: space-between;
-  padding: 8px 0;
+  /* gap = רווח-מינימום בין הפנים כך שלא יידבקו גם במסך נמוך; במסך
+     גבוה space-between נותן רווח גדול יותר וה-gap לא משפיע.
+     padding-top = "בית" לנוני מעל שלוש הפנים — נח על ראש החבל בהתחלה
+     ולא מכסה אף פנים; שלוש הבחירות גלויות עד גרירה מכוונת. */
+  gap: 30px;
+  padding: 108px 0 8px;
 }
-/* המוט — קו ענבר רך ועדין, כמו ב-mockup (לא אלמוג רווי) */
+/* המוט — קו ענבר רך ועדין, כמו ב-mockup (לא אלמוג רווי).
+   מתחיל גבוה (4%) כדי שהחבל יגיע עד "בית" נוני שמעל הפנים. */
 .coral-pole {
   position: absolute;
-  left: 50%; top: 8%; bottom: 8%;
+  left: 50%; top: 4%; bottom: 8%;
   width: 5px;
   background: linear-gradient(180deg, #FFDFA0 0%, #F4BE6A 50%, #EBAB55 100%);
   border-radius: 4px;
@@ -543,8 +549,9 @@ body {
   .screen-question { font-size: 1.12rem; }
   .setup-narrative { font-size: 1.05rem; }
   .face-circle { width: 52px; height: 52px; font-size: 1.8rem; }
-  .nuni { width: 82px; height: 86px; }
-  .coral-track { max-height: 360px; }
+  .nuni { width: 78px; height: 82px; }
+  /* נוני קטן יותר במסך נמוך → "בית" נמוך יותר, יותר מקום לרווח בין הפנים */
+  .coral-track { max-height: 360px; padding-top: 84px; gap: 24px; }
   .setup-scene-wrap { min-height: 130px; }
   .bridge-scene { width: 180px; height: 160px; }
   .bridge-nuni { width: 100px; height: 105px; }
@@ -690,7 +697,7 @@ body {
         </div>
 
         <div class="nuni-track">
-          <div class="nuni" id="nuni" style="top: 50%;">
+          <div class="nuni" id="nuni" style="top: 12%;">
             <img src="assets/noni-idle.png" alt="נוני" draggable="false">
           </div>
         </div>
@@ -719,8 +726,8 @@ const DIMENSIONS = [
     id: 'adjust',
     name: 'מָקוֹם',
     color: '#F2B844',
-    setupNarrative: 'כָּל בֹּקֶר נוּנִי מַגִּיעַ לַשּׁוֹנִית.<br>יֵשׁ בְּקָרִים שֶׁקַּל לוֹ,<br>וְיֵשׁ בְּקָרִים שֶׁקְּצָת פָּחוֹת.',
-    setupSpeak: 'כל בוקר נוני מגיע לשונית. יש בקרים שקל לו, ויש בקרים שקצת פחות.',
+    setupNarrative: 'כָּל בֹּקֶר נוּנִי מַגִּיעַ לַשּׁוֹנִית.<br>יֵשׁ יָמִים שֶׁקַּל לוֹ,<br>וְיֵשׁ יָמִים שֶׁקְּצָת פָּחוֹת.',
+    setupSpeak: 'כל בוקר נוני מגיע לשונית. יש ימים שקל לו, ויש ימים שקצת פחות.',
     question: 'הַאִם נוּנִי מַרְגִּישׁ טוֹב<br>כְּשֶׁהוּא בָּא לַשּׁוֹנִית בַּבֹּקֶר?',
     questionSpeak: 'האם נוני מרגיש טוב כשהוא בא לשונית בבוקר?',
     scene: sceneAdjust
@@ -955,7 +962,7 @@ document.querySelectorAll('.bridge-station').forEach((el, i) => { if (i >= DIMEN
 // וכפתור "שִׁמְעוּ שׁוּב" פשוט מנסה שוב את ה-MP3.
 const AUDIO_MAP = {
   'נוני צריך עזרה קטנה. בכל פעם תבחרו איך נראה לכם שנוני מרגיש. אין תשובה נכונה או לא נכונה.': 'bridge',
-  'כל בוקר נוני מגיע לשונית. יש בקרים שקל לו, ויש בקרים שקצת פחות.': 'setup-adjust',
+  'כל בוקר נוני מגיע לשונית. יש ימים שקל לו, ויש ימים שקצת פחות.': 'setup-adjust',
   'בשונית יש דגים שאוהבים לשחק יחד. לפעמים נוני מצטרף, ולפעמים הוא מחפש עם מי.': 'setup-friend',
   'לפעמים קורה משהו מרגיז. נוני עוצר רגע, ומנסה להירגע.': 'setup-emotion',
   'נוני מצא בשונית משהו שעוד לא הכיר. הוא מסתכל, וחושב מה זה.': 'setup-joy',
@@ -1083,9 +1090,8 @@ function goQuestion() {
   // Question text
   document.getElementById('question-text').innerHTML = dim.question;
 
-  // Reset NUNI to middle
+  // Reset NUNI — המיקום עצמו (בית) נקבע אחרי showScreen ב-parkNuniHome
   const nuni = document.getElementById('nuni');
-  nuni.style.top = '50%';
   nuni.classList.remove('listening');
   document.getElementById('listening-note').classList.remove('show');
   document.querySelectorAll('.face-stop').forEach(f => {
@@ -1100,6 +1106,9 @@ function goQuestion() {
   document.getElementById('btn-q-next').disabled = true;
 
   showScreen('screen-question');
+
+  // המסך גלוי → יש מידות; מציבים את נוני בבית (מעל הפנים) ב-rAF
+  requestAnimationFrame(parkNuniHome);
 
   // Auto-play question audio
   setTimeout(() => playQuestionAudio(), 300);
@@ -1173,7 +1182,42 @@ let isDragging = false;
 let trackRect = null;
 let dragStartY = 0;
 let dragStartTop = 0;
-const SNAP_POSITIONS = { top: 8, middle: 50, bottom: 92 };
+// ברירת-מחדל; נחשב מחדש דינמית מהמיקום האמיתי של הפנים (refreshSnaps)
+let SNAP_POSITIONS = { top: 8, middle: 50, bottom: 92 };
+
+// מחשב את מרכז כל אחת משלוש הפנים כאחוז מגובה מסלול-נוני.
+// חסין לשינויי-פריסה (padding, גובה מסך) → נוני נצמד תמיד למרכז הפנים.
+function refreshSnaps() {
+  const track = document.querySelector('.nuni-track');
+  if (!track) return;
+  const tr = track.getBoundingClientRect();
+  if (!tr.height) return; // המסך עוד לא גלוי — אין מידות
+  document.querySelectorAll('.face-stop').forEach(f => {
+    const c = f.querySelector('.face-circle').getBoundingClientRect();
+    SNAP_POSITIONS[f.dataset.pos] = ((c.top + c.height / 2) - tr.top) / tr.height * 100;
+  });
+}
+
+// "בית" נוני = מעל הפנים העליונות, על ראש החבל. קצהו התחתון ~12px
+// מעל עיגול-הפנים העליון כך שאף פנים לא מוסתרת.
+function nuniHomeTop() {
+  const track = document.querySelector('.nuni-track');
+  const tr = track.getBoundingClientRect();
+  const topFace = document.querySelector('.face-stop[data-pos="top"] .face-circle').getBoundingClientRect();
+  const h = nuni.getBoundingClientRect().height || 100;
+  if (!tr.height) return 6; // fallback לפני שהמסך גלוי
+  // רצוי: קצה תחתון של נוני ~12px מעל עיגול-הפנים העליון
+  let centerPx = (topFace.top - tr.top) - 12 - h / 2;
+  // תקרה: קצהו העליון של נוני לא יחרוג מעל ראש המסלול (=מתחת לכרטיס-השאלה)
+  if (centerPx < h / 2) centerPx = h / 2;
+  return centerPx / tr.height * 100;
+}
+
+// מציב את נוני בבית (נקרא אחרי שמסך-השאלה גלוי, ב-rAF כדי שיהיו מידות)
+function parkNuniHome() {
+  refreshSnaps();
+  nuni.style.top = nuniHomeTop() + '%';
+}
 
 function armNextButton() {
   // Time-gate 1.2s — נשמר גם בנקישה וגם במקלדת
@@ -1272,6 +1316,13 @@ if (window.PointerEvent) {
   document.addEventListener('touchcancel', endDrag);
 }
 nuni.addEventListener('contextmenu', e => e.preventDefault());
+
+// שינוי גודל/סיבוב מסך → לחשב מחדש snap ולהחזיר את נוני למקומו הנכון
+window.addEventListener('resize', () => {
+  if (!document.getElementById('screen-question').classList.contains('active')) return;
+  refreshSnaps();
+  nuni.style.top = (snappedPosition ? SNAP_POSITIONS[snappedPosition] : nuniHomeTop()) + '%';
+});
 
 // נקישה ישירה על פנים + נגישות מקלדת (Enter / רווח)
 document.querySelectorAll('.face-stop').forEach(stop => {
