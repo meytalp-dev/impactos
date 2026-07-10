@@ -149,7 +149,7 @@
       <div class="noni-row">
         <img class="noni" src="assets/noni-thinking.png" alt="נוני" onerror="this.src='assets/noni-happy.png'">
         <div class="bubble">
-          <div class="say">לַחֲצוּ עַל הָאוֹת שֶׁשְּׁמַעְתֶּם: <b id="r1-target">ל</b><span class="sub-count">אוֹת <span id="r1-count">1</span> מִתּוֹךְ 3</span></div>
+          <div class="say">לַחֲצוּ עַל הָאוֹת שֶׁשְּׁמַעְתֶּם: <b id="r1-target">ל</b><span class="sub-count">אוֹת <span id="r1-count">1</span> מִתּוֹךְ <span id="r1-total">8</span></span></div>
           <button class="spk" data-spk><span class="wv"><i></i><i></i><i></i><i></i></span> שִׁמְעוּ שׁוּב</button>
         </div>
       </div>
@@ -280,10 +280,17 @@
 
     /* rounds data — mockup: taps advance, correct answer glows */
     /* מדגם אותיות: 3 פריטים בדמו (במבדק האמיתי ~8, כולל זוגות דומים ד/ר ב/כ) */
+    /* מדגם אותיות (מפרט §1.6): 8 פריטים מוטי-מידע — זוגות דומים ויזואלית (ד/ר · ב/כ),
+       זוגות דומים בצליל (ב/פ · ש/ס · א/ע), ואותיות שכיחות. מדגם 8 = הערכת רמה אמינה. */
     var L_ITEMS=[
-      {t:'ל',snd:'sound-lamed.mp3',opts:['מ','ל','ש','ר','א','ד']},
-      {t:'מ',snd:'sound-mem.mp3',opts:['נ','מ','ב','כ','ט','ק']},
-      {t:'ד',snd:'sound-dalet.mp3',opts:['ר','ד','ך','ז','ו','ה']}
+      {t:'ד',snd:'sound-dalet.mp3',opts:['ר','ד','ך','ז','ו','ה']},   /* ד/ר ויזואלי */
+      {t:'ר',snd:'sound-resh.mp3', opts:['ד','ר','ך','נ','ו','ח']},   /* ר/ד ויזואלי */
+      {t:'ב',snd:'sound-bet.mp3',  opts:['כ','ב','פ','נ','ת','מ']},   /* ב/כ ויזואלי · ב/פ צלילי */
+      {t:'כ',snd:'sound-kaf.mp3',  opts:['ב','כ','נ','ר','ת','ל']},   /* כ/ב ויזואלי */
+      {t:'ש',snd:'sound-shin.mp3', opts:['ס','ש','מ','ע','ר','ל']},   /* ש/ס צלילי */
+      {t:'א',snd:'sound-alef.mp3', opts:['ע','א','ה','ר','מ','ל']},   /* א/ע צלילי */
+      {t:'מ',snd:'sound-mem.mp3',  opts:['נ','מ','ב','כ','ט','ק']},   /* מ/נ */
+      {t:'ל',snd:'sound-lamed.mp3',opts:['מ','ל','ש','ר','א','ד']}    /* אות שכיחה */
     ];
     var R2=[{t:'לָ',ok:1},{t:'לִי'},{t:'לוֹ'}];
     /* קריאת מילה: בַּיִת — תמונות אמיתיות מהמאגר, בלי כיתוב (הכיתוב היה מסגיר) */
@@ -310,7 +317,7 @@
     }
 
     var lIdx=0;
-    function buildLetters(){lIdx=0;renderLetterItem();}
+    function buildLetters(){lIdx=0;var tt=$('#r1-total');if(tt)tt.textContent=L_ITEMS.length;renderLetterItem();}
     function renderLetterItem(){
       var it=L_ITEMS[lIdx];
       $('#r1-target').textContent=it.t;
