@@ -50,7 +50,7 @@
   // ---- חישוב פרופיל פר-תלמיד.ה (זהה למקור בדשבורד) ----
   function blankProfile() {
     return { last: null, weekCount: 0, mastered: [], inProgress: [],
-             avgKnown: null, bktStrand: null, errorLetters: [] };
+             avgKnown: null, bktStrand: null, errorLetters: [], skills: null };
   }
 
   function computeProfiles(students, events, bktRows) {
@@ -74,18 +74,28 @@
     (bktRows || []).forEach(function (row) {
       var p = profiles[row.student_id];
       if (!p) return;
-      var strand1 = (row.strand_bkt || {})['1'] || {};
+      var sb = row.strand_bkt || {};
+      var strand1 = sb['1'] || {};
+      var strand4 = sb['4'] || {};
       p.bktStrand = strand1;
       p.avgKnown = (typeof strand1.pKnown === 'number') ? strand1.pKnown : null;
       var perLetter = strand1.per_letter || {};
+      var letterVals = [];
       Object.keys(perLetter).forEach(function (letter) {
         var st = perLetter[letter] || {};
         var pct = Math.round((st.pKnown || 0) * 100);
+        if ((st.attempts || 0) > 0 && typeof st.pKnown === 'number') letterVals.push(st.pKnown);
         if (pct >= 90) p.mastered.push({ letter: letter, pct: pct });
         else if ((st.attempts || 0) > 0) p.inProgress.push({ letter: letter, pct: pct });
       });
       p.mastered.sort(function (a, b) { return b.pct - a.pct; });
       p.inProgress.sort(function (a, b) { return b.pct - a.pct; });
+      // מיומנויות פר-תלמיד (מאושר 10.7): אותיות=ממוצע per_letter · פענוח=סטרנד1 · הבנה=סטרנד4
+      p.skills = {
+        letters:       letterVals.length ? letterVals.reduce(function(a,b){return a+b;},0) / letterVals.length : null,
+        decoding:      (typeof strand1.pKnown === 'number') ? strand1.pKnown : null,
+        comprehension: (typeof strand4.pKnown === 'number') ? strand4.pKnown : null
+      };
     });
 
     return profiles;
@@ -193,10 +203,32 @@
     return (Date.now() - new Date(iso).getTime()) < (windowMs || 10 * 60 * 1000);
   }
 
+  // ממוצע כיתתי פר-מיומנות — סופר רק תלמידים עם דאטה (null=אין עדיין מספיק).
+  // מחזיר {letters,decoding,comprehension} → {pct,n} או null. (שטף לא כאן — אין תא-BKT.)
+  function classSkills() {
+    if (!_state) return null;
+    var acc = { letters: [], decoding: [], comprehension: [] };
+    Object.keys(_state.profiles).forEach(function (sid) {
+      var s = (_state.profiles[sid] || {}).skills;
+      if (!s) return;
+      ['letters', 'decoding', 'comprehension'].forEach(function (k) {
+        if (typeof s[k] === 'number') acc[k].push(s[k]);
+      });
+    });
+    var out = {};
+    ['letters', 'decoding', 'comprehension'].forEach(function (k) {
+      out[k] = acc[k].length
+        ? { pct: Math.round(acc[k].reduce(function (a, b) { return a + b; }, 0) / acc[k].length * 100), n: acc[k].length }
+        : null;
+    });
+    return out;
+  }
+
   window.TeacherCloud = {
     init: init,
     subscribeRealtime: subscribeRealtime,
     computeProfiles: computeProfiles,
+    classSkills: classSkills,
     rama: rama,
     formatLast: formatLast,
     isLive: isLive,

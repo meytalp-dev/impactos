@@ -103,13 +103,13 @@
       <div class="card rcard">
         <div class="stitle"><span class="tile" style="background:#DDF3EC;color:#0F7E72"><span class="tic" data-ic="chart"></span></span>
           <div><h2>דוח לדוגמה — התקדמות הכיתה</h2><div class="s">שיעור השליטה הממוצע של הכיתה בכל מיומנות · החודש</div></div></div>
-        <div class="donuts">
-          <div class="du"><div class="donut" style="--p:88;--c:#5FBFA4;--sz:120px"><div class="v">88%<small>זיהוי אותיות</small></div></div><div class="name">זיהוי אותיות</div></div>
-          <div class="du"><div class="donut" style="--p:76;--c:#5FBFA4;--sz:120px"><div class="v">76%<small>קריאת הברות</small></div></div><div class="name">קריאת הברות</div></div>
-          <div class="du"><div class="donut" style="--p:64;--c:#E8A55F;--sz:120px"><div class="v">64%<small>שטף</small></div></div><div class="name">שטף קריאה</div></div>
-          <div class="du"><div class="donut" style="--p:58;--c:#E07B7B;--sz:120px"><div class="v">58%<small>הבנה</small></div></div><div class="name">הבנת הנקרא</div></div>
+        <div class="donuts" id="donuts">
+          <div class="du" data-skill="letters"><div class="donut" style="--p:88;--c:#5FBFA4;--sz:120px"><div class="v"><span class="pv">88%</span><small>זיהוי אותיות</small></div></div><div class="name">זיהוי אותיות</div></div>
+          <div class="du" data-skill="decoding"><div class="donut" style="--p:76;--c:#5FBFA4;--sz:120px"><div class="v"><span class="pv">76%</span><small>פענוח</small></div></div><div class="name">פענוח (כולל הברות)</div></div>
+          <div class="du" data-skill="fluency"><div class="donut" style="--p:64;--c:#E8A55F;--sz:120px"><div class="v"><span class="pv">64%</span><small>שטף</small></div></div><div class="name">שטף קריאה</div></div>
+          <div class="du" data-skill="comprehension"><div class="donut" style="--p:58;--c:#E07B7B;--sz:120px"><div class="v"><span class="pv">58%</span><small>הבנה</small></div></div><div class="name">הבנת הנקרא</div></div>
         </div>
-        <div class="take"><span class="tic" data-ic="checkcircle"></span><div><b>שורה תחתונה:</b> הכיתה שולטת יפה בזיהוי אותיות ובקריאת הברות. שטף קריאה והבנה עדיין מתפתחים — כדאי לתת להם דגש בשבועות הקרובים.</div></div>
+        <div class="take" id="reportTake"><span class="tic" data-ic="checkcircle"></span><div><b>שורה תחתונה:</b> הכיתה שולטת יפה בזיהוי אותיות ובקריאת הברות. שטף קריאה והבנה עדיין מתפתחים — כדאי לתת להם דגש בשבועות הקרובים.</div></div>
       </div>
 
       <div class="card rcard">
@@ -141,9 +141,31 @@
     var MODE=(window.AvneiRuntimeMode&&window.AvneiRuntimeMode.current)||'cloud';
     (function(){var b=document.getElementById('rtBadge');if(MODE==='cloud'){b.className='rt-badge rt-cloud';document.getElementById('rtTx').textContent='נתונים חיים · ענן';}})();
     (function(){ if(location.protocol==='file:'||!window.TeacherCloud)return;
-      TeacherCloud.init().then(function(st){var cr=document.querySelector('.crumbs');
-        if(cr&&st.klass)cr.textContent='אבני יסוד · דוחות · כיתת '+st.klass.name;})
-        .catch(function(e){if(e&&/no-session|no-class/.test(e.message||''))return;}); })();
+      TeacherCloud.init().then(function(st){
+        var cr=document.querySelector('.crumbs');
+        if(cr&&st.klass)cr.textContent='אבני יסוד · דוחות · כיתת '+st.klass.name;
+        // מיומנויות כיתתיות אמיתיות (מאושר 10.7): אותיות/פענוח/הבנה מ-BKT · שטף עדיין לא נמדד
+        var sk=TeacherCloud.classSkills()||{};
+        var MAP={letters:sk.letters,decoding:sk.decoding,comprehension:sk.comprehension};
+        document.querySelectorAll('#donuts .du').forEach(function(du){
+          var key=du.dataset.skill, donut=du.querySelector('.donut'), pv=du.querySelector('.pv');
+          if(key==='fluency'){ if(pv)pv.textContent='—'; if(donut)donut.style.setProperty('--p',0); du.title='שטף עדיין לא נמדד — אין לו תא-BKT'; return; }
+          var v=MAP[key];
+          if(v&&typeof v.pct==='number'){ if(pv)pv.textContent=v.pct+'%'; if(donut)donut.style.setProperty('--p',v.pct); }
+          else { if(pv)pv.textContent='—'; if(donut)donut.style.setProperty('--p',0); du.title='אין עדיין מספיק תרגול'; }
+        });
+        var hasAny=(sk.letters||sk.decoding||sk.comprehension);
+        var take=document.getElementById('reportTake');
+        if(take){ take.innerHTML='<span class="tic" data-ic="checkcircle"></span><div><b>שורה תחתונה:</b> '+
+          (hasAny?'הנתונים נאספים מהתרגול בזמן אמת. שטף עדיין לא נמדד — יתחבר כשמנוע-השטף יופעל.'
+                 :'אין עדיין מספיק תרגול להצגת ממוצעים — הדוח יתמלא ככל שהילדים מתרגלים.')+'</div>'; }
+        var dc=document.getElementById('donuts'), rc=dc&&dc.closest('.rcard'), h2=rc&&rc.querySelector('h2');
+        if(h2&&/לדוגמה/.test(h2.textContent)) h2.textContent='התקדמות הכיתה';
+        // מגמת-החודש דורשת היסטוריה שבועית שעוד לא נאספה — לסמן ככן ולא להציג מגמה מזויפת
+        var tc=document.getElementById('chart'), trc=tc&&tc.closest('.rcard'), ts=trc&&trc.querySelector('.s');
+        if(ts) ts.textContent='נתוני דוגמה — יתמלא לאורך זמן ככל שתצטבר היסטוריה שבועית';
+        if(window.DemoIcons)document.querySelectorAll('.tic[data-ic]').forEach(function(el){if(!el.firstChild&&DemoIcons[el.dataset.ic])el.innerHTML=DemoIcons[el.dataset.ic];});
+      }).catch(function(e){if(e&&/no-session|no-class/.test(e.message||''))return;console.warn('[reports] cloud',e);}); })();
     function paintIcons(){var I=window.DemoIcons||{};document.querySelectorAll('[data-ic]').forEach(function(el){var k=el.getAttribute('data-ic');if(I[k])el.innerHTML=I[k];});}
     function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},2600);}
     document.addEventListener('click',function(e){var b=e.target.closest('[data-toast]');if(b)toast(b.getAttribute('data-toast'));});
