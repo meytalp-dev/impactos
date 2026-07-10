@@ -1,0 +1,39 @@
+name: Supabase keep-alive
+
+# Free-tier Supabase projects auto-pause after ~7 days without activity.
+# This workflow runs a tiny read query every 2 days so the pilot backend
+# never falls asleep mid-school-day. It's the no-cost alternative to the
+# paid tier — swap to paid and delete this file when the pilot scales.
+#
+# NOTE: GitHub only runs scheduled workflows from the DEFAULT branch (main),
+# so this must be on `main` to fire. You can also trigger it by hand from the
+# Actions tab (Run workflow). GitHub disables cron on repos with no activity
+# for 60 days — regular commits keep it alive.
+
+on:
+  schedule:
+    - cron: '17 5 */2 * *'   # every 2 days, 05:17 UTC (odd minute = fewer skipped runs)
+  workflow_dispatch: {}       # manual "Run workflow" button
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase (registers DB activity)
+        run: |
+          URL="https://ynxfszmpoppqrqocewcs.supabase.co"
+          # Publishable (anon) key — safe to expose; RLS is the real gate.
+          KEY="sb_publishable_Nq1wqSAjsAZMmuOXq2afUA_f_g8CEIU"
+          code=$(curl -s -o /tmp/resp.json -w "%{http_code}" -m 30 \
+            -X POST "$URL/rest/v1/rpc/get_student_bkt" \
+            -H "apikey: $KEY" \
+            -H "Authorization: Bearer $KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"p_token":"keepalive-ping"}')
+          echo "Supabase responded: HTTP $code"
+          cat /tmp/resp.json || true
+          if [ "$code" != "200" ]; then
+            echo "::error::Keep-alive failed (HTTP $code) — the project may already be paused. Restore it in the Supabase dashboard."
+            exit 1
+          fi
+          echo "✅ Backend pinged — project kept active."
