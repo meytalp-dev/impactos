@@ -50,7 +50,7 @@
   // ---- חישוב פרופיל פר-תלמיד.ה (זהה למקור בדשבורד) ----
   function blankProfile() {
     return { last: null, weekCount: 0, mastered: [], inProgress: [],
-             avgKnown: null, bktStrand: null, errorLetters: [], skills: null, boy: null };
+             avgKnown: null, bktStrand: null, errorLetters: [], skills: null, boy: null, placement: null };
   }
 
   function computeProfiles(students, events, bktRows) {
@@ -115,8 +115,9 @@
     }
     var klass = classesRes.data[0];
 
+    // select('*') עמיד: אם עמודות-ההצבה (מיגרציה 0005) עוד לא קיימות — פשוט לא יחזרו.
     var stuRes = await supabase.from('students')
-      .select('id, name').eq('class_id', klass.id).eq('active', true).order('created_at');
+      .select('*').eq('class_id', klass.id).eq('active', true).order('created_at');
     if (stuRes.error) throw stuRes.error;
     var students = stuRes.data || [];
 
@@ -140,6 +141,12 @@
       (res[2].data || []).forEach(function (a) {
         var p = profiles[a.student_id];
         if (p && !p.boy) p.boy = a.payload;
+      });
+      // החלטת-הצבה של המורה (עמודות students · מיגרציה 0005) — null אם עוד לא רצה
+      students.forEach(function (s) {
+        var p = profiles[s.id];
+        if (p) p.placement = { start_island: (s.start_island != null ? s.start_island : null),
+          confirmed: !!s.placement_confirmed, override: !!s.placement_override };
       });
     }
     return { supabase: supabase, user: user, klass: klass, students: students, profiles: profiles };

@@ -241,14 +241,17 @@
           // הוצב.ה במבדק-פתיחה (BOY) → הצגה על סולם הרכישה
           if(p.boy&&p.boy.placement){
             var pl=p.boy.placement, obs=p.boy.observations||{}, scr=p.boy.scores||{};
-            var rung=ISL_TO_RUNG[pl.start_island]; if(rung==null)rung=1;
+            // האי שהמורה אישרה/שינתה גובר על הצעת ה-BOY
+            var confirmed=!!(p.placement&&p.placement.confirmed);
+            var effIsl=(p.placement&&p.placement.start_island!=null)?p.placement.start_island:pl.start_island;
+            var rung=ISL_TO_RUNG[effIsl]; if(rung==null)rung=ISL_TO_RUNG[pl.start_island]; if(rung==null)rung=1;
             var lad=[0,1,2,3].map(function(i){return i<rung?2:(i===rung?1:null);});
             var ev=['שמיעת צלילים והברות',
               (scr.letters!=null&&scr.letters_total!=null)?('זיהתה '+scr.letters+' מתוך '+scr.letters_total+' אותיות שנדגמו'):'זיהוי אותיות',
               ((obs.obs_blending>=2)?'התחילה לחבר אות ותנועה':'חיבור אות ותנועה — בהמשך'),
               (scr.word?'קראה מילה שלמה':'קריאת מילים — בהמשך')];
-            var lvl=(pl.start_island>=5?'good':(pl.start_island===1?'gap':'part'));
-            return {id:s.id,nm:s.name,g:'f',lvl:lvl,chk:true,apr:false,arung:rung,lad:lad,ev:ev,
+            var lvl=(effIsl>=5?'good':(effIsl===1?'gap':'part'));
+            return {id:s.id,nm:s.name,g:'f',lvl:lvl,chk:true,apr:confirmed,arung:rung,lad:lad,ev:ev,
               cap:(pl.skill?pl.skill.replace('מַתְחִילִים מִכָּאן — ',''):''),
               sum:'נקודת הפתיחה מהמבדק: '+(pl.island_name||'')+'.'+(pl.on_border?' (גבול — נבחר השלב הנמוך)':''),
               oral:null,obs:null};
@@ -302,19 +305,32 @@
     function closeDrawer(){document.getElementById('drawer').classList.remove('on');document.getElementById('scrim').classList.remove('on');}
     document.getElementById('scrim').addEventListener('click',closeDrawer);
     document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDrawer();});
+    // כתיבת החלטת-ההצבה לענן (עמודות students · מיגרציה 0005). RLS students_update_own מתיר.
+    function savePlacementCloud(kid,opts){
+      try{
+        if(location.protocol==='file:'||!window.TeacherCloud||!TeacherCloud.state||!TeacherCloud.state.supabase||!kid||!kid.id)return;
+        var rung=kidRung(kid), island=(RUNGS[rung]&&RUNGS[rung].isl)||null;
+        TeacherCloud.state.supabase.from('students').update({
+          start_island:island, placement_confirmed:!!opts.confirmed,
+          placement_override:!!opts.override, placement_decided_at:new Date().toISOString()
+        }).eq('id',kid.id).then(function(res){
+          if(res&&res.error)console.warn('[placement] שמירה נכשלה — האם מיגרציה 0005 רצה?',res.error.message);
+        });
+      }catch(e){console.warn('[placement]',e);}
+    }
     document.addEventListener('click',function(e){
       var sd=e.target.closest('button[data-send]');
       if(sd){e.stopPropagation();if(sd.disabled)return;var ki=+sd.dataset.send;sd.disabled=true;sd.innerHTML='<span class="tic" data-ic="checkcircle"></span>המבדק נשלח ל'+KIDS[ki].nm;fillTics();toast('מבדק הפתיחה נשלח למכשיר של '+KIDS[ki].nm);return;}
       var pr=e.target.closest('button[data-practice]');
-      if(pr){e.stopPropagation();var pi=+pr.dataset.practice,kk=KIDS[pi],rr=kidRung(kk);if(!kk.apr){kk.apr=true;refreshCard(pi);toast('נקודת הפתיחה אושרה · '+RUNGS[rr].act+' נפתח ל'+kk.nm);}else toast(RUNGS[rr].act+' נפתח ל'+kk.nm);return;}
+      if(pr){e.stopPropagation();var pi=+pr.dataset.practice,kk=KIDS[pi],rr=kidRung(kk);if(!kk.apr){kk.apr=true;savePlacementCloud(kk,{confirmed:true,override:false});refreshCard(pi);toast('נקודת הפתיחה אושרה · '+RUNGS[rr].act+' נפתח ל'+kk.nm);}else toast(RUNGS[rr].act+' נפתח ל'+kk.nm);return;}
       var ap=e.target.closest('[data-approve]');
-      if(ap){var i=+ap.dataset.approve;KIDS[i].apr=true;var rg=RUNGS[kidRung(KIDS[i])];toast('אושר · '+KIDS[i].nm+' '+(KIDS[i].g==='m'?'מתחיל':'מתחילה')+' ב'+rg.short);openDrawer(i);refreshCard(i);return;}
+      if(ap){var i=+ap.dataset.approve;KIDS[i].apr=true;savePlacementCloud(KIDS[i],{confirmed:true,override:false});var rg=RUNGS[kidRung(KIDS[i])];toast('אושר · '+KIDS[i].nm+' '+(KIDS[i].g==='m'?'מתחיל':'מתחילה')+' ב'+rg.short);openDrawer(i);refreshCard(i);return;}
       var un=e.target.closest('[data-unapprove]');
-      if(un){var ui=+un.dataset.unapprove;KIDS[ui].apr=false;KIDS[ui].arung=null;toast('האישור בוטל · חזרנו להצעת המערכת, ממתין לאישורך');openDrawer(ui);refreshCard(ui);return;}
+      if(un){var ui=+un.dataset.unapprove;KIDS[ui].apr=false;KIDS[ui].arung=null;savePlacementCloud(KIDS[ui],{confirmed:false,override:false});toast('האישור בוטל · חזרנו להצעת המערכת, ממתין לאישורך');openDrawer(ui);refreshCard(ui);return;}
       var ch=e.target.closest('[data-change]');
       if(ch){var pk=document.getElementById('ipick');if(pk)pk.classList.toggle('hidden');return;}
       var si=e.target.closest('[data-setrung]');
-      if(si){var parts=si.dataset.setrung.split('_');var idx=+parts[0],rn=+parts[1];KIDS[idx].arung=rn;KIDS[idx].apr=true;toast('נקבע · '+KIDS[idx].nm+' '+(KIDS[idx].g==='m'?'יתחיל':'תתחיל')+' ב'+RUNGS[rn].short);openDrawer(idx);refreshCard(idx);return;}
+      if(si){var parts=si.dataset.setrung.split('_');var idx=+parts[0],rn=+parts[1];KIDS[idx].arung=rn;KIDS[idx].apr=true;savePlacementCloud(KIDS[idx],{confirmed:true,override:true});toast('נקבע · '+KIDS[idx].nm+' '+(KIDS[idx].g==='m'?'יתחיל':'תתחיל')+' ב'+RUNGS[rn].short);openDrawer(idx);refreshCard(idx);return;}
     });
 
     function fillTics(){if(!window.DemoIcons)return;document.querySelectorAll('.tic[data-ic]').forEach(function(el){if(!el.firstChild&&DemoIcons[el.dataset.ic])el.innerHTML=DemoIcons[el.dataset.ic];});}
