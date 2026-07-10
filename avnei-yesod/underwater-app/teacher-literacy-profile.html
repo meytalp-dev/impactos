@@ -236,7 +236,24 @@
       if(location.protocol==='file:')return;
       TeacherCloud.init().then(function(st){
         var LM={lead:'exc',ontrack:'good',more:'part',support:'gap','new':'new'};
-        KIDS=st.students.map(function(s){var p=st.profiles[s.id]||{};var r=TeacherCloud.rama(p);
+        var ISL_TO_RUNG={1:0,3:1,4:2,5:3};
+        KIDS=st.students.map(function(s){var p=st.profiles[s.id]||{};
+          // הוצב.ה במבדק-פתיחה (BOY) → הצגה על סולם הרכישה
+          if(p.boy&&p.boy.placement){
+            var pl=p.boy.placement, obs=p.boy.observations||{}, scr=p.boy.scores||{};
+            var rung=ISL_TO_RUNG[pl.start_island]; if(rung==null)rung=1;
+            var lad=[0,1,2,3].map(function(i){return i<rung?2:(i===rung?1:null);});
+            var ev=['שמיעת צלילים והברות',
+              (scr.letters!=null&&scr.letters_total!=null)?('זיהתה '+scr.letters+' מתוך '+scr.letters_total+' אותיות שנדגמו'):'זיהוי אותיות',
+              ((obs.obs_blending>=2)?'התחילה לחבר אות ותנועה':'חיבור אות ותנועה — בהמשך'),
+              (scr.word?'קראה מילה שלמה':'קריאת מילים — בהמשך')];
+            var lvl=(pl.start_island>=5?'good':(pl.start_island===1?'gap':'part'));
+            return {id:s.id,nm:s.name,g:'f',lvl:lvl,chk:true,apr:false,arung:rung,lad:lad,ev:ev,
+              cap:(pl.skill?pl.skill.replace('מַתְחִילִים מִכָּאן — ',''):''),
+              sum:'נקודת הפתיחה מהמבדק: '+(pl.island_name||'')+'.'+(pl.on_border?' (גבול — נבחר השלב הנמוך)':''),
+              oral:null,obs:null};
+          }
+          var r=TeacherCloud.rama(p);
           return {id:s.id,nm:s.name,g:'f',lvl:LM[r.cls]||'new',chk:false,apr:false,lad:null,ev:null,
                   cap:'',sum:'טרם ענתה על מבדק הפתיחה — הפרופיל ייבנה ממנו.',oral:null,obs:null};});
         rerenderRoster();

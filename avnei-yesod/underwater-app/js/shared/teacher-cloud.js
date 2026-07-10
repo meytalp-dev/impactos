@@ -50,7 +50,7 @@
   // ---- חישוב פרופיל פר-תלמיד.ה (זהה למקור בדשבורד) ----
   function blankProfile() {
     return { last: null, weekCount: 0, mastered: [], inProgress: [],
-             avgKnown: null, bktStrand: null, errorLetters: [], skills: null };
+             avgKnown: null, bktStrand: null, errorLetters: [], skills: null, boy: null };
   }
 
   function computeProfiles(students, events, bktRows) {
@@ -130,8 +130,17 @@
           .order('client_timestamp', { ascending: false }).limit(3000),
         supabase.from('bkt_state')
           .select('student_id, legacy_bkt, strand_bkt').in('student_id', ids),
+        supabase.from('assessments')
+          .select('student_id, assessment_type, payload, taken_at')
+          .in('student_id', ids).eq('assessment_type', 'BOY')
+          .order('taken_at', { ascending: false }),
       ]);
       profiles = computeProfiles(students, res[0].data, res[1].data);
+      // ההצבה האחרונה (BOY) פר תלמיד.ה — ordered desc, הראשון = העדכני
+      (res[2].data || []).forEach(function (a) {
+        var p = profiles[a.student_id];
+        if (p && !p.boy) p.boy = a.payload;
+      });
     }
     return { supabase: supabase, user: user, klass: klass, students: students, profiles: profiles };
   }
