@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&family=Rubik:wght@400;500;600;700;800&family=Assistant:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="pulse-core.css">
+<script src="../demo/demo-icons.js" defer></script>
 <style>
 /* ═══════ הרחבות מסך — על בסיס pulse-core.css בלבד ═══════ */
 :root {
@@ -43,6 +44,78 @@ body { font-family: "Rubik","Assistant","Heebo",Arial,sans-serif; }
   }
 }
 .brand { display: flex; align-items: center; gap: 10px; }
+/* ═══════ אחידות עם מסכי-המורה ═══════ */
+/* אותו שורש-גופן (17px) ואותו רקע-גרדיאנט תכלת-מנטה כמו demo.css. */
+html { font-size: 17px; }
+body {
+  /* צפיפות זהה למסכי-המורה: טקסט-גוף ~14px + line-height 1.5 (לא 17px/1.6).
+     הכותרות מעוגנות ל-rem (שורש 17px) אז נשארות גדולות — יחס גוף/כותרת כמו במורה. */
+  font-size: 14px; line-height: 1.5; min-height: 100dvh;
+  /* מסכי-המורה (underwater-app) עושים override ל-demo.css: רקע לבן חלק, Rubik, letter-spacing. */
+  background: #FFFFFF;
+  letter-spacing: -.01em;
+}
+/* כותרות בגודל+משקל של demo.css (.sec-title 21px/800 · .hero h1 25px/800) */
+.hero h1 { font-size: 25px; font-weight: 800; }
+.section-title { font-size: 21px; font-weight: 800; }
+.stat-num { font-weight: 800; }
+.topbar .crumbs { font-size: 15px; font-weight: 600; color: var(--muted); }
+.topbar .crumbs b { color: var(--ink); font-weight: 800; }
+.topbar .date { font-size: 14px; font-weight: 600; color: var(--muted);
+  background: #F4F7F7; padding: 7px 16px; border-radius: 999px; }
+/* מסך-מוצר, לא הדגמה: מסתירים תוויות "דמו" (הזרעת-דוגמה עדיין דרך ?seed=1) */
+.demo-badge, .demo-banner { display: none !important; }
+
+/* ═══════ APP SHELL + RAIL (זהה לתפריט-הצד של מסכי-המורה) ═══════ */
+.app { position: relative; z-index: 2; display: flex; min-height: 100dvh; }
+.rail {
+  flex: 0 0 222px; position: sticky; top: 0; align-self: flex-start; height: 100dvh;
+  display: flex; flex-direction: column; gap: 4px; padding: 20px 14px 16px;
+  /* זהה ל-teacher-home: רקע כמעט-לבן אטום, בלי blur, גבול דק. */
+  background: #FBFDFD; border-left: 1px solid #EEF2F2;
+}
+.rail .logo {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none;
+  padding: 6px 0 16px; margin-bottom: 8px; border-bottom: 1px solid rgba(52,96,103,.12);
+}
+.rail .logo .gm { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center;
+  background: var(--surface); box-shadow: var(--shadow-card); }
+.rail .logo .gm svg { width: 22px; height: 22px; }
+.rail .logo b { font-size: 15px; font-weight: 900; color: var(--aqua-deep); text-align: center; line-height: 1.15; }
+.rail .item {
+  display: flex; align-items: center; gap: 13px; width: 100%; padding: 12px 14px; border: none; cursor: pointer;
+  background: transparent; border-radius: 14px; font-family: inherit; font-weight: 600; font-size: 15px;
+  color: var(--muted); text-align: right; text-decoration: none; transition: background .15s, color .15s; position: relative;
+}
+.rail .item .ic { width: 26px; height: 24px; flex: 0 0 auto; display: grid; place-items: center; color: var(--muted); transition: color .15s; }
+.rail .item .ic svg { width: 23px; height: 23px; display: block; }
+.rail .item:hover { background: var(--surface); color: var(--ink); }
+.rail .item:hover .ic { color: var(--ink); }
+.rail .item.active { background: var(--surface); color: var(--ink); font-weight: 800; box-shadow: var(--shadow-card); }
+.rail .item.active .ic { color: var(--aqua-deep); }
+.rail .item.active::before { content: ''; position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+  width: 5px; height: 26px; border-radius: 6px; background: var(--aqua-deep); }
+.rail .me { margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 12px 10px 4px; border-top: 1px solid rgba(52,96,103,.12); }
+.rail .me .av { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; flex: 0 0 auto;
+  color: #fff; background: linear-gradient(135deg, var(--aqua-deep), #7C6BD0); font-size: 15px; box-shadow: var(--shadow-card); }
+.rail .me small { font-size: 13px; color: var(--ink); font-weight: 700; line-height: 1.15; }
+.rail .me small span { display: block; font-size: 11px; color: var(--muted); font-weight: 600; }
+.main { flex: 1; min-width: 0; }
+/* טאבים של תצוגות-הפולס (לשעבר תפריט-הצד) — כעת אופקיים בראש התוכן */
+.view-tabs { display: flex; gap: 6px; flex-wrap: wrap; max-width: 1120px; margin: 0 auto; padding: 16px clamp(16px,3vw,20px) 0; }
+.view-tab { background: transparent; border: none; font-family: inherit; font-size: .92rem; font-weight: 600;
+  color: var(--muted); padding: 9px 16px; border-radius: 12px; cursor: pointer; transition: background .15s, color .15s; }
+.view-tab:hover { background: var(--surface); color: var(--ink); }
+.view-tab.active { background: var(--surface); color: var(--aqua-deep); box-shadow: var(--shadow-card); }
+@media (max-width: 900px) {
+  .app { display: block; }
+  .rail { flex-direction: row; height: auto; width: auto; position: sticky; top: 0; z-index: 45; overflow-x: auto;
+    gap: 6px; padding: 10px 14px; border-left: none; border-bottom: 1px solid rgba(82,189,181,.18); }
+  .rail .logo, .rail .me { display: none; }
+  .rail .item { width: auto; white-space: nowrap; padding: 8px 12px; }
+  .rail .item.active::before { display: none; }
+}
+@media print { .rail, .view-tabs, .demo-banner { display: none !important; } #container .view { display: block !important; } }
 .brand-mark {
   width: 34px; height: 34px;
   border-radius: 11px;
@@ -782,38 +855,36 @@ details.drawer[open] summary::after { content: "–"; }
 <body>
 
 <!-- Top bar -->
-<header class="topbar">
-  <div class="brand">
-    <div class="brand-mark" aria-hidden="true">פ</div>
-    <div>
-      <div class="brand-title">פולס · דשבורד מחנכת</div>
-      <div class="brand-sub">מבט רך על איך הילדים מרגישים</div>
-    </div>
-  </div>
-  <div class="topbar-meta">
-    <span class="demo-badge">נתוני הדגמה בלבד · מיועד להצגת חוויית שימוש</span>
-    <label class="visually-hidden" for="class-select">בחירת כיתה</label>
-    <select class="class-select" id="class-select">
-      <option value="layer">מבט שכבה א׳</option>
-      <option value="א'1">כיתה א'1</option>
-      <option value="א'2">כיתה א'2</option>
-      <option value="א'3">כיתה א'3</option>
-      <option value="א'4">כיתה א'4</option>
-    </select>
-    <span id="biweek-label">דמו פנימי · יוני 2026</span>
-  </div>
-</header>
+<div class="app">
+  <nav class="rail" aria-label="אזורי דשבורד הפולס">
+    <a class="logo" href="../avnei-yesod/underwater-app/teacher-home.html" title="חזרה למסכי המורה"><span class="gm"><svg viewBox="0 0 24 24" fill="none" stroke="#0F7E72" stroke-width="2.3" stroke-linecap="round"><path d="M6 18v-5"/><path d="M12 18V7"/><path d="M18 18v-8"/></svg></span><b>אבני<br>יסוד</b></a>
+    <button type="button" class="item view-tab active" data-view="overview"><span class="ic" data-ic="eye"></span><span class="t">תמונת מצב</span></button>
+    <button type="button" class="item view-tab" data-view="trends"><span class="ic" data-ic="trend"></span><span class="t">מגמות</span></button>
+    <button type="button" class="item view-tab" data-view="questions"><span class="ic" data-ic="chat"></span><span class="t">שאלות הפולס</span></button>
+    <button type="button" class="item view-tab" data-view="tools"><span class="ic" data-ic="tools"></span><span class="t">כלים והתערבויות</span></button>
+    <div class="me"><div class="av" id="meAv">מ</div><small id="meNm">מיטל פלג<span id="meCls">מורה · א׳1</span></small></div>
+  </nav>
 
-<div class="layout">
-  <aside class="side-nav" id="side-nav" aria-label="אזורי הדשבורד">
-    <button type="button" class="side-link active" data-view="overview">תמונת מצב</button>
-    <button type="button" class="side-link" data-view="trends">מגמות</button>
-    <button type="button" class="side-link" data-view="questions">שאלות הפולס</button>
-    <button type="button" class="side-link" data-view="tools">כלים והתערבויות</button>
-  </aside>
-  <div class="container" id="container">
-    <!-- Filled by JS -->
-  </div>
+  <main class="main">
+    <header class="topbar">
+      <div class="crumbs"><b>פולס</b> · אבני יסוד · דשבורד מחנכת</div>
+      <div class="topbar-meta">
+        <label class="visually-hidden" for="class-select">בחירת כיתה</label>
+        <select class="class-select" id="class-select">
+          <option value="layer">מבט שכבה א׳</option>
+          <option value="א'1">כיתה א'1</option>
+          <option value="א'2">כיתה א'2</option>
+          <option value="א'3">כיתה א'3</option>
+          <option value="א'4">כיתה א'4</option>
+        </select>
+        <span class="date" id="biweek-label">יוני 2026</span>
+      </div>
+    </header>
+
+    <div class="container" id="container">
+      <!-- Filled by JS -->
+    </div>
+  </main>
 </div>
 
 <!-- Demo banner -->
@@ -927,7 +998,7 @@ function applyView() {
   document.querySelectorAll('#container .view').forEach(el => {
     el.style.display = el.dataset.view === activeView ? '' : 'none';
   });
-  document.querySelectorAll('.side-link').forEach(b =>
+  document.querySelectorAll('.view-tab').forEach(b =>
     b.classList.toggle('active', b.dataset.view === activeView));
 }
 function setView(v) {
@@ -1742,7 +1813,7 @@ function renderLayerView(container) {
           <div class="hero-sun">${ICONS.sun}</div>
           <div>
             <h1>${greeting()}, מבט על שכבה א׳</h1>
-            <div class="hero-date">דמו פנימי · יוני 2026 · תצוגת רכזת שכבה</div>
+            <div class="hero-date">יוני 2026 · תצוגת רכזת שכבה</div>
           </div>
         </div>
         <span class="demo-badge">נתוני הדגמה בלבד · מיועד להצגת חוויית שימוש</span>
@@ -1834,7 +1905,7 @@ function renderNavStrip(classId) {
 function renderFooter() {
   return `
     <footer class="page-foot">
-      פולס א׳-ב׳ · אימפקט.OS · דמו פנימי, יוני 2026 — כל השמות והנתונים בדויים.<br>
+      פולס א׳-ב׳ · אימפקט.OS · יוני 2026 — כל השמות והנתונים בדויים.<br>
       הפיילוט הראשון: 4 כיתות בכיתה א׳, בכ־4 בתי ספר או מסגרות פיילוט, בכפוף לאישור סופי. תחילת פיילוט: 1.9.2026.<br>
       המערכת מציעה איתותים רכים בלבד — לא אבחנות, לא ציונים, ובלי בינה מלאכותית.
     </footer>
@@ -1846,9 +1917,10 @@ function render() {
   const classId = document.getElementById('class-select').value;
   const container = document.getElementById('container');
 
-  // תפריט הצד רלוונטי רק לתצוגת כיתה — במבט שכבה מסתירים
-  const sideNav = document.getElementById('side-nav');
-  if (sideNav) sideNav.style.display = classId === 'layer' ? 'none' : '';
+  // פריטי-התצוגה ברייל רלוונטיים רק לתצוגת כיתה — במבט שכבה מסתירים
+  document.querySelectorAll('.rail .view-tab').forEach(function (el) {
+    el.style.display = classId === 'layer' ? 'none' : '';
+  });
 
   if (classId === 'layer') {
     return renderLayerView(container);
@@ -1963,7 +2035,7 @@ function render() {
           <div class="hero-sun">${ICONS.sun}</div>
           <div>
             <h1>${greeting()}${teacherName ? ', ' + escapeHtml(teacherName) : ''}</h1>
-            <div class="hero-date">דמו פנימי · יוני 2026 · כיתה ${escapeHtml(classId)} · פולס ${data.biweek}</div>
+            <div class="hero-date">יוני 2026 · כיתה ${escapeHtml(classId)} · פולס ${data.biweek}</div>
           </div>
         </div>
         <div class="hero-side">
@@ -2244,7 +2316,7 @@ document.addEventListener('keydown', e => {
   select.addEventListener('change', render);
 
   // תפריט הצד — מעבר בין תצוגות
-  document.querySelectorAll('.side-link').forEach(b =>
+  document.querySelectorAll('.view-tab').forEach(b =>
     b.addEventListener('click', () => setView(b.dataset.view)));
 
   // ═══════ Auto-load demo data ב-?seed=1 / ?demo=1 ═══════

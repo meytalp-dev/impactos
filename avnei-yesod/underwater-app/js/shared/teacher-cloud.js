@@ -33,8 +33,9 @@
   }
 
   async function initClient() {
-    var mod = await import(SB_JS);
-    await loadConfig();
+    // הרצה במקביל: ייבוא ה-client מ-CDN + טעינת הקונפיג המקומי (אין תלות ביניהם).
+    var results = await Promise.all([import(SB_JS), loadConfig()]);
+    var mod = results[0];
     return mod.createClient(
       window.AvneiCloudConfig.SUPABASE_URL,
       window.AvneiCloudConfig.SUPABASE_PUBLISHABLE_KEY,
