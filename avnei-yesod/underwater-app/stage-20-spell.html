@@ -250,11 +250,18 @@
       // מגוון אות ראשונה + תנועה (patach/kamatz). ב/כ/פ: בַּת (דגש קל טופל ע"י decompose).
       var WORD_TEXTS = ['בַּת', 'דַּג', 'גַּן', 'יָם', 'רַק', 'שַׁר'];
 
+      // סדר אקראי בכל סשן — כל המילים באותה רמה (דו-צירופיות), אין רמפת-קושי,
+      // ולכן ערבוב מונע שינון-רצף בלי לפגוע בפדגוגיה.
       function resolveWords() {
-        return WORD_TEXTS.map(function (t) {
+        var words = WORD_TEXTS.map(function (t) {
           var w = WA && WA.getWordByText ? WA.getWordByText(t) : null;
           return w || { text: t, key: (WA ? WA.wordKey(t) : t), first_letter: t.charAt(0), level: '2cv' };
         });
+        for (var i = words.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var tmp = words[i]; words[i] = words[j]; words[j] = tmp;
+        }
+        return words;
       }
 
       var NONI_PNG = {

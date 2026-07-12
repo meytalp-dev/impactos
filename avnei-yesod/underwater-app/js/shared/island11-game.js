@@ -203,6 +203,13 @@
 
     // בניית התור מהתוכן ה-inline (בלי fetch)
     var rounds = (game.mode === 'missing') ? MISSING_ROUNDS : WHERE_ROUNDS;
+    // סדר אקראי — הסבבים מקובצים לפי סצנה, אין רמפת-קושי, ולכן ערבוב מונע
+    // שינון-רצף בין ריצות בלי לפגוע בפדגוגיה.
+    rounds = rounds.slice();
+    for (var s = rounds.length - 1; s > 0; s--) {
+      var t = Math.floor(Math.random() * (s + 1));
+      var tmp = rounds[s]; rounds[s] = rounds[t]; rounds[t] = tmp;
+    }
     queue = rounds.map(function (r) { return toConfig(r, game); });
 
     $('startVeil').hidden = false;

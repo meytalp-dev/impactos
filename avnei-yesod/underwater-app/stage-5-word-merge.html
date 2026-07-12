@@ -522,12 +522,9 @@
   <script src="js/templates/mechanic-match-word-to-image.js"></script>
 
   <script>
-    // Global error trap
+    // Global error trap — לוג לקונסול בלבד; לעולם לא להציג stack גולמי לילד.ה.
     window.addEventListener('error', function (e) {
-      const box = document.createElement('div');
-      box.style.cssText = 'position:fixed;top:60px;left:20px;right:20px;background:#FFD3D8;color:#9c1a3a;padding:14px;border-radius:10px;z-index:99999;font-family:monospace;font-size:11px;direction:ltr;text-align:left;white-space:pre-wrap;max-height:50vh;overflow:auto';
-      box.textContent = 'JS ERROR: ' + (e.message || 'unknown') + '\nFile: ' + (e.filename || '?') + ':' + (e.lineno || '?') + '\n\n' + (e.error && e.error.stack ? e.error.stack : '');
-      document.body.appendChild(box);
+      console.error('JS ERROR:', e.message || 'unknown', (e.filename || '?') + ':' + (e.lineno || '?'), e.error && e.error.stack ? e.error.stack : '');
     });
 
     (function () {
@@ -765,10 +762,6 @@
           document.getElementById('startOverlay').classList.add('hidden');
           startRound();
         } catch (e) {
-          const errBox = document.createElement('div');
-          errBox.style.cssText = 'position:fixed;top:60px;left:20px;right:20px;background:#FFD3D8;color:#9c1a3a;padding:14px;border-radius:10px;z-index:9999;font-family:monospace;font-size:12px;direction:ltr;text-align:left';
-          errBox.textContent = 'ERROR: ' + (e && e.message ? e.message : String(e)) + '\n' + (e && e.stack ? e.stack.split('\n').slice(0,5).join('\n') : '');
-          document.body.appendChild(errBox);
           console.error('startRound failed:', e);
         }
       });

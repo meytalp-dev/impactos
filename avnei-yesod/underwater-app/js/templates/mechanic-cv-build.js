@@ -320,7 +320,7 @@
       }
       if (!state.selectedVowel) {
         result.innerHTML = state.selectedLetter + '<span class="cv-build-result__placeholder">?</span>';
-        anchor.textContent = 'בַּחֲרוּ נִיקּוּד';
+        anchor.textContent = 'בַּחֲרוּ נִקּוּד';
         display.classList.remove('built');
         return;
       }
@@ -367,7 +367,7 @@
         if (anchorWord) {
           anchor.innerHTML = cv + ' = <strong>' + anchorWord + '</strong> ✓';
         } else {
-          anchor.innerHTML = '<strong>כל הכבוד!</strong> ✓';
+          anchor.innerHTML = '<strong>כָּל הַכָּבוֹד!</strong> ✓';
         }
 
         state.locked = true;
@@ -403,7 +403,7 @@
           anchor.innerHTML = '<strong>הִנֵּה הַצֵּרוּף — הַעְתִּיקוּ</strong>';
         } else if (state.attempts >= 2 && state.scaffoldLevel < 1) {
           state.scaffoldLevel = 1;
-          anchor.innerHTML = '<strong>הָאוֹת הִיא ' + t.letter + '</strong> — בַּחֲרוּ נִיקּוּד';
+          anchor.innerHTML = '<strong>הָאוֹת הִיא ' + t.letter + '</strong> — בַּחֲרוּ נִקּוּד';
         } else {
           anchor.textContent = 'לֹא בְּדִיּוּק — נַסּוּ שׁוּב';
         }

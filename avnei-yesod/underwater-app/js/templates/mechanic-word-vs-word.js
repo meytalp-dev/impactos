@@ -32,12 +32,39 @@
     }
   }
 
-  // Pick the "most similar" distractor — מילה באותה אות-ראש או אורך.
+  // ניקוד → מחלקת-צליל. הומופון = אותו רצף עיצורים + אותו רצף מחלקות-צליל.
+  // פתח·קמץ=/a/ · צירי·סגול=/e/ · קובוץ·שורוק=/u/ · שווא=ø. מסיח כזה נשמע זהה
+  // למטרה במשימת-האזנה → בלתי-מדיד באוזן, חייב להיפסל (מיטל: מסיח-שמע מובחן).
+  const VOWEL_SOUND = {
+    'ַ': 'a', 'ָ': 'a',   // patach, kamatz
+    'ֵ': 'e', 'ֶ': 'e',   // tzere, segol
+    'ִ': 'i',                  // hiriq
+    'ֹ': 'o', 'ֺ': 'o',   // holam, holam-haser
+    'ֻ': 'u',                  // kubutz
+    'ְ': '',                   // shva
+  };
+  function phoneticSig(text) {
+    if (typeof text !== 'string') return '';
+    let cons = '', vow = '';
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (ch >= 'א' && ch <= 'ת') cons += ch;          // אות עברית
+      else if (Object.prototype.hasOwnProperty.call(VOWEL_SOUND, ch)) vow += VOWEL_SOUND[ch];
+      // dagesh/shuruk-mark (ּ) וכל היתר — לא משפיעים על השלד להשוואה.
+    }
+    return cons + '|' + vow;
+  }
+
+  // Pick the "most similar" distractor — מילה באותה אות-ראש או אורך, אך לא הומופון.
   function pickSimilarDistractor(word) {
     const WA = getWA();
     if (!WA) return null;
+    const targetSig = phoneticSig(word.text);
     const sameLevel = WA.getWords(word.level || WA.classifyWordLevel(word.text))
-      .filter(function (w) { return w.text !== word.text; });
+      .filter(function (w) {
+        // לא אותה מילה, ולא מילה שנשמעת זהה (הומופון ניקודי).
+        return w.text !== word.text && phoneticSig(w.text) !== targetSig;
+      });
     // עדיפות לאותה אות-ראש (פעם 1).
     const sameFirst = sameLevel.filter(function (w) { return w.first_letter === word.first_letter; });
     const pool = sameFirst.length > 0 ? sameFirst : sameLevel;
