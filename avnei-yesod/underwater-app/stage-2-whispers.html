@@ -124,7 +124,7 @@
   <script>
   // ============================================================
   // ים השמועות · Whispers Memory · אי 2 P2
-  // מנגנון: memory-pair על עיצור-סוגר (closing phoneme)
+  // מנגנון: memory-pair על חריזה (rime) — זוג = אותו צליל-סוף מלא (תנועה+עיצור)
   // תואם משימה 2ב של ראמ"ה (4+/6 רף תקין)
   // ============================================================
 
@@ -137,7 +137,7 @@
     data: null,
     rounds: [],
     idx: 0,
-    cards: [],       // current round cards: {word, phoneme_end, audio, flipped, matched}
+    cards: [],       // current round cards: {word, rime, audio, flipped, matched}
     selection: [],   // indices in state.cards (max 2)
     mistakesInRound: 0,
     totalMistakes: 0,
@@ -210,7 +210,7 @@
     const cards = round.cards.map(w => ({
       word: w,
       display: wordsData[w].display || w,
-      phoneme_end: wordsData[w].phoneme_end,
+      rime: wordsData[w].rime,
       audio: wordsData[w].audio,
       flipped: false,
       matched: false,
@@ -288,7 +288,7 @@
       const [i1, i2] = state.selection;
       const c1 = state.cards[i1];
       const c2 = state.cards[i2];
-      const isMatch = c1.phoneme_end === c2.phoneme_end;
+      const isMatch = c1.rime === c2.rime;
 
       // חשיפה ראשונית (לפחות קלף אחד נחשף עכשיו לראשונה) = ניחוש-חקירה, לא טעות
       const exploratory = !c1.wasSeenBeforeTap || !c2.wasSeenBeforeTap;
@@ -313,11 +313,9 @@
     elNoni.classList.remove('pulsing');
     showNoniBubble('יפה! אותו צליל בסוף!');
 
-    // Feedback audio: "מצאתם!" → phoneme-end-X
-    const phonemeKey = state.data.phoneme_end_audio[c1.phoneme_end];
+    // Feedback audio: "יפה! אותו צליל בסוף!" — חריזה, בלי צליל מבודד
     playChain([
-      { key: 'whispers-feedback-correct-pair', delayAfter: 350 },
-      { key: phonemeKey, delayAfter: 0 },
+      { key: 'whispers-feedback-correct-pair', delayAfter: 0 },
     ]);
 
     spawnGlowParticles(getCardEl(i1));
@@ -330,7 +328,7 @@
     logEvent('pair_correct', {
       is_correct: true,
       pair: [c1.word, c2.word],
-      phoneme_end: c1.phoneme_end,
+      rime: c1.rime,
       mistakes_in_round: state.mistakesInRound,
     });
 
@@ -368,7 +366,7 @@
       exploratory: !!exploratory,
       measured: !exploratory,
       pair: [c1.word, c2.word],
-      phonemes: [c1.phoneme_end, c2.phoneme_end],
+      rimes: [c1.rime, c2.rime],
       mistakes_in_round: state.mistakesInRound,
     });
 
@@ -387,15 +385,13 @@
       showNoniBubble('אופס, צלילי הסוף שונים. נסו שוב!');
       setTimeout(() => revertSelection(), 1500);
     } else if (state.mistakesInRound === 2) {
-      // Mistake 2: play the closing phoneme of each, then revert
+      // Mistake 2: replay the two words so the child hears the endings in context (חריזה)
       showNoniBubble('הקשיבו לצליל בסוף של כל מילה');
       AvneiAudio.play('whispers-hint-listen-to-ends');
-      const key1 = state.data.phoneme_end_audio[c1.phoneme_end];
-      const key2 = state.data.phoneme_end_audio[c2.phoneme_end];
       setTimeout(() => {
         playChain([
-          { key: key1, delayAfter: 800 },
-          { key: key2, delayAfter: 0 },
+          { key: c1.audio, delayAfter: 900 },
+          { key: c2.audio, delayAfter: 0 },
         ]);
       }, 1400);
       setTimeout(() => revertSelection(), 4200);
@@ -425,14 +421,14 @@
   }
 
   function highlightMatchingPair() {
-    // Find any unmatched pair sharing a closing phoneme — glow them as a hint
-    const byPhoneme = {};
+    // Find any unmatched pair sharing a rime — glow them as a hint
+    const byRime = {};
     state.cards.forEach((c, idx) => {
       if (c.matched) return;
-      (byPhoneme[c.phoneme_end] = byPhoneme[c.phoneme_end] || []).push(idx);
+      (byRime[c.rime] = byRime[c.rime] || []).push(idx);
     });
-    for (const p in byPhoneme) {
-      const idxs = byPhoneme[p];
+    for (const p in byRime) {
+      const idxs = byRime[p];
       if (idxs.length >= 2) {
         getCardEl(idxs[0]).classList.add('hint-glow');
         getCardEl(idxs[1]).classList.add('hint-glow');

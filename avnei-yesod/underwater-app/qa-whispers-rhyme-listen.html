@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA האזנה · לחישות · רדיזיין חריזה</title>
+<style>
+  :root { --teal:#0EA391; --coral:#E27F66; --ink:#26505C; }
+  * { box-sizing:border-box; }
+  body { font-family:'Heebo',system-ui,sans-serif; margin:0; background:#F4FBFC; color:var(--ink); padding:24px; max-width:720px; }
+  h1 { font-size:22px; margin:0 0 4px; }
+  .sub { color:#5B7B84; margin:0 0 20px; font-size:14px; line-height:1.5; }
+  .fam { margin:26px 0 8px; }
+  .fam-head { display:flex; align-items:center; gap:12px; border-bottom:2px solid #D6EEF0; padding-bottom:8px; margin-bottom:8px; }
+  .fam-title { font-weight:800; font-size:18px; color:var(--teal); }
+  .fam-rime { font-size:15px; color:#5B7B84; }
+  .playall { margin-inline-start:auto; border:none; background:var(--coral); color:#fff; border-radius:20px; padding:7px 14px; font-size:13px; font-weight:700; cursor:pointer; }
+  .playall:active { transform:scale(.95); }
+  .row { display:flex; align-items:center; gap:14px; background:#fff; border:1px solid #E1EEF0; border-radius:14px; padding:10px 16px; margin:7px 0; box-shadow:0 1px 3px rgba(0,0,0,.04); }
+  .play { flex:0 0 auto; width:46px; height:46px; border-radius:50%; border:none; background:var(--teal); color:#fff; font-size:19px; cursor:pointer; }
+  .play:active { transform:scale(.94); }
+  .meta { flex:1 1 auto; min-width:0; }
+  .word { font-size:26px; font-weight:800; }
+  .key { font-size:11px; color:#8AA5AC; font-family:monospace; }
+  .tag { display:inline-block; font-size:11px; font-weight:700; border-radius:6px; padding:2px 7px; margin-inline-start:8px; vertical-align:middle; }
+  .tag.new { background:#FFF4E9; color:#C77A2E; }
+  .tag.exist { background:#E7F3F1; color:#0EA391; }
+  .row.flag { background:#FFF4E9; border-color:#FFD9B0; }
+  .listen { font-size:12.5px; color:#8AA5AC; margin-top:2px; }
+  .row.flag .listen { color:#C77A2E; font-weight:700; }
+  .verdict { flex:0 0 auto; display:flex; gap:6px; }
+  .verdict button { border:1px solid #D6E4E6; background:#fff; border-radius:8px; padding:6px 10px; cursor:pointer; font-size:14px; }
+  .verdict button.ok.on { background:#D8F5E6; border-color:#7CE7B4; }
+  .verdict button.bad.on { background:#FFE0E0; border-color:#FFB0B0; }
+  .note { font-size:12.5px; color:#5B7B84; margin-top:22px; line-height:1.6; background:#fff; border:1px solid #E1EEF0; border-radius:12px; padding:14px 16px; }
+</style>
+</head>
+<body>
+  <h1>🎧 QA האזנה — "ים השמועות" · רדיזיין חריזה (9.7)</h1>
+  <p class="sub">
+    המשחקון עבר מ"עיצור סוגר" ל<strong>חריזה אמיתית</strong>. הבדיקה החשובה: לחצי
+    <strong>▶ נגני משפחה</strong> — כל 4 המילים צריכות להישמע <strong>מתחרזות</strong> (אותו סוף מלא, כולל התנועה).
+    אם מילה אחת "בולטת" ולא מתלכדת — סמני ✗.<br>
+    <span class="tag exist">קיים</span> = הקלטה ותיקה &nbsp; <span class="tag new">חדש 9.7</span> = הקלטה חדשה לבדיקה מדוקדקת.
+  </p>
+
+  <div id="app"></div>
+  <button id="dlBtn" style="margin-top:18px;border:none;background:var(--coral);color:#fff;border-radius:20px;padding:10px 20px;font-size:15px;font-weight:700;cursor:pointer">⬇️ הורד דוח</button>
+
+  <p class="note">
+    ✅ <strong>whispers סגור.</strong> כל הקליפים אושרו. משפחת ‑ָר נסגרה עם 3 מילים (נהר·שער·מספר) — אלבנלאבס לא הצליח מלרע נקי על מילה רביעית. אם משהו לא מתחרז — סמני ✗, "⬇️ הורד דוח" ואמרי "הורדתי". הסימון נשמר מקומית.
+  </p>
+
+<script>
+const FAMILIES = [
+  { title:'משפחת ‑וֹן', rime:'/on/', words:[
+    { k:'word-shaon',  w:'שָׁעוֹן',  new:false },
+    { k:'word-limon',  w:'לִימוֹן',  new:false },
+    { k:'word-balon',  w:'בָּלוֹן',  new:false },
+    { k:'word-aron',   w:'אָרוֹן',   new:false },
+  ]},
+  { title:'משפחת ‑וֹם', rime:'/om/', words:[
+    { k:'word-yom',    w:'יוֹם',    new:false },
+    { k:'word-shalom', w:'שָׁלוֹם',  new:false },
+    { k:'word-chalom', w:'חֲלוֹם',  new:false },
+    { k:'word-makom',  w:'מָקוֹם',  new:false },
+  ]},
+  { title:'משפחת ‑יר', rime:'/ir/', words:[
+    { k:'word-shir',   w:'שִׁיר',   new:false },
+    { k:'word-sir',    w:'סִיר',    new:true, listen:'/sir/ — ⚠️ לוודא שונה מ"עיר"!', flag:true },
+    { k:'word-kir',    w:'קִיר',    new:true, listen:'/kir/ — מתחרז עם שיר/סיר' },
+    { k:'word-ir',     w:'עִיר',    new:true, listen:'/ir/ — ⚠️ לוודא שונה מ"סיר"!', flag:true },
+  ]},
+  { title:'משפחת ‑ָר', rime:'/ar/', words:[
+    { k:'word-nahar',  w:'נָהָר',   new:false },
+    { k:'word-kikar',  w:'כִּכָּר',   new:true, listen:'/ki-kar/ — החליף את שַׁעַר (ע׳ גרונית). לוודא מלרע נקי שמתחרז עם נהר/מספר' },
+    { k:'word-mispar', w:'מִסְפָּר',  new:false },
+  ]},
+  { title:'משפחת ‑ָל', rime:'/al/', words:[
+    { k:'word-gal',    w:'גַּל',    new:false },
+    { k:'word-gamal',  w:'גָּמָל',   new:false },
+    { k:'word-migdal', w:'מִגְדָּל',  new:false },
+    { k:'word-tal',    w:'טַל',    new:true, listen:'/tal/ — מתחרז עם גל' },
+  ]},
+];
+
+const store = JSON.parse(localStorage.getItem('qa-whispers-rhyme')||'{}');
+const app = document.getElementById('app');
+let audio = new Audio();
+
+function play(key){ audio.pause(); audio = new Audio('assets/audio/'+key+'.mp3'); audio.play(); }
+function playSeq(keys){
+  audio.pause();
+  let i = 0;
+  const next = () => {
+    if (i >= keys.length) return;
+    audio = new Audio('assets/audio/'+keys[i]+'.mp3');
+    audio.onended = () => { i++; setTimeout(next, 450); };
+    audio.play();
+  };
+  next();
+}
+
+FAMILIES.forEach(fam => {
+  const box = document.createElement('div'); box.className = 'fam';
+  const head = document.createElement('div'); head.className = 'fam-head';
+  head.innerHTML = `<span class="fam-title">${fam.title}</span><span class="fam-rime">${fam.rime}</span>`;
+  const playAll = document.createElement('button');
+  playAll.className = 'playall'; playAll.textContent = '▶ נגני משפחה';
+  playAll.onclick = () => playSeq(fam.words.map(x=>x.k));
+  head.appendChild(playAll);
+  box.appendChild(head);
+
+  fam.words.forEach(c => {
+    const row = document.createElement('div');
+    row.className = 'row' + (c.flag?' flag':'');
+    row.innerHTML = `
+      <button class="play" title="נגן">▶</button>
+      <div class="meta">
+        <div class="word">${c.w}<span class="tag ${c.new?'new':'exist'}">${c.new?'חדש 9.7':'קיים'}</span></div>
+        ${c.listen?`<div class="listen">👂 ${c.listen}</div>`:''}
+        <div class="key">${c.k}.mp3</div>
+      </div>
+      <div class="verdict">
+        <button class="ok ${store[c.k]==='ok'?'on':''}">✓</button>
+        <button class="bad ${store[c.k]==='bad'?'on':''}">✗</button>
+      </div>`;
+    row.querySelector('.play').onclick = () => play(c.k);
+    const ok = row.querySelector('.ok'), bad = row.querySelector('.bad');
+    ok.onclick  = () => { store[c.k]='ok';  ok.classList.add('on'); bad.classList.remove('on'); save(); };
+    bad.onclick = () => { store[c.k]='bad'; bad.classList.add('on'); ok.classList.remove('on'); save(); };
+    box.appendChild(row);
+  });
+  app.appendChild(box);
+});
+function save(){ localStorage.setItem('qa-whispers-rhyme', JSON.stringify(store)); }
+
+document.getElementById('dlBtn').onclick = function(){
+  const clips = [];
+  FAMILIES.forEach(fam => fam.words.forEach(c => clips.push({ k:c.k, w:c.w, fam:fam.title, rime:fam.rime, listen:c.listen })));
+  const bad = clips.filter(c => store[c.k]==='bad');
+  const ok  = clips.filter(c => store[c.k]==='ok');
+  const un  = clips.filter(c => !store[c.k]);
+  let md = '# QA האזנה — "ים השמועות" · חריזה\n\n';
+  md += 'נבדקו: ' + (ok.length+bad.length) + '/' + clips.length + '  ·  ✓ תקין: ' + ok.length + '  ·  ✗ בעיה: ' + bad.length + '\n\n';
+  md += '## ✗ בעיות (' + bad.length + ')\n' + (bad.length ? bad.map(c => '- ✗ ' + c.w + ' [' + c.fam + ' ' + c.rime + '] (' + c.k + '.mp3)' + (c.listen?' — '+c.listen:'')).join('\n') : '—');
+  md += '\n\n## ✓ תקינים (' + ok.length + ')\n' + (ok.length ? ok.map(c => '- ✓ ' + c.w + ' [' + c.fam + '] (' + c.k + '.mp3)').join('\n') : '—');
+  md += '\n\n## ⬜ טרם נבדק (' + un.length + ')\n' + (un.length ? un.map(c => '- ⬜ ' + c.w + ' [' + c.fam + '] (' + c.k + '.mp3)').join('\n') : '—');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([md], {type:'text/markdown'}));
+  a.download = 'qa-rhyme-report.md'; a.click();
+};
+</script>
+</body>
+</html>

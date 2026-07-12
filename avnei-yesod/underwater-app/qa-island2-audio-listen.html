@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA האזנה · אי 2 · קליפים שהוקלטו מחדש</title>
+<style>
+  :root { --teal:#0EA391; --coral:#E27F66; --ink:#26505C; }
+  * { box-sizing:border-box; }
+  body { font-family:'Heebo',system-ui,sans-serif; margin:0; background:#F4FBFC; color:var(--ink); padding:24px; }
+  h1 { font-size:22px; margin:0 0 4px; }
+  .sub { color:#5B7B84; margin:0 0 20px; font-size:14px; }
+  .group { margin:22px 0 8px; font-weight:800; font-size:16px; color:var(--teal); border-bottom:2px solid #D6EEF0; padding-bottom:6px; }
+  .row { display:flex; align-items:center; gap:14px; background:#fff; border:1px solid #E1EEF0; border-radius:14px; padding:12px 16px; margin:8px 0; box-shadow:0 1px 3px rgba(0,0,0,.04); }
+  .play { flex:0 0 auto; width:48px; height:48px; border-radius:50%; border:none; background:var(--teal); color:#fff; font-size:20px; cursor:pointer; }
+  .play:active { transform:scale(.94); }
+  .meta { flex:1 1 auto; min-width:0; }
+  .word { font-size:26px; font-weight:800; }
+  .key { font-size:11px; color:#8AA5AC; font-family:monospace; }
+  .listen { font-size:13px; color:var(--coral); font-weight:700; margin-top:2px; }
+  .flag { background:#FFF4E9; border-color:#FFD9B0; }
+  .flag .listen { color:#C77A2E; }
+  .verdict { flex:0 0 auto; display:flex; gap:6px; }
+  .verdict button { border:1px solid #D6E4E6; background:#fff; border-radius:8px; padding:6px 10px; cursor:pointer; font-size:14px; }
+  .verdict button.ok.on { background:#D8F5E6; border-color:#7CE7B4; }
+  .verdict button.bad.on { background:#FFE0E0; border-color:#FFB0B0; }
+  .note { font-size:12px; color:#8AA5AC; margin-top:14px; }
+</style>
+</head>
+<body>
+  <h1>🎧 QA האזנה — אי 2 · 15 קליפים שהוקלטו מחדש (8.7)</h1>
+  <p class="sub">קול נוני (ElevenLabs). ליד כל קליפ מה לוודא באוזן. הכלי האוטומטי (Whisper) עיוור להבחנת /p/ מול /f/ ולניקוד — לכן האוזן שלך מכריעה. הסימון נשמר מקומית.</p>
+
+  <div id="app"></div>
+  <button id="dlBtn" style="margin-top:18px;border:none;background:var(--coral);color:#fff;border-radius:20px;padding:10px 20px;font-size:15px;font-weight:700;cursor:pointer">⬇️ הורד דוח</button>
+  <p class="note">💡 קליפים מסומנים בכתום = לתשומת-לב מיוחדת (Whisper דיווח על חשד). אם משהו עדיין שגוי — סמני ✗, לחצי "⬇️ הורד דוח" ואמרי לי "הורדתי" — אקרא את הקובץ ואריץ תיקון-הגייה.</p>
+
+<script>
+const CLIPS = [
+  { g:'🔁 סבב-3 — "שתי"→"זוּג" · "הביתה"→"אל הבית שלו" (לבדיקה)' },
+  { k:'intro-twin-seaweeds', w:'פתיחת אצות התאומות', listen:'"זוּג אַצּוֹת זוֹהֲרוֹת... לְכָל אַחַת מִלָּה מִשֶּׁלָּהּ" (בלי "שתי"/"שרה")', flag:true },
+  { k:'twin-question-same-or-different', w:'שאלת אצות התאומות', listen:'"הַצְּלִיל הָרִאשׁוֹן בַּמִּלִּים..." (בלי "שתי")', flag:true },
+  { k:'twin-feedback-correct-same',      w:'פידבק: זהה',  listen:'"הַמִּלִּים מַתְחִילוֹת בְּאוֹתוֹ צְלִיל" (בלי "שתי")', flag:true },
+  { k:'intro-fish-schools',  w:'פתיחת להקות הדגיגים', listen:'"זוּג לְהָקוֹת דְּגִיגִים" (בלי "שתי")', flag:true },
+
+  { g:'🔁 סבב-4 — "המילים" ו-"בית" הוחלפו' },
+  { k:'twin-feedback-correct-different', w:'פידבק: שונה', listen:'קוצר ל-"כֵּן! הַצְּלִילִים שׁוֹנִים" (בלי "במילים")', flag:true },
+  { k:'intro-fish-mission',  w:'משימת להקות הדגיגים', listen:'"לִשְׁלֹחַ אוֹתוֹ לַלְּהָקָה שֶׁמַּתְחִילָה..." (בלי "בית"→"בת")', flag:true },
+  { k:'fish-feedback-correct', w:'פידבק: דגיג חזר', listen:'"הַדָּגִיג חָזַר לַלְּהָקָה שֶׁלּוֹ" (בלי "בית")', flag:true },
+
+  { g:'✅ כבר אישרת — לארכיון' },
+  { k:'word-saba',    w:'סָבָּא',   listen:'/saba/ — ב׳ דגושה ✓' },
+  { k:'word-mafteach',w:'מַפְתֵּחַ', listen:'בלי תנועה על ח׳ ✓' },
+  { k:'word-sefer',   w:'סֵפֶר',   listen:'פ׳ רפה (/f/) ✓' },
+  { k:'intro-twin-mission',  w:'משימת אצות התאומות', listen:'"לְהַקְשִׁיב לַמִּלִּים... הַצְּלִיל הָרִאשׁוֹן" ✓' },
+  { k:'fish-finale-complete',w:'סיום להקות הדגיגים', listen:'"הַלְּהָקוֹת שְׂמֵחוֹת" ✓' },
+
+  { g:'פונמות מבודדות (הצליל שמושמע אחרי זוג נכון)' },
+  { k:'phoneme-mmm', w:'מְמְמ', listen:'/m/ מאורך ונקי — זהה לצליל בתחילת "מים"' },
+  { k:'phoneme-sss', w:'סְסְס', listen:'/s/ מאורך ונקי — זהה לתחילת "סוס"' },
+  { k:'phoneme-shh', w:'שְׁשְׁש', listen:'/ʃ/ מאורך ונקי — זהה לתחילת "שמש"' },
+  { k:'phoneme-lll', w:'לְלְל', listen:'/l/ מאורך ונקי — זהה לתחילת "לב"' },
+  { k:'phoneme-nnn', w:'נְנְנ', listen:'/n/ מאורך ונקי — זהה לתחילת "נמר"' },
+  { k:'phoneme-rrr', w:'רְרְר', listen:'/r/ מאורך ונקי — זהה לסוף "נמר"' },
+];
+
+const store = JSON.parse(localStorage.getItem('qa-isl2-audio')||'{}');
+const app = document.getElementById('app');
+let audio = new Audio();
+
+CLIPS.forEach(c => {
+  if (c.g) { const h=document.createElement('div'); h.className='group'; h.textContent=c.g; app.appendChild(h); return; }
+  const row = document.createElement('div');
+  row.className = 'row' + (c.flag?' flag':'');
+  row.innerHTML = `
+    <button class="play" title="נגן">▶</button>
+    <div class="meta">
+      <div class="word">${c.w}</div>
+      <div class="listen">👂 ${c.listen}</div>
+      <div class="key">${c.k}.mp3</div>
+    </div>
+    <div class="verdict">
+      <button class="ok ${store[c.k]==='ok'?'on':''}">✓</button>
+      <button class="bad ${store[c.k]==='bad'?'on':''}">✗</button>
+    </div>`;
+  row.querySelector('.play').onclick = () => { audio.pause(); audio = new Audio('assets/audio/'+c.k+'.mp3'); audio.play(); };
+  const ok = row.querySelector('.ok'), bad = row.querySelector('.bad');
+  ok.onclick  = () => { store[c.k]='ok';  ok.classList.add('on'); bad.classList.remove('on'); save(); };
+  bad.onclick = () => { store[c.k]='bad'; bad.classList.add('on'); ok.classList.remove('on'); save(); };
+  app.appendChild(row);
+});
+function save(){ localStorage.setItem('qa-isl2-audio', JSON.stringify(store)); }
+
+document.getElementById('dlBtn').onclick = function(){
+  const clips = CLIPS.filter(c => c.k);
+  const bad = clips.filter(c => store[c.k]==='bad');
+  const ok  = clips.filter(c => store[c.k]==='ok');
+  const un  = clips.filter(c => !store[c.k]);
+  let md = '# QA האזנה — אי 2 · קליפים שהוקלטו מחדש\n\n';
+  md += 'נבדקו: ' + (ok.length+bad.length) + '/' + clips.length + '  ·  ✓ תקין: ' + ok.length + '  ·  ✗ בעיה: ' + bad.length + '\n\n';
+  md += '## ✗ בעיות (' + bad.length + ')\n' + (bad.length ? bad.map(c => '- ✗ ' + c.w + ' (' + c.k + '.mp3) — ' + (c.listen||'')).join('\n') : '—');
+  md += '\n\n## ✓ תקינים (' + ok.length + ')\n' + (ok.length ? ok.map(c => '- ✓ ' + c.w + ' (' + c.k + '.mp3)').join('\n') : '—');
+  md += '\n\n## ⬜ טרם נבדק (' + un.length + ')\n' + (un.length ? un.map(c => '- ⬜ ' + c.w + ' (' + c.k + '.mp3)').join('\n') : '—');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([md], {type:'text/markdown'}));
+  a.download = 'qa-island2-report.md'; a.click();
+};
+</script>
+</body>
+</html>
