@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#EAF8FE">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>אבני יסוד · כניסה והרשמה</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://esm.sh" crossorigin>
+  <link rel="preconnect" href="https://ynxfszmpoppqrqocewcs.supabase.co" crossorigin>
+  <link rel="modulepreload" href="https://esm.sh/@supabase/supabase-js@2.45.4">
+  <script src="js/shared/cloud-config.js"></script>
+  <style>
+    :root{
+      --deep:#12414A; --soft:#5E7A82; --line:#E7EEEE;
+      --teal:#0F7E72; --sea:#5FBFA4; --mint-bg:#DDF3EC;
+      --purple:#9B8FD6; --purple-tx:#6A59B8; --purple-bg:#F1EEFA;
+      --radius:22px; --radius-sm:14px;
+    }
+    *{box-sizing:border-box;}
+    body{margin:0;font-family:'Rubik',sans-serif;letter-spacing:-.01em;color:var(--deep);
+      min-height:100dvh;background:
+        radial-gradient(1100px 600px at 80% -10%, #E9F7F2 0%, rgba(233,247,242,0) 60%),
+        radial-gradient(900px 500px at 0% 110%, #F1EEFA 0%, rgba(241,238,250,0) 55%),
+        #FBFDFD;
+      display:flex;align-items:center;justify-content:center;padding:40px 18px;}
+    .wrap{width:100%;max-width:960px;}
+    .brand{display:flex;align-items:center;gap:14px;justify-content:center;margin-bottom:8px;
+      animation:fadeUp .7s cubic-bezier(.32,.72,0,1) both;}
+    .brand .gm{width:54px;height:54px;border-radius:15px;display:grid;place-items:center;background:var(--mint-bg);flex:0 0 auto;}
+    .brand .gm svg{width:29px;height:29px;}
+    .brand h1{font-family:'Heebo',sans-serif;font-size:clamp(26px,4vw,38px);font-weight:900;line-height:1.05;}
+    .brand span{display:block;font-size:13.5px;font-weight:600;color:var(--soft);margin-top:3px;}
+    .sub{text-align:center;color:var(--soft);font-size:15px;margin:14px 0 30px;}
+
+    /* ---------- role picker ---------- */
+    .roles{display:grid;grid-template-columns:1fr 1fr;gap:16px;animation:fadeUp .7s .05s cubic-bezier(.32,.72,0,1) both;}
+    @media(max-width:640px){.roles{grid-template-columns:1fr;}}
+    .role{position:relative;text-align:right;cursor:pointer;font-family:inherit;background:#fff;border:1px solid var(--line);
+      border-radius:var(--radius);padding:24px;display:flex;flex-direction:column;gap:12px;min-height:184px;
+      box-shadow:0 1px 3px rgba(38,80,92,.05);transition:transform .5s cubic-bezier(.32,.72,0,1),box-shadow .5s,border-color .3s;}
+    .role:hover{transform:translateY(-6px);box-shadow:0 16px 34px rgba(38,80,92,.12);border-color:#D6E2E2;}
+    .role .ic{width:56px;height:56px;border-radius:15px;display:grid;place-items:center;flex:0 0 auto;}
+    .role .ic svg{width:28px;height:28px;stroke-width:1.7;}
+    .role.teacher .ic{background:#EAF0F7;color:#41689A;}
+    .role.principal .ic{background:var(--purple-bg);color:var(--purple-tx);}
+    .role h3{font-size:21px;font-weight:800;}
+    .role p{font-size:14px;color:var(--soft);line-height:1.5;flex:1;}
+    .role .go{display:flex;align-items:center;gap:6px;font-size:14.5px;font-weight:800;}
+    .role.teacher .go{color:#41689A;} .role.principal .go{color:var(--purple-tx);}
+    .role .go svg{width:18px;height:18px;transition:transform .4s;}
+    .role:hover .go svg{transform:translateX(-4px);}
+    .studentline{text-align:center;margin-top:22px;font-size:13.5px;color:var(--soft);}
+    .studentline a{color:var(--teal);font-weight:700;text-decoration:none;}
+    .studentline a:hover{text-decoration:underline;}
+
+    /* ---------- auth card ---------- */
+    .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);max-width:460px;margin:0 auto;
+      padding:30px 28px;box-shadow:0 18px 50px rgba(38,80,92,.10);animation:fadeUp .5s cubic-bezier(.32,.72,0,1) both;}
+    .card .top{display:flex;align-items:center;gap:12px;margin-bottom:6px;}
+    .card .top .ic{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;flex:0 0 auto;}
+    .card .top .ic svg{width:24px;height:24px;stroke-width:1.8;}
+    .card.teacher .top .ic{background:#EAF0F7;color:#41689A;}
+    .card.principal .top .ic{background:var(--purple-bg);color:var(--purple-tx);}
+    .card .top h2{font-size:21px;font-weight:800;}
+    .card .top small{display:block;font-size:12.5px;color:var(--soft);font-weight:600;margin-top:2px;}
+    .back{background:none;border:none;font-family:inherit;font-size:13.5px;font-weight:700;color:var(--soft);
+      cursor:pointer;padding:0;margin-bottom:16px;display:inline-flex;align-items:center;gap:5px;}
+    .back:hover{color:var(--deep);}
+
+    .tabs{display:flex;gap:6px;background:#F2F6F6;border-radius:var(--radius-sm);padding:5px;margin:18px 0 20px;}
+    .tabs button{flex:1;border:none;background:none;font-family:inherit;font-size:14.5px;font-weight:700;color:var(--soft);
+      padding:9px;border-radius:10px;cursor:pointer;transition:all .2s;}
+    .tabs button.on{background:#fff;color:var(--deep);box-shadow:0 1px 3px rgba(38,80,92,.1);}
+
+    .fg{margin-bottom:15px;}
+    .fg label{display:block;font-size:13.5px;font-weight:700;margin-bottom:6px;}
+    .fg input{width:100%;padding:13px 15px;border:2px solid var(--line);border-radius:var(--radius-sm);
+      font-family:'Rubik',sans-serif;font-size:15.5px;background:#fff;color:var(--deep);transition:border-color .2s,box-shadow .2s;}
+    .fg input:focus{outline:none;border-color:var(--sea);box-shadow:0 0 0 4px rgba(95,191,164,.18);}
+    .fg input[dir="ltr"]{text-align:left;}
+    .fg .hint{font-size:12px;color:var(--soft);margin-top:5px;line-height:1.45;}
+    .fg input.code{letter-spacing:.12em;font-weight:700;text-transform:uppercase;}
+
+    .btn{width:100%;padding:15px;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:16px;
+      font-weight:800;cursor:pointer;transition:transform .1s,background .2s,opacity .2s;color:#fff;}
+    .btn:active{transform:scale(.985);}
+    .btn:disabled{opacity:.6;cursor:wait;}
+    .card.teacher .btn{background:var(--sea);} .card.teacher .btn:hover{background:#54b096;}
+    .card.principal .btn{background:var(--purple);} .card.principal .btn:hover{background:#8b7dd0;}
+    .btn-link{background:none;border:none;color:var(--soft);font-family:inherit;font-size:14px;cursor:pointer;
+      text-decoration:underline;text-underline-offset:4px;display:block;width:100%;margin-top:14px;padding:6px;}
+    .btn-link:hover{color:var(--deep);}
+
+    .alert{padding:13px 15px;border-radius:var(--radius-sm);font-size:13.5px;line-height:1.5;margin-bottom:16px;}
+    .alert-error{background:#FFE9E9;color:#B33A3A;border:1px solid #F5C7C7;}
+    .alert-ok{background:#E7F7EF;color:#1F7A4D;border:1px solid #C1E7D2;}
+    .alert-info{background:#FFF6D6;color:#7A5C0E;border:1px solid #F0DE8A;}
+
+    /* code reveal after principal signup */
+    .codebox{background:linear-gradient(135deg,#F5F2FC,#EEEAFB);border:1px solid #DDD5F2;border-radius:18px;
+      padding:20px;text-align:center;margin-bottom:18px;}
+    .codebox .lbl{font-size:12.5px;font-weight:800;color:var(--purple-tx);letter-spacing:.03em;}
+    .codebox .code{font-family:'Heebo',sans-serif;font-size:32px;font-weight:900;color:var(--deep);letter-spacing:.14em;margin:8px 0;}
+    .codebox .cp{background:#fff;border:1px solid #DDD5F2;color:var(--purple-tx);font-family:inherit;font-weight:700;
+      font-size:13px;padding:7px 16px;border-radius:999px;cursor:pointer;}
+    .codebox .cp:hover{background:#faf8ff;}
+    .codebox p{font-size:12.5px;color:var(--soft);margin:10px 0 0;line-height:1.5;}
+
+    [hidden]{display:none!important;}
+    .foot{text-align:center;margin-top:30px;font-size:12px;color:#94A6AB;letter-spacing:.03em;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+
+    /* ---------- נוני — דמות חיה ---------- */
+    .noni-hero{position:relative;width:100%;display:flex;flex-direction:column;align-items:center;margin-bottom:6px;
+      animation:fadeUp .7s cubic-bezier(.32,.72,0,1) both;}
+    .noni-img{width:clamp(120px,17vw,160px);height:auto;display:block;cursor:pointer;user-select:none;
+      filter:drop-shadow(0 14px 22px rgba(107,89,184,.28));transform-origin:50% 65%;
+      animation:noniFloat 4.2s ease-in-out infinite;position:relative;z-index:2;}
+    @keyframes noniFloat{
+      0%,100%{transform:translateY(0) rotate(-2deg);}
+      50%    {transform:translateY(-13px) rotate(2deg);}
+    }
+    /* נדנוד-קפיצי במגע/מעבר-עכבר */
+    .noni-img.noni-wiggle{animation:noniWiggle .9s ease-in-out 1;}
+    @keyframes noniWiggle{
+      0%,100%{transform:translateY(0) rotate(0) scale(1);}
+      20%    {transform:translateY(-6px) rotate(-9deg) scale(1.07);}
+      45%    {transform:translateY(-2px) rotate(7deg)  scale(1.09);}
+      70%    {transform:translateY(-4px) rotate(-4deg) scale(1.05);}
+    }
+    /* בועה מדברת */
+    .noni-say{margin-top:2px;background:#fff;border:1px solid var(--line);border-radius:16px;
+      padding:7px 15px;font-size:13.5px;font-weight:700;color:var(--purple-tx);position:relative;z-index:2;
+      box-shadow:0 4px 14px rgba(107,89,184,.12);animation:sayPop .5s .5s cubic-bezier(.32,.72,0,1) both;}
+    .noni-say::before{content:"";position:absolute;top:-7px;right:50%;transform:translateX(50%) rotate(45deg);
+      width:12px;height:12px;background:#fff;border-inline-start:1px solid var(--line);border-top:1px solid var(--line);}
+    @keyframes sayPop{from{opacity:0;transform:translateY(-6px) scale(.9);}to{opacity:1;transform:none;}}
+    /* בועות עולות מאחורי נוני */
+    .noni-bubbles{position:absolute;top:20px;bottom:-6px;left:50%;transform:translateX(-50%);
+      width:150px;pointer-events:none;z-index:1;}
+    .noni-bubbles span{position:absolute;bottom:0;border-radius:50%;opacity:0;
+      background:radial-gradient(circle at 32% 30%,rgba(255,255,255,.95),rgba(168,232,255,.25) 70%,rgba(168,232,255,.05));
+      border:1px solid rgba(255,255,255,.6);animation:noniRise 5s ease-in infinite;}
+    .noni-bubbles span:nth-child(1){left:14%;width:9px;height:9px;animation-delay:0s;}
+    .noni-bubbles span:nth-child(2){left:30%;width:6px;height:6px;animation-delay:1.4s;}
+    .noni-bubbles span:nth-child(3){left:52%;width:11px;height:11px;animation-delay:2.5s;}
+    .noni-bubbles span:nth-child(4){left:70%;width:7px;height:7px;animation-delay:3.4s;}
+    .noni-bubbles span:nth-child(5){left:86%;width:8px;height:8px;animation-delay:.8s;}
+    @keyframes noniRise{
+      0%{opacity:0;transform:translateY(0) scale(.5);}
+      15%{opacity:.85;}
+      75%{opacity:.6;}
+      100%{opacity:0;transform:translateY(-110px) scale(1);}
+    }
+    @media (prefers-reduced-motion: reduce){
+      .noni-img{animation:none;} .noni-bubbles{display:none;}
+      .noni-img.noni-wiggle{animation:none;}
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="noni-hero" id="noniHero">
+      <div class="noni-bubbles" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+      <img class="noni-img" id="noniImg" src="assets/noni-hero-transparent.png" alt="נוני — הדמות של אבני יסוד" draggable="false">
+      <div class="noni-say" id="noniSay">היי, אני נוני!</div>
+    </div>
+    <div class="brand">
+      <span class="gm"><svg viewBox="0 0 24 24" fill="none" stroke="#0F7E72" stroke-width="2.3" stroke-linecap="round"><path d="M6 18v-5"/><path d="M12 18V7"/><path d="M18 18v-8"/></svg></span>
+      <div><h1>אבני יסוד</h1><span>מערכת חינוכית דיפרנציאלית · כיתה א׳</span></div>
+    </div>
+
+    <!-- ROLE PICKER -->
+    <section id="rolePicker">
+      <p class="sub">בחרו את סוג המשתמש כדי להיכנס או להירשם</p>
+      <div class="roles">
+        <button class="role teacher" data-role="teacher">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="1.6"/><path d="M12 16v4"/><path d="M8.5 20h7"/><path d="M7 12l3-3 2 2 4.5-4.5"/></svg></span>
+          <h3>מורה</h3>
+          <p>תמונת הכיתה, תרגול יומי ומעקב אחר כל תלמיד.ה. הצטרפות עם קוד בית הספר.</p>
+          <span class="go">כניסה / הרשמה <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></span>
+        </button>
+        <button class="role principal" data-role="principal">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15.6 8.4 13 13l-4.6 2.6L11 11l4.6-2.6Z"/></svg></span>
+          <h3>מנהלת</h3>
+          <p>מבט-על בית-ספרי: מפת כיתות, ילדים שחשוב לא לפספס ותמונת השימוש של הצוות.</p>
+          <span class="go">כניסה / הרשמה <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></span>
+        </button>
+      </div>
+      <p class="studentline">תלמיד.ה? <a href="index.html">כניסה לעולם הלמידה ‹</a></p>
+    </section>
+
+    <!-- AUTH CARD -->
+    <section id="authCard" hidden>
+      <div class="card" id="card">
+        <button class="back" id="backBtn"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg> בחירת תפקיד</button>
+        <div class="top">
+          <span class="ic" id="cardIc"></span>
+          <div><h2 id="cardTitle">מורה</h2><small id="cardSub"></small></div>
+        </div>
+
+        <div class="tabs">
+          <button id="tabLogin" class="on">כניסה</button>
+          <button id="tabSignup">הרשמה</button>
+        </div>
+
+        <div id="alert"></div>
+
+        <!-- reveal code after principal creates a school -->
+        <div id="codeReveal" hidden></div>
+
+        <form id="authForm">
+          <div class="fg" id="fgName" hidden>
+            <label for="name" id="lblName">שם מלא</label>
+            <input type="text" id="name" autocomplete="name" placeholder="שם ושם משפחה">
+          </div>
+          <div class="fg">
+            <label for="email">דואר אלקטרוני</label>
+            <input type="email" id="email" required dir="ltr" placeholder="name@example.com" autocomplete="email">
+          </div>
+          <div class="fg">
+            <label for="password">סיסמה</label>
+            <input type="password" id="password" required dir="ltr" autocomplete="current-password" placeholder="לפחות 6 תווים">
+          </div>
+          <!-- school code (teacher signup) OR school name (principal signup) -->
+          <div class="fg" id="fgSchool" hidden>
+            <label for="school" id="lblSchool">קוד בית ספר</label>
+            <input type="text" id="school" class="code" placeholder="AV-XXXXX">
+            <div class="hint" id="hintSchool">הזינו את הקוד שקיבלתם מהמנהלת.</div>
+          </div>
+          <button type="submit" class="btn" id="submitBtn">היכנסי</button>
+          <button type="button" class="btn-link" id="forgotBtn">שכחתי סיסמה</button>
+        </form>
+      </div>
+      <div class="foot">אבני יסוד · הנתונים מאובטחים לכל בית ספר בנפרד</div>
+    </section>
+  </main>
+
+  <script>
+    /* נוני חיה — נדנוד במגע/מעבר-עכבר + החלפת משפט ידידותי */
+    (function(){
+      var img=document.getElementById('noniImg'), say=document.getElementById('noniSay');
+      if(!img) return;
+      var lines=['היי, אני נוני!','כל ילד.ה בקצב שלו.ה 🐙','כיף שבאתם!','בואו נתחיל ‹'];
+      var i=0, busy=false;
+      function wiggle(next){
+        if(busy) return; busy=true;
+        img.classList.add('noni-wiggle');
+        if(next){ i=(i+1)%lines.length; say.textContent=lines[i];
+          say.style.animation='none'; void say.offsetWidth; say.style.animation='sayPop .45s cubic-bezier(.32,.72,0,1) both'; }
+        setTimeout(function(){ img.classList.remove('noni-wiggle'); busy=false; }, 900);
+      }
+      img.addEventListener('click', function(){ wiggle(true); });
+      img.addEventListener('mouseenter', function(){ wiggle(false); });
+      // נדנוד קטן פעם בכמה שניות כדי שנוני תרגיש חיה
+      setInterval(function(){ if(!busy && !document.hidden) wiggle(false); }, 6500);
+    })();
+  </script>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
+    const cfg = window.AvneiCloudConfig;
+    const supabase = createClient(cfg.SUPABASE_URL, cfg.SUPABASE_PUBLISHABLE_KEY, {
+      auth: { persistSession:true, autoRefreshToken:true, storage:window.localStorage, storageKey:'avnei-yesod-supabase-auth' }
+    });
+
+    // localStorage keys for onboarding that must survive an email-confirmation round-trip
+    const PENDING_SCHOOL_NAME = 'avnei-pending-school-name';
+    const PENDING_JOIN_CODE   = 'avnei-pending-join-code';
+
+    const $ = id => document.getElementById(id);
+    const rolePicker=$('rolePicker'), authCard=$('authCard'), card=$('card');
+    const alertEl=$('alert'), codeReveal=$('codeReveal');
+    const tabLogin=$('tabLogin'), tabSignup=$('tabSignup');
+    const fgName=$('fgName'), fgSchool=$('fgSchool');
+    const nameEl=$('name'), emailEl=$('email'), passEl=$('password'), schoolEl=$('school');
+    const submitBtn=$('submitBtn'), forgotBtn=$('forgotBtn');
+
+    let role='teacher';   // 'teacher' | 'principal'
+    let tab='login';      // 'login' | 'signup'
+
+    function showAlert(msg,type='error'){ alertEl.innerHTML='<div class="alert alert-'+type+'">'+msg+'</div>'; }
+    function clearAlert(){ alertEl.innerHTML=''; codeReveal.hidden=true; codeReveal.innerHTML=''; }
+
+    const ICONS={
+      teacher:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="1.6"/><path d="M12 16v4"/><path d="M8.5 20h7"/><path d="M7 12l3-3 2 2 4.5-4.5"/></svg>',
+      principal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15.6 8.4 13 13l-4.6 2.6L11 11l4.6-2.6Z"/></svg>'
+    };
+
+    // ---------- routing after a session is established ----------
+    async function routeForContext(){
+      // finish any pending onboarding (survives email-confirmation delay)
+      const { data:{ user } } = await supabase.auth.getUser();
+      if(!user) return false;
+      // ensure teacher row exists (defensive — trigger normally handles it)
+      await ensureTeacherRow(user);
+
+      let ctx = await getContext();
+      const pendSchool = localStorage.getItem(PENDING_SCHOOL_NAME);
+      const pendJoin   = localStorage.getItem(PENDING_JOIN_CODE);
+
+      if(!ctx.school_id && pendSchool){
+        const { data, error } = await supabase.rpc('create_school',{ p_school_name: pendSchool });
+        if(!error){ localStorage.removeItem(PENDING_SCHOOL_NAME); ctx = await getContext(); }
+      } else if(!ctx.school_id && pendJoin){
+        const { error } = await supabase.rpc('join_school',{ p_code: pendJoin });
+        if(!error){ localStorage.removeItem(PENDING_JOIN_CODE); ctx = await getContext(); }
+      }
+
+      if(ctx.role==='principal'){ location.href='principal-avnei.html'; return true; }
+      // teacher: setup if no class yet, else home
+      const { data:classes } = await supabase.from('classes').select('id').limit(1);
+      location.href = (classes && classes.length) ? 'teacher-home.html' : 'teacher-setup.html';
+      return true;
+    }
+
+    async function getContext(){
+      const { data, error } = await supabase.rpc('get_my_context');
+      if(error || !data || !data.length) return { role:'teacher', school_id:null, school_name:null, join_code:null };
+      return data[0];
+    }
+
+    async function ensureTeacherRow(user){
+      const { data } = await supabase.from('teachers').select('id').eq('id',user.id).maybeSingle();
+      if(!data){
+        await supabase.from('teachers').insert({ id:user.id, email:user.email, name:(user.email||'').split('@')[0] });
+      }
+    }
+
+    // ---------- role / tab UI ----------
+    function openRole(r){
+      role=r; clearAlert();
+      rolePicker.hidden=true; authCard.hidden=false;
+      card.className='card '+r;
+      $('cardIc').innerHTML=ICONS[r];
+      $('cardTitle').textContent = r==='principal' ? 'מנהלת' : 'מורה';
+      $('cardSub').textContent   = r==='principal' ? 'מבט-על בית-ספרי' : 'ניהול הכיתה';
+      setTab('login');
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+    function setTab(t){
+      tab=t; clearAlert();
+      tabLogin.classList.toggle('on', t==='login');
+      tabSignup.classList.toggle('on', t==='signup');
+      const signup = t==='signup';
+      fgName.hidden = !signup;
+      fgSchool.hidden = !signup;
+      passEl.setAttribute('autocomplete', signup?'new-password':'current-password');
+      // school field morphs by role
+      if(role==='principal'){
+        $('lblSchool').textContent='שם בית הספר';
+        schoolEl.classList.remove('code');
+        schoolEl.placeholder='למשל: בית ספר אימפקט';
+        $('hintSchool').textContent='ניצור בית ספר חדש ותקבלי קוד לשיתוף עם המורות.';
+      } else {
+        $('lblSchool').textContent='קוד בית ספר';
+        schoolEl.classList.add('code');
+        schoolEl.placeholder='AV-XXXXX';
+        $('hintSchool').textContent='הזינו את הקוד שקיבלתם מהמנהלת.';
+      }
+      submitBtn.textContent = signup
+        ? (role==='principal' ? 'יצירת בית ספר וכניסה' : 'הרשמה והצטרפות')
+        : 'היכנסי';
+      forgotBtn.hidden = signup;
+    }
+
+    document.querySelectorAll('.role').forEach(b=> b.addEventListener('click',()=>openRole(b.dataset.role)));
+    $('backBtn').addEventListener('click',()=>{ authCard.hidden=true; rolePicker.hidden=false; });
+    tabLogin.addEventListener('click',()=>setTab('login'));
+    tabSignup.addEventListener('click',()=>setTab('signup'));
+
+    // ---------- submit ----------
+    $('authForm').addEventListener('submit', async (e)=>{
+      e.preventDefault(); clearAlert();
+      const email=emailEl.value.trim(), password=passEl.value;
+      submitBtn.disabled=true; const orig=submitBtn.textContent; submitBtn.textContent='רגע...';
+
+      try{
+        if(tab==='login'){
+          const { error } = await supabase.auth.signInWithPassword({ email, password });
+          if(error){ showAlert(error.message.includes('Invalid')?'דואר אלקטרוני או סיסמה שגויים':'אירעה שגיאה בכניסה. נסו שוב.'); return; }
+          await routeForContext();
+          return;
+        }
+
+        // ----- SIGNUP -----
+        const name=nameEl.value.trim();
+        const schoolVal=schoolEl.value.trim();
+        if(role==='teacher' && !schoolVal){ showAlert('הזינו את קוד בית הספר שקיבלתם מהמנהלת.'); return; }
+        if(role==='principal' && !schoolVal){ showAlert('הזינו שם לבית הספר.'); return; }
+
+        // stash the onboarding action so it completes even if email confirmation is required
+        if(role==='principal') localStorage.setItem(PENDING_SCHOOL_NAME, schoolVal);
+        else                   localStorage.setItem(PENDING_JOIN_CODE, schoolVal.toUpperCase());
+
+        const { data, error } = await supabase.auth.signUp({
+          email, password, options:{ data:{ name } }
+        });
+        if(error){
+          localStorage.removeItem(PENDING_SCHOOL_NAME); localStorage.removeItem(PENDING_JOIN_CODE);
+          showAlert(error.message.includes('already')?'כתובת הדוא"ל כבר רשומה — עברו ל״כניסה״.':('הרשמה נכשלה: '+error.message)); return;
+        }
+
+        // set the display name on the teacher row (best-effort)
+        if(data.user && name){
+          await supabase.from('teachers').upsert({ id:data.user.id, email, name }, { onConflict:'id' });
+        }
+
+        if(data.session){
+          // auto-confirmed → complete onboarding now
+          if(role==='principal'){
+            const { data:res, error:cErr } = await supabase.rpc('create_school',{ p_school_name: schoolVal });
+            if(!cErr && res && res.length){
+              localStorage.removeItem(PENDING_SCHOOL_NAME);
+              revealCode(res[0].join_code);
+              return;
+            }
+          } else {
+            const { error:jErr } = await supabase.rpc('join_school',{ p_code: schoolVal.toUpperCase() });
+            if(jErr){ showAlert('הקוד לא נמצא. בדקו את קוד בית הספר ונסו שוב.'); localStorage.removeItem(PENDING_JOIN_CODE); return; }
+            localStorage.removeItem(PENDING_JOIN_CODE);
+          }
+          await routeForContext();
+        } else {
+          // email confirmation required — onboarding will finish on next login
+          showAlert('שלחנו אליכם דוא"ל לאישור. אשרו אותו, ואז חזרו לכאן ל״כניסה״ — נשלים אוטומטית את החיבור לבית הספר.','info');
+          setTab('login');
+        }
+      }catch(err){
+        console.error(err); showAlert('אירעה שגיאה לא צפויה. נסו שוב.');
+      }finally{
+        submitBtn.disabled=false; if(alertEl.querySelector('.alert-info')===null && codeReveal.hidden) submitBtn.textContent=orig;
+      }
+    });
+
+    function revealCode(code){
+      codeReveal.hidden=false;
+      codeReveal.innerHTML =
+        '<div class="codebox"><div class="lbl">קוד בית הספר שלכם</div>'+
+        '<div class="code">'+code+'</div>'+
+        '<button type="button" class="cp" id="copyCode">העתקת הקוד</button>'+
+        '<p>שתפו את הקוד עם המורות — הן יזינו אותו בהרשמה כדי להצטרף לבית הספר.</p></div>'+
+        '<button type="button" class="btn" id="goDash">כניסה לדשבורד המנהלת ‹</button>';
+      $('authForm').hidden=true;
+      document.querySelector('.tabs').hidden=true;
+      $('copyCode').addEventListener('click',()=>{ navigator.clipboard && navigator.clipboard.writeText(code); $('copyCode').textContent='הועתק ✓'; });
+      $('goDash').addEventListener('click',()=>{ location.href='principal-avnei.html'; });
+    }
+
+    forgotBtn.addEventListener('click', async ()=>{
+      const email=emailEl.value.trim();
+      if(!email){ showAlert('הזינו קודם את כתובת הדוא"ל, ואז לחצו "שכחתי סיסמה".','info'); emailEl.focus(); return; }
+      clearAlert(); forgotBtn.disabled=true; forgotBtn.textContent='שולחת...';
+      try{
+        const { error } = await supabase.auth.resetPasswordForEmail(email,{ redirectTo: location.origin+location.pathname });
+        showAlert(error?'לא הצלחנו לשלוח. בדקו את הכתובת ונסו שוב.':'שלחנו דוא"ל לאיפוס סיסמה. בדקו את התיבה (וגם ספאם).', error?'error':'ok');
+      }finally{ forgotBtn.disabled=false; forgotBtn.textContent='שכחתי סיסמה'; }
+    });
+
+    // ---------- already logged in? finish onboarding + route ----------
+    function showLoggedInBanner(user){
+      const bar=document.createElement('div');
+      bar.style.cssText='max-width:460px;margin:0 auto 22px;background:#F1EEFA;border:1px solid #E2DAF5;border-radius:16px;'+
+        'padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;'+
+        'animation:fadeUp .5s cubic-bezier(.32,.72,0,1) both;';
+      const who = (user && user.email) ? ('<span style="font-weight:400;">('+user.email+')</span>') : '';
+      bar.innerHTML='<span style="font-weight:700;color:#6A59B8;font-size:13.5px;min-width:150px;flex:1;">את כבר מחוברת '+who+'</span>'+
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;">'+
+        '<button id="goDashNow" style="border:none;background:#9B8FD6;color:#fff;font-family:inherit;font-weight:800;'+
+        'font-size:13.5px;padding:9px 16px;border-radius:11px;cursor:pointer;white-space:nowrap;">המשך לדשבורד ‹</button>'+
+        '<button id="switchUserBtn" style="border:1px solid #D8CEF0;background:#fff;color:#6A59B8;font-family:inherit;font-weight:700;'+
+        'font-size:13.5px;padding:9px 16px;border-radius:11px;cursor:pointer;white-space:nowrap;">התחברות כמשתמש אחר</button>'+
+        '</div>';
+      rolePicker.parentNode.insertBefore(bar, rolePicker);
+      document.getElementById('goDashNow').addEventListener('click', ()=>routeForContext());
+      document.getElementById('switchUserBtn').addEventListener('click', async ()=>{
+        const b=document.getElementById('switchUserBtn'); b.disabled=true; b.textContent='מתנתקת…';
+        try{ await supabase.auth.signOut(); }catch(e){}
+        // clear any stale onboarding intents, then reload to a clean role picker
+        localStorage.removeItem(PENDING_SCHOOL_NAME); localStorage.removeItem(PENDING_JOIN_CODE);
+        location.href='gate.html';
+      });
+    }
+    (async function boot(){
+      try{
+        const params = new URLSearchParams(location.search);
+        const { data:{ user } } = await supabase.auth.getUser();
+        if(user && !params.has('home')){ await routeForContext(); return; }
+        if(user && params.has('home')){ showLoggedInBanner(user); }  // came from "למסך הראשי" — stay, don't auto-bounce
+      }catch(e){ /* stay on the gate */ }
+    })();
+  </script>
+</body>
+</html>

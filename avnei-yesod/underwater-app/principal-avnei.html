@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#FFFFFF">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>דשבורד מנהלת · אבני יסוד</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Approved mint design system (single source of truth) -->
+  <link rel="stylesheet" href="../../demo/demo.css">
+  <script src="../../demo/demo-icons.js" defer></script>
+  <!-- Cloud data layer: teacher-cloud (pure helpers) + principal-cloud (school aggregation) -->
+  <link rel="preconnect" href="https://esm.sh" crossorigin>
+  <link rel="preconnect" href="https://ynxfszmpoppqrqocewcs.supabase.co" crossorigin>
+  <link rel="modulepreload" href="https://esm.sh/@supabase/supabase-js@2.45.4">
+  <script src="js/shared/cloud-config.js"></script>
+  <script src="js/shared/teacher-cloud.js"></script>
+  <script src="js/shared/principal-cloud.js"></script>
+  <style>
+    .rail .logo .gm{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:#DDF3EC;}
+    .rail .logo .gm svg{width:22px;height:22px;}
+
+    .hero{background:#FFFFFF;border:1px solid #ECF0F0;border-radius:var(--radius-lg);padding:20px 24px;
+      box-shadow:0 1px 3px rgba(38,80,92,.05);margin-bottom:20px;border-right:8px solid #9B8FD6;}
+    .hero .q{font-size:12px;font-weight:800;color:#6a59b8;background:#F1EEFA;display:inline-block;padding:4px 13px;border-radius:var(--pill);margin-bottom:10px;}
+    .hero h1{font-size:clamp(20px,2.4vw,25px);font-weight:800;color:var(--deep);}
+    .hero p{font-size:13.5px;color:var(--text-soft);margin-top:7px;max-width:72ch;line-height:1.5;}
+    .hero p b{color:#b5611f;}
+    .codechip{display:inline-flex;align-items:center;gap:8px;margin-top:14px;background:#F5F2FC;border:1px solid #E2DAF5;
+      border-radius:var(--pill);padding:7px 8px 7px 14px;}
+    .codechip .lbl{font-size:12px;font-weight:700;color:#6a59b8;}
+    .codechip b{font-family:'Heebo',sans-serif;font-size:15px;font-weight:900;letter-spacing:.1em;color:var(--deep);}
+    .codechip button{border:none;background:#fff;border:1px solid #E2DAF5;color:#6a59b8;border-radius:999px;
+      font-family:inherit;font-weight:700;font-size:12px;padding:5px 12px;cursor:pointer;}
+    .codechip button:hover{background:#faf8ff;}
+
+    .gcard{position:relative;display:flex;flex-direction:column;gap:11px;text-align:right;
+      transition:transform .5s cubic-bezier(.32,.72,0,1),box-shadow .5s cubic-bezier(.32,.72,0,1),border-color .3s;}
+    .gcard:hover{transform:translateY(-6px);box-shadow:0 12px 28px rgba(38,80,92,.11);border-color:#DCE4E5;}
+    .gtile{width:56px;height:56px;border-radius:15px;display:grid;place-items:center;font-weight:800;flex:0 0 auto;
+      font-size:23px;font-family:'Heebo',sans-serif;transition:transform .4s cubic-bezier(.32,.72,0,1);}
+    .gcard:hover .gtile{transform:translateY(-2px) scale(1.04);}
+    .gcard h3{font-size:19px;font-weight:800;color:var(--deep);line-height:1.15;}
+    .gcard .ds{font-size:13.5px;color:var(--text-soft);line-height:1.5;flex:1;}
+    .gcard .ge{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:14px;font-weight:700;color:var(--tx,#0F7E72);}
+    .gcard .ge .tic svg{width:18px;height:18px;transition:transform .4s;}
+    .gcard:hover .ge .tic svg{transform:translateX(-4px);}
+    .gtag{position:absolute;top:14px;left:14px;font-size:10.5px;font-weight:800;padding:4px 10px;border-radius:999px;
+      background:#F1F4F5;color:var(--text-soft);white-space:nowrap;}
+    .tone-ok{background:var(--okbg);color:#0d6b54;}
+    .tone-watch{background:var(--watchbg);color:#9c6212;}
+    .tone-care{background:var(--carebg);color:#a23d3d;}
+
+    .pcls{cursor:pointer;min-height:196px;}
+    .pcls.ok{--tx:#0d6b54;} .pcls.watch{--tx:#9c6212;} .pcls.care{--tx:#a23d3d;} .pcls.new{--tx:#41689A;}
+    .pcls .donut{--sz:62px;} .pcls .donut::after{inset:8px;} .pcls .donut .v{font-size:14.5px;}
+    .pcls .dlab{font-size:11.5px;font-weight:700;color:var(--text-soft);margin-top:-4px;}
+
+    .pkid .step{font-size:14px;color:#0d3b30;background:var(--okbg);border-radius:14px;padding:10px 12px;line-height:1.5;}
+    .pkid .step b{color:#0d6b54;}
+    .pkid.care .step{background:#FFF3EE;color:#7a3b27;} .pkid.care .step b{color:#b5611f;}
+
+    .puse h3{font-size:17px;}
+    .puse .gtile{background:#EAF0F7;color:#41689A;}
+    .chip-use{font-size:13px;font-weight:700;padding:4px 12px;border-radius:var(--pill);display:inline-block;background:#F0F5F6;color:#48707C;align-self:flex-start;}
+
+    .tierwrap{display:flex;flex-direction:column;gap:10px;}
+    .tierleg{display:flex;gap:18px;flex-wrap:wrap;font-size:13.5px;font-weight:700;color:var(--text-soft);}
+    .tierleg i{width:12px;height:12px;border-radius:4px;display:inline-block;margin-left:6px;vertical-align:-1px;}
+
+    .sec-title{font-size:16px;}
+    .sec-title .tag{background:#F2F5F5;color:#7C8E94;}
+    .btn-primary{background:#5FBFA4;color:#fff;} .btn-chip{background:#F0F5F6;color:#48707C;}
+
+    /* back-to-gate button (topbar) */
+    .backhome{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;color:#48707C;
+      text-decoration:none;background:#F4F7F7;border:1px solid #E7EEEE;border-radius:var(--pill);padding:6px 13px;
+      transition:background .2s,color .2s,transform .1s;white-space:nowrap;}
+    .backhome:hover{background:#EDF2F3;color:var(--deep);}
+    .backhome:active{transform:scale(.97);}
+    .backhome .tic svg{width:15px;height:15px;}
+    .empty .backlink{display:inline-block;margin-top:14px;margin-inline-start:10px;font-size:13px;font-weight:700;
+      color:#48707C;text-decoration:none;border-bottom:1px solid transparent;}
+    .empty .backlink:hover{color:var(--deep);border-bottom-color:currentColor;}
+
+    /* empty state — מנהלת חדשה בלי כיתות */
+    .empty{text-align:center;padding:40px 24px;}
+    .empty .ic{width:64px;height:64px;border-radius:18px;background:#F1EEFA;color:#6a59b8;display:grid;place-items:center;margin:0 auto 16px;}
+    .empty .ic .tic svg{width:32px;height:32px;}
+    .empty h2{font-size:22px;font-weight:900;color:var(--deep);margin-bottom:8px;}
+    .empty p{font-size:14.5px;color:var(--text-soft);line-height:1.6;max-width:52ch;margin:0 auto 20px;}
+    .empty .bigcode{font-family:'Heebo',sans-serif;font-size:36px;font-weight:900;letter-spacing:.16em;color:var(--deep);
+      background:linear-gradient(135deg,#F5F2FC,#EEEAFB);border:1px solid #DDD5F2;border-radius:18px;padding:18px 30px;display:inline-block;}
+    .empty .cprow{margin-top:14px;}
+    .empty .cprow button{border:1px solid #E2DAF5;background:#fff;color:#6a59b8;border-radius:999px;font-family:inherit;font-weight:700;font-size:13px;padding:8px 18px;cursor:pointer;}
+
+    /* class detail modal */
+    .cm-scrim{position:fixed;inset:0;background:rgba(20,50,58,.42);z-index:60;opacity:0;pointer-events:none;transition:opacity .28s;}
+    .cm-scrim.on{opacity:1;pointer-events:auto;}
+    .cm-modal{position:fixed;z-index:70;top:50%;right:50%;transform:translate(50%,-46%) scale(.98);opacity:0;pointer-events:none;
+      width:min(620px,94vw);max-height:90dvh;background:#fff;border-radius:24px;box-shadow:0 30px 80px -30px rgba(20,50,58,.5);display:flex;flex-direction:column;transition:opacity .28s,transform .28s cubic-bezier(.32,.72,0,1);}
+    .cm-modal.on{opacity:1;pointer-events:auto;transform:translate(50%,-50%) scale(1);}
+    .cm-x{position:absolute;top:16px;left:16px;width:38px;height:38px;border-radius:50%;border:1px solid #E5EBEC;background:#fff;cursor:pointer;font-size:17px;color:var(--text-soft);z-index:2;line-height:1;}
+    .cm-scroll{overflow-y:auto;padding:26px 28px 30px;}
+    .cm-head{display:flex;align-items:center;gap:13px;margin-bottom:16px;padding-inline-start:40px;}
+    .cm-tile{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-family:'Heebo',sans-serif;font-size:20px;font-weight:900;flex:0 0 auto;}
+    .cm-head h2{font-size:21px;font-weight:900;color:var(--deep);}
+    .cm-head .sub{font-size:13px;color:var(--text-soft);font-weight:600;margin-top:2px;}
+    .cm-row{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid #F0F4F4;}
+    .cm-row:last-child{border-bottom:none;}
+    .cm-av{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-family:'Heebo',sans-serif;font-size:15px;flex:0 0 auto;}
+    .cm-nm{font-size:15px;font-weight:700;color:var(--deep);flex:1;}
+    .cm-nm small{display:block;font-size:12px;color:var(--text-soft);font-weight:500;margin-top:1px;}
+    .cm-badge{font-size:11.5px;font-weight:800;padding:4px 11px;border-radius:var(--pill);white-space:nowrap;}
+
+    .rt-badge{position:fixed;bottom:14px;left:14px;z-index:30;font-size:11.5px;font-weight:800;
+      padding:6px 12px;border-radius:999px;box-shadow:0 2px 8px rgba(38,80,92,.14);display:flex;align-items:center;gap:6px;}
+    .rt-badge .d{width:7px;height:7px;border-radius:50%;}
+    .rt-cloud{background:var(--okbg);color:#0d6b54;} .rt-cloud .d{background:var(--ok);}
+    .rt-load{background:#EAF0F7;color:#41689A;} .rt-load .d{background:#41689A;}
+
+    body{background:#FFFFFF;font-family:'Rubik',sans-serif;letter-spacing:-.01em;}
+    .tic{display:inline-flex;align-items:center;vertical-align:-.16em;line-height:0;color:inherit;}
+    .tic svg{width:1.08em;height:1.08em;display:block;}
+    .scene-bg,.veil{display:none;}
+    .rail{background:#FBFDFD;backdrop-filter:none;border-left:1px solid #EEF2F2;}
+    .topbar .date{background:#F4F7F7;box-shadow:none;}
+    .card{background:#FFFFFF;backdrop-filter:none;border:1px solid #ECF0F0;box-shadow:0 1px 3px rgba(38,80,92,.05);}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <nav class="rail" aria-label="ניווט">
+      <a class="logo" href="principal-avnei.html"><span class="gm"><svg viewBox="0 0 24 24" fill="none" stroke="#0F7E72" stroke-width="2.3" stroke-linecap="round"><path d="M6 18v-5"/><path d="M12 18V7"/><path d="M18 18v-8"/></svg></span><b>אבני<br>יסוד</b></a>
+      <a class="item active" href="principal-avnei.html"><span class="ic" data-ic="home"></span><span class="t">דף הבית</span></a>
+      <a class="item" href="#sec-classes"><span class="ic" data-ic="classes"></span><span class="t">מפת כיתות</span></a>
+      <a class="item" href="#sec-usage"><span class="ic" data-ic="people"></span><span class="t">צוות</span></a>
+      <button class="item" data-toast="מבט משולב (למידה ורגש) — בקרוב · גל 2"><span class="ic" data-ic="learn"></span><span class="t">למידה ורגש</span></button>
+      <button class="item" data-toast="פולס בית-ספרי — בקרוב · גל 2"><span class="ic" data-ic="pulse"></span><span class="t">פולס</span></button>
+      <button class="item" id="logoutBtn"><span class="ic" data-ic="settings"></span><span class="t">יציאה</span></button>
+      <div class="me"><div class="av" id="meAv">מ</div><small id="meNm">מנהלת<span id="meSchool">בית ספר</span></small></div>
+    </nav>
+
+    <main class="main"><div class="main-inner">
+      <div class="topbar">
+        <a class="backhome" href="gate.html?home=1"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>למסך הראשי</a>
+        <div class="crumbs" id="crumbs">אבני יסוד · מנהלת</div>
+        <div class="date" id="todayDate">היום</div>
+      </div>
+
+      <!-- hero -->
+      <div class="hero">
+        <span class="q">האם כיתות א׳ מקבלות מענה בזמן?</span>
+        <h1 id="heroTitle">כיתות א׳ — תמונת בוקר</h1>
+        <p id="heroLine">טוען את תמונת בית הספר…</p>
+        <div class="codechip" id="codeChip" hidden>
+          <span class="lbl">קוד בית הספר</span><b id="codeVal">—</b>
+          <button id="copyCodeChip">העתקה</button>
+        </div>
+      </div>
+
+      <!-- empty state (fresh principal, no classes yet) -->
+      <section class="sec" id="emptyState" hidden>
+        <div class="card empty">
+          <span class="ic"><span class="tic" data-ic="people"></span></span>
+          <h2>בית הספר מוכן — עכשיו מזמינים את הצוות</h2>
+          <p>עדיין לא הצטרפו מורות. שתפו את הקוד הבא עם מורות כיתות א׳ — הן יזינו אותו בהרשמה, וכיתותיהן יופיעו כאן אוטומטית.</p>
+          <div class="bigcode" id="emptyCode">—</div>
+          <div class="cprow"><button id="copyCodeEmpty">העתקת הקוד</button><a class="backlink" href="gate.html?home=1">‹ חזרה למסך הראשי</a></div>
+        </div>
+      </section>
+
+      <!-- action stat row -->
+      <section class="sec" id="statRow" hidden>
+        <div class="grid g-4" id="stats"></div>
+      </section>
+
+      <!-- class map -->
+      <section class="sec" id="sec-classes" hidden>
+        <div class="sec-title"><span class="tic" data-ic="target"></span> מפת כיתות א׳ <span class="tag">לחיצה על כיתה לפרטים</span></div>
+        <div class="grid g-4" id="classes"></div>
+      </section>
+
+      <!-- school-wide tier -->
+      <section class="sec" id="tierSec" hidden>
+        <div class="sec-title"><span class="tic" data-ic="waves"></span> איך מתחלקים הילדים בבית הספר? <span class="tag">תמונה אחת</span></div>
+        <div class="card tierwrap">
+          <div class="tierbar" id="tierbar"></div>
+          <div class="tierleg" id="tierleg"></div>
+          <div class="note">כשהרבה ילדים מסומנים יחד באותה כיתה — כדאי לבדוק קודם את <b>סביבת הכיתה</b>, לא רק את הילדים.</div>
+        </div>
+      </section>
+
+      <!-- kids not to miss -->
+      <section class="sec" id="kidsSec" hidden>
+        <div class="sec-title"><span class="tic" data-ic="heart"></span> ילדים שחשוב לא לפספס <span class="tag">קריאה · לפי נתוני התרגול</span></div>
+        <div class="grid g-auto" id="kids"></div>
+      </section>
+
+      <!-- teacher usage -->
+      <section class="sec" id="usageSecWrap" hidden>
+        <div class="sec-title" id="sec-usage"><span class="tic" data-ic="tools"></span> האם הכלי עובד בשגרת ההוראה? <span class="tag">לא ציון — תמונת שימוש</span></div>
+        <div class="grid g-4" id="usage"></div>
+      </section>
+    </div></main>
+  </div>
+
+  <!-- class detail modal -->
+  <div class="cm-scrim" id="cmScrim"></div>
+  <div class="cm-modal" id="cmModal" role="dialog" aria-modal="true" aria-label="פרטי כיתה">
+    <button class="cm-x" id="cmClose" aria-label="סגירה">✕</button>
+    <div class="cm-scroll" id="cmBody"></div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="rt-badge rt-load" id="rtBadge"><span class="d"></span><span id="rtTx">מתחבר…</span></div>
+
+  <script>
+    var ST=null;
+    function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},2600);}
+    function initial(n){return (n||'').replace(/[^א-ת]/g,'').charAt(0)||'·';}
+    function initials2(n){var p=(n||'').split(' ');return (p[0]?p[0][0]:'')+(p[1]?p[1][0]:'')||'·';}
+    function fillTics(){if(!window.DemoIcons)return;document.querySelectorAll('.tic[data-ic]').forEach(function(el){if(!el.firstChild&&DemoIcons[el.dataset.ic])el.innerHTML=DemoIcons[el.dataset.ic];});}
+    var cmap={ok:'var(--ok)',watch:'var(--watch)',care:'var(--care)','new':'#41689A'};
+    var tone={ok:'tone-ok',watch:'tone-watch',care:'tone-care','new':'tone-ok'};
+    var toneBg={ok:{bg:'var(--okbg)',fg:'#0d6b54'},watch:{bg:'var(--watchbg)',fg:'#9c6212'},care:{bg:'var(--carebg)',fg:'#a23d3d'},'new':{bg:'#EAF0F7',fg:'#41689A'}};
+    var statusLabel={ok:'בקצב',watch:'תמיכה קלה',care:'ליווי קרוב','new':'טרם נאספו נתונים'};
+    var kidStepText={
+      care:'שיחה קצרה עם המורה, ובדיקה אם נמנע.ת ממשימות קריאה. עדיף חיזוק בקבוצה קטנה מאשר עוד תרגול לבד.',
+      watch:'לא להעמיס עוד תרגול לבד — קבוצת חיזוק קטנה ותרגול ממוקד באותיות שעדיין מתבלבלות.'
+    };
+
+    function setBadge(mode){
+      var b=document.getElementById('rtBadge');
+      if(mode==='cloud'){b.className='rt-badge rt-cloud';document.getElementById('rtTx').textContent='נתונים חיים · ענן';}
+      else{b.className='rt-badge rt-load';document.getElementById('rtTx').textContent='מתחבר…';}
+    }
+    function copy(code){ if(navigator.clipboard) navigator.clipboard.writeText(code); toast('הקוד הועתק'); }
+
+    /* ---------- render ---------- */
+    function renderHeader(){
+      var s=ST.school||{};
+      document.getElementById('meSchool').textContent = s.name || 'בית ספר';
+      document.getElementById('meAv').textContent = initial(s.name)||'מ';
+      document.getElementById('crumbs').textContent = (s.name||'בית ספר')+' · אבני יסוד · מנהלת';
+      try{ var d=new Date(); document.getElementById('todayDate').textContent = d.toLocaleDateString('he-IL',{weekday:'short',day:'2-digit',month:'2-digit'}); }catch(e){}
+      if(s.join_code){
+        document.getElementById('codeVal').textContent=s.join_code;
+        document.getElementById('codeChip').hidden=false;
+        document.getElementById('emptyCode').textContent=s.join_code;
+      }
+    }
+
+    function renderEmpty(){
+      document.getElementById('heroTitle').textContent='ברוכה הבאה · '+ (ST.school.name||'בית הספר');
+      document.getElementById('heroLine').innerHTML='בית הספר נוצר בהצלחה. כדי שתמונת הכיתות תתמלא — <b>הזמינו את המורות עם קוד בית הספר</b>.';
+      document.getElementById('emptyState').hidden=false;
+    }
+
+    function renderStats(){
+      var sum=PrincipalCloud.summary();
+      var studentsTotal=ST.students.length;
+      var tier=PrincipalCloud.schoolTier();
+      var stats=[
+        {ic:'heart', sb:'#FBE6E6', c:'#A23D3D', big:sum.careKids, t:'ילדים בליווי קרוב', s:'בכל הכיתות · לפי נתוני התרגול'},
+        {ic:'target',sb:'#FBF0E4', c:'#B5611F', big:sum.classesCare+'/'+sum.classesTotal, t:'כיתות שדורשות ליווי', s:'רוב הילדים בהן זקוקים לחיזוק'},
+        {ic:'people',sb:'#EAF0F7', c:'#41689A', big:sum.activeTeachers+'/'+sum.teachersTotal, t:'מורות פעילות השבוע', s:'שלחו תרגול או עדכנו קבוצות'},
+        {ic:'learn', sb:'#DDF3EC', c:'#0F7E72', big:studentsTotal, t:'תלמידי א׳ במערכת', s:tier.ok+' בשגרה · '+tier.watch+' תמיכה · '+tier.care+' ליווי'}
+      ];
+      document.getElementById('stats').innerHTML=stats.map(function(x){
+        return '<div class="card stat"><span class="ico" style="--sb:'+x.sb+';color:'+x.c+'"><span class="tic" data-ic="'+x.ic+'"></span></span>'+
+          '<div><div class="big">'+x.big+'</div><div class="t">'+x.t+'</div><div class="s">'+x.s+'</div></div></div>';
+      }).join('');
+      document.getElementById('statRow').hidden=false;
+    }
+
+    function renderClasses(){
+      var wrap=document.getElementById('classes'); wrap.innerHTML='';
+      ST.classes.forEach(function(c){
+        var b=ST.byClass[c.id]||{};
+        var st=b.status||'new';
+        var p=(b.progressPct!=null)?b.progressPct:0;
+        var d=document.createElement('div'); d.className='card gcard pcls '+st;
+        d.innerHTML='<span class="gtag '+tone[st]+'">'+statusLabel[st]+'</span>'+
+          '<div class="donut" style="--p:'+p+';--c:'+cmap[st]+'"><div class="v">'+(b.progressPct!=null?p+'%':'—')+'</div></div>'+
+          '<div class="dlab">'+(b.progressPct!=null?'התקדמות ממוצעת':'אין עדיין נתונים')+'</div>'+
+          '<h3>'+c.name+'</h3><p class="ds">'+(b.teacherName||'—')+' · '+(b.studentIds?b.studentIds.length:0)+' תלמידים</p>'+
+          '<span class="ge">פרטי הכיתה <span class="tic" data-ic="chevleft"></span></span>';
+        d.addEventListener('click',function(){openClass(c.id);});
+        wrap.appendChild(d);
+      });
+      document.getElementById('sec-classes').hidden=false;
+    }
+
+    function renderTier(){
+      var t=PrincipalCloud.schoolTier();
+      var total=t.total||1;
+      document.getElementById('tierbar').innerHTML=
+        '<span class="tier-ok" style="flex:'+Math.max(t.ok,1)+'">רוב — שגרה</span>'+
+        '<span class="tier-watch" style="flex:'+Math.max(t.watch,1)+'">תמיכה קלה</span>'+
+        '<span class="tier-care" style="flex:'+Math.max(t.care,1)+'">ליווי קרוב</span>';
+      document.getElementById('tierleg').innerHTML=
+        '<span><i style="background:var(--ok)"></i>שגרה — '+t.ok+' ילדים מתקדמים יפה</span>'+
+        '<span><i style="background:var(--watch)"></i>תמיכה קלה — '+t.watch+' ילדים בתרגול נוסף</span>'+
+        '<span><i style="background:var(--care)"></i>ליווי קרוב — '+t.care+' ילדים במענה אישי</span>';
+      document.getElementById('tierSec').hidden=false;
+    }
+
+    function renderKids(){
+      var kids=PrincipalCloud.kidsToWatch(8);
+      if(!kids.length) return;
+      var k=document.getElementById('kids'); k.innerHTML='';
+      kids.forEach(function(x){
+        var d=document.createElement('div'); d.className='card gcard pkid '+x.status;
+        var readLine = (x.knownPct!=null? 'שליטה נוכחית '+x.knownPct+'%. ':'טרם נאספה נקודת פתיחה. ')+
+          (x.errorLetters.length? 'מתבלבל.ת ב: '+x.errorLetters.join(' · ')+'.' : '');
+        d.innerHTML='<span class="gtag">'+x.className+'</span>'+
+          '<span class="gtile '+tone[x.status]+'">'+initial(x.name)+'</span>'+
+          '<h3>'+x.name+'</h3>'+
+          '<p class="ds"><b>בקריאה:</b> '+readLine+'<br><b>מורה:</b> '+x.teacherName+' · '+x.lastLabel+'</p>'+
+          '<div class="step"><b>הצעד הבא:</b> '+(kidStepText[x.status]||'')+'</div>';
+        k.appendChild(d);
+      });
+      document.getElementById('kidsSec').hidden=false;
+    }
+
+    function renderUsage(){
+      var usage=PrincipalCloud.teacherUsage();
+      if(!usage.length) return;
+      var lvlTx={high:'משתמשת קבוע',mid:'משתמשת חלקית',low:'טרם השתמשה השבוע'};
+      var lvlNote={
+        high:'שולחת תרגולים ועוקבת אחר הכיתה.',
+        mid:'פעילה — כדאי לוודא שאין צורך בעזרה בבניית קבוצות חיזוק.',
+        low:'כדאי לבדוק אם יש עומס טכני או פדגוגי, או צורך בליווי.'
+      };
+      document.getElementById('usage').innerHTML=usage.map(function(x){
+        return '<div class="card gcard puse"><span class="gtag">'+x.className+'</span>'+
+          '<span class="gtile">'+initials2(x.teacherName)+'</span>'+
+          '<h3>'+x.teacherName+'</h3><p class="ds">'+lvlNote[x.level]+' <br>'+x.weekActive+'/'+x.total+' תלמידים תרגלו השבוע · '+x.lastLabel+'</p>'+
+          '<span class="chip-use">'+lvlTx[x.level]+'</span></div>';
+      }).join('');
+      document.getElementById('usageSecWrap').hidden=false;
+    }
+
+    /* ---------- class modal ---------- */
+    function openClass(cid){
+      var b=ST.byClass[cid]; if(!b) return;
+      var rows=b.studentIds.map(function(sid){
+        var s=(ST.students.filter(function(x){return x.id===sid;})[0])||{};
+        var p=ST.profiles[sid]||{};
+        var r=TeacherCloud.rama(p);
+        var bucket={lead:'ok',ontrack:'ok',more:'watch',support:'care','new':'new'}[r.cls]||'new';
+        var k=TeacherCloud.knownRatio(p);
+        var tg=toneBg[bucket];
+        return {name:s.name,bucket:bucket,pct:(k==null?null:Math.round(k*100)),last:TeacherCloud.formatLast(p.last),label:statusLabel[bucket]};
+      }).sort(function(a,c){var o={care:0,watch:1,'new':2,ok:3};return o[a.bucket]-o[c.bucket];});
+      var tg=toneBg[b.status||'new'];
+      var body='<div class="cm-head"><div class="cm-tile" style="background:'+tg.bg+';color:'+tg.fg+'">'+(b.klass.name||'').replace(/[^0-9]/g,'')+'</div>'+
+        '<div><h2>כיתה '+b.klass.name+'</h2><div class="sub">'+b.teacherName+' · '+b.studentIds.length+' תלמידים · '+(b.progressPct!=null?'התקדמות '+b.progressPct+'%':'אין עדיין נתונים')+'</div></div></div>';
+      if(!rows.length){ body+='<p style="color:var(--text-soft);font-size:14px;padding:10px 4px;">עדיין אין תלמידים פעילים בכיתה זו.</p>'; }
+      rows.forEach(function(x){
+        var tg2=toneBg[x.bucket];
+        body+='<div class="cm-row"><div class="cm-av" style="background:'+tg2.bg+';color:'+tg2.fg+'">'+initial(x.name)+'</div>'+
+          '<div class="cm-nm">'+x.name+'<small>'+x.last+(x.pct!=null?' · שליטה '+x.pct+'%':'')+'</small></div>'+
+          '<span class="cm-badge" style="background:'+tg2.bg+';color:'+tg2.fg+'">'+x.label+'</span></div>';
+      });
+      document.getElementById('cmBody').innerHTML=body;
+      document.getElementById('cmScrim').classList.add('on');
+      document.getElementById('cmModal').classList.add('on');
+    }
+    function closeClass(){document.getElementById('cmScrim').classList.remove('on');document.getElementById('cmModal').classList.remove('on');}
+
+    /* ---------- boot ---------- */
+    (async function boot(){
+      try{
+        ST = await PrincipalCloud.init();
+        setBadge('cloud');
+        renderHeader();
+        if(!ST.classes.length){
+          renderEmpty();
+        } else {
+          document.getElementById('heroTitle').textContent='כיתות א׳ — תמונת בוקר · '+(ST.school.name||'');
+          var sum=PrincipalCloud.summary();
+          document.getElementById('heroLine').innerHTML = sum.careKids
+            ? 'רוב הילדים מתקדמים עם הכיתה. <b>'+sum.careKids+' ילדים כדאי ללוות מקרוב השבוע</b> — ראו למטה את הרשימה ואת מפת הכיתות.'
+            : 'רוב הילדים מתקדמים יפה. אין כרגע ילדים שדורשים ליווי קרוב — המשיכו לעקוב במפת הכיתות.';
+          renderStats(); renderClasses(); renderTier(); renderKids(); renderUsage();
+        }
+        fillTics();
+      }catch(e){
+        console.error('[principal-avnei] load failed:', e && e.message);
+        if(String(e&&e.message).indexOf('cloud-unavailable-file')>-1){
+          document.getElementById('heroLine').textContent='דשבורד המנהלת דורש חיבור לאינטרנט (ענן). פתחו דרך הכתובת החיה, לא כקובץ מקומי.';
+        } else if(['no-session','not-principal','no-school'].indexOf(String(e&&e.message))===-1){
+          document.getElementById('heroLine').textContent='לא הצלחנו לטעון את נתוני בית הספר. רעננו את הדף, או נסו שוב מאוחר יותר.';
+        }
+        fillTics();
+      }
+    })();
+
+    /* ---------- global clicks ---------- */
+    document.getElementById('cmClose').addEventListener('click',closeClass);
+    document.getElementById('cmScrim').addEventListener('click',closeClass);
+    document.addEventListener('keydown',function(e){if(e.key==='Escape')closeClass();});
+    document.getElementById('copyCodeChip')&&document.getElementById('copyCodeChip').addEventListener('click',function(){copy(ST&&ST.school.join_code);});
+    document.getElementById('copyCodeEmpty')&&document.getElementById('copyCodeEmpty').addEventListener('click',function(){copy(ST&&ST.school.join_code);});
+    document.getElementById('logoutBtn').addEventListener('click',async function(){
+      try{ if(ST&&ST.supabase){ await ST.supabase.auth.signOut(); } }catch(e){}
+      location.href='gate.html';
+    });
+    document.addEventListener('click',function(e){var b=e.target.closest('button.item, .item[data-toast]');if(b&&b.dataset.toast){toast(b.dataset.toast);}});
+    window.addEventListener('load',fillTics);
+    if(window.DemoIcons)fillTics();else setTimeout(fillTics,400);
+  </script>
+</body>
+</html>
