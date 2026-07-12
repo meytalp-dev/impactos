@@ -55,13 +55,22 @@
     saveMastery(mastery);
   }
 
+  // זיכרון-סשן של המילים שהוצגו לאחרונה, פר-משחק (לא נשמר; מתאפס בטעינה מחדש).
+  // מונע חזרה על אותה מילה לפני שאחרות הוצגו — בלי לשנות את סדר-עדיפויות המאסטרי.
+  const recentByGame = {};
+
   /**
    * Picks the next word for `gameId` from `words`, using mastery priorities.
-   * Returns one word object (random within the highest-priority non-empty bucket).
+   * Returns one word object. בתוך הדלי בעל-העדיפות, מעדיף מילה שלא הוצגה
+   * לאחרונה בסשן הזה, כדי למנוע כפילויות-רצף (נופל לכל הדלי אם כולן "טריות").
    */
   function pickWord(gameId, words) {
     if (!words || words.length === 0) return null;
     const mastery = getMastery();
+    const recent = recentByGame[gameId] || (recentByGame[gameId] = []);
+    // כמה מילים לזכור: עד חצי מהמאגר (מקסימום 8) — מספיק למנוע חזרה-קרובה
+    // ועדיין מאפשר סבב-חזרה בהמשך.
+    const recentCap = Math.min(8, Math.max(1, Math.floor(words.length / 2)));
 
     const attemptedElsewhere = []; // tried in OTHER games, not all mastered
     const brandNew = [];           // never seen anywhere
@@ -101,16 +110,25 @@
       { name: 'mastered-here',       items: masteredHere },
     ];
 
+    function remember(word) {
+      recent.push(word.id);
+      while (recent.length > recentCap) recent.shift();
+      return word;
+    }
+
     for (const bucket of priorityBuckets) {
       if (bucket.items.length > 0) {
-        const w = bucket.items[Math.floor(Math.random() * bucket.items.length)];
-        console.log(`[mastery] picked "${w.id}" from bucket "${bucket.name}" (${bucket.items.length} candidates)`);
-        return w;
+        // עדיפות למילים שלא הוצגו לאחרונה; אם כולן טריות — כל הדלי.
+        const fresh = bucket.items.filter(w => recent.indexOf(w.id) === -1);
+        const pool = fresh.length > 0 ? fresh : bucket.items;
+        const w = pool[Math.floor(Math.random() * pool.length)];
+        console.log(`[mastery] picked "${w.id}" from bucket "${bucket.name}" (${pool.length}/${bucket.items.length} candidates)`);
+        return remember(w);
       }
     }
 
     // fallback (shouldn't reach here)
-    return words[Math.floor(Math.random() * words.length)];
+    return remember(words[Math.floor(Math.random() * words.length)]);
   }
 
   /** Clears all mastery — for testing or "reset progress" button */
