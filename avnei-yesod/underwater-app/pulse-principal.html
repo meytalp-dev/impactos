@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#FFFFFF">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>פולס בית-ספרי · מנהלת · אבני יסוד</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Approved mint design system (single source of truth) -->
+  <link rel="stylesheet" href="../../demo/demo.css">
+  <script src="../../demo/demo-icons.js" defer></script>
+  <!-- Cloud data layer: teacher-cloud (pure helpers) + principal-cloud (school) + pulse-cloud -->
+  <link rel="preconnect" href="https://esm.sh" crossorigin>
+  <link rel="preconnect" href="https://ynxfszmpoppqrqocewcs.supabase.co" crossorigin>
+  <link rel="modulepreload" href="https://esm.sh/@supabase/supabase-js@2.45.4">
+  <script src="js/shared/cloud-config.js"></script>
+  <script src="js/shared/teacher-cloud.js"></script>
+  <script src="js/shared/principal-cloud.js"></script>
+  <script src="js/shared/pulse-cloud.js"></script>
+  <style>
+    .rail .logo .gm{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:#DDF3EC;}
+    .rail .logo .gm svg{width:22px;height:22px;}
+
+    .hero{background:#FFFFFF;border:1px solid #ECF0F0;border-radius:var(--radius-lg);padding:20px 24px;
+      box-shadow:0 1px 3px rgba(38,80,92,.05);margin-bottom:20px;border-right:8px solid #E08FAF;}
+    .hero .q{font-size:12px;font-weight:800;color:#B05A86;background:#FBEBF2;display:inline-block;padding:4px 13px;border-radius:var(--pill);margin-bottom:10px;}
+    .hero h1{font-size:clamp(20px,2.4vw,25px);font-weight:800;color:var(--deep);}
+    .hero p{font-size:13.5px;color:var(--text-soft);margin-top:7px;max-width:74ch;line-height:1.5;}
+    .hero p b{color:#b5611f;}
+    .hero .acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;}
+
+    /* dimension tiles */
+    .dims{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;}
+    .dim{display:flex;align-items:flex-start;gap:13px;}
+    .dtile{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;flex:0 0 auto;}
+    .dtile .tic svg{width:24px;height:24px;}
+    .dim h3{font-size:15.5px;font-weight:800;color:var(--deep);}
+    .dim .st{font-size:13.5px;font-weight:700;margin-top:3px;}
+    .dim .st.ok{color:#0d6b54;} .dim .st.watch{color:#9c6212;} .dim .st.care{color:#a23d3d;} .dim .st.new{color:#48707C;}
+    .dim small{display:block;font-size:12.5px;color:var(--text-soft);line-height:1.45;margin-top:5px;}
+    .dim .bar{height:6px;border-radius:4px;background:#EEF2F2;margin-top:9px;overflow:hidden;}
+    .dim .bar>i{display:block;height:100%;border-radius:4px;}
+
+    /* per-class pulse cards */
+    .clsgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));gap:14px;}
+    .ccls{display:flex;flex-direction:column;gap:11px;position:relative;min-height:150px;}
+    .ctile{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-size:20px;font-weight:800;font-family:'Heebo',sans-serif;flex:0 0 auto;}
+    .ccls.ok .ctile{background:var(--okbg);color:#0d6b54;}
+    .ccls.watch .ctile{background:var(--watchbg);color:#9c6212;}
+    .ccls.care .ctile{background:var(--carebg);color:#a23d3d;}
+    .ccls.new .ctile{background:#EAF0F7;color:#41689A;}
+    .ccls h3{font-size:18px;font-weight:800;color:var(--deep);}
+    .ccls h3 small{display:block;font-size:12px;font-weight:600;color:var(--text-soft);margin-top:2px;}
+    .ccls p{font-size:13.5px;color:var(--text-soft);line-height:1.5;flex:1;margin:0;}
+    .ccls p b{color:var(--deep);}
+    .ccls .flag{font-size:12.5px;font-weight:800;}
+    .ccls.ok .flag{color:#0d6b54;} .ccls.watch .flag{color:#9c6212;} .ccls.care .flag{color:#a23d3d;} .ccls.new .flag{color:#48707C;}
+    .ccls .done{position:absolute;top:14px;left:14px;display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:var(--pill);white-space:nowrap;}
+    .ccls .done.full{color:#0d6b54;background:var(--okbg);} .ccls .done.part{color:#9c6212;background:var(--watchbg);}
+    .ccls .done .tic svg{width:13px;height:13px;}
+
+    /* attention children */
+    .kids{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;}
+    .kid{border-right:5px solid var(--c);}
+    .kid.care{--c:var(--care);--cbg:var(--carebg);--ctx:#a23d3d;} .kid.watch{--c:var(--watch);--cbg:var(--watchbg);--ctx:#9c6212;}
+    .kid .top{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+    .kid .av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-size:17px;font-weight:800;color:var(--ctx);background:var(--cbg);flex:0 0 auto;font-family:'Heebo',sans-serif;}
+    .kid h3{font-size:17.5px;font-weight:800;color:var(--deep);flex:1;}
+    .kid .pill{font-size:11px;font-weight:800;padding:4px 11px;border-radius:var(--pill);white-space:nowrap;background:var(--cbg);color:var(--ctx);}
+    .kid .chip{font-size:11px;font-weight:700;padding:3px 10px;border-radius:var(--pill);background:#F0F5F6;color:#48707C;}
+    .kid .seen{font-size:14px;color:var(--text-soft);line-height:1.5;margin:3px 0;} .kid .seen b{color:var(--text-main);}
+    .kid .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+
+    .plink{display:flex;align-items:center;gap:13px;text-align:right;cursor:pointer;text-decoration:none;color:inherit;
+      transition:transform .15s,box-shadow .15s;}
+    .plink:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(38,80,92,.10);}
+    .plink .dtile{width:48px;height:48px;background:#F1EEFA;color:#6a59b8;}
+    .plink h3{font-size:15px;font-weight:800;color:var(--deep);}
+    .plink small{display:block;font-size:12.5px;color:var(--text-soft);margin-top:2px;line-height:1.4;}
+    .plink .go{margin-inline-start:auto;color:#B9C9C6;flex:0 0 auto;} .plink .go svg{width:20px;height:20px;}
+
+    .sec-title{font-size:16px;} .sec-title .tag{background:#F2F5F5;color:#7C8E94;}
+    .btn-primary{background:#5FBFA4;color:#fff;} .btn-soft{background:#F0F5F6;color:#48707C;}
+
+    .rt-badge{position:fixed;bottom:14px;left:14px;z-index:30;font-size:11.5px;font-weight:800;
+      padding:6px 12px;border-radius:999px;box-shadow:0 2px 8px rgba(38,80,92,.14);display:flex;align-items:center;gap:6px;}
+    .rt-badge .d{width:7px;height:7px;border-radius:50%;}
+    .rt-cloud{background:var(--okbg);color:#0d6b54;} .rt-cloud .d{background:var(--ok);}
+    .rt-load{background:#EAF0F7;color:#41689A;} .rt-load .d{background:#41689A;}
+
+    body{background:#FFFFFF;font-family:'Rubik',sans-serif;letter-spacing:-.01em;}
+    .tic{display:inline-flex;align-items:center;vertical-align:-.16em;line-height:0;color:inherit;}
+    .tic svg{width:1.08em;height:1.08em;display:block;}
+    .scene-bg,.veil{display:none;}
+    .rail{background:#FBFDFD;backdrop-filter:none;border-left:1px solid #EEF2F2;}
+    .topbar .date{background:#F4F7F7;box-shadow:none;}
+    .card{background:#FFFFFF;backdrop-filter:none;border:1px solid #ECF0F0;box-shadow:0 1px 3px rgba(38,80,92,.05);}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <nav class="rail" aria-label="ניווט">
+      <a class="logo" href="principal-avnei.html"><span class="gm"><svg viewBox="0 0 24 24" fill="none" stroke="#0F7E72" stroke-width="2.3" stroke-linecap="round"><path d="M6 18v-5"/><path d="M12 18V7"/><path d="M18 18v-8"/></svg></span><b>אבני<br>יסוד</b></a>
+      <a class="item" href="principal-avnei.html"><span class="ic" data-ic="home"></span><span class="t">דף הבית</span></a>
+      <a class="item" href="principal-avnei.html#sec-classes"><span class="ic" data-ic="classes"></span><span class="t">מפת כיתות</span></a>
+      <a class="item" href="principal-avnei.html#sec-usage"><span class="ic" data-ic="people"></span><span class="t">צוות</span></a>
+      <a class="item" href="mavat-meshulav.html"><span class="ic" data-ic="learn"></span><span class="t">למידה ורגש</span></a>
+      <a class="item active" href="pulse-principal.html"><span class="ic" data-ic="pulse"></span><span class="t">פולס</span></a>
+      <button class="item" id="logoutBtn"><span class="ic" data-ic="settings"></span><span class="t">יציאה</span></button>
+      <div class="me"><div class="av" id="meAv">מ</div><small id="meNm">מנהלת<span id="meSchool">בית ספר</span></small></div>
+    </nav>
+
+    <main class="main"><div class="main-inner">
+      <div class="topbar">
+        <div class="crumbs" id="crumbs">אבני יסוד · מנהלת · פולס</div>
+        <div class="date" id="todayDate">היום</div>
+      </div>
+
+      <!-- hero -->
+      <div class="hero">
+        <span class="q">מצב רגשי-חברתי · בית-ספרי</span>
+        <h1 id="heroTitle">פולס — איך בית הספר מרגיש</h1>
+        <p id="heroLine">טוען את תמונת הרווחה…</p>
+        <div class="acts" id="heroActs" hidden>
+          <a class="btn btn-primary" href="mavat-meshulav.html"><span class="tic" data-ic="link"></span>למבט המשולב</a>
+        </div>
+      </div>
+
+      <!-- empty state -->
+      <section class="sec" id="emptyState" hidden>
+        <div class="card" style="text-align:center;padding:38px 24px;">
+          <span style="width:60px;height:60px;border-radius:17px;background:#FBEBF2;color:#B05A86;display:grid;place-items:center;margin:0 auto 15px;"><span class="tic" data-ic="pulse"></span></span>
+          <h2 style="font-size:21px;font-weight:900;color:var(--deep);margin-bottom:8px;">עדיין לא נאסף פולס</h2>
+          <p style="font-size:14px;color:var(--text-soft);line-height:1.6;max-width:52ch;margin:0 auto;">כשהמורות ישלחו את הפולס הראשון לילדים, תמונת הרווחה של בית הספר תופיע כאן — ברמת הממד, הכיתה והילד.ה.</p>
+        </div>
+      </section>
+
+      <!-- 4 dimensions school-wide -->
+      <section class="sec" id="dimsSec" hidden>
+        <div class="sec-title"><span class="tic" data-ic="waves"></span> תמונת בית הספר <span class="tag" id="dimsTag">4 ממדים</span></div>
+        <div class="dims" id="dims"></div>
+      </section>
+
+      <!-- per-class -->
+      <section class="sec" id="clsSec" hidden>
+        <div class="sec-title"><span class="tic" data-ic="classes"></span> לפי כיתות <span class="tag" id="clsTag">פולס אחרון</span></div>
+        <div class="clsgrid" id="clsgrid"></div>
+      </section>
+
+      <!-- attention children -->
+      <section class="sec" id="kidsSec" hidden>
+        <div class="sec-title"><span class="tic" data-ic="heart"></span> ילדים לתשומת לב רגשית <span class="tag" id="kidsTag">מכל הכיתות</span></div>
+        <div class="kids" id="kids"></div>
+      </section>
+
+      <div class="note"><b>חשוב:</b> הפולס לא מדרג כיתות ולא מתייג ילדים — הוא מסמן איפה כדאי להקשיב קודם, והמורה תמיד רואה לפני המנהלת.</div>
+    </div></main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="rt-badge rt-load" id="rtBadge"><span class="d"></span><span id="rtTx">מתחבר…</span></div>
+
+  <script>
+    var ST=null, BYS=null;
+    function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},2600);}
+    function initial(n){return (n||'').replace(/[^א-ת]/g,'').charAt(0)||'·';}
+    function fillTics(){if(!window.DemoIcons)return;document.querySelectorAll('.tic[data-ic]').forEach(function(el){if(!el.firstChild&&DemoIcons[el.dataset.ic])el.innerHTML=DemoIcons[el.dataset.ic];});}
+    function setBadge(mode){var b=document.getElementById('rtBadge');if(mode==='cloud'){b.className='rt-badge rt-cloud';document.getElementById('rtTx').textContent='נתונים חיים · ענן';}else{b.className='rt-badge rt-load';document.getElementById('rtTx').textContent='מתחבר…';}}
+
+    var stTx={ok:'יציב',watch:'לתשומת לב',care:'זקוק להקשבה','new':'טרם נאסף'};
+    var stFace={ok:'רוב הילדים מדווחים חיובי.',watch:'חלק מהילדים מסמנים קושי.',care:'ילדים אחדים מבקשים הקשבה.','new':'עדיין אין מספיק תשובות.'};
+    var barCol={ok:'#5FBFA4',watch:'#E6A94B',care:'#D98A82','new':'#C9D4D4'};
+
+    /* ---------- helpers on loaded data ---------- */
+    function classNameOf(sid){
+      var s=ST.students.filter(function(x){return x.id===sid;})[0];
+      if(!s) return '';
+      var c=ST.classes.filter(function(x){return x.id===s.class_id;})[0];
+      return c?c.name:'';
+    }
+    // אגרגציה כיתתית של הרגש: לכל כיתה — כמה ענו, כמה care/watch, סטטוס
+    function classPulse(){
+      var out={};
+      ST.classes.forEach(function(c){ out[c.id]={klass:c,total:0,answered:0,care:0,watch:0,ok:0,teacherName:(ST.byClass[c.id]||{}).teacherName||'—'}; });
+      ST.students.forEach(function(s){
+        var o=out[s.class_id]; if(!o) return; o.total++;
+        var ps=BYS[s.id]; if(!ps||!ps.hasData) return; o.answered++;
+        var cls=ps.level.cls; if(o[cls]!=null) o[cls]++;
+      });
+      Object.keys(out).forEach(function(cid){
+        var o=out[cid];
+        if(!o.answered){ o.status='new'; return; }
+        var careShare=o.care/o.answered;
+        o.status = careShare>=0.34 ? 'care' : (o.care+o.watch>0 ? 'watch' : 'ok');
+      });
+      return out;
+    }
+
+    /* ---------- render ---------- */
+    function renderHeader(){
+      var s=ST.school||{};
+      document.getElementById('meSchool').textContent=s.name||'בית ספר';
+      document.getElementById('meAv').textContent=initial(s.name)||'מ';
+      document.getElementById('crumbs').textContent=(s.name||'בית ספר')+' · מנהלת · פולס';
+      try{var d=new Date();document.getElementById('todayDate').textContent=d.toLocaleDateString('he-IL',{weekday:'short',day:'2-digit',month:'2-digit'});}catch(e){}
+    }
+
+    function renderDims(){
+      var dims=PulseCloud.schoolDims(BYS);
+      var anyData=PulseCloud.DIM_IDS.some(function(id){return dims[id].n>0;});
+      if(!anyData) return false;
+      var totalN=Object.keys(BYS).filter(function(sid){return BYS[sid].hasData;}).length;
+      document.getElementById('dimsTag').textContent='4 ממדים · '+totalN+' ילדים ענו';
+      document.getElementById('dims').innerHTML=PulseCloud.DIMENSIONS.map(function(m){
+        var d=dims[m.id]; var cls=d.level.cls;
+        var pct=d.mean!=null?Math.round((d.mean-1)/2*100):0;  // 1..3 → 0..100
+        var desc=d.n?stFace[cls]:'טרם נאספו תשובות בממד זה.';
+        return '<div class="card dim">'+
+          '<span class="dtile" style="background:'+m.bg+';color:'+m.fg+'"><span class="tic" data-ic="'+m.icon+'"></span></span>'+
+          '<div style="flex:1"><h3>'+m.label+'</h3>'+
+          '<div class="st '+cls+'">'+stTx[cls]+(d.n?' · '+d.mean.toFixed(1)+'/3':'')+'</div>'+
+          '<small>'+desc+'</small>'+
+          '<div class="bar"><i style="width:'+pct+'%;background:'+barCol[cls]+'"></i></div></div></div>';
+      }).join('');
+      document.getElementById('dimsSec').hidden=false;
+      return true;
+    }
+
+    function renderClasses(){
+      if(!ST.classes.length) return;
+      var cp=classPulse();
+      document.getElementById('clsgrid').innerHTML=ST.classes.map(function(c){
+        var o=cp[c.id]; var st=o.status;
+        var flagged=o.care+o.watch;
+        var line = st==='new'
+          ? 'טרם התקבל פולס מהכיתה.'
+          : (flagged? '<b>'+flagged+' '+(flagged===1?'ילד.ה':'ילדים')+' לתשומת לב</b> רגשית מתוך '+o.answered+' שענו.' : 'תמונה יציבה — אין ילדים במעקב רגשי.');
+        var flagTx = st==='new' ? 'ממתין לפולס' : (flagged? flagged+' במעקב' : 'שגרה טובה');
+        var doneCls = o.total&&o.answered>=o.total ? 'full' : 'part';
+        var doneTx = o.total? o.answered+'/'+o.total+' ענו' : 'אין תלמידים';
+        return '<div class="card ccls '+st+'">'+
+          '<span class="done '+doneCls+'"><span class="tic" data-ic="checkcircle"></span>'+doneTx+'</span>'+
+          '<span class="ctile">'+(c.name||'').replace(/[^0-9]/g,'')+'</span>'+
+          '<h3>'+c.name+' <small>'+o.teacherName+'</small></h3>'+
+          '<p>'+line+'</p>'+
+          '<span class="flag">'+flagTx+'</span></div>';
+      }).join('');
+      document.getElementById('clsTag').textContent='פולס אחרון · '+ST.classes.length+' כיתות';
+      document.getElementById('clsSec').hidden=false;
+    }
+
+    function renderKids(){
+      var kids=PulseCloud.kidsToWatch(ST.students, BYS, classNameOf, 9);
+      if(!kids.length) return;
+      document.getElementById('kidsTag').textContent=kids.length+' השבוע · מכל הכיתות';
+      document.getElementById('kids').innerHTML=kids.map(function(x){
+        var dimLabel=x.weakDimMeta?x.weakDimMeta.label:'רווחה כללית';
+        var seen = x.status==='care'
+          ? 'מסמן.ת קושי חוזר ב<b>'+dimLabel+'</b> בפולס האחרון. שווה הקשבה קרובה.'
+          : 'סימון של קושי מתון ב<b>'+dimLabel+'</b> — לשים לב שלא מעמיק.';
+        return '<div class="card kid '+x.status+'">'+
+          '<div class="top"><div class="av">'+initial(x.name)+'</div><h3>'+x.name+'</h3>'+
+          '<span class="chip">'+x.className+'</span><span class="pill">'+dimLabel+'</span></div>'+
+          '<div class="seen">'+seen+'</div>'+
+          '<div class="acts"><a class="btn btn-soft btn-sm" href="mavat-meshulav.html"><span class="tic" data-ic="link"></span>למבט המשולב</a></div></div>';
+      }).join('');
+      document.getElementById('kidsSec').hidden=false;
+    }
+
+    /* ---------- boot ---------- */
+    (async function boot(){
+      try{
+        ST = await PrincipalCloud.init();
+        setBadge('cloud');
+        renderHeader();
+        var ids=ST.students.map(function(s){return s.id;});
+        var rows = ids.length ? await PulseCloud.loadForStudents(ST.supabase, ids) : [];
+        BYS = PulseCloud.perStudent(rows);
+        var answered=Object.keys(BYS).filter(function(sid){return BYS[sid].hasData;}).length;
+        if(!answered){
+          document.getElementById('heroTitle').textContent='פולס — '+(ST.school.name||'בית הספר');
+          document.getElementById('heroLine').innerHTML='עדיין לא נאסף פולס בבית הספר. כשהמורות ישלחו את הפולס הראשון — <b>תמונת הרווחה תופיע כאן</b>.';
+          document.getElementById('emptyState').hidden=false;
+        } else {
+          var kids=PulseCloud.kidsToWatch(ST.students, BYS, classNameOf);
+          document.getElementById('heroTitle').textContent='פולס — איך בית הספר מרגיש · '+(ST.school.name||'');
+          document.getElementById('heroLine').innerHTML = kids.length
+            ? 'תמונת הרווחה מ-'+answered+' ילדים שענו. <b>'+kids.length+' ילדים כדאי להקשיב להם קרוב</b> — ראו למטה, לצד תמונת הכיתות והממדים.'
+            : 'תמונת הרווחה מ-'+answered+' ילדים שענו — יציבה ברוב הממדים. אין כרגע ילדים שדורשים הקשבה קרובה.';
+          document.getElementById('heroActs').hidden=false;
+          renderDims(); renderClasses(); renderKids();
+        }
+        fillTics();
+      }catch(e){
+        console.error('[pulse-principal] load failed:', e && e.message);
+        if(String(e&&e.message).indexOf('cloud-unavailable-file')>-1){
+          document.getElementById('heroLine').textContent='מסך הפולס דורש חיבור לאינטרנט (ענן). פתחו דרך הכתובת החיה, לא כקובץ מקומי.';
+        } else if(['no-session','not-principal','no-school'].indexOf(String(e&&e.message))===-1){
+          document.getElementById('heroLine').textContent='לא הצלחנו לטעון את נתוני הפולס. רעננו את הדף, או נסו שוב מאוחר יותר.';
+        }
+        fillTics();
+      }
+    })();
+
+    document.getElementById('logoutBtn').addEventListener('click',async function(){
+      try{ if(ST&&ST.supabase){ await ST.supabase.auth.signOut(); } }catch(e){}
+      location.href='gate.html';
+    });
+    document.addEventListener('click',function(e){var b=e.target.closest('button.item[data-toast]');if(b&&b.dataset.toast){toast(b.dataset.toast);}});
+    window.addEventListener('load',fillTics);
+    if(window.DemoIcons)fillTics();else setTimeout(fillTics,400);
+  </script>
+</body>
+</html>

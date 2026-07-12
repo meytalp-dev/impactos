@@ -892,6 +892,54 @@ const sid = params.get('sid') || 'test-' + Math.random().toString(36).slice(2, 7
 const biweek = params.get('biweek') || '1';
 const sessionId = 's-' + Date.now();
 
+// ═══════ חיווט לענן (גל 2) ═══════
+// כשמגיעים עם ?token= של תלמיד.ה (או ?respondent=parent&token=parent_token),
+// שולחים את הפולס ל-Supabase דרך ingest_pulse_response. בלי token / ב-file:// /
+// אם השליחה נכשלת — נופלים ל-localStorage (מצב דמו), בלי לשבור את החוויה.
+// הקונפיג ציבורי ובטוח (RLS הוא שער-הגישה) — לכן מוטמע כאן, כי השאלון חי
+// בתיקייה נפרדת מ-avnei-yesod/underwater-app/js/shared/cloud-config.js.
+const pulseToken = params.get('token') || '';
+const pulseRespondent = params.get('respondent') === 'parent' ? 'parent' : 'student';
+const PULSE_CLOUD = {
+  URL: 'https://ynxfszmpoppqrqocewcs.supabase.co',
+  KEY: 'sb_publishable_Nq1wqSAjsAZMmuOXq2afUA_f_g8CEIU',
+  JS:  'https://esm.sh/@supabase/supabase-js@2.45.4'
+};
+
+// מזהה-מחזור: שבוע ISO (למשל '2026-W28'). מאחד student↔teacher באותה תקופה,
+// ומאפשר ל"מבט משולב" להצליב פולס עם למידה. ?cycle= דורס אם המורה שולחת מפורשות.
+function isoWeekCycle(d) {
+  const dt = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = dt.getUTCDay() || 7;
+  dt.setUTCDate(dt.getUTCDate() + 4 - day);
+  const yStart = new Date(Date.UTC(dt.getUTCFullYear(), 0, 1));
+  const wk = Math.ceil((((dt - yStart) / 86400000) + 1) / 7);
+  return dt.getUTCFullYear() + '-W' + String(wk).padStart(2, '0');
+}
+const pulseCycle = params.get('cycle') || isoWeekCycle(new Date());
+
+// שולח את התשובות לענן. מחזיר true אם נכתב בהצלחה.
+async function submitPulseToCloud(answers, takenAt) {
+  if (!pulseToken || location.protocol === 'file:') return false;
+  try {
+    const { createClient } = await import(PULSE_CLOUD.JS);
+    const sb = createClient(PULSE_CLOUD.URL, PULSE_CLOUD.KEY, { auth: { persistSession: false } });
+    const { error } = await sb.rpc('ingest_pulse_response', {
+      p_token: pulseToken,
+      p_respondent: pulseRespondent,
+      p_cycle: pulseCycle,
+      p_answers: answers,
+      p_taken_at: takenAt
+    });
+    if (error) { console.warn('[PULSE] cloud write failed, falling back to local:', error.message); return false; }
+    console.log('[PULSE] Saved to cloud:', { respondent: pulseRespondent, cycle: pulseCycle, answers });
+    return true;
+  } catch (e) {
+    console.warn('[PULSE] cloud unavailable, falling back to local:', e && e.message);
+    return false;
+  }
+}
+
 // ═══════ פולס ממוקד — ?dims=emotion או ?dims=adjust,joy ═══════
 // המורה בוחרת בדשבורד איזה פולס לשלוח: מלא (ברירת מחדל) או ממוקד בממד אחד.
 // ערך לא מוכר / ריק → הפולס המלא, בלי שבירה. תחנות עודפות מוסתרות בהמשך.
@@ -1147,20 +1195,29 @@ function showThanks(thanks) {
   setTimeout(() => toast.classList.remove('show'), 1500);
 }
 
-function showOutro() {
-  // שמירת דמו בלבד — ראו הערת הפרטיות למעלה (ניקוי אוטומטי אחרי 24 שעות).
-  // בפיילוט האמיתי: שליחה ל-backend, בלי localStorage.
-  try {
-    const submission = {
-      school: 'demo', class: classId, sid, biweek, sessionId,
-      submittedAt: new Date().toISOString(),
-      responses
-    };
-    const existing = JSON.parse(localStorage.getItem('pulse-demo-responses') || '[]');
-    existing.push(submission);
-    localStorage.setItem('pulse-demo-responses', JSON.stringify(existing));
-    console.log('[PULSE] Saved submission:', submission);
-  } catch (_) {}
+async function showOutro() {
+  const takenAt = new Date().toISOString();
+  // answers = {dim: score} — הצורה שהטבלה pulse_responses מצפה לה.
+  const answers = {};
+  responses.forEach(r => { answers[r.dim] = r.score; });
+
+  // עם token → שליחה לענן (גל 2). מחכים לכתיבה לפני הניווט כדי לא לאבד דאטה
+  // (הניווט מבטל fetch תלוי). הילד.ה רואה את בועת-התודה בינתיים.
+  // בלי token / file:// / כישלון → נפילה ל-localStorage (מצב דמו).
+  let saved = false;
+  try { saved = await submitPulseToCloud(answers, takenAt); } catch (_) {}
+  if (!saved) {
+    try {
+      const submission = {
+        school: 'demo', class: classId, sid, biweek, sessionId,
+        submittedAt: takenAt, responses
+      };
+      const existing = JSON.parse(localStorage.getItem('pulse-demo-responses') || '[]');
+      existing.push(submission);
+      localStorage.setItem('pulse-demo-responses', JSON.stringify(existing));
+      console.log('[PULSE] Saved submission (local):', submission);
+    } catch (_) {}
+  }
 
   // מעבר למסך הסיכום — מדבקה אקראית ופרידה חמה (תמיד, בלי קשר לתשובות)
   const qp = new URLSearchParams({ class: classId, sid, biweek });

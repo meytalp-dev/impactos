@@ -697,6 +697,46 @@ const mode = params.get('mode') === 'micro' ? 'micro' : 'monthly';
 
 if (mode === 'micro') document.body.classList.add('mode-micro');
 
+// ============ חיווט לענן (גל 2) · מסלול-כתיבת הורה ============
+// ההורה מגיע.ה עם קישור ייעודי pulse-parent-monthly.html?ptoken=<parent_token>.
+// כותבים ל-pulse_responses עם respondent='parent' דרך ingest_pulse_response
+// (מיגרציה 0008). בלי ptoken / file:// / כישלון → נופלים ל-console (דמו).
+// הקונפיג ציבורי ובטוח (RLS הוא שער-הגישה) — מוטמע כי העמוד בתיקייה נפרדת.
+const ptoken = params.get('ptoken') || '';
+const PULSE_CLOUD = {
+  URL: 'https://ynxfszmpoppqrqocewcs.supabase.co',
+  KEY: 'sb_publishable_Nq1wqSAjsAZMmuOXq2afUA_f_g8CEIU',
+  JS:  'https://esm.sh/@supabase/supabase-js@2.45.4'
+};
+// מחזור חודשי: '2026-07'. ?cycle= דורס.
+function monthCycle() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+const parentCycle = params.get('cycle') || monthCycle();
+
+// כשיש ptoken אמיתי — זו לא הדגמה: מסתירים את תווית ה"דמו".
+if (ptoken) document.querySelectorAll('.demo-badge').forEach(el => { el.style.display = 'none'; });
+
+// נרמול לסולם הקנוני 1-3 (גבוה=טוב), כדי לאחד עם פולס הילד.ה/מורה.
+function norm4to3(v) { return Math.round((1 + (v - 1) * (2 / 3)) * 100) / 100; }   // 1..4 → 1..3
+function norm5to3(v) { return Math.round((1 + (v - 1) * 0.5) * 100) / 100; }         // 1..5 → 1..3
+
+// שולח את תשובות ההורה לענן. answers = {dim: score 1-3}. מחזיר true בהצלחה.
+// טקסט חופשי (q4_text/q5_text) *לא* נשלח — הבטחת-הפרטיות אומרת שהוא ליועצת בלבד,
+// ומסלול-היועצת עדיין פתוח (זיכרון מיטל). לכן בגל זה שולחים רק ציונים + דגל alert.
+async function submitParentToCloud(answers, takenAt) {
+  if (!ptoken || location.protocol === 'file:') return false;
+  try {
+    const { createClient } = await import(PULSE_CLOUD.JS);
+    const sb = createClient(PULSE_CLOUD.URL, PULSE_CLOUD.KEY, { auth: { persistSession: false } });
+    const { error } = await sb.rpc('ingest_pulse_response', {
+      p_token: ptoken, p_respondent: 'parent', p_cycle: parentCycle,
+      p_answers: answers, p_taken_at: takenAt
+    });
+    if (error) { console.warn('[PULSE parent] cloud write failed:', error.message); return false; }
+    console.log('[PULSE parent] Saved to cloud:', { cycle: parentCycle, answers });
+    return true;
+  } catch (e) { console.warn('[PULSE parent] cloud unavailable:', e && e.message); return false; }
+}
+
 // Pre-fill child name everywhere (textContent only)
 document.querySelectorAll('.child-name').forEach(el => el.textContent = childName);
 document.getElementById('child-pill').textContent = parentLabel ? `הורה של ${childName}` : childName;
@@ -813,15 +853,22 @@ loadState();
   - הגבלת אורך טקסט פתוח (500 תווים) + סניטציה לפני אחסון/תצוגה
   - rate limit פר token + timestamp נקבע בשרת, לא מהקליינט
 */
-document.getElementById('submit-btn').addEventListener('click', () => {
-  const payload = {
-    ts: new Date().toISOString(),
-    child: childName,
-    mode: 'monthly',
-    answers
-  };
-  console.log('Submitting (monthly):', payload);
-  // TODO: POST to backend (Supabase) — ראו הערת הוולידציה למעלה
+document.getElementById('submit-btn').addEventListener('click', async () => {
+  const takenAt = new Date().toISOString();
+  // מיפוי לממדים הקנוניים (adjust/emotion/joy). 'friend' לא נשאל בפולס הורה.
+  //   q1 (סקרנות ללמידה, 1-4) → joy    · q2 (הירגעות, 1-4) → emotion
+  //   q3 (שמחה ללכת לביה"ס, 1-5) → adjust · q4 (תלונות חוזרות) → דגל alert בלבד
+  const cloudAnswers = {};
+  if (answers.q1 != null) cloudAnswers.joy     = norm4to3(parseInt(answers.q1, 10));
+  if (answers.q2 != null) cloudAnswers.emotion = norm4to3(parseInt(answers.q2, 10));
+  if (answers.q3 != null) cloudAnswers.adjust  = norm5to3(parseInt(answers.q3, 10));
+  if (answers.q4 === 'yes') cloudAnswers.alert = true;   // דגל, לא ציון-ממד
+
+  console.log('Submitting (monthly):', { child: childName, cycle: parentCycle, answers: cloudAnswers });
+  let saved = false;
+  try { saved = await submitParentToCloud(cloudAnswers, takenAt); } catch (_) {}
+  if (!saved) console.log('[PULSE parent] not sent to cloud (no ptoken / offline) — demo mode');
+
   clearDraft();
   document.getElementById('form-container').style.display = 'none';
   document.getElementById('thanks-screen').classList.add('show');
@@ -837,15 +884,18 @@ document.querySelectorAll('#micro-container input[name="micro"]').forEach(input 
     document.getElementById('micro-submit').disabled = false;
   });
 });
-document.getElementById('micro-submit').addEventListener('click', () => {
-  const payload = {
-    ts: new Date().toISOString(),
-    child: childName,
-    mode: 'micro',
-    flourishing: microValue
-  };
-  console.log('Submitting (micro):', payload);
-  // TODO: POST to backend — אותן דרישות ולידציה בצד שרת
+document.getElementById('micro-submit').addEventListener('click', async () => {
+  const takenAt = new Date().toISOString();
+  // "פולס מהיר" = מדד פריחה כללי אחד (0-10). ממפים ל-joy (הקרוב ביותר: שמחה/פריחה),
+  // מנורמל לסולם 1-3. לא מפזרים על כל הממדים כדי לא לזייף רזולוציה שההורה לא נתן.
+  const flourish3 = Math.round((1 + (microValue / 10) * 2) * 100) / 100;   // 0..10 → 1..3
+  const cloudAnswers = { joy: flourish3 };
+
+  console.log('Submitting (micro):', { child: childName, cycle: parentCycle, flourishing: microValue, answers: cloudAnswers });
+  let saved = false;
+  try { saved = await submitParentToCloud(cloudAnswers, takenAt); } catch (_) {}
+  if (!saved) console.log('[PULSE parent] micro not sent to cloud (no ptoken / offline) — demo mode');
+
   document.getElementById('micro-container').style.display = 'none';
   document.getElementById('thanks-next').textContent = 'הפולס החודשי המלא יישלח אליך בעוד כשבועיים';
   document.getElementById('thanks-screen').classList.add('show');
