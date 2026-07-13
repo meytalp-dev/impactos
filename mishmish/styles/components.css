@@ -1,0 +1,271 @@
+/* ============================================================
+   מישמיש | مِشْمِش — Components
+   ------------------------------------------------------------
+   רכיבי מסך-הפעילות: רקע-סצנה, שורת-התקדמות, מישמיש+בועה,
+   כפתור-האזנה, אריחי-תשובה, שורת-פיגום (עמית), שורת שפת-הישרדות.
+   כללי-מפתח נעולים:
+     · שמיעתי-קודם — כפתור האזנה מרכזי, טקסט = תמיכה מנוקדת.
+     · בלי אדום/ירוק — מצבים מסומנים גם בצורה לא-צבעונית (מסגרת/אייקון).
+     · טעות = הזמנה להאזין שוב, לא כישלון.
+   ============================================================ */
+
+/* ---------- שכבת-סצנה (רקע מלא) ---------- */
+.scene {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-size: cover;
+  background-position: center 30%;
+  background-repeat: no-repeat;
+}
+/* שכבת-רוגע מעל הרקע כדי שה-UI יהיה קריא (מרכז+תחתית) */
+.scene::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 250, 241, 0) 0%,
+    rgba(255, 250, 241, 0.35) 52%,
+    rgba(255, 250, 241, 0.82) 100%
+  );
+  pointer-events: none;
+}
+.scene > * { position: relative; z-index: 1; }
+
+/* ---------- שורה עליונה: התקדמות + מקום ---------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+}
+.progress { display: flex; gap: var(--space-2); }
+.progress .paw {
+  width: 18px; height: 18px;
+  border-radius: var(--radius-pill);
+  background: var(--color-border-soft);
+  transition: background var(--motion-normal) var(--ease-soft);
+}
+.progress .paw.done { background: var(--color-apricot-300); }
+.progress .paw.current {
+  background: var(--color-apricot-500);
+  box-shadow: 0 0 0 4px rgba(217, 121, 61, 0.20);
+}
+.place-chip {
+  font-size: var(--font-size-sm);
+  font-weight: 800;
+  color: var(--color-apricot-500);
+  background: var(--color-cream-50);
+  border: 1px solid var(--color-border-soft);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+}
+.place-chip .ar { color: var(--color-apricot-500); font-weight: 700; margin-inline-start: 6px; }
+
+/* ---------- אזור מרכזי: מישמיש + בועה ---------- */
+.stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  text-align: center;
+}
+.mishmish {
+  width: var(--character-size);
+  height: auto;
+  filter: drop-shadow(0 12px 16px rgba(150, 90, 40, 0.22));
+  transform-origin: center bottom;
+  /* "חיה": נשימה עדינה תמידית — נותנת תחושת-חיים בלי להסיח */
+  animation: breathe 3.4s var(--ease-soft) infinite;
+}
+@keyframes breathe {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-4px) scale(1.015); }
+}
+/* חגיגה — פופ שמחליף את הנשימה */
+.mishmish.celebrate { animation: pop var(--motion-slow) var(--ease-soft); }
+@keyframes pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.07) translateY(-6px) rotate(-1.5deg); }
+  100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mishmish, .mishmish.celebrate { animation: none; }
+}
+
+.bubble {
+  position: relative;
+  background: var(--color-cream-50);
+  border: 2px solid var(--color-apricot-300);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+  box-shadow: var(--shadow-card);
+  max-width: 34ch;
+}
+.bubble .he {
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  line-height: var(--line-height-tight);
+}
+.bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -11px; inset-inline-start: 44px;
+  width: 18px; height: 18px;
+  background: var(--color-cream-50);
+  border-inline-end: 2px solid var(--color-apricot-300);
+  border-bottom: 2px solid var(--color-apricot-300);
+  transform: rotate(45deg);
+}
+
+/* ---------- כפתור האזנה (הפעולה הראשית — שמיעתי-קודם) ---------- */
+.listen {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--space-8);            /* 56px יעד-מגע */
+  padding: 0 var(--space-6);
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  color: var(--color-white);
+  background: var(--color-sky-500);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-button);
+  transition: transform var(--motion-fast) var(--ease-soft);
+}
+.listen:active { transform: translateY(2px); }
+.listen .ico { width: 26px; height: 26px; }
+.listen.playing { background: var(--color-sky-700); }
+
+/* ---------- אריחי-תשובה ---------- */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 520px;
+  margin-inline: auto;
+}
+.tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 128px;
+  padding: var(--space-4) var(--space-2) var(--space-3);
+  background: var(--color-cream-50);
+  border: 3px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+  transition: border-color var(--motion-fast) var(--ease-soft),
+              box-shadow var(--motion-fast) var(--ease-soft),
+              transform var(--motion-fast) var(--ease-soft);
+}
+.tile:active { transform: translateY(2px); }
+.tile img { width: 72px; height: 72px; object-fit: contain; }
+.tile .cap {
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+}
+/* אריח נבחר (האזנה שנייה) — כחול-זהות, לא "נכון" */
+.tile.selected {
+  border-color: var(--color-state-selected);
+  box-shadow: var(--shadow-selected);
+}
+/* נכון — סימון כפול: צבע-זהות + אייקון וי לא-צבעוני (לא ירוק) */
+.tile.correct { border-color: var(--color-olive-500); }
+.tile.correct::after {
+  content: "✓";
+  position: absolute;
+  top: 6px; inset-inline-end: 10px;
+  font-size: 20px; font-weight: 900;
+  color: var(--color-ink-900);
+}
+/* נסי-שוב — צהוב-חם + אייקון אוזן (הזמנה להאזין), לעולם לא אדום */
+.tile.retry { border-color: var(--color-state-retry); }
+.tile.retry::after {
+  content: "↺";
+  position: absolute;
+  top: 6px; inset-inline-end: 10px;
+  font-size: 20px; font-weight: 900;
+  color: var(--color-ink-700);
+}
+.tile[aria-disabled="true"] { opacity: 0.55; pointer-events: none; }
+
+/* ---------- שורת-פיגום (עמית / רמז) ---------- */
+/* מדיניות: רמז = קול + דמות. טקסט ערבי מוסתר עד אישור בודק ילידי. */
+.scaffold {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  max-width: 520px;
+  margin: var(--space-4) auto 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-olive-300);
+  border: 1px dashed var(--color-olive-500);
+  border-radius: var(--radius-md);
+  text-align: start;
+}
+.scaffold .peer { width: 52px; height: 52px; object-fit: contain; flex: none; }
+.scaffold .tag {
+  font-size: var(--font-size-xs);
+  font-weight: 800;
+  color: var(--color-olive-500);
+  background: var(--color-cream-50);
+  border-radius: var(--radius-pill);
+  padding: var(--space-1) var(--space-3);
+  white-space: nowrap;
+}
+.scaffold .ar { font-size: var(--font-size-sm); color: var(--color-ink-900); font-weight: 600; }
+/* דגל-אימות: כשהעאמייה לא אושרה ע"י בודק/ת ילידי/ת — כל טקסט ערבי מוחבא (שער-עאמייה).
+   כולל שם-המקום (place-chip) ולא רק בועת-הפיגום. מוצג רק הרמז הקולי/דמות. */
+[data-arabic-verified="false"] .scaffold .ar,
+[data-arabic-verified="false"] .place-chip .ar { display: none; }
+
+/* ---------- שורת שפת-הישרדות (רוחבית, זמינה-תמיד) ---------- */
+.survival {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4) var(--space-5);
+}
+.survival button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-ink-700);
+  background: var(--color-cream-50);
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-pill);
+}
+.survival .ico { width: 22px; height: 22px; }
+
+/* ---------- מצב שגיאת-אודיו (לא spinner אינסופי) ---------- */
+.audio-error {
+  display: none;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-terracotta-500);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+}
+[data-audio="error"] .audio-error { display: inline-flex; }
+
+/* ---------- רספונסיביות ---------- */
+@media (max-width: 640px) {
+  .bubble .he { font-size: var(--font-size-xl); }
+  .tile { min-height: 108px; }
+  .tile img { width: 56px; height: 56px; }
+}

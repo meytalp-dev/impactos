@@ -87,6 +87,13 @@
   .beam-animal.soft { filter: none; opacity: 1; }
   .beam-animal.beckon { animation: beckon 1s ease-in-out infinite; }
   .beam-animal.faded { opacity: .1; }
+  /* real illustrations (drop-in): PNG replaces the emoji placeholder, keeps the
+     dark-silhouette→reveal treatment from the parent filter/opacity. */
+  .beam-animal.has-art { border-radius: 16px; background-size: contain; background-repeat: no-repeat; background-position: center bottom;
+    width: clamp(84px,22vw,124px); height: clamp(84px,22vw,124px);
+    filter: grayscale(.85) brightness(.42) drop-shadow(0 0 1px rgba(0,0,0,.5)); opacity: .34; }
+  .beam-animal.has-art.found, .beam-animal.has-art.chosen, .beam-animal.has-art.soft { filter: drop-shadow(0 6px 12px rgba(0,0,0,.4)); opacity: 1; }
+  .beam-animal.has-art .ba-emoji { display: none; }
   /* firefly hint: gentle drift so the dark field feels alive, not a quiz grid */
   .beam-scene::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .5;
     background:
@@ -209,9 +216,10 @@
     function nextRound() {
       if (idx >= order.length) return showDone();
       var word = order[idx++];
+      var item = makeItem(word);
       stageEl.innerHTML = '';
       LumiLightBeam.present(stageEl, {
-        item: makeItem(word), emoji: D.emoji, lumi: null,
+        item: item, emoji: D.emoji, lumi: null,
         targetRep: { glyph: (D.emoji && D.emoji[word]) || '❔' },
         instructionHe: idx === 1 ? 'הַקְשִׁיבוּ וְהָאִירוּ' : null, showInstruction: idx === 1,
         onMeasured: function () {},
@@ -220,6 +228,15 @@
           try { LumiAudio.english('You found it!'); } catch (e) {}
           setTimeout(nextRound, 950);
         },
+      });
+      // drop-in real art: map each silhouette (options order) to its wild PNG.
+      // Falls back silently to the emoji placeholder if a file is absent.
+      var btns = stageEl.querySelectorAll('.beam-animal');
+      item.options.forEach(function (o, i) {
+        var b = btns[i]; if (!b) return;
+        var img = new Image();
+        img.onload = function () { b.classList.add('has-art'); b.style.backgroundImage = 'url(' + img.src + ')'; };
+        img.src = 'assets/animals/wild/' + o.img + '.png';
       });
     }
 
