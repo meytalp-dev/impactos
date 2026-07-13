@@ -167,6 +167,10 @@ function MINIGAME(c){
 '• **מדידה נקייה מול משחק עשיר:** המכניקה אסור שתוסיף עומס לא־קשור־לידע (זריזות/זיכרון). משימה נמדדת = פעולה נקייה דרך `_measured-core.js`: **נגיעה־ראשונה בוחרת** (לא משמיעה שם־כרטיס), כפתור־מטרה מרכזי משמיע רק את היעד, **רק ניסיון־ראשון נמדד**, טעות→מצב־למידה (הוראה, לא הערכה). two-tap מותר רק ב־meet/חקר לא־נמדדים.\n'+
 '• **אפס־ענישה:** טעות → לומי סקרן/סבלני. בלי X/אדום/צליל־כישלון.\n'+
 '• **DNA חזותי:** פלטת־שקיעה חמה (peach/gold/amber/coral/sage/dusk), Heebo/Rubik, מגע ≥56px, ממשק־RTL / אנגלית־LTR. **לא תת־ימי, לא נוני, לא מפת־איים.**\n\n'+
+'━━ 🔧 גוצ׳ות בנייה מוכחים (חובה — נלמדו בפועל מ־T3/T4, אל תחזור עליהם) ━━\n'+
+'• **שלד־העמוד — באג "נפתח אבל ריק":** אם אתה משתמש ב־`<main class="lg-stage">` (כמו lantern-grove/safari-beam) — **חובה** לכלול ב־CSS את החוק `.lg-stage{ position:relative; flex:1; min-height:0; width:100%; display:flex; flex-direction:column; }`. בלעדיו שרשרת ה־flex (`#stage → .measure → .measure-scene`) קורסת לגובה 0, והפריטים (שממוקמים `absolute` בתוך הסצנה) נעלמים — המשחקון נפתח אך הבמה ריקה. **`safari-beam.html` הוא הרפרנס התקין** — העתק ממנו את שלד ה־CSS במלואו.\n'+
+'• **מכניקה משותפת = נעולה:** `light-beam.js` (T2–T5) · `path-choice.js` · `scene-hide.js` משותפים לכמה משחקונים — **אסור לשנות אותם**. חווט איורים/פרצופים/כדורים **page-local בלבד**: הזרק דרך `targetRep.glyph` / מפת `emoji` שאתה מעביר ל־`.present(...)`, או ב־post-render (כמו `paintFaces` ב־T3 ו־`ORB` ב־T4) + CSS מקומי בדף. אל תיגע בקובץ המכניקה המשותף.\n'+
+'• **גודל דמות — נצל את המסך:** ה־`.beam-animal`/הדמות צריכה להיות גדולה ומזמינה (יש מקום). עובד: `width/height: clamp(88px,23vw,132px)`, `font-size: clamp(54px,15vw,82px)`. פרצופי־storybook: `background-size:116%` (לא `contain`) כדי למלא את הדיסק — לגיליון יש שוליים פנימיים.\n\n'+
 '━━ בנק־הפריטים ━━\n'+
 'צור `lumi/items/'+c.file+'.json` בסכמת `animals.json`: ממדים meet(לא־נמדד)→recognize(ליבה נמדדת: שומע→בוחר תמונה, ≥3/מילה)→discriminate(זוג־מבלבל, ≥1/מילה)→produce(הקשבה־עצמית, לא־נמדד). כל אפשרות עם `img`, מיקום־תשובה מאוזן, `distractor_rationale`, `help_he` (🆘 בעברית). '+c.itemsNote+'\n'+
 'לשימוש־חוזר: מחוללים ב־`scratchpad/gen-lumi-animals.js` + `build-review.js`. אחרי עריכת JSON → הרץ `lumi/app/js/_build-data.js` לבניית `js/data.js` מחדש (הדף נפתח מ־file://).\n\n'+
@@ -181,9 +185,9 @@ function MINIGAME(c){
 'כל מילה חייבת להיות מוכרת לילד ישראלי בן 6 (הלקסיקון של הגן מכיר את המושג). מילה מסופקת/נדירה → סמן `age_flag:true` + ASK מיטל (כמו ש־sheep סומן).\n\n'+
 (c.extra ? '━━ ייחודי לתת־נושא הזה ━━\n'+c.extra+'\n\n' : '')+
 '━━ אסור לגעת ━━\n'+
-'`avnei-yesod/` (פרויקט־אחות) · `_measured-core.js`/`bkt.js` (לוגיקה נעולה) · משחקונים/קבצים של סוכנים אחרים · אסור `git push` (התזמורת אוספת).\n\n'+
+'`avnei-yesod/` (פרויקט־אחות) · `_measured-core.js`/`bkt.js` (לוגיקה נעולה) · **`light-beam.js`/`path-choice.js`/`scene-hide.js` (מכניקה משותפת — חווט page-local, לא בקובץ)** · משחקונים/קבצים של סוכנים אחרים · אסור `git push` (התזמורת אוספת).\n\n'+
 '━━ סיום ━━\n'+
-'פתח את המשחקון בדפדפן (`?autoplay=1 ?peek=1 ?reset=1`), עבור סבב מלא, ודא: no_read (אפס טקסט־תוכן לילד) · קונסולה נקייה · אודיו מוקלט מתנגן. commit של הקבצים החדשים בלבד (הודעה בעברית, בלי push). דווח: מה נבנה · אילו מילים ASK (age_flag) · אילו איורים חסרים (ART-BRIEF).'
+'פתח את המשחקון בדפדפן וגם **לחץ "בואו נתחיל" ידנית** (לא רק `?autoplay=1` — autoplay עוקף את מסלול הכפתור ומחביא באגים!). עבור סבב מלא, ודא: **הבמה לא ריקה — האפשרויות נראות אחרי "בואו נתחיל"** (גובה `.measure-scene` > 0; ראה גוצ׳ת `.lg-stage`) · no_read (אפס טקסט־תוכן לילד) · קונסולה נקייה · אודיו מוקלט מתנגן. commit של הקבצים החדשים בלבד (הודעה בעברית, בלי push). דווח: מה נבנה · אילו מילים ASK (age_flag) · אילו איורים חסרים (ART-BRIEF).'
   );
 }
 
@@ -498,19 +502,21 @@ BAKED_NOTES['T3']=[
   'משחקון: lumi/app/find-the-feeling.html (light-beam, "פרצופים בחושך" — האלומה מאירה פרצוף, הצ׳אנק "I\'m ___" מתנגן). קליפת-איכות זהה ל-T2 safari-beam. QA: syntax נקי · no_read נקי · makeItem ללא דליפת-קונפיוזבל · glyph→face ממופה ייחודית · 6/6 פנסים',
   'items/t3-emotions.json (topic=emotions): meet+recognize×3+discriminate×1+produce ל-6 מילים, מיקומים מאוזנים 0/1/2. discriminate = זוגות-פנים מבלבלים (הליבה החדשה: scared↔surprised). _build-data.js → data.js',
   'לא נבדק בדפדפן חי (אין Playwright/jsdom) — QA סטטי + צפייה בנכסים בלבד; מומלץ סבב-עין אנושי לפני push',
-  '⚠️ תזמורת (13.7): לאמת מול מיטל שהחלפת hungry→surprised היא באמת החלטתה (הסוכן ייחס לה) לפני push — זה משנה את חיבור-Food. + T3 עדיין uncommitted ב-working tree (find-the-feeling.html/data.js/t3-emotions.json/emotions assets) מעל commit 671004d.',
+  '✅ מיטל אישרה (13.7): hungry→surprised = החלטתה. רגשות סופי = happy/sad/scared/tired/surprised/okay. חיבור-Food נדחה (מתועד ART-BRIEF).',
+  '🔧 באג-תקינות תוקן (תזמורת 13.7): הסצנה הופיעה ריקה ("נפתח אבל אין כלום") — חסרה הגדרת CSS ל-.lg-stage (ה-<main> העוטף), אז flex-chain #stage→.measure-scene קרס לגובה 0 והכדורים (absolute) נעלמו. הוספתי .lg-stage{flex:1;...} כמו ב-safari. אומת ב-CDP: sceneRect h:0→508. אותו תיקון ב-color-beam (T4).',
 ];
 BAKED_NOTES['T4']=[
   'אוצר: כל 10 הצבעים (red/blue/yellow/green/orange/purple/pink/black/white/brown = אדום/כחול/צהוב/ירוק/כתום/סגול/ורוד/שחור/לבן/חום) מוכרים לגיל 6 — אין age_flag, אין ASK אוצר',
   'אודיו מוקלט הופק ל-10/10 המילים (ElevenLabs · Jessica · multilingual_v2) ואומת ב-Whisper 10/10 (red תוקן: "Red." נקי). + הסבר/סיום עברית בקול נוני (eleven_v3): color-intro-he / color-done-he',
   '🔴 בידוד קריטי מיושם: כל אפשרות = אותו אובייקט (כדור) בצבע אחר → המדד הוא צבע ולא צורה. discriminate = זוגות-גוון קרובים (red↔orange, blue↔purple, pink↔red, black↔brown וכו\')',
-  '✅ נכסים אמיתיים ל-6 הליבה: מיטל סיפקה 6 כדורי-אור (13/7) → rembg (שקיפות) → ~320px → assets/colors/orbs/orb-{red,blue,yellow,green,orange,purple}.png → שובצו במשחקון. אומת headless (מעומעם+חשוף). גל שני (pink/black/white/brown) עדיין חסר כדורים → ART-BRIEF-t4-colors.md',
+  '✅ כל 10 הכדורים חיים עם נכסים אמיתיים: מיטל סיפקה 10 כדורי-אור (13/7) → rembg (white עם alpha-matting) → ~320px → assets/colors/orbs/orb-*.png → שובצו. המשחקון מריץ עכשיו את כל 10 הצבעים. אומת headless: ליבה + גל-שני (black/white/brown נבדלים, שקיפות נקייה)',
   'שיבוץ ה-PNG נעשה בלי לגעת ב-light-beam.js המשותפת: color-beam.html מעביר <img> דרך מפת glyph מקומית שהמכניקה מזריקה כ-innerHTML (fallback לאמוג׳י ב-onerror)',
   'משחקון: lumi/app/color-beam.html (light-beam, "צבע החורשה", פלטת שקיעה סגלגלה, פסי-התקדמות נצבעים בגוון). QA headless (Edge): אינטרו רונדר תקין · no_read נקי (אפס אנגלית נראית — רק אמוג׳י+עברית) · אודיו מוקלט מחווט',
   'items/t4-colors.json נוצר (topic=colors, 60 פריטים): כיסוי מלא meet+recognize×3+discriminate×1+produce לכל 10 הצבעים, מיקומי-תשובה מאוזנים (14/13/13). _build-data.js הורחב לכלול אותו → data.js (189 פריטים)',
   'פיילוט מריץ 6 צבעי-ליבה (red/blue/yellow/green/orange/purple — לכולם כדור-אמוג׳י עקבי). גל שני (pink/black/white/brown) חי בבנק+אודיו אבל pink חסר כדור-אמוג׳י (🩷=לב) → ממתין לאיור אמיתי כדי להיכנס למשחקון',
   'תלות/follow-up: light-beam.js מציג אמוג׳י (משותפת T2–T5). חיווט PNG→.beam-animal = פוליש עתידי כשהאיורים יאושרו — לא לגעת במכניקה המשותפת בלי תיאום. הנכסים שמיטל הורידה (09PM 13/7) הם T1/T2/T3 (חיות+רקעים+פרצופים) — לא כדורי-צבע של T4',
   'לא נבדק סבב-משחק מלא בדפדפן חי (Edge headless פלייקי על file:// + טיימרים) — אינטרו אומת חזותית + QA סטטי; מומלץ סבב-עין אנושי',
+  '🔧 באג-תקינות תוקן (תזמורת 13.7): color-beam הופיע ריק אחרי "בואו נתחיל" — חסרה הגדרת .lg-stage → flex-chain קרס לגובה 0. הוספתי .lg-stage{flex:1;...}. אומת ב-CDP (Chrome headless): sceneRect h:0→508, 3 כדורי-orb מרונדרים. (זהה לתיקון T3.)',
 ];
 let state={};
 try{state=JSON.parse(localStorage.getItem(LS_KEY)||'{}');}catch(e){state={};}
