@@ -312,6 +312,12 @@ window.MishmishBoss = (function () {
     }
     if (els.listen) els.listen.addEventListener('click', function () { if (activeCtl) activeCtl.replay(false); });
 
+    // אריחי-השיפוט של שער-הצליל (#tile-same/#tile-different) הם אלמנטים סטטיים —
+    // מחווטים פעם-אחת (כמו same-different) ומנתבים לפריט הפעיל דרך soundChoose.
+    var soundChoose = null;
+    if (els.tSame) els.tSame.addEventListener('click', function () { if (soundChoose) soundChoose('same', els.tSame); });
+    if (els.tDiff) els.tDiff.addEventListener('click', function () { if (soundChoose) soundChoose('different', els.tDiff); });
+
     // ── journey-track (מתמלא בתחתית בין שני המרחבים) ──
     if (els.journeyNodes) {
       els.journeyNodes.innerHTML = '';
@@ -615,6 +621,9 @@ window.MishmishBoss = (function () {
         }
         els.instr && (els.instr.textContent = 'הַקְשִׁיבוּ לְאָמִיר וּבַחֲרוּ מָה לוֹמַר');
       }
+
+      // חיווט אריחי-השיפוט לפריט-הצליל הנוכחי (onChoice הוא closure פר-פריט)
+      soundChoose = (gate.kind === 'sound') ? function (choice, btn) { onChoice(btn, { choice: choice }); } : null;
 
       lockAll(false);
       window.setTimeout(function () { playIntro(); }, 250);
