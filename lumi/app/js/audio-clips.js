@@ -48,6 +48,16 @@
     'my name is': 'greet-myname', 'Hello! My name is…': 'greet-myname', 'Hello! My name is...': 'greet-myname',
     'Nice!': 'nice',
     'Nice to meet you!': 'nice-meet',
+    // face (T10 · Light Up the Face) — bare part word (recognize/discriminate),
+    // the "Touch your ___." TPR chunk (comprehend), and the "This is my ___" mirror chunk.
+    'eyes': 'eyes', 'nose': 'nose', 'mouth': 'mouth', 'ears': 'ears',
+    'Touch your eyes.': 'touch-eyes', 'Touch your nose.': 'touch-nose',
+    'Touch your mouth.': 'touch-mouth', 'Touch your ears.': 'touch-ears',
+    'These are my eyes!': 'chunk-eyes', 'This is my nose!': 'chunk-nose',
+    'This is my mouth!': 'chunk-mouth', 'These are my ears!': 'chunk-ears',
+    // fruits (T8 · The Fruit Basket) — 'orange' already mapped above (shared w/ T4).
+    'apple': 'apple', 'banana': 'banana',
+    'I want an apple.': 'iwant-apple', 'I want a banana.': 'iwant-banana', 'I want an orange.': 'iwant-orange',
   };
   Object.keys(clips).forEach(function (text) {
     LumiAudio.clipMap[text] = base + clips[text] + '.mp3';
