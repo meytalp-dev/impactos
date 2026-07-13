@@ -431,7 +431,7 @@ const GPT_ASSETS = {
  T7:{objs:['a friendly companion creature — idle / standing','the same companion — waving hello'], note:'A NEW companion character (a friend Lumi meets), distinct from Lumi but clearly the same art world. Keep it consistent across its own poses.'},
  T8:{objs:['apple — red, glossy-soft','banana','orange'], bg:{name:'fruit-bg.png', desc:'A cozy fruit basket / small fruit tree at magical twilight, warm and inviting.'}},
  T9:{objs:['a loaf / slice of bread','an egg','a slice of cake','a glass or small carton of milk','a cup or bottle of water'], bg:{name:'picnic-bg.png', desc:'A soft picnic blanket laid out in a magical twilight grove clearing.'}},
- T10:{none:true},
+ T10:{optional:true, objs:['Lumi FACE close-up, front-facing — head & face fill the frame, with clearly separated eyes / nose / mouth AND two soft rounded EARS added on the sides of the head'], note:'PLACEHOLDER runs now (existing lumi face + emoji hotspots). 🔴 ASK Meytal: Lumi has NO distinct ears — option A: draw this face-portrait WITH ears (recommended); option B: keep ears mapped to the side head-tufts. See ART-BRIEF-t10-face.md. Same character/style; transparent bg after rembg.'},
  T11:{optional:true, objs:['Lumi full-body, front-facing, standing, clearly showing hands, feet, head and hair'], note:'OPTIONAL — only if the existing Lumi crop doesn\'t clearly show a full body for the "touch your ___" hotspots. Same character, same style.'},
  T12:{objs:['a Lumi-family MUM creature','a Lumi-family DAD creature','a BABY creature (smallest)','a BROTHER creature','a SISTER creature','a GRANDMA creature (soft, gently older)','a GRANDPA creature (soft, gently older)'], bg:{name:'family-bg.png', desc:'A warm cozy home interior at twilight with a soft photo-frame vignette.'}, note:'All are the SAME glowing-creature species as Lumi — a family. Vary size / age / a tiny accessory (glasses for grandparents, a bow, etc.) but keep the shared Lumi identity and palette.'},
  T13:{optional:true, objs:['a friendly, warm, neutral cartoon child avatar (generic, non-specific)'], note:'OPTIONAL — can instead reuse Lumi + a simple silhouette. Keep it generic and inclusive.'},
@@ -472,10 +472,21 @@ TASKS.forEach(t=>{t.gpt=GPT_ASSETS[t.id]; t.gptPrompt=GPT_PROMPT(t.gpt,t.subEn);
 
 const LS_KEY='lumi-minigames-board-v1';
 // pets כבר חי (baked). השאר todo.
-const BAKED_STATUS={T0:'done', T1:'done', T2:'done', T3:'done', T4:'done', T5:'done', T6:'done', T7:'done', T8:'done'};
+const BAKED_STATUS={T0:'done', T1:'done', T2:'done', T3:'done', T4:'done', T5:'done', T6:'done', T7:'done', T8:'done', T10:'done'};
 // הערות/משימות־המשך שסוכנים כותבים בסיום (נשמר בקובץ → נראה בכל דפדפן, לא רק localStorage).
 // כל סוכן מוסיף: BAKED_NOTES['T1']=['ASK: sheep age_flag','חסר איור cow — ART-BRIEF נפתח'];
 const BAKED_NOTES={};
+BAKED_NOTES['T10']=[
+  'משחקון: lumi/app/t10-face.html (👀 הָאִירוּ אֶת הַפָּנִים). מכניקה: אלומת־אור (light-beam) המשותפת — לא נגעתי בקובץ המכניקה; חווט page-local בלבד. קליפת-איכות: find-the-feeling (T3) בפלטת lantern-grove teal-dusk. סבב: הילד מקשיב למילה ומאיר עם אלומת-האור על החלק הנכון בפני-לומי (hotspots במקום כרטיסים)',
+  'מילים: eyes/nose/mouth/ears (עיניים/אף/פה/אוזניים) — כולן מוכרות לגיל 6, אין age_flag אוצרי',
+  '🔴 ASK מיטל (נכס, לא אוצר): ללומי אין אוזניים מובחנות — "ears" ממופה כרגע לזיזי-הצד. אופציה א (מומלץ): דיוקן-פנים חדש של לומי עם אוזניים רכות. אופציה ב: להשאיר + callout. פירוט ב-ART-BRIEF-t10-face.md. גם: אמוג׳י ears 👂 זהה לאייקון 👂 של כפתור-המטרה (נעול ב-_measured-core) — נכס אמיתי מסיר את הכפילות',
+  'איורים: PLACEHOLDER — פני לומי הקיימות (lumi-idle.png) עמומות ברקע + hotspots אמוג׳י (👀👃👄👂) בטבעות-זוהר, ממוקמים אנטומית. בר-בדיקה עכשיו בלי תלות בנכס חדש. ART-BRIEF-t10-face.md נפתח (2 אופציות + חיווט מוכן להחלפה: .face-portrait + parts/*.png כמו paintFaces ב-T3)',
+  'אודיו מוקלט: 12/12 קליפים אנגלית הופקו (ElevenLabs · Jessica · multilingual_v2): eyes/nose/mouth/ears + Touch your ___ (comprehend/TPR) + צ׳אנק "This/These is/are my ___" (mouth/nose יחיד, eyes/ears רבים — דקדוק נכון). אינטרו+סיום עברית (נוני · eleven_v3): face-intro-he/face-done-he. ✅ QA-Whisper: כל המילים תומללו נכון (mouth אומת ב-small model; base מבלבל /θ/~/s/ — ארטיפקט תמלול, לא הגייה)',
+  'חיווט BKT: recognize×3 + discriminate×1 פר-מילה → word_receptive · comprehend×1 (Touch your ___) → chunk_comprehension · meet+produce = null. confusables: eyes↔ears (זוגי צד/חזית) · nose↔mouth (מרכז-פנים תחתון). מחבר ל-TPR ("Touch your nose")',
+  'items/t10-face.json (28 פריטים): meet×4 + recognize×12 + discriminate×4 + comprehend×4 + produce×4. מיקומי-תשובה מאוזנים, distractor_rationale + help_he לכל פריט. מסיחי recognize מגדרים את השותף-המבלבל (חי בבנק discriminate). _emoji (eyes/nose/mouth/ears נוספו) + audio-clips + _build-data חווטו; data.js נבנה מחדש',
+  'QA headless (Playwright, לחיצת "בואו נתחיל" ידנית — לא רק autoplay): הבמה לא ריקה (measure-scene h=660, 3 hotspots ממוקמים) · no_read נקי (0 אותיות לטיניות במסך-הילד) · קונסולה 0 שגיאות · סבב autoplay מלא: 4/4 פנסים נדלקים עד מסך-הסיום',
+  'תלות: light-beam.js משותף (T2-T5,T8,T10) — לא נגעתי. חיווט page-local בלבד. אין תלויות חדשות',
+];
 BAKED_NOTES['T8']=[
   'משחקון: lumi/app/fruit-basket.html (🧺 סַל הַפֵּרוֹת). מכניקה: אלומת־אור (light-beam) המשותפת — לא נגעתי בקובץ המכניקה; חווט page-local בלבד (הזרקת דמויות-פרי דרך מפת-emoji מקומית FRUIT=<img> + CSS מקומי, בדיוק כמו ORB ב-color-beam). קליפת-איכות: color-beam (lantern-grove palette). סבב: 3 פירות, כל סבב מציג את כל הסל → הילד מקשיב למילה ומאיר על הפרי',
   'מילים: apple/banana/orange (תפוח/בננה/תפוז) — כולן מוכרות לגיל 6. אין age_flag, אין ASK אוצר',
