@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" data-arabic-verified="false">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>מישמיש · مشمش — הַמַּעֲבָר לַשְּׁכוּנָה הַמְּשֻׁתֶּפֶת</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700&family=Heebo:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <style>
+    /* ── בּוֹס-הנושא · הַמַּעֲבָר — CSS עצמאי; טוקנים מ-tokens.css ──
+       מרכיב 3 שערים (צליל/תבנית/אינטראקציה). מעבר בין שני מרחבי-הילד
+       (חצר → משותף) הוא מבנה-המשחק. שמיעתי-קודם, בלי אדום/ירוק, ניקוד מלא, Heebo. */
+    * { box-sizing: border-box; margin: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; overflow: hidden; font-family: var(--font-he); }
+    body { background: #1d2b22; }
+
+    .stage { position: fixed; inset: 0; overflow: hidden; }
+    .scene-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; transition: opacity .3s var(--ease-soft); }
+    .scrim { position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, rgba(255,250,241,.08) 0%, rgba(255,250,241,.40) 46%, rgba(255,250,241,.70) 100%); pointer-events: none; }
+
+    /* וילון-מעבר קולנועי (מישמיש חוצה את השער בין מרחבים) */
+    .curtain { position: absolute; inset: 0; z-index: 45; background: radial-gradient(circle at 50% 46%, rgba(46,60,50,.65), rgba(20,28,22,.96));
+      opacity: 0; pointer-events: none; transition: opacity .34s var(--ease-soft); display: grid; place-items: center; }
+    .curtain.show { opacity: 1; }
+    .curtain .glyph { font-size: clamp(40px,12vw,80px); filter: drop-shadow(0 6px 12px rgba(0,0,0,.4)); animation: walk 1s ease infinite; }
+    @keyframes walk { 50% { transform: translateY(-8px); } }
+
+    /* שורה עליונה: התקדמות-שערים + שם-מקום (מסגור-גשר) */
+    .topbar { position: absolute; top: 0; inset-inline: 0; z-index: 40; display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; gap: 10px; }
+    .progress { display: flex; gap: 8px; background: rgba(255,250,241,.9); padding: 8px 14px; border-radius: var(--radius-pill); box-shadow: var(--shadow-soft); }
+    .paw { width: 14px; height: 14px; border-radius: 50%; background: var(--color-sand-200); transition: transform .3s var(--ease-soft), background .3s; }
+    .paw.done { background: var(--color-mint-500); }
+    .paw.current { background: var(--color-apricot-500); transform: scale(1.28); }
+    .place-chip { background: rgba(38,55,70,.72); color: #fff; font-weight: 700; font-size: 14px; padding: 6px 14px; border-radius: var(--radius-pill); }
+    .place-chip .ar { font-family: var(--font-ar); opacity: .75; margin-inline-start: 6px; }
+
+    /* באנר-שער (מופיע רגע בתחילת כל שער) */
+    .banner { position: absolute; top: 50%; inset-inline: 0; z-index: 46; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px;
+      opacity: 0; pointer-events: none; transition: opacity .28s var(--ease-soft); }
+    .banner.show { opacity: 1; }
+    .banner .b-title { font-size: clamp(30px,8vw,52px); font-weight: 900; color: var(--color-ink-900); background: rgba(255,250,241,.96); padding: 10px 30px; border-radius: var(--radius-lg); box-shadow: var(--shadow-card); }
+    .banner .b-sub { font-size: clamp(18px,4.6vw,26px); font-weight: 700; color: #fff; background: rgba(38,55,70,.72); padding: 6px 20px; border-radius: var(--radius-pill); }
+
+    /* קשת-שער + שומר-שער (אמיר) — נפתחת רק בשימוש נכון */
+    .gate { position: absolute; top: 56px; inset-inline-end: 12px; z-index: 22; display: flex; flex-direction: column; align-items: center; gap: 2px; transition: transform .5s var(--ease-soft), opacity .5s; }
+    .gate .arch { width: clamp(56px,15vw,84px); height: clamp(64px,17vw,96px); border: 5px solid var(--color-sand-400); border-bottom: none;
+      border-radius: clamp(28px,7vw,42px) clamp(28px,7vw,42px) 0 0; background: linear-gradient(180deg, rgba(233,154,103,.18), rgba(255,250,241,.05)); position: relative; }
+    .gate .doors { position: absolute; inset: 6px 6px 0; display: flex; }
+    .gate .door { flex: 1; background: rgba(201,157,102,.55); transition: transform .6s var(--ease-soft); }
+    .gate .door.l { border-radius: 0 0 0 8px; transform-origin: left; }
+    .gate .door.r { border-radius: 0 0 8px 0; transform-origin: right; }
+    .gate.open .door.l { transform: scaleX(.06); }
+    .gate.open .door.r { transform: scaleX(.06); }
+    .gate .keeper { width: clamp(48px,12vw,66px); filter: drop-shadow(0 4px 8px rgba(0,0,0,.28)); }
+
+    /* אזור-משחק כללי */
+    .prompt { position: absolute; top: 62px; inset-inline: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 0 16px; }
+    .area[hidden] { display: none; }
+
+    /* — שער-צליל — */
+    .sound-bubble { background: rgba(255,250,241,.96); color: var(--color-ink-900); font-weight: 800; font-size: clamp(22px,6vw,34px);
+      padding: 10px 26px; border-radius: var(--radius-lg); box-shadow: var(--shadow-card); }
+    .snds { display: flex; gap: clamp(14px,4vw,28px); margin-top: 6px; }
+    .snd { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; background: var(--color-sky-500); color: #fff;
+      border: none; padding: 14px 18px; border-radius: var(--radius-md); box-shadow: var(--shadow-button); min-width: 88px; min-height: 76px; font-family: var(--font-he); font-weight: 800; }
+    .snd:active { transform: scale(.95); }
+    .snd.done { background: var(--color-sky-700); }
+    .snd.playing { animation: pulse 1s ease infinite; }
+    .snd .num { font-size: 22px; }
+    .snd .lbl { font-size: 13px; opacity: .9; }
+    .snd svg { width: 26px; height: 26px; }
+    .judge { display: flex; gap: clamp(14px,4vw,30px); }
+    .jtile { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; width: clamp(120px,32vw,168px); min-height: 96px;
+      background: rgba(255,250,241,.97); border: 3px solid transparent; border-radius: var(--radius-lg); padding: 16px 12px; box-shadow: var(--shadow-card);
+      font-family: var(--font-he); font-weight: 900; font-size: clamp(22px,5.6vw,30px); color: var(--color-ink-900); transition: transform .16s var(--ease-soft), border-color .2s; }
+    .jtile:active { transform: scale(.95); }
+    .jtile[aria-disabled="true"] { opacity: .55; filter: saturate(.6); pointer-events: none; }
+    .jtile .ico { font-size: clamp(34px,9vw,50px); line-height: 1; }
+    .jtile.selected { border-color: var(--color-state-selected); box-shadow: var(--shadow-selected); transform: translateY(-4px); }
+    .jtile.retry { border-color: var(--color-state-retry); animation: wobble .5s ease; }
+
+    /* — שער-תבנית — */
+    .sentence { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center;
+      background: rgba(255,250,241,.96); color: var(--color-ink-900); font-weight: 800;
+      font-size: clamp(24px,6.4vw,40px); line-height: 1.25; padding: 12px 26px; border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card); max-width: 92vw; text-align: center; }
+    .slot-gap { display: inline-grid; place-items: center; min-width: clamp(72px,20vw,120px); height: clamp(40px,10vw,58px);
+      border-radius: var(--radius-md); border: 3px dashed var(--color-border-strong); background: rgba(233,154,103,.12);
+      color: var(--color-apricot-500); font-weight: 900; padding: 0 12px; transition: all .3s var(--ease-soft); }
+    .slot-gap.filled { border-style: solid; border-color: var(--color-mint-500); background: rgba(85,162,146,.16);
+      color: var(--color-ink-900); animation: gapFill .5s var(--ease-soft); }
+    @keyframes gapFill { 0%{transform:scale(.5);} 60%{transform:scale(1.15);} 100%{transform:scale(1);} }
+
+    /* — שער-אינטראקציה — */
+    .amir-row { display: flex; align-items: center; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .amir-bubble { background: rgba(255,250,241,.96); color: var(--color-ink-900); font-weight: 800; font-size: clamp(22px,5.6vw,34px);
+      padding: 10px 24px; border-radius: var(--radius-lg); box-shadow: var(--shadow-card); }
+    .referent { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; background: rgba(255,250,241,.9);
+      padding: 10px 14px; border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); }
+    .referent .badge { font-size: 13px; font-weight: 700; color: var(--color-ink-700); }
+    .referent img { width: clamp(64px,17vw,96px); height: clamp(64px,17vw,96px); object-fit: contain; }
+
+    .listen { display: inline-flex; align-items: center; gap: 8px; background: var(--color-sky-500); color: #fff;
+      font-family: var(--font-he); font-weight: 700; font-size: 17px; border: none; padding: 11px 24px;
+      border-radius: var(--radius-pill); box-shadow: var(--shadow-button); min-height: 56px; }
+    .listen[hidden] { display: none; }
+    .listen:active { transform: scale(.95); }
+    .listen[data-audio="playing"] { animation: pulse 1s ease infinite; }
+    @keyframes pulse { 50%{ box-shadow: 0 0 0 8px rgba(79,157,200,.25), var(--shadow-button);} }
+    .listen svg { width: 24px; height: 24px; }
+
+    /* אריחי-בחירה (תבנית + אינטראקציה) */
+    .tiles { position: absolute; inset-inline: 0; bottom: clamp(120px,26vh,180px); z-index: 20;
+      display: flex; gap: clamp(12px,3.5vw,26px); justify-content: center; align-items: flex-end; padding: 0 14px; flex-wrap: wrap; }
+    .tiles:empty { display: none; }
+    .tile { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer;
+      width: clamp(120px,30vw,180px); min-height: 56px; background: rgba(255,250,241,.97); border: 3px solid transparent;
+      border-radius: var(--radius-lg); padding: 12px 10px 10px; box-shadow: var(--shadow-card);
+      transition: transform .16s var(--ease-soft), box-shadow .2s, border-color .2s; }
+    .tile:active { transform: scale(.94); }
+    .tile[aria-disabled="true"] { opacity: .55; filter: saturate(.6); pointer-events: none; }
+    .tile img { width: clamp(56px,15vw,92px); height: clamp(56px,15vw,92px); object-fit: contain; }
+    .tile .emoji { font-size: clamp(48px,13vw,80px); line-height: 1; }
+    .tile .cap { font-weight: 800; font-size: clamp(18px,4.6vw,24px); color: var(--color-ink-900); text-align: center; }
+    .tile.selected { border-color: var(--color-state-selected); box-shadow: var(--shadow-selected); transform: translateY(-4px); }
+    .tile.retry { border-color: var(--color-state-retry); animation: wobble .5s ease; }
+    @keyframes wobble { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-7px) rotate(-3deg);} 75%{transform:translateX(7px) rotate(3deg);} }
+
+    /* מישמיש (דמות חיה) */
+    .mishmish { position: absolute; bottom: 52px; inset-inline-start: 8px; width: clamp(88px,21vw,132px); z-index: 28; filter: drop-shadow(0 6px 12px rgba(0,0,0,.28)); transition: transform .25s; }
+    .mishmish.celebrate { animation: cheer .7s ease; }
+    @keyframes cheer { 30%{transform:translateY(-14px) rotate(-4deg) scale(1.06);} 60%{transform:translateY(0) rotate(3deg);} }
+
+    /* פיגום-עמית (אמיר) — בועת-רמז; טקסט ערבי מגודר עד אימות בודק ילידי */
+    .scaffold { position: absolute; bottom: 56px; inset-inline-end: 12px; z-index: 30; display: none; align-items: center; gap: 8px;
+      background: rgba(255,250,241,.95); padding: 8px 14px 8px 8px; border-radius: var(--radius-pill); box-shadow: var(--shadow-soft); max-width: 62vw; }
+    .scaffold.show { display: flex; }
+    .scaffold img { width: 46px; height: 46px; }
+    .scaffold .he { font-weight: 700; font-size: 14px; color: var(--color-ink-700); }
+    .scaffold .ar { font-family: var(--font-ar); font-size: 14px; color: var(--color-ink-500); }
+    [data-arabic-verified="false"] .place-chip .ar,
+    [data-arabic-verified="false"] .scaffold .ar { display: none; }
+
+    /* journey-track — מתמלא בתחתית בין שני המרחבים */
+    .journey { position: absolute; bottom: 44px; inset-inline: 16px; z-index: 26; height: 12px; }
+    .journey-rail { position: absolute; inset-block: 4px; inset-inline: 0; height: 4px; background: rgba(255,250,241,.5); border-radius: var(--radius-pill); }
+    .journey-fill { position: absolute; inset-block: 4px; inset-inline-start: 0; height: 4px; width: 0; background: var(--color-mint-500); border-radius: var(--radius-pill); transition: width .6s var(--ease-soft); }
+    .journey-nodes { position: absolute; inset: 0; }
+    .jnode { position: absolute; top: -2px; transform: translateX(50%); width: 14px; height: 14px; border-radius: 50%; background: var(--color-sand-200); box-shadow: var(--shadow-soft); }
+    .jnode.done { background: var(--color-mint-500); }
+    .jnode.current { background: var(--color-apricot-500); }
+    .journey-paw { position: absolute; top: -9px; transform: translateX(50%); font-size: 20px; transition: inset-inline-start .6s var(--ease-soft); }
+
+    /* שורת שפת-הישרדות (רוחבית, זמינה-תמיד) — מוזרקת מ-data/scaffold.json */
+    .survival { position: absolute; bottom: 0; inset-inline: 0; z-index: 32; display: flex; gap: 8px; justify-content: center; padding: 8px; }
+    .survival button { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,250,241,.88); color: var(--color-ink-700);
+      font-family: var(--font-he); font-weight: 700; font-size: 14px; border: none; padding: 9px 15px; border-radius: var(--radius-pill);
+      box-shadow: var(--shadow-soft); min-height: 40px; }
+    .survival button:active { transform: scale(.95); }
+    .survival .sv-ico { font-size: 17px; }
+
+    /* overlays: פתיחה + סיום */
+    .overlay { position: absolute; inset: 0; z-index: 60; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; gap: 18px; padding: 28px; background: radial-gradient(circle at 50% 35%, rgba(46,60,50,.88), rgba(20,28,22,.96)); }
+    .overlay.hidden { display: none; }
+    .overlay img.hero { width: clamp(120px,30vw,180px); filter: drop-shadow(0 10px 18px rgba(0,0,0,.5)); }
+    .overlay h2 { font-size: clamp(26px,7vw,42px); color: var(--color-ink-900); background: rgba(255,250,241,.95); padding: 10px 24px; border-radius: var(--radius-lg); box-shadow: var(--shadow-card); }
+    .overlay p { font-size: clamp(17px,4.4vw,22px); color: var(--color-ink-900); line-height: 1.5; max-width: 480px; background: rgba(255,250,241,.9); padding: 12px 20px; border-radius: var(--radius-md); }
+    .overlay .duo { display: inline-flex; gap: 10px; }
+    .overlay .duo img { width: clamp(96px,24vw,150px); filter: drop-shadow(0 10px 18px rgba(0,0,0,.5)); }
+    .btn-big { font-family: var(--font-he); font-size: 22px; font-weight: 800; color: #fff; background: var(--color-apricot-500); border: none; padding: 15px 42px; border-radius: var(--radius-pill); box-shadow: var(--shadow-button); min-height: 56px; }
+    .btn-big:active { transform: scale(.96); }
+    .btn-ghost { font-family: var(--font-he); font-size: 16px; font-weight: 700; color: var(--color-ink-900); background: rgba(255,255,255,.85); border: none; padding: 12px 26px; border-radius: var(--radius-pill); text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; }
+    .peek { position: fixed; inset-block-end: 8px; inset-inline-start: 8px; max-width: 340px; max-height: 46vh; overflow: auto; background: var(--color-cream-50); border: 1px solid var(--color-border-soft); border-radius: 12px; padding: 10px; font-size: 12px; z-index: 90; direction: ltr; text-align: left; white-space: pre-wrap; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+    @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; } }
+  </style>
+</head>
+<body>
+  <main class="stage" id="stage">
+    <img class="scene-bg" id="scene-bg" src="../assets/backgrounds/bg-hara-courtyard.png" alt="" aria-hidden="true" onerror="this.style.display='none'">
+    <div class="scrim" aria-hidden="true"></div>
+    <div class="curtain" id="curtain" aria-hidden="true"><span class="glyph">🐾</span></div>
+
+    <header class="topbar">
+      <div id="gate-progress" class="progress" aria-label="הִתְקַדְּמוּת הַשְּׁעָרִים"></div>
+      <div class="place-chip"><span id="place-he" class="he">בֶּחָצֵר</span><span id="place-ar" class="ar" lang="ar">بالحارة</span></div>
+    </header>
+
+    <!-- קשת-שער + שומר-שער (אמיר) -->
+    <div class="gate" id="gate" aria-hidden="true">
+      <img class="keeper" id="gatekeeper" src="../assets/characters/peers/amir-idle.png" alt="">
+      <div class="arch"><div class="doors"><span class="door l"></span><span class="door r"></span></div></div>
+    </div>
+
+    <!-- באנר-שער -->
+    <div class="banner" id="gate-banner" aria-hidden="true">
+      <div class="b-title" id="banner-title">שַׁעַר הַצְּלִיל</div>
+      <div class="b-sub" id="banner-sub">אוֹתוֹ אוֹ שׁוֹנֶה?</div>
+    </div>
+
+    <p id="instr" class="sr-only" aria-live="polite"></p>
+
+    <div class="prompt">
+      <!-- שער-צליל -->
+      <section class="area" id="area-sound" hidden>
+        <div class="sound-bubble" id="sound-bubble" aria-live="polite">אוֹתוֹ אוֹ שׁוֹנֶה?</div>
+        <div class="snds">
+          <button class="snd" id="snd-1" type="button"><span class="num">1</span>
+            <svg viewBox="0 0 24 24" fill="none"><path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/><path d="M15.5 8.5a4 4 0 0 1 0 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <span class="lbl">הַשְׁמָעָה</span></button>
+          <button class="snd" id="snd-2" type="button"><span class="num">2</span>
+            <svg viewBox="0 0 24 24" fill="none"><path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/><path d="M15.5 8.5a4 4 0 0 1 0 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <span class="lbl">הַשְׁמָעָה</span></button>
+        </div>
+        <div class="judge">
+          <button class="jtile" id="tile-same" type="button" aria-disabled="true"><span class="ico" aria-hidden="true">🟰</span>אוֹתוֹ</button>
+          <button class="jtile" id="tile-different" type="button" aria-disabled="true"><span class="ico" aria-hidden="true">⚡</span>שׁוֹנֶה</button>
+        </div>
+      </section>
+
+      <!-- שער-תבנית -->
+      <section class="area" id="area-pattern" hidden>
+        <div id="sentence" class="sentence" aria-live="polite"></div>
+      </section>
+
+      <!-- שער-אינטראקציה -->
+      <section class="area" id="area-interaction" hidden>
+        <div class="amir-row">
+          <div class="amir-bubble" id="amir-he" aria-live="polite">מָה אַתֶּם רוֹצִים?</div>
+          <div class="referent">
+            <span class="badge" id="ref-badge">אַתֶּם צְרִיכִים</span>
+            <img id="ref-img" src="" alt="">
+          </div>
+        </div>
+      </section>
+
+      <button id="listen" class="listen" type="button" hidden>
+        <svg viewBox="0 0 24 24" fill="none"><path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/><path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span>הַאֲזָנָה</span>
+      </button>
+    </div>
+
+    <div id="tiles" class="tiles" role="group" aria-label="בַּחֲרוּ אֶת הַתְּשׁוּבָה"></div>
+
+    <img class="mishmish" id="mishmish" src="../assets/characters/mishmish/mishmish-idle.png" alt="מישמיש">
+
+    <!-- בועת-רמז אמיר (עאמייה מגודרת עד אימות בודק ילידי) -->
+    <div class="scaffold" id="scaffold">
+      <img src="../assets/characters/peers/amir-hint.png" alt="">
+      <span class="he" id="amir-text"></span>
+      <span class="ar" id="amir-ar" lang="ar" data-arabic-verified="false"></span>
+    </div>
+
+    <!-- journey-track: מתמלא בתחתית בין שני המרחבים -->
+    <div class="journey" id="journey" aria-hidden="true">
+      <div class="journey-rail"></div>
+      <div class="journey-fill" id="journey-fill"></div>
+      <div class="journey-nodes" id="journey-nodes"></div>
+      <span class="journey-paw" id="journey-paw">🐾</span>
+    </div>
+
+    <!-- שורת שפת-הישרדות מוזרקת מ-data/scaffold.json דרך MishmishScaffold.render -->
+    <nav id="survival" class="survival" aria-label="עזרה"></nav>
+
+    <!-- overlay פתיחה -->
+    <div class="overlay" id="introOverlay">
+      <img class="hero" src="../assets/characters/mishmish/mishmish-idle.png" alt="מישמיש">
+      <h2>הַמַּעֲבָר 🚪</h2>
+      <p>מִישְׁמִישׁ יוֹצֵא מֵהֶחָצֵר שֶׁלּוֹ אֶל הַמֶּרְחָב הַמְּשֻׁתָּף.<br>בְּכָל שַׁעַר — אָמִיר פּוֹתֵחַ כְּשֶׁמַּצְלִיחִים!</p>
+      <button class="btn-big" id="startBtn">בּוֹאוּ נַתְחִיל</button>
+    </div>
+
+    <!-- overlay סיום -->
+    <div class="overlay hidden" id="doneOverlay">
+      <div class="duo">
+        <img src="../assets/characters/mishmish/mishmish-celebrate.png" alt="מישמיש">
+        <img src="../assets/characters/peers/amir-happy.png" alt="אמיר">
+      </div>
+      <h2>מְצֻיָּן! 🎉</h2>
+      <p>הִגַּעְתֶּם לַמֶּרְחָב הַמְּשֻׁתָּף — עֲבַרְתֶּם אֶת כָּל הַשְּׁעָרִים!</p>
+      <button class="btn-big" id="againBtn">עוֹד פַּעַם</button>
+      <a class="btn-ghost" href="map.html">לַמַּפָּה ←</a>
+    </div>
+  </main>
+
+  <!-- ============================================================
+       🔴 fixture-דמו (draft) — חי בדף (הקורא), לא במכניקה ולא ב-pack.
+       הבוס קורא בפועל מ-data.js (packs class+market מבונים). ה-fixture הוא
+       רשת-בטיחות standalone בלבד: אם pack חסר contrasts/patterns.
+       עברית = טיוטה לאישור מיטל. שאלת-אמיר בשער-3 = תוכן-בוס חדש (draft).
+       ============================================================ -->
+  <script>
+    window.MISHMISH_BOSS_DEMO = {
+      sound: {
+        contrasts: [
+          { pair: ['בְּ', 'פִּ'], words: [['בְּבַקָּשָׁה', 'פִּתְחוּ']], wave: 1, pb_focus: true, _draft: true }
+        ]
+      },
+      pattern: {
+        frame: 'זֶה ___', frame_f: 'זֹאת ___',
+        slots: [
+          { id: 'sefer', he: 'סֵפֶר', emoji: '📖', gender: 'm' },
+          { id: 'machberet', he: 'מַחְבֶּרֶת', emoji: '📓', gender: 'f' },
+          { id: 'kise', he: 'כִּסֵּא', emoji: '🪑', gender: 'm' }
+        ]
+      },
+      interaction: {
+        ask: { he: 'מָה אַתֶּם רוֹצִים?', audioKey: 'boss:ask:give_me' },   // draft → asks.meytal
+        produce: { id: 'give_me', frame: 'תֵּן לִי ___', intent: 'request_object' },
+        slots: [
+          { id: 'banana', he: 'בָּנָנָה', emoji: '🍌', gender: 'f', sound_tags: ['b_initial'] },
+          { id: 'apple', he: 'תַּפּוּחַ', emoji: '🍎', gender: 'm', sound_tags: ['p_medial'] }
+        ]
+      }
+    };
+  </script>
+
+  <!-- סדר-סקריפטים תקין: data → data-loader → audio → bkt → scaffold → amir → מכניקה -->
+  <script src="js/data.js"></script>
+  <script src="js/data-loader.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/bkt.js"></script>
+  <script src="js/shared/scaffold.js"></script>
+  <script src="js/shared/amir.js"></script>
+  <script src="js/templates/mechanic-boss.js"></script>
+  <script>
+    MishmishScaffold.render('#survival');   /* מזריק את שורת ההישרדות לפני start() → #sv-* קיימים */
+    window.MishmishBoss.start();
+  </script>
+</body>
+</html>
