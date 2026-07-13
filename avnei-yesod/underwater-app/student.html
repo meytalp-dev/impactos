@@ -252,8 +252,11 @@
 
   // כניסה ראשונה → הפרופיל האורייני (מבדק הצבה BOY) לפני המפה, אם עוד לא הוצב.ה.
   // המבדק נשמר בענן; המורה מאשרת את אי-הפתיחה. דגל מקומי מונע הצגה חוזרת עד אישור.
-  if (!profile.placement_confirmed &&
-      window.localStorage.getItem('avnei-boy-done-' + profile.student_id) !== '1') {
+  // remap=1 (מהרישום בשער) כופה את המיפוי גם אם כבר הוצב — לבדיקה חוזרת של הזרימה.
+  const forceRemap = urlParams.get('remap') === '1';
+  if (forceRemap ||
+      (!profile.placement_confirmed &&
+       window.localStorage.getItem('avnei-boy-done-' + profile.student_id) !== '1')) {
     window.location.replace('boy-check.html?token=' + encodeURIComponent(token));
     throw new Error('redirect to boy-check');
   }
