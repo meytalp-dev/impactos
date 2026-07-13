@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#2e2440">
+<title>Lumi · מפת החורשות</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/components.css">
+<style>
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { font-family: var(--font-ui, 'Heebo', system-ui, sans-serif); color: #fff6ec; overflow: hidden; }
+
+  /* the real Lantern Grove, dimmed — the map lives inside the world */
+  .bg { position: fixed; inset: 0; z-index: -2;
+    background: #2e2440 center/cover no-repeat url(assets/worlds/lantern-grove/backgrounds/grove-bg.png) fixed; }
+  .bg::before { content: ""; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(46,36,64,.72) 0%, rgba(46,36,64,.44) 30%, rgba(46,36,64,.68) 100%); }
+
+  .wrap { position: fixed; inset: 0; display: flex; flex-direction: column; }
+  .top { display: flex; align-items: center; gap: 12px; padding: max(16px, env(safe-area-inset-top)) 18px 10px; }
+  .top .lumi { width: 56px; height: 56px; background: center/contain no-repeat url(assets/character/lumi/lumi-happy.png);
+    filter: drop-shadow(0 6px 12px rgba(0,0,0,.5)); flex: none; }
+  .top h1 { margin: 0; font-size: clamp(20px, 5.4vw, 26px); font-weight: 900; text-shadow: 0 2px 12px rgba(46,36,64,.8); }
+  .top .sub { font-size: 13px; font-weight: 600; color: #ffe8d2; opacity: .9; }
+
+  .grid { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 6px 16px calc(20px + env(safe-area-inset-bottom)); }
+  .card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+    min-height: 116px; padding: 16px 12px; cursor: pointer; text-align: center;
+    background: rgba(255,246,236,.90); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.5);
+    border-radius: 22px; box-shadow: var(--shadow-card, 0 10px 26px rgba(46,36,64,.36));
+    transition: transform .15s var(--ease, ease), box-shadow .15s; color: var(--dusk-deep, #2e2440); }
+  .card:active { transform: scale(.95); }
+  .card .ic { font-size: 40px; filter: drop-shadow(0 3px 6px rgba(46,36,64,.25)); line-height: 1; }
+  .card .nm { font-size: 15px; font-weight: 800; line-height: 1.2; }
+  .card .en { font-size: 11px; font-weight: 600; color: var(--ink-soft, #7a6a68); direction: ltr; }
+  /* a soft lantern glow on each card top */
+  .card .ic::after { content: ""; }
+
+  .foot { text-align: center; font-size: 12px; font-weight: 600; color: rgba(255,246,236,.7);
+    padding: 0 16px calc(8px + env(safe-area-inset-bottom)); }
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="wrap">
+    <div class="top">
+      <div class="lumi" aria-hidden="true"></div>
+      <div>
+        <h1 id="hi">בְּחַרוּ חוֹרְשָׁה 🏮</h1>
+        <div class="sub">כָּל חוֹרְשָׁה — מִשְׂחָק חָדָשׁ</div>
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <script>
+  (function () {
+    'use strict';
+    // the REAL polished minigames (each an illustrated world), not the old pilot.
+    var GAMES = [
+      { f: 'farm-path.html',        ic: '🚜', nm: 'שְׁבִיל הָרֶפֶת', en: 'Farm' },
+      { f: 'safari-beam.html',      ic: '🌴', nm: 'סָפָארִי הַפַּנָּס', en: 'Safari' },
+      { f: 'fruit-basket.html',     ic: '🧺', nm: 'סַל הַפֵּרוֹת', en: 'Fruits' },
+      { f: 'picnic.html',           ic: '🍽️', nm: 'הַפִּיקְנִיק', en: 'Picnic' },
+      { f: 'color-beam.html',       ic: '🌈', nm: 'צֶבַע הַחוֹרְשָׁה', en: 'Colors' },
+      { f: 'count-the-lanterns.html', ic: '🔢', nm: 'סְפֹר פַּנָּסִים', en: 'Numbers' },
+      { f: 'find-the-feeling.html', ic: '🔦', nm: 'מְצָא אֶת הָרֶגֶשׁ', en: 'Feelings' },
+      { f: 'lumi-says.html',        ic: '🚦', nm: 'לוּמִי אוֹמֵר', en: 'Lumi Says' },
+      { f: 't10-face.html',         ic: '👀', nm: 'הָאִירוּ אֶת הַפָּנִים', en: 'Face' },
+      { f: 't11-body.html',         ic: '🙌', nm: 'גַּע וְזוּז', en: 'Body' },
+      { f: 'family-photo.html',     ic: '🖼️', nm: 'תְּמוּנַת הַמִּשְׁפָּחָה', en: 'Family' },
+      { f: 'lantern-of-hello.html', ic: '🏮', nm: 'פַּנַּס הַשָּׁלוֹם', en: 'Hello' }
+    ];
+
+    // greet the child by name if we have it
+    try {
+      var m = /[?&]name=([^&]+)/.exec(location.search);
+      var name = m ? decodeURIComponent(m[1]) : (localStorage.getItem('lumi-student-name') || '');
+      if (name) document.getElementById('hi').textContent = name + ', בְּחַרוּ חוֹרְשָׁה 🏮';
+    } catch (e) {}
+
+    var grid = document.getElementById('grid');
+    GAMES.forEach(function (g) {
+      var c = document.createElement('button');
+      c.type = 'button'; c.className = 'card';
+      c.innerHTML = '<span class="ic">' + g.ic + '</span><span class="nm">' + g.nm + '</span><span class="en">' + g.en + '</span>';
+      c.addEventListener('click', function () { location.href = g.f; });
+      grid.appendChild(c);
+    });
+  })();
+  </script>
+</body>
+</html>
