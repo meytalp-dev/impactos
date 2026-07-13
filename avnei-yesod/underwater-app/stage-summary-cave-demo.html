@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0A2438">
+  <title>מְעָרַת הָאוֹת הָאֲבוּדָה · סִכּוּם אוֹתִיּוֹת · פּיילוֹט</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+
+  <style>
+    html, body { height: 100%; overflow: hidden; }
+    .stage-scene { position: fixed; inset: 0; }
+    .scene-frame { position: absolute; inset: 0; overflow: hidden; touch-action: none; }
+    .scene-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+    /* גוון-מערה כהה מעל רקע השונית */
+    .cave-tint { position: absolute; inset: 0; z-index: 1; pointer-events: none;
+      background: radial-gradient(circle at 50% 40%, rgba(10,36,56,0.30), rgba(6,20,34,0.72)); }
+
+    .top-bar { position: absolute; top: 0; inset-inline: 0; display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; z-index: 40; }
+    .letter-chip { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.9); padding: 6px 16px 6px 10px; border-radius: var(--radius-pill); box-shadow: 0 4px 14px rgba(0,0,0,0.3); }
+    .letter-chip .big { font-size: 34px; font-weight: 900; color: var(--text-main); background: #fff; border: 3px solid var(--water-secondary); border-radius: 14px; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; line-height: 1; transition: transform .3s cubic-bezier(.34,1.56,.64,1); }
+    .letter-chip .big.swap { animation: chipSwap .5s cubic-bezier(.34,1.56,.64,1); }
+    @keyframes chipSwap { 0%{transform:scale(.4) rotate(-10deg);opacity:.3;} 60%{transform:scale(1.2);} 100%{transform:scale(1);} }
+    .letter-chip .cnt { font-size: 16px; font-weight: 700; color: var(--text-soft); }
+    .speaker-btn { width: 56px; height: 56px; border-radius: 50%; background: var(--water-secondary); color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(0,0,0,.4); }
+    .speaker-btn:active { transform: scale(0.93); }
+    .speaker-btn svg { width: 30px; height: 30px; }
+
+    .prompt-bar { position: absolute; top: 74px; inset-inline: 0; display: flex; justify-content: center; z-index: 30; pointer-events: none; padding: 0 68px; }
+    .prompt-bar span { background: rgba(255,255,255,0.92); color: var(--text-main); font-weight: 800; font-size: clamp(15px, 3.6vw, 21px); padding: 9px 20px; border-radius: var(--radius-pill); box-shadow: 0 3px 12px rgba(0,0,0,.3); text-align: center; }
+    .prompt-bar b { color: var(--coral); }
+
+    .reef { position: absolute; top: 118px; inset-inline: 0; bottom: 122px; z-index: 10; }
+    .rope-canvas { position: absolute; inset: 0; z-index: 22; touch-action: none; cursor: grab; }
+    .rope-canvas:active { cursor: grabbing; }
+
+    .hunt-item {
+      position: absolute; width: clamp(92px, 20vw, 128px); height: clamp(92px, 20vw, 128px);
+      display: flex; align-items: center; justify-content: center; font-size: clamp(52px, 12vw, 76px); line-height: 1;
+      border-radius: 50%; z-index: 12; user-select: none; will-change: transform; pointer-events: none;
+      background: radial-gradient(circle at 34% 30%, rgba(255,255,255,0.98), rgba(214,240,255,0.82) 62%, rgba(150,210,240,0.6));
+      border: 3px solid rgba(255,255,255,0.9);
+      box-shadow: 0 8px 22px rgba(0,0,0,0.32), inset 0 6px 12px rgba(255,255,255,0.6), inset 0 -8px 16px rgba(90,150,190,0.35);
+      animation: bob var(--bob, 3.4s) ease-in-out infinite; transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .2s;
+    }
+    .hunt-item::before { content:''; position:absolute; top:14%; inset-inline-start:20%; width:26%; height:20%; border-radius:50%; background:rgba(255,255,255,.85); filter:blur(1px); }
+    .hunt-item::after { content: attr(data-emoji); filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2)); }
+    @keyframes bob { 0%,100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-9px) rotate(3deg); } }
+    .hunt-item.targeted { transform: scale(1.12); box-shadow: 0 0 0 5px rgba(255,231,168,.85), 0 0 26px rgba(255,231,168,.7), inset 0 6px 12px rgba(255,255,255,.6); }
+    .hunt-item.startle { animation: startle .55s ease; }
+    @keyframes startle { 0%{transform:rotate(0);} 20%{transform:translateX(-8px) rotate(-12deg) scale(1.08);} 45%{transform:translateX(9px) rotate(12deg) scale(1.08);} 70%{transform:translateX(-5px) rotate(-8deg);} 100%{transform:rotate(0);} }
+    .hunt-item.caught { animation: caught .6s ease forwards; }
+    @keyframes caught { 0%{transform:scale(1);} 30%{transform:scale(1.3); box-shadow:0 0 26px var(--hint),0 0 46px rgba(255,169,141,.8);} 100%{transform:scale(0.15); opacity:0;} }
+    .hunt-item.hint { animation: hintPulse 1.2s ease-in-out infinite; }
+    @keyframes hintPulse { 0%,100%{box-shadow:0 0 0 4px rgba(255,231,168,.5),0 0 18px rgba(255,231,168,.6);} 50%{box-shadow:0 0 0 7px rgba(255,231,168,.95),0 0 30px rgba(255,231,168,1);} }
+
+    /* היצור-השומר במרכז — נוני מאכיל אותו במילים נכונות */
+    .guardian { position: absolute; top: 6px; inset-inline-end: 10px; font-size: clamp(40px,10vw,58px); z-index: 13; filter: drop-shadow(0 4px 8px rgba(0,0,0,.4)); animation: bob 4s ease-in-out infinite; }
+    .guardian.eat { animation: eat .5s ease; }
+    @keyframes eat { 0%{transform:scale(1);} 40%{transform:scale(1.3) rotate(-6deg);} 100%{transform:scale(1);} }
+    .guardian.spit { animation: spit .5s ease; }
+    @keyframes spit { 0%{transform:scale(1);} 30%{transform:scale(.85) rotate(8deg);} 100%{transform:scale(1);} }
+
+    /* רשת-אבני-האות (אנכית בצד) */
+    .stones { position: absolute; top: 122px; inset-inline-end: 8px; z-index: 26; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+    .stones-cap { font-size: 12px; font-weight: 800; color: #fff; opacity: .9; text-shadow: 0 1px 3px rgba(0,0,0,.6); }
+    .stone-slot { width: clamp(44px,10vw,58px); height: clamp(44px,10vw,58px); border-radius: 14px; border: 2px dashed rgba(255,255,255,.4); background: rgba(255,255,255,.12); display: flex; align-items: center; justify-content: center; font-size: clamp(24px,6vw,32px); font-weight: 900; color: #fff; }
+    .stone-slot.filled { border-style: solid; border-color: #C9A8FF; color: #fff;
+      background: radial-gradient(circle at 40% 30%, #B98BFF, #6E3FB0); box-shadow: 0 0 16px rgba(185,139,255,.8), inset 0 4px 8px rgba(255,255,255,.4);
+      animation: stonePop .55s cubic-bezier(.34,1.56,.64,1); }
+    @keyframes stonePop { 0%{transform:scale(.3) rotate(-20deg);} 60%{transform:scale(1.25);} 100%{transform:scale(1);} }
+
+    .noni { position: absolute; bottom: 84px; inset-inline-start: 4px; width: clamp(84px,21vw,124px); z-index: 28; filter: drop-shadow(0 6px 12px rgba(0,0,0,.5)); pointer-events: none; }
+
+    .name-pop { position: absolute; z-index: 35; background: #fff; color: var(--text-main); font-weight: 800; font-size: clamp(18px,4.4vw,26px); padding: 6px 16px; border-radius: var(--radius-pill); box-shadow: 0 6px 18px rgba(0,0,0,.4); transform: translate(-50%,-50%) scale(.6); opacity: 0; pointer-events: none; animation: namePop 1.3s ease forwards; }
+    @keyframes namePop { 15%{opacity:1;transform:translate(-50%,-50%) scale(1.08);} 30%{transform:translate(-50%,-50%) scale(1);} 75%{opacity:1;transform:translate(-50%,-90%) scale(1);} 100%{opacity:0;transform:translate(-50%,-140%) scale(.9);} }
+
+    .overlay { position: absolute; inset: 0; z-index: 60; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 20px; padding: 28px; background: radial-gradient(circle at 50% 35%, rgba(20,56,82,.86), rgba(6,20,34,.96)); }
+    .overlay.hidden { display: none; }
+    .overlay h2 { margin: 0; font-size: clamp(26px,6.6vw,42px); color: var(--text-main); background: rgba(255,255,255,.94); padding: 12px 26px; border-radius: 20px; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+    .overlay p { margin: 0; font-size: clamp(17px,4.4vw,23px); color: var(--text-main); line-height: 1.5; max-width: 520px; background: rgba(255,255,255,.9); padding: 14px 22px; border-radius: 18px; }
+    .overlay p b { color: var(--coral); }
+    .btn-big { font-size: 24px; font-weight: 800; color: #fff; background: var(--coral); padding: 16px 44px; border-radius: var(--radius-pill); box-shadow: 0 10px 24px rgba(255,169,141,.5); min-height: var(--touch-min); }
+    .btn-big:active { transform: scale(.96); }
+    .btn-ghost { font-size: 18px; font-weight: 700; color: var(--text-main); background: rgba(255,255,255,.85); padding: 12px 30px; border-radius: var(--radius-pill); }
+    .stone-row { display: flex; gap: 12px; }
+    .stone-row .s { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 900; color:#fff; background: radial-gradient(circle at 40% 30%, #B98BFF, #6E3FB0); box-shadow: 0 0 16px rgba(185,139,255,.8); }
+    .pilot-tag { position: absolute; top: 8px; inset-inline-end: 12px; z-index: 70; font-size: 12px; font-weight: 700; color: #fff; background: rgba(0,0,0,.4); padding: 4px 10px; border-radius: 999px; }
+  </style>
+</head>
+<body>
+  <div class="pilot-tag">פּיילוֹט · מְעָרַת הָאוֹת הָאֲבוּדָה</div>
+
+  <main class="stage-scene">
+    <div class="scene-frame" id="frame">
+      <img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true" onerror="this.style.display='none'">
+      <div class="cave-tint"></div>
+
+      <div class="top-bar">
+        <div class="letter-chip"><span class="big" id="chip">ל</span><span class="cnt" id="cnt">חֶדֶר 1/3</span></div>
+        <button class="speaker-btn" id="replayBtn" aria-label="שִׁמְעוּ שׁוּב">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/><path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+        </button>
+      </div>
+
+      <div class="prompt-bar"><span id="prompt">גִּרְרוּ חֶבֶל בּוּעוֹת אֶל הַתְּמוּנוֹת שֶׁמַּתְחִילוֹת בְּ<b>ל</b></span></div>
+
+      <div class="reef" id="reef">
+        <div class="guardian" id="guardian">🐡</div>
+        <canvas class="rope-canvas" id="rope"></canvas>
+      </div>
+
+      <div class="stones" id="stones"><span class="stones-cap">אַבְנֵי הָאוֹת</span></div>
+      <img class="noni" id="noni" src="assets/noni-idle.png" alt="נוֹנִי">
+    </div>
+  </main>
+
+  <div class="overlay" id="introOverlay">
+    <h2>מְעָרַת הָאוֹת הָאֲבוּדָה 🕳️</h2>
+    <p>בְּתוֹךְ הַמְּעָרָה מִסְתַּתְּרוֹת אַבְנֵי־אוֹת! 💎<br>נוֹנִי יוֹרֶה חֶבֶל שֶׁל בּוּעוֹת — <b>גִּרְרוּ אוֹתוֹ</b> אֶל תְּמוּנָה וְשַׁחְרְרוּ.<br>אִסְפוּ רַק מִלִּים שֶׁמַּתְחִילוֹת בָּאוֹת שֶׁל הַחֶדֶר, וְתִזְכּוּ בְּאֶבֶן הָאוֹת.</p>
+    <button class="btn-ghost" id="introSpeaker" style="display:inline-flex;align-items:center;gap:8px;">🔊 הַקְשִׁיבוּ לַהַסְבֵּר</button>
+    <button class="btn-big" id="startBtn">בּוֹאוּ נַתְחִיל</button>
+  </div>
+
+  <div class="overlay hidden" id="doneOverlay">
+    <h2>מָצָאתֶם אֶת כָּל הָאֲבָנִים! 🎉</h2>
+    <div class="stone-row"><div class="s">ל</div><div class="s">נ</div><div class="s">ר</div></div>
+    <p id="doneMsg">כָּל הַכָּבוֹד! אָסַפְתֶּם אֶת אַבְנֵי הָאוֹת מִכָּל חַדְרֵי הַמְּעָרָה.</p>
+    <button class="btn-big" id="againBtn">עוֹד פַּעַם</button>
+    <a class="btn-ghost" href="stage-3-island.html">חֲזָרָה לְאִי 3</a>
+  </div>
+
+  <script>
+  (function () {
+    'use strict';
+
+    // ── חדרי המסע = אותיות הסקירה (סיכום מצטבר) ──
+    var ROOMS = [
+      { letter:'ל', findKey:'find-words-lamed', phon:'phoneme-lll',
+        words:[{e:'❤️',w:'לֵב'},{e:'🍋',w:'לִימוֹן'},{e:'🍞',w:'לֶחֶם'},{e:'🤡',w:'לֵצָן'}] },
+      { letter:'נ', findKey:'find-words-nun', phon:'phoneme-nnn',
+        words:[{e:'🕯️',w:'נֵר'},{e:'🐍',w:'נָחָשׁ'},{e:'🐆',w:'נָמֵר'},{e:'👟',w:'נַעַל'}] },
+      { letter:'ר', findKey:'find-words-resh', phon:'phoneme-rrr',
+        words:[{e:'🚂',w:'רַכֶּבֶת'},{e:'🦵',w:'רֶגֶל'},{e:'🚦',w:'רַמְזוֹר'},{e:'🌬️',w:'רוּחַ'}] }
+    ];
+    var NEUTRAL = [{e:'🐟',w:'דָּג'},{e:'⚽',w:'כַּדּוּר'},{e:'🌳',w:'עֵץ'},{e:'🍊',w:'תַּפּוּז'},{e:'🎈',w:'בָּלוֹן'},{e:'⭐',w:'כּוֹכָב'}];
+    var TARGETS_PER = 3, DISTRACT_PER = 3;
+    var SLOTS = [ {l:10,t:14},{l:44,t:8},{l:70,t:20},{l:16,t:52},{l:48,t:58},{l:72,t:52} ];
+
+    function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i];a[i]=a[j];a[j]=t; } return a; }
+
+    // ── אודיו ──
+    var AudioMgr = (function(){
+      var cache={};
+      function get(k){ if(!cache[k]){ var a=new Audio('assets/audio/'+k+'.mp3'); a.preload='auto'; cache[k]=a; } return cache[k]; }
+      var keys=['praise-metzuyan','praise-mealeh','press-here'];
+      ROOMS.forEach(function(r){ keys.push(r.findKey); keys.push(r.phon); });
+      return {
+        unlock:function(){ keys.forEach(function(k){ try{ var a=get(k); var p=a.play(); if(p) p.then(function(){a.pause();a.currentTime=0;}).catch(function(){}); }catch(e){} }); },
+        play:function(k){ try{ var a=get(k); a.currentTime=0; a.play().catch(function(){}); }catch(e){} }
+      };
+    })();
+
+    var frame=document.getElementById('frame'), reef=document.getElementById('reef'),
+        canvas=document.getElementById('rope'), guardian=document.getElementById('guardian'),
+        noni=document.getElementById('noni'), chip=document.getElementById('chip'),
+        cntEl=document.getElementById('cnt'), promptEl=document.getElementById('prompt'),
+        stonesEl=document.getElementById('stones');
+    var ctx=canvas.getContext('2d');
+    var dpr=Math.max(1, Math.min(window.devicePixelRatio||1, 2));
+
+    // סלוטים לאבני-אות
+    ROOMS.forEach(function(r){ var s=document.createElement('div'); s.className='stone-slot'; s.dataset.letter=r.letter; stonesEl.appendChild(s); });
+    var stoneSlots=stonesEl.querySelectorAll('.stone-slot');
+
+    var state={ room:0, found:0, wrong:0, locked:false, items:[], hintTimer:null };
+    var PRAISES=['praise-metzuyan','praise-mealeh']; var pi=0;
+    function setNoni(n){ noni.src='assets/noni-'+n+'.png'; }
+
+    function sizeCanvas(){
+      var w=reef.clientWidth, h=reef.clientHeight;
+      canvas.width=Math.round(w*dpr); canvas.height=Math.round(h*dpr);
+      canvas.style.width=w+'px'; canvas.style.height=h+'px';
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+    }
+    function origin(){ return { x:38, y:reef.clientHeight-6 }; }
+
+    // ── ציור חבל-הבועות ──
+    function drawRope(px,py){
+      var w=reef.clientWidth, h=reef.clientHeight; ctx.clearRect(0,0,w,h);
+      var o=origin(), n=14;
+      for(var i=0;i<=n;i++){
+        var t=i/n, x=o.x+(px-o.x)*t, y=o.y+(py-o.y)*t;
+        var r=2.5+3.5*Math.sin(t*Math.PI); // דק בקצוות, עבה באמצע
+        ctx.beginPath(); ctx.arc(x,y,r+1.5,0,6.29);
+        ctx.fillStyle='rgba(180,225,255,0.35)'; ctx.fill();
+        ctx.beginPath(); ctx.arc(x,y,r,0,6.29);
+        ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.fill();
+      }
+      // בועה גדולה בקצה
+      ctx.beginPath(); ctx.arc(px,py,13,0,6.29); ctx.fillStyle='rgba(200,235,255,0.5)'; ctx.fill();
+      ctx.beginPath(); ctx.arc(px-3,py-3,4,0,6.29); ctx.fillStyle='rgba(255,255,255,0.95)'; ctx.fill();
+    }
+    function clearRope(){ ctx.clearRect(0,0,reef.clientWidth,reef.clientHeight); }
+
+    // ── מגע: גרירת החבל ──
+    var dragging=false, hoverItem=null;
+    function local(e){ var r=reef.getBoundingClientRect(); return { x:e.clientX-r.left, y:e.clientY-r.top }; }
+    function itemAt(px,py){
+      for(var i=state.items.length-1;i>=0;i--){ var it=state.items[i], el=it.el;
+        if(el.classList.contains('caught')) continue;
+        if(px>=el.offsetLeft && px<=el.offsetLeft+el.offsetWidth && py>=el.offsetTop && py<=el.offsetTop+el.offsetHeight) return it;
+      }
+      return null;
+    }
+    function setHover(it){
+      if(hoverItem===it) return;
+      if(hoverItem) hoverItem.el.classList.remove('targeted');
+      hoverItem=it; if(it) it.el.classList.add('targeted');
+    }
+    canvas.addEventListener('pointerdown', function(e){ if(state.locked) return; dragging=true; clearHint();
+      var p=local(e); drawRope(p.x,p.y); setHover(itemAt(p.x,p.y));
+      try{ canvas.setPointerCapture(e.pointerId); }catch(_){}
+    });
+    canvas.addEventListener('pointermove', function(e){ if(!dragging) return; var p=local(e); drawRope(p.x,p.y); setHover(itemAt(p.x,p.y)); });
+    function endDrag(e){ if(!dragging) return; dragging=false; var p=local(e); var it=itemAt(p.x,p.y);
+      setHover(null); clearRope();
+      if(it) evaluate(it); else scheduleHint();
+    }
+    canvas.addEventListener('pointerup', endDrag);
+    canvas.addEventListener('pointercancel', endDrag);
+
+    function clearHint(){ if(state.hintTimer){clearTimeout(state.hintTimer);state.hintTimer=null;} }
+    function scheduleHint(){ clearHint(); state.hintTimer=setTimeout(function(){ if(state.locked)return;
+      for(var i=0;i<state.items.length;i++){ var it=state.items[i];
+        if(it.target && !it.el.classList.contains('caught')){ it.el.classList.add('hint'); AudioMgr.play(ROOMS[state.room].phon); setNoni('thinking'); return; } }
+    }, 9000); }
+
+    function buildRoom(){
+      state.found=0; state.wrong=0; state.locked=false; state.items=[]; setNoni('idle');
+      var old=reef.querySelectorAll('.hunt-item'); for(var k=0;k<old.length;k++) old[k].remove();
+      sizeCanvas();
+      var room=ROOMS[state.room];
+      chip.textContent=room.letter; chip.classList.remove('swap'); void chip.offsetWidth; chip.classList.add('swap');
+      cntEl.textContent='חֶדֶר '+(state.room+1)+'/'+ROOMS.length;
+      promptEl.innerHTML='גִּרְרוּ חֶבֶל בּוּעוֹת אֶל הַתְּמוּנוֹת שֶׁמַּתְחִילוֹת בְּ<b>'+room.letter+'</b>';
+
+      var targets=shuffle(room.words).slice(0,TARGETS_PER).map(function(x){return {e:x.e,w:x.w,target:true};});
+      // מסיחים: אותיות-הסקירה האחרות + ניטרליים (סקירה אמיתית)
+      var otherPool=[];
+      ROOMS.forEach(function(r,ri){ if(ri!==state.room) otherPool=otherPool.concat(r.words); });
+      otherPool=otherPool.concat(NEUTRAL);
+      var distract=shuffle(otherPool).slice(0,DISTRACT_PER).map(function(x){return {e:x.e,w:x.w,target:false};});
+
+      var data=shuffle(targets.concat(distract));
+      var slots=shuffle(SLOTS).slice(0,data.length);
+      data.forEach(function(it,i){
+        var el=document.createElement('div'); el.className='hunt-item';
+        el.dataset.emoji=it.e; el.setAttribute('aria-label',it.w);
+        el.style.insetInlineStart=slots[i].l+'%'; el.style.top=slots[i].t+'%';
+        el.style.setProperty('--bob',(3+(i%4)*0.4).toFixed(1)+'s'); el.style.animationDelay=(i*0.22).toFixed(2)+'s';
+        reef.appendChild(el);
+        state.items.push({ el:el, w:it.w, target:it.target });
+      });
+      state.needed=state.items.filter(function(x){return x.target;}).length;
+      setTimeout(function(){ AudioMgr.play(room.findKey); }, 380);
+      scheduleHint();
+    }
+
+    function namePop(el,w){ var rc=el.getBoundingClientRect(); var p=document.createElement('div'); p.className='name-pop'; p.textContent=w; p.style.left=(rc.left+rc.width/2)+'px'; p.style.top=(rc.top+rc.height/2)+'px'; document.body.appendChild(p); setTimeout(function(){p.remove();},1300); }
+
+    function evaluate(it){
+      if(state.locked || it.el.classList.contains('caught')) return; clearHint();
+      if(it.target){
+        it.el.classList.remove('hint','targeted'); namePop(it.el,it.w); setNoni('happy');
+        guardian.classList.remove('spit'); void guardian.offsetWidth; guardian.classList.add('eat');
+        AudioMgr.play(PRAISES[pi%PRAISES.length]); pi++;
+        it.el.classList.add('caught'); state.found++; state.wrong=0;
+        if(state.found>=state.needed){ state.locked=true; fillStone(); setTimeout(nextRoom,1150); }
+        else { setTimeout(function(){setNoni('idle');},650); scheduleHint(); }
+      } else {
+        state.wrong++; setNoni('surprised'); it.el.classList.remove('targeted'); it.el.classList.add('startle');
+        guardian.classList.remove('eat'); void guardian.offsetWidth; guardian.classList.add('spit');
+        setTimeout(function(){ it.el.classList.remove('startle'); setNoni('idle'); },600);
+        if(state.wrong>=2){ for(var i=0;i<state.items.length;i++){ var t=state.items[i]; if(t.target && !t.el.classList.contains('caught')){ t.el.classList.add('hint'); break; } }
+          AudioMgr.play(state.wrong>=3?'press-here':ROOMS[state.room].phon); }
+        scheduleHint();
+      }
+    }
+
+    function fillStone(){ var sl=stoneSlots[state.room]; if(sl){ sl.textContent=ROOMS[state.room].letter; sl.classList.add('filled'); } }
+
+    function nextRoom(){
+      state.room++;
+      if(state.room>=ROOMS.length){ setNoni('happy'); setTimeout(function(){ document.getElementById('doneOverlay').classList.remove('hidden'); AudioMgr.play('praise-metzuyan'); },350); }
+      else buildRoom();
+    }
+
+    document.getElementById('replayBtn').addEventListener('click', function(){ AudioMgr.play(ROOMS[state.room].findKey); });
+    document.getElementById('introSpeaker').addEventListener('click', function(){ AudioMgr.unlock(); AudioMgr.play(ROOMS[0].findKey); });
+    document.getElementById('startBtn').addEventListener('click', function(){ AudioMgr.unlock(); document.getElementById('introOverlay').classList.add('hidden'); buildRoom(); });
+    document.getElementById('againBtn').addEventListener('click', function(){ state.room=0; pi=0; stoneSlots.forEach(function(sl){sl.textContent='';sl.classList.remove('filled');}); document.getElementById('doneOverlay').classList.add('hidden'); buildRoom(); });
+    window.addEventListener('resize', function(){ if(document.getElementById('introOverlay').classList.contains('hidden')) sizeCanvas(); });
+
+    // דילוג-intro ל-QA/צילום
+    if(/[?&]auto=1/.test(location.search)){ document.getElementById('introOverlay').classList.add('hidden'); buildRoom(); }
+  })();
+  </script>
+</body>
+</html>
