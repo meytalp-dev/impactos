@@ -558,8 +558,367 @@ window.MISHMISH_DATA = {
             }
           ],
           "help_he": "מִישְׁמִישׁ מְחַפֵּשׂ צִפּוֹר 🐦"
+        },
+        {
+          "id": "map.frame.this_that.01",
+          "pattern": "this_that",
+          "dimension": "recognize",
+          "target": "sefer",
+          "measured": true,
+          "pb_focus": false,
+          "prompt": {
+            "he": "זֶה סֵפֶר",
+            "audio_he": "זה ספר",
+            "instruction_key": "light_and_find"
+          },
+          "options": [
+            {
+              "item": "sefer",
+              "emoji": "📖",
+              "img": "class/item-sefer",
+              "cap": "סֵפֶר",
+              "correct": true
+            },
+            {
+              "item": "machberet",
+              "emoji": "📓",
+              "img": "class/item-machberet",
+              "cap": "מַחְבֶּרֶת",
+              "correct": false
+            },
+            {
+              "item": "kise",
+              "emoji": "🪑",
+              "img": "class/item-kise",
+              "cap": "כִּסֵּא",
+              "correct": false
+            }
+          ],
+          "help_he": "מִישְׁמִישׁ אוֹמֵר: זֶה סֵפֶר 📖"
+        },
+        {
+          "id": "map.frame.this_that.02",
+          "pattern": "this_that",
+          "dimension": "recognize",
+          "target": "machberet",
+          "measured": true,
+          "pb_focus": false,
+          "prompt": {
+            "he": "זֹאת מַחְבֶּרֶת",
+            "audio_he": "זאת מחברת",
+            "instruction_key": "light_and_find"
+          },
+          "options": [
+            {
+              "item": "machberet",
+              "emoji": "📓",
+              "img": "class/item-machberet",
+              "cap": "מַחְבֶּרֶת",
+              "correct": true
+            },
+            {
+              "item": "sefer",
+              "emoji": "📖",
+              "img": "class/item-sefer",
+              "cap": "סֵפֶר",
+              "correct": false
+            },
+            {
+              "item": "iparon",
+              "emoji": "✏️",
+              "img": "class/item-iparon",
+              "cap": "עִפָּרוֹן",
+              "correct": false
+            }
+          ],
+          "help_he": "מִישְׁמִישׁ אוֹמֵר: זֹאת מַחְבֶּרֶת 📓"
+        },
+        {
+          "id": "map.frame.have.01",
+          "pattern": "have",
+          "dimension": "recognize",
+          "target": "ball",
+          "measured": true,
+          "pb_focus": false,
+          "prompt": {
+            "he": "יֵשׁ לִי כַּדּוּר",
+            "audio_he": "יש לי כדור",
+            "instruction_key": "light_and_find"
+          },
+          "options": [
+            {
+              "item": "ball",
+              "emoji": "⚽",
+              "cap": "כַּדּוּר",
+              "correct": true
+            },
+            {
+              "item": "sefer",
+              "emoji": "📖",
+              "img": "class/item-sefer",
+              "cap": "סֵפֶר",
+              "correct": false
+            },
+            {
+              "item": "apple",
+              "emoji": "🍎",
+              "img": "food/item-apple",
+              "cap": "תַּפּוּחַ",
+              "correct": false
+            }
+          ],
+          "help_he": "מִישְׁמִישׁ אוֹמֵר: יֵשׁ לִי כַּדּוּר ⚽"
+        },
+        {
+          "id": "map.frame.have.02",
+          "pattern": "have",
+          "dimension": "recognize",
+          "target": "sefer",
+          "measured": true,
+          "pb_focus": false,
+          "prompt": {
+            "he": "יֵשׁ לִי סֵפֶר",
+            "audio_he": "יש לי ספר",
+            "instruction_key": "light_and_find"
+          },
+          "options": [
+            {
+              "item": "sefer",
+              "emoji": "📖",
+              "img": "class/item-sefer",
+              "cap": "סֵפֶר",
+              "correct": true
+            },
+            {
+              "item": "ball",
+              "emoji": "⚽",
+              "cap": "כַּדּוּר",
+              "correct": false
+            },
+            {
+              "item": "banana",
+              "emoji": "🍌",
+              "img": "food/item-banana",
+              "cap": "בָּנָנָה",
+              "correct": false
+            }
+          ],
+          "help_he": "מִישְׁמִישׁ אוֹמֵר: יֵשׁ לִי סֵפֶר 📖"
+        },
+        {
+          "id": "map.frame.want.01",
+          "pattern": "want",
+          "dimension": "recognize",
+          "target": "banana",
+          "measured": true,
+          "pb_focus": false,
+          "prompt": {
+            "he": "אֲנִי רוֹצֶה בָּנָנָה",
+            "audio_he": "אני רוצה בננה",
+            "instruction_key": "light_and_find"
+          },
+          "options": [
+            {
+              "item": "banana",
+              "emoji": "🍌",
+              "img": "food/item-banana",
+              "cap": "בָּנָנָה",
+              "correct": true
+            },
+            {
+              "item": "apple",
+              "emoji": "🍎",
+              "img": "food/item-apple",
+              "cap": "תַּפּוּחַ",
+              "correct": false
+            },
+            {
+              "item": "apricot",
+              "emoji": "🍑",
+              "img": "food/item-orange",
+              "cap": "מִשְׁמֵשׁ",
+              "correct": false
+            }
+          ],
+          "help_he": "מִישְׁמִישׁ אוֹמֵר: אֲנִי רוֹצֶה בָּנָנָה 🍌"
+        },
+        {
+          "id": "map.frame.want.02",
+          "pattern": "want",
+          "dimension": "recognize",
+          "target": "apple",
+          "measured": true,
+          "pb_focus": false,
+          "prompt": {
+            "he": "אֲנִי רוֹצֶה תַּפּוּחַ",
+            "audio_he": "אני רוצה תפוח",
+            "instruction_key": "light_and_find"
+          },
+          "options": [
+            {
+              "item": "apple",
+              "emoji": "🍎",
+              "img": "food/item-apple",
+              "cap": "תַּפּוּחַ",
+              "correct": true
+            },
+            {
+              "item": "banana",
+              "emoji": "🍌",
+              "img": "food/item-banana",
+              "cap": "בָּנָנָה",
+              "correct": false
+            },
+            {
+              "item": "apricot",
+              "emoji": "🍑",
+              "img": "food/item-orange",
+              "cap": "מִשְׁמֵשׁ",
+              "correct": false
+            }
+          ],
+          "help_he": "מִישְׁמִישׁ אוֹמֵר: אֲנִי רוֹצֶה תַּפּוּחַ 🍎"
+        },
+        {
+          "id": "map.frame.give_me.01",
+          "pattern": "give_me",
+          "dimension": "recognize",
+          "target": "apricot",
+          "measured": true,
+          "pb_focus": false,
+          "prompt": {
+            "he": "תֵּן לִי מִשְׁמֵשׁ",
+            "audio_he": "תן לי משמש",
+            "instruction_key": "light_and_find"
+          },
+          "options": [
+            {
+              "item": "apricot",
+              "emoji": "🍑",
+              "img": "food/item-orange",
+              "cap": "מִשְׁמֵשׁ",
+              "correct": true
+            },
+            {
+              "item": "flower",
+              "emoji": "🌸",
+              "cap": "פֶּרַח",
+              "correct": false
+            },
+            {
+              "item": "bird",
+              "emoji": "🐦",
+              "cap": "צִפּוֹר",
+              "correct": false
+            }
+          ],
+          "help_he": "מִישְׁמִישׁ אוֹמֵר: תֵּן לִי מִשְׁמֵשׁ 🍑"
+        },
+        {
+          "id": "map.frame.give_me.02",
+          "pattern": "give_me",
+          "dimension": "recognize",
+          "target": "flower",
+          "measured": true,
+          "pb_focus": false,
+          "prompt": {
+            "he": "תֵּן לִי פֶּרַח",
+            "audio_he": "תן לי פרח",
+            "instruction_key": "light_and_find"
+          },
+          "options": [
+            {
+              "item": "flower",
+              "emoji": "🌸",
+              "cap": "פֶּרַח",
+              "correct": true
+            },
+            {
+              "item": "apricot",
+              "emoji": "🍑",
+              "img": "food/item-orange",
+              "cap": "מִשְׁמֵשׁ",
+              "correct": false
+            },
+            {
+              "item": "cat",
+              "emoji": "🐱",
+              "cap": "חָתוּל",
+              "correct": false
+            }
+          ],
+          "help_he": "מִישְׁמִישׁ אוֹמֵר: תֵּן לִי פֶּרַח 🌸"
+        },
+        {
+          "id": "map.frame.see_hear.01",
+          "pattern": "see_hear",
+          "dimension": "recognize",
+          "target": "bird",
+          "measured": true,
+          "pb_focus": false,
+          "prompt": {
+            "he": "אֲנִי רוֹאֶה צִפּוֹר",
+            "audio_he": "אני רואה ציפור",
+            "instruction_key": "light_and_find"
+          },
+          "options": [
+            {
+              "item": "bird",
+              "emoji": "🐦",
+              "cap": "צִפּוֹר",
+              "correct": true
+            },
+            {
+              "item": "cat",
+              "emoji": "🐱",
+              "cap": "חָתוּל",
+              "correct": false
+            },
+            {
+              "item": "dog",
+              "emoji": "🐶",
+              "cap": "כֶּלֶב",
+              "correct": false
+            }
+          ],
+          "help_he": "מִישְׁמִישׁ אוֹמֵר: אֲנִי רוֹאֶה צִפּוֹר 🐦"
+        },
+        {
+          "id": "map.frame.see_hear.02",
+          "pattern": "see_hear",
+          "dimension": "recognize",
+          "target": "cat",
+          "measured": true,
+          "pb_focus": false,
+          "prompt": {
+            "he": "אֲנִי רוֹאֶה חָתוּל",
+            "audio_he": "אני רואה חתול",
+            "instruction_key": "light_and_find"
+          },
+          "options": [
+            {
+              "item": "cat",
+              "emoji": "🐱",
+              "cap": "חָתוּל",
+              "correct": true
+            },
+            {
+              "item": "bird",
+              "emoji": "🐦",
+              "cap": "צִפּוֹר",
+              "correct": false
+            },
+            {
+              "item": "fish",
+              "emoji": "🐟",
+              "cap": "דָּג",
+              "correct": false
+            }
+          ],
+          "help_he": "מִישְׁמִישׁ אוֹמֵר: אֲנִי רוֹאֶה חָתוּל 🐱"
         }
-      ]
+      ],
+      "_frames_note": "🔴 6 הפריטים הראשונים = אוצר-מילים (pattern:'mapping'); 10 הפריטים האחרונים (map.frame.*) = פריטי-מסגרת שנוספו 14.7 לזריעת נקודת-התחלה פר-תבנית: 2 פר-תבנית-שדרה (this_that/have/want/give_me/see_hear), מתוייגים pattern:<שדרה>+dimension:recognize → lantern.js שולח ל-BKT את ה-KC האמיתי וזורע L1 (identifies). 2 מילות-יעד שונות פר-תבנית → מאפשר גם 'נרכשה' (סף ≥2 נכונות · ≥2 מילים). כל העברית מנוקדת = טיוטה לאישור מיטל; רק נכסים/אמוג'י קיימים. הערה-אורך: המיפוי כעת 16 פריטים — אם ארוך מדי לגיל, אפשר לצמצם ל-1 פר-תבנית (זורע 'emerging' לא 'נרכשה')."
     },
     {
       "pack": "market",
