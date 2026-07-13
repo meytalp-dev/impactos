@@ -239,20 +239,28 @@ function loadCloudSync() {
     assert(result.remaining === 1, 'op remains (will retry once token bound)');
   });
 
-  await test('queueBktSync debounce — multiple calls → 1 op (eventually)', async () => {
-    setupCloud();
+  await test('queueBktSync debounce — multiple calls → 1 coalesced upsert', async () => {
+    // Spy on the bkt RPC. Eager flush (post-enqueue) drains the queue, so we
+    // assert coalescing via the RPC spy rather than a lingering queue entry.
+    const bktCalls = [];
+    setupCloud({
+      rpc: async (name, params) => {
+        if (name === 'upsert_student_bkt') bktCalls.push(params);
+        return { error: null, data: 'ok' };
+      },
+    });
     const sync = loadCloudSync();
     sync.queueBktSync({ a: 1 }, { x: 1 });
     sync.queueBktSync({ a: 2 }, { x: 2 });
     sync.queueBktSync({ a: 3 }, { x: 3 });
     assert(sync.getQueueLength() === 0, 'nothing queued yet (still in debounce)');
 
+    // Wait past debounce (1500) + eager flush (1000) with margin.
     await new Promise(r => REAL_SET_TIMEOUT(r, 3200));
 
-    assert(sync.getQueueLength() === 1, `1 op queued after debounce (got ${sync.getQueueLength()})`);
-    const q = JSON.parse(global.localStorage.getItem('avnei-yesod-cloud-sync-queue-v1'));
-    assert(q[0].op === 'bkt', `op is 'bkt'`);
-    assert(q[0].payload.legacy_bkt.a === 3, 'last value wins (a=3)');
+    assert(bktCalls.length === 1, `exactly 1 bkt upsert (got ${bktCalls.length})`);
+    assert(bktCalls[0] && bktCalls[0].p_legacy.a === 3, 'last value wins (a=3)');
+    assert(sync.getQueueLength() === 0, 'queue drained after flush');
   });
 
   console.log('\n' + '='.repeat(60));

@@ -32,7 +32,8 @@
 
   const QUEUE_KEY = 'avnei-yesod-cloud-sync-queue-v1';
   const FLUSH_INTERVAL_MS = 5000;
-  const BKT_DEBOUNCE_MS = 3000;
+  const EAGER_FLUSH_MS = 1000;   // near-immediate flush after any enqueue
+  const BKT_DEBOUNCE_MS = 1500;  // aggregate rapid bursts, but don't sit for 3s
   const MAX_BACKOFF_MS = 60000;
   const INITIAL_BACKOFF_MS = 1000;
 
@@ -109,6 +110,20 @@
       next_attempt_at: 0,  // 0 = ready
     });
     writeQueue(q);
+    // Don't wait up to FLUSH_INTERVAL_MS: kick a near-immediate flush so a child
+    // who closes the tab right after practicing doesn't strand events/bkt in the
+    // local queue. Debounced so a burst of ops → one flush.
+    scheduleFlush();
+  }
+
+  // Debounced eager flush (separate from the 5s periodic backstop)
+  let flushSoonTimer = null;
+  function scheduleFlush() {
+    if (flushSoonTimer) return;  // one flush per window is enough
+    flushSoonTimer = setTimeout(() => {
+      flushSoonTimer = null;
+      flush().catch(() => {});
+    }, EAGER_FLUSH_MS);
   }
 
   function queueEvent(eventType, payload, clientTimestamp) {
@@ -254,11 +269,15 @@
       console.log('[cloud-sync] Network online, flushing queue');
       flush().catch(() => {});
     });
-    // Flush on visibility (user returning to tab)
+    // Flush on visibility change — both directions. Returning to tab flushes any
+    // parked ops; leaving (hidden) is the most reliable "about to close" signal on
+    // mobile, so flush there too before the page is frozen/discarded.
     window.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') flush().catch(() => {});
+      flush().catch(() => {});
     });
-    // Final attempt before unload (best-effort; sendBeacon would be better but RPC requires it)
+    // pagehide fires on real navigation/close where beforeunload is unreliable
+    // (bfcache, mobile). Best-effort final flush.
+    window.addEventListener('pagehide', () => { flush().catch(() => {}); });
     window.addEventListener('beforeunload', () => { flush().catch(() => {}); });
   }
 
