@@ -153,6 +153,72 @@
     }
     .aline button.play:hover { border-color: var(--color-sky-300); }
 
+    /* ---------- פאנל QA-הגייה (בדיקת-אוזן) ---------- */
+    .qa {
+      background: var(--color-white); border: 2px solid var(--color-border-soft);
+      border-radius: var(--radius-xl); box-shadow: var(--shadow-card); overflow: hidden;
+    }
+    .qa > header {
+      padding: var(--space-4) var(--space-5); display: flex; align-items: center;
+      justify-content: space-between; gap: var(--space-3); flex-wrap: wrap;
+      background: linear-gradient(90deg, rgba(217,121,61,0.12), rgba(255,255,255,0) 60%);
+      border-bottom: 1px solid var(--color-border-soft);
+    }
+    .qa .qa-title { display: flex; flex-direction: column; gap: 2px; }
+    .qa .qa-title b { font-size: var(--font-size-lg); font-weight: 800; color: var(--color-ink-900); }
+    .qa .qa-title small { font-size: var(--font-size-xs); color: var(--color-ink-500); max-width: 66ch; }
+    .qa .qa-controls { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center; }
+    .qa .qa-count {
+      font-size: var(--font-size-xs); font-weight: 800; border-radius: var(--radius-pill);
+      padding: 5px 12px; white-space: nowrap;
+    }
+    .qa .qa-count.warn { background: #fdeecb; color: var(--color-sun-500); }
+    .qa .qa-count.ok { background: #e2f3ea; color: #2f9968; }
+    .qa .qa-count.redo { background: #fce4e2; color: #c0472f; }
+    .qa .qa-toggle, .qa .qa-export {
+      background: var(--color-white); border: 2px solid var(--color-border-soft); cursor: pointer;
+      border-radius: var(--radius-pill); padding: 6px 14px; font-weight: 800; font-size: var(--font-size-xs);
+      color: var(--color-ink-700);
+    }
+    .qa .qa-toggle[aria-pressed="true"] { background: var(--color-apricot-300); color: #fff; border-color: var(--color-apricot-300); }
+    .qa .qa-export { background: var(--color-sky-500); color: #fff; border-color: var(--color-sky-500); }
+    .qa .qa-export:hover { background: var(--color-sky-700); border-color: var(--color-sky-700); }
+
+    .qa .qa-body { padding: var(--space-3) var(--space-4) var(--space-5); display: flex; flex-direction: column; gap: 8px; }
+    .qa .qgroup-h {
+      font-size: var(--font-size-xs); font-weight: 800; color: var(--color-ink-500);
+      margin: var(--space-3) 0 2px; padding-inline-start: 4px; letter-spacing: .02em;
+    }
+    .qrow {
+      display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: var(--space-3);
+      border: 1px solid var(--color-border-soft); border-radius: var(--radius-lg);
+      padding: 8px var(--space-3); border-inline-start: 4px solid var(--color-border-soft);
+    }
+    .qrow[data-flag="warn"] { border-inline-start-color: var(--color-sun-500); background: rgba(243,202,103,.05); }
+    .qrow[data-verdict="ok"]   { border-inline-start-color: #4caf7d; background: rgba(76,175,125,.06); }
+    .qrow[data-verdict="redo"] { border-inline-start-color: #d9534f; background: rgba(217,83,79,.06); }
+    .qrow button.qplay {
+      background: var(--color-white); border: 2px solid var(--color-sky-300); cursor: pointer;
+      border-radius: 50%; width: 38px; height: 38px; font-size: 16px; flex: none;
+      display: grid; place-items: center; color: var(--color-sky-700);
+    }
+    .qrow button.qplay:hover { background: var(--color-sky-500); color: #fff; }
+    .qrow button.qplay.playing { background: var(--color-sun-500); color: #fff; border-color: var(--color-sun-500); }
+    .qrow .qtext { min-width: 0; }
+    .qrow .qtext .qhe { font-size: var(--font-size-md); font-weight: 700; color: var(--color-ink-900); }
+    .qrow .qtext .qmeta { font-size: 11px; color: var(--color-ink-500); display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1px; }
+    .qrow .qtext .qmeta code { font-family: ui-monospace, monospace; direction: ltr; }
+    .qrow .qtext .qheard { font-size: 11px; color: #b5622e; margin-top: 2px; }
+    .qrow .qheard b { font-weight: 700; }
+    .qrow .qmark { display: flex; gap: 6px; flex: none; }
+    .qrow .qmark button {
+      border: 2px solid var(--color-border-soft); background: var(--color-white); cursor: pointer;
+      border-radius: var(--radius-pill); padding: 5px 12px; font-weight: 800; font-size: var(--font-size-xs); white-space: nowrap;
+    }
+    .qrow .qmark button.ok[aria-pressed="true"]   { background: #4caf7d; color: #fff; border-color: #4caf7d; }
+    .qrow .qmark button.redo[aria-pressed="true"] { background: #d9534f; color: #fff; border-color: #d9534f; }
+    .qrow .qmark button:hover { border-color: var(--color-ink-500); }
+
     .empty { font-size: var(--font-size-sm); color: var(--color-ink-500); padding: var(--space-3); }
 
     .foot { font-size: var(--font-size-xs); color: var(--color-ink-500); text-align: center; line-height: 1.7; }
@@ -175,6 +241,8 @@
 
     <div class="totals" id="totals"></div>
 
+    <section class="qa" id="audioQA" hidden></section>
+
     <div id="topics"></div>
 
     <p class="foot">
@@ -188,6 +256,8 @@
   <script src="js/data.js"></script>
   <script src="js/data-loader.js"></script>
   <script src="js/audio.js"></script>
+  <!-- נתוני בדיקת-אודיו (QA) — מיוצר מ-manifest+report+packs -->
+  <script src="js/audio-qa-data.js"></script>
   <script>
   /* ============================================================
      אַדְמִין — לוגיקת-View. קורא MISHMISH_DATA, בונה כרטיס פר-pack.
@@ -415,6 +485,149 @@
     function stat(n, label) {
       return '<div class="stat"><b>' + n + '</b><span>' + label + '</span></div>';
     }
+  })();
+
+  /* ============================================================
+     פאנל QA-הגייה — בדיקת-אוזן אנושית מעל הקליפים המוקלטים.
+     Whisper מדגיש חשודים; האוזן מכריעה. סימונים נשמרים ב-localStorage,
+     ויצוא נותן רשימת "להקליט מחדש" למסירה לסוכן-האודיו.
+     ============================================================ */
+  (function () {
+    var QA = window.MISHMISH_AUDIO_QA;
+    var host = document.getElementById('audioQA');
+    if (!QA || !QA.clips || !QA.clips.length || !host) return;
+    host.hidden = false;
+
+    var LS = 'mishmish_qa_verdicts';
+    var verdicts = {};
+    try { verdicts = JSON.parse(localStorage.getItem(LS) || '{}'); } catch (e) { verdicts = {}; }
+    var save = function () { try { localStorage.setItem(LS, JSON.stringify(verdicts)); } catch (e) {} };
+
+    var onlyFlags = true;               // ברירת-מחדל: להראות רק חשודים
+    var audioEl = null, playingKey = null;
+
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    function groupOf(k) { return (k.indexOf('/') > -1 ? k.split('/')[0] : (k.split('.')[0] || 'שׁוֹנוֹת')); }
+    var GROUP_HE = {
+      lex: 'מִלִּים (lexicon)', pat: 'תַּבְנִיוֹת', con: 'נִגּוּדֵי פּ/בּ',
+      amir: 'רְמָזִים (אָמִיר)', market: 'שׁוּק', map: 'מִיפּוּי', mapping: 'מִיפּוּי'
+    };
+
+    function counts() {
+      var ok = 0, redo = 0, warn = 0;
+      QA.clips.forEach(function (c) {
+        if (c.verdict === 'WARN') warn++;
+        if (verdicts[c.key] === 'ok') ok++;
+        if (verdicts[c.key] === 'redo') redo++;
+      });
+      return { ok: ok, redo: redo, warn: warn, total: QA.clips.length, done: ok + redo };
+    }
+
+    function stopAudio() {
+      if (audioEl) { try { audioEl.pause(); } catch (e) {} }
+      var b = playingKey && host.querySelector('.qplay[data-key="' + cssq(playingKey) + '"]');
+      if (b) b.classList.remove('playing');
+      playingKey = null;
+    }
+    function cssq(s) { return String(s).replace(/"/g, '\\"'); }
+
+    function play(key, path, btn) {
+      stopAudio();
+      audioEl = new Audio('../assets/audio/' + path);
+      playingKey = key; btn.classList.add('playing');
+      audioEl.addEventListener('ended', function () { btn.classList.remove('playing'); playingKey = null; });
+      audioEl.addEventListener('error', function () {
+        btn.classList.remove('playing'); btn.textContent = '⚠'; btn.title = 'הַקְלִיפּ לֹא נִמְצָא — הַרִיצוּ שֶׁרֶת (http) אוֹ בִּדְקוּ שֶׁ-assets/audio קַיָּים';
+      });
+      audioEl.play().catch(function () {});
+    }
+
+    function mark(key, v) {
+      if (verdicts[key] === v) delete verdicts[key]; else verdicts[key] = v;   // לחיצה חוזרת = ביטול
+      save(); render();
+    }
+
+    function render() {
+      var c = counts();
+      var list = QA.clips.filter(function (x) { return onlyFlags ? (x.verdict === 'WARN' || verdicts[x.key]) : true; });
+
+      // קיבוץ
+      var groups = {};
+      list.forEach(function (x) { (groups[groupOf(x.key)] = groups[groupOf(x.key)] || []).push(x); });
+
+      var rowsHtml = Object.keys(groups).map(function (g) {
+        var items = groups[g].map(function (x) {
+          var v = verdicts[x.key] || '';
+          var flag = x.verdict === 'WARN' ? 'warn' : '';
+          var heardHtml = (x.verdict === 'WARN' && x.heard)
+            ? '<div class="qheard">🎧 Whisper שָׁמַע: <b>' + esc(x.heard) + '</b></div>' : '';
+          return '<div class="qrow" data-flag="' + flag + '" data-verdict="' + esc(v) + '">' +
+            '<button class="qplay" type="button" data-key="' + esc(x.key) + '" data-path="' + esc(x.path) + '" aria-label="נַגֵּן">▶</button>' +
+            '<div class="qtext">' +
+              '<div class="qhe">' + (x.he ? esc(x.he) : '<span style="color:var(--color-ink-500)">(' + esc(x.key) + ')</span>') + '</div>' +
+              '<div class="qmeta">' + (x.pack ? '<span>' + esc(x.pack) + '</span>' : '') +
+                (x.kind ? '<span>' + esc(x.kind) + '</span>' : '') + '<code>' + esc(x.key) + '</code></div>' +
+              heardHtml +
+            '</div>' +
+            '<div class="qmark">' +
+              '<button class="ok" type="button" data-key="' + esc(x.key) + '" data-v="ok" aria-pressed="' + (v === 'ok') + '">✓ תָּקִין</button>' +
+              '<button class="redo" type="button" data-key="' + esc(x.key) + '" data-v="redo" aria-pressed="' + (v === 'redo') + '">✗ הַקְלִיטוּ שׁוּב</button>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+        return '<div class="qgroup-h">' + esc(GROUP_HE[g] || g) + ' (' + groups[g].length + ')</div>' + items;
+      }).join('');
+
+      host.innerHTML =
+        '<header>' +
+          '<div class="qa-title">' +
+            '<b>🎧 בְּדִיקַת־הַגָּיָה (אוֹזֶן אֱנוֹשִׁית)</b>' +
+            '<small>Whisper הִדְגִּישׁ ' + c.warn + ' קְלִיפִּים חֲשׁוּדִים מִתּוֹךְ ' + c.total + '. הַאֲזִינוּ וְסַמְּנוּ ✓/✗. רֹב הַחֲשׁוּדִים = טָעוּת־תִּמְלוּל שֶׁל Whisper (הַקְּלִיפּ תָּקִין) — הָאֹזֶן מַכְרִיעָה. סַיַּמְתֶּם? "יְצוּא" נוֹתֵן רְשִׁימַת הַקְלָטָה־מֵחָדָשׁ.</small>' +
+          '</div>' +
+          '<div class="qa-controls">' +
+            '<span class="qa-count warn">🟡 ' + c.warn + ' חֲשׁוּדִים</span>' +
+            '<span class="qa-count ok">✓ ' + c.ok + '</span>' +
+            '<span class="qa-count redo">✗ ' + c.redo + '</span>' +
+            '<button class="qa-toggle" type="button" aria-pressed="' + onlyFlags + '">' + (onlyFlags ? 'רַק חֲשׁוּדִים' : 'כָּל הַ-' + c.total) + '</button>' +
+            '<button class="qa-export" type="button">⬇ יְצוּא הַכְרָעוֹת</button>' +
+          '</div>' +
+        '</header>' +
+        '<div class="qa-body">' + (rowsHtml || '<p class="empty">אֵין קְלִיפִּים לְהַצָּגָה.</p>') + '</div>';
+    }
+
+    host.addEventListener('click', function (e) {
+      var t = e.target.closest ? e.target : null; if (!t) return;
+      var pb = t.closest('.qplay');
+      if (pb) { play(pb.getAttribute('data-key'), pb.getAttribute('data-path'), pb); return; }
+      var mk = t.closest('.qmark button');
+      if (mk) { mark(mk.getAttribute('data-key'), mk.getAttribute('data-v')); return; }
+      var tg = t.closest('.qa-toggle');
+      if (tg) { onlyFlags = !onlyFlags; stopAudio(); render(); return; }
+      var ex = t.closest('.qa-export');
+      if (ex) { exportDecisions(); return; }
+    });
+
+    function exportDecisions() {
+      var redo = QA.clips.filter(function (x) { return verdicts[x.key] === 'redo'; });
+      var ok = QA.clips.filter(function (x) { return verdicts[x.key] === 'ok'; });
+      var payload = {
+        exported: new Date().toISOString(),
+        total: QA.clips.length, marked_ok: ok.length, marked_redo: redo.length,
+        redo: redo.map(function (x) { return { key: x.key, he: x.he, pack: x.pack, heard: x.heard }; }),
+        ok: ok.map(function (x) { return x.key; })
+      };
+      var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'mishmish-audio-qa-decisions.json';
+      document.body.appendChild(a); a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    }
+
+    render();
   })();
   </script>
 </body>
