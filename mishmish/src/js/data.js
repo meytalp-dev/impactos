@@ -32,6 +32,10 @@ window.MISHMISH_DATA = {
       "topic": "placement",
       "pattern": "mapping",
       "pattern_he": "מִיפּוּי · הַכָּרַת מִלִּים בְּשֵׁמַע",
+      "target": {
+        "lantern": "audioWord → option.img"
+      },
+      "_target_note": "target = שדה גנרי פר-מכניקה (pack-schema §2). ה-loader חושף target[mechanic]; כל מכניקה קוראת אחיד.",
       "_note": "משחקון-המיפוי (הפרקטיס הראשון, חובה). מכניקת 'פנס' — השראה מ-stage-3-flashlight-demo של אבני יסוד. המטרה שוּנתה מ'מתחיל באות' ל'התמונה ששמעת את שמה' (audioWord→img). שמיעתי-קודם; בלי אדום/ירוק; ניקוד; עברית מאומתת ע\"י מיטל. probe שקט — הפלט = snapshot ל-BKT.",
       "items": [
         {
@@ -241,6 +245,7 @@ window.MISHMISH_DATA = {
     },
     {
       "pack": "market",
+      "mechanic": "give-me",
       "place": {
         "he": "בַּשּׁוּק",
         "ar": "بالسوق",
@@ -249,6 +254,10 @@ window.MISHMISH_DATA = {
       "topic": "food",
       "pattern": "give_me",
       "pattern_he": "תֵּן לִי ___",
+      "target": {
+        "give-me": "audioPhrase → item.img"
+      },
+      "_target_note": "target = שדה גנרי פר-מכניקה (pack-schema §2). ה-loader חושף target[mechanic]; כל מכניקה קוראת אחיד.",
       "_note": "הנושא = תפאורה; ציר-הרכישה = התבנית 'תן לי ___' (כוונת-בקשה). עברית מאומתת ע\"י מיטל; כל help_ar = טיוטה, לא-מאושר עד בודק ילידי.",
       "items": [
         {
@@ -359,5 +368,66 @@ window.MISHMISH_DATA = {
         }
       ]
     }
-  ]
+  ],
+  "scaffold": {
+    "_comment": "שכבת שפת-הישרדות רוחבית — מקור-אמת יחיד, זמין-תמיד בכל מסך. (F1) התבנית=קוד (js/shared/scaffold.js); הקובץ הזה=דאטה. אסור לשכפל את השורה בקוד-מכניקה — כל משחקון מזריק מכאן. עברית=יעד (מאומת מיטל); ערבית=פיגום עאמייה, טיוטה לא-מאושרת (ar_verified:false) עד בודק ילידי דרך tools/arabic-review-tool.html.",
+    "survival_bar": {
+      "_note": "3 כפתורי-הישרדות. action+arg מתמפים ל-API של המשחקון הפעיל: replay(false)=עוד-פעם, replay(true)=לאט, hint()=לא-הבנתי. ה-id חייב להישאר sv-again/sv-slow/sv-help — עליו נשענת חיווט המכניקות (play.js/lantern.js/measured.js).",
+      "buttons": [
+        {
+          "id": "sv-again",
+          "action": "replay",
+          "arg": false,
+          "emoji": "🔁",
+          "icon": "icon-replay.svg",
+          "label_he": "עוֹד פַּעַם"
+        },
+        {
+          "id": "sv-slow",
+          "action": "replay",
+          "arg": true,
+          "emoji": "🐢",
+          "icon": "icon-slow.svg",
+          "label_he": "לְאַט"
+        },
+        {
+          "id": "sv-help",
+          "action": "hint",
+          "arg": null,
+          "emoji": "❔",
+          "icon": "icon-help.svg",
+          "label_he": "לֹא הֵבַנְתִּי"
+        }
+      ]
+    },
+    "amir_hints": {
+      "_note": "טקסטי-רמז גנריים של אמיר (דמות-עמית דו-לשונית) פר-מדרג — למכניקות עתידיות שאין להן תסריט-רמז משלהן. מדרג נעול: encourage (עידוד להאזין שוב) → point (הצבעה חזותית על הנכון) → amiya (פיגום עאמייה בשפת-האם). 🔴 he=טיוטה פדגוגית לאישור מיטל. 🔴 ar=טיוטת עאמייה לא-מאושרת: ar_verified:false, לא מוצג/מושמע כברירת-מחדל, נרשם ב-asks.native.",
+      "tiers": [
+        {
+          "tier": "encourage",
+          "_use": "שלב 0 — עידוד להאזין שוב, בלי לחשוף את התשובה.",
+          "state": "listening",
+          "he": "עוֹד פַּעַם — הַקְשִׁיבוּ טוֹב, אַתֶּם קְרוֹבִים!",
+          "ar": "كمان مرّة — اسمعوا منيح، قرّبتوا!",
+          "ar_verified": false
+        },
+        {
+          "tier": "point",
+          "_use": "שלב 1→2 — הפניה חזותית: מישמיש מראה איפה הנכון.",
+          "state": "hint",
+          "he": "הִסְתַּכְּלוּ — מִישְׁמִישׁ מַרְאֶה לָכֶם אֵיפֹה.",
+          "ar": "تطلّعوا — مشمش بيوريكم وين.",
+          "ar_verified": false
+        },
+        {
+          "tier": "amiya",
+          "_use": "שלב אחרון — פיגום-עאמייה: אמיר לוחש רמז בשפת-האם. מגודר עד אישור בודק ילידי.",
+          "state": "hint",
+          "he": "אָמִיר לוֹחֵשׁ לָכֶם בַּעֲרָבִית…",
+          "ar": "أمير بيوشوشلكم بالعربي…",
+          "ar_verified": false
+        }
+      ]
+    }
+  }
 };
