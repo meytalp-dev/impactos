@@ -10,13 +10,16 @@
 <style>
   /* page shell only — the minigame's look lives in lantern-grove.css (Codex). */
   html, body { height: 100%; margin: 0; }
+  /* ?frame=1 — deterministic 390×844 device box for accurate screenshots */
+  body.frame { width: 390px; height: 844px; margin: 24px auto; box-shadow: 0 20px 60px rgba(0,0,0,.5); overflow: hidden; }
+  html:has(body.frame) { height: auto; background: #111; }
   body {
     font-family: system-ui, -apple-system, "Segoe UI", Rubik, sans-serif;
     /* full-bleed grove atmosphere for the pilot (final composition = Codex) */
     background: #233c52 url(assets/worlds/lantern-grove/backgrounds/grove-bg.png) center top / cover no-repeat fixed;
     color: #fff6ec; display: flex; flex-direction: column;
   }
-  .app { flex: 1; display: flex; flex-direction: column; max-width: 640px; width: 100%;
+  .app { flex: 1; min-height: 0; display: flex; flex-direction: column; max-width: 640px; width: 100%;
          margin: 0 auto; padding: 12px 14px 18px; box-sizing: border-box; }
   .top { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
   .beat-label { font-size: 14px; font-weight: 800; background: rgba(0,0,0,.22);
@@ -27,7 +30,7 @@
   .path { display: flex; justify-content: center; gap: 8px; min-height: 34px; margin-bottom: 4px; }
   .path .lantern { width: 26px; height: 30px; display: grid; place-items: center; font-size: 15px; opacity: .5; }
   .path .lantern--lit, .path .lantern--full, .path .lantern--partial { opacity: 1; }
-  #stage { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  #stage { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
   /* intro */
   .intro { position: fixed; inset: 0; display: grid; place-items: center; z-index: 5;
            background: linear-gradient(180deg, #516a82, #233c52); text-align: center; padding: 24px; }
@@ -90,6 +93,12 @@
     var LEARNER = 'pilot-lantern';
     var q = location.search;
 
+    if (/[?&]frame=1/.test(q)) document.body.classList.add('frame');
+    if (/[?&]probe=1/.test(q)) setTimeout(function () {
+      function r(s){var e=document.querySelector(s);if(!e)return s+':none';var b=e.getBoundingClientRect();return s+' '+Math.round(b.top)+'→'+Math.round(b.bottom);}
+      document.title = 'innerH='+window.innerHeight+' scrollH='+document.documentElement.scrollHeight+' | '+
+        ['#stage','.measure-scene','.lg-grove','.lumi-companion','.lg-lanterns'].map(r).join(' | ');
+    }, 1600);
     if (/[?&]reset=1/.test(q)) { try { localStorage.clear(); } catch (e) {} }
     if (/[?&]autoplay=1/.test(q)) window.LUMI_AUTOPLAY = true;
 
