@@ -39,7 +39,71 @@ window.MishmishMissingSlot = (function () {
     ['idle', 'hint', 'listening', 'happy'].forEach(function (m) { var im = new Image(); im.src = '../assets/characters/peers/amir-' + m + '.png'; });
   }
 
-  // ── בניית רצף-הסבבים מהתבניות של ה-pack ──────────────────────
+  // ── seam חוזה-דאטה: pack אמיתי מול fixture ────────────────────
+  // ה-pack האמיתי (pack-schema §2) מוסר slots כ*מזהי-lexeme (מחרוזות)*,
+  // והפרטים יושבים ב-pack.lexicon[]. ה-fixture (בדף) מוסר slots כאובייקטים
+  // מלאים {id,he,img,pb_focus}. resolveSlot מנרמל את שניהם לצורת-אריח אחת,
+  // כך ש-buildRounds ומטה זהים לשני המקורות. תאימות-לאחור: אובייקט → כמו היום.
+
+  // אינדקס lexicon (id→lexeme) מ-pack; ריק כשאין pack (מצב-fixture).
+  function buildLexIndex(pack) {
+    var idx = {};
+    ((pack && pack.lexicon) || []).forEach(function (l) { if (l && l.id) idx[l.id] = l; });
+    return idx;
+  }
+
+  // pb_focus נגזר מ-lexeme.sound_tags: תג המסמן בּ/פּ בראש-הברה (onset) → true;
+  // "b_p_free" וכל שאר התגים (כולל *_medial) → false; בספק → false.
+  // 🔴 לא ממציאים שדה חדש ב-pack — קוראים רק sound_tags הקיים.
+  function pbFocusFromTags(tags) {
+    if (!tags || !tags.length) return false;
+    return tags.some(function (t) {
+      t = String(t).toLowerCase();
+      return t === 'b_initial' || t === 'p_initial' ||
+             t === 'b_onset'   || t === 'p_onset';
+    });
+  }
+
+  // resolveSlot(slot) → אובייקט-אריח מנורמל {id,he,img(src מלא|null),emoji,audioKey,gender,pb_focus}
+  function resolveSlot(slot, lexIndex) {
+    // תאימות-לאחור: slot שהוא כבר אובייקט (fixture) → בדיוק כמו היום.
+    if (slot && typeof slot === 'object') {
+      return {
+        id: slot.id, he: slot.he,
+        img: slot.img ? ('../assets/items/food/' + slot.img + '.png') : null,  // fixture: basename תחת items/food/
+        emoji: slot.emoji || null,
+        audioKey: slot.audioKey || null,     // אין ב-fixture → יורד ל-audio_key_prefix ב-buildRounds
+        gender: slot.gender || null,
+        pb_focus: !!slot.pb_focus
+      };
+    }
+    // pack (§2): slot = מזהה-lexeme (מחרוזת) → פותרים מול ה-lexicon.
+    var lex = lexIndex[slot];
+    if (!lex) return null;                    // slot ללא lexeme תואם → מדלגים (לא שוברים)
+    return {
+      id: lex.id, he: lex.he,
+      img: lex.img ? ('../assets/items/' + lex.img) : null,   // lexeme.img כבר כולל תת-תיקייה+.png
+      emoji: lex.emoji || null,
+      audioKey: lex.audio_he || null,         // אודיו-מילה מה-pack
+      gender: lex.gender || null,
+      pb_focus: pbFocusFromTags(lex.sound_tags)
+    };
+  }
+
+  // normalizePatterns → משאיר רק patterns עם חלל "___" (מדלג greet/what_is וכו'),
+  // ופותר את ה-slots לאובייקטי-אריח. שאר שדות ה-pattern (audio_frame/gendered/frame_f) נשמרים.
+  function normalizePatterns(patterns, lexIndex) {
+    return (patterns || [])
+      .filter(function (pat) { return pat && typeof pat.frame === 'string' && pat.frame.indexOf('___') !== -1; })
+      .map(function (pat) {
+        var out = {};
+        for (var k in pat) if (Object.prototype.hasOwnProperty.call(pat, k)) out[k] = pat[k];
+        out.slots = (pat.slots || []).map(function (s) { return resolveSlot(s, lexIndex); }).filter(Boolean);
+        return out;
+      });
+  }
+
+  // ── בניית רצף-הסבבים מהתבניות המנורמלות ──────────────────────
   // לכל pattern יש frame + slots (מילות-היעד האפשריות). כל סבב מכוון
   // למילה אחת; 3 אריחים = היעד + 2 מסיחים מתוך אותן slots. הפריים חוזר,
   // המילה מתחלפת — כך ה-KC (intent+pattern) נמדד על-פני ≥2 מילים שונות.
@@ -52,24 +116,28 @@ window.MishmishMissingSlot = (function () {
         // מסיחים = 2 ה-slots הבאים במחזוריות (סדר קבוע, לא אקראי — עקבי ל-QA)
         var distractors = [slots[(ti + 1) % slots.length], slots[(ti + 2) % slots.length]];
         var options = [target].concat(distractors).map(function (s, oi) {
-          return { id: s.id, he: s.he, img: s.img, correct: oi === 0 };
+          return { id: s.id, he: s.he, img: s.img, emoji: s.emoji, correct: oi === 0 };
         });
         // סדר-אריחים קבוע פר-סבב: מסובבים לפי מיקום-היעד כדי שהנכון לא תמיד ראשון
         var rot = ti % 3;
         for (var r = 0; r < rot; r++) options.push(options.shift());
 
+        // frame ממוגדר (§5): pattern.gendered + target נקבה → frame_f (זֹאת), אחרת frame (זֶה)
+        var frame = (pat.gendered && pat.frame_f && target.gender === 'f') ? pat.frame_f : pat.frame;
+
         rounds.push({
           id: pat.id + '::' + target.id,
           pattern: pat.id,
           intent: pat.intent || null,
-          frame: pat.frame,                                // "אֲנִי רוֹצֶה ___"
+          frame: frame,                                    // "זֶה ___" / "זֹאת ___" / "אֲנִי רוֹצֶה ___"
           targetId: target.id,
           targetHe: target.he,
-          // אודיו-יעד = המשפט המלא (frame + מילה) — שמיעתי-קודם, מודל להפקה.
-          // audio_frame (frame שעוצר על ה-___) משמש כמודל-רמז בהשמעה-חוזרת.
-          audio_he: (pat.frame_read || pat.frame).replace('___', target.he),
+          // אודיו-יעד = המשפט המלא (TTS-fallback); כשיוקלט קליפ-מילה (audioKey) הוא ינוגן.
+          // audio_frame (frame שעוצר על ה-___) משמש כמודל-רמז בהשמעה-חוזרת (מה-pack: pattern.audio_frame).
+          audio_he: (pat.frame_read || frame).replace('___', target.he),
           audio_frame: pat.audio_frame || null,
-          audio_full_key: pat.audio_key_prefix ? (pat.audio_key_prefix + target.id) : null,
+          // מפתח-קליפ ליעד: אודיו-מילה מה-pack (lexeme.audio_he) → אחרת prefix ה-fixture → אחרת null (TTS).
+          audio_full_key: target.audioKey || (pat.audio_key_prefix ? (pat.audio_key_prefix + target.id) : null),
           options: options,
           pb_focus: !!target.pb_focus,
           instruction: pat.instruction || null
@@ -91,8 +159,12 @@ window.MishmishMissingSlot = (function () {
 
     // מקור-התבניות: pack.patterns (pack-schema §2). fallback ל-fixture הדף
     // עד שסוכן ה-pack יזרים אותן. אין תוכן קשיח במכניקה עצמה.
+    // pack אמיתי: slots = מזהי-lexeme (מחרוזות) → נפתרים מול pack.lexicon.
+    // fixture: slots = אובייקטים מלאים → resolveSlot משאיר כמו היום.
     var demo = window.MISHMISH_MISSING_SLOT_DEMO || {};
-    var patterns = (pack && pack.patterns) || demo.patterns || [];
+    var rawPatterns = (pack && pack.patterns) || demo.patterns || [];
+    var lexIndex = buildLexIndex(pack);
+    var patterns = normalizePatterns(rawPatterns, lexIndex);
     var rounds = buildRounds(patterns);
 
     var scene = demo.scene || (pack && pack.scene) || {};
@@ -165,10 +237,12 @@ window.MishmishMissingSlot = (function () {
           b.className = 'tile';
           b.type = 'button';
           b.setAttribute('aria-disabled', 'true');          // נעול עד סוף ההאזנה
-          b.innerHTML =
-            '<img src="../assets/items/food/' + opt.img + '.png" alt="" ' +
-            'onerror="this.style.visibility=\'hidden\'">' +
-            '<span class="cap">' + opt.he + '</span>';
+          // opt.img = src מלא (נפתר ב-resolveSlot: pack כולל תת-תיקייה+.png · fixture תחת food/).
+          // בלי img (למשל greeting) → אמוג'י כגיבוי כדי שהאריח לא יישאר ריק.
+          var visual = opt.img
+            ? '<img src="' + opt.img + '" alt="" onerror="this.style.visibility=\'hidden\'">'
+            : (opt.emoji ? '<span aria-hidden="true" style="font-size:clamp(48px,13vw,80px);line-height:1">' + opt.emoji + '</span>' : '');
+          b.innerHTML = visual + '<span class="cap">' + opt.he + '</span>';
           b.addEventListener('click', function () { onTile(b, opt); });
           els.tiles.appendChild(b);
         });
