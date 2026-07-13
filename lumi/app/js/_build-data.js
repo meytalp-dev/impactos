@@ -7,7 +7,7 @@ const path = require('path');
 const itemsDir = path.join(__dirname, '..', '..', 'items');
 const items = JSON.parse(fs.readFileSync(path.join(itemsDir, 'animals.json'), 'utf8'));
 // Additive topic banks (each self-contained; not duplicated in animals.json).
-['t3-emotions.json', 't4-colors.json'].forEach((f) => {
+['t3-emotions.json', 't4-colors.json', 't5-numbers.json', 't6-actioninstruction.json', 't7-greetingsfriends.json'].forEach((f) => {
   const p = path.join(itemsDir, f);
   if (fs.existsSync(p)) items.push.apply(items, JSON.parse(fs.readFileSync(p, 'utf8')));
 });
