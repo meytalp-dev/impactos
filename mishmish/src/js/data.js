@@ -22,6 +22,316 @@ window.MISHMISH_DATA = {
   },
   "packs": [
     {
+      "pack": "body",
+      "_schema": "rich topic-pack per briefs/pack-schema.md §2 (meta/lexicon/patterns/contrasts/target). מזין את כל 6 המכניקות דרך target.<mechanic>. דאטה בלבד — אין קוד. נבנה על תבנית-הזהב data/pack-class.json 1:1, שונה רק תוכן.",
+      "_filename_note": "🔴 שם הקובץ = pack-BODY.json (מקף) — כי _build-data.js מגלה packs ב-`f.startsWith('pack-')`. תואם ל-pack-class.json / pack-market.json / pack-mapping.json.",
+      "_img_note": "img = נתיב יחסי מתחת ל-assets/items/ כולל סיומת (למשל 'body/body-hand.png' → assets/items/body/body-hand.png). המכניקה קוראת lexeme.img ומקדימה '../assets/items/'.",
+      "_gates": "🔴 (א) כל עברית = טיוטה לאישור מיטל (asks.meytal). (ב) כל cognate_ar/audio_amiya = טיוטת עאמייה ar_verified:false → asks.native (tools/arabic-review-tool.html). ה-pack לא עובר done עד אישור בודק ילידי.",
+      "meta": {
+        "id": "body",
+        "topic": "הַגּוּף וְהָרְגָשׁוֹת",
+        "topic_en": "the body & feelings",
+        "week_range": "13-16 · ינואר 2027",
+        "setting": "hara-courtyard",
+        "bg": "bg-hara-courtyard.png",
+        "space": "hara",
+        "amir": true,
+        "sound_wave": 2,
+        "literacy_sight_words": [
+          "אֲנִי",
+          "יֵשׁ",
+          "לִי"
+        ],
+        "cognate_focus": {
+          "he": "עַיִן",
+          "ar": "عين",
+          "ar_verified": false
+        },
+        "_cognate_focus_note": "🔗 נושא-הגוף עשיר-קוגנטים (שתי השפות שמיות): עַיִן ↔ عين · רֹאשׁ ↔ راس · יָד ↔ إيد · רֶגֶל ↔ رجل. לחישות-הגשר של אמיר.",
+        "pb_focus_note": "מוקד פּ/בּ בגל 2 = מודעות-הבחנה קלה עם מינימל-פֵּר גוף (פֶּה מול בֶּטֶן) — שני איברים מוכרים-לגיל, שניהם דגושים, /p/ מול /b/."
+      },
+      "lexicon": [
+        {
+          "id": "hand",
+          "type": "body_part",
+          "he": "יָד",
+          "gloss": "hand",
+          "img": "body/body-hand.png",
+          "emoji": "✋",
+          "audio_he": "lex/hand-he",
+          "cognate_ar": "إيد",
+          "audio_amiya": "lex/hand-amiya",
+          "ar_verified": false,
+          "_cognate": "🔗 יָד ↔ إيد (iid) — קוגנט שמי (שורש י-ד).",
+          "gender": "f",
+          "number": "sg",
+          "_dual_note": "רבים/זוגי טבעי = יָדַיִם. ה-lexeme יחיד לצורך זיהוי.",
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "head",
+          "type": "body_part",
+          "he": "רֹאשׁ",
+          "gloss": "head",
+          "img": "body/body-head.png",
+          "emoji": "🧑",
+          "audio_he": "lex/head-he",
+          "cognate_ar": "راس",
+          "audio_amiya": "lex/head-amiya",
+          "ar_verified": false,
+          "_cognate": "🔗 רֹאשׁ ↔ راس (raas) — קוגנט שמי (שורש ר-א-שׁ).",
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "eye",
+          "type": "body_part",
+          "he": "עַיִן",
+          "gloss": "eye",
+          "img": "body/body-eye.png",
+          "emoji": "👁️",
+          "audio_he": "lex/eye-he",
+          "cognate_ar": "عين",
+          "audio_amiya": "lex/eye-amiya",
+          "ar_verified": false,
+          "_cognate": "🔗 קוגנט-הליבה של נושא 4: עַיִן ↔ عين — זהות-שורש כמעט מלאה (ע-י-נ). ה-ע יתרון-הגייה לילד הערבי.",
+          "gender": "f",
+          "number": "sg",
+          "_dual_note": "זוגי טבעי = עֵינַיִם (משמש בתבנית see_hear).",
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "foot",
+          "type": "body_part",
+          "he": "רֶגֶל",
+          "gloss": "foot / leg",
+          "img": "body/body-foot.png",
+          "emoji": "🦶",
+          "audio_he": "lex/foot-he",
+          "cognate_ar": "إجر",
+          "audio_amiya": "lex/foot-amiya",
+          "ar_verified": false,
+          "_cognate": "🔗 רֶגֶל ↔ رجل (rijl, פוצחא) / إجر (ijr, עאמייה) — קוגנט שמי (שורש ר-ג-ל). לבחירת הבודק הילידי איזו צורה מדוברת באזור.",
+          "gender": "f",
+          "number": "sg",
+          "_dual_note": "זוגי טבעי = רַגְלַיִם.",
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "happy",
+          "type": "emotion",
+          "he": "שָׂמֵחַ",
+          "he_f": "שְׂמֵחָה",
+          "gloss": "happy",
+          "img": "body/emo-happy.png",
+          "emoji": "😄",
+          "audio_he": "lex/happy-he",
+          "audio_he_f": "lex/happy-he-f",
+          "cognate_ar": "مبسوط",
+          "audio_amiya": "lex/happy-amiya",
+          "ar_verified": false,
+          "gender": null,
+          "number": null,
+          "_adj_note": "רגש = שם-תואר-מצב; מוטה למין הדובר (he=זכר, he_f=נקבה) → מזין grammar-toggle דרך תבנית feeling.",
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "sad",
+          "type": "emotion",
+          "he": "עָצוּב",
+          "he_f": "עֲצוּבָה",
+          "gloss": "sad",
+          "img": "body/emo-sad.png",
+          "emoji": "😢",
+          "audio_he": "lex/sad-he",
+          "audio_he_f": "lex/sad-he-f",
+          "cognate_ar": "زعلان",
+          "audio_amiya": "lex/sad-amiya",
+          "ar_verified": false,
+          "gender": null,
+          "number": null,
+          "_adj_note": "אֲנִי עָצוּב (m) / אֲנִי עֲצוּבָה (f).",
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "tired",
+          "type": "emotion",
+          "he": "עָיֵף",
+          "he_f": "עֲיֵפָה",
+          "gloss": "tired",
+          "img": "body/emo-tired.png",
+          "emoji": "😴",
+          "audio_he": "lex/tired-he",
+          "audio_he_f": "lex/tired-he-f",
+          "cognate_ar": "تعبان",
+          "audio_amiya": "lex/tired-amiya",
+          "ar_verified": false,
+          "gender": null,
+          "number": null,
+          "_adj_note": "אֲנִי עָיֵף (m) / אֲנִי עֲיֵפָה (f).",
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "scared",
+          "type": "emotion",
+          "he": "מְפַחֵד",
+          "he_f": "מְפַחֶדֶת",
+          "gloss": "scared / afraid",
+          "img": "body/emo-scared.png",
+          "emoji": "😨",
+          "audio_he": "lex/scared-he",
+          "audio_he_f": "lex/scared-he-f",
+          "cognate_ar": "خايف",
+          "audio_amiya": "lex/scared-amiya",
+          "ar_verified": false,
+          "gender": null,
+          "number": null,
+          "_adj_note": "אֲנִי מְפַחֵד (m) / אֲנִי מְפַחֶדֶת (f). ה-פ כאן רפה (/f/) — לא נכנסת למוקד פּ/בּ.",
+          "sound_tags": [
+            "b_p_free"
+          ]
+        }
+      ],
+      "patterns": [
+        {
+          "id": "have",
+          "frame": "יֵשׁ לִי ___",
+          "intent": "לְסַפֵּר עַל שַׁיָּכוּת",
+          "structure": "יֵשׁ לִי + שם-עצם",
+          "slots": [
+            "hand",
+            "head",
+            "eye",
+            "foot"
+          ],
+          "audio_frame": "pat/have",
+          "recurs_in": [
+            "body",
+            "class",
+            "family"
+          ],
+          "_note": "תבנית-שדרה (KC_META.have · יֵשׁ לִי). 'יֵשׁ לִי יָד' · 'יֵשׁ לִי רֹאשׁ'. פנייה/הפקה בלשון-ילד."
+        },
+        {
+          "id": "see_hear",
+          "frame": "אֲנִי רוֹאֶה בְּ___",
+          "frame_filled": "אֲנִי רוֹאֶה בְּעֵינַיִם",
+          "intent": "לְתָאֵר תְּפִיסָה",
+          "structure": "אני רואה ב + איבר-תפיסה",
+          "slots": [
+            "eye"
+          ],
+          "audio_frame": "pat/see-hear",
+          "recurs_in": [
+            "body",
+            "nature",
+            "play"
+          ],
+          "_note": "תבנית-שדרה (KC_META.see_hear · אֲנִי רוֹאֶה/שׁוֹמֵעַ). הצורה המופקת בזוגי: 'אֲנִי רוֹאֶה בְּעֵינַיִם'. גל-שמיעה עתידי יוסיף אֹזֶן (asks.meytal — אין נכס-תמונה לאֹזֶן עדיין)."
+        },
+        {
+          "id": "feeling",
+          "frame": "אֲנִי ___",
+          "intent": "לְבַטֵּא רֶגֶשׁ",
+          "structure": "אני + שם-תואר-רגש",
+          "gendered": true,
+          "frame_f": "אֲנִי ___",
+          "slots": [
+            "happy",
+            "sad",
+            "tired",
+            "scared"
+          ],
+          "audio_frame": "pat/feeling",
+          "recurs_in": [
+            "body",
+            "family",
+            "play"
+          ],
+          "_note": "ציר-מין ל-grammar-toggle: הרגש מוטה למין הדובר — אֲנִי שָׂמֵחַ (m) / אֲנִי שְׂמֵחָה (f). ה-frame קבוע; ההטיה ב-lexeme.he/he_f. אינה תבנית-שדרה ב-KC_META (כמו greet/what_is ב-class) — נושאת ציר-דקדוק בלבד."
+        },
+        {
+          "id": "this_that",
+          "frame": "זֶה ___",
+          "intent": "לְהַצְבִּיעַ / לְזַהוֹת",
+          "structure": "זה + שם-עצם",
+          "gendered": true,
+          "frame_f": "זֹאת ___",
+          "slots": [
+            "hand",
+            "head",
+            "eye",
+            "foot"
+          ],
+          "audio_frame": "pat/this-that",
+          "recurs_in": [
+            "body",
+            "class",
+            "family"
+          ],
+          "_note": "תבנית-שדרה (KC_META.this_that). ציר מין: 'זֶה רֹאשׁ' (m) מול 'זֹאת יָד' (f) — מזין grammar-toggle לצד feeling."
+        }
+      ],
+      "contrasts": [
+        {
+          "pair": [
+            "פֶּ",
+            "בֶּ"
+          ],
+          "words": [
+            [
+              "פֶּה",
+              "בֶּטֶן"
+            ]
+          ],
+          "lex_refs": [],
+          "extra_words": [
+            "פֶּה",
+            "בֶּטֶן"
+          ],
+          "wave": 2,
+          "level": "gentle",
+          "audio": [
+            "con/pe",
+            "con/beten"
+          ],
+          "ar_verified": false,
+          "_note": "זוג פּ/בּ של גל 2, מינימל-פֵּר גופני: פֶּה (פּ דגושה /p/) מול בֶּטֶן (בּ דגושה /b/) — שני איברים מוכרים-לגיל, מובחנים בפתיח-ההברה. גל 2 = מודעות-הבחנה קלה. אין lex_refs כי אינם מ-8 הפריטים הראשיים (כמו class אך שם רופרר לפריטים). אודיו חייב להישמע מובחן (QA תמלול Whisper). 🔴 לאישור מיטל + עאמייה לבודק ילידי."
+        }
+      ],
+      "target": {
+        "swim-hunt": "audioWord → lexeme.img",
+        "same-different": "contrast.pair discrimination",
+        "missing-slot": "pattern.frame → choose slot",
+        "grammar-toggle": "lexeme.gender/number match (זֶה/זֹאת · שָׂמֵחַ/שְׂמֵחָה)",
+        "follow-instr": "הוראת-גוף: הַצְבִּיעוּ עַל / הָנִיעוּ אֶת הַ___ (lexeme body_part)",
+        "roleplay": "pattern.frame produced to Amir (מַה זֶּה? → זֶה ___ · אֵיךְ אַתָּה מַרְגִּישׁ? → אֲנִי ___)"
+      },
+      "_mechanic_reads": {
+        "swim-hunt": "lexicon (body_part+emotion, img) + target.swim-hunt — זיהוי-בשמיעה פר-lexeme",
+        "same-different": "contrasts — הבחנת פֶּ/בֶּ (פֶּה מול בֶּטֶן)",
+        "missing-slot": "patterns (have/this_that/see_hear) — בחירת slot",
+        "grammar-toggle": "lexicon.gender + patterns this_that (זֶה/זֹאת) + feeling (שָׂמֵחַ/שְׂמֵחָה)",
+        "follow-instr": "pattern feeling/this_that + lexicon body_part — ביצוע הוראת-גוף (TPR)",
+        "roleplay": "patterns this_that+feeling + amir — turn דו-לשוני (זיהוי-איבר + הבעת-רגש)"
+      }
+    },
+    {
       "pack": "class",
       "_schema": "rich topic-pack per briefs/pack-schema.md §2 (meta/lexicon/patterns/contrasts/target). מזין את כל 6 המכניקות דרך target.<mechanic>. דאטה בלבד — אין קוד.",
       "_filename_note": "🔴 שם הקובץ = pack-CLASS.json (מקף), לא pack.class.json (נקודה) כפי שנכתב במשימה — כי _build-data.js מגלה packs ב-`f.startsWith('pack-')`. קובץ בנקודה היה נדלג בשקט ולא מגיע ל-runtime. תואם ל-pack-market.json / pack-mapping.json.",
@@ -337,6 +647,886 @@ window.MISHMISH_DATA = {
         "grammar-toggle": "lexicon.gender/number + pattern this_that (זֶה/זֹאת)",
         "follow-instr": "pattern open_close + lexicon — ביצוע הוראה",
         "roleplay": "patterns what_is+this_that + amir — turn דו-לשוני"
+      }
+    },
+    {
+      "pack": "colors",
+      "_schema": "rich topic-pack per briefs/pack-schema.md §2 (meta/lexicon/patterns/contrasts/target). מזין את כל 6 המכניקות דרך target.<mechanic>. דאטה בלבד — אין קוד. נבנה 1:1 על תבנית-הזהב data/pack-class.json; שונה רק התוכן.",
+      "_filename_note": "🔴 שם הקובץ = pack-COLORS.json (מקף) — כי _build-data.js מגלה packs ב-`f.startsWith('pack-')`. קובץ בנקודה היה נדלג בשקט. תואם ל-pack-class.json / pack-market.json / pack-mapping.json.",
+      "_img_note": "img = נתיב יחסי מתחת ל-assets/items/ כולל סיומת (למשל 'colors/color-ball-red.png' → assets/items/colors/color-ball-red.png). המכניקות העשירות קוראות lexeme.img ומקדימות '../assets/items/' בלבד. כל 6 קובצי-ה-PNG אומתו קיימים תחת assets/items/colors/.",
+      "_gates": "🔴 (א) כל עברית = טיוטה לאישור מיטל (asks.meytal). (ב) כל cognate_ar/audio_amiya = טיוטת עאמייה ar_verified:false → asks.native (tools/arabic-review-tool.html). ה-pack לא עובר done עד אישור בודק/ת ילידי/ת.",
+      "_grammar_note": "נושא-הליבה של grammar-toggle כאן = התאמת תואר-צבע פר-מין (adj:{m,f}). כל lexeme נושא adj={m,f} עם צורות-הצבע. 🔴 מגבלה: שני שמות-העצם בסט (כַּדּוּר · פֶּרַח) הם זכר → אין שם-עצם נקבה שיפעיל את צורת-ה-f בפועל. ל-gender-toggle אמיתי דרוש שם-עצם נקבה (למשל 'צַלַּחַת'/'בֻּבָּה') או שימוש בציר-המספר (sg/pl) כמימד הפעיל. רשום ב-asks.meytal.",
+      "meta": {
+        "id": "colors",
+        "topic": "צְבָעִים, מִסְפָּרִים וּכְמֻיּוֹת",
+        "topic_en": "colors, numbers & quantities · describing objects in the shared park",
+        "week_range": "9-12 · נוב'–דצמ' 2026",
+        "setting": "shared-park",
+        "bg": "bg-shared-park.png",
+        "space": "shared",
+        "amir": true,
+        "sound_wave": 2,
+        "literacy_sight_words": [
+          "זֶה",
+          "מַה",
+          "יֵשׁ"
+        ],
+        "cognate_focus": {
+          "he": "שָׁלוֹשׁ",
+          "ar": "ثلاثة",
+          "ar_verified": false,
+          "_note": "🔗 ציר-הקוגנט של הנושא = המספרים (שורש שמי משותף חזק: שָׁלוֹשׁ↔ثلاثة). שמות-הצבע עצמם אינם קוגנטים נקיים. 🔴 לקסמות-מספר טרם ב-lexicon (שלב-הרחבה עתידי); השדה מתעד את ציר-הקוגנט של הנושא לחישת-הגשר של אמיר."
+        },
+        "pb_focus_note": "מוקד פּ/בּ בגל 2 = הבחנה שמתחילה (מעבר לגל 1 הקליל): פֶּרַח (פּ ראשונית) מול בַּלּוֹן (בּ ראשונית). הבחנת-אוזן בתחילת-מילה, לא מוקד-הבחנה כבד עדיין."
+      },
+      "lexicon": [
+        {
+          "id": "ball-red",
+          "type": "object",
+          "he": "כַּדּוּר אָדוֹם",
+          "gloss": "red ball",
+          "img": "colors/color-ball-red.png",
+          "emoji": "🔴",
+          "audio_he": "lex/ball-red-he",
+          "cognate_ar": "طابة حمرا",
+          "audio_amiya": "lex/ball-red-amiya",
+          "ar_verified": false,
+          "_cognate_alt": "طابة = עאמייה יומיומי; كرة = פוצחא. لבחירת הבודק/ת הילידי/ת. התאמת-התואר בעאמייה נקבה (حمرا) כי طابة נקבה — סתירה לזכר-העברי, לאימות.",
+          "gender": "m",
+          "number": "sg",
+          "color": "red",
+          "adj": {
+            "m": "אָדוֹם",
+            "f": "אֲדֻמָּה"
+          },
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "ball-blue",
+          "type": "object",
+          "he": "כַּדּוּר כָּחֹל",
+          "gloss": "blue ball",
+          "img": "colors/color-ball-blue.png",
+          "emoji": "🔵",
+          "audio_he": "lex/ball-blue-he",
+          "cognate_ar": "طابة زرقا",
+          "audio_amiya": "lex/ball-blue-amiya",
+          "ar_verified": false,
+          "gender": "m",
+          "number": "sg",
+          "color": "blue",
+          "adj": {
+            "m": "כָּחֹל",
+            "f": "כְּחֻלָּה"
+          },
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "ball-green",
+          "type": "object",
+          "he": "כַּדּוּר יָרֹק",
+          "gloss": "green ball",
+          "img": "colors/color-ball-green.png",
+          "emoji": "🟢",
+          "audio_he": "lex/ball-green-he",
+          "cognate_ar": "طابة خضرا",
+          "audio_amiya": "lex/ball-green-amiya",
+          "ar_verified": false,
+          "gender": "m",
+          "number": "sg",
+          "color": "green",
+          "adj": {
+            "m": "יָרֹק",
+            "f": "יְרֻקָּה"
+          },
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "ball-yellow",
+          "type": "object",
+          "he": "כַּדּוּר צָהֹב",
+          "gloss": "yellow ball",
+          "img": "colors/color-ball-yellow.png",
+          "emoji": "🟡",
+          "audio_he": "lex/ball-yellow-he",
+          "cognate_ar": "طابة صفرا",
+          "audio_amiya": "lex/ball-yellow-amiya",
+          "ar_verified": false,
+          "gender": "m",
+          "number": "sg",
+          "color": "yellow",
+          "adj": {
+            "m": "צָהֹב",
+            "f": "צְהֻבָּה"
+          },
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "flower-red",
+          "type": "object",
+          "he": "פֶּרַח אָדוֹם",
+          "gloss": "red flower",
+          "img": "colors/color-flower-red.png",
+          "emoji": "🌹",
+          "audio_he": "lex/flower-red-he",
+          "cognate_ar": "وردة حمرا",
+          "audio_amiya": "lex/flower-red-amiya",
+          "ar_verified": false,
+          "gender": "m",
+          "number": "sg",
+          "color": "red",
+          "adj": {
+            "m": "אָדוֹם",
+            "f": "אֲדֻמָּה"
+          },
+          "sound_tags": [
+            "p_initial"
+          ],
+          "_pb": "פֶּרַח נושא פֶּ (פּ דגושה) — עוגן צליל /p/ לגל 2, מול בַּלּוֹן (/b/) ב-contrasts."
+        },
+        {
+          "id": "flower-blue",
+          "type": "object",
+          "he": "פֶּרַח כָּחֹל",
+          "gloss": "blue flower",
+          "img": "colors/color-flower-blue.png",
+          "emoji": "🪻",
+          "audio_he": "lex/flower-blue-he",
+          "cognate_ar": "وردة زرقا",
+          "audio_amiya": "lex/flower-blue-amiya",
+          "ar_verified": false,
+          "gender": "m",
+          "number": "sg",
+          "color": "blue",
+          "adj": {
+            "m": "כָּחֹל",
+            "f": "כְּחֻלָּה"
+          },
+          "sound_tags": [
+            "p_initial"
+          ],
+          "_pb": "פֶּרַח נושא פֶּ (פּ דגושה) — עוגן צליל /p/ לגל 2."
+        }
+      ],
+      "patterns": [
+        {
+          "id": "this_that",
+          "frame": "זֶה ___",
+          "intent": "לְהַצְבִּיעַ / לְזַהוֹת",
+          "structure": "זה + שם-עצם + תואר-צבע",
+          "gendered": true,
+          "frame_f": "זֹאת ___",
+          "slots": [
+            "ball-red",
+            "ball-blue",
+            "ball-green",
+            "ball-yellow",
+            "flower-red",
+            "flower-blue"
+          ],
+          "audio_frame": "pat/this-that",
+          "recurs_in": [
+            "class",
+            "colors",
+            "food"
+          ],
+          "_note": "עמוד-שדרה (spine). 'זֶה כַּדּוּר אָדוֹם'. כל שמות-העצם בסט זכר → frame זֶה; frame_f (זֹאת) שמור לשם-עצם נקבה עתידי. מזין missing-slot + grammar-toggle."
+        },
+        {
+          "id": "what_is",
+          "frame": "מַה זֶּה?",
+          "intent": "לִשְׁאוֹל",
+          "structure": "שאלת-זיהוי",
+          "slots": [
+            "ball-red",
+            "ball-blue",
+            "ball-green",
+            "ball-yellow",
+            "flower-red",
+            "flower-blue"
+          ],
+          "audio_frame": "pat/what-is",
+          "answer_pattern": "this_that",
+          "recurs_in": [
+            "class",
+            "colors",
+            "food"
+          ],
+          "_note": "שאלה → תשובת-תבנית ('זֶה כַּדּוּר יָרֹק'). זוג עם this_that ל-roleplay מול אמיר."
+        },
+        {
+          "id": "have",
+          "frame": "יֵשׁ לִי ___",
+          "intent": "לְתָאֵר / לְהַצְהִיר",
+          "structure": "יש לי + שם-עצם + תואר-צבע",
+          "slots": [
+            "ball-red",
+            "ball-blue",
+            "ball-green",
+            "ball-yellow",
+            "flower-red",
+            "flower-blue"
+          ],
+          "audio_frame": "pat/have",
+          "recurs_in": [
+            "class",
+            "colors",
+            "play"
+          ],
+          "_note": "עמוד-שדרה (spine, KC have::have). 'יֵשׁ לִי כַּדּוּר אָדוֹם'. מזין missing-slot ורמת-הפקה מודרכת."
+        }
+      ],
+      "contrasts": [
+        {
+          "pair": [
+            "פּ",
+            "בּ"
+          ],
+          "words": [
+            [
+              "פֶּרַח",
+              "בַּלּוֹן"
+            ]
+          ],
+          "lex_refs": [
+            "flower-red",
+            null
+          ],
+          "wave": 2,
+          "level": "emerging",
+          "audio": [
+            "con/perach",
+            "con/balon"
+          ],
+          "ar_verified": false,
+          "_note": "זוג פּ/בּ הרשמי של נושא הצבעים (גל 2). פֶּרַח (פּ) קיים ב-lexicon; בַּלּוֹן (בּ) הוא מסיח-צליל חיצוני מתאים-לפארק (אין נכס-תמונה/הקלטה עדיין — asks.meytal). גל 2 = הבחנה שמתחילה, לא כבדה. אודיו חייב להישמע מובחן (QA תמלול Whisper). 🔴 לאישור מיטל."
+        }
+      ],
+      "target": {
+        "swim-hunt": "audioWord → lexeme.img",
+        "same-different": "contrast.pair discrimination",
+        "missing-slot": "pattern.frame → choose slot",
+        "grammar-toggle": "lexeme.gender/number + color-adj agreement (זֶה/זֹאת · adj.m/adj.f)",
+        "follow-instr": "lexeme + instruction (הָבִיאוּ / הַרְאוּ אֶת הַ___)",
+        "roleplay": "pattern.frame produced to Amir (מַה זֶּה? → יֵשׁ לִי ___)"
+      },
+      "_mechanic_reads": {
+        "swim-hunt": "lexicon (objects, img) + target.swim-hunt — זיהוי-בשמיעה פר-lexeme (כַּדּוּר אָדוֹם וכו')",
+        "same-different": "contrasts — הבחנת פֶּרַח/בַּלּוֹן (פּ/בּ גל 2)",
+        "missing-slot": "patterns (this_that/have) — בחירת slot",
+        "grammar-toggle": "lexicon.gender/number + adj{m,f} + pattern this_that (זֶה/זֹאת · תואר-צבע)",
+        "follow-instr": "pattern + lexicon — ביצוע הוראה על עצם-צבע",
+        "roleplay": "patterns what_is+this_that/have + amir — turn דו-לשוני"
+      }
+    },
+    {
+      "pack": "family",
+      "_schema": "rich topic-pack per briefs/pack-schema.md §2 (meta/lexicon/patterns/contrasts/target). מזין את כל 6 המכניקות דרך target.<mechanic>. דאטה בלבד — אין קוד. נבנה על תבנית pack-class.json 1:1; שונה תוכן בלבד.",
+      "_filename_note": "🔴 שם הקובץ = pack-FAMILY.json (מקף), לא pack.family.json (נקודה) — _build-data.js מגלה packs ב-`f.startsWith('pack-')`. קובץ בנקודה נדלג בשקט. תואם ל-pack-class.json / pack-market.json / pack-mapping.json.",
+      "_img_note": "img = נתיב יחסי מתחת ל-assets/items/ כולל סיומת (למשל 'family/fam-mom.png' → assets/items/family/fam-mom.png). מכניקה קוראת lexeme.img ומקדימה '../assets/items/'. כל 6 נכסי-המשפחה קיימים ב-assets/items/family/.",
+      "_gates": "🔴 (א) כל עברית = טיוטה לאישור מיטל (asks.meytal). (ב) כל cognate_ar/audio_amiya = טיוטת עאמייה ar_verified:false → asks.native (tools/arabic-review-tool.html). ה-pack לא עובר done עד אישור בודק ילידי.",
+      "meta": {
+        "id": "family",
+        "topic": "הַמִּשְׁפָּחָה וְהַחֲבֵרִים",
+        "topic_en": "family & friends · this-is / I-have · courtyard people",
+        "week_range": "5-8 · אוקטובר 2026",
+        "setting": "hara-courtyard",
+        "bg": "bg-hara-courtyard.png",
+        "space": "hara",
+        "amir": true,
+        "sound_wave": 1,
+        "literacy_sight_words": [
+          "אַבָּא",
+          "אִמָּא",
+          "שָׁלוֹם",
+          "תּוֹדָה"
+        ],
+        "cognate_focus": {
+          "he": "אַבָּא",
+          "ar": "بابا",
+          "ar_verified": false
+        },
+        "_cognate_note": "🔗 קוגנטי-אמת חזקים יותר לשורש: אָח ↔ أخ (akh) · אָחוֹת ↔ أخت (ukht) — שורש א-ח משותף לשתי השפות. אַבָּא↔بابا הוא קוגנט-הליבה הידידותי לגיל (מדובר). לבחירת הבודק הילידי.",
+        "pb_focus_note": "מוקד פּ/בּ בגל 1 = קליל, שמיעתי-מודעות בלבד. נושא המשפחה עשיר ב-/b/ (אַבָּא · סַבָּא) → עוגן /b/ טבעי; בן-הזוג /p/ מגיע מעוגן-הגל הרוחבי (פִּתְחוּ). לא מוקד-הבחנה כבד."
+      },
+      "lexicon": [
+        {
+          "id": "dad",
+          "type": "person",
+          "he": "אַבָּא",
+          "gloss": "dad",
+          "img": "family/fam-dad.png",
+          "emoji": "👨",
+          "audio_he": "lex/dad-he",
+          "cognate_ar": "بابا",
+          "audio_amiya": "lex/dad-amiya",
+          "ar_verified": false,
+          "_cognate": "🔗 קוגנט-הליבה של נושא 2: אַבָּא ↔ بابا / أب. לחישת-הגשר של אמיר.",
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "b_medial"
+          ],
+          "_pb": "אַבָּא נושא בָּ (בּ דגושה) — עוגן צליל /b/ טבעי לגל 1."
+        },
+        {
+          "id": "mom",
+          "type": "person",
+          "he": "אִמָּא",
+          "gloss": "mom",
+          "img": "family/fam-mom.png",
+          "emoji": "👩",
+          "audio_he": "lex/mom-he",
+          "cognate_ar": "ماما",
+          "audio_amiya": "lex/mom-amiya",
+          "ar_verified": false,
+          "_cognate": "אִמָּא ↔ ماما / أمّ (umm, שורש א-מ). לחישת-גשר של אמיר.",
+          "gender": "f",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "grandpa",
+          "type": "person",
+          "he": "סַבָּא",
+          "gloss": "grandpa",
+          "img": "family/fam-grandpa.png",
+          "emoji": "👴",
+          "audio_he": "lex/grandpa-he",
+          "cognate_ar": "سيدو",
+          "audio_amiya": "lex/grandpa-amiya",
+          "ar_verified": false,
+          "_cognate_alt": "סַבָּא ↔ سيدو / جدّ (jaddo) בעאמייה — אין קוגנט-צליל ישיר; המילה היומיומית משתנה אזורית. לבחירת הבודק הילידי.",
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "b_medial"
+          ],
+          "_pb": "סַבָּא נושא בָּ (בּ דגושה) — עוגן /b/ נוסף."
+        },
+        {
+          "id": "grandma",
+          "type": "person",
+          "he": "סַבְתָּא",
+          "gloss": "grandma",
+          "img": "family/fam-grandma.png",
+          "emoji": "👵",
+          "audio_he": "lex/grandma-he",
+          "cognate_ar": "تيتة",
+          "audio_amiya": "lex/grandma-amiya",
+          "ar_verified": false,
+          "_cognate_alt": "סַבְתָּא ↔ تيتة (teta) / ستّ בעאמייה — אין קוגנט-צליל ישיר. לבחירת הבודק הילידי.",
+          "gender": "f",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ],
+          "_pb_note": "סַבְתָּא = סַבְ (בְ רפה, /v/) — לא נושא /b/ דגוש. לא עוגן פּ/בּ."
+        },
+        {
+          "id": "brother",
+          "type": "person",
+          "he": "אָח",
+          "gloss": "brother",
+          "img": "family/fam-brother.png",
+          "emoji": "👦",
+          "audio_he": "lex/brother-he",
+          "cognate_ar": "أخ",
+          "audio_amiya": "lex/brother-amiya",
+          "ar_verified": false,
+          "_cognate": "🔗 קוגנט-אמת: אָח ↔ أخ (akh), שורש א-ח משותף. מודגם היטב לילד הערבי.",
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "sister",
+          "type": "person",
+          "he": "אָחוֹת",
+          "gloss": "sister",
+          "img": "family/fam-sister.png",
+          "emoji": "👧",
+          "audio_he": "lex/sister-he",
+          "cognate_ar": "أخت",
+          "audio_amiya": "lex/sister-amiya",
+          "ar_verified": false,
+          "_cognate": "🔗 קוגנט-אמת: אָחוֹת ↔ أخت (ukht), שורש א-ח משותף. עוגן-קוגנט חזק לנושא.",
+          "gender": "f",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "shalom",
+          "type": "greeting",
+          "he": "שָׁלוֹם",
+          "gloss": "hello / peace",
+          "img": null,
+          "emoji": "👋",
+          "audio_he": "lex/shalom-he",
+          "cognate_ar": "سلام",
+          "audio_amiya": "lex/shalom-amiya",
+          "ar_verified": false,
+          "_cognate": "🔗 קוגנט רוחבי (חוזר מ-class): שָׁלוֹם ↔ سلام (שורש ש/ס-ל-מ). מזין את pattern greet ל-roleplay.",
+          "gender": null,
+          "number": null,
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "toda",
+          "type": "greeting",
+          "he": "תּוֹדָה",
+          "gloss": "thank you",
+          "img": null,
+          "emoji": "🙏",
+          "audio_he": "lex/toda-he",
+          "cognate_ar": "شكراً",
+          "audio_amiya": "lex/toda-amiya",
+          "ar_verified": false,
+          "gender": null,
+          "number": null,
+          "sound_tags": [
+            "b_p_free"
+          ],
+          "_note": "מילת-ברכה חוזרת מ-class — נחוצה כ-slot ל-pattern greet ב-roleplay (turn דו-לשוני עם אמיר)."
+        }
+      ],
+      "patterns": [
+        {
+          "id": "this_that",
+          "frame": "זֶה ___",
+          "intent": "לְהַצְבִּיעַ / לְזַהוֹת",
+          "structure": "זה + שם-עצם (בֶּן-מִשְׁפָּחָה)",
+          "gendered": true,
+          "frame_f": "זֹאת ___",
+          "slots": [
+            "dad",
+            "mom",
+            "grandpa",
+            "grandma",
+            "brother",
+            "sister"
+          ],
+          "audio_frame": "pat/this-that",
+          "recurs_in": [
+            "class",
+            "family",
+            "food"
+          ],
+          "spine": true,
+          "_note": "עמוד-שדרה (KC this_that). ציר מין = לב הנושא: 'זֶה אַבָּא' (m) מול 'זֹאת אִמָּא' (f) · 'זֶה סַבָּא' מול 'זֹאת סַבְתָּא' — מזין grammar-toggle."
+        },
+        {
+          "id": "have",
+          "frame": "יֵשׁ לִי ___",
+          "intent": "לְסַפֵּר (יֵשׁ לִי)",
+          "structure": "יש לי + שם-עצם",
+          "slots": [
+            "brother",
+            "sister",
+            "dad",
+            "mom",
+            "grandpa",
+            "grandma"
+          ],
+          "audio_frame": "pat/have",
+          "recurs_in": [
+            "family",
+            "class",
+            "food"
+          ],
+          "spine": true,
+          "_note": "עמוד-שדרה (KC have). 'יֵשׁ לִי אָח' · 'יֵשׁ לִי אָחוֹת' — מבנה קבוע (יש לי) שלא משתנה עם המין, כך שהילד מתמקד בשם-העצם. מזין missing-slot ו-roleplay."
+        },
+        {
+          "id": "greet",
+          "frame": "שָׁלוֹם · מַה שְּׁלוֹמְכֶם?",
+          "intent": "לְבָרֵךְ",
+          "structure": "ברכת-מפגש",
+          "slots": [
+            "shalom",
+            "toda"
+          ],
+          "audio_frame": "pat/greet",
+          "reply_frames": [
+            "שָׁלוֹם!",
+            "תּוֹדָה, טוֹב!"
+          ],
+          "recurs_in": [
+            "class",
+            "family",
+            "play"
+          ],
+          "_note": "חוזרת מ-class (recurs). ברכה + שאלת-שלום בלשון רבים (מַה שְּׁלוֹמְכֶם). פנייה לילד תמיד רבים. מזין roleplay עם אמיר בחצר."
+        }
+      ],
+      "contrasts": [
+        {
+          "pair": [
+            "בַּ",
+            "פִּ"
+          ],
+          "words": [
+            [
+              "אַבָּא",
+              "פִּתְחוּ"
+            ]
+          ],
+          "lex_refs": [
+            "dad"
+          ],
+          "wave": 1,
+          "level": "gentle",
+          "audio": [
+            "con/abba",
+            "con/pitchu"
+          ],
+          "ar_verified": false,
+          "_note": "🔴 הצעה לאישור מיטל. נושא המשפחה חסר זוג-מינימלי פּ/בּ טבעי, לכן גל-1 (מודעות קלילה בלבד) עוגן על ה-/b/ הפנימי אַבָּא, ובן-הזוג /p/ מושאל מעוגן-הגל הרוחבי פִּתְחוּ (מ-class). lex_refs = ['dad'] בלבד (פִּתְחוּ אינו lexeme ב-pack זה — מחרוזת-אודיו רוחבית). אודיו חייב להישמע מובחן (QA תמלול Whisper). asks.meytal."
+        }
+      ],
+      "target": {
+        "swim-hunt": "audioWord → lexeme.img",
+        "same-different": "contrast.pair discrimination",
+        "missing-slot": "pattern.frame → choose slot",
+        "grammar-toggle": "lexeme.gender/number match (זֶה/זֹאת)",
+        "follow-instr": "lexeme + deixis (הַרְאוּ לִי אֶת ___)",
+        "roleplay": "pattern.frame produced to Amir (מַה שְּׁלוֹמְכֶם? → שָׁלוֹם · זֶה אַבָּא / יֵשׁ לִי אָח)"
+      },
+      "_mechanic_reads": {
+        "swim-hunt": "lexicon (persons, img) + target.swim-hunt — זיהוי-בשמיעה פר-lexeme (אַבָּא/אִמָּא/סַבָּא/סַבְתָּא/אָח/אָחוֹת)",
+        "same-different": "contrasts — מודעות בַּ/פִּ קלילה (אַבָּא מול פִּתְחוּ)",
+        "missing-slot": "patterns (this_that/have) — בחירת slot (יֵשׁ לִי ___)",
+        "grammar-toggle": "lexicon.gender/number + pattern this_that (זֶה אַבָּא / זֹאת אִמָּא)",
+        "follow-instr": "pattern this_that/have + lexicon — ביצוע-הוראה (הַרְאוּ לִי אֶת סַבְתָּא)",
+        "roleplay": "patterns greet+this_that+have + amir — turn דו-לשוני בחצר"
+      }
+    },
+    {
+      "pack": "hobbies",
+      "_schema": "rich topic-pack per briefs/pack-schema.md §2 (meta/lexicon/patterns/contrasts/target). מזין את כל 6 המכניקות דרך target.<mechanic>. דאטה בלבד — אין קוד. נבנה על תבנית pack-class.json 1:1; שונה תוכן בלבד.",
+      "_filename_note": "🔴 שם הקובץ = pack-HOBBIES.json (מקף), לא pack.hobbies.json (נקודה) — כי _build-data.js מגלה packs ב-`f.startsWith('pack-')`. קובץ בנקודה היה נדלג בשקט ולא מגיע ל-runtime. תואם ל-pack-class.json / pack-market.json / pack-mapping.json.",
+      "_img_note": "img = נתיב יחסי מתחת ל-assets/items/ כולל סיומת (למשל 'hobbies/hobby-ball.png' → assets/items/hobbies/hobby-ball.png). מכניקה קוראת lexeme.img ומקדימה '../assets/items/'.",
+      "_gender_axis_note": "🔴 4 המקצועות = ציר-מין (m/f) ל-grammar-toggle (הבריף). כל lexeme-מקצוע נושא he (צורת-זכר, ברירת-מחדל/גוף-מילון) + he_f (צורת-נקבה) + audio_he_f, עם gender:'m' כבסיס. זו התוספת התוכנית היחידה מעבר לשדות pack-class.json — נדרשת כי הנושא הוא מקצועות. חיווט בלוק pack.grammar (nounId→m/f) = עבודת-אינטגרציה של התזמורת/סוכן-grammar, כמו ב-class (שאין לו עדיין grammar block).",
+      "_gates": "🔴 (א) כל עברית = טיוטה לאישור מיטל (asks.meytal). (ב) כל cognate_ar/audio_amiya = טיוטת עאמייה ar_verified:false → asks.native (tools/arabic-review-tool.html). ה-pack לא עובר done עד אישור בודק ילידי.",
+      "meta": {
+        "id": "hobbies",
+        "topic": "תַּחְבִּיבִים, מִקְצוֹעוֹת וְאֵרוּעִים",
+        "topic_en": "hobbies, professions & events",
+        "week_range": "31-34 · מאי–יוני 2027",
+        "setting": "shared-park",
+        "bg": "bg-shared-park.png",
+        "space": "shared",
+        "amir": true,
+        "sound_wave": 4,
+        "literacy_sight_words": [
+          "אֲנִי",
+          "רוֹצֶה",
+          "אוֹהֵב",
+          "זֶה"
+        ],
+        "cognate_focus": {
+          "he": "טַבָּח",
+          "ar": "طبّاخ",
+          "ar_verified": false
+        },
+        "_cognate_note": "🔗 קוגנט-הליבה של נושא זה: טַבָּח ↔ طبّاخ (שורש שמי ט-ב-ח / ط-ب-خ). גם מוּזִיקָה ↔ موسيقى (שאילה משותפת). לחישת-הגשר של אמיר.",
+        "pb_focus_note": "מוקד פּ/בּ בגל 4 = הבחנה ממוקדת (heavier) — לא רק מודעות-שמע. זוג בָּלוֹן ↔ פַּרְפַּר (בּ/פּ בתחילת-מילה, שני פריטי-פארק מוכרים)."
+      },
+      "lexicon": [
+        {
+          "id": "ball",
+          "type": "object",
+          "he": "כַּדּוּרֶגֶל",
+          "gloss": "football / soccer ball",
+          "img": "hobbies/hobby-ball.png",
+          "emoji": "⚽",
+          "audio_he": "lex/ball-he",
+          "cognate_ar": "فوتبول",
+          "audio_amiya": "lex/ball-amiya",
+          "ar_verified": false,
+          "_cognate_alt": "كرة قدم (כדורגל מילולי) מול فوتبول (השאלה מדוברת). לבחירת הבודק הילידי.",
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "bike",
+          "type": "object",
+          "he": "אוֹפַנַּיִם",
+          "gloss": "bicycle",
+          "img": "hobbies/hobby-bike.png",
+          "emoji": "🚲",
+          "audio_he": "lex/bike-he",
+          "cognate_ar": "بسكليت",
+          "audio_amiya": "lex/bike-amiya",
+          "ar_verified": false,
+          "_cognate_alt": "بسكليت (עאמייה פלסטינית מקובלת) מול دراجة (תקני). לבחירת הבודק.",
+          "gender": "m",
+          "number": "dual",
+          "sound_tags": [
+            "b_p_free"
+          ],
+          "_note": "אוֹפַנַּיִם = צורת-זוגי (dual). ה-פ כאן = /f/ (פ רפה), לא /p/ — אינה נכנסת למוקד פּ/בּ."
+        },
+        {
+          "id": "brush",
+          "type": "object",
+          "he": "מִכְחוֹל",
+          "gloss": "paintbrush",
+          "img": "hobbies/hobby-paint.png",
+          "emoji": "🖌️",
+          "audio_he": "lex/brush-he",
+          "cognate_ar": "فرشاة",
+          "audio_amiya": "lex/brush-amiya",
+          "ar_verified": false,
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "music",
+          "type": "object",
+          "he": "מוּזִיקָה",
+          "gloss": "music",
+          "img": "hobbies/hobby-music.png",
+          "emoji": "🎵",
+          "audio_he": "lex/music-he",
+          "cognate_ar": "موسيقى",
+          "audio_amiya": "lex/music-amiya",
+          "ar_verified": false,
+          "_cognate": "🔗 מוּזִיקָה ↔ موسيقى — שאילה בין-לשונית משותפת, גשר-צליל נוח.",
+          "gender": "f",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "doctor",
+          "type": "profession",
+          "he": "רוֹפֵא",
+          "he_f": "רוֹפְאָה",
+          "gloss": "doctor",
+          "img": "hobbies/job-doctor.png",
+          "emoji": "🩺",
+          "audio_he": "lex/doctor-he",
+          "audio_he_f": "lex/doctor-f-he",
+          "cognate_ar": "دكتور",
+          "audio_amiya": "lex/doctor-amiya",
+          "ar_verified": false,
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ],
+          "_gender_axis": "רוֹפֵא (m) / רוֹפְאָה (f) — זוג-מין למכניקת grammar-toggle. ה-פ = /f/ (רפה)."
+        },
+        {
+          "id": "teacher",
+          "type": "profession",
+          "he": "מוֹרֶה",
+          "he_f": "מוֹרָה",
+          "gloss": "teacher",
+          "img": "hobbies/job-teacher.png",
+          "emoji": "👩‍🏫",
+          "audio_he": "lex/teacher-he",
+          "audio_he_f": "lex/teacher-f-he",
+          "cognate_ar": "معلّم",
+          "audio_amiya": "lex/teacher-amiya",
+          "ar_verified": false,
+          "_cognate_alt": "معلّم מול أستاذ (astaz). לבחירת הבודק.",
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ],
+          "_gender_axis": "מוֹרֶה (m) / מוֹרָה (f) — זוג-מין למכניקת grammar-toggle."
+        },
+        {
+          "id": "cook",
+          "type": "profession",
+          "he": "טַבָּח",
+          "he_f": "טַבָּחִית",
+          "gloss": "cook / chef",
+          "img": "hobbies/job-cook.png",
+          "emoji": "👨‍🍳",
+          "audio_he": "lex/cook-he",
+          "audio_he_f": "lex/cook-f-he",
+          "cognate_ar": "طبّاخ",
+          "audio_amiya": "lex/cook-amiya",
+          "ar_verified": false,
+          "_cognate": "🔗 קוגנט-הליבה: טַבָּח ↔ طبّاخ (שורש ט-ב-ח / ط-ب-خ). לחישת-הגשר של אמיר.",
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "b_medial"
+          ],
+          "_pb": "טַבָּח נושא בָּ (בּ דגושה, /b/ אמצעי) — עוגן צליל /b/ לגל 4.",
+          "_gender_axis": "טַבָּח (m) / טַבָּחִית (f) — זוג-מין למכניקת grammar-toggle."
+        },
+        {
+          "id": "driver",
+          "type": "profession",
+          "he": "נֶהָג",
+          "he_f": "נַהֶגֶת",
+          "gloss": "driver",
+          "img": "hobbies/job-driver.png",
+          "emoji": "🚕",
+          "audio_he": "lex/driver-he",
+          "audio_he_f": "lex/driver-f-he",
+          "cognate_ar": "سوّاق",
+          "audio_amiya": "lex/driver-amiya",
+          "ar_verified": false,
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ],
+          "_gender_axis": "נֶהָג (m) / נַהֶגֶת (f) — זוג-מין למכניקת grammar-toggle."
+        }
+      ],
+      "patterns": [
+        {
+          "id": "want",
+          "frame": "אֲנִי רוֹצֶה ___",
+          "intent": "לְבַקֵּשׁ",
+          "structure": "אני רוצה",
+          "slots": [
+            "ball",
+            "bike",
+            "brush",
+            "music"
+          ],
+          "audio_frame": "pat/want",
+          "recurs_in": [
+            "market",
+            "play",
+            "hobbies"
+          ],
+          "_note": "תבנית-שדרה (spine · KC want::request). חזרה ל-A1 בשלב מאוחר. 'אֲנִי רוֹצֶה אוֹפַנַּיִם'."
+        },
+        {
+          "id": "like",
+          "frame": "אֲנִי אוֹהֵב ___",
+          "frame_f": "אֲנִי אוֹהֶבֶת ___",
+          "gendered_speaker": true,
+          "intent": "לְהַבִּיעַ חִיבָּה",
+          "structure": "אני אוהב/אוהבת",
+          "slots": [
+            "ball",
+            "bike",
+            "brush",
+            "music"
+          ],
+          "audio_frame": "pat/like",
+          "recurs_in": [
+            "hobbies",
+            "play",
+            "family"
+          ],
+          "_note": "תבנית חוויתית (לא KC-שדרה — אינה ב-KC_META). ממוגדרת לפי *הדובר* (הילד), לא לפי המושא: אֲנִי אוֹהֵב (בן) / אֲנִי אוֹהֶבֶת (בת). 🔴 שונה מ-this_that שממוגדר לפי המושא."
+        },
+        {
+          "id": "this_that",
+          "frame": "זֶה ___",
+          "intent": "לְהַצְבִּיעַ / לְזַהוֹת",
+          "structure": "זה + שם-עצם",
+          "gendered": true,
+          "frame_f": "זֹאת ___",
+          "slots": [
+            "doctor",
+            "teacher",
+            "cook",
+            "driver"
+          ],
+          "audio_frame": "pat/this-that",
+          "recurs_in": [
+            "class",
+            "family",
+            "hobbies"
+          ],
+          "_note": "תבנית-שדרה (spine · KC this_that::identify). ציר מין לפי המושא: 'זֶה רוֹפֵא' (m) מול 'זֹאת מוֹרָה' (f) — מזין grammar-toggle עם ציר-המקצועות."
+        },
+        {
+          "id": "give_me",
+          "frame": "תֵּן לִי ___",
+          "intent": "לְבַקֵּשׁ חֵפֶץ",
+          "structure": "תן לי + שם-עצם",
+          "slots": [
+            "ball",
+            "bike",
+            "brush",
+            "music"
+          ],
+          "audio_frame": "pat/give-me",
+          "recurs_in": [
+            "market",
+            "class",
+            "hobbies"
+          ],
+          "_note": "תבנית-שדרה (spine · KC give_me::request_object). 'תֵּן לִי מִכְחוֹל'."
+        }
+      ],
+      "contrasts": [
+        {
+          "pair": [
+            "בָּ",
+            "פַּ"
+          ],
+          "words": [
+            [
+              "בָּלוֹן",
+              "פַּרְפַּר"
+            ]
+          ],
+          "lex_refs": [
+            "cook"
+          ],
+          "wave": 4,
+          "level": "focused",
+          "audio": [
+            "con/balon",
+            "con/parpar"
+          ],
+          "ar_verified": false,
+          "_note": "זוג פּ/בּ של גל 4 (הבחנה ממוקדת, כבדה יותר מגל 1). בָּלוֹן (בּ /b/) מול פַּרְפַּר (פּ /p/) — שני פריטי-פארק מוכרים-לגיל, בתחילת-מילה. lex_ref=cook (טַבָּח) = עוגן /b/ בלקסיקון (אין lexeme עם /p/ דגושה נקי, לכן מילת-הניגוד חיצונית — כמו ב-pack-class). אודיו חייב להישמע מובחן (QA תמלול Whisper). 🔴 לאישור מיטל."
+        }
+      ],
+      "target": {
+        "swim-hunt": "audioWord → lexeme.img",
+        "same-different": "contrast.pair discrimination",
+        "missing-slot": "pattern.frame → choose slot",
+        "grammar-toggle": "lexeme.gender/he_f match (זֶה/זֹאת · רוֹפֵא/רוֹפְאָה)",
+        "follow-instr": "pattern want/give_me verb + lexeme (רוֹצֶה/תֵּן לִי)",
+        "roleplay": "pattern.frame produced to Amir (מַה זֶּה? → זֶה ___)"
+      },
+      "_mechanic_reads": {
+        "swim-hunt": "lexicon (objects, img) + target.swim-hunt — זיהוי-בשמיעה פר-lexeme",
+        "same-different": "contrasts — הבחנת בָּ/פַּ גל 4",
+        "missing-slot": "patterns (want/like/this_that/give_me) — בחירת slot",
+        "grammar-toggle": "lexicon.gender + he_f (ציר-המקצועות) + pattern this_that (זֶה/זֹאת)",
+        "follow-instr": "pattern want/give_me + lexicon — ביצוע בקשה",
+        "roleplay": "patterns this_that + amir — turn דו-לשוני"
       }
     },
     {
@@ -922,6 +2112,10 @@ window.MISHMISH_DATA = {
     },
     {
       "pack": "market",
+      "_schema": "rich topic-pack per briefs/pack-schema.md §2 (meta/lexicon/patterns/contrasts/target). מזין את 6 המכניקות דרך target.<mechanic> + שומר תאימות-לאחור למכניקת give-me הישנה (items[] ש-play.js/lantern.js קוראים). דאטה בלבד — אין קוד.",
+      "_gates": "🔴 (א) כל עברית = טיוטה לאישור מיטל (asks.meytal). (ב) כל cognate_ar/audio_amiya/place.ar = טיוטת עאמייה ar_verified:false → asks.native (tools/arabic-review-tool.html). ה-pack לא עובר done עד אישור בודק ילידי.",
+      "_img_note": "img = נתיב יחסי מתחת ל-assets/items/ כולל תת-תיקייה+.png (למשל 'food/item-apple.png' → assets/items/food/item-apple.png). מכניקות (missing-slot/grammar-toggle) מקדימות '../assets/items/'. פריטי give-me הישנים ב-items[] משתמשים במבנה-הישן (options[].img = basename בלי סיומת) — נשמר כפי-שהוא לתאימות-לאחור.",
+      "_backcompat_note": "🔴 השדות ברמת-השורש pack/mechanic/pattern/pattern_he/place/topic + items[] נשמרים 1:1 מהגרסה הקודמת כי play.js (pick{pack:'market',mechanic:'give-me'}) ו-lantern.js קוראים אותם. הרובד העשיר (meta/lexicon/patterns/contrasts/_mechanic_reads) נוסף לצדם ומזין את שאר המכניקות.",
       "mechanic": "give-me",
       "place": {
         "he": "בַּשּׁוּק",
@@ -931,11 +2125,359 @@ window.MISHMISH_DATA = {
       "topic": "food",
       "pattern": "give_me",
       "pattern_he": "תֵּן לִי ___",
-      "target": {
-        "give-me": "audioPhrase → item.img"
+      "meta": {
+        "id": "market",
+        "topic": "אֹכֶל וּקְנִיּוֹת",
+        "topic_en": "food & shopping · the shared market",
+        "week_range": "17-21 · פבר'–מרץ 2027",
+        "setting": "shared-market",
+        "bg": "bg-shared-market.png",
+        "space": "shared",
+        "amir": true,
+        "sound_wave": 3,
+        "literacy_sight_words": [
+          "אֲנִי",
+          "רוֹצֶה",
+          "כַּמָּה",
+          "זֶה"
+        ],
+        "cognate_focus": {
+          "he": "מִשְׁמֵשׁ",
+          "ar": "مشمش",
+          "ar_verified": false
+        },
+        "pb_focus_note": "מוקד פּ/בּ בגל 3 = מוקד-הבחנה מלא (לא קליל כמו גל 1). זוג רשמי: בָּנָנָה (בּ ראשונית) מול פָּנָס (פּ ראשונית)."
       },
-      "_target_note": "target = שדה גנרי פר-מכניקה (pack-schema §2). ה-loader חושף target[mechanic]; כל מכניקה קוראת אחיד.",
-      "_note": "הנושא = תפאורה; ציר-הרכישה = התבנית 'תן לי ___' (כוונת-בקשה). עברית מאומתת ע\"י מיטל; כל help_ar = טיוטה, לא-מאושר עד בודק ילידי.",
+      "lexicon": [
+        {
+          "id": "apple",
+          "type": "food",
+          "he": "תַּפּוּחַ",
+          "gloss": "apple",
+          "img": "food/item-apple.png",
+          "emoji": "🍎",
+          "audio_he": "lex/apple-he",
+          "cognate_ar": "تفاحة",
+          "audio_amiya": "lex/apple-amiya",
+          "ar_verified": false,
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "p_medial"
+          ],
+          "_pb": "תַּפּוּחַ נושא פּ דגושה (medial /p/) — עוגן צליל /p/, לא onset."
+        },
+        {
+          "id": "banana",
+          "type": "food",
+          "he": "בָּנָנָה",
+          "gloss": "banana",
+          "img": "food/item-banana.png",
+          "emoji": "🍌",
+          "audio_he": "lex/banana-he",
+          "cognate_ar": "موزة",
+          "audio_amiya": "lex/banana-amiya",
+          "ar_verified": false,
+          "gender": "f",
+          "number": "sg",
+          "sound_tags": [
+            "b_initial"
+          ],
+          "_pb": "בָּנָנָה נושאת בְּ דגושה ראשונית (b onset) — צד ה-/b/ בזוג הרשמי מול פָּנָס. → pb_focus."
+        },
+        {
+          "id": "orange",
+          "type": "food",
+          "he": "תַּפּוּז",
+          "gloss": "orange",
+          "img": "food/item-orange.png",
+          "emoji": "🍊",
+          "audio_he": "lex/orange-he",
+          "cognate_ar": "برتقالة",
+          "audio_amiya": "lex/orange-amiya",
+          "ar_verified": false,
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "p_medial"
+          ]
+        },
+        {
+          "id": "bread",
+          "type": "food",
+          "he": "לֶחֶם",
+          "gloss": "bread",
+          "img": "food/item-bread.png",
+          "emoji": "🍞",
+          "audio_he": "lex/bread-he",
+          "cognate_ar": "خبز",
+          "audio_amiya": "lex/bread-amiya",
+          "ar_verified": false,
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "cheese",
+          "type": "food",
+          "he": "גְּבִינָה",
+          "gloss": "cheese",
+          "img": "food/item-cheese.png",
+          "emoji": "🧀",
+          "audio_he": "lex/cheese-he",
+          "cognate_ar": "جبنة",
+          "audio_amiya": "lex/cheese-amiya",
+          "ar_verified": false,
+          "gender": "f",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ],
+          "_pb": "הבֿ ב-גְּבִינָה רפה (/v/) — לא נכנס למוקד פּ/בּ."
+        },
+        {
+          "id": "tomato",
+          "type": "food",
+          "he": "עַגְבָנִיָּה",
+          "gloss": "tomato",
+          "img": "food/item-tomato.png",
+          "emoji": "🍅",
+          "audio_he": "lex/tomato-he",
+          "cognate_ar": "بندورة",
+          "audio_amiya": "lex/tomato-amiya",
+          "ar_verified": false,
+          "gender": "f",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ],
+          "_pb": "הבֿ ב-עַגְבָנִיָּה רפה (/v/) — לא מוקד פּ/בּ. cognate בעאמייה = بندورة (טיוטה)."
+        },
+        {
+          "id": "cucumber",
+          "type": "food",
+          "he": "מְלָפְפוֹן",
+          "gloss": "cucumber",
+          "img": "food/item-cucumber.png",
+          "emoji": "🥒",
+          "audio_he": "lex/cucumber-he",
+          "cognate_ar": "خيار",
+          "audio_amiya": "lex/cucumber-amiya",
+          "ar_verified": false,
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ],
+          "_pb": "הפֿ ב-מְלָפְפוֹן רפות (/f/) — לא /p/ פלוסיבי, לא מוקד פּ/בּ."
+        },
+        {
+          "id": "grapes",
+          "type": "food",
+          "he": "עֲנָבִים",
+          "gloss": "grapes",
+          "img": "food/item-grapes.png",
+          "emoji": "🍇",
+          "audio_he": "lex/grapes-he",
+          "cognate_ar": "عنب",
+          "audio_amiya": "lex/grapes-amiya",
+          "ar_verified": false,
+          "gender": "m",
+          "number": "pl",
+          "sound_tags": [
+            "b_p_free"
+          ],
+          "_note": "עֲנָבִים = ריבוי (זכר). מזין ציר number ל-grammar-toggle (יחיד עֵנָב מול רבים עֲנָבִים)."
+        },
+        {
+          "id": "milk",
+          "type": "food",
+          "he": "חָלָב",
+          "gloss": "milk",
+          "img": "food/item-milk.png",
+          "emoji": "🥛",
+          "audio_he": "lex/milk-he",
+          "cognate_ar": "حليب",
+          "audio_amiya": "lex/milk-amiya",
+          "ar_verified": false,
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ],
+          "_pb": "הבֿ הסופית ב-חָלָב רפה (/v/) — לא מוקד פּ/בּ."
+        },
+        {
+          "id": "apricot",
+          "type": "food",
+          "he": "מִשְׁמֵשׁ",
+          "gloss": "apricot",
+          "img": null,
+          "emoji": "🍑",
+          "audio_he": "lex/apricot-he",
+          "cognate_ar": "مشمش",
+          "audio_amiya": "lex/apricot-amiya",
+          "ar_verified": false,
+          "_cognate": "🔗 קוגנט-הליבה של השוק: מִשְׁמֵשׁ ↔ مشمش — זהה כמעט לגמרי, ושם-הדמות עצמה. לחישת-הגשר של אמיר.",
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ],
+          "_img_gap": "🔴 אין assets/items/food/item-apricot.png — img:null נופל ל-emoji 🍑. asks.meytal: נכס תמונת-משמש (או שימוש בדמות מישמיש)."
+        }
+      ],
+      "patterns": [
+        {
+          "id": "want",
+          "frame": "אֲנִי רוֹצֶה ___",
+          "intent": "לְבַקֵּשׁ",
+          "structure": "אני רוצה + שם-עצם",
+          "slots": [
+            "apple",
+            "banana",
+            "orange",
+            "bread",
+            "cheese",
+            "tomato",
+            "cucumber",
+            "grapes",
+            "milk",
+            "apricot"
+          ],
+          "audio_frame": "pat/want",
+          "recurs_in": [
+            "food",
+            "play",
+            "class"
+          ],
+          "_spine": "עמוד-שדרה (bkt KC_META.want, spine). חוזרת ב-3 נושאים ≥.",
+          "_note": "פנייה בלשון-ילד ('אֲנִי רוֹצֶה') — כאן הילד הוא הדובר (הפקה מודרכת). מזין missing-slot + roleplay."
+        },
+        {
+          "id": "give_me",
+          "frame": "תֵּן לִי ___",
+          "intent": "לְבַקֵּשׁ חֵפֶץ",
+          "structure": "תן לי + שם-עצם",
+          "slots": [
+            "apple",
+            "banana",
+            "orange",
+            "bread",
+            "cheese",
+            "tomato",
+            "cucumber",
+            "grapes",
+            "milk",
+            "apricot"
+          ],
+          "audio_frame": "pat/give-me",
+          "recurs_in": [
+            "food",
+            "class",
+            "play"
+          ],
+          "_spine": "עמוד-שדרה (bkt KC_META.give_me, spine). זהה לתבנית של items[] הישנים (מכניקת give-me).",
+          "_note": "'תֵּן לִי מִשְׁמֵשׁ' — הבקשה שאמיר ממלא ב-roleplay. מזין missing-slot + roleplay + give-me הישן."
+        },
+        {
+          "id": "howmuch",
+          "frame": "כַּמָּה זֶה עוֹלֶה?",
+          "intent": "לִשְׁאוֹל",
+          "structure": "שאלת-מחיר (קבועה)",
+          "slots": [
+            "apple",
+            "banana",
+            "orange",
+            "bread",
+            "cheese",
+            "tomato",
+            "cucumber",
+            "grapes",
+            "milk",
+            "apricot"
+          ],
+          "audio_frame": "pat/howmuch",
+          "recurs_in": [
+            "food"
+          ],
+          "_note": "שאלת-קבע של השוק (בלי ___ ממשי בתוך המסגרת; הפריט מוצג לצד השאלה). מזין roleplay (turn קנייה עם אמיר). לא-מזין missing-slot (אין slot פנימי)."
+        },
+        {
+          "id": "this_that",
+          "frame": "זֶה ___",
+          "intent": "לְהַצְבִּיעַ / לְזַהוֹת",
+          "structure": "זה + שם-עצם",
+          "gendered": true,
+          "frame_f": "זֹאת ___",
+          "slots": [
+            "apple",
+            "banana",
+            "orange",
+            "bread",
+            "cheese",
+            "tomato",
+            "cucumber",
+            "grapes",
+            "milk",
+            "apricot"
+          ],
+          "audio_frame": "pat/this-that",
+          "recurs_in": [
+            "class",
+            "family",
+            "food"
+          ],
+          "_spine": "עמוד-שדרה (bkt KC_META.this_that, spine).",
+          "_note": "ציר מין: 'זֶה לֶחֶם' (m) מול 'זֹאת בָּנָנָה' (f) — מזין grammar-toggle + missing-slot."
+        }
+      ],
+      "contrasts": [
+        {
+          "pair": [
+            "בָּ",
+            "פָּ"
+          ],
+          "words": [
+            [
+              "בָּנָנָה",
+              "פָּנָס"
+            ]
+          ],
+          "lex_refs": [
+            "banana"
+          ],
+          "wave": 3,
+          "level": "focus",
+          "audio": [
+            "con/banana",
+            "con/panas"
+          ],
+          "ar_verified": false,
+          "_note": "🔴 זוג פּ/בּ הרשמי של השוק (גל 3, מהברִיף): בָּנָנָה (בּ ראשונית) מול פָּנָס (פּ ראשונית). גל 3 = מוקד-הבחנה מלא (עומק מעבר לגל 1 הקליל). אודיו חייב להישמע מובחן (QA תמלול Whisper). פָּנָס = פריט לא-אכיל ואין לו lexeme/תמונה — הבחנה שמיעתית בלבד, אלא אם יסופק נכס-תמונה (asks.meytal). 🔴 לאישור מיטל."
+        }
+      ],
+      "target": {
+        "give-me": "audioPhrase → item.img",
+        "swim-hunt": "audioWord → lexeme.img",
+        "same-different": "contrast.pair discrimination (בָּ/פָּ)",
+        "missing-slot": "pattern.frame → choose slot",
+        "grammar-toggle": "lexeme.gender/number match (זֶה/זֹאת · יחיד/רבים)",
+        "follow-instr": "lexeme + preposition",
+        "roleplay": "pattern.frame produced to Amir (תֵּן לִי ___ / אֲנִי רוֹצֶה ___)"
+      },
+      "_mechanic_reads": {
+        "give-me": "items[] (מבנה-ישן) + target.give-me — play.js/lantern.js, זיהוי-בשמיעה פר-פריט (תאימות-לאחור)",
+        "swim-hunt": "lexicon (food, img) + target.swim-hunt — זיהוי-בשמיעה פר-lexeme",
+        "same-different": "contrasts — הבחנת בָּ/פָּ (בָּנָנָה/פָּנָס)",
+        "missing-slot": "patterns (want/give_me/this_that) — בחירת slot",
+        "grammar-toggle": "lexicon.gender/number + pattern this_that (זֶה/זֹאת · עֵנָב/עֲנָבִים)",
+        "follow-instr": "lexicon + prepositions — ביצוע הוראה",
+        "roleplay": "patterns give_me+want+howmuch + amir — turn קנייה דו-לשוני"
+      },
+      "_target_note": "target = שדה גנרי פר-מכניקה (pack-schema §2). ה-loader חושף target[mechanic]; כל מכניקה קוראת אחיד. give-me נשמר לתאימות-לאחור לצד המכניקות העשירות.",
       "items": [
         {
           "id": "market.food.give.tapuz.01",
@@ -1044,6 +2586,290 @@ window.MISHMISH_DATA = {
           "help_ar_verified": false
         }
       ]
+    },
+    {
+      "pack": "nature",
+      "_schema": "rich topic-pack per briefs/pack-schema.md §2 (meta/lexicon/patterns/contrasts/target). מזין את כל 6 המכניקות דרך target.<mechanic>. דאטה בלבד — אין קוד. נבנה על תבנית-הזהב pack-class.json 1:1; רק התוכן השתנה.",
+      "_filename_note": "🔴 שם הקובץ = pack-NATURE.json (מקף), לא pack.nature.json (נקודה) — כי _build-data.js מגלה packs ב-`f.startsWith('pack-')`. תואם ל-pack-class.json / pack-market.json / pack-mapping.json.",
+      "_img_note": "img = נתיב יחסי מתחת ל-assets/items/ כולל סיומת (למשל 'nature/animal-cat.png' → assets/items/nature/animal-cat.png). כל 8 הנכסים כבר קיימים ב-assets/items/nature/.",
+      "_gates": "🔴 (א) כל עברית = טיוטה לאישור מיטל (asks.meytal). (ב) כל cognate_ar/audio_amiya = טיוטת עאמייה ar_verified:false → asks.native (tools/arabic-review-tool.html). ה-pack לא עובר done עד אישור בודק ילידי.",
+      "meta": {
+        "id": "nature",
+        "topic": "בַּעֲלֵי חַיִּים וְטֶבַע",
+        "topic_en": "animals & nature · seeing and naming living things",
+        "week_range": "27-30 · אפריל–מאי 2027",
+        "setting": "shared-park",
+        "bg": "bg-shared-park.png",
+        "space": "shared",
+        "amir": true,
+        "sound_wave": 4,
+        "literacy_sight_words": [
+          "אֲנִי",
+          "רוֹאֶה",
+          "יֵשׁ",
+          "זֶה"
+        ],
+        "cognate_focus": {
+          "he": "כֶּלֶב",
+          "ar": "كلب",
+          "ar_verified": false
+        },
+        "_cognate_note": "כֶּלֶב ↔ كلب (kalb) = קוגנט-אמת חזק (שורש כ-ל-ב משותף) — לחישת-הגשר של אמיר לנושא זה.",
+        "pb_focus_note": "מוקד פּ/בּ בגל 4 = הבחנה מלאה (הכבדה). שלוש נשאיות /p/ בלקסיקון: צִפּוֹר (פּ אמצעית) · פַּרְפַּר (פַּ ראשונית) · פֶּרַח (פֶּ ראשונית). זוג-ההבחנה = פַּרְפַּר מול בַּרְוָז (par/bar)."
+      },
+      "lexicon": [
+        {
+          "id": "cat",
+          "type": "animal",
+          "he": "חָתוּל",
+          "gloss": "cat",
+          "img": "nature/animal-cat.png",
+          "emoji": "🐈",
+          "audio_he": "lex/cat-he",
+          "cognate_ar": "قطة",
+          "audio_amiya": "lex/cat-amiya",
+          "ar_verified": false,
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "dog",
+          "type": "animal",
+          "he": "כֶּלֶב",
+          "gloss": "dog",
+          "img": "nature/animal-dog.png",
+          "emoji": "🐕",
+          "audio_he": "lex/dog-he",
+          "cognate_ar": "كلب",
+          "audio_amiya": "lex/dog-amiya",
+          "ar_verified": false,
+          "_cognate": "🔗 קוגנט-הליבה של נושא הטבע: כֶּלֶב ↔ كلب (שורש כ-ל-ב). לחישת-הגשר של אמיר.",
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "bird",
+          "type": "animal",
+          "he": "צִפּוֹר",
+          "gloss": "bird",
+          "img": "nature/animal-bird.png",
+          "emoji": "🐦",
+          "audio_he": "lex/bird-he",
+          "cognate_ar": "عصفور",
+          "audio_amiya": "lex/bird-amiya",
+          "ar_verified": false,
+          "gender": "f",
+          "number": "sg",
+          "sound_tags": [
+            "p_medial"
+          ],
+          "_pb": "צִפּוֹר נושאת פּ אמצעית (פּ דגושה, /p/) — עוגן צליל /p/ נוסף לגל 4."
+        },
+        {
+          "id": "fish",
+          "type": "animal",
+          "he": "דָּג",
+          "gloss": "fish",
+          "img": "nature/animal-fish.png",
+          "emoji": "🐟",
+          "audio_he": "lex/fish-he",
+          "cognate_ar": "سمكة",
+          "audio_amiya": "lex/fish-amiya",
+          "ar_verified": false,
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "butterfly",
+          "type": "animal",
+          "he": "פַּרְפַּר",
+          "gloss": "butterfly",
+          "img": "nature/animal-butterfly.png",
+          "emoji": "🦋",
+          "audio_he": "lex/butterfly-he",
+          "cognate_ar": "فراشة",
+          "audio_amiya": "lex/butterfly-amiya",
+          "ar_verified": false,
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "p_initial"
+          ],
+          "_pb": "פַּרְפַּר נושא פַּ ראשונית + פּ אמצעית (שתיהן דגושות, /p/) — עוגן-/p/ המרכזי + צד ה-פּ בזוג-ההבחנה של גל 4."
+        },
+        {
+          "id": "tree",
+          "type": "plant",
+          "he": "עֵץ",
+          "gloss": "tree",
+          "img": "nature/plant-tree.png",
+          "emoji": "🌳",
+          "audio_he": "lex/tree-he",
+          "cognate_ar": "شجرة",
+          "audio_amiya": "lex/tree-amiya",
+          "ar_verified": false,
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "flower",
+          "type": "plant",
+          "he": "פֶּרַח",
+          "gloss": "flower",
+          "img": "nature/plant-flower.png",
+          "emoji": "🌸",
+          "audio_he": "lex/flower-he",
+          "cognate_ar": "وردة",
+          "audio_amiya": "lex/flower-amiya",
+          "ar_verified": false,
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "p_initial"
+          ],
+          "_pb": "פֶּרַח נושא פֶּ ראשונית (פּ דגושה, /p/) — עוגן צליל /p/ נוסף לגל 4."
+        },
+        {
+          "id": "leaf",
+          "type": "plant",
+          "he": "עָלֶה",
+          "gloss": "leaf",
+          "img": "nature/plant-leaf.png",
+          "emoji": "🍃",
+          "audio_he": "lex/leaf-he",
+          "cognate_ar": "ورقة",
+          "audio_amiya": "lex/leaf-amiya",
+          "ar_verified": false,
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ]
+        }
+      ],
+      "patterns": [
+        {
+          "id": "see_hear",
+          "frame": "אֲנִי רוֹאֶה ___",
+          "intent": "לִרְאוֹת / לְהַבְחִין",
+          "structure": "אני רואה + שם-עצם",
+          "slots": [
+            "cat",
+            "dog",
+            "bird",
+            "fish",
+            "butterfly",
+            "tree",
+            "flower",
+            "leaf"
+          ],
+          "audio_frame": "pat/see-hear",
+          "recurs_in": [
+            "nature",
+            "home",
+            "family"
+          ],
+          "_note": "🌟 תבנית-הליבה של הנושא (spine=perceive). 'אֲנִי רוֹאֶה חָתוּל' · 'אֲנִי רוֹאֶה צִפּוֹר'. הפועל 'רוֹאֶה' אינו מִשְׁתַּנֶּה לפי מין המושא. מזין missing-slot ו-roleplay."
+        },
+        {
+          "id": "have",
+          "frame": "יֵשׁ לִי ___",
+          "intent": "לְסַפֵּר עַל רְכוּשׁ",
+          "structure": "יש לי + שם-עצם",
+          "slots": [
+            "cat",
+            "dog",
+            "bird",
+            "fish"
+          ],
+          "audio_frame": "pat/have",
+          "recurs_in": [
+            "nature",
+            "class",
+            "family"
+          ],
+          "_note": "spine=possess. 'יֵשׁ לִי כֶּלֶב' — חיות-בית בלבד ב-slots (חתול/כלב/ציפור/דג). מזין missing-slot ו-roleplay."
+        },
+        {
+          "id": "this_that",
+          "frame": "זֶה ___",
+          "intent": "לְהַצְבִּיעַ / לְזַהוֹת",
+          "structure": "זה + שם-עצם",
+          "gendered": true,
+          "frame_f": "זֹאת ___",
+          "slots": [
+            "cat",
+            "dog",
+            "bird",
+            "fish",
+            "butterfly",
+            "tree",
+            "flower",
+            "leaf"
+          ],
+          "audio_frame": "pat/this-that",
+          "recurs_in": [
+            "class",
+            "family",
+            "food",
+            "nature"
+          ],
+          "_note": "spine=identify. ציר מין: 'זֶה כֶּלֶב' (m) מול 'זֹאת צִפּוֹר' (f) — מזין grammar-toggle. צִפּוֹר היא ה-lexeme היחיד ב-f בנושא זה."
+        }
+      ],
+      "contrasts": [
+        {
+          "pair": [
+            "פַּ",
+            "בַּ"
+          ],
+          "words": [
+            [
+              "פַּרְפַּר",
+              "בַּרְוָז"
+            ]
+          ],
+          "lex_refs": [
+            "butterfly"
+          ],
+          "wave": 4,
+          "level": "focus",
+          "audio": [
+            "con/parpar",
+            "con/barvaz"
+          ],
+          "ar_verified": false,
+          "_note": "זוג פּ/בּ של גל 4 — המוקד הכבד של המסלול השנתי. פַּרְפַּר (פַּ דגושה, /p/) מול בַּרְוָז (בַּ דגושה, /b/); שתיהן חיות-פארק, הברה-ראשונה מינימלית (par/bar) → הבחנה נקייה. פֶּרַח ו-צִפּוֹר משמשים עוגני-/p/ נוספים בלקסיקון. גל 4 = הבחנה מלאה (לא קלילה כמו גל 1). אודיו חייב להישמע מובחן (QA תמלול Whisper). 🔴 בַּרְוָז אינו נכס-תמונה עדיין + לאישור מיטל."
+        }
+      ],
+      "target": {
+        "swim-hunt": "audioWord → lexeme.img",
+        "same-different": "contrast.pair discrimination (פַּ/בַּ)",
+        "missing-slot": "pattern.frame → choose slot (אֲנִי רוֹאֶה ___)",
+        "grammar-toggle": "lexeme.gender/number match (זֶה/זֹאת · צִפּוֹר=f)",
+        "follow-instr": "lexeme + preposition (הַרְאוּ / אֵיפֹה ___)",
+        "roleplay": "pattern.frame produced to Amir (אֲנִי רוֹאֶה ___ · יֵשׁ לִי ___)"
+      },
+      "_mechanic_reads": {
+        "swim-hunt": "lexicon (animals+plants, img) + target.swim-hunt — זיהוי-בשמיעה פר-lexeme",
+        "same-different": "contrasts — הבחנת פַּ/בַּ (פַּרְפַּר/בַּרְוָז)",
+        "missing-slot": "patterns (see_hear/have) — בחירת slot",
+        "grammar-toggle": "lexicon.gender/number + pattern this_that (זֶה/זֹאת · צִפּוֹר=f)",
+        "follow-instr": "lexicon + prepositions — ביצוע הוראה",
+        "roleplay": "patterns see_hear+have + amir — turn דו-לשוני"
+      }
     }
   ],
   "scaffold": {
