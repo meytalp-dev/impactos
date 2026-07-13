@@ -102,8 +102,8 @@
 <div class="wrap">
   <header>
     <h1>Lumi · לוח משימות משחקונים + סוכן תזמורת</h1>
-    <p>21 משחקונים לבנייה לפי התוכנית השנתית (pets כבר חי). לכל משחקון פרומפט בנייה מדויק המקודד את כל הכללים הנעולים של לומי. בראש — פרומפט <b>סוכן־תזמורת</b> שמנהל את הבנייה המקבילית. סטטוס נשמר בדפדפן (localStorage).</p>
-    <div class="meta">נוצר 13.7.2026 · מבוסס על <code style="direction:ltr">lumi-minigames-pack.html</code> + מקורות־האמת ב־<code style="direction:ltr">_handoff/</code> + המכניקות הנעולות ב־<code style="direction:ltr">lumi/app/</code></div>
+    <p>21 משחקונים לפי התוכנית השנתית (pets כבר חי). <b>הושלמו 10/21</b> — גל 0 (Animals) וגל A (5 קבוצות הליבה) במלואם, וגל B חלקי (T8/T10/T12). לכל משחקון פרומפט בנייה מדויק המקודד את כל הכללים הנעולים של לומי. בראש — פרומפט <b>סוכן־תזמורת</b> שמנהל את הבנייה המקבילית. סטטוס נשמר בדפדפן (localStorage).</p>
+    <div class="meta">נוצר 13.7.2026 · עודכן 14.7.2026 (10 משחקונים חיים: farm-path · safari-beam · find-the-feeling · color-beam · count-the-lanterns · lumi-says · lantern-of-hello · fruit-basket · t10-face · family-photo) · מבוסס על <code style="direction:ltr">lumi-minigames-pack.html</code> + מקורות־האמת ב־<code style="direction:ltr">_handoff/</code> + המכניקות הנעולות ב־<code style="direction:ltr">lumi/app/</code></div>
   </header>
 
   <div class="progress">
@@ -422,7 +422,7 @@ const GPT_STYLE =
 'OUTPUT: large canvas (~3× display size), subject centered & front-facing, plain white background — transparency is cut later with rembg, so do NOT worry about the background. One subject per image.';
 
 const GPT_ASSETS = {
- T1:{objs:['cow — friendly, standing, front-facing','horse — gentle, standing','duck — small, front-facing','pig — round & cute','sheep — 🔴 confirm with Meytal (age_flag) BEFORE generating'], bg:{name:'farm-bg.png', desc:'A magical twilight farm / pasture with a soft wooden fence and a hay bale, a gentle glowing path receding into depth, soft floating lantern-lights blurred in the background.'}},
+ T1:{objs:['cow — friendly, standing, front-facing','horse — gentle, standing','duck — small, front-facing','pig — round & cute','sheep — ✅ approved (age_flag resolved 14.7); safe to generate — friendly, standing, fluffy, front-facing'], bg:{name:'farm-bg.png', desc:'A magical twilight farm / pasture with a soft wooden fence and a hay bale, a gentle glowing path receding into depth, soft floating lantern-lights blurred in the background.'}},
  T2:{objs:['lion — soft mane, friendly','elephant — big & gentle (size contrast)','monkey — small, playful','bear — round, cozy'], bg:{name:'jungle-bg.png', desc:'A magical night jungle with soft glowing plants and gentle fireflies, layered leafy depth, a soft path.'}},
  T3:{optional:true, objs:['a happy companion face','a sad companion face','a hungry companion face','a tired companion face','a scared companion face (soft, NOT frightening)','an okay / neutral companion face'], note:'OPTIONAL — the default is to reuse Lumi\'s 7 existing expression states as the faces. Only generate these if you want distinct non-Lumi emotion cards. Keep them one consistent little companion, same size, only the expression changes.'},
  T4:{objs:['the SAME simple soft glowing balloon-orb — red','the same orb — blue','the same orb — yellow','the same orb — green','the same orb — orange','the same orb — purple','the same orb — pink','the same orb — black','the same orb — white','the same orb — brown'], note:'Keep the object IDENTICAL across all 10 — only the color changes (this isolates "color" as the tested variable). Start with the first 6; the rest are wave-2.'},
@@ -472,14 +472,25 @@ TASKS.forEach(t=>{t.gpt=GPT_ASSETS[t.id]; t.gptPrompt=GPT_PROMPT(t.gpt,t.subEn);
 
 const LS_KEY='lumi-minigames-board-v1';
 // pets כבר חי (baked). השאר todo.
-const BAKED_STATUS={T0:'done', T1:'done', T2:'done', T3:'done', T4:'done', T5:'done', T6:'done', T7:'done', T8:'done', T10:'done', T12:'done'};
+const BAKED_STATUS={T0:'done', T1:'done', T2:'done', T3:'done', T4:'done', T5:'done', T6:'done', T7:'done', T8:'done', T9:'done', T10:'done', T12:'done'};
 // הערות/משימות־המשך שסוכנים כותבים בסיום (נשמר בקובץ → נראה בכל דפדפן, לא רק localStorage).
 // כל סוכן מוסיף: BAKED_NOTES['T1']=['ASK: sheep age_flag','חסר איור cow — ART-BRIEF נפתח'];
 const BAKED_NOTES={};
+BAKED_NOTES['T9']=[
+  'משחקון: lumi/app/picnic.html (🧺 הַפִּיקְנִיק שֶׁל לוּמִי). מכניקה: סצנה־נסתרת (scene-hide) המשותפת — לא נגעתי בקובץ המכניקה; חווט page-local בלבד (הזרקת פריטי־אוכל דרך paintFood → assets/food/*.png + CSS מקומי). שלד־עמוד: safari-beam/family-photo skeleton בפלטת lantern-grove. סבב: לומי רָעֵב ושואל צ׳אנק שלם ("I want water.") והילד מוצא ונוגע באוכל על שמיכת־הפיקניק. פותח ב-"I\'m hungry!", מסיים ב-"Thank you!"',
+  'מילים: bread/egg/cake/milk/water — כולן מוכרות לגיל 6, אין age_flag אוצרי',
+  '🟡 ASK מיטל (קריאוּת־איור, לא age_flag): egg.png שמיטל סיפקה = ביצה מעוטרת/דקורטיבית (עיטורי מנטה+עלה זוהר) — יפה ועל-DNA אבל ייתכן שתיקרא כ"קישוט/אבן" ולא כ"ביצה/אוכל" בעיני בן 6. אם רוצים — גרסת ביצה פשוטה (חלקה/קשה חתוכה). המילה egg/בֵּיצָה מוכרת לחלוטין, לא חוסם. ראה ART-BRIEF-t9-snacksmeal.md',
+  '✅ איורים: מיטל סיפקה 5 פריטי־אוכל + רקע פיקניק (14.7 01:17) → rembg (isnet-general-use, post_process_mask — alpha-matting נכשל OOM על exports גדולים; הקטנתי קלט ל-900px) → assets/food/{bread,egg,cake,milk,water}.png + assets/worlds/picnic/picnic-bg.png (רקע נשאר אטום). חיתוכים נקיים (שקיפות אמיתית, בלי הילת-לבן), מחווטים ופעילים. אין נכסים חסרים',
+  'אודיו מוקלט: 16 קליפי אנגלית חדשים (ElevenLabs · Jessica · multilingual_v2): 5 מילים + 5 צ׳אנק scene-hide "I want ___" + 5 צ׳אנק חם "Here is the ___!" + "I\'m hungry!". ("Thank you!" משתמש חוזר בקליפ T7 הקיים). אינטרו+סיום עברית (נוני · eleven_v3): t9-intro-he/t9-done-he. ✅ QA-Whisper: 16/16 תומללו נכון',
+  'חיווט BKT: recognize×3 + discriminate×1 פר-מילה → word_receptive · comprehend×1 (scene-hide "I want ___") → chunk_comprehension · meet+produce = null. confusables (discriminate): bread↔cake (אפויים) · milk↔water (משקאות) · egg↔milk (חיוורים/בהירים)',
+  'items/t9-snacksmeal.json (35 פריטים): meet×5 + recognize×15 + discriminate×5 + produce×5 + comprehend×5. מיקומי-תשובה מאוזנים, distractor_rationale + help_he לכל פריט. מסיחי recognize מגדרים את השותף-המבלבל (חי בבנק discriminate). מחולל: scratchpad/gen-t9.js. topic=food/subtopic=snacksmeal. _emoji (5 נוספו) + _reps (5) + audio-clips + _build-data חווטו; data.js נבנה מחדש',
+  'QA headless (Playwright, לחיצת "בואו נתחיל" ידנית — לא רק autoplay): הבמה לא ריקה (measure-scene h=660, 3 peekers נראים + has-art) · no_read נקי (0 אותיות לטיניות במסך-הילד) · קונסולה 0 שגיאות · סבב autoplay מלא: 5/5 פנסים נדלקים עד מסך-הסיום',
+  'תלות רכה T3→T9: הצ׳אנק "I\'m hungry" מגיע מ-T3 (רגשות) — משתמש בו כאן כפותח. תלות: scene-hide.js משותף (T12+T9) — לא נגעתי, חיווט page-local בלבד. אין תלויות חדשות',
+];
 BAKED_NOTES['T12']=[
   'משחקון: lumi/app/family-photo.html (🖼️ תְּמוּנַת הַמִּשְׁפָּחָה). מכניקה: סצנה־נסתרת (scene-hide) המשותפת — לא נגעתי בקובץ המכניקה; חווט page-local בלבד (הזרקת דמויות דרך paintFamily → assets/family/*.png + CSS מקומי). קליפת־איכות: safari-beam skeleton בפלטת lantern-grove מנטה/חמים. סבב: לומי שואל צ׳אנק שלם ("Where is my mum?") והילד מוצא ונוגע בבן־המשפחה בתמונה. הבמה מסוגננת כתמונה תלויה (מסגרת מאט לבנה + רקע חדר)',
   'מילים: mum/dad/baby/brother/sister/grandma/grandpa — כולן מוכרות לגיל 6, אין age_flag אוצרי',
-  '🟡 ASK מיטל (הגייה, לא אוצר): "mum" מוקלט בקול Jessica (אמריקאי) ונשמע קרוב ל־"mom" (Whisper תמלל "mom"). שתי הצורות תקינות; אם רוצים מבטא בריטי מובהק ל־mum — צריך voice/הגייה אחרת. שאר 21 הקליפים תומללו מדויק',
+  '✅ הוכרע (מיטל 14.7): מבטא אמריקאי לאורך כל הפרויקט — "mum" בהגיית Jessica (נשמע ≈"mom") תקין ומאושר. אין צורך ב-voice בריטי. כל 22 הקליפים סגורים',
   '✅ איורים: מיטל סיפקה 7 דמויות־משפחה + רקע בית (13/7 22:42) → אושר מיפוי איתה (mum=(1),dad=(2),baby=(3),brother=(4),sister=(5),grandma=(6),grandpa=(7),bg=(8)) → rembg (isnet-general-use + alpha-matting fg=250/bg=15, שומר glow-rim) → assets/family/{7}.png + assets/worlds/family/room-bg.png (רקע נשאר אטום, מוחשך ב-CSS overlay). מחווטים ופעילים. אין נכסים חסרים. ART-BRIEF-t12-family.md נפתח (סטטוס: הוטמע — רשומת נכסים)',
   'אודיו מוקלט: 22/22 קליפי אנגלית הופקו (ElevenLabs · Jessica · multilingual_v2): 7 מילים + 7 צ׳אנק scene-hide "Where is my ___?" + 7 צ׳אנק חם "This is my ___!" + "I love you!". אינטרו+סיום עברית (נוני · eleven_v3): family-intro-he/family-done-he. ✅ QA-Whisper: 22/22 תומללו נכון (mum≈mom — ראה ASK)',
   'חיווט BKT: recognize×3 + discriminate×1 פר-מילה → word_receptive · comprehend×1 (scene-hide "Where is my ___?") → chunk_comprehension · meet+produce = null. confusables (discriminate): mum↔grandma · dad↔brother (לפי הברִיף) + grandma↔grandpa (משקפיים) · sister↔mum (פרח/פפיון) · baby↔brother (צעירים)',
@@ -490,7 +501,7 @@ BAKED_NOTES['T12']=[
 BAKED_NOTES['T10']=[
   'משחקון: lumi/app/t10-face.html (👀 הָאִירוּ אֶת הַפָּנִים). מכניקה: אלומת־אור (light-beam) המשותפת — לא נגעתי בקובץ המכניקה; חווט page-local בלבד. קליפת-איכות: find-the-feeling (T3) בפלטת lantern-grove teal-dusk. סבב: הילד מקשיב למילה ומאיר עם אלומת-האור על החלק הנכון בפני-לומי (hotspots במקום כרטיסים)',
   'מילים: eyes/nose/mouth/ears (עיניים/אף/פה/אוזניים) — כולן מוכרות לגיל 6, אין age_flag אוצרי',
-  '🔴 ASK מיטל (נכס, לא אוצר): ללומי אין אוזניים מובחנות — "ears" ממופה כרגע לזיזי-הצד. אופציה א (מומלץ): דיוקן-פנים חדש של לומי עם אוזניים רכות. אופציה ב: להשאיר + callout. פירוט ב-ART-BRIEF-t10-face.md. גם: אמוג׳י ears 👂 זהה לאייקון 👂 של כפתור-המטרה (נעול ב-_measured-core) — נכס אמיתי מסיר את הכפילות',
+  '🎨 החלטה (מיטל 14.7, נוטה לכן): להפיק דיוקן-פנים חדש של לומי עם אוזניים רכות (אופציה א) — נכס בודד, פרומפט GPT מוכן ב-ART-BRIEF-t10-face.md. קריטי-בינוני: T10 הוא משחק זיהוי חלקי-פנים, ו"ears" נמדד על יעד לא-מובחן; דיוקן עם אוזניים הופך את discriminate (eyes↔ears) לנקי. לא חוסם — placeholder 🦻 עובד ובר-בדיקה עכשיו; זה שדרוג-איכות של המדד. מסיר גם את כפילות ה-👂 מול אייקון כפתור-המטרה',
   '✅ תיקון־ביניים (תזמורת): כפילות ה-👂 נפתרה page-local — ears מוצג כ-🦻 (EMOJI override ב-t10-face, בלי לגעת ב-_emoji.json הגלובלי/מכניקה). הדיוקן-עם-אוזניים (אופ׳ א) עדיין ה-fix הסופי כשיגיע נכס.',
   'איורים: PLACEHOLDER — פני לומי הקיימות (lumi-idle.png) עמומות ברקע + hotspots אמוג׳י (👀👃👄👂) בטבעות-זוהר, ממוקמים אנטומית. בר-בדיקה עכשיו בלי תלות בנכס חדש. ART-BRIEF-t10-face.md נפתח (2 אופציות + חיווט מוכן להחלפה: .face-portrait + parts/*.png כמו paintFaces ב-T3)',
   'אודיו מוקלט: 12/12 קליפים אנגלית הופקו (ElevenLabs · Jessica · multilingual_v2): eyes/nose/mouth/ears + Touch your ___ (comprehend/TPR) + צ׳אנק "This/These is/are my ___" (mouth/nose יחיד, eyes/ears רבים — דקדוק נכון). אינטרו+סיום עברית (נוני · eleven_v3): face-intro-he/face-done-he. ✅ QA-Whisper: כל המילים תומללו נכון (mouth אומת ב-small model; base מבלבל /θ/~/s/ — ארטיפקט תמלול, לא הגייה)',
@@ -532,13 +543,13 @@ BAKED_NOTES['T6']=[
   'תלות: path-choice.js משותפת (T1/T6) — לא נגעתי בה; חיווט page-local בלבד (data-action + CSS). כשיגיע come.png → להוסיף שורת-CSS מקבילה ולהסיר placeholder',
 ];
 BAKED_NOTES['T1']=[
-  '🔴 ASK מיטל: sheep (כבשה) age_flag — לאשר אוצר לפני הפקת איור/הרחבה',
-  'איורים: מיטל סיפקה → cow/horse/duck/pig + farm-bg מחווטים ופעילים (rembg לשקיפות). חסר רק sheep (age_flag) — נשאר אמוג׳י עד אישור. ART-BRIEF-t1-farm.md מעודכן',
+  '✅ הוכרע (מיטל 14.7): sheep (כבשה) מאושרת כאוצר — age_flag נסגר, אין ASK. farm=5 מילים סופי. push לא חסום עוד',
+  'איורים: מיטל סיפקה → cow/horse/duck/pig + farm-bg מחווטים ופעילים (rembg לשקיפות). 🎨 חסר רק איור sheep — פרומפט GPT מוכן בכרטיס (הכבשה אושרה, אפשר להפיק עכשיו). כרגע אמוג׳י placeholder. ART-BRIEF-t1-farm.md מעודכן',
   'אודיו מוקלט הופק ל-5/5 המילים (ElevenLabs · Jessica) ואומת ב-Whisper (cow/horse/duck/pig/sheep — מבטא תקין)',
   'משחקון: lumi/app/farm-path.html + css/farm-path.css (path-choice, פלטת שקיעה). QA headless: no_read נקי · קונסולה 0 שגיאות · 5 פנסים · סבב מלא',
   'חיווט PNG→path-choice = צעד פוליש עתידי (כשהאיורים יאושרו); כרגע אמוג׳י כמו שאושר בבריף',
   'שופר audio.js (playClip catch על autoplay-block) — קונסולה נקייה בכל המשחקונים',
-  '⚠️ תזמורת (13.7): sheep פעיל בבנק החי — farm=5 מילים כולל sheep (פריט נמדד, לא רק אודיו). commit T1 ac8f9aa חסום ל-push עד החלטת מיטל על age_flag. אופציה: לבנות farm=4 (cow/horse/duck/pig) עד אז.',
+  '✅ sheep פעיל בבנק החי — farm=5 מילים כולל sheep (פריט נמדד). אושר ע"י מיטל (14.7) → commit T1 משוחרר ל-push.',
 ];
 BAKED_NOTES['T2']=[
   'אוצר: 4 המילים (lion/elephant/monkey/bear) מוכרות לגיל 6 — אין age_flag, אין ASK אוצר',

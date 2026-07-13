@@ -55,6 +55,13 @@
     'Touch your mouth.': 'touch-mouth', 'Touch your ears.': 'touch-ears',
     'These are my eyes!': 'chunk-eyes', 'This is my nose!': 'chunk-nose',
     'This is my mouth!': 'chunk-mouth', 'These are my ears!': 'chunk-ears',
+    // body (T11 · Touch & Go / TPR) — bare part word (recognize/discriminate + path-choice
+    // target), the "Touch your ___." TPR chunk (comprehend), and the "This is my ___" mirror chunk.
+    'head': 'head', 'hair': 'hair', 'hands': 'hands', 'feet': 'feet',
+    'Touch your head.': 'touch-head', 'Touch your hair.': 'touch-hair',
+    'Touch your hands.': 'touch-hands', 'Touch your feet.': 'touch-feet',
+    'This is my head!': 'chunk-head', 'This is my hair!': 'chunk-hair',
+    'These are my hands!': 'chunk-hands', 'These are my feet!': 'chunk-feet',
     // fruits (T8 · The Fruit Basket) — 'orange' already mapped above (shared w/ T4).
     'apple': 'apple', 'banana': 'banana',
     'I want an apple.': 'iwant-apple', 'I want a banana.': 'iwant-banana', 'I want an orange.': 'iwant-orange',
@@ -78,6 +85,16 @@
     'Find the duck.': 'find-the-duck', 'Find the monkey.': 'find-the-monkey', 'Find the ball.': 'find-the-ball',
     'How many? Two.': 'howmany-two', 'How many? Three.': 'howmany-three', 'How many? Five.': 'howmany-five',
     'How many? Seven.': 'howmany-seven', 'How many? Ten.': 'howmany-ten',
+    // snacks & meal (T9 · Lumi's Picnic) — bare word (recognize/discriminate/meet), the
+    // "I want ___" scene-hide chunk (comprehend, MEASURED), and the warm "Here is the ___!"
+    // naming spoken when the food is found. Both "Bread." and "bread" map to one clip.
+    'bread': 'bread', 'Bread.': 'bread', 'egg': 'egg', 'Egg.': 'egg', 'cake': 'cake', 'Cake.': 'cake',
+    'milk': 'milk', 'Milk.': 'milk', 'water': 'water', 'Water.': 'water',
+    'I want bread.': 'iwant-bread', 'I want an egg.': 'iwant-egg', 'I want cake.': 'iwant-cake',
+    'I want milk.': 'iwant-milk', 'I want water.': 'iwant-water',
+    'Here is the bread!': 'here-bread', 'Here is the egg!': 'here-egg', 'Here is the cake!': 'here-cake',
+    'Here is the milk!': 'here-milk', 'Here is the water!': 'here-water',
+    'I\'m hungry!': 'im-hungry',
   };
   Object.keys(clips).forEach(function (text) {
     LumiAudio.clipMap[text] = base + clips[text] + '.mp3';
