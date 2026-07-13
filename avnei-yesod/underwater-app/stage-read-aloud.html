@@ -142,6 +142,25 @@
     border-top: 1px dashed #e0e6ea; padding-top: 12px; }
   #corpusPanel #cpCount { font-weight: 800; margin-inline-end: auto; color: var(--water-depth-ink, #1d6b7a); }
   #corpusPanel .cp-hint { font-size: 12px; color: var(--text-soft, #789); margin-top: 6px; }
+  /* פרטיות: שורה קבועה ליד המיקרופון + שער-הסכמה חד-פעמי למבוגר.ת */
+  .privacy-note { font-size: 12.5px; color: var(--text-soft, #789); text-align: center;
+    max-width: 320px; margin: 2px auto 0; line-height: 1.4; opacity: .9; }
+  .consent-scrim { position: fixed; inset: 0; background: rgba(20,50,58,.55); z-index: 120;
+    display: none; align-items: center; justify-content: center; padding: 20px; }
+  .consent-scrim.on { display: flex; }
+  .consent-box { background: #fff; border-radius: 20px; max-width: 380px; width: 100%;
+    padding: 24px 22px; box-shadow: 0 18px 48px rgba(20,50,58,.28); text-align: center; }
+  .consent-box .tag { display: inline-block; font-size: 12px; font-weight: 800; color: #0F7E72;
+    background: #DDF3EC; padding: 4px 12px; border-radius: 999px; margin-bottom: 12px; }
+  .consent-box h2 { font-size: 19px; font-weight: 800; color: var(--deep, #1E3D47); margin: 0 0 10px; }
+  .consent-box p { font-size: 14.5px; line-height: 1.6; color: var(--text-main, #26505C); margin: 0 0 16px; text-align: right; }
+  .consent-box p b { font-weight: 800; }
+  .consent-actions { display: flex; flex-direction: column; gap: 10px; }
+  .consent-actions button { min-height: 52px; border: none; border-radius: 999px; cursor: pointer;
+    font-family: inherit; font-size: 16px; font-weight: 800; }
+  .consent-ok { background: #2BB0A3; color: #fff; box-shadow: 0 8px 20px rgba(43,176,163,.32); }
+  .consent-no { background: #F1F5F6; color: var(--text-main, #26505C); }
+  .consent-actions button:active { transform: scale(.97); }
 </style>
 <script src="../../demo/journey.js" defer></script>
 </head>
@@ -172,7 +191,22 @@
       <svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg>
     </div>
     <div class="mic-label" id="micLabel">לִחֲצוּ וְקִרְאוּ</div>
+    <div class="privacy-note" id="privacyNote">הַהַקְלָטָה נִשְׁלַחַת לִבְדִיקַת הַקְּרִיאָה בִּלְבַד — וְאֵינָהּ נִשְׁמֶרֶת.</div>
     <button class="next-btn" id="next">הַבָּא ←</button>
+  </div>
+</div>
+
+<!-- שער-הסכמה חד-פעמי (למבוגר.ת המלווה) לפני ההקלטה הראשונה -->
+<div class="consent-scrim" id="consentScrim" role="dialog" aria-modal="true" aria-labelledby="consentTitle">
+  <div class="consent-box">
+    <span class="tag">מידע למבוגר.ת המלווה</span>
+    <h2 id="consentTitle">הקלטת קול לבדיקת קריאה</h2>
+    <p>כדי לבדוק את הקריאה, נוני מקליטה את הילד.ה לרגע. ההקלטה נשלחת לשירות תמלול מאובטח,
+       מנותחת מיד, <b>ואינה נשמרת אצלנו</b> — נשמר רק הטקסט שזוהה. אפשר להשתמש בכלי רק באישור מבוגר.ת.</p>
+    <div class="consent-actions">
+      <button class="consent-ok" id="consentOk">הבנתי — אפשר להקליט</button>
+      <button class="consent-no" id="consentNo">לא עכשיו</button>
+    </div>
   </div>
 </div>
 
@@ -396,7 +430,19 @@ function renderTeacherSummary(){
     `📖 <span class="ts-name">${name}</span> <span class="ts-sep">·</span>${parts}`;
 }
 
-mic.addEventListener('click', () => recording ? stopRec() : startRec());
+// שער-הסכמה חד-פעמי לפני ההקלטה הראשונה (העלאת קול-ילד לתמלול)
+const CONSENT_KEY = 'avnei-readaloud-consent-v1';
+const hasConsent = () => { try { return localStorage.getItem(CONSENT_KEY) === '1'; } catch(e){ return false; } };
+const consentScrim = document.getElementById('consentScrim');
+document.getElementById('consentOk').addEventListener('click', () => {
+  try { localStorage.setItem(CONSENT_KEY, '1'); } catch(e){}
+  consentScrim.classList.remove('on');
+});
+document.getElementById('consentNo').addEventListener('click', () => consentScrim.classList.remove('on'));
+mic.addEventListener('click', () => {
+  if (!recording && !hasConsent()) { consentScrim.classList.add('on'); return; }
+  recording ? stopRec() : startRec();
+});
 nextBtn.addEventListener('click', () => { idx = (idx+1) % list().length; showWord(); });
 document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', () => {
   document.querySelectorAll('.mode-btn').forEach(x => x.classList.remove('active'));
