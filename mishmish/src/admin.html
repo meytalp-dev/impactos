@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>מישמיש · مشمش — אַדְמִין: תַּתֵּי־נוֹשְׂאִים · מִשְׂחֲקוֹנִים · אוֹדְיוֹ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700&family=Heebo:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/base.css">
+  <style>
+    /* ============================================================
+       אַדְמִין מישמיש · لوحة الإدارة
+       View ניהולי מעל ה-packs (data/pack-*.json → MISHMISH_DATA).
+       לכל תת-נושא: רשימת משחקונים (מכניקות) עם קישור-פתיחה,
+       ובדיקת-אודיו חיה לכל שורת-השמעה (דרך MishmishAudio — כמו במשחק).
+       זה מסך-מבוגר (QA) — מותר צבעי-סטטוס (✓/✗) לבדיקת-אודיו.
+       ============================================================ */
+
+    body { background: var(--color-cream-50); }
+
+    .admin {
+      max-width: 1100px; margin: 0 auto;
+      padding: var(--space-4) var(--space-4) var(--space-9);
+      display: flex; flex-direction: column; gap: var(--space-5);
+    }
+
+    /* ---------- כותרת ---------- */
+    .head {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: var(--space-4); flex-wrap: wrap;
+    }
+    .head h1 {
+      font-size: var(--font-size-xl); font-weight: 800; color: var(--color-ink-900);
+      display: flex; align-items: baseline; gap: var(--space-3); margin-bottom: var(--space-1);
+    }
+    .head h1 .ar { font-family: var(--font-ar); font-size: var(--font-size-md); color: var(--color-apricot-500); }
+    .head .sub { font-size: var(--font-size-sm); color: var(--color-ink-500); max-width: 60ch; }
+    .head .actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+    .btn-link {
+      background: var(--color-white); border: 2px solid var(--color-border-soft);
+      border-radius: var(--radius-pill); padding: var(--space-2) var(--space-4);
+      font-weight: 700; font-size: var(--font-size-sm); color: var(--color-ink-700);
+      text-decoration: none; box-shadow: var(--shadow-soft); white-space: nowrap;
+    }
+    .btn-link:hover { border-color: var(--color-apricot-300); color: var(--color-ink-900); }
+
+    /* ---------- שורת-סיכום ---------- */
+    .totals { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+    .stat {
+      background: var(--color-white); border: 2px solid var(--color-border-soft);
+      border-radius: var(--radius-lg); padding: var(--space-3) var(--space-4);
+      box-shadow: var(--shadow-soft); min-width: 120px;
+    }
+    .stat b { display: block; font-size: var(--font-size-xl); color: var(--color-apricot-500); font-weight: 800; }
+    .stat span { font-size: var(--font-size-xs); color: var(--color-ink-500); }
+
+    /* ---------- כרטיס תת-נושא ---------- */
+    .topic {
+      background: var(--color-white); border: 2px solid var(--color-border-soft);
+      border-radius: var(--radius-xl); box-shadow: var(--shadow-card);
+      overflow: hidden;
+    }
+    .topic > header {
+      padding: var(--space-4) var(--space-5);
+      display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+      flex-wrap: wrap;
+      background: linear-gradient(90deg, rgba(238,161,94,0.10), rgba(255,255,255,0) 60%);
+      border-bottom: 1px solid var(--color-border-soft);
+    }
+    .topic[data-space="shared"] > header {
+      background: linear-gradient(90deg, rgba(155,202,228,0.14), rgba(255,255,255,0) 60%);
+    }
+    .topic .t-title { display: flex; align-items: baseline; gap: var(--space-3); flex-wrap: wrap; }
+    .topic .t-title .he { font-size: var(--font-size-lg); font-weight: 800; color: var(--color-ink-900); }
+    .topic .t-title .en { font-size: var(--font-size-xs); color: var(--color-ink-500); }
+    .topic .meta-chips { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+    .chip {
+      font-size: 11px; font-weight: 700; color: var(--color-ink-700);
+      background: var(--color-cream-100); border-radius: var(--radius-pill);
+      padding: 3px 10px; white-space: nowrap;
+    }
+    .chip.wave { background: #fdeecb; color: var(--color-sun-500); }
+    .chip.space-hara { background: #f6e2c4; color: var(--color-apricot-500); }
+    .chip.space-shared { background: #dcecf6; color: var(--color-sky-700); }
+    .chip.amir { background: #ece3f4; color: #7a5ca0; }
+
+    .topic .body { padding: var(--space-4) var(--space-5) var(--space-5); display: grid; gap: var(--space-4); }
+    @media (min-width: 820px) { .topic .body { grid-template-columns: 1fr 1fr; } }
+
+    .panel h3 {
+      font-size: var(--font-size-sm); font-weight: 800; color: var(--color-ink-900);
+      margin-bottom: var(--space-3); display: flex; align-items: center; gap: var(--space-2);
+    }
+    .panel h3 .count { font-weight: 700; color: var(--color-ink-500); font-size: var(--font-size-xs); }
+
+    /* ---------- משחקונים ---------- */
+    .games { display: flex; flex-direction: column; gap: var(--space-2); }
+    .game {
+      display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+      border: 1px solid var(--color-border-soft); border-radius: var(--radius-lg);
+      padding: var(--space-2) var(--space-3);
+    }
+    .game .g-name { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .game .g-name b { font-size: var(--font-size-sm); color: var(--color-ink-900); font-weight: 700; }
+    .game .g-name small { font-size: 11px; color: var(--color-ink-500); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .game a.open {
+      background: var(--color-apricot-300); color: #fff; text-decoration: none;
+      border-radius: var(--radius-pill); padding: 6px 14px; font-weight: 800; font-size: var(--font-size-sm);
+      white-space: nowrap; box-shadow: var(--shadow-soft);
+    }
+    .game a.open:hover { background: var(--color-apricot-500); }
+    .game .soon {
+      font-size: 11px; font-weight: 800; color: var(--color-ink-500);
+      background: var(--color-cream-100); border-radius: var(--radius-pill); padding: 5px 12px; white-space: nowrap;
+    }
+
+    /* ---------- בדיקת אודיו ---------- */
+    .audio-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin-bottom: var(--space-3); }
+    .play-all {
+      background: var(--color-sky-500); color: #fff; border: none; cursor: pointer;
+      border-radius: var(--radius-pill); padding: 6px 14px; font-weight: 800; font-size: var(--font-size-xs);
+      box-shadow: var(--shadow-soft);
+    }
+    .play-all:hover { background: var(--color-sky-700); }
+    .play-all:disabled { opacity: .5; cursor: default; }
+
+    .audio-list { display: flex; flex-direction: column; gap: 6px; }
+    .aline {
+      display: flex; align-items: center; gap: var(--space-3);
+      border: 1px solid var(--color-border-soft); border-radius: var(--radius-md);
+      padding: 6px var(--space-3);
+    }
+    .aline .dot {
+      width: 12px; height: 12px; border-radius: 50%; flex: none;
+      background: var(--color-sand-200); transition: background var(--motion-normal) var(--ease-soft);
+    }
+    .aline[data-audio="playing"] .dot { background: var(--color-sun-500); box-shadow: 0 0 8px 2px rgba(243,202,103,.7); }
+    .aline[data-audio="ok"] .dot { background: #4caf7d; }
+    .aline[data-audio="error"] .dot { background: #d9534f; }
+    .aline .txt { flex: 1; min-width: 0; }
+    .aline .txt b { font-size: var(--font-size-sm); color: var(--color-ink-900); font-weight: 700; display: block; }
+    .aline .txt small { font-size: 10px; color: var(--color-ink-500); font-family: ui-monospace, monospace; direction: ltr; text-align: right; display: block; }
+    .aline .src {
+      font-size: 10px; font-weight: 800; border-radius: var(--radius-pill); padding: 2px 8px; white-space: nowrap;
+    }
+    .aline .src.tts { background: var(--color-cream-100); color: var(--color-ink-500); }
+    .aline .src.clip { background: #dcecf6; color: var(--color-sky-700); }
+    .aline button.play {
+      background: var(--color-white); border: 2px solid var(--color-border-soft); cursor: pointer;
+      border-radius: 50%; width: 34px; height: 34px; font-size: 15px; flex: none;
+      display: grid; place-items: center; color: var(--color-sky-700);
+    }
+    .aline button.play:hover { border-color: var(--color-sky-300); }
+
+    .empty { font-size: var(--font-size-sm); color: var(--color-ink-500); padding: var(--space-3); }
+
+    .foot { font-size: var(--font-size-xs); color: var(--color-ink-500); text-align: center; line-height: 1.7; }
+    .foot code { background: var(--color-cream-100); border-radius: 4px; padding: 1px 5px; font-size: 11px; }
+  </style>
+</head>
+<body>
+  <main class="admin">
+
+    <div class="head">
+      <div>
+        <h1>אַדְמִין · מִשְׁמִישׁ <span class="ar" lang="ar">لوحة الإدارة</span></h1>
+        <p class="sub">כָּל תַּתֵּי־הַנּוֹשְׂאִים (packs) — לְכָל אֶחָד רְשִׁימַת מִשְׂחֲקוֹנִים עִם קִישּׁוּר־פְּתִיחָה, וּבְדִיקַת־אוֹדְיוֹ חַיָּה לְכָל שׁוּרַת־הַשְׁמָעָה (אוֹתָהּ שִׁכְבַת־אוֹדְיוֹ שֶׁל הַמִּשְׂחָק).</p>
+      </div>
+      <div class="actions">
+        <a class="btn-link" href="map.html">🗺️ מַפַּת הַשְּׁכוּנָה</a>
+        <a class="btn-link" href="enter.html">🚪 שַׁעַר כְּנִיסָה</a>
+      </div>
+    </div>
+
+    <div class="totals" id="totals"></div>
+
+    <div id="topics"></div>
+
+    <p class="foot">
+      מָקוֹר־אֱמֶת: <code>data/pack-*.json</code> → <code>src/js/data.js</code> (מוּטְמָע, file://-safe).<br>
+      עִדְכַּנְתֶּם <code>data/</code>? הָרִיצוּ <code>node src/js/_build-data.js</code> וְרַעֲנְנוּ.
+      בְּדִיקַת־הָאוֹדְיוֹ מְנַגֶּנֶת דֶּרֶךְ <code>MishmishAudio.hebrew</code> — קְלִיפּ מוּקְלָט אִם קַיָּים, אַחֶרֶת TTS חַי.
+    </p>
+  </main>
+
+  <!-- אותה תשתית כמו מסכי המשחקון: data → data-loader → audio -->
+  <script src="js/data.js"></script>
+  <script src="js/data-loader.js"></script>
+  <script src="js/audio.js"></script>
+  <script>
+  /* ============================================================
+     אַדְמִין — לוגיקת-View. קורא MISHMISH_DATA, בונה כרטיס פר-pack.
+     אין כאן מקור-אמת חדש: מכניקות מ-pack.target, אודיו מהפריטים/לקסיקון.
+     ============================================================ */
+  (function () {
+    var DATA = window.MISHMISH_DATA || { packs: [], instructions: {} };
+    var A = window.MishmishAudio;
+
+    /* מכניקה → קובץ-מסך (null = אין מסך עדיין → "בקרוב") */
+    var SCREEN = {
+      'lantern':        'lantern.html',
+      'swim-hunt':      'index.html',
+      'give-me':        'index.html',
+      'same-different': 'same-different.html',
+      'missing-slot':   'missing-slot.html',
+      'grammar-toggle': 'grammar-toggle.html',
+      'follow-instr':   null,
+      'roleplay':       null
+    };
+
+    /* מכניקה → תווית עברית (מנוקדת) */
+    var MECH_HE = {
+      'lantern':        'פַּנָּס · מִיפּוּי',
+      'swim-hunt':      'צַיִד־הַאֲזָנָה',
+      'give-me':        'תֵּן לִי ___',
+      'same-different': 'אוֹתוֹ / שׁוֹנֶה',
+      'missing-slot':   'הַשְׁלָמַת מִשְׁבֶּצֶת',
+      'grammar-toggle': 'זֶה / זֹאת',
+      'follow-instr':   'בַּצְּעוּ הוֹרָאָה',
+      'roleplay':       'תַּפְקִיד עִם אָמִיר'
+    };
+
+    /* כותרת תת-נושא (he) לפי צורת ה-pack */
+    function topicTitle(p) {
+      if (p.meta && p.meta.topic) return p.meta.topic;
+      if (p.place && p.place.he) return p.place.he;
+      if (p.pattern_he) return p.pattern_he;
+      return p.pack;
+    }
+    function topicEn(p) {
+      if (p.meta && p.meta.topic_en) return p.meta.topic_en;
+      if (p.topic) return p.topic;
+      return '';
+    }
+    function topicSpace(p) {
+      if (p.meta && p.meta.space) return p.meta.space;
+      if (p.space) return p.space;
+      return 'hara';
+    }
+
+    /* המכניקות שהחבילה מצהירה עליהן (מפתחות pack.target); נופל ל-pack.mechanic */
+    function mechanicsOf(p) {
+      if (p.target && typeof p.target === 'object') return Object.keys(p.target);
+      if (p.mechanic) return [p.mechanic];
+      return [];
+    }
+
+    /* חילוץ שורות-אודיו פר-pack — תומך בשתי צורות:
+       (א) items[] עם prompt.he / prompt.audio_he  (mapping, market)
+       (ב) lexicon[] + patterns[]                   (class — pack עשיר) */
+    function audioLines(p) {
+      var lines = [];
+      function push(label, text, key, srcKey) {
+        if (!text && !label) return;
+        lines.push({
+          label: label || text,
+          text: text || label,      // מה ש-TTS יאמר (עדיף unpointed audio_he)
+          key: key || null,         // מפתח-קליפ מוקלט (אם יירשם ב-clipMap)
+          hasClip: !!(srcKey && CLIPS[srcKey])
+        });
+      }
+
+      (p.items || []).forEach(function (it) {
+        if (!it.prompt) return;
+        push(it.prompt.he, it.prompt.audio_he || it.prompt.he, it.id, it.id);
+      });
+
+      (p.lexicon || []).forEach(function (lx) {
+        push(lx.he, lx.he, lx.audio_he, lx.audio_he);
+      });
+      (p.patterns || []).forEach(function (pt) {
+        var frame = pt.frame_read || pt.frame;
+        if (frame) push(frame, frame.replace(/___/g, '…'), pt.audio_frame, pt.audio_frame);
+      });
+
+      return lines;
+    }
+
+    /* מפת-קליפים מוקלטים בפועל (assets/audio/…). ריקה כרגע → הכל TTS.
+       כשיוקלטו קליפים, רַשְׁמוּ כאן key→file וגם ב-audio.js (setClipMap). */
+    var CLIPS = {};
+    if (A && A.setClipMap) A.setClipMap(CLIPS);
+
+    /* ---------- render ---------- */
+    var packs = (DATA.packs || []).slice();
+
+    var totalGames = 0, totalOpen = 0, totalAudio = 0;
+
+    var html = packs.map(function (p) {
+      var space = topicSpace(p);
+      var mechs = mechanicsOf(p);
+      var lines = audioLines(p);
+      totalAudio += lines.length;
+
+      /* משחקונים */
+      var gamesHtml = mechs.map(function (m) {
+        totalGames++;
+        var screen = SCREEN[m] || null;
+        var nameHe = MECH_HE[m] || m;
+        var tgt = (p.target && p.target[m]) ? p.target[m] : '';
+        var right;
+        if (screen) {
+          totalOpen++;
+          var url = screen + '?pack=' + encodeURIComponent(p.pack) + '&mechanic=' + encodeURIComponent(m);
+          right = '<a class="open" href="' + url + '" target="_blank" rel="noopener">▶ פְּתַח</a>';
+        } else {
+          right = '<span class="soon">בְּקָרוֹב</span>';
+        }
+        return '<div class="game">' +
+                 '<span class="g-name"><b>' + esc(nameHe) + '</b><small>' + esc(m + (tgt ? ' · ' + tgt : '')) + '</small></span>' +
+                 right +
+               '</div>';
+      }).join('');
+
+      /* אודיו */
+      var audioHtml = lines.length
+        ? lines.map(function (ln, i) {
+            var badge = ln.hasClip
+              ? '<span class="src clip">🎙️ קְלִיפּ</span>'
+              : '<span class="src tts">🔊 TTS</span>';
+            return '<div class="aline" data-audio="idle" data-pack="' + esc(p.pack) + '" data-i="' + i + '">' +
+                     '<span class="dot"></span>' +
+                     '<button class="play" type="button" aria-label="נַגֵּן">▶</button>' +
+                     '<span class="txt"><b>' + esc(ln.label) + '</b><small>' + esc(ln.key || '—') + '</small></span>' +
+                     badge +
+                   '</div>';
+          }).join('')
+        : '<p class="empty">אֵין שׁוּרוֹת־אוֹדְיוֹ בְּ־pack זֶה.</p>';
+
+      /* meta chips */
+      var chips = [];
+      var wk = (p.meta && p.meta.week_range) || (p.week_range) || '';
+      if (wk) chips.push('<span class="chip">🗓️ ' + esc(wk) + '</span>');
+      var setting = (p.meta && p.meta.setting) || p.setting || '';
+      if (setting) chips.push('<span class="chip">🎨 ' + esc(setting) + '</span>');
+      chips.push('<span class="chip space-' + esc(space) + '">' + (space === 'shared' ? 'מְשֻׁתָּף' : 'שְׁכוּנָה') + '</span>');
+      var sw = (p.meta && p.meta.sound_wave);
+      if (sw) chips.push('<span class="chip wave">🔉 גַּל ' + esc(sw) + '</span>');
+      if (p.meta && p.meta.amir) chips.push('<span class="chip amir">🫧 אָמִיר</span>');
+
+      return '<section class="topic" data-space="' + esc(space) + '">' +
+        '<header>' +
+          '<div class="t-title"><span class="he">' + esc(topicTitle(p)) + '</span>' +
+            '<span class="en">' + esc(topicEn(p)) + ' · <code>' + esc(p.pack) + '</code></span></div>' +
+          '<div class="meta-chips">' + chips.join('') + '</div>' +
+        '</header>' +
+        '<div class="body">' +
+          '<div class="panel">' +
+            '<h3>🎮 מִשְׂחֲקוֹנִים <span class="count">(' + mechs.length + ')</span></h3>' +
+            '<div class="games">' + (gamesHtml || '<p class="empty">אֵין מְכָנִיקוֹת מֻצְהָרוֹת.</p>') + '</div>' +
+          '</div>' +
+          '<div class="panel">' +
+            '<div class="audio-head">' +
+              '<h3>🔊 בְּדִיקַת אוֹדְיוֹ <span class="count">(' + lines.length + ')</span></h3>' +
+              (lines.length ? '<button class="play-all" type="button" data-pack="' + esc(p.pack) + '">▶ נַגֵּן הַכֹּל</button>' : '') +
+            '</div>' +
+            '<div class="audio-list">' + audioHtml + '</div>' +
+          '</div>' +
+        '</div>' +
+      '</section>';
+    }).join('');
+
+    document.getElementById('topics').innerHTML = html ||
+      '<p class="empty">לֹא נִמְצְאוּ packs. הָרִיצוּ <code>node src/js/_build-data.js</code>.</p>';
+
+    document.getElementById('totals').innerHTML =
+      stat(packs.length, 'תַּתֵּי־נוֹשְׂאִים') +
+      stat(totalGames, 'מִשְׂחֲקוֹנִים') +
+      stat(totalOpen, 'פְּתִיחִים עַכְשָׁו') +
+      stat(totalAudio, 'שׁוּרוֹת־אוֹדְיוֹ');
+
+    /* מפת שורות-אודיו לנגן, פר-pack, לפי אינדקס — לשחזור מהיר */
+    var LINES = {};
+    packs.forEach(function (p) { LINES[p.pack] = audioLines(p); });
+
+    /* ---------- אינטראקציית אודיו ---------- */
+    function setState(el, s) { el.setAttribute('data-audio', s); }
+
+    function playLine(el) {
+      if (!A) return Promise.resolve();
+      var pack = el.getAttribute('data-pack');
+      var idx = +el.getAttribute('data-i');
+      var ln = (LINES[pack] || [])[idx];
+      if (!ln) return Promise.resolve();
+      A.stop();
+      setState(el, 'playing');
+      return A.hebrew(ln.text, { key: ln.key || undefined })
+        .then(function () { setState(el, 'ok'); })
+        .catch(function () { setState(el, 'error'); });
+    }
+
+    document.addEventListener('click', function (e) {
+      var playBtn = e.target.closest ? e.target.closest('.aline .play') : null;
+      if (playBtn) { playLine(playBtn.closest('.aline')); return; }
+
+      var allBtn = e.target.closest ? e.target.closest('.play-all') : null;
+      if (allBtn) {
+        var pack = allBtn.getAttribute('data-pack');
+        var els = [].slice.call(document.querySelectorAll('.aline[data-pack="' + cssq(pack) + '"]'));
+        allBtn.disabled = true;
+        (function next(i) {
+          if (i >= els.length) { allBtn.disabled = false; return; }
+          playLine(els[i]).then(function () { setTimeout(function () { next(i + 1); }, 350); });
+        })(0);
+      }
+    });
+
+    /* ---------- utils ---------- */
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    function cssq(s) { return String(s).replace(/"/g, '\\"'); }
+    function stat(n, label) {
+      return '<div class="stat"><b>' + n + '</b><span>' + label + '</span></div>';
+    }
+  })();
+  </script>
+</body>
+</html>

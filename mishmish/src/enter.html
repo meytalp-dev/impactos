@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" data-arabic-verified="false">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>מישמיש · مشمش — כְּנִיסָה</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700&family=Heebo:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <style>
+    /* ── שער-הכניסה לתלמידים — מסך-נחיתה עצמאי (טוקנים מ-tokens.css) ──
+       כפתור אחד גדול מוביל למיפוי (משחקון הפנס). ניקוד מלא, Heebo,
+       פנייה בלשון-רבים, בלי אדום/ירוק, עאמייה מגודרת עד בודק ילידי. */
+    * { box-sizing: border-box; margin: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; }
+    body {
+      font-family: var(--font-he);
+      color: var(--color-ink-900);
+      background: #1d2b22;
+      overflow: hidden;
+    }
+
+    .stage { position: fixed; inset: 0; display: grid; grid-template-rows: 1fr auto; overflow: hidden; }
+
+    /* רקע-הסצנה: חצר-השכונה — המרחב הביתי (حارتي) שממנו יוצאים לטיול */
+    .scene-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+    /* שכבת-חמימות רכה כדי שהטקסט המנוקד יבלוט מעל הרקע */
+    .scrim { position: absolute; inset: 0; z-index: 1; pointer-events: none;
+      background:
+        radial-gradient(120% 80% at 50% 12%, rgba(255,250,241,.10) 0%, rgba(255,250,241,.0) 42%),
+        linear-gradient(180deg, rgba(30,43,34,.28) 0%, rgba(255,250,241,.10) 34%, rgba(255,250,241,.42) 72%, rgba(255,250,241,.66) 100%); }
+
+    /* שורה עליונה: מותג + הקוגנט של נושא 1 (שָׁלוֹם · سلام — הערבית מגודרת) */
+    .brandbar { position: absolute; top: 0; inset-inline: 0; z-index: 30;
+      display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; }
+    .brand { display: inline-flex; align-items: baseline; gap: 8px;
+      background: rgba(38,55,70,.55); color: #fff; padding: 7px 16px; border-radius: var(--radius-pill);
+      font-weight: 800; font-size: 16px; box-shadow: var(--shadow-soft); backdrop-filter: blur(3px); }
+    .brand .ar { font-family: var(--font-ar); font-weight: 600; opacity: .8; }
+    .hello-chip { background: rgba(217,121,61,.92); color: #fff; font-weight: 800; font-size: 15px;
+      padding: 7px 16px; border-radius: var(--radius-pill); box-shadow: var(--shadow-soft); }
+    .hello-chip .ar { font-family: var(--font-ar); font-weight: 600; opacity: .82; margin-inline-start: 6px; }
+
+    /* מרכז: השער */
+    .center { position: relative; z-index: 20; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: clamp(10px, 2.4vh, 20px); padding: 64px 20px 8px; text-align: center; }
+
+    /* הילת-הפנס מאחורי מישמיש — רומזת למיפוי (משחקון הפנס) */
+    .lantern-glow { position: relative; display: grid; place-items: center; }
+    .lantern-glow::before { content: ""; position: absolute; width: clamp(220px, 62vw, 340px); height: clamp(220px, 62vw, 340px);
+      border-radius: 50%; background: radial-gradient(circle, rgba(243,202,103,.55) 0%, rgba(243,202,103,.18) 42%, rgba(243,202,103,0) 70%);
+      filter: blur(2px); animation: glowPulse 3.6s var(--ease-soft) infinite; }
+    @keyframes glowPulse { 0%,100% { transform: scale(1); opacity: .85; } 50% { transform: scale(1.08); opacity: 1; } }
+
+    .mishmish { position: relative; width: clamp(150px, 40vw, 230px); z-index: 2;
+      filter: drop-shadow(0 12px 20px rgba(77,55,31,.34)); animation: floaty 4.2s var(--ease-soft) infinite; }
+    @keyframes floaty { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-12px) rotate(1.5deg); } }
+
+    .welcome { display: inline-block; background: rgba(255,250,241,.95); color: var(--color-ink-900);
+      font-weight: 900; font-size: clamp(28px, 7.4vw, 46px); line-height: var(--line-height-tight);
+      padding: 12px 28px; border-radius: var(--radius-lg); box-shadow: var(--shadow-card); }
+    .welcome .em { color: var(--color-apricot-500); }
+
+    .subtitle { max-width: 520px; background: rgba(255,250,241,.88); color: var(--color-ink-700);
+      font-weight: 700; font-size: clamp(16px, 4.2vw, 21px); line-height: var(--line-height-normal);
+      padding: 12px 22px; border-radius: var(--radius-md); box-shadow: var(--shadow-soft); }
+
+    /* אזור תחתון: הכפתור הגדול → מיפוי */
+    .gate { position: relative; z-index: 20; display: flex; flex-direction: column; align-items: center;
+      gap: 10px; padding: 0 20px calc(20px + env(safe-area-inset-bottom)); }
+
+    .start {
+      display: inline-flex; align-items: center; gap: 12px; text-decoration: none;
+      font-family: var(--font-he); font-weight: 900; font-size: clamp(22px, 5.8vw, 30px); color: #fff;
+      background: linear-gradient(180deg, var(--color-apricot-300) 0%, var(--color-apricot-500) 100%);
+      padding: 18px 46px; border-radius: var(--radius-pill); min-height: 64px;
+      box-shadow: var(--shadow-button), 0 0 0 6px rgba(255,250,241,.5);
+      transition: transform var(--motion-fast) var(--ease-soft), box-shadow var(--motion-normal); }
+    .start:hover { transform: translateY(-2px); }
+    .start:active { transform: translateY(2px) scale(.98); box-shadow: 0 3px 0 rgba(45,103,137,.22), 0 0 0 6px rgba(255,250,241,.5); }
+    .start .flash { width: 34px; height: 34px; flex: none; filter: drop-shadow(0 2px 3px rgba(0,0,0,.25)); animation: sway 2.4s ease-in-out infinite; }
+    @keyframes sway { 0%,100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
+
+    /* תגית-מיפוי קטנה מתחת לכפתור — מסבירה לאן נכנסים (מסגור-גילוי, לא מבחן) */
+    .gate-note { display: inline-flex; align-items: center; gap: 7px;
+      background: rgba(85,162,146,.16); color: var(--color-mint-500);
+      font-weight: 800; font-size: 14px; padding: 6px 15px; border-radius: var(--radius-pill); }
+    .gate-note b { color: var(--color-ink-700); }
+
+    /* שער-עאמייה: כל טקסט ערבי מוסתר עד אישור בודק/ת ילידי/ת */
+    [data-arabic-verified="false"] .ar { display: none; }
+
+    @media (max-width: 380px) { .center { padding-top: 56px; } }
+    @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation: none !important; } }
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <img class="scene-bg" src="../assets/backgrounds/bg-hara-courtyard.png" alt="" aria-hidden="true"
+         onerror="this.style.display='none'">
+    <div class="scrim" aria-hidden="true"></div>
+
+    <!-- מותג + ברכת-פתיחה (הקוגנט של נושא 1: שָׁלוֹם · سلام — הערבית מגודרת) -->
+    <header class="brandbar">
+      <div class="brand"><span class="he">מִישְׁמִישׁ</span><span class="ar" lang="ar">مشمش</span></div>
+      <div class="hello-chip"><span class="he">שָׁלוֹם</span><span class="ar" lang="ar">سلام</span></div>
+    </header>
+
+    <!-- מרכז השער -->
+    <section class="center">
+      <div class="lantern-glow">
+        <img class="mishmish" src="../assets/characters/mishmish/mishmish-happy.png" alt="מישמיש מְחַיֵּךְ">
+      </div>
+      <h1 class="welcome">שְׂמֵחִים שֶׁ<span class="em">בָּאתֶם</span>!</h1>
+      <p class="subtitle">קֹדֶם נֵצֵא לְטִיּוּל קָטָן עִם הַפַּנָּס וְנַכִּיר אֶתְכֶם —<br>בְּלִי מִבְחָן, רַק גִּלּוּי בְּיַחַד. 🔦</p>
+    </section>
+
+    <!-- הכפתור הגדול → מיפוי (משחקון הפנס · lantern.html, pack ברירת-מחדל = mapping) -->
+    <div class="gate">
+      <a class="start" href="lantern.html" aria-label="בּוֹאוּ נַתְחִיל — כְּנִיסָה לַמִּיפּוּי">
+        <img class="flash" src="../assets/icons/icon-hint.svg" alt="" aria-hidden="true"
+             onerror="this.style.display='none'">
+        <span>בּוֹאוּ נַתְחִיל</span>
+      </a>
+      <span class="gate-note">מַתְחִילִים בְּ<b>טִיּוּל הַכָּרוּת</b> · פַּנָּס</span>
+    </div>
+  </main>
+</body>
+</html>
