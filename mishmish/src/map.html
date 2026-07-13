@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>מישמיש · مشمش — מַפַּת הַשְּׁכוּנָה</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700&family=Heebo:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/base.css">
+  <style>
+    /* ============================================================
+       מַפַּת הַשְּׁכוּנָה · خريطة الحارة  — overworld מצויר
+       איור GPT (bg-map-neighborhood.png) + צמתים ממוקמים מעל
+       ה-landmarks לפי אחוזים. View מעל data/pack-*.json.
+       בלי אדום/ירוק — התקדמות = פנס שנדלק. ניקוד מלא בעברית.
+       ============================================================ */
+
+    body { overflow-x: hidden; background: var(--color-cream-100); }
+
+    .map {
+      min-height: 100vh; max-width: 1240px; margin: 0 auto;
+      padding: var(--space-4) var(--space-4) var(--space-8);
+      display: flex; flex-direction: column; gap: var(--space-4);
+    }
+
+    .top { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+    .top h1 { font-size: var(--font-size-xl); font-weight: 800; display: flex; align-items: baseline; gap: var(--space-3); }
+    .top h1 .ar { font-size: var(--font-size-md); color: var(--color-apricot-500); }
+    .yr {
+      background: var(--color-white); border: 2px solid var(--color-border-soft);
+      border-radius: var(--radius-pill); padding: var(--space-2) var(--space-4);
+      font-weight: 700; font-size: var(--font-size-sm); color: var(--color-ink-700);
+      box-shadow: var(--shadow-soft); white-space: nowrap;
+    }
+    .yr b { color: var(--color-apricot-500); }
+
+    /* ---------- לוח המפה המצויר ---------- */
+    .board {
+      position: relative; width: 100%;
+      aspect-ratio: 1672 / 941;
+      border-radius: var(--radius-xl); overflow: hidden;
+      box-shadow: var(--shadow-card);
+      border: 3px solid var(--color-white);
+      /* קואורדינטות הצמתים נמדדות מהשמאל — מבטלים RTL בתוך הלוח */
+      direction: ltr;
+    }
+    .board img.bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+    /* תוויות-אזור צפות (עדינות) */
+    .zone-tag {
+      position: absolute; top: var(--space-3); z-index: 5;
+      font-weight: 800; font-size: var(--font-size-sm);
+      padding: var(--space-1) var(--space-4); border-radius: var(--radius-pill);
+      background: rgba(255,250,241,0.82); backdrop-filter: blur(3px);
+      box-shadow: var(--shadow-soft); direction: rtl;
+    }
+    .zone-tag .ar { font-family: var(--font-ar); font-size: var(--font-size-xs); font-weight: 700; margin-inline-start: 6px; }
+    .zone-tag.shared { left: var(--space-4); color: var(--color-sky-700); }
+    .zone-tag.shared .ar { color: var(--color-sky-500); }
+    .zone-tag.home   { right: var(--space-4); color: var(--color-apricot-500); }
+    .zone-tag.home .ar { color: var(--color-terracotta-500); }
+
+    /* ---------- צומת (node) מעל landmark ---------- */
+    .node {
+      position: absolute; z-index: 4;
+      transform: translate(-50%, -50%);
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      background: none; padding: 0; direction: rtl; text-decoration: none;
+      cursor: pointer;
+    }
+    .node .pin {
+      width: 46px; height: 46px; border-radius: 50%;
+      display: grid; place-items: center; font-size: 24px;
+      background: rgba(255,250,241,0.92);
+      border: 3px solid var(--color-white);
+      box-shadow: 0 6px 14px rgba(77,55,31,0.28);
+      transition: transform var(--motion-normal) var(--ease-soft),
+                  box-shadow var(--motion-normal) var(--ease-soft);
+    }
+    .node .sign {
+      display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+      background: rgba(255,250,241,0.94);
+      border: 2px solid var(--color-border-soft);
+      border-radius: var(--radius-pill);
+      padding: 3px 10px; box-shadow: var(--shadow-soft);
+      font-weight: 800; font-size: 14px; color: var(--color-ink-900);
+    }
+    .node .sign .ar { font-family: var(--font-ar); font-size: 11px; font-weight: 700; color: var(--color-apricot-500); }
+    .node .dots { display: flex; gap: 3px; }
+    .node .dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.85); box-shadow: 0 0 0 1px rgba(141,101,54,0.3); }
+    .node .dots i.on { background: var(--color-apricot-300); box-shadow: 0 0 0 1px var(--color-apricot-500); }
+
+    .node:hover .pin, .node:focus-visible .pin { transform: translateY(-4px) scale(1.06); box-shadow: 0 10px 20px rgba(77,55,31,0.34); outline: none; }
+
+    /* פנס-מצב על הפין (בלי אדום/ירוק) */
+    .node[data-lit="dim"]  .pin { box-shadow: 0 0 12px 2px rgba(243,202,103,0.55), 0 6px 14px rgba(77,55,31,0.28); }
+    .node[data-lit="warm"] .pin { box-shadow: 0 0 16px 4px rgba(243,202,103,0.75), 0 6px 14px rgba(77,55,31,0.28); border-color: var(--color-sun-300); }
+    .node[data-lit="full"] .pin { box-shadow: 0 0 22px 7px rgba(243,202,103,0.9),  0 6px 14px rgba(77,55,31,0.28); border-color: var(--color-sun-500); }
+
+    /* צומת נוכחי — טבעת פועמת */
+    .node[data-current] .pin { animation: pulse 1.8s var(--ease-soft) infinite; }
+    @keyframes pulse { 0%,100%{ box-shadow: 0 0 0 0 rgba(217,121,61,0.5), 0 6px 14px rgba(77,55,31,0.28);} 50%{ box-shadow: 0 0 0 10px rgba(217,121,61,0), 0 6px 14px rgba(77,55,31,0.28);} }
+
+    .node[data-soon] { opacity: 0.72; }
+    .node[data-soon] .sign::after { content: 'בְּקָרוֹב'; font-size: 10px; color: var(--color-ink-500); font-weight: 800; }
+
+    /* מישמיש על השביל */
+    .mishmish-walk {
+      position: absolute; z-index: 3; width: 8.5%; height: auto;
+      left: 49%; top: 70%; transform: translate(-50%,-50%);
+      filter: drop-shadow(0 8px 10px rgba(77,55,31,0.35));
+      animation: bob 2.6s var(--ease-soft) infinite; pointer-events: none;
+    }
+    @keyframes bob { 0%,100%{ transform: translate(-50%,-50%) translateY(0);} 50%{ transform: translate(-50%,-50%) translateY(-6px);} }
+
+    /* ---------- מקרא + שפת-הישרדות ---------- */
+    .legend { display: flex; gap: var(--space-4); justify-content: center; flex-wrap: wrap; font-size: var(--font-size-xs); color: var(--color-ink-500); }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .legend .chip { width: 13px; height: 13px; border-radius: 50%; border: 1px solid var(--color-border-strong); }
+
+    .survival { display: flex; gap: var(--space-2); justify-content: center; flex-wrap: wrap; }
+    .survival button {
+      background: var(--color-white); border: 2px solid var(--color-border-soft);
+      border-radius: var(--radius-pill); padding: var(--space-2) var(--space-4);
+      font-weight: 700; font-size: var(--font-size-sm); color: var(--color-ink-700);
+      box-shadow: var(--shadow-soft); display: inline-flex; align-items: center; gap: var(--space-2);
+    }
+    .survival button .ar { font-family: var(--font-ar); font-size: var(--font-size-xs); color: var(--color-ink-500); }
+    .survival button:hover { border-color: var(--color-sky-300); }
+
+    /* מובייל: הסימנים קטנים; מסתירים כיתוב-ערבית של הצומת לחיסכון-מקום */
+    @media (max-width: 640px) {
+      .top h1 { font-size: var(--font-size-md); }
+      .node .pin { width: 34px; height: 34px; font-size: 18px; }
+      .node .sign { font-size: 11px; padding: 2px 7px; }
+      .node .sign .ar { display: none; }
+      .zone-tag { font-size: 11px; }
+      .zone-tag .ar { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="map">
+
+    <div class="top">
+      <h1>מַפַּת הַשְּׁכוּנָה <span class="ar" lang="ar">خريطة الحارة</span></h1>
+      <div class="yr">שָׁנָה א' · <b>סֶפְּטֶמְבֶּר → יוּנִי</b></div>
+    </div>
+
+    <section class="board" aria-label="מפת השכונה">
+      <img class="bg" src="../assets/backgrounds/bg-map-neighborhood.png" alt="מפת השכונה של מישמיש">
+
+      <div class="zone-tag home">הַשְּׁכוּנָה שֶׁלִּי<span class="ar" lang="ar">حارتي</span></div>
+      <div class="zone-tag shared">הַמֶּרְחָב הַמְּשֻׁתָּף<span class="ar" lang="ar">المكان المشترك</span></div>
+
+      <!-- הצמתים מוזרקים כאן לפי PLACES (x/y = אחוז מהפינה השמאלית-עליונה של האיור) -->
+
+      <img class="mishmish-walk" src="../assets/characters/mishmish/mishmish-happy.png" alt="מישמיש">
+    </section>
+
+    <div class="legend" aria-hidden="true">
+      <span><i class="chip" style="background:rgba(255,250,241,0.92)"></i> טֶרֶם הִתְחַלְנוּ</span>
+      <span><i class="chip" style="background:#f6dfab"></i> מַתְחִילִים</span>
+      <span><i class="chip" style="background:var(--color-sun-300)"></i> מַכִּירִים</span>
+      <span><i class="chip" style="background:var(--color-sun-500)"></i> מַרְגִּישִׁים בַּבַּיִת</span>
+    </div>
+
+    <nav class="survival" aria-label="שפת הישרדות">
+      <button type="button">🔁 עוֹד פַּעַם <span class="ar" lang="ar">كمان مرّة</span></button>
+      <button type="button">🐢 לְאַט <span class="ar" lang="ar">بشويش</span></button>
+      <button type="button">🤔 לֹא הֵבַנְתִּי <span class="ar" lang="ar">ما فهمت</span></button>
+      <button type="button">🏠 הַבַּיְתָה</button>
+    </nav>
+  </main>
+
+  <script>
+    /* ============================================================
+       PLACES = מקור-אמת יחיד (View מעל ה-packs).
+       x/y = אחוז מיקום הצומת מעל האיור (מהשמאל/מהעליון).
+       screen: קובץ המשחקון (null = בקרוב). lit/dots = דמה.
+       current: הצומת שהילד/ה נמצא/ת בו כעת (טבעת פועמת).
+       ============================================================ */
+    const PLACES = [
+      // --- על השביל / מרכז ---
+      { emo:'🗺️', pl:'הֶחָצֵר בָּעֶרֶב', ar:'الحارة', space:'hara',   x:50, y:52, screen:'lantern.html',        lit:'full', dots:5, of:5, week:'פתיחה' },
+      // --- הַשְּׁכוּנָה שֶׁלִּי (ימין) ---
+      { emo:'🏫', pl:'הַגָּן וְהַכִּתָּה',   ar:'الصف',    space:'hara',   x:63, y:17, screen:'index.html',          lit:'warm', dots:3, of:5, week:'ספט׳', current:true },
+      { emo:'🏠', pl:'הַבַּיִת וְהֶחָצֵר',   ar:'البيت',   space:'hara',   x:87, y:27, screen:'missing-slot.html',   lit:'dim',  dots:1, of:5, week:'אוק׳' },
+      { emo:'🩹', pl:'הַמִּרְפָּאָה',        ar:'العيادة', space:'hara',   x:70, y:55, screen:'same-different.html', lit:'dim',  dots:1, of:5, week:'נוב׳' },
+      { emo:'🕰️', pl:'הָרְחוֹב וְהַשִּׁגְרָה', ar:'الشارع', space:'hara',   x:86, y:76, screen:'grammar-toggle.html', lit:null,   dots:0, of:5, week:'דצמ׳' },
+      // --- הַמֶּרְחָב הַמְּשֻׁתָּף (שמאל) ---
+      { emo:'🛒', pl:'הַמַּכֹּלֶת',          ar:'الدكّان', space:'shared', x:12, y:23, screen:null,                  lit:null,   dots:0, of:5, week:'ינו׳' },
+      { emo:'🧺', pl:'הַשּׁוּק וְהַמַּאֲפִיָּה', ar:'السوق', space:'shared', x:32, y:19, screen:'index.html',          lit:'warm', dots:3, of:6, week:'מרץ' },
+      { emo:'🌿', pl:'הַגִּנָּה וְהַוָּאדִי',  ar:'الوادي',  space:'shared', x:11, y:56, screen:null,                  lit:null,   dots:0, of:5, week:'אפר׳' },
+      { emo:'🎈', pl:'מִגְרַשׁ הַמִּשְׂחָקִים', ar:'الملعب', space:'shared', x:22, y:78, screen:null,                  lit:null,   dots:0, of:5, week:'יוני' },
+    ];
+
+    const board = document.querySelector('.board');
+    const mish  = board.querySelector('.mishmish-walk');
+    PLACES.forEach(p => {
+      const tag  = p.screen ? 'a' : 'div';
+      const node = document.createElement(tag);
+      node.className = 'node';
+      node.style.left = p.x + '%';
+      node.style.top  = p.y + '%';
+      if (p.screen) node.setAttribute('href', p.screen);
+      if (p.lit)    node.setAttribute('data-lit', p.lit);
+      if (p.current) node.setAttribute('data-current', '');
+      if (!p.screen) node.setAttribute('data-soon', '');
+      node.setAttribute('aria-label', p.pl);
+      const dots = Array.from({length:p.of}, (_,i)=>`<i class="${i<p.dots?'on':''}"></i>`).join('');
+      node.innerHTML =
+        `<span class="pin">${p.emo}</span>
+         <span class="sign">${p.pl} <span class="ar" lang="ar">${p.ar}</span></span>
+         <span class="dots" aria-hidden="true">${dots}</span>`;
+      board.insertBefore(node, mish);   /* מתחת למישמיש בסדר-הערימה */
+    });
+  </script>
+</body>
+</html>
