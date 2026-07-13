@@ -23,6 +23,9 @@
   body.frame { width: 390px; height: 844px; margin: 24px auto; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
   html:has(body.frame) { height: auto; background: #111; overflow: auto; }
 
+  /* wrapper must fill the viewport so the flex chain (#stage → .measure-scene) has height */
+  .lg-stage { position: relative; flex: 1; min-height: 0; width: 100%; display: flex; flex-direction: column; }
+
   /* ---- HUD: warm progress rail (one glow per feeling found) ---- */
   .lg-hud { position: absolute; top: 0; inset-inline: 0; z-index: 40;
     display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; }
@@ -73,11 +76,12 @@
   .beam { position: absolute; width: 210px; height: 210px; transform: translate(-50%,-50%); pointer-events: none;
     border-radius: 50%; mix-blend-mode: screen;
     background: radial-gradient(circle, rgba(255,236,176,.62), rgba(255,236,176,.16) 46%, transparent 70%); }
-  .beam-animal { position: absolute; transform: translate(50%,-50%); width: clamp(66px,17vw,96px); height: clamp(66px,17vw,96px);
-    border-radius: 50%; display: grid; place-items: center; font-size: clamp(42px,11vw,60px);
+  .beam-animal { position: absolute; transform: translate(50%,-50%); width: clamp(92px,25vw,140px); height: clamp(92px,25vw,140px);
+    border-radius: 50%; display: grid; place-items: center; font-size: clamp(58px,16vw,90px);
     opacity: .26; filter: grayscale(.75) brightness(.5); transition: opacity .25s, filter .25s, transform .2s; }
-  /* recorded storybook faces replace the emoji placeholder (JS adds .has-face) */
-  .beam-animal.has-face { background-repeat: no-repeat; background-position: center; background-size: contain; }
+  /* recorded storybook faces replace the emoji placeholder (JS adds .has-face).
+     background-size 116% (not contain) lets the face fill more of the larger disc — the sheet has internal whitespace. */
+  .beam-animal.has-face { background-repeat: no-repeat; background-position: center; background-size: 116%; }
   .beam-animal.has-face .ba-emoji { opacity: 0; }
   .beam-animal.found { opacity: 1; filter: none; }
   .beam-animal.armed { transform: translate(50%,-50%) scale(1.14); }
