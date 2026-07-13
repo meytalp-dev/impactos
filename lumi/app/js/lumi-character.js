@@ -1,73 +1,87 @@
 // ============================================================
-// lumi-character.js — Lumi, a small GLOWING creature (not an octopus, not a
-// fish, not Noni). Rendered as inline SVG so it is crisp, themeable, and can
-// carry MEANING through gesture (comprehensible input, learning-model §2):
-//   points  → "where?"          (comprehend / find-it)
-//   listen  → cups toward ear   (recognize / discriminate)
-//   hug     → arms in, big glow (function / celebration)
-//   lean    → tips forward      (produce invitation)
-//   dim     → low glow          (drifted, patient "let's listen again")
-//   glow    → radiant           (a lantern just lit / home)
+// lumi-character.js — Lumi, the small GLOWING grove-creature. Renders the REAL
+// illustrated character (assets/character/lumi/lumi-*.png, transparent PNG) so
+// Lumi looks identical everywhere — the lantern-grove pilot AND every minigame /
+// the journey — instead of a schematic SVG placeholder.
 //
-// API: LumiCharacter.mount(el) → controller with .setMood(name) and .say(html).
-// No word-text ever rendered inside Lumi's bubble in the child loop; the bubble
-// shows only gesture dots / Hebrew procedural UI when explicitly asked.
+// Meaning through gesture (comprehensible input, learning-model §2) via mood art:
+//   listen  → lumi-listening   (recognize / discriminate — "listen")
+//   points  → lumi-pointing    (comprehend / find-it — "where?")
+//   lean    → lumi-curious     (produce invitation)
+//   hug/glow→ lumi-celebrate   (celebration / a lantern lit)
+//   dim     → lumi-try-again   (drifted, patient "let's listen again")
+//   happy   → lumi-happy   ·   idle → lumi-idle
+//
+// API unchanged: LumiCharacter.mount(el) → { setMood(name), say(html), pulse() }.
+// Self-contained: injects its own stylesheet once, so it needs no page CSS. Paths
+// are relative to the page (all callers live in lumi/app/), matching the minigames.
 // ============================================================
 window.LumiCharacter = (function () {
   'use strict';
 
-  var SVG = [
-    '<svg class="lumi-svg" viewBox="0 0 120 130" aria-hidden="true">',
-      '<defs>',
-        '<radialGradient id="lumiBody" cx="50%" cy="42%" r="62%">',
-          '<stop offset="0%" stop-color="var(--lumi-core)"/>',
-          '<stop offset="60%" stop-color="var(--lumi-body)"/>',
-          '<stop offset="100%" stop-color="var(--amber)"/>',
-        '</radialGradient>',
-        '<radialGradient id="lumiAura" cx="50%" cy="50%" r="50%">',
-          '<stop offset="0%" stop-color="var(--lumi-aura)"/>',
-          '<stop offset="100%" stop-color="rgba(255,210,120,0)"/>',
-        '</radialGradient>',
-      '</defs>',
-      '<circle class="lumi-aura" cx="60" cy="60" r="58" fill="url(#lumiAura)"/>',
-      // little floaty tendrils of light
-      '<g class="lumi-arms">',
-        '<path class="lumi-arm lumi-arm-l" d="M28 74 q-16 6 -18 22" />',
-        '<path class="lumi-arm lumi-arm-r" d="M92 74 q16 6 18 22" />',
-      '</g>',
-      '<circle class="lumi-core" cx="60" cy="58" r="40" fill="url(#lumiBody)"/>',
-      // face
-      '<g class="lumi-face">',
-        '<circle class="lumi-eye lumi-eye-l" cx="48" cy="54" r="5.4"/>',
-        '<circle class="lumi-eye lumi-eye-r" cx="72" cy="54" r="5.4"/>',
-        '<circle class="lumi-spark lumi-spark-l" cx="49.6" cy="52" r="1.7"/>',
-        '<circle class="lumi-spark lumi-spark-r" cx="73.6" cy="52" r="1.7"/>',
-        '<path class="lumi-smile" d="M50 70 q10 10 20 0"/>',
-        '<ellipse class="lumi-cheek lumi-cheek-l" cx="40" cy="65" rx="5" ry="3.2"/>',
-        '<ellipse class="lumi-cheek lumi-cheek-r" cx="80" cy="65" rx="5" ry="3.2"/>',
-      '</g>',
-      // pointing hand (shown only in "points" mood)
-      '<circle class="lumi-point" cx="104" cy="60" r="6"/>',
-    '</svg>'
-  ].join('');
+  var BASE = 'assets/character/lumi/';
+  // code mood  →  real portrait file (the 7 illustrated moods we have)
+  var MOOD_SRC = {
+    idle: 'lumi-idle', listen: 'lumi-listening', points: 'lumi-pointing',
+    lean: 'lumi-curious', hug: 'lumi-celebrate', glow: 'lumi-celebrate',
+    dim: 'lumi-try-again', happy: 'lumi-happy'
+  };
+  var MOODS = Object.keys(MOOD_SRC);
 
-  var MOODS = ['idle', 'listen', 'points', 'hug', 'lean', 'dim', 'glow', 'happy'];
+  function injectCSS() {
+    if (document.getElementById('lumi-character-css')) return;
+    var rules = [
+      '.lumi-stage { position: relative; }',
+      // the portrait fills whatever box the page gives .lumi-stage (contain → no crop)
+      '.lumi-stage .lc-figure { width: 100%; height: 100%; background: center / contain no-repeat;',
+      '  transition: transform .28s var(--ease, cubic-bezier(.34,1.3,.5,1)); transform-origin: 50% 88%; }',
+      // soft aura so Lumi glows like a grove-creature, on any background
+      '.lumi-stage .lc-glow { position: absolute; z-index: -1; inset: 14% 4% 4%; border-radius: 50%;',
+      '  background: radial-gradient(circle, var(--lumi-aura, rgba(255,210,120,.55)), rgba(255,210,120,0) 70%);',
+      '  filter: blur(5px); opacity: .55; animation: lumiBreathe 3.8s ease-in-out infinite; }',
+      '@keyframes lumiBreathe { 0%,100% { transform: scale(1); opacity: .5; } 50% { transform: scale(1.08); opacity: .72; } }'
+    ];
+    // per-mood portrait
+    MOODS.forEach(function (m) {
+      rules.push('.lumi-stage[data-mood="' + m + '"] .lc-figure { background-image: url(' + BASE + MOOD_SRC[m] + '.png); }');
+    });
+    // gentle mood body-language (on the figure, so a page-level float on .lumi-stage still runs)
+    rules.push('.lumi-stage[data-mood="listen"] .lc-figure { transform: rotate(-3deg); }');
+    rules.push('.lumi-stage[data-mood="points"] .lc-figure { transform: translateX(-4%) scale(1.03); }');
+    rules.push('.lumi-stage[data-mood="lean"]   .lc-figure { transform: rotate(4deg) translateY(-2%); }');
+    rules.push('.lumi-stage[data-mood="dim"]    .lc-figure { filter: saturate(.75) brightness(.92); }');
+    rules.push('.lumi-stage[data-mood="dim"]    .lc-glow { opacity: .25; }');
+    rules.push('.lumi-stage[data-mood="happy"]  .lc-glow, .lumi-stage[data-mood="hug"] .lc-glow, .lumi-stage[data-mood="glow"] .lc-glow { opacity: .85; }');
+    rules.push('.lumi-stage.lumi-pulse .lc-figure { animation: lumiJoy .62s var(--ease, cubic-bezier(.34,1.3,.5,1)); }');
+    rules.push('@keyframes lumiJoy { 0% { transform: scale(1); } 40% { transform: scale(1.12) rotate(-2deg); } 100% { transform: scale(1); } }');
+    // legacy: any leftover inline SVG from old markup stays hidden
+    rules.push('.lumi-stage .lumi-svg { display: none; }');
+
+    var st = document.createElement('style');
+    st.id = 'lumi-character-css';
+    st.textContent = rules.join('\n');
+    document.head.appendChild(st);
+  }
 
   function mount(el) {
+    injectCSS();
     el.classList.add('lumi');
     el.innerHTML =
-      '<div class="lumi-stage" data-mood="idle">' + SVG + '</div>' +
+      '<div class="lumi-stage" data-mood="idle">' +
+        '<div class="lc-glow"></div>' +
+        '<div class="lc-figure"></div>' +
+      '</div>' +
       '<div class="lumi-bubble" hidden></div>';
     var stage  = el.querySelector('.lumi-stage');
     var bubble = el.querySelector('.lumi-bubble');
 
     function setMood(name) {
-      if (MOODS.indexOf(name) === -1) name = 'idle';
+      if (!MOOD_SRC[name]) name = 'idle';
       stage.setAttribute('data-mood', name);
     }
 
-    // say — bubble content is HTML (gesture glyphs / Hebrew UI only). Pass ''
-    // to hide. NEVER used to show English word-text in the child loop.
+    // say — bubble content is HTML (gesture glyphs / Hebrew procedural UI only).
+    // NEVER English word-text in the child loop. Pass '' to hide.
     function say(html) {
       if (!html) { bubble.hidden = true; bubble.innerHTML = ''; return; }
       bubble.hidden = false;
@@ -77,8 +91,7 @@ window.LumiCharacter = (function () {
     // pulse — a quick celebratory bloom (a lantern lit / correct answer).
     function pulse() {
       stage.classList.remove('lumi-pulse');
-      // force reflow to restart the animation
-      void stage.offsetWidth;
+      void stage.offsetWidth;   // restart the animation
       stage.classList.add('lumi-pulse');
     }
 
