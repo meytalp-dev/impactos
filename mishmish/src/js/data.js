@@ -22,6 +22,324 @@ window.MISHMISH_DATA = {
   },
   "packs": [
     {
+      "pack": "class",
+      "_schema": "rich topic-pack per briefs/pack-schema.md §2 (meta/lexicon/patterns/contrasts/target). מזין את כל 6 המכניקות דרך target.<mechanic>. דאטה בלבד — אין קוד.",
+      "_filename_note": "🔴 שם הקובץ = pack-CLASS.json (מקף), לא pack.class.json (נקודה) כפי שנכתב במשימה — כי _build-data.js מגלה packs ב-`f.startsWith('pack-')`. קובץ בנקודה היה נדלג בשקט ולא מגיע ל-runtime. תואם ל-pack-market.json / pack-mapping.json.",
+      "_img_note": "img = נתיב יחסי מתחת ל-assets/items/ כולל סיומת (למשל 'class/item-sefer.png' → assets/items/class/item-sefer.png). מכניקה קוראת lexeme.img ומקדימה '../assets/items/'. (שים לב: lantern.js הישן מוסיף '.png' לבד ל-items[].options[].img — זה מבנה הפריטים הישן; ה-pack הזה הוא המבנה העשיר החדש עם lexicon.)",
+      "_gates": "🔴 (א) כל עברית = טיוטה לאישור מיטל (asks.meytal). (ב) כל cognate_ar/audio_amiya = טיוטת עאמייה ar_verified:false → asks.native (tools/arabic-review-tool.html). ה-pack לא עובר done עד אישור בודק ילידי.",
+      "meta": {
+        "id": "class",
+        "topic": "אֲנִי וְהַכִּתָּה",
+        "topic_en": "me and my class · greetings & class objects",
+        "week_range": "1-4 · ספטמבר 2026",
+        "setting": "hara-courtyard",
+        "bg": "bg-hara-courtyard.png",
+        "space": "hara",
+        "amir": true,
+        "sound_wave": 1,
+        "literacy_sight_words": [
+          "אֲנִי",
+          "כֵּן",
+          "לֹא",
+          "שָׁלוֹם"
+        ],
+        "cognate_focus": {
+          "he": "שָׁלוֹם",
+          "ar": "سلام",
+          "ar_verified": false
+        },
+        "pb_focus_note": "מוקד פּ/בּ בגל 1 = קליל, שמיעתי-מודעות בלבד (בְּבַקָּשָׁה · פִּתְחוּ) — לא מוקד-הבחנה כבד."
+      },
+      "lexicon": [
+        {
+          "id": "machberet",
+          "type": "object",
+          "he": "מַחְבֶּרֶת",
+          "gloss": "notebook",
+          "img": "class/item-machberet.png",
+          "emoji": "📓",
+          "audio_he": "lex/machberet-he",
+          "cognate_ar": "دفتر",
+          "audio_amiya": "lex/machberet-amiya",
+          "ar_verified": false,
+          "gender": "f",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "machak",
+          "type": "object",
+          "he": "מַחַק",
+          "gloss": "eraser",
+          "img": "class/item-machak.png",
+          "emoji": "🧽",
+          "audio_he": "lex/machak-he",
+          "cognate_ar": "محّاية",
+          "audio_amiya": "lex/machak-amiya",
+          "ar_verified": false,
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "kise",
+          "type": "object",
+          "he": "כִּסֵּא",
+          "gloss": "chair",
+          "img": "class/item-kise.png",
+          "emoji": "🪑",
+          "audio_he": "lex/kise-he",
+          "cognate_ar": "كرسي",
+          "audio_amiya": "lex/kise-amiya",
+          "ar_verified": false,
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "yalkut",
+          "type": "object",
+          "he": "יַלְקוּט",
+          "gloss": "schoolbag",
+          "img": "class/item-yalkut.png",
+          "emoji": "🎒",
+          "audio_he": "lex/yalkut-he",
+          "cognate_ar": "شنطة",
+          "audio_amiya": "lex/yalkut-amiya",
+          "ar_verified": false,
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "sefer",
+          "type": "object",
+          "he": "סֵפֶר",
+          "gloss": "book",
+          "img": "class/item-sefer.png",
+          "emoji": "📖",
+          "audio_he": "lex/sefer-he",
+          "cognate_ar": "كتاب",
+          "audio_amiya": "lex/sefer-amiya",
+          "ar_verified": false,
+          "_cognate_alt": "סֵפֶר ↔ سِفْر (sifr) = קוגנט-אמת (שורש ס-פ-ר), אך המילה היומיומית בעאמייה = كتاب. לבחירת הבודק הילידי.",
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "iparon",
+          "type": "object",
+          "he": "עִפָּרוֹן",
+          "gloss": "pencil",
+          "img": "class/item-iparon.png",
+          "emoji": "✏️",
+          "audio_he": "lex/iparon-he",
+          "cognate_ar": "قلم",
+          "audio_amiya": "lex/iparon-amiya",
+          "ar_verified": false,
+          "gender": "m",
+          "number": "sg",
+          "sound_tags": [
+            "p_medial"
+          ],
+          "_pb": "עִפָּרוֹן נושא פָּ (פּ דגושה) — עוגן צליל /p/ לגל 1."
+        },
+        {
+          "id": "shalom",
+          "type": "greeting",
+          "he": "שָׁלוֹם",
+          "gloss": "hello / peace",
+          "img": null,
+          "emoji": "👋",
+          "audio_he": "lex/shalom-he",
+          "cognate_ar": "سلام",
+          "audio_amiya": "lex/shalom-amiya",
+          "ar_verified": false,
+          "_cognate": "🔗 קוגנט-הליבה של נושא 1: שָׁלוֹם ↔ سلام (שורש ש/ס-ל-מ). לחישת-הגשר של אמיר.",
+          "gender": null,
+          "number": null,
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "toda",
+          "type": "greeting",
+          "he": "תּוֹדָה",
+          "gloss": "thank you",
+          "img": null,
+          "emoji": "🙏",
+          "audio_he": "lex/toda-he",
+          "cognate_ar": "شكراً",
+          "audio_amiya": "lex/toda-amiya",
+          "ar_verified": false,
+          "gender": null,
+          "number": null,
+          "sound_tags": [
+            "b_p_free"
+          ]
+        },
+        {
+          "id": "bevakasha",
+          "type": "greeting",
+          "he": "בְּבַקָּשָׁה",
+          "gloss": "please / you're welcome",
+          "img": null,
+          "emoji": "🤲",
+          "audio_he": "lex/bevakasha-he",
+          "cognate_ar": "لو سمحت",
+          "audio_amiya": "lex/bevakasha-amiya",
+          "ar_verified": false,
+          "gender": null,
+          "number": null,
+          "sound_tags": [
+            "b_initial"
+          ],
+          "_pb": "בְּבַקָּשָׁה נושאת בְּ ראשונית (בּ דגושה) — עוגן צליל /b/ מול פִּתְחוּ."
+        }
+      ],
+      "patterns": [
+        {
+          "id": "greet",
+          "frame": "שָׁלוֹם · מַה שְּׁלוֹמְכֶם?",
+          "intent": "לְבָרֵךְ",
+          "structure": "ברכת-מפגש",
+          "slots": [
+            "shalom",
+            "toda",
+            "bevakasha"
+          ],
+          "audio_frame": "pat/greet",
+          "reply_frames": [
+            "שָׁלוֹם!",
+            "תּוֹדָה, טוֹב!"
+          ],
+          "recurs_in": [
+            "class",
+            "family",
+            "play"
+          ],
+          "_note": "ברכה + שאלת-שלום בלשון רבים (מַה שְּׁלוֹמְכֶם). פנייה לילד תמיד רבים."
+        },
+        {
+          "id": "this_that",
+          "frame": "זֶה ___",
+          "intent": "לְהַצְבִּיעַ / לְזַהוֹת",
+          "structure": "זה + שם-עצם",
+          "gendered": true,
+          "frame_f": "זֹאת ___",
+          "slots": [
+            "machberet",
+            "machak",
+            "kise",
+            "yalkut",
+            "sefer",
+            "iparon"
+          ],
+          "audio_frame": "pat/this-that",
+          "recurs_in": [
+            "class",
+            "family",
+            "food"
+          ],
+          "_note": "ציר מין: 'זֶה סֵפֶר' (m) מול 'זֹאת מַחְבֶּרֶת' (f) — מזין grammar-toggle."
+        },
+        {
+          "id": "what_is",
+          "frame": "מַה זֶּה?",
+          "intent": "לִשְׁאוֹל",
+          "structure": "שאלת-זיהוי",
+          "slots": [
+            "machberet",
+            "machak",
+            "kise",
+            "yalkut",
+            "sefer",
+            "iparon"
+          ],
+          "audio_frame": "pat/what-is",
+          "answer_pattern": "this_that",
+          "recurs_in": [
+            "class",
+            "food",
+            "colors"
+          ],
+          "_note": "שאלה → תשובת מילה/שתיים ('זֶה עִפָּרוֹן'). זוג עם this_that ל-roleplay."
+        },
+        {
+          "id": "open_close",
+          "frame": "פִּתְחוּ אֶת הַ___ · סִגְרוּ אֶת הַ___",
+          "intent": "לְהוֹרוֹת",
+          "structure": "הוראה קצרה (ציווי רבים)",
+          "slots": [
+            "sefer",
+            "yalkut"
+          ],
+          "extra_targets": [
+            "דֶּלֶת"
+          ],
+          "audio_frame": "pat/open-close",
+          "recurs_in": [
+            "class"
+          ],
+          "_note": "הוראות פשוטות מהברִיף: 'פִּתְחוּ אֶת הַסֵּפֶר' (נושאת פִּ) · 'סִגְרוּ אֶת הַדֶּלֶת'. מזין follow-instr. הַדֶּלֶת אין לה נכס-תמונה עדיין (asks.meytal)."
+        }
+      ],
+      "contrasts": [
+        {
+          "pair": [
+            "בְּ",
+            "פִּ"
+          ],
+          "words": [
+            [
+              "בְּבַקָּשָׁה",
+              "פִּתְחוּ"
+            ]
+          ],
+          "lex_refs": [
+            "bevakasha",
+            "iparon"
+          ],
+          "wave": 1,
+          "level": "gentle",
+          "audio": [
+            "con/bevakasha",
+            "con/pitchu"
+          ],
+          "ar_verified": false,
+          "_note": "זוג פּ/בּ הרשמי של נושא 1 (הברִיף: הפרעה = בבקשה · פִּתְחוּ). גל 1 = מודעות-שמע קלילה בלבד, לא הבחנה כבדה. אודיו חייב להישמע מובחן (QA תמלול Whisper). 🔴 לאישור מיטל."
+        }
+      ],
+      "target": {
+        "swim-hunt": "audioWord → lexeme.img",
+        "same-different": "contrast.pair discrimination",
+        "missing-slot": "pattern.frame → choose slot",
+        "grammar-toggle": "lexeme.gender/number match (זֶה/זֹאת)",
+        "follow-instr": "pattern open_close verb + lexeme (פִּתְחוּ/סִגְרוּ)",
+        "roleplay": "pattern.frame produced to Amir (מַה זֶּה? → זֶה ___)"
+      },
+      "_mechanic_reads": {
+        "swim-hunt": "lexicon (objects, img) + target.swim-hunt — זיהוי-בשמיעה פר-lexeme",
+        "same-different": "contrasts — הבחנת בְּ/פִּ",
+        "missing-slot": "patterns (this_that/greet) — בחירת slot",
+        "grammar-toggle": "lexicon.gender/number + pattern this_that (זֶה/זֹאת)",
+        "follow-instr": "pattern open_close + lexicon — ביצוע הוראה",
+        "roleplay": "patterns what_is+this_that + amir — turn דו-לשוני"
+      }
+    },
+    {
       "pack": "mapping",
       "mechanic": "lantern",
       "place": {
