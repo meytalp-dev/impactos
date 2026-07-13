@@ -58,6 +58,19 @@
     // fruits (T8 · The Fruit Basket) — 'orange' already mapped above (shared w/ T4).
     'apple': 'apple', 'banana': 'banana',
     'I want an apple.': 'iwant-apple', 'I want a banana.': 'iwant-banana', 'I want an orange.': 'iwant-orange',
+    // family (T12 · The Family Photo) — bare word (recognize/discriminate/meet),
+    // the "Where is my ___?" scene-hide chunk (comprehend), and the "This is my ___!"
+    // warm naming spoken when a family member is found. Both "Mum." and "mum" map to one clip.
+    'mum': 'mum', 'Mum.': 'mum', 'dad': 'dad', 'Dad.': 'dad', 'baby': 'baby', 'Baby.': 'baby',
+    'brother': 'brother', 'Brother.': 'brother', 'sister': 'sister', 'Sister.': 'sister',
+    'grandma': 'grandma', 'Grandma.': 'grandma', 'grandpa': 'grandpa', 'Grandpa.': 'grandpa',
+    'Where is my mum?': 'where-mum', 'Where is my dad?': 'where-dad', 'Where is the baby?': 'where-baby',
+    'Where is my brother?': 'where-brother', 'Where is my sister?': 'where-sister',
+    'Where is my grandma?': 'where-grandma', 'Where is my grandpa?': 'where-grandpa',
+    'This is my mum!': 'this-mum', 'This is my dad!': 'this-dad', 'This is the baby!': 'this-baby',
+    'This is my brother!': 'this-brother', 'This is my sister!': 'this-sister',
+    'This is my grandma!': 'this-grandma', 'This is my grandpa!': 'this-grandpa',
+    'I love you!': 'ilove',
   };
   Object.keys(clips).forEach(function (text) {
     LumiAudio.clipMap[text] = base + clips[text] + '.mp3';

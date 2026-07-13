@@ -472,10 +472,21 @@ TASKS.forEach(t=>{t.gpt=GPT_ASSETS[t.id]; t.gptPrompt=GPT_PROMPT(t.gpt,t.subEn);
 
 const LS_KEY='lumi-minigames-board-v1';
 // pets כבר חי (baked). השאר todo.
-const BAKED_STATUS={T0:'done', T1:'done', T2:'done', T3:'done', T4:'done', T5:'done', T6:'done', T7:'done', T8:'done', T10:'done'};
+const BAKED_STATUS={T0:'done', T1:'done', T2:'done', T3:'done', T4:'done', T5:'done', T6:'done', T7:'done', T8:'done', T10:'done', T12:'done'};
 // הערות/משימות־המשך שסוכנים כותבים בסיום (נשמר בקובץ → נראה בכל דפדפן, לא רק localStorage).
 // כל סוכן מוסיף: BAKED_NOTES['T1']=['ASK: sheep age_flag','חסר איור cow — ART-BRIEF נפתח'];
 const BAKED_NOTES={};
+BAKED_NOTES['T12']=[
+  'משחקון: lumi/app/family-photo.html (🖼️ תְּמוּנַת הַמִּשְׁפָּחָה). מכניקה: סצנה־נסתרת (scene-hide) המשותפת — לא נגעתי בקובץ המכניקה; חווט page-local בלבד (הזרקת דמויות דרך paintFamily → assets/family/*.png + CSS מקומי). קליפת־איכות: safari-beam skeleton בפלטת lantern-grove מנטה/חמים. סבב: לומי שואל צ׳אנק שלם ("Where is my mum?") והילד מוצא ונוגע בבן־המשפחה בתמונה. הבמה מסוגננת כתמונה תלויה (מסגרת מאט לבנה + רקע חדר)',
+  'מילים: mum/dad/baby/brother/sister/grandma/grandpa — כולן מוכרות לגיל 6, אין age_flag אוצרי',
+  '🟡 ASK מיטל (הגייה, לא אוצר): "mum" מוקלט בקול Jessica (אמריקאי) ונשמע קרוב ל־"mom" (Whisper תמלל "mom"). שתי הצורות תקינות; אם רוצים מבטא בריטי מובהק ל־mum — צריך voice/הגייה אחרת. שאר 21 הקליפים תומללו מדויק',
+  '✅ איורים: מיטל סיפקה 7 דמויות־משפחה + רקע בית (13/7 22:42) → אושר מיפוי איתה (mum=(1),dad=(2),baby=(3),brother=(4),sister=(5),grandma=(6),grandpa=(7),bg=(8)) → rembg (isnet-general-use + alpha-matting fg=250/bg=15, שומר glow-rim) → assets/family/{7}.png + assets/worlds/family/room-bg.png (רקע נשאר אטום, מוחשך ב-CSS overlay). מחווטים ופעילים. אין נכסים חסרים. ART-BRIEF-t12-family.md נפתח (סטטוס: הוטמע — רשומת נכסים)',
+  'אודיו מוקלט: 22/22 קליפי אנגלית הופקו (ElevenLabs · Jessica · multilingual_v2): 7 מילים + 7 צ׳אנק scene-hide "Where is my ___?" + 7 צ׳אנק חם "This is my ___!" + "I love you!". אינטרו+סיום עברית (נוני · eleven_v3): family-intro-he/family-done-he. ✅ QA-Whisper: 22/22 תומללו נכון (mum≈mom — ראה ASK)',
+  'חיווט BKT: recognize×3 + discriminate×1 פר-מילה → word_receptive · comprehend×1 (scene-hide "Where is my ___?") → chunk_comprehension · meet+produce = null. confusables (discriminate): mum↔grandma · dad↔brother (לפי הברִיף) + grandma↔grandpa (משקפיים) · sister↔mum (פרח/פפיון) · baby↔brother (צעירים)',
+  'items/t12-family.json (49 פריטים): meet×7 + recognize×21 + discriminate×7 + produce×7 + comprehend×7. מיקומי־תשובה מאוזנים, distractor_rationale + help_he לכל פריט. מסיחי recognize מגדרים את השותף־המבלבל (חי בבנק discriminate). מחולל: scratchpad/gen-t12.js. _emoji (7 נוספו) + audio-clips + _build-data חווטו; data.js נבנה מחדש (403 פריטים)',
+  'QA headless (Playwright, לחיצת "בואו נתחיל" ידנית — לא רק autoplay): הבמה לא ריקה (measure-scene h=660, 3 peekers נראים + has-art) · no_read נקי (0 אותיות לטיניות במסך־הילד) · קונסולה 0 שגיאות · סבב autoplay מלא: 7/7 פנסים נדלקים עד מסך־הסיום (לומי אומר "I love you!")',
+  'תלות: scene-hide.js משותף (T12 ראשון להשתמש בו) — לא נגעתי. חיווט page-local בלבד. אין תלויות חדשות',
+];
 BAKED_NOTES['T10']=[
   'משחקון: lumi/app/t10-face.html (👀 הָאִירוּ אֶת הַפָּנִים). מכניקה: אלומת־אור (light-beam) המשותפת — לא נגעתי בקובץ המכניקה; חווט page-local בלבד. קליפת-איכות: find-the-feeling (T3) בפלטת lantern-grove teal-dusk. סבב: הילד מקשיב למילה ומאיר עם אלומת-האור על החלק הנכון בפני-לומי (hotspots במקום כרטיסים)',
   'מילים: eyes/nose/mouth/ears (עיניים/אף/פה/אוזניים) — כולן מוכרות לגיל 6, אין age_flag אוצרי',
