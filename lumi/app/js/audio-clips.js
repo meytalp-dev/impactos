@@ -71,6 +71,13 @@
     'This is my brother!': 'this-brother', 'This is my sister!': 'this-sister',
     'This is my grandma!': 'this-grandma', 'This is my grandpa!': 'this-grandpa',
     'I love you!': 'ilove',
+    // measured comprehend / chunk prompts (scene-hide "Where is…", TPR "Find the…",
+    // numbers "How many?…") — these are MEASURED, so a recorded voice matters most here.
+    'Where is the dog?': 'where-the-dog', 'Where is the cat?': 'where-the-cat',
+    'Where is the cow?': 'where-the-cow', 'Where is the lion?': 'where-the-lion',
+    'Find the duck.': 'find-the-duck', 'Find the monkey.': 'find-the-monkey', 'Find the ball.': 'find-the-ball',
+    'How many? Two.': 'howmany-two', 'How many? Three.': 'howmany-three', 'How many? Five.': 'howmany-five',
+    'How many? Seven.': 'howmany-seven', 'How many? Ten.': 'howmany-ten',
   };
   Object.keys(clips).forEach(function (text) {
     LumiAudio.clipMap[text] = base + clips[text] + '.mp3';

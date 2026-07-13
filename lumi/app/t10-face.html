@@ -187,6 +187,11 @@
     if (/[?&]frame=1/.test(q)) document.body.classList.add('frame');
 
     var D = window.LUMI_DATA || { emoji: {}, reps: {} };
+    // page-local glyph override: the bare 👂 for "ears" is identical to the target
+    // button's 👂 "listen" icon (locked in _measured-core) → confusing. Use 🦻 (a distinct
+    // ear silhouette) here only, until the real face-portrait art lands. Never mutate the
+    // shared global D.emoji / _emoji.json.
+    var EMOJI = Object.assign({}, D.emoji, { ears: '🦻' });
     var WORDS = ['eyes', 'nose', 'mouth', 'ears'];   // T10 · Face
     // confusable partner (kept OUT of recognize distractors → the tough pair lives in
     // the discriminate bank, not this playable recognize loop).
@@ -199,7 +204,7 @@
 
     // emoji → word (to identify each rendered hotspot in DOM/options order)
     var glyphWord = {};
-    WORDS.forEach(function (w) { var g = D.emoji && D.emoji[w]; if (g) glyphWord[g] = w; });
+    WORDS.forEach(function (w) { var g = EMOJI[w]; if (g) glyphWord[g] = w; });
 
     var stageEl = document.getElementById('stage');
     var progEl = document.getElementById('prog');
@@ -217,7 +222,7 @@
     var pkEls = {};
     WORDS.forEach(function (w) {
       var el = document.createElement('span'); el.className = 'pk';
-      el.innerHTML = '<span class="dot"></span><span>' + ((D.emoji && D.emoji[w]) || '❔') + '</span>';
+      el.innerHTML = '<span class="dot"></span><span>' + (EMOJI[w] || '❔') + '</span>';
       peekEl.appendChild(el); pkEls[w] = el;
     });
     function markFound(w) { found[w] = true; if (pkEls[w]) pkEls[w].classList.add('on'); }
@@ -263,8 +268,8 @@
       var word = order[idx++];
       stageEl.innerHTML = '';
       LumiLightBeam.present(stageEl, {
-        item: makeItem(word), emoji: D.emoji, lumi: null,
-        targetRep: { glyph: (D.emoji && D.emoji[word]) || '❔' },
+        item: makeItem(word), emoji: EMOJI, lumi: null,
+        targetRep: { glyph: EMOJI[word] || '❔' },
         instructionHe: idx === 1 ? 'הַקְשִׁיבוּ וְהָאִירוּ' : null, showInstruction: idx === 1,
         onMeasured: function () {},
         onDone: function () {
