@@ -33,7 +33,9 @@ lumi/app/assets/
 └── worlds/farm-path/
     └── backgrounds/farm-bg.png
 ```
-> **מצב נוכחי:** המשחקון בר-בדיקה **עכשיו** עם **placeholder אמוג׳י** (🐮🐴🦆🐷🐑 מ-`_emoji.json`) ורקע-CSS (שמי-שקיעה + שדה). כשה-PNG יגיעו — צעד פוליש קצר יחווט אותם למכניקת path-choice (כמו שנעשה ל-pets ב-`lantern-grove.css`). **אל תבנה פוליש חזותי לפני אישור המכניקה.**
+> **מצב נוכחי (עודכן):** מיטל סיפקה איורים → **4/5 חיות + רקע-החווה כבר מחווטים ופעילים** במשחקון:
+> `cow.png · horse.png · duck.png · pig.png` (soft-3D, אחרי **rembg** לשקיפות אמיתית) + `farm-bg.png`.
+> **חסר רק `sheep`** — נשאר placeholder אמוג׳י (🐑) עד אישור ה-age_flag של מיטל והפקת האיור.
 
 ---
 
@@ -65,5 +67,6 @@ lumi/app/assets/
 inner glow · אורות שנדלקים · ניצוצות/חלקיקים · השבילים המקווקוים · ברק/זוהר-פנס · הצללות. אלה תאורה/אפקט — קלים ועקביים יותר ב-CSS.
 
 ## ✅ צ'קליסט מסירה
-- [ ] 5 × animals/farm/*.png (סט אחיד, רקע שקוף אמיתי אחרי rembg) — **sheep רק אחרי אישור מיטל**
-- [ ] 1 × worlds/farm-path/backgrounds/farm-bg.png (אנכי, מרכז פנוי)
+- [x] cow.png · horse.png · duck.png · pig.png (rembg → שקיפות, מחווטים ל-path-choice)
+- [ ] **sheep.png — ממתין לאישור מיטל (age_flag)**
+- [x] worlds/farm-path/backgrounds/farm-bg.png (רפת שקיעה, מחווט כסצנה)

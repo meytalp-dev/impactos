@@ -127,8 +127,9 @@
       if (idx >= order.length) return showDone();
       var word = order[idx++];
       stageEl.innerHTML = '';
+      var it = makeItem(word);
       LumiPathChoice.present(stageEl, {
-        item: makeItem(word),
+        item: it,
         emoji: D.emoji || {},
         targetRep: { glyph: (D.emoji && D.emoji[word]) || '❔' },
         instructionHe: idx === 1 ? 'הַקְשִׁיבוּ וְהוֹבִילוּ' : null, showInstruction: idx === 1,
@@ -139,6 +140,12 @@
           setTimeout(nextRound, 950);
         },
       });
+      // tag each trail with its animal so the CSS swaps emoji → real PNG
+      // (options render in the same order path-choice.present iterates them).
+      var btns = stageEl.querySelectorAll('.trail-animal');
+      for (var b = 0; b < btns.length; b++) {
+        if (it.options[b]) btns[b].setAttribute('data-animal', it.options[b].img);
+      }
     }
 
     function showDone() {
