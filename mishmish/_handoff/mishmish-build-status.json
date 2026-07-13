@@ -5,26 +5,58 @@
     "native_reviewer": "כל טקסט עאמייה עובר tools/arabic-review-tool.html לפני שה-pack עובר ל-done"
   },
   "F1": {
-    "status": "done", "agent": "scaffold", "updated": "13.7",
+    "status": "done",
+    "agent": "scaffold",
+    "updated": "13.7",
     "notes": "שכבת שפת-הישרדות הרוחבית כמקור-אמת יחיד. חדש: data/scaffold.json (survival_bar=3 כפתורים again/slow/help עם label_he מנוקד+emoji+action/arg; amir_hints=3 מדרגים encourage/point/amiya, he-טיוטה + ar-טיוטה מגודרת). חדש: src/js/shared/scaffold.js → window.MishmishScaffold.render()/bind()/amirHint(): מזריק את השורה עם ה-id הקיימים (sv-again/sv-slow/sv-help) כך ש-play.js/lantern.js מחווטים כרגיל (לא נגעתי בהם). וירתי index.html+lantern.html: הוחלף הקידוד-הכפול ב-<nav id=survival> ריק + <script js/shared/scaffold.js> + render() לפני start(). אומת בדפדפן (Chrome headless) על שני הדפים — השורה מוזרקת זהה למקור, אפס שגיאות; וב-node harness (render/bind/amirHint, idempotent, fallback). fallback ב-scaffold.js מבטיח שהשורה מוזרקת גם לפני rebuild.",
     "asks": {
-      "meytal": ["amir_hints.he (3 מחרוזות גנריות לאישור פדגוגי): encourage='עוֹד פַּעַם — הַקְשִׁיבוּ טוֹב, אַתֶּם קְרוֹבִים!' · point='הִסְתַּכְּלוּ — מִישְׁמִישׁ מַרְאֶה לָכֶם אֵיפֹה.' · amiya='אָמִיר לוֹחֵשׁ לָכֶם בַּעֲרָבִית…'"],
-      "native": ["amir_hints.ar (3 טיוטות עאמייה, ar_verified:false, לא מוצגות כברירת-מחדל) ל-tools/arabic-review-tool.html: encourage='كمان مرّة — اسمعوا منيح، قرّبتوا!' · point='تطلّعوا — مشمش بيوريكم وين.' · amiya='أمير بيوشوشلكم بالعربي…'"]
+      "meytal": [
+        "amir_hints.he (3 מחרוזות גנריות לאישור פדגוגי): encourage='עוֹד פַּעַם — הַקְשִׁיבוּ טוֹב, אַתֶּם קְרוֹבִים!' · point='הִסְתַּכְּלוּ — מִישְׁמִישׁ מַרְאֶה לָכֶם אֵיפֹה.' · amiya='אָמִיר לוֹחֵשׁ לָכֶם בַּעֲרָבִית…'"
+      ],
+      "native": [
+        "amir_hints.ar (3 טיוטות עאמייה, ar_verified:false, לא מוצגות כברירת-מחדל) ל-tools/arabic-review-tool.html: encourage='كمان مرّة — اسمعوا منيح، قرّبتوا!' · point='تطلّعوا — مشمش بيوريكم وين.' · amiya='أمير بيوشوشلكم بالعربي…'"
+      ]
     },
     "needs_rebuild": "🔴 כן — הוספתי data/scaffold.json + שורה ב-_build-data.js (DATA.scaffold=readJson('scaffold.json')). data.js המיוצר טרם כולל scaffold; התזמורת תריץ `node src/js/_build-data.js` באינטגרציה. עד אז scaffold.js נופל ל-FALLBACK (survival_bar זהה) → אפס שבירה; amir_hints יהיו זמינים רק אחרי rebuild (אף מכניקה נוכחית לא צורכת אותם עדיין)."
   },
   "AMIR": {
-    "status": "done", "agent": "amir", "updated": "13.7",
+    "status": "done",
+    "agent": "amir",
+    "updated": "13.7",
     "notes": "רכיב-הפיגום הדו-לשוני (אמיר) כחוזה אחיד לכל המכניקות. חדש: src/js/shared/amir.js → window.MishmishAmir: attach(el)→instance{show,hide,listening,happy,el} + singleton show/hide/listening/happy על #scaffold. API: amir.show(level,{he,ar}) — level=מדרג('encourage'/'point'/'amiya') או מספר(1/2/3); texts דורס ברירת-מחדל מ-scaffold.json (MishmishScaffold.amirHint). מדיניות-עולם: אמיר-כדמות מופיע רק במדרג 'עאמייה' (אחרי השמעה-חוזרת+חזותי); בועה=רמז-עברי(יעד)+🔴 עאמייה מגודרת — ה-.ar נכתב ל-DOM (למען הבודק) אך מוסתר ב-CSS ([data-arabic-verified=false]) ולא מושמע אלא-אם root='true' וגם audio.ARABIC_VERIFIED; מצבי-דמות listening(הילד עונה/עידוד)/hint(מרמז/עאמייה)/happy(הצלחה); אין כפתור-תרגום. אין מחרוזות עאמייה קשיחות ב-amir.js — הכל מ-scaffold.json(F1) או מ-texts. ensure() משלים img/.he/.ar לכל container (עמיד לשתי מוסכמות: .show class + hidden attr). חיווט ל-measured.js דרך ה-ctx.scaffold הקיים (בלי לשבור חוזה): scaffoldHint(step) מגלה אמיר רק ב-step≥3 (עאמייה), scaffoldHide() בהצלחה+אתחול, awaitingAnswer→listening אם מוצג; כולם feature-detected → בלי amir.js נופל ל-toggle hidden הישן (אפס שינוי לדפים קיימים). אומת: node harness 7/7 (show/gating/override/level-מספרי/מצבים/ensure/scaffoldHint-step≥3) + headless Chrome 14/14 על src/amir-demo.html (שמיעתי-קודם→אריחים נעולים; מדרג1-2 אמיר מוסתר; מדרג3 אמיר מופיע+he מוצג+עאמייה נכתבה אך display:none בפועל+data-arabic-verified=false+אין כפתור; הצלחה→happy→נעלם). regression: index.html (בלי amir.js) נטען headless — אפס שגיאות-JS, אריחים מלאים, scaffold hidden (fallback תקין).",
     "asks": {
-      "meytal": ["🔴 אישור-עיצוב-אינטראקציה: אמיר-כדמות מופיע רק במדרג-הרמז האחרון ('עאמייה'), אחרי השמעה-חוזרת (מדרג1=מישמיש) והצבעה-חזותית (מדרג2). כך המתוכנן ב-HANDOFF (מדרג רמזים השמעה→חזותי→עאמייה). לאשר שזו ההתנהגות הרצויה (או אם רוצים שאמיר יופיע כבר במדרג-עידוד). טקסטי he עצמם = של F1 (כבר ב-asks.meytal של scaffold), לא כתבתי חדשים."],
-      "native": ["אין עאמייה חדשה — amir.js צורך את ar-הטיוטות מ-data/scaffold.json (F1) בלבד, כולן ar_verified:false ומגודרות. אין מה לאמת מעבר למה שכבר ב-asks.native של F1 (3 מדרגי amir_hints.ar)."]
+      "meytal": [
+        "🔴 אישור-עיצוב-אינטראקציה: אמיר-כדמות מופיע רק במדרג-הרמז האחרון ('עאמייה'), אחרי השמעה-חוזרת (מדרג1=מישמיש) והצבעה-חזותית (מדרג2). כך המתוכנן ב-HANDOFF (מדרג רמזים השמעה→חזותי→עאמייה). לאשר שזו ההתנהגות הרצויה (או אם רוצים שאמיר יופיע כבר במדרג-עידוד). טקסטי he עצמם = של F1 (כבר ב-asks.meytal של scaffold), לא כתבתי חדשים."
+      ],
+      "native": [
+        "אין עאמייה חדשה — amir.js צורך את ar-הטיוטות מ-data/scaffold.json (F1) בלבד, כולן ar_verified:false ומגודרות. אין מה לאמת מעבר למה שכבר ב-asks.native של F1 (3 מדרגי amir_hints.ar)."
+      ]
     },
     "needs_rebuild": "לא ל-amir.js/measured.js (קוד בלבד; לא נגעתי ב-data/). 🔴 תלות: amir.js קורא he/ar מ-scaffold.json דרך MishmishScaffold.amirHint — לפני שהתזמורת מריצה `node src/js/_build-data.js` (תלות F1), data.js חסר scaffold ו-amirHint נופל ל-tiers ריקים → אמיר יראה בועה ריקה אלא-אם המכניקה מספקת {he,ar} או הדף מגדיר window.MISHMISH_SCAFFOLD (כמו ב-amir-demo.html). 🔴 אימוץ בדפים: index/same-different/missing-slot עדיין לא טוענים <script js/shared/amir.js> — הוספתו (עבודת-אינטגרציה, HTML בבעלות סוכנים אחרים) מפעילה את הרכיב; עד אז measured.js נופל להתנהגות-הישנה. נגעתי רק ב: amir.js(חדש), measured.js(חיווט ctx.scaffold — אין F-owner ללוח), amir-demo.html(חדש, דף-בדיקה עצמאי)."
   },
-  "F5": { "status": "doing", "agent": "seed", "updated": "13.7", "notes": "audio.js v0 קיים (clipMap seam + Web Speech fallback, ערבית מגודרת). חסר: הקלטת קליפים אמיתיים + QA Whisper + הפרדת קול-מישמיש/אמיר." },
+  "F5": {
+    "status": "doing",
+    "agent": "audio",
+    "updated": "14.7",
+    "notes": "audio.js v0 + scripts/generate-mishmish-audio.py + _mishmish_tts.py + assets/audio/{he,lex,pat,con,market,mapping}/ + manifest.json (32 מפתחות). קול-מישמיש ZI6I4a3UGgs1DXxqWjBV eleven_v3.",
+    "orchestrator": "14.7 · אומת ומוחזק לא-committed: הקליפים אמיתיים (ID3 MP3, 11-25KB) — סונתזה אצווה ראשונה: lex food(10)+mapping frames(16)+market(3)+pat(1)+con(2)=32. עאמייה מגודרת נכון (65 clips ב-gated_amiya, ar/ ריקה בדיסק ✅). 🔴 לא-גמור: (1) 13 אזהרות-QA-Whisper לא-נפתרו (qa_warn:13/32) — הגייה חשודה, אסור לשלוח לילדים בלי אוזן; (2) חסרים קליפי-he לכל 5 ה-packs החדשים (family/colors/body/nature/hobbies lex-he + patterns); (3) הסוכן השאיר doing. → assets/audio/ + scripts/ נשארים untracked עד: פתרון 13 warns + כיסוי packs חדשים + סימון done. עד אז המכניקות נופלות ל-Web-Speech (מותר). 🟣 asks.meytal: לאשר קול-מישמיש בקליפים שנוצרו + הכרעה על 13 ה-warns."
+  },
+  "M5": {
+    "status": "done",
+    "agent": "follow-instr",
+    "updated": "14.7",
+    "orchestrator": "14.7 · הסוכן לא עדכן status — התזמורת מתעדת. 2 קבצים: src/js/templates/mechanic-follow-instr.js + src/follow-instr.html. אומת מבנית/סטטית (אין playwright בתזמורת): תחביר נקי (node --check), DATA-DRIVEN (MishmishData.pick{mechanic:'follow-instr'} + fixture-fallback → לא קורס), BKT.ingest קיים, סדר-סקריפטים תקין (data→loader→bkt→scaffold→amir→epa→flow→מכניקה). additive (דף חדש, לא נוגע במסכים קיימים). committed. 🟣 טרם אימות-console חי + אישור-פדגוגיה לטקסט-הילד (רשום לבדיקת מיטל)."
+  },
+  "M6": {
+    "status": "done",
+    "agent": "roleplay",
+    "updated": "14.7",
+    "orchestrator": "14.7 · הסוכן לא עדכן status — התזמורת מתעדת. 2 קבצים: src/js/templates/mechanic-roleplay.js + src/roleplay.html. אומת מבנית/סטטית: תחביר נקי, DATA-DRIVEN (MishmishData.pick{mechanic:'roleplay'} + fixture-fallback), BKT.ingest קיים, סדר-סקריפטים תקין (כולל amir — turn עם אמיר). additive. committed. 🔴 M6=נטו-חדש (אין קונכיית-מקור); 🟣 טרם אימות-console חי + אישור מודל-הפקה (בחירה-בין-2) וניסוח turns (לבדיקת מיטל)."
+  },
   "F6": {
-    "status": "done", "agent": "bkt-l2", "updated": "13.7",
+    "status": "done",
+    "agent": "bkt-l2",
+    "updated": "13.7",
     "notes": "BKT-L2 גל A הושלם ב-src/js/bkt.js. מיטל אישרה (שלב-0): (1) סט-KC = 5 תבניות-שדרה בלבד (this_that/have/want/give_me/see_hear); (2) סף-דרגה = ≥2 נכונות בניסיון-ראשון עם ≥2 מילות-יעד שונות. יושם: מפתח-KC=intent::pattern (KC_META עם intent+he+spine); סולם 3 רמות פר-KC (recognize→identifies, produce_supported→L2, produce_independent→L3) עם דגלי-ראיה שקופים (seen/correct/distinctWords/reached/status — בלי אחוזים; pKnown רק תחת _signal פנימי); תיוג-מסיח רב-צירי (evt.errorAxis→kc.miss{sound/pattern/vocab}, נגזר אוטומטית: pb_focus→sound אחרת vocab); פּ/בּ מפוצל-context (snapshot.pb.onset מול .sentence) כדי לזהות 'מבחין בתחילת מילה אך לא במשפט'. offline נשמר + snapshot()/pbAccuracy()/level()/getPattern() תואמי-לאחור + מיגרציית v1→v2. אומת ב-node harness (23/23) מול צורות ה-evt האמיתיות של lantern.js+play.js: reached-thresholds, distinct-words gate, miss-axes, pb-context, 3 רמות, reload-offline, migration. לא נגעתי בקוראים (evt הקיים עדיין עובד — intent נגזר מהמפה).",
     "asks": {
       "meytal": [],
@@ -32,9 +64,16 @@
     },
     "needs_rebuild": "לא — ערכתי רק src/js/bkt.js (לא data/). אין תלות ב-data.js. 🔴 הערה למכניקות/תוכן: כדי לנצל את הרזולוציה החדשה, ה-evt של ה-ingest יכול לשאת אופציונלית: intent (אחרת נגזר מ-pattern), errorAxis ('sound'/'pattern'/'vocab' בטעות), pb_context ('onset'/'sentence'). ה-pack-ים כרגע שולחים pattern=give_me/mapping — רק give_me הוא KC-שדרה נמדד; 'mapping' נשאר probe (spine:false)."
   },
-  "M1": { "status": "done", "agent": "seed", "updated": "13.7", "notes": "lantern.html+lantern.js בנוי ועובד (swim-hunt/הפנס). 🔴 כרגע hard-codes pack 'mapping' — צריך ליטוש: לקרוא pack דרך ?pack= מ-pack-loader הכללי." },
+  "M1": {
+    "status": "done",
+    "agent": "seed",
+    "updated": "13.7",
+    "notes": "lantern.html+lantern.js בנוי ועובד (swim-hunt/הפנס). 🔴 כרגע hard-codes pack 'mapping' — צריך ליטוש: לקרוא pack דרך ?pack= מ-pack-loader הכללי."
+  },
   "M3": {
-    "status": "done", "agent": "slot", "updated": "13.7",
+    "status": "done",
+    "agent": "slot",
+    "updated": "13.7",
     "notes": "התבנית העוצרת (missing-slot) — עמוד-שדרה של התבניות. חדש (2 קבצים בלבד, בלי לגעת במשותף): src/js/templates/mechanic-missing-slot.js → window.MishmishMissingSlot + src/missing-slot.html. המכניקה data-driven טהורה: קוראת patterns מה-pack ({id,frame,slots[{id,he,img,pb_focus}],intent,audio_frame} לפי pack-schema §2) דרך MishmishData.pick({pack,mechanic:'missing-slot'}); אין תוכן קשיח בקוד. מישמיש אומר בקשה מלאה על-פי תבנית, המסך מציג את המשפט המנוקד עם חלל (אֲנִי רוֹצֶה ___), 3 אריחי-מילה (יעד+2 מסיחים מאותן slots, סדר קבוע), הילד בוחר את המשלים. חוזה measured.js נשמר 1:1 בדרייבר: שמיעתי-קודם (אריחים נעולים עד סוף ההשמעה), רק ניסיון-ראשון נמדד, בלי אדום/ירוק (retry=צהוב, selected=כחול-זהות, מישמיש confused-soft→hint), מדרג-רמז השמעה-חוזרת(frame)→הצבעה-חזותית→פיגום-אמיר, עאמייה מגודרת. מדידה: evt.pattern=pattern.id, evt.target=מזהה-מילה (סף ≥2-מילים-שונות), dimension='produce_supported' (רמה 2), pb_context='sentence' (מבחין פּ/בּ בתוך משפט מול onset). אודיו דרך MishmishAudio.hebrew עם seam clipMap (key-prefix 'want-') → כשאין קליפ מוקלט נופל ל-Web-Speech fallback חי (מותר). אומת בדפדפן (Playwright/Chromium, phone-portrait 414 + tablet-landscape 1024): אפס console errors; אריחים נעולים באינטרו→נפתחים; טעות→confused-soft+אמיר+retry-צהוב בלי אדום; נכון→מילוי-החלל+celebrate; סיום; BKT רשם request::want ברמת produces_supported (3 seen/2 correct/2 distinctWords) + pb.sentence 1/1 (לא onset) + miss.vocab=1 — בדיוק KC=intent+pattern. עד שה-pack יקבל patterns, המכניקה נופלת ל-fixture window.MISHMISH_MISSING_SLOT_DEMO שחי בדף missing-slot.html (לא במכניקה, לא ב-pack) — מסומן כטיוטה.",
     "asks": {
       "meytal": [
@@ -50,7 +89,9 @@
     "needs_rebuild": "לא — יצרתי רק 2 קבצים חדשים (mechanic-missing-slot.js + missing-slot.html), לא נגעתי ב-data/ / packs / משותף. 🔴 להמשך (P-task/סוכן-pack): להזריק patterns ל-pack (pack-schema §2: patterns:[{id:'want',frame:'אֲנִי רוֹצֶה ___',intent:'request',slots:[{id,he,img,pb_focus}],audio_frame,audio_key_prefix:'want-'}]) — אז המכניקה תעדיף אותם על ה-fixture אוטומטית. + להקליט קליפי 'want-<slotId>.mp3' תחת assets/audio/market/ (QA Whisper) כדי לשדרג מ-TTS-fallback לקול-מישמיש מוקלט."
   },
   "M4": {
-    "status": "done", "agent": "grammar", "updated": "13.7",
+    "status": "done",
+    "agent": "grammar",
+    "updated": "13.7",
     "notes": "מכניקת grammar-toggle (התאמת מין/מספר · target=\"lexeme.gender/number match\"). חדש (2 קבצים בלבד, בלי לגעת במשותף/pack/data): src/js/templates/mechanic-grammar-toggle.js → window.MishmishGrammarToggle + src/grammar-toggle.html. DATA-DRIVEN טהור — קורא pack.grammar{gender:{items:[{nounId,adj:{m,f}}]},number:{items:[{baseId,sg,pl,_show,count_pl}]}} + resolver id→pack.lexicon (נשען על lexicon.gender/number בדיוק כמו §2). שני תת-מצבים: (א) מין — מישמיש אומר 'זֶה כִּסֵּא'/'זֹאת מַחְבֶּרֶת' (frame זֶה/זֹאת נושא רמז-מין), בוחרים תואר תואם (גָּדוֹל/גְּדוֹלָה); (ב) מספר — התמונה מציגה כמות (1 מול הרבה, ע\"י שכפול ה-PNG — בלי נכס-'רבים' חדש), בוחרים צורה תואמת (סֵפֶר/סְפָרִים). סבבים משורגים מין↔מספר. שמיעתי-קודם (אריחים נעולים עד סוף ההשמעה), בלי אדום/ירוק (retry=צהוב wobble, selected=כחול-זהות, confused-soft→hint→amir), מדרג-רמז זהה ל-M2/M3. אודיו דרך MishmishAudio.hebrew עם seam clipMap (keys gt:gender:*/gt:count/gt:*-full) → TTS-fallback חי עד הקלטה. שורת-הישרדות דרך MishmishScaffold.bind. מדידה=מפת-מרחקים פר-מימד: שני KC נפרדים ב-bkt.js (לא נגעתי בו!) — pattern='gender_agree'(intent agree_gender) + 'number_agree'(intent agree_number), שניהם spine:false (probe, כמו contrast של M2 — לא מזהמים 5 תבניות-השדרה); dimension='recognize'; target=מזהה-שם-עצם (סף ≥2-מילים-שונות=הכללת-כלל); טעות-דקדוק→errorAxis='pattern'. אומת: (1) node harness מול bkt.js האמיתי — שני KC, reached ב-≥2 נכונות/≥2 מילים, miss.pattern=1 (לא sound/vocab), spine נקי, level פר-מימד. (2) בדפדפן דרך CDP driver (Chrome headless, ריצה מלאה 6 סבבים): אפס exceptions, אפס מחלקות אדום/ירוק ב-DOM, שני KC נרשמו, finale+peek הגיעו; אימות שהניסיון-הראשון בלבד נמדד (המדידה מדווחת number=new כשה-first-try היה שגוי — נאמן). (3) screenshots phone 414 + tablet 1024×768 — layout תקין, אפס גלישה אופקית (bodyScrollW===innerW), רקע bg-hara-courtyard (המרחב של הילד), ניקוד מלא Heebo, יעדי-מגע ≥56px. עד שה-pack יקבל grammar — נופל ל-fixture window.MISHMISH_GRAMMAR_TOGGLE_DEMO שחי בדף (לא במכניקה, לא ב-pack), מסומן כטיוטה.",
     "asks": {
       "meytal": [
@@ -69,16 +110,24 @@
     "needs_rebuild": "לא — יצרתי רק 2 קבצים חדשים (mechanic-grammar-toggle.js + grammar-toggle.html); לא נגעתי ב-data/ / packs / bkt.js / משותף. 🔴 להמשך (P-task/סוכן-pack, אחרי אישור מיטל לתוכן): להזריק ל-pack-class.json בלוק grammar={gender:{instruction,items:[{nounId,adj:{m,f}}]}, number:{instruction,items:[{baseId,sg,pl,_show:'sg'|'pl',count_pl}]}} — שם-העצם (he/img/gender/number) נפתר אוטומטית מ-lexicon הקיים לפי nounId/baseId; אז המכניקה תעדיף pack.grammar על ה-fixture. + להקליט קליפי אודיו (gt:gender:<id>=משפט-שם-עצם, gt:count=שאלת-כמות, gt:gender-full/gt:number-full=מודל-אחרי-נכון) תחת assets/audio/ (QA Whisper) לשדרוג מ-TTS-fallback לקול-מישמיש. הערה ל-bkt.js/מבט-מבוגר: 2 KC חדשים (agree_gender::gender_agree, agree_number::number_agree, spine:false, miss.pattern) = מפת-המרחקים פר-מימד."
   },
   "M2": {
-    "status": "done", "agent": "same-diff", "updated": "13.7",
+    "status": "done",
+    "agent": "same-diff",
+    "updated": "13.7",
     "notes": "מכניקת 'אוֹתוֹ אוֹ שׁוֹנֶה?' (הבחנת-צליל, נושאת מסלול פּ/בּ גל 1-2 שמיעתי). נבנו: src/js/templates/mechanic-same-different.js (→window.MishmishSameDiff) + src/same-different.html. DATA-DRIVEN: קוראת pack.contrasts ומסננת לפי contrast.wave מול pack.sound_wave (לוגיקת-הגל אומתה ב-node). מבנה-פריט: שתי השמעות רצף (GAP 480ms) → 2 אריחי-שיפוט גדולים נעולים עד סוף ההשמעה (שמיעתי-קודם). מדידה=ניסיון-ראשון בלבד→BKT.ingest{pattern:'contrast',intent:'discriminate',target=תווית-זוג,pb_focus,pb_context:'onset',errorAxis:'sound'}; אומת ב-node מול bkt.js האמיתי: KC 'discriminate::contrast' (spine:false, לא מזהם 5 השדרה), rung identifies נרכש ב-≥2 זוגות, miss.sound, pb.onset a/s נכונים, non-first-try לא נספר, pbAccuracy תקין. בלי אדום/ירוק: טעות→מישמיש confused-soft→מדרג-רמז (השמעה-חוזרת איטית→הצבעה חזותית→פיגום-אמיר מ-scaffold.amirHint, ערבית מגודרת). שורת-הישרדות דרך MishmishScaffold.bind. אומת בדפדפן (Chrome headless, טאבלט 1024×768, ?open=1): רקע-שוק, בועה, 2 כרטיסי-השמעה, 2 אריחים, מישמיש, שורת-הישרדות — נטען נקי, אפס שגיאות, layout על-פי הטוקנים. נגעתי רק בקבצים שלי (מכניקה+HTML)+briefs (בקשת-נכסי-צבע §F)+assets/items/colors/README. לא נגעתי ב-pack/ליבה.",
     "asks": {
-      "meytal": ["FALLBACK contrasts (טיוטה, עד ש-P5 יספק pack.contrasts): זוג1 בָּנָנָה/פָּנָס, זוג2 פֶּרַח/בַּיִת — פּ/בּ בתחילת-מילה, גל 1 שמיעתי. לאשר/להעביר ל-pack.", "אריחי-שיפוט: 'אוֹתוֹ' (🟰) / 'שׁוֹנֶה' (⚡) + בועת-הוראה 'אוֹתוֹ אוֹ שׁוֹנֶה?' — לאישור ניסוח/אימוג'י.", "עצמי-צבע (6 PNG) ל-assets/items/colors/ = בקשת-GPT ב-briefs §F (לא נוצרים בקוד); same-different עצמה לא צורכת אותם."],
+      "meytal": [
+        "FALLBACK contrasts (טיוטה, עד ש-P5 יספק pack.contrasts): זוג1 בָּנָנָה/פָּנָס, זוג2 פֶּרַח/בַּיִת — פּ/בּ בתחילת-מילה, גל 1 שמיעתי. לאשר/להעביר ל-pack.",
+        "אריחי-שיפוט: 'אוֹתוֹ' (🟰) / 'שׁוֹנֶה' (⚡) + בועת-הוראה 'אוֹתוֹ אוֹ שׁוֹנֶה?' — לאישור ניסוח/אימוג'י.",
+        "עצמי-צבע (6 PNG) ל-assets/items/colors/ = בקשת-GPT ב-briefs §F (לא נוצרים בקוד); same-different עצמה לא צורכת אותם."
+      ],
       "native": []
     },
     "needs_rebuild": "לא — ערכתי רק קוד (mechanic+html) ו-briefs/README. אין שינוי ב-data/*.json → אין צורך ב-rebuild. 🔴 תלות פתוחה: (1) contrasts אמיתיים בתוך pack (משימת P — כרגע FALLBACK בקוד, מסומן); (2) F5 להקליט את זוגות-המילים (כרגע Web Speech fallback חי; המנוע קורא clip דרך key='sd:<word>' כשיוקלט)."
   },
   "P1": {
-    "status": "doing", "agent": "pack-class", "updated": "13.7",
+    "status": "doing",
+    "agent": "pack-class",
+    "updated": "13.7",
     "notes": "ה-pack הראשון בתוכנית השנתית (נושא 1 · 'אֲנִי וְהַכִּתָּה' · שבועות 1-4). חדש: data/pack-class.json — דאטה בלבד, מבנה עשיר לפי pack-schema §2 (meta/lexicon/patterns/contrasts/target-6-מפתחות) שמזין את כל 6 המכניקות. lexicon=9 (6 חפצי-כיתה עם תמונות אמיתיות + 3 מילות-ברכה): מַחְבֶּרֶת(f)/מַחַק/כִּסֵּא/יַלְקוּט/סֵפֶר/עִפָּרוֹן + שָׁלוֹם/תּוֹדָה/בְּבַקָּשָׁה. כל lexeme: he מנוקד, gloss, img, emoji, gender/number, sound_tags, cognate_ar+audio_amiya (טיוטה ar_verified:false). patterns=4: greet(שָׁלוֹם·מַה שְּׁלוֹמְכֶם?), this_that(זֶה/זֹאת — ציר-מין ל-grammar-toggle), what_is(מַה זֶּה?), open_close(פִּתְחוּ/סִגְרוּ — follow-instr). contrasts=1: בְּבַקָּשָׁה↔פִּתְחוּ (זוג פּ/בּ הרשמי של נושא 1 מהברִיף, wave 1 קליל). meta: setting=hara-courtyard, space=hara, amir=true, sound_wave=1, cognate=שָׁלוֹם/سلام. נכסים: 6 PNG שקופים הועתקו ל-assets/items/class/ (item-machberet/machak/kise/yalkut/sefer/iparon.png) — אומתו קיימים; bg-hara-courtyard.png קיים. JSON אומת ב-node (תקין, 6 target keys, כל נתיבי-התמונה נפתרים). 🔴 שם-קובץ: השתמשתי ב-pack-class.json (מקף) ולא pack.class.json (נקודה) כי _build-data.js מגלה packs ב-startsWith('pack-') — קובץ-נקודה היה נדלג בשקט. 🔴 seam למכניקות: slots ב-patterns = מזהי-lexeme (מחרוזות, לפי §2) ולא אובייקטים מוטבעים {id,he,img,pb_focus} כפי ש-M3 מימש — יש לפתור מול lexicon בזמן-build/מכניקה (ראו needs_rebuild).",
     "asks": {
       "meytal": [
@@ -94,9 +143,65 @@
     },
     "needs_rebuild": "🔴 כן — הוספתי data/pack-class.json חדש. _build-data.js יגלה אותו אוטומטית (startsWith('pack-')); התזמורת תריץ `node src/js/_build-data.js` באינטגרציה כדי שייכנס ל-data.js/window.MISHMISH_DATA. 🔴 שני seams לתזמורת/מכניקות: (1) patterns[].slots = מזהי-lexeme (מחרוזות לפי §2); M3 missing-slot מצפה כרגע ל-slots כאובייקטים {id,he,img,pb_focus} — לפתור מזהים מול lexicon (build denormalize או resolver במכניקה). (2) img = נתיב מתחת ל-assets/items/ כולל '.png' (class/item-x.png); lantern.js הישן מוסיף '.png' לבד ל-items[].options[].img (המבנה הישן) — המכניקות העשירות קוראות lexeme.img ומקדימות '../assets/items/' בלבד."
   },
-  "P5": { "status": "doing", "agent": "seed", "updated": "13.7", "notes": "pack-market.json קיים חלקית (3 פריטי give_me, אודיו: banana/tapuz/tapuach). חסר: contrasts (פּ/בּ), עוד פריטים, roleplay, וכל help_ar עדיין ar_verified:false." },
+  "P5": {
+    "status": "done",
+    "agent": "pack-market",
+    "updated": "14.7",
+    "notes": "ה-pack החמישי (נושא 5 · 'אֹכֶל וּקְנִיּוֹת' · השוק המשותף · שבועות 17-21 · פבר'–מרץ 2027). השלמתי את data/pack-market.json מ-3-פריטי-give_me-בלבד לרמת pack-class.json 1:1 — הוספתי את הרובד העשיר (meta/lexicon/patterns/contrasts/target/_mechanic_reads) לצד השדות-הישנים, בלי לשבור תאימות-לאחור. 🔴 תאימות-לאחור אומתה: השדות ברמת-השורש (pack/mechanic/place/topic/pattern/pattern_he) + 3 פריטי items[] (give_me: tapuz/banana/tapuach) נשמרו בייט-אחר-בייט כי play.js (pick{pack:'market',mechanic:'give-me'}, קורא pack.place.he/pack.pattern/item.prompt/item.options/item.target) ו-lantern.js קוראים אותם. meta: id=market, topic='אֹכֶל וּקְנִיּוֹת', setting=shared-market, bg=bg-shared-market.png, space=shared (מרחב-משותף — לא hara), amir=true, sound_wave=3 (גל פּ/בּ מלא). lexicon=10 מאכלים: 9 עם תמונות אמיתיות שאומתו קיימות ב-assets/items/food/ (item-apple/banana/orange/bread/cheese/tomato/cucumber/grapes/milk.png) + מִשְׁמֵשׁ(apricot, img:null→emoji 🍑, קוגנט-הליבה+שם-הדמות). כל lexeme: he מנוקד · gloss · img(food/item-*.png נתיב-מלא §2) · emoji · audio_he:'lex/<id>-he' · cognate_ar+audio_amiya:'lex/<id>-amiya'+ar_verified:false · gender/number · sound_tags. sound_tags מדויקים ל-pbFocusFromTags של missing-slot: banana=b_initial (onset→pb_focus true, צד ה-/b/), apple/orange=p_medial (dagesh /p/, לא onset→false), gvina/agvania/milk=b_p_free (בֿ רפה /v/), melafefon=b_p_free (פֿ רפה /f/). patterns=4, נושא 3 תבניות-שדרה (bkt KC_META spine ≥2 ✓): want(אֲנִי רוֹצֶה ___) · give_me(תֵּן לִי ___, זהה למכניקה-הישנה) · this_that(זֶה/זֹאת gendered — ציר-מין ל-grammar-toggle) + howmuch(כַּמָּה זֶה עוֹלֶה? — probe שוק, לא-שדרה). כל slots=מזהי-lexeme (מחרוזות §2, נפתרים מול lexicon ע\"י resolver M3-fix). contrasts=1: 🔴 בָּנָנָה↔פָּנָס — זוג פּ/בּ הרשמי של השוק גל 3 (מהברִיף), wave 3 level=focus (מוקד-הבחנה מלא, לא קליל כגל 1), lex_refs=['banana'], ar_verified:false. target=6 מפתחות עשירים + give-me הישן (7 סה\"כ) → data-loader.targetOf('give-me') עדיין מחזיר את המחרוזת הישנה. אימות (node): JSON תקין · 10 lexemes/4 patterns/3 items · 0 slot/lex_refs שבורים · 3 backbone patterns · legacy pack=market/mechanic=give-me/pattern=give_me/place.he=בַּשּׁוּק שמורים · 9/9 נתיבי-food קיימים בפועל (apricot=null מכוון). 🔴 לא הרצתי _build-data.js — רק שמרתי JSON (התזמורת בונה באינטגרציה). אימות-דפדפן חי לא-אפשרי בלי rebuild (הצינור מריץ אותו) → needs_rebuild.",
+    "asks": {
+      "meytal": [
+        "🔴 אישור עברית + ניקוד לכל ה-pack (טיוטה): lexicon — תַּפּוּחַ · בָּנָנָה · תַּפּוּז · לֶחֶם · גְּבִינָה · עַגְבָנִיָּה · מְלָפְפוֹן · עֲנָבִים · חָלָב · מִשְׁמֵשׁ. patterns — 'אֲנִי רוֹצֶה ___' · 'תֵּן לִי ___' · 'כַּמָּה זֶה עוֹלֶה?' · 'זֶה ___' / 'זֹאת ___' (זֶה לֶחֶם / זֹאת בָּנָנָה). ב/כ/פ דגש-קל בראש-הברה (בָּנָנָה=בּ /b/, תַּפּוּחַ/תַּפּוּז=פּ /p/ דגושה medial). לאשר במיוחד עַגְבָנִיָּה/מְלָפְפוֹן (ניקוד ארוך) + עֲנָבִים (רבים).",
+        "🔴 זוג פּ/בּ הרשמי של השוק (גל 3): בָּנָנָה(בּ ראשונית)↔פָּנָס(פּ ראשונית) — מהברִיף. גל 3 = מוקד-הבחנה מלא. פָּנָס = פריט לא-אכיל, אין לו lexeme/תמונה בשוק. לאשר: (א) האם רוצים נכס-תמונה לפָּנָס לוויזואל ב-same-different, או (ב) הבחנה שמיעתית-בלבד (שתי השמעות, בלי תמונה). כרגע מוגדר כשמיעתי-בלבד.",
+        "🔴 נכס חסר: אין assets/items/food/item-apricot.png — מִשְׁמֵשׁ (קוגנט-הליבה + שם-הדמות) נופל כרגע ל-emoji 🍑. לאשר: להפיק נכס תמונת-משמש, או להשתמש בדמות מישמיש עצמה כתמונת-הפריט.",
+        "אוצר-מילים לאישור התאמה-לגיל (גן/א'): מְלָפְפוֹן · עַגְבָנִיָּה · גְּבִינָה — לוודא מוכרים לגיל 5-8 בעברית."
+      ],
+      "native": [
+        "🔴 כל cognate_ar + audio_amiya + place.ar = טיוטה ar_verified:false → tools/arabic-review-tool.html: תַּפּוּחַ=تفاحة · בָּנָנָה=موزة · תַּפּוּז=برتقالة · לֶחֶם=خبز · גְּבִינָה=جبنة · עַגְבָנִיָּה=بندورة (עאמייה — לא طماطم?) · מְלָפְפוֹן=خيار · עֲנָבִים=عنب · חָלָב=حليب · מִשְׁמֵשׁ=مشمش (קוגנט-הליבה, כמעט-זהה + שם-הדמות). + place.ar='بالسوق' + contrast audio (con/banana, con/panas) לאימות הגייה. אף ערבית לא מוצגת/מושמעת כברירת-מחדל עד אישור ילידי. 🔴 בندورة/طماطم = הבדל אזורי בעאמייה (עגבנייה) — לבחירת הבודק לפי אזור-הפיילוט."
+      ]
+    },
+    "needs_rebuild": "🔴 כן — ערכתי data/pack-market.json (הוספת רובד עשיר). _build-data.js יגלה אותו (startsWith('pack-')); התזמורת תריץ `node src/js/_build-data.js` באינטגרציה. עד אז הרובד-העשיר לא ב-runtime — אך התאימות-לאחור מלאה: play.js/lantern.js קוראים את items[]/place/pattern הקיימים ב-data.js הנוכחי בלי שינוי, אפס שבירה. 🔴 seams זהים ל-P1/P2: slots=מזהי-lexeme (resolver M3-fix תומך); img=נתיב-מלא food/*.png (מכניקות מקדימות '../assets/items/'). 🔴 אודיו: לא הוקלטו lex/<id>-he/-amiya/pat/*/con/* — עד הקלטה+QA Whisper המכניקות העשירות נופלות ל-Web-Speech fallback (מותר עד F5); 3 פריטי give-me הישנים כבר בעלי אודיו market/{banana,tapuz,tapuach}.mp3. לא נגעתי בשום קובץ אחר (רק data/pack-market.json + דיווח זה)."
+  },
+  "P8": {
+    "status": "done",
+    "agent": "pack-hobbies",
+    "updated": "14.7",
+    "notes": "ה-pack האחרון בתוכנית השנתית (נושא 8 · 'תַּחְבִּיבִים, מִקְצוֹעוֹת וְאֵרוּעִים' · שבועות 31-34 · מאי–יוני 2027 · חֲזָרָה ל-A1). חדש: data/pack-hobbies.json — דאטה בלבד, נבנה על תבנית-הזהב pack-class.json 1:1 (meta/lexicon/patterns/contrasts/target-6-מפתחות/_mechanic_reads), רק התוכן השתנה. meta: id=hobbies, setting=shared-park, bg=bg-shared-park.png, space=shared, amir=true, sound_wave=4, cognate_focus=טַבָּח/طبّاخ (קוגנט-אמת שורש ט-ב-ח). lexicon=8: 4 תחביבים (כַּדּוּרֶגֶל m / אוֹפַנַּיִם dual / מִכְחוֹל m / מוּזִיקָה f) + 4 מקצועות עם ציר-מין m/f (רוֹפֵא·רוֹפְאָה / מוֹרֶה·מוֹרָה / טַבָּח·טַבָּחִית / נֶהָג·נַהֶגֶת). כל lexeme: he מנוקד · gloss · img(hobbies/<file>.png §2) · emoji · gender/number · sound_tags · audio_he='lex/<id>-he' · cognate_ar+audio_amiya='lex/<id>-amiya' (טיוטה ar_verified:false); כל lexeme-מקצוע נושא בנוסף he_f+audio_he_f לציר grammar-toggle. patterns=4 (3 שדרה + 1 חוויתית, ≥2 שדרה כנדרש לחזרה ל-A1): want(אֲנִי רוֹצֶה ___ · spine request) · like(אֲנִי אוֹהֵב/אוֹהֶבֶת ___ · ממוגדר-דובר frame_f, לא-KC/חוויתי) · this_that(זֶה/זֹאת ___ · spine identify · gendered · slots=4 מקצועות → מזין grammar-toggle) · give_me(תֵּן לִי ___ · spine request_object). contrasts=1: בָּלוֹן↔פַּרְפַּר (זוג בָּ/פַּ בתחילת-מילה · גל 4 level=focused · lex_refs=['cook']=עוגן /b/ טַבָּח · ar_verified:false). slots=מזהי-lexeme (מחרוזות §2, נפתרים ב-M3-resolver). target=6 מפתחות זהים ל-pack-class. אימות ב-node: JSON תקין · 8 lexemes/4 patterns/1 contrast · 6 target keys · 3 spine (want/this_that/give_me) · 8/8 תמונות-הפריט קיימות ב-assets/items/hobbies/ · bg-shared-park.png קיים · כל ה-slots מצביעים על lexeme-ids · כל ar_verified=false (מגודר). 🔴 לא הרצתי _build-data.js (רק התזמורת בונה data.js באינטגרציה) — רק שמרתי JSON.",
+    "asks": {
+      "meytal": [
+        "🔴 אישור עברית + ניקוד לכל ה-pack (טיוטה): lexicon — כַּדּוּרֶגֶל · אוֹפַנַּיִם · מִכְחוֹל · מוּזִיקָה · רוֹפֵא/רוֹפְאָה · מוֹרֶה/מוֹרָה · טַבָּח/טַבָּחִית · נֶהָג/נַהֶגֶת. patterns — 'אֲנִי רוֹצֶה ___' · 'אֲנִי אוֹהֵב/אוֹהֶבֶת ___' · 'זֶה ___'/'זֹאת ___' · 'תֵּן לִי ___'. לאשר במיוחד צורות-הנקבה של המקצועות (רוֹפְאָה·טַבָּחִית·נַהֶגֶת) וניקודן.",
+        "🔴 תבניות — הכרעה: כרטיס-הלוח המקורי (P8) הציע 'אֲנִי אוֹהֵב לְ___' + 'אֲנִי רוֹצֶה לִהְיוֹת ___' (מקצוע). ה-prompt המתואם שלי הכתיב want/like/this_that/give_me עם slot-שם-עצם (מדיד, נשען על תבניות-השדרה של bkt.js). מימשתי את ה-prompt. לאשר איזו גרסה רצויה, או לשלב 'רוֹצֶה לִהְיוֹת ___' כתבנית חמישית.",
+        "🔴 review_targets — כרטיס P8 ביקש רשימת-KC מנושאים קודמים לחזרה מרוכזת ל-A1. הנוכחי מקיים חזרה דרך 3 תבניות-השדרה, אך אין בלוק review_targets מפורש. לאשר אם צריך רשימה מפורשת (data-only, קל להוסיף).",
+        "זוג פּ/בּ (contrasts גל 4): בָּלוֹן↔פַּרְפַּר — שני פריטי-פארק מוכרים בתחילת-מילה. לאשר. (אין lexeme עם פּ דגושה נקי, לכן מילת-הניגוד חיצונית כמו ב-class/nature). הערה: pack-nature משתמש ב-פַּרְפַּר↔בַּרְוָז — חפיפה מכוונת? להכריע אם רוצים זוג שונה כאן.",
+        "ציר-מין למקצועות (grammar-toggle): מומש כ-he+he_f בכל lexeme-מקצוע (התוספת התוכנית היחידה מעבר לסכמת class). חיווט בלוק pack.grammar (nounId→m/f) = עבודת-אינטגרציה (כמו class שאין לו עדיין)."
+      ],
+      "native": [
+        "🔴 8 טיוטות עאמייה (ar_verified:false, מגודרות) → tools/arabic-review-tool.html: כַּדּוּרֶגֶל→فوتبول (או كرة قدم) · אוֹפַנַּיִם→بسكليت (או دراجة) · מִכְחוֹל→فرشاة · מוּזִיקָה→موسيقى · רוֹפֵא→دكتور · מוֹרֶה→معلّم (או أستاذ) · טַבָּח→طبّاخ (קוגנט-הליבה) · נֶהָג→سوّاق. + contrast audio (con/balon · con/parpar). אף ערבית לא מוצגת/מושמעת עד אישור.",
+        "🔴 בחירת דיאלקט למילים בעלות חלופות (بسكليت/دراجة · معلّم/أستاذ · فوتبول/كرة قدم) = החלטת בודק ילידי לפי אזור-הפיילוט."
+      ]
+    },
+    "needs_rebuild": "🔴 כן — הוספתי data/pack-hobbies.json חדש. _build-data.js יגלה אותו אוטומטית (startsWith('pack-')); התזמורת תריץ `node src/js/_build-data.js` באינטגרציה כדי שייכנס ל-data.js/window.MISHMISH_DATA. עד אז ה-pack לא ב-runtime. ההתנהגות תקינה גם לפני rebuild (target רק תיאורי). 🔴 seams זהים ל-P1: (1) slots=מזהי-lexeme (resolver M3-fix תומך); (2) img=נתיב-מלא hobbies/*.png (מכניקות מקדימות '../assets/items/'). 🔴 תוספת-תוכן יחידה מעבר לסכמת class: he_f/audio_he_f ב-4 lexemes-מקצוע (ציר-מין ל-grammar-toggle) — מתועד ב-_gender_axis_note. 🔴 קליפי אודיו טרם הוקלטו (lex/<id>-he · lex/<id>-f-he · pat/want|like|this-that|give-me · con/balon · con/parpar) → עד הקלטה+QA Whisper (F5) המכניקות נופלות ל-Web-Speech fallback. לא נגעתי בשום קובץ אחר (רק data/pack-hobbies.json + דיווח זה)."
+  },
+  "P-NATURE": {
+    "status": "done",
+    "agent": "pack-nature",
+    "updated": "14.7",
+    "notes": "נושא הטבע בתוכנית השנתית (בַּעֲלֵי חַיִּים וְטֶבַע · שבועות 27-30 · אפריל–מאי 2027). חדש: data/pack-nature.json — דאטה בלבד, נבנה על תבנית-הזהב pack-class.json 1:1 (meta/lexicon/patterns/contrasts/target-6-מפתחות/_mechanic_reads), רק התוכן השתנה. meta: id=nature, setting=shared-park, bg=bg-shared-park.png, space=shared, amir=true, sound_wave=4, cognate_focus=כֶּלֶב/كلب (קוגנט-אמת שורש כ-ל-ב). lexicon=8 (5 חיות + 3 צמחים, כל התמונות כבר קיימות ב-assets/items/nature/): חָתוּל(m)/כֶּלֶב(m)/צִפּוֹר(f)/דָּג(m)/פַּרְפַּר(m) · עֵץ(m)/פֶּרַח(m)/עָלֶה(m). כל lexeme: he מנוקד, gloss, img, emoji, gender/number, sound_tags, audio_he='lex/<id>-he', cognate_ar+audio_amiya='lex/<id>-amiya' (טיוטה ar_verified:false). patterns=3 (כולן תבניות-שדרה, ≥2 כנדרש): see_hear(אֲנִי רוֹאֶה ___ — הליבה, spine perceive, 8 slots) · have(יֵשׁ לִי ___, spine possess, 4 חיות-בית) · this_that(זֶה/זֹאת ___, spine identify, gendered, מזין grammar-toggle; צִפּוֹר=f). contrasts=1: פַּרְפַּר↔בַּרְוָז (זוג פַּ/בַּ גל 4 — המוקד הכבד; par/bar הברה-ראשונה מינימלית; פֶּרַח+צִפּוֹר=עוגני-/p/ נוספים). slots=מזהי-lexeme (מחרוזות, §2). target=6 מפתחות זהים ל-pack-class. אימות ב-node: JSON תקין · 8/8 תמונות נפתרות · bg קיים · כל ה-slots מצביעים על lexeme-ids אמיתיים · target keys זהים ל-pack-class. 🔴 לא הרצתי _build-data.js (רק התזמורת בונה data.js באינטגרציה) — רק שמרתי JSON.",
+    "asks": {
+      "meytal": [
+        "אישור ניקוד לכל הלקסיקון (8): חָתוּל · כֶּלֶב · צִפּוֹר · דָּג · פַּרְפַּר · עֵץ · פֶּרַח · עָלֶה.",
+        "אישור תבניות-השדרה: 'אֲנִי רוֹאֶה ___' · 'יֵשׁ לִי ___' · 'זֶה ___ / זֹאת ___'.",
+        "🔴 זוג-ההבחנה פּ/בּ של גל 4 = פַּרְפַּר מול בַּרְוָז. בַּרְוָז נבחר כמילת-בּ (אין בּ-דגושה ראשונית ב-8 הלקסמות; שתיהן חיות-פארק, par/bar מינימלי). לאשר את הבחירה + הניקוד. 🔴 בַּרְוָז אינו נכס-תמונה עדיין."
+      ],
+      "native": [
+        "🔴 8 טיוטות עאמייה (ar_verified:false, מגודרות — לא מוצגות/מושמעות) ל-tools/arabic-review-tool.html: חָתוּל→قطة · כֶּלֶב→كلب · צִפּוֹר→عصفور · דָּג→سمكة · פַּרְפַּר→فراشة · עֵץ→شجرة · פֶּרַח→وردة · עָלֶה→ورقة. + cognate_focus כֶּלֶב↔كلب (קוגנט-אמת) לאימות. + זוג-ההבחנה בַּרְוָז (audio con/barvaz) — לוודא שאינו מתנגש בעאמייה."
+      ]
+    },
+    "needs_rebuild": "🔴 כן — הוספתי data/pack-nature.json חדש. _build-data.js יגלה אותו אוטומטית (startsWith('pack-')); התזמורת תריץ `node src/js/_build-data.js` באינטגרציה כדי שייכנס ל-data.js/window.MISHMISH_DATA. עד אז ה-pack לא ב-runtime. ההתנהגות תקינה גם לפני rebuild (target רק תיאורי). 🔴 קליפי אודיו טרם הוקלטו (audio_he='lex/<id>-he' · con/parpar · con/barvaz · pat/see-hear · pat/have · pat/this-that) → עד הקלטה+QA Whisper (F5) המכניקות נופלות ל-Web-Speech fallback."
+  },
   "LOADER": {
-    "status": "done", "agent": "loader", "updated": "13.7",
+    "status": "done",
+    "agent": "loader",
+    "updated": "13.7",
     "notes": "pack-loader כללי: src/js/data-loader.js חדש → window.MishmishData.pack(id) + pick({pack,mechanic}) שקורא ?pack=/?mechanic= מה-URL עם ברירות-מחדל (=מה שרץ היום). play.js ו-lantern.js צורכים דרך ה-loader במקום hard-code (עם fallback לישן אם ה-loader לא נטען → אפס שבירה). הוספתי שדה גנרי target.<mechanic> ל-2 ה-packs (mapping.target.lantern, market.target['give-me']) + market קיבל mechanic:'give-me'. וירתי <script src=js/data-loader.js> ב-index.html+lantern.html אחרי data.js. אומת ב-node harness מול data.js הנוכחי וגם מול build-בזיכרון: defaults זהים, URL-override עובד, target נקרא אחיד, missing→null בלי crash. פותר את הליטוש הפתוח של M1 (hard-code של mapping).",
     "asks": {
       "meytal": [],
@@ -105,16 +210,22 @@
     "needs_rebuild": "🔴 כן — ערכתי data/pack-mapping.json + data/pack-market.json (שדות mechanic/target). data.js המיוצר טרם נבנה מחדש; התזמורת תריץ `node src/js/_build-data.js` באינטגרציה. ההתנהגות תקינה גם לפני rebuild (ה-target רק תיאורי)."
   },
   "M3-fix": {
-    "status": "done", "agent": "slot-fix", "updated": "13.7",
+    "status": "done",
+    "agent": "slot-fix",
+    "updated": "13.7",
     "notes": "תיקון seam חוזה-דאטה ב-M3 (missing-slot) בלבד — קובץ יחיד src/js/templates/mechanic-missing-slot.js, לא נגעתי בשום קובץ אחר (לא data.js/packs/משותף/HTML/מכניקות). הבעיה שזוהתה ב-P1: pack אמיתי מוסר patterns[].slots כ*מזהי-lexeme (מחרוזות)* + פרטים ב-pack.lexicon[], אך המכניקה ציפתה ל-slots כאובייקטים מלאים (fixture) → אריחים לא נבנו כשה-pack מזין. פתרון (resolver במכניקה, בלי denormalize ב-build): (1) buildLexIndex(pack) בונה id→lexeme; resolveSlot(slot) מנרמל מחרוזת-מזהה→אובייקט-אריח {id,he,img,emoji,audioKey,gender,pb_focus}, ואובייקט (fixture) נשאר כמו היום 1:1 (תאימות-לאחור). (2) normalizePatterns מסנן patterns שה-frame שלהם מכיל '___' (greet/what_is נדחים). (3) pb_focus נגזר מ-lexeme.sound_tags: onset (b_initial/p_initial) → true, b_p_free וכל השאר (כולל p_medial) → false, בספק → false — לא הומצא שדה חדש. (4) אודיו מה-pack: audio-מילה=lexeme.audio_he (audio_full_key), audio-frame=pattern.audio_frame (מודל-רמז), TTS-fallback נשמר. (5) frame ממוגדר: pattern.gendered + target נקבה → frame_f (זֹאת), אחרת frame (זֶה). (6) תמונה: lexeme.img כבר כולל תת-תיקייה+.png → מקדימים '../assets/items/' בלבד; fixture נשאר '../assets/items/food/<img>.png'. renderTiles משתמש כעת ב-src המלא הנפתר (+גיבוי-אמוג'י לפריט בלי img). אומת בדפדפן (Playwright/Chromium): missing-slot.html?pack=class → 6 סבבים מ-this_that, אריחים מַחְבֶּרֶת/מַחַק/כִּסֵּא… בעברית מנוקדת + תמונות אמיתיות מ-assets/items/class/, frame ממוגדר זֹאת למַחְבֶּרֶת(f) מול זֶה לזכר, BKT.ingest רשם pattern='this_that' target='machberet' dimension='produce_supported' pb_context='sentence', אפס console errors/warnings, אפס pageerrors. וגם ?pack= ריק (fixture) עדיין עובד זהה: 'אֲנִי רוֹצֶה ___', תמונות food/, pattern='want'. open_close (2 slots) נדחה כצפוי (<3 slots). הערה ל-P1: iparon מתויג p_medial → pb_focus=false; אם רוצים לעגן /p/ כמוקד יש לתייג p_initial/onset ב-pack (החלטת-תיוג, לא לוגיקת-מכניקה).",
     "asks": {
-      "meytal": ["scene/רקע: עם ?pack=class הרקע עדיין מציג את סצנת-ה-fixture (בַּשּׁוּק/market) כי ה-fixture תמיד קיים בדף וה-scene נקרא demo.scene לפני pack — מחוץ ל-scope התיקון הזה (רק slots/patterns), נרשם לתשומת-לב: pack.meta.setting=hara-courtyard לא מוזרם לרקע. תיקון עתידי אפשרי במכניקה (עדיין קובץ יחיד) אם רוצים."],
+      "meytal": [
+        "scene/רקע: עם ?pack=class הרקע עדיין מציג את סצנת-ה-fixture (בַּשּׁוּק/market) כי ה-fixture תמיד קיים בדף וה-scene נקרא demo.scene לפני pack — מחוץ ל-scope התיקון הזה (רק slots/patterns), נרשם לתשומת-לב: pack.meta.setting=hara-courtyard לא מוזרם לרקע. תיקון עתידי אפשרי במכניקה (עדיין קובץ יחיד) אם רוצים."
+      ],
       "native": []
     },
     "needs_rebuild": "לא — ערכתי רק src/js/templates/mechanic-missing-slot.js. לא נגעתי ב-data/ / packs / משותף / HTML → אין צורך ב-rebuild. התיקון עובד ישירות מול data.js הקיים (class כבר בנוי בו עם slots-מחרוזות + lexicon)."
   },
   "EPA": {
-    "status": "done", "agent": "epa", "updated": "14.7",
+    "status": "done",
+    "agent": "epa",
+    "updated": "14.7",
     "orchestrator": "14.7 · אומת ותועד: תחביר נקי (node --check), סדר-סקריפטים תקין ב-3 הדפים (data→loader→bkt→scaffold→epa→flow), flow.js מוגן fail-safe (guards ל-EPA/overlay/URLSearchParams חסרים → לא שובר דף). לא הרצתי console חי (אין playwright בסביבת-התזמורת) — הסתמכתי על Playwright של סוכן-EPA + אימות מבני/סטטי + עיצוב-נכשל-בטוח. committed (epa.js+flow.js+3 script-tags). asks.meytal שנותרו = שלב-עתידי (כתיבת-תוכן-אינטרבנציות, כיול-סף, דשבורד-מורה), לא חוסמי-v1.",
     "notes": "שכבת EPA (Error Pattern Analysis · אבחון-כשל→תגבור) — הועתקה למישמיש לפי מודל אבני-יסוד (architecture-mvp.md §4.3.5c + underwater-app/interventions/*.json). מיטל אישרה: הפלט = **שניהם** (ראוטר בתוך-אפליקציה + המלצת-מורה). חדש: src/js/shared/epa.js → window.MishmishEPA. 🔴 כלל-הברזל נשמר: EPA = ספירה תיאורית בלבד (בלי אחוזים/הסתברות); ה-BKT נשאר הבייסיאני היחיד. v1 קורא read-only מ-BKT.snapshot() (האגרגט הקיים) — לא נגעתי ב-bkt.js/מכניקות/HTML/data. 3 צירים: Failure=miss.{sound,pattern,vocab} · Context=pb.{onset,sentence} · Task=דרגה. API: diagnose(snap?)→{byAxis,perKc,pb,dominant} · recommendNext(diag)→תגבור-בתוך-אפליקציה {mechanic,pattern,interventionId,reason} · teacherPlan(diag)→המלצת-אינטרבנציה {interventionId,title_he,goal_he,tier,group_size,minutes,evidence}. מיפוי-כשל→תגבור (טיוטה, מוטבע כ-FALLBACK): vocab→lantern (Tier-1) · sound→same-different/הבחנת-בּ/פּ (Tier-2) · pattern→missing-slot/חיזוק-תבנית (Tier-2) · pb_sentence (onset תקין אך sentence חלש)→missing-slot/בּ-פּ-בתוך-משפט (Tier-2). אומת ב-node (4 תרחישים): vocab-dominant→lantern, sound-dominant→same-different, pb-onset-ok+sentence-weak→pb_sentence (גובר נכון), clean→אין-דומיננטי+אין-teacherPlan. שני הפלטים מיוצרים, ספירות בלבד, אפס תלות-כתיבה. ✅ מיטל אישרה את הטבלה 14.7. ✅ הראוטר חוּוט לזרימת-התלמיד: חדש src/js/shared/flow.js → window.MishmishFlow (self-attaching): מזהה #doneOverlay ומזריק כפתור 'הַמְשֵׁךְ →' בסיום → decideNext() קורא EPA.recommendNext ובונה URL (מכניקה→דף, שומר ?pack; אחרי מיפוי→נושא class). חוּוט ב-3 דפים (2 script-tags בלבד, בלי לגעת בלוגיקה): lantern.html (מקור-מיפוי + יעד-vocab), missing-slot.html (יעד-pattern/pb + default), same-different.html (יעד-sound). אומת בדפדפן (Playwright): (א) מיפוי-נקי→missing-slot?pack=class, (ב) נושא-נקי→missing-slot?pack=class, (ג) vocab-dominant→lantern?pack=class; + playthrough מלא של missing-slot עד סיום → 'הַמְשֵׁךְ →' מופיע (התלמיד טעה→vocab→נותב לפנס), אפס pageerrors.",
     "asks": {
@@ -128,7 +239,9 @@
     "needs_rebuild": "לא — קבצים חדשים src/js/shared/epa.js + flow.js (read-only מעל BKT), + 2 script-tags ב-3 דפי-HTML (additive, בלי שינוי לוגיקה). לא נגעתי ב-data/ / packs / bkt.js / מכניקות-JS. 🔴 פתוח: (1) ✅ ראוטר-בתוך-אפליקציה חוּוט (flow.js). נותר: דשבורד-מורה שקורא teacherPlan. (2) v1 קורא אגרגט snapshot; רזולוציית Failure×Context×Task מלאה פר-אירוע (יומן-אירועים כמו אבני-יסוד) דורשת tap ב-ingest — שדרוג עתידי. (3) 🔜 task 'מיפוי→נקודת-התחלה' (הבא): פריטי-מסגרת ב-pack-mapping (pattern:this_that/want... dimension:recognize) — החלטת-תוכן. (4) grammar-toggle.html + index.html טרם מחווטים ל-flow (לא ביעדי-הטבלה)."
   },
   "MAP-STARTPOINT": {
-    "status": "done", "agent": "epa", "updated": "14.7",
+    "status": "done",
+    "agent": "epa",
+    "updated": "14.7",
     "orchestrator": "14.7 · ✅ מיטל הכריעה: להשאיר 16 פריטים (זורע 'נרכשה' פר-תבנית). committed (pack-mapping.json +10 מסגרת + data.js מבונה). אומת: loader מזהה mapping=16, כל 21 תמונות-האופציות קיימות, bkt-KC נזרעים (סימולציית node מול bkt.js: ילד-חזק→5 שדרה identifies, חלש→new). 🟣 נותר async: אישור-ניקוד ל-10 משפטי-המסגרת (רשום ב-asks.meytal). מגבלה ידועה: כשל-מסגרת מתויג axis=vocab (לא pattern) — שדרוג-עתידי errorAxis מפורש.",
     "notes": "task 'מיפוי→נקודת-התחלה' (מיטל אישרה 14.7: כל 5 תבניות-השדרה, 2 פריטים כל אחת). הבעיה: משחקון-המיפוי מדד רק אוצר-מילים (pattern:'mapping', spine:false) → 5 תבניות-השדרה קיבלו אפס ראיה → אין נקודת-התחלה פר-תבנית. פתרון — **דאטה בלבד** (בלי שינוי קוד): הוספתי 10 פריטי-מסגרת ל-data/pack-mapping.json (items[]), 2 פר-תבנית-שדרה (this_that: זֶה סֵפֶר/זֹאת מַחְבֶּרֶת · have: יֵשׁ לִי כַּדּוּר/סֵפֶר · want: אֲנִי רוֹצֶה בָּנָנָה/תַּפּוּחַ · give_me: תֵּן לִי מִשְׁמֵשׁ/פֶּרַח · see_hear: אֲנִי רוֹאֶה צִפּוֹר/חָתוּל). כל פריט: pattern:<שדרה> + dimension:recognize + prompt.he מנוקד (audio_he לא-מנוקד ל-TTS) + 3 אופציות (נכון+2 מסיחים) עם תמונות/אמוג'י קיימים בלבד. lantern.js כבר קורא item.pattern → שולח ל-BKT את ה-KC האמיתי (בלי לגעת בקוד). 2 מילות-יעד שונות פר-תבנית → מאפשר גם 'נרכשה'. אומת ב-node מול bkt.js האמיתי (סימולציית lantern ingest): ילד-חזק (הכל נכון) → כל 5 השדרה מגיעות ל-identifies (seen:2/correct:2/distinctWords:2/reached:true); ילד-חלש (הכל שגוי) → כולן נשארות 'new' (נקודת-התחלה נמוכה תקינה); probe::mapping (אוצר-מילים) נשמר. סינרגיה: המיפוי זורע L1 → flow.js/EPA משתמשים ב-snapshot להחלטת התגבור הבא.",
     "asks": {
@@ -140,5 +253,78 @@
       "native": []
     },
     "needs_rebuild": "🔴 כן — ערכתי data/pack-mapping.json (הוספת 10 items). data.js המיוצר טרם נבנה מחדש; 🔴 לא הרצתי _build-data.js בעצמי (מריץ אחד יבשל גם שינויי-data/ של סוכנים מקבילים — לפי הקונבנציה התזמורת מריצה באינטגרציה). עד rebuild הפריטים לא ב-runtime. הלוגיקה אומתה מול ה-JSON הגולמי + bkt.js. לא נגעתי בקוד (lantern.js קורא item.pattern כבר היום)."
+  },
+  "P2": {
+    "status": "done",
+    "agent": "pack-family",
+    "updated": "14.7",
+    "notes": "ה-pack השני בתוכנית השנתית (נושא 2 · 'הַמִּשְׁפָּחָה וְהַחֲבֵרִים' · שבועות 5-8 · אוקטובר 2026). חדש: data/pack-family.json — דאטה בלבד, נבנה על תבנית pack-class.json 1:1 (אותם מפתחות עליונים meta/lexicon/patterns/contrasts/target/_mechanic_reads; שונה תוכן בלבד). lexicon=8 (6 בני-משפחה עם תמונות אמיתיות מ-assets/items/family/ + 2 מילות-ברכה חוזרות מ-class ל-roleplay): אַבָּא(m)/אִמָּא(f)/סַבָּא(m)/סַבְתָּא(f)/אָח(m)/אָחוֹת(f) + שָׁלוֹם/תּוֹדָה. כל lexeme: he מנוקד · gloss · img (family/fam-*.png) · emoji · audio_he:'lex/<id>-he' · cognate_ar+audio_amiya:'lex/<id>-amiya'+ar_verified:false · gender/number · sound_tags. patterns=3 עם ≥2 שדרה: this_that(spine — 'זֶה אַבָּא'/'זֹאת אִמָּא', gendered+frame_f, ציר-מין ל-grammar-toggle) · have(spine — 'יֵשׁ לִי אָח'/'יֵשׁ לִי אָחוֹת', מבנה קבוע שלא משתנה עם מין) · greet(recurs מ-class — 'שָׁלוֹם · מַה שְּׁלוֹמְכֶם?', slots shalom/toda). slots = מזהי-lexeme (מחרוזות, §2). contrasts=1: אַבָּא↔פִּתְחוּ (בַּ/פִּ, wave 1 קליל) — הצעה: לנושא-המשפחה אין זוג-מינימלי פּ/בּ טבעי, לכן עוגן /b/ פנימי (אַבָּא) מול עוגן-/p/ רוחבי (פִּתְחוּ מ-class); lex_refs=['dad'] בלבד. meta: setting=hara-courtyard, space=hara, amir=true, sound_wave=1, cognate_focus=אַבָּא/بابا (+הערה: אָח↔أخ / אָחוֹت↔أخت הם קוגנטי-אמת חזקים יותר לשורש). target=אותם 6 מפתחות (follow-instr הותאם לנושא: 'הַרְאוּ לִי אֶת ___' דאיקסיס, כי לנושא-משפחה אין תבנית-ציווי כמו open_close ב-class). אומת ב-node: (1) מפתחות עליונים ומפתחות-target זהים ל-pack-class 1:1; (2) 8 lexemes, 2 spine patterns (this_that/have), כל ה-slots ו-lex_refs נפתרים ל-lexeme קיים (0 שבורים); (3) כל 6 נתיבי-התמונה קיימים בפועל (fam-mom/dad/grandma/grandpa/sister/brother.png); (4) כל lexeme ar_verified:false (שער-עאמייה נסגר). 🔴 לא הרצתי _build-data.js — רק שמרתי JSON (התזמורת בונה באינטגרציה).",
+    "asks": {
+      "meytal": [
+        "🔴 אישור עברית + ניקוד לכל ה-pack (טיוטה): lexicon — אַבָּא · אִמָּא · סַבָּא · סַבְתָּא · אָח · אָחוֹת · שָׁלוֹם · תּוֹדָה. patterns — 'זֶה ___' / 'זֹאת ___' (זֶה אַבָּא / זֹאת אִמָּא) · 'יֵשׁ לִי ___' (יֵשׁ לִי אָח / יֵשׁ לִי אָחוֹת) · 'שָׁלוֹם · מַה שְּׁלוֹמְכֶם?'. כל הפניות לילד בלשון-רבים (הַרְאוּ לִי); ב/כ/פ דגש קל בראש-הברה (אַבָּא, סַבָּא = בּ דגושה /b/).",
+        "🔴 בחירת cognate_focus לנושא: הצעתי אַבָּא↔بابا (ידידותי-לגיל, מדובר). חלופה חזקה-יותר לשורש: אָח↔أخ / אָחוֹת↔أخت (שורש א-ח משותף, קוגנט-אמת). להכריע איזה עוגן-קוגנט מוביל.",
+        "🔴 זוג פּ/בּ (contrasts): נושא-המשפחה חסר זוג-מינימלי פּ/בּ טבעי. הצעתי אַבָּא(בַּ /b/)↔פִּתְחוּ(פִּ /p/ — מושאל מ-class כעוגן-/p/ רוחבי, wave 1 קליל). לאשר, או להחליף בזוג אחר, או להשמיט contrast לנושא זה (העוגן /b/ אַבָּא/סַבָּא ממילא חזק).",
+        "אוצר-מילים לאישור התאמה-לגיל (גן/א'): סַבְתָּא מול תֵּיתָא/סָבְתָא, סַבָּא — לוודא מוכרים; האם להוסיף מילת-רגש/חבר (למשל חָבֵר/שָׂמֵחַ) ל-roleplay מעבר לברכות?"
+      ],
+      "native": [
+        "🔴 כל cognate_ar + audio_amiya = טיוטה ar_verified:false → tools/arabic-review-tool.html: אַבָּא=بابا (קוגנט-הליבה) · אִמָּא=ماما · סַבָּא=سيدو (אזורי — jaddo/sido?) · סַבְתָּא=تيتة (teta/sitt?) · אָח=أخ (קוגנט-אמת) · אָחוֹת=أخت (קוגנט-אמת) · שָׁלוֹם=سلام · תּוֹדָה=شكراً. + contrast audio (con/abba, con/pitchu) לאימות הגייה. אף ערבית לא מוצגת/מושמעת כברירת-מחדל עד אישור ילידי. 🔴 האזוריות של סַבָּא/סַבְתָּא בעאמייה (גליל/משולש/נגב) לבחירת הבודק לפי אזור-הפיילוט."
+      ]
+    },
+    "needs_rebuild": "🔴 כן — הוספתי data/pack-family.json חדש. _build-data.js יגלה אותו אוטומטית (startsWith('pack-')); התזמורת תריץ `node src/js/_build-data.js` באינטגרציה כדי שייכנס ל-data.js/window.MISHMISH_DATA. עד אז ה-pack לא ב-runtime (אומת מול ה-JSON הגולמי + מבנה pack-class + bkt.js KC_META). 🔴 seams זהים ל-P1 (class): slots=מזהי-lexeme (M3/M3-fix resolver כבר תומך במחרוזות); img=נתיב-מלא class/family + '.png' (מכניקות עשירות מקדימות '../assets/items/'). 🔴 אודיו: לא הוקלטו קליפי lex/<id>-he/-amiya — עד הקלטה+QA Whisper המכניקות נופלות ל-Web-Speech fallback (מותר עד F5). לא נגעתי בשום קובץ אחר (רק data/pack-family.json + דיווח זה)."
+  },
+  "P-COLORS": {
+    "status": "done",
+    "agent": "pack-colors",
+    "updated": "14.7",
+    "notes": "ה-pack נושא-הצבעים בתוכנית השנתית ('צְבָעִים, מִסְפָּרִים וּכְמֻיּוֹת' · שבועות 9-12 · נוב'–דצמ'). חדש: data/pack-colors.json — דאטה בלבד, נבנה 1:1 על תבנית-הזהב data/pack-class.json (meta/lexicon/patterns/contrasts/target/_mechanic_reads); שונה רק התוכן. meta: id=colors, setting=shared-park, bg=bg-shared-park.png, space=shared, amir=true, sound_wave=2. lexicon=6 עצמי-צבע עם תמונות אמיתיות: כַּדּוּר אָדוֹם/כָּחֹל/יָרֹק/צָהֹב + פֶּרַח אָדוֹם/כָּחֹל (colors/color-{ball,flower}-{color}.png). כל lexeme: he מנוקד (שם-עצם+תואר-צבע), gloss, img, emoji, gender/number, sound_tags, cognate_ar+audio_amiya (טיוטה ar_verified:false), ו-🟢 adj:{m,f} עם צורות-הצבע (אָדוֹם/אֲדֻמָּה · כָּחֹל/כְּחֻלָּה · יָרֹק/יְרֻקָּה · צָהֹב/צְהֻבָּה) = נושא-הליבה של grammar-toggle. patterns=3: this_that (זֶה ___, spine, gendered) · what_is (מַה זֶּה?) · have (יֵשׁ לִי ___, spine) → נושא 2 תבניות-שדרה (this_that+have), עומד בדרישת ≥2. contrasts=1: פֶּרַח↔בַּלּוֹן (זוג פּ/בּ גל 2, level=emerging, ar_verified:false). target=6 מפתחות זהים לתבנית-הזהב. אומת ב-node: JSON תקין; 6 target keys תואמים 1:1 ל-pack-class; כל 6 lexemes נושאים את כל שדות-הסכמה+adj; כל 6 נתיבי-התמונה + bg נפתרים (קיימים בדיסק); כל patterns[].slots = מזהי-lexeme (מחרוזות) שנפתרים ל-lexicon; 2 תבניות-שדרה נישאות. לא נגעתי בשום קובץ אחר (מכניקות/packs/משותף/data.js).",
+    "asks": {
+      "meytal": [
+        "🔴 אישור עברית + ניקוד לכל ה-pack (טיוטה): lexicon — כַּדּוּר אָדוֹם · כַּדּוּר כָּחֹל · כַּדּוּר יָרֹק · כַּדּוּר צָהֹב · פֶּרַח אָדוֹם · פֶּרַח כָּחֹל. תארי-צבע (adj m/f) — אָדוֹם/אֲדֻמָּה · כָּחֹל/כְּחֻלָּה · יָרֹק/יְרֻקָּה · צָהֹב/צְהֻבָּה (לאשר במיוחד את צורות-הנקבה עם דגש: אֲדֻמָּה/כְּחֻלָּה/צְהֻבָּה). patterns — 'זֶה כַּדּוּר אָדוֹם' · 'מַה זֶּה?' · 'יֵשׁ לִי כַּדּוּר אָדוֹם'. כל הפניות לילד בלשון-רבים.",
+        "🔴 מגבלת gender-toggle: שני שמות-העצם בסט (כַּדּוּר · פֶּרַח) הם זכר → צורת-ה-f של התואר לא מופעלת בפועל בשום פריט. ל-gender-toggle אמיתי דרוש שם-עצם נקבה (למשל צַלַּחַת/בֻּבָּה) — או להישען כאן על ציר-המספר (sg/pl, 'מספרים וכמויות' בנושא). להכריע: להוסיף שם-עצם-נקבה לסט הצבעים, או להסתפק בציר-המספר?",
+        "🔴 זוג פּ/בּ (contrasts): פֶּרַח↔בַּלּוֹן (גל 2). פֶּרַח קיים ב-lexicon; בַּלּוֹן = מסיח-צליל מתאים-לפארק אך חסר נכס-תמונה+הקלטה. לאשר את הזוג (או להחליף למילת-בּ אחרת מוכרת-לגיל), ואם צריך אייקון בַּלּוֹן.",
+        "ציר-הקוגנט של הנושא = מספרים (שָׁלוֹשׁ↔ثلاثة, שורש שמי חזק). שמות-הצבע עצמם אינם קוגנטים נקיים. cognate_focus תיעד זאת אך לקסמות-מספר טרם ב-lexicon — לאשר אם להוסיף 1-3 מספרים כלקסמות בגל הבא."
+      ],
+      "native": [
+        "🔴 כל cognate_ar + audio_amiya = טיוטה ar_verified:false → tools/arabic-review-tool.html: כַּדּוּר=طابة (קוגנט/פוצחא كرة?) · פֶּרַח=وردة · צבעים בעאמייה: אָדוֹם=أحمر/حمرا · כָּחֹל=أزرق/زرقا · יָרֹק=أخضر/خضرا · צָהֹב=أصفر/صفرا. 🔴 שים לב: طابة/وردة נקבה בעאמייה → התואר בעאמייה נוקב (طابة حمرا) בעוד העברי זכר (כַּדּוּר אָדוֹם) — סתירת-מין בין-לשונית, החלטת-תוכן לבודק/ת. + contrast audio (con/perach, con/balon). אף ערבית לא מוצגת/מושמעת כברירת-מחדל עד אישור."
+      ]
+    },
+    "needs_rebuild": "🔴 כן — הוספתי data/pack-colors.json חדש. _build-data.js יגלה אותו אוטומטית (startsWith('pack-')); התזמורת תריץ `node src/js/_build-data.js` באינטגרציה כדי שייכנס ל-data.js/window.MISHMISH_DATA. 🔴 לא הרצתי _build-data.js בעצמי (לפי הקונבנציה + כדי לא לבשל שינויי-data/ מקבילים). עד rebuild ה-pack לא ב-runtime; אומת מול ה-JSON הגולמי + תבנית-הזהב + הדיסק. seams זהים ל-P1: patterns[].slots=מזהי-lexeme (M3/M3-fix כבר פותר מול lexicon); img=נתיב-מלא מתחת ל-assets/items/. שדה חדש adj:{m,f} על כל lexeme = seam ל-grammar-toggle כשיוזרק בלוק grammar (החלטת-תוכן עתידית, אחרי אישור מיטל). 🔴 אודיו: לא הוקלטו קליפי lex/<id>-he/-amiya — עד הקלטה+QA Whisper המכניקות נופלות ל-Web-Speech fallback (מותר עד F5)."
+  },
+  "P4": {
+    "status": "done",
+    "agent": "pack-body",
+    "updated": "14.7",
+    "notes": "ה-pack הרביעי בתוכנית השנתית (נושא 4 · 'הַגּוּף וְהָרְגָשׁוֹת' · שבועות 13-16 · ינואר 2027). חדש: data/pack-body.json — דאטה בלבד, בנוי על תבנית-הזהב data/pack-class.json 1:1 (אותם מפתחות עליונים meta/lexicon/patterns/contrasts/target/_mechanic_reads; שונה תוכן בלבד). meta: id=body, setting=hara-courtyard, space=hara, amir=true, sound_wave=2, cognate_focus=עַיִן/عين. lexicon=8 (4 איברי-גוף עם תמונות אמיתיות מ-assets/items/body/ + 4 רגשות): יָד(f)/רֹאשׁ(m)/עַיִן(f)/רֶגֶל(f) + שָׂמֵחַ/עָצוּב/עָיֵף/מְפַחֵד. איברי-הגוף עשירי-קוגנטים שמיים (עַיִן↔عين · רֹאשׁ↔راس · יָד↔إيد · רֶגֶל↔رجل). הרגשות = שמות-תואר-מצב עם he (זכר) + he_f (נקבה: שְׂמֵחָה/עֲצוּבָה/עֲיֵפָה/מְפַחֶדֶת) + audio_he_f — מוטים למין-הדובר → מזינים grammar-toggle דרך תבנית feeling. patterns=4 (נושאות 3 תבניות-שדרה ≥2): have(spine · יֵשׁ לִי ___) · see_hear(spine · אֲנִי רוֹאֶה בְּעֵינַיִם) · feeling(אֲנִי ___ · רגש, ציר-מין, לא-שדרה כמו greet/what_is ב-class) · this_that(spine · זֶה/זֹאת, ציר-מין). slots=מזהי-lexeme (מחרוזות, §2, resolver M3-fix). contrasts=1: זוג פּ/בּ גל 2 מינימל-פֵּר גופני פֶּה↔בֶּטֶן (/p/ מול /b/ בפתיח-הברה), wave=2, ar_verified:false. target=6 מפתחות זהים ל-class (follow-instr הותאם ל-TPR-גוף). נכסים: כל 8 ה-PNG קיימים ב-assets/items/body/; bg-hara-courtyard.png קיים. אומת ב-node: מפתחות-עליונים ו-target זהים ל-pack-class 1:1; 8 lexemes; 3 spine (have/see_hear/this_that); 0 slots-יתומים; כל cognate/contrast ar_verified:false; כל 8 נתיבי-התמונה קיימים בדיסק. 🔴 לא הרצתי _build-data.js — רק שמרתי JSON.",
+    "asks": {
+      "meytal": [
+        "🔴 אישור עברית + ניקוד לכל ה-pack (טיוטה): lexicon — יָד · רֹאשׁ · עַיִן · רֶגֶל · שָׂמֵחַ · עָצוּב · עָיֵף · מְפַחֵד. patterns — 'יֵשׁ לִי ___' · 'אֲנִי רוֹאֶה בְּעֵינַיִם' · 'אֲנִי ___' (רגש) · 'זֶה ___' / 'זֹאת ___'. לשון-רבים; ב/כ/פ דגש-קל בראש-הברה (בְּעֵינַיִם · פֶּה · בֶּטֶן).",
+        "🔴 צורות-הנקבה של הרגשות (he_f, ל-grammar-toggle דרך feeling): שָׂמֵחַ→שְׂמֵחָה · עָצוּב→עֲצוּבָה · עָיֵף→עֲיֵפָה · מְפַחֵד→מְפַחֶדֶת. לאשר ניקוד (אֲנִי שָׂמֵחַ m / אֲנִי שְׂמֵחָה f).",
+        "אוצר-מילים לאישור התאמה-לגיל (גן/א'): 'עָיֵף' · 'מְפַחֵד' — לוודא שמוכרים ומתאימים רגשית לכיתה א'.",
+        "🔴 זוג פּ/בּ (contrasts, גל 2): פֶּה(פּ /p/)↔בֶּטֶן(בּ /b/) — שני איברים מוכרים-לגיל, מובחנים בפתיח-הברה, אינם מ-8 הפריטים הראשיים. לאשר שזה הזוג הרצוי או להחליף.",
+        "אֹזֶן (איבר-שמיעה ל-see_hear המלאה 'אֲנִי שׁוֹמֵעַ בָּאָזְנַיִם') חסרה נכס-תמונה — כרגע see_hear מוגבל לעַיִן. לאשר אם צריך אייקון-אוזן בגל עתידי."
+      ],
+      "native": [
+        "🔴 כל cognate_ar + audio_amiya = טיוטה ar_verified:false → tools/arabic-review-tool.html: יָד=إيد · רֹאשׁ=راس · עַיִן=عين (קוגנט-הליבה) · רֶגֶל=إجر(עאמייה)/رجل(פוצחא) · שָׂמֵחַ=مبسوط · עָצוּב=زعلان · עָיֵף=تعبان · מְפַחֵד=خايف. + contrast audio (con/pe=פֶּה, con/beten=בֶּטֶן) לאימות הגייה מובחנת. אף ערבית לא מוצגת/מושמעת עד אישור ילידי. 🔴 רֶגֶל: לבחור צורה מדוברת באזור-הפיילוט."
+      ]
+    },
+    "needs_rebuild": "🔴 כן — הוספתי data/pack-body.json חדש. _build-data.js יגלה אותו אוטומטית (startsWith('pack-')); התזמורת תריץ node src/js/_build-data.js באינטגרציה. עד אז ה-pack לא ב-runtime (אומת מול ה-JSON הגולמי + תבנית-הזהב + bkt.js KC_META + הדיסק). seams זהים ל-P1: slots=מזהי-lexeme (M3/M3-fix resolver); img=נתיב-מלא body/body-*.png (+'../assets/items/'); he_f=שדה-תוכן חדש לרגשות (מקביל ל-frame_f) שה-grammar-toggle יקרא לצורת-הנקבה. 🔴 אודיו: לא הוקלטו קליפי lex/<id>-he/-he-f/-amiya — Web-Speech fallback עד F5. לא נגעתי בשום קובץ אחר (רק data/pack-body.json + דיווח זה)."
+  },
+  "M5": {
+    "status": "done", "agent": "follow-instr", "updated": "14.7",
+    "notes": "מכניקת 'בִּיצוּעַ הוֹרָאוֹת' (follow-instr · קליטה/reception · target='lexeme + preposition'). חדש (2 קבצים בלבד, בלי לגעת במשותף/pack/data): src/js/templates/mechanic-follow-instr.js → window.MishmishFollowInstr + src/follow-instr.html. DATA-DRIVEN טהור: מישמיש נותן הוראה מדוברת ('שִׂימוּ אֶת הַסֵּפֶר עַל הַשֻּׁלְחָן'), הילד גורר (Pointer Events, מגע+עכבר) או מקיש את הפריט אל יעד-מיקום (drop-zone) נכון מבין 3 (שֻׁלְחָן/מַדָּף/סַל, נכסים קיימים assets/items/locations/loc-*.png). קורא מה-pack דרך MishmishData.pick({pack:'class',mechanic:'follow-instr'}): פריטי-lexeme (he/img) נפתרים מול pack.lexicon (עם ?pack=class → תמונות אמיתיות class/item-*.png), מילות-יחס+מיקומים+משפטים מ-pack.follow_instr (עתידי) → אחרת fixture window.MISHMISH_FOLLOW_INSTR_DEMO שחי בדף (לא במכניקה, לא ב-pack), מסומן טיוטה. חוזה measured.js נשמר 1:1 בדרייבר-סבב עצמאי (כמו same-different): שמיעתי-קודם (יעדים נעולים + פריט לא-נגרר עד סוף ההשמעה), רק ניסיון-ראשון נמדד, בלי אדום/ירוק (retry=צהוב wobble, selected=כחול-זהות, point=משמש, מישמיש confused-soft→hint), מדרג-רמז השמעה-חוזרת→הצבעה-חזותית(point)→פיגום-אמיר(עאמייה, amir.js, מגודר). שורת-הישרדות דרך MishmishScaffold.bind; אמיר דרך MishmishAmir.attach (מופיע רק במדרג-האחרון). מדידה: BKT.ingest{pattern:'follow_instr',intent:'follow',target=מזהה-פריט,dimension:'recognize',firstTry,correct,errorAxis:'pattern'} → KC='follow::follow_instr' (spine:false=probe, לא מזהם 5 השדרה). אודיו: MishmishAudio.hebrew(sentence,{key}) → seam clipMap (key=round.id/audio) → Web-Speech fallback חי עד F5. סדר script-tags תקין: data→data-loader→audio→bkt→scaffold→amir→epa→flow→מכניקה. אומת בדפדפן (CDP driver, Chrome headless, speechSynthesis stubbed לדטרמיניזם): phone 414 + tablet 1024 → PASS: אפס console errors/exceptions; שמיעתי-קודם (יעדים נעולים ב-first-render → נפתחים אחרי ~260ms); 5 סבבים, כל משפט מנוקד נכון + היעד הנכון selected(כחול)+הפריט מתיישב(drop.filled); סבב-0 עבר דרך מסלול-הגרירה (Pointer דרך synthetic mouse); סבב-1 טעות מכוונת → retry(צהוב)+מישמיש confused-soft, אפס אדום/ירוק בפועל; done overlay הגיע; BKT follow::follow_instr rung identifies reached (seen 5/correct 4/distinctWords 4) + miss.pattern=1 (errorAxis); אפס גלישה אופקית (414: sw=iw=504 · 1024: sw=iw=1006). גם ?pack=class (bg-hara-courtyard מ-meta.setting, item-sefer מ-lexicon) ו-?pack=home (אין pack → fallback ל-fixture, נכסים אמיתיים) רצים נקי.",
+    "asks": {
+      "meytal": [
+        "🔴 אישור עברית + ניקוד ל-5 משפטי-ההוראה (טיוטה, fixture): 'שִׂימוּ אֶת הַסֵּפֶר עַל הַשֻּׁלְחָן' · 'שִׂימוּ אֶת הָעִפָּרוֹן בַּסַּל' · 'שִׂימוּ אֶת הַמַּחְבֶּרֶת עַל הַמַּדָּף' · 'שִׂימוּ אֶת הַיַּלְקוּט עַל הַשֻּׁלְחָן' · 'שִׂימוּ אֶת הַמַּחַק בַּסַּל'. פועל=שִׂימוּ (ציווי רבים); מיקומים=הַשֻּׁלְחָן/הַמַּדָּף/הַסַּל; מילות-יחס עַל/בַּ. לאשר ניקוד (במיוחד הָעִפָּרוֹן=הָ לפני ע גרונית · הַיַּלְקוּט=י דגושה · בַּסַּל).",
+        "טקסט-ילד (טיוטה, מנוקד, לשון-רבים): intro='מִישְׁמִישׁ אוֹמֵר לָכֶם מָה לַעֲשׂוֹת. הַקְשִׁיבוּ, וְשִׂימוּ אֶת הַפְּרִיט בַּמָּקוֹם הַנָּכוֹן!' · שבח-סיום='מְצֻיָּן!' + 'בִּצַּעְתֶּם אֶת כָּל הַהוֹרָאוֹת שֶׁל מִישְׁמִישׁ!' (בלי 'יופי') · פנייה='בַּחֲרוּ אֶת הַמָּקוֹם הַנָּכוֹן'.",
+        "החלטת-מדידה לאישור: הפריט המושמע בהוראה מוצג יחיד (נגרר), והגירוי-המבחין = יעד-המיקום (3 מקומות קבועים). היעד-הנכון מתחלף בין סבבים (לא תמיד אותו מקום) + 5 פריטים שונים → סף ≥2-מילים-שונות. dimension=recognize (רמה 1, קליטה). לאשר שזו מדידת בִּיצוּעַ-הוֹרָאָה הרצויה מול חלופה (בחירת-פריט ליעד-קבוע).",
+        "🔴 מילות-יחס נוספות (מִתַּחַת / לְיַד) שהברִיף מזכיר: כרגע ה-fixture משתמש רק ב-עַל/בַּ (הנחה על יעד = חד-משמעי חזותית). 'מִתַּחַת'/'לְיַד' דורשים ייצוג-מרחבי של יחס בין שני עצמים (לא drop-zone בודד) — נדחה לגל עתידי / pack-home ייעודי. לאשר כיוון.",
+        "מפתח מקום/פנייה: place-chip 'בֶּחָצֵר' (מרחב hara-courtyard) — לאשר ניקוד."
+      ],
+      "native": [
+        "פיגום-אמיר במסך (follow-instr.html) צורך את מדרגי amir_hints מ-scaffold.json (F1) — ה-ar שם כבר ברשימת-האימות של F1 (encourage/point/amiya, ar_verified:false, מגודר). המכניקה רק מציגה he ומגדרת ar; אין עאמייה חדשה.",
+        "place_ar 'بالحارة' (מסגור-גשר: 'החצר שלי / حارتي') כתוב ב-fixture אך מוסתר (data-arabic-verified=false) עד אימות ילידי."
+      ]
+    },
+    "needs_rebuild": "לא — יצרתי רק 2 קבצים חדשים (mechanic-follow-instr.js + follow-instr.html); לא נגעתי ב-data/ / packs / bkt.js / משותף / HTML אחר. עובד ישירות מול data.js הקיים (class כבר בנוי בו עם lexicon). 🔴 להמשך (P-task/סוכן-pack, אחרי אישור מיטל): (1) להזריק בלוק follow_instr ל-pack (pack-schema): follow_instr={verb,locations:[{id,he,prep,phrase,img}],items?,placements:[{item:<lexemeId>,loc:<locId>,he:<משפט-מנוקד>,audio?}]} — item נפתר מ-lexicon, he=משפט מאושר; אז המכניקה תעדיף pack.follow_instr על ה-fixture. (2) להקליט קליפי-הוראה (key=round.id 'follow_instr::<item>@<loc>' או placement.audio) תחת assets/audio/ (QA Whisper) לשדרוג מ-TTS-fallback לקול-מישמיש. הערה ל-bkt.js/מבט-מבוגר: KC חדש follow::follow_instr (spine:false, probe, miss.pattern) = ראיית-קליטה (רמה 1). הערה ל-flow.js (EPA, לא שלי): PAGE אין בו 'follow-instr' — ניתוב *אל* המכניקה ידרוש הוספה שם (ניתוב *ממנה* דרך הכפתור 'הַמְשֵׁךְ' עובד כרגיל)."
   }
 }
