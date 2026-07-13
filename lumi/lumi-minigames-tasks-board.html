@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumi · לוח משימות משחקונים + סוכן תזמורת</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Rubik:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --dusk:#5b4a6b; --ink:#3a3040; --soft:#8a7a6a; --line:#f0dcc6; --bg:#fff3e6;
+    --card:#fffaf3;
+    --coral:#f0714f; --coral-soft:#ffe9e1;
+    --amber:#c0731f; --amber-soft:#fdefdd;
+    --sage:#4f8a52; --sage-soft:#e7f4e6;
+    --beam:#3f8ba0; --beam-soft:#e4f2f6;
+    --path:#b06a1e; --path-soft:#faeeda;
+    --scene:#6a5aa0; --scene-soft:#efeafb;
+    --gray:#8a7a6a; --gray-soft:#f4ece1;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Heebo',sans-serif;background:linear-gradient(165deg,#fff3e6,#fde3cf);color:var(--ink);padding:26px 18px 90px;}
+  .wrap{max-width:1080px;margin:0 auto;}
+  header h1{font-size:clamp(23px,3.4vw,31px);font-weight:900;color:var(--dusk);}
+  header p{font-size:15px;color:var(--soft);margin-top:6px;line-height:1.6;}
+  header .meta{font-size:12.5px;color:#a9977f;margin-top:5px;}
+
+  .progress{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 20px;margin:18px 0 22px;box-shadow:0 2px 8px rgba(150,110,70,.08);}
+  .progress .nums{display:flex;gap:20px;flex-wrap:wrap;font-size:14px;margin-bottom:10px;}
+  .progress .nums b{font-weight:900;font-size:17px;color:var(--dusk);}
+  .progress .nums .done b{color:var(--sage);} .progress .nums .doing b{color:var(--beam);} .progress .nums .todo b{color:var(--amber);}
+  .bar{height:10px;border-radius:999px;background:#f2e4d3;overflow:hidden;display:flex;}
+  .bar .fdone{background:var(--sage);height:100%;transition:width .3s;}
+  .bar .fdoing{background:#7fb8c9;height:100%;transition:width .3s;}
+
+  /* orchestrator hero card */
+  .orch{background:linear-gradient(160deg,var(--dusk),#7a5f7f 72%,var(--coral));color:#fff;border-radius:18px;padding:22px 24px;margin-bottom:26px;box-shadow:0 6px 20px rgba(91,74,107,.25);}
+  .orch h2{font-size:20px;font-weight:900;margin-bottom:6px;display:flex;align-items:center;gap:9px;}
+  .orch p{font-size:13.8px;line-height:1.65;opacity:.94;max-width:820px;}
+  .orch ul{margin:10px 22px 4px;font-size:13.3px;line-height:1.7;opacity:.95;}
+  .orch .obtn{margin-top:14px;background:#fff;color:var(--dusk);font-family:inherit;font-size:13.5px;font-weight:800;border:none;border-radius:11px;padding:10px 18px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;box-shadow:0 2px 8px rgba(0,0,0,.15);}
+  .orch .obtn:hover{background:#fff6ec;} .orch .obtn.copied{background:var(--sage-soft);color:var(--sage);}
+  details.oprompt{margin-top:12px;border:1px solid rgba(255,255,255,.3);border-radius:11px;background:rgba(255,255,255,.08);}
+  details.oprompt summary{cursor:pointer;font-size:13px;font-weight:700;color:#ffe4d6;padding:9px 14px;user-select:none;}
+  details.oprompt pre{white-space:pre-wrap;font-family:'Heebo',monospace;font-size:12.6px;line-height:1.65;color:#fff2ea;padding:4px 16px 14px;direction:rtl;text-align:right;}
+
+  .group{margin-bottom:28px;}
+  .group>h2{font-size:18px;font-weight:900;color:var(--dusk);margin-bottom:4px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .group>h2 .gc{font-size:12px;font-weight:800;border-radius:999px;padding:2px 11px;background:var(--sage-soft);color:var(--sage);}
+  .group>.gdesc{font-size:13.3px;color:var(--soft);margin-bottom:12px;line-height:1.55;}
+
+  .task{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:15px 18px;margin-bottom:10px;box-shadow:0 2px 6px rgba(150,110,70,.06);transition:opacity .2s;position:relative;overflow:hidden;}
+  .task::before{content:"";position:absolute;inset:0 auto 0 0;width:5px;background:var(--gray);}
+  .task.mech-beam::before{background:var(--beam);} .task.mech-path::before{background:var(--path);} .task.mech-scene::before{background:var(--scene);} .task.mech-meet::before{background:var(--amber);}
+  .task.st-done{opacity:.6;}
+  .task.st-done .t-title{text-decoration:line-through;text-decoration-thickness:1.5px;text-decoration-color:#c9b79b;}
+  .t-head{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;}
+  .t-title{font-size:15.5px;font-weight:800;color:var(--dusk);flex:1;min-width:220px;line-height:1.45;}
+  .t-title .tid{font-size:11.5px;font-weight:800;color:#b09a7f;margin-inline-end:7px;}
+  .t-title .en{font-weight:600;color:var(--soft);font-size:12.5px;direction:ltr;}
+  .t-chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+  .chip{font-size:11.3px;font-weight:700;border-radius:999px;padding:3px 10px;white-space:nowrap;}
+  .chip.m-beam{background:var(--beam-soft);color:var(--beam);} .chip.m-path{background:var(--path-soft);color:var(--path);}
+  .chip.m-scene{background:var(--scene-soft);color:var(--scene);} .chip.m-meet{background:var(--amber-soft);color:var(--amber);}
+  .chip.eff{background:var(--gray-soft);color:var(--gray);}
+  .chip.dep{background:var(--coral-soft);color:var(--coral);}
+  .t-desc{font-size:13.2px;color:var(--soft);line-height:1.58;margin-top:8px;}
+  .t-desc .words{direction:ltr;font-family:'Rubik',monospace;color:var(--dusk);font-weight:600;}
+  .assets-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px;}
+  .ak{font-size:12px;font-weight:600;padding:3px 10px;border-radius:9px;border:1px solid var(--line);line-height:1.4;}
+  .ak.have{background:var(--sage-soft);color:var(--sage);border-color:#c6e6c6;}
+  .ak.need{background:var(--coral-soft);color:#c0532f;border-color:#f6d3c6;}
+  .baked-notes{margin-top:10px;background:#fff6ec;border:1px solid var(--line);border-radius:11px;padding:9px 14px;font-size:12.6px;color:#6a5a44;}
+  .baked-notes b{color:var(--amber);font-size:12px;}
+  .baked-notes ul{margin:4px 20px 0;line-height:1.6;}
+  .t-foot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;}
+  .st-sel{font-family:inherit;font-size:13px;font-weight:700;border-radius:10px;padding:7px 12px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;}
+  .st-sel.v-doing{background:var(--beam-soft);color:var(--beam);border-color:#c6e2ea;}
+  .st-sel.v-done{background:var(--sage-soft);color:var(--sage);border-color:#c6e6c6;}
+  .btn{font-family:inherit;font-size:13px;font-weight:700;border-radius:10px;padding:7px 14px;border:1px solid var(--line);background:#fff;color:var(--dusk);cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+  .btn:hover{background:#fdf4ea;}
+  .btn.copied{background:var(--sage-soft);color:var(--sage);border-color:#c6e6c6;}
+  .note{flex:1;min-width:170px;font-family:inherit;font-size:13px;border:1px solid var(--line);border-radius:10px;padding:7px 11px;color:var(--ink);background:#fffdf9;outline:none;}
+  .note:focus{border-color:var(--coral);box-shadow:0 0 0 3px rgba(240,113,79,.13);}
+  .btn.copygpt{background:var(--beam-soft);color:var(--beam);border-color:#c6e2ea;}
+  .btn.copygpt:hover{background:#d8eef4;}
+  .nogpt{font-size:12px;color:var(--soft);font-weight:600;}
+  details.prompt,details.gptprompt{margin-top:10px;border:1px solid var(--line);border-radius:11px;background:#fffaf2;}
+  details.prompt summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--coral);padding:9px 14px;user-select:none;}
+  details.gptprompt{background:var(--beam-soft);border-color:#cbe6ee;}
+  details.gptprompt summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--beam);padding:9px 14px;user-select:none;}
+  details.prompt pre,details.gptprompt pre{white-space:pre-wrap;font-size:12.7px;line-height:1.65;color:#3a4c52;padding:4px 16px 14px;direction:ltr;text-align:left;}
+  details.prompt pre{font-family:'Heebo',monospace;color:#5a4d42;direction:rtl;text-align:right;}
+  details.gptprompt pre{font-family:'Rubik',ui-monospace,monospace;}
+
+  .toast{position:fixed;bottom:22px;inset-inline-start:50%;transform:translateX(50%);background:var(--dusk);color:#fff;font-size:13.5px;font-weight:600;border-radius:12px;padding:10px 20px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:9;}
+  .toast.show{opacity:1;}
+  footer{margin-top:32px;font-size:12.5px;color:#a9977f;line-height:1.7;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 20px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Lumi · לוח משימות משחקונים + סוכן תזמורת</h1>
+    <p>21 משחקונים לבנייה לפי התוכנית השנתית (pets כבר חי). לכל משחקון פרומפט בנייה מדויק המקודד את כל הכללים הנעולים של לומי. בראש — פרומפט <b>סוכן־תזמורת</b> שמנהל את הבנייה המקבילית. סטטוס נשמר בדפדפן (localStorage).</p>
+    <div class="meta">נוצר 13.7.2026 · מבוסס על <code style="direction:ltr">lumi-minigames-pack.html</code> + מקורות־האמת ב־<code style="direction:ltr">_handoff/</code> + המכניקות הנעולות ב־<code style="direction:ltr">lumi/app/</code></div>
+  </header>
+
+  <div class="progress">
+    <div class="nums">
+      <span class="done">הושלמו: <b id="nDone">0</b></span>
+      <span class="doing">בעבודה: <b id="nDoing">0</b></span>
+      <span class="todo">טרם התחילו: <b id="nTodo">0</b></span>
+      <span>סה״כ: <b id="nAll">0</b></span>
+    </div>
+    <div class="bar"><div class="fdone" id="fDone"></div><div class="fdoing" id="fDoing"></div></div>
+  </div>
+
+  <!-- ORCHESTRATOR -->
+  <div class="orch">
+    <h2>🎼 סוכן תזמורת</h2>
+    <p>מפעילים סוכן אחד שקורא את הלוח הזה, מחלק משחקונים לסוכני־בנייה (מקבילית ב־VS Code נפרד או דרך Agent), אוכף single‑ownership + רשימות "אסור לגעת", מריץ בדיקות, ואוסף push מאוחד בסוף. הוא לא בונה בעצמו — הוא מנהל.</p>
+    <ul>
+      <li><b>Single ownership:</b> משחקון אחד = סוכן אחד. שני סוכנים על אותו תת־נושא = בזבוז.</li>
+      <li><b>אסור־לגעת מפורש</b> בכל bootstrap: <code style="direction:ltr">avnei-yesod/</code> · <code style="direction:ltr">_measured-core.js</code>/<code style="direction:ltr">bkt.js</code> (לוגיקה נעולה) · קבצי סוכנים אחרים.</li>
+      <li><b>אף סוכן לא דוחף</b> — התזמורת אוספת, מריצה <code style="direction:ltr">tests/lantern-grove.test.html</code>, ודוחפת רק כשירוק + scope תואם + מיטל אישרה אוצר שסומן ASK.</li>
+    </ul>
+    <button class="obtn" id="orchCopy">📋 העתק פרומפט תזמורת</button>
+    <details class="oprompt"><summary>הצג פרומפט תזמורת</summary><pre id="orchPre"></pre></details>
+  </div>
+
+  <div id="groups"></div>
+
+  <footer>
+    💡 <b>זרימה:</b> מפעילים את סוכן־התזמורת (למעלה) → הוא מחלק ומדווח. או ידנית: בוחרים משימה → "העתק פרומפט" → מדביקים לסוכן חדש (VS Code נפרד לעבודה מקבילה). כל פרומפט כולל "אסור לגעת" למניעת התנגשויות + צעד־אחרון של עדכון הסטטוס בלוח.<br>
+    🔴 <b>נעול (מקורות־האמת גוברים):</b> אין פוליש־חזותי לפני אישור מיטל שהמכניקות/מדידה נכונות · אודיו מוקלט (Jessica) לא TTS־דפדפן · no_read מוחלט · מדידה נקייה מול משחק עשיר. בספק פדגוגי — לעצור ולשאול את מיטל.<br>
+    הסטטוסים נשמרים מקומית בדפדפן.
+  </footer>
+</div>
+<div class="toast" id="toast">הפרומפט הועתק ✓</div>
+
+<script>
+const GROUPS = [
+  {id:'G0', name:'גל 0 · השלמת Animals', chip:'הפריטים כבר בבנק — חסרים איורים+אודיו', desc:'המנוע data-driven ומכליל מ־pets מיד. שני התת־נושאים כאן צריכים רק נכסים (איורי־חיות + אודיו מוקלט) — לא קוד חדש. מוכיח את ההכללה.'},
+  {id:'GA', name:'גל A · 5 קבוצות הליבה', chip:'ROI הכי גבוה · נשזרות בכל חורשה', desc:'הליבה החוצת־נושא. חלקן שעונות על נכסים קיימים (7 מצבי לומי, פנסי Lantern Grove, שמי־DNA) ולכן זולות. הן הדבק שמאפשר "לשחק" בכל שאר החורשות.'},
+  {id:'GB', name:'גל B · מוכר ואהוב', chip:'Food · Body · Family', desc:'הכי מוכרים/אהובים/רגשיים לגיל 6, וממנפים את scene-hide שכבר קיים בקוד. פונקציות "I want / This is my ___".'},
+  {id:'GC', name:'גל C · תנועה ומיקום', chip:'Transport · Places · Home', desc:'לב מכניקות path-choice ו־scene-hide. Places בונה את מפת־המסע — המסגרת הנרטיבית שמחברת את כל החורשות.'},
+  {id:'GD', name:'גל D · השלמה + DNA', chip:'Clothes · Toys · Nature', desc:'משחקיות עשירה (הלבשת לומי / ארגז־צעצועים / שמי־שקיעה). Nature סוגר על ה־DNA של המותג.'}
+];
+
+// ---- תבנית פרומפט משותפת לכל משחקון (מקודדת את כל הכללים הנעולים של לומי) ----
+function MINIGAME(c){
+  return (
+'אתה סוכן בפרויקט impactos, אנך Lumi — מוצר־צרכני (הורה+ילד, ללא מורה) ללימוד אנגלית כשפה־שנייה לגיל 6, דוברי־עברית. אתה בונה משחקון חדש: תת־הנושא "'+c.sub+'" ('+c.subEn+').\n\n'+
+'🎯 המשחקון: '+c.concept+' · מכניקה: '+c.mechName+'.\n'+
+'מילים: '+c.words+'\nצ׳אנק תקשורתי: '+c.chunk+'\n'+
+'סצנה: '+c.scene+'\n\n'+
+'━━ לפני שנוגעים בקוד — ללמוד את הקנוני (חובה, האי החדש חייב להיות עקבי) ━━\n'+
+'1. `lumi/app/lantern-grove.html` — קליפת־האיכות הרשמית (מיטל אישרה כבסיס). זהו הרף.\n'+
+'2. `lumi/app/js/mechanics/_measured-core.js` — חוזה המדידה (נעול, אסור לגעת).\n'+
+'3. `lumi/app/js/mechanics/'+c.mechFile+'` — המכניקה שלך.\n'+
+'4. `lumi/items/animals.json` — סכמת בנק־הפריטים לחיקוי.\n'+
+'5. מקורות־אמת פדגוגיים: `_handoff/2026-07-13-lumi-STATE-handoff.md` + `...-lumi-v2-redirect-and-corrections.md` + `...-lumi-learning-model.md`.\n\n'+
+'━━ כללים נעולים (כל סטייה = באג) ━━\n'+
+'• **no_read מוחלט:** אפס טקסט אנגלי ואפס תרגום־עברי של תוכן מוצג לילד. משמעות דרך **אודיו־אנגלי מוקלט + תמונה + מחוות־לומי** בלבד. עברית רק ב־3 מקומות: הנחיה פרוצדורלית פעם־ראשונה (`instruction_key`+`instructions-he.json`) · כפתור 🆘 · רגע־הורה.\n'+
+'• **אוראלי־קודם:** בלי קריאה/פוניקס/ניקוד.\n'+
+'• **מדידה נקייה מול משחק עשיר:** המכניקה אסור שתוסיף עומס לא־קשור־לידע (זריזות/זיכרון). משימה נמדדת = פעולה נקייה דרך `_measured-core.js`: **נגיעה־ראשונה בוחרת** (לא משמיעה שם־כרטיס), כפתור־מטרה מרכזי משמיע רק את היעד, **רק ניסיון־ראשון נמדד**, טעות→מצב־למידה (הוראה, לא הערכה). two-tap מותר רק ב־meet/חקר לא־נמדדים.\n'+
+'• **אפס־ענישה:** טעות → לומי סקרן/סבלני. בלי X/אדום/צליל־כישלון.\n'+
+'• **DNA חזותי:** פלטת־שקיעה חמה (peach/gold/amber/coral/sage/dusk), Heebo/Rubik, מגע ≥56px, ממשק־RTL / אנגלית־LTR. **לא תת־ימי, לא נוני, לא מפת־איים.**\n\n'+
+'━━ בנק־הפריטים ━━\n'+
+'צור `lumi/items/'+c.file+'.json` בסכמת `animals.json`: ממדים meet(לא־נמדד)→recognize(ליבה נמדדת: שומע→בוחר תמונה, ≥3/מילה)→discriminate(זוג־מבלבל, ≥1/מילה)→produce(הקשבה־עצמית, לא־נמדד). כל אפשרות עם `img`, מיקום־תשובה מאוזן, `distractor_rationale`, `help_he` (🆘 בעברית). '+c.itemsNote+'\n'+
+'לשימוש־חוזר: מחוללים ב־`scratchpad/gen-lumi-animals.js` + `build-review.js`. אחרי עריכת JSON → הרץ `lumi/app/js/_build-data.js` לבניית `js/data.js` מחדש (הדף נפתח מ־file://).\n\n'+
+'━━ חיווט BKT (נעול) ━━\n'+
+'recognize+discriminate → `word_receptive` פר־מילה · comprehend → `chunk_comprehension` · meet/produce/function → null. **כלל־שליטה:** אין שליטה בלי ≥2 ייצוגים + ≥2 הקשרים + הצלחת discriminate אמיתית (`bkt.js` אוכף — recognize לבד לא מדליק פנס). מסך־הורה = צ׳יפים שקופים, לא "87%".\n\n'+
+'━━ אודיו (🔴 מוקלט, לא TTS־דפדפן — המבטא המשונה = הבעיה #1 שמיטל פסלה) ━━\n'+
+'הפק MP3 באנגלית דרך ElevenLabs: voice **Jessica `cgSgspJ2msm6clMCkdW9`**, model `eleven_multilingual_v2`, `ELEVENLABS_API_KEY` ב־`.env` (root), requests ל־`api.elevenlabs.io/v1/text-to-speech/{voice_id}`. קליפים → `lumi/app/assets/audio/words/*.mp3`. רשום ב־`js/audio-clips.js` (`LumiAudio.clipMap`, מפתח=טקסט מדויק; fallback ל־TTS אוטומטי בזמן פיתוח בלבד). **QA: תמלל (Whisper) — אתה לא שומע.** רגעי־הורה/🆘 בעברית = קול נוני `ZI6I4a3UGgs1DXxqWjBV` (`eleven_v3`).\n\n'+
+'━━ נכסים (איורים) ━━\n'+
+'קיים: '+c.have+'. חסר: '+c.need+'.\n'+
+'לחסרים: **עדכן/צור `lumi/ART-BRIEF-'+c.file+'.md`** עם רשימת האיורים המדויקת (soft-3D storybook, פלטת lantern-grove mint/aqua/warm-glow, PNG — GPT צובע רקע אטום → **חובה rembg** לשקיפות אמיתית → `assets/`). **בכרטיס המשימה בלוח יש פרומפט GPT מוכן** לנכסים האלה (כפתור "🎨 העתק פרומפט GPT") — מסור אותו למיטל / השתמש בו להפקה. בינתיים **placeholder אמוג׳י/צללית** כדי שהמשחקון בר־בדיקה **עכשיו**, וסמן assets כ־ASK בדוח. אל תבנה פוליש חזותי לפני אישור המכניקות.\n\n'+
+'━━ אוצר מוכר־לגיל ━━\n'+
+'כל מילה חייבת להיות מוכרת לילד ישראלי בן 6 (הלקסיקון של הגן מכיר את המושג). מילה מסופקת/נדירה → סמן `age_flag:true` + ASK מיטל (כמו ש־sheep סומן).\n\n'+
+(c.extra ? '━━ ייחודי לתת־נושא הזה ━━\n'+c.extra+'\n\n' : '')+
+'━━ אסור לגעת ━━\n'+
+'`avnei-yesod/` (פרויקט־אחות) · `_measured-core.js`/`bkt.js` (לוגיקה נעולה) · משחקונים/קבצים של סוכנים אחרים · אסור `git push` (התזמורת אוספת).\n\n'+
+'━━ סיום ━━\n'+
+'פתח את המשחקון בדפדפן (`?autoplay=1 ?peek=1 ?reset=1`), עבור סבב מלא, ודא: no_read (אפס טקסט־תוכן לילד) · קונסולה נקייה · אודיו מוקלט מתנגן. commit של הקבצים החדשים בלבד (הודעה בעברית, בלי push). דווח: מה נבנה · אילו מילים ASK (age_flag) · אילו איורים חסרים (ART-BRIEF).'
+  );
+}
+
+const TASKS = [
+ // ---- G0 · Animals ----
+ {id:'T1', g:'G0', sub:'חיות־משק', subEn:'Farm', mech:'path', mechName:'מסלול־פנסים (path-choice)', mechFile:'path-choice.js',
+  concept:'🚜 The Farm Path', words:'cow, horse, duck, pig, sheep', chunk:'"Where is the cow? / It\'s a horse."',
+  eff:'סוכן־יום', dep:null,
+  desc:'חורשה→שדה. לומי צועד ברפת; הילד מוביל אותו לחיה ששמע. scene-hide לצ׳אנק "Where is the cow?".',
+  scene:'רפת/שדה בשקיעה, חיות מציצות מאחורי גדר/ערמת־חציר.',
+  itemsNote:'הפריטים כבר קיימים ב־`lumi/items/animals.json` (subtopic farm) — ודא כיסוי מלא ל־5 המילים; אם חסר, השלם באותה סכמה.',
+  have:'פריטים בבנק', need:'5 איורי חיות־משק + רקע חווה + אודיו 5 מילים',
+  extra:'sheep סומן `age_flag` (כבשה — אפשרי נדיר לגן ישראלי). השאר ASK עד החלטת מיטל. זו הוכחת־ההכללה מ־pets — אל תשכתב מנוע, רק הזן data + נכסים.'},
+
+ {id:'T2', g:'G0', sub:'חיות־בר', subEn:'Wild', mech:'beam', mechName:'אלומת־אור (light-beam)', mechFile:'light-beam.js',
+  concept:'🌴 Safari Beam', words:'lion, elephant, monkey, bear', chunk:'"It\'s a lion! / a big elephant."',
+  eff:'סוכן־יום', dep:null,
+  desc:'ג׳ונגל חשוך; הילד מאיר וחושף חיית־בר מסתתרת. אלומת־האור מושלמת לספארי־לילה. discriminate: lion מול elephant.',
+  scene:'ג׳ונגל־לילה; אלומת פנס לומי חושפת חיה מסתתרת בכל פעם.',
+  itemsNote:'הפריטים כבר קיימים ב־`animals.json` (subtopic wild) — ודא כיסוי ל־4 המילים.',
+  have:'פריטים בבנק', need:'4 איורי חיות־בר + רקע ג׳ונגל + אודיו 4 מילים',
+  extra:'ניגוד גודל (elephant גדול / monkey קטן) מנוצל ל־discriminate טבעי.'},
+
+ // ---- GA · Core ----
+ {id:'T3', g:'GA', sub:'רגשות', subEn:'Emotions', mech:'beam', mechName:'אלומת־אור (light-beam)', mechFile:'light-beam.js',
+  concept:'🔦 Find the Feeling', words:'happy, sad, hungry, tired, scared, okay', chunk:'"I\'m happy / I\'m hungry."',
+  eff:'סוכן־חצי־יום', dep:null,
+  desc:'פני־דמות בסצנה חשוכה; לומי משמיע "happy" והילד מאיר את הפרצוף המתאים. מנצל את 7 מצבי לומי כפרצופים.',
+  scene:'כמה פרצופים בחושך; אלומה מאירה פרצוף אחד. לומי משנה הבעה בהתאם.',
+  itemsNote:'רגש = מצב פנים; recognize = שומע רגש→מאיר פרצוף. discriminate: happy מול sad. produce: הילד אומר "I\'m happy".',
+  have:'7 מצבי לומי כפרצופים', need:'אודיו 6 רגשות (אולי פרצופי־חבר נוספים)',
+  extra:'מחבר ישירות ל־Food ("I\'m hungry"→"I want ___"). לומי־המגיב = נכס קיים, נצל אותו לפידבק רגשי.'},
+
+ {id:'T4', g:'GA', sub:'צבעים', subEn:'Colors', mech:'beam', mechName:'אלומת־אור (light-beam)', mechFile:'light-beam.js',
+  concept:'🌈 Color the Grove', words:'red, blue, yellow, green, orange, purple, pink, black, white, brown', chunk:'"It\'s red / the red one."',
+  eff:'סוכן־יום', dep:null,
+  desc:'אלומת־האור צובעת. "red" → הילד מאיר את הפריט האדום. מסיחים = אותו חפץ בצבעים אחרים (בידוד המשתנה "צבע").',
+  scene:'אותו חפץ (פנס/פרח/כדור) ×3 בצבעים שונים; אלומה בוחרת גוון.',
+  itemsNote:'הבידוד קריטי: המסיחים חייבים להיות **אותו אובייקט** בצבע אחר, כדי שהמדד יהיה צבע ולא צורה. discriminate: red מול orange (קרובים).',
+  have:'אלומת־אור', need:'חפצים בצבעים שונים + אודיו 10 צבעים',
+  extra:'התחל ב־6 צבעי־ליבה (red/blue/yellow/green/orange/purple); pink/black/white/brown גל שני. הצבעים נשזרים בכל שאר החורשות ("the red car").'},
+
+ {id:'T5', g:'GA', sub:'מספרים', subEn:'Numbers 1–10', mech:'beam', mechName:'אלומת־אור (light-beam)', mechFile:'light-beam.js',
+  concept:'🔢 Count the Lanterns', words:'one … ten', chunk:'"How many? one, two, three…"',
+  eff:'סוכן־חצי־יום', dep:null,
+  desc:'"How many?" — הילד סופר פנסים שנדלקים ומאיר את הכמות הנכונה. הפנסים = ליבת Lantern Grove, אז זה טבעי לעולם.',
+  scene:'קבוצות פנסים; הילד מאיר את הכמות ששמע (או בוחר בין 2/3/4 קבוצות).',
+  itemsNote:'recognize = שומע מספר→בוחר כמות. discriminate: two מול three. התחל 1–5, הרחב 6–10.',
+  have:'פנסי Lantern Grove', need:'אודיו 10 מספרים',
+  extra:'הכי זול־נכסים בגל — משתמש רק בפנסים הקיימים. נשזר בכל חורשה ("two dogs").'},
+
+ {id:'T6', g:'GA', sub:'מילות־פעולה + הנחיה', subEn:'Action & Instruction', mech:'path', mechName:'מסלול־פנסים (path-choice) + TPR', mechFile:'path-choice.js',
+  concept:'🚦 Lumi Says (TPR)', words:'look, listen, point, find, touch, say, go, stop, come, jump', chunk:'"Look! / Find the ___ / Stop!"',
+  eff:'סוכן־יום', dep:null,
+  desc:'"לומי אומר" פיזי: הפקודה נשמעת והילד מוביל את לומי — דוחף במסלול, עוצר, קופץ. פעלים = פעולה במרחב.',
+  scene:'לומי על מסלול; הפקודה מפעילה תנועה (go/stop/jump/come).',
+  itemsNote:'רבים מהפעלים = meet/function לא־נמדדים (look/listen/point). go/stop/come/jump = פעולה נמדדת דרך path-choice (בחירת־תגובה נכונה). find/touch מחברים לגוף (T11).',
+  have:'לומי pointing/idle', need:'אנימציית קפיצה/עצירה + אודיו 10 פעלים',
+  extra:'זו הליבה שמאפשרת "לשחק" — בונה את אוצר־ההנחיות שכל שאר המשחקונים משתמשים בו. עדיפות פנימית: go/stop/find/touch קודם.'},
+
+ {id:'T7', g:'GA', sub:'שלום וחברים', subEn:'Greetings & Friends', mech:'meet', mechName:'מפגש (meet) + הפקה (produce)', mechFile:'meet.js',
+  concept:'🏮 Lantern of Hello', words:'hello, hi, bye, please, thank you, yes, no, sorry', chunk:'"Hello! My name is ___."',
+  eff:'סוכן־חצי־יום', dep:null,
+  desc:'בכניסה לכל חורשה נדלק פנס וחבר־דמות מופיע. לומי מנופף "Hello!"; הילד משיב ומקליט את עצמו. פותח כל סשן.',
+  scene:'כניסה לחורשה; חבר מופיע, לומי מנופף.',
+  itemsNote:'כמעט הכל meet/produce לא־נמדד (נימוסים = שימוש, לא מדידה). produce = לולאת הקשבה־עצמית (הקלט→שמע־את־עצמך→שמע־לומי). yes/no אפשר recognize קל.',
+  have:'7 מצבי לומי', need:'דמות־חבר (idle/wave) + אודיו greetings',
+  extra:'זה לא־נמדד בכוונה — המשחקיות "מתפרעת" כאן. משמש כמסך־פתיחה גנרי לכל שאר המשחקונים.'},
+
+ // ---- GB · Food/Body/Family ----
+ {id:'T8', g:'GB', sub:'פירות', subEn:'Fruits', mech:'beam', mechName:'אלומת־אור (light-beam)', mechFile:'light-beam.js',
+  concept:'🧺 The Fruit Basket', words:'apple, banana, orange', chunk:'"I want an apple. / I like ___."',
+  eff:'סוכן־חצי־יום', dep:'רצוי אחרי T3 (רגשות)',
+  desc:'סל/עץ חשוך; הילד מאיר ומוצא את הפרי ששמע. לומי "רעב" (רגש) → "I want an apple" מחבר food לרגשות.',
+  scene:'עץ/סל־פירות בשקיעה; אלומה חושפת פרי.',
+  itemsNote:'3 מילים בלבד — הוסף מסיחים חוצי־נושא (חיות/צעצועים שכבר נלמדו). discriminate: apple מול orange (עגולים דומים).',
+  have:'—', need:'3 איורי פירות + רקע סל + אודיו',
+  extra:'מחבר לפונקציית־הרצון "I want ___" — עמוד־שדרה תקשורתי שחוזר בהרבה חורשות.'},
+
+ {id:'T9', g:'GB', sub:'חטיפים/ארוחה', subEn:'Snacks & Meal', mech:'scene', mechName:'סצנה־נסתרת (scene-hide)', mechFile:'scene-hide.js',
+  concept:'🍽️ Lumi\'s Picnic', words:'bread, egg, cake, milk, water', chunk:'"I\'m hungry. / I want water."',
+  eff:'סוכן־יום', dep:'רצוי אחרי T8',
+  desc:'סצנת־פיקניק; לומי "I\'m hungry! Find the bread". הילד מוצא בהקשר. produce: הילד "מזמין" בקול.',
+  scene:'שמיכת־פיקניק עם פריטי־אוכל; לומי מבקש צ׳אנק שלם.',
+  itemsNote:'scene-hide מזין `chunk_comprehension` (הבנת משפט שלם, לא מילה בודדת). produce = "I want water" (הקשבה־עצמית).',
+  have:'—', need:'5 פריטי־אוכל + רקע פיקניק + אודיו',
+  extra:'הצ׳אנק "I\'m hungry" מגיע מ־T3 (רגשות) — תלות רכה.'},
+
+ {id:'T10', g:'GB', sub:'פנים', subEn:'Face', mech:'beam', mechName:'אלומת־אור (light-beam)', mechFile:'light-beam.js',
+  concept:'👀 Light Up the Face', words:'eyes, nose, mouth, ears', chunk:'"This is my nose."',
+  eff:'סוכן־חצי־יום', dep:null,
+  desc:'פני לומי הגדולות; הילד מאיר את החלק ששמע. כל חלק שמואר מהבהב. מנצל שלומי כבר קיים.',
+  scene:'פני לומי במסך מלא; hotspots על עיניים/אף/פה/אוזניים.',
+  itemsNote:'recognize = שומע חלק→מאיר אותו על פני לומי. discriminate: eyes מול ears. hotspots במקום כרטיסים.',
+  have:'פני לומי (7 מצבים)', need:'hotspots פנים + אודיו 4 מילים',
+  extra:'זול־נכסים — משתמש בפני לומי הקיימות. מחבר ל־TPR ("Touch your nose").'},
+
+ {id:'T11', g:'GB', sub:'גוף', subEn:'Body', mech:'path', mechName:'מסלול־פנסים (path-choice) + TPR', mechFile:'path-choice.js',
+  concept:'🙌 Touch & Go (TPR)', words:'hands, feet, head, hair', chunk:'"Touch your ears. / my head."',
+  eff:'סוכן־חצי־יום', dep:'רצוי אחרי T6 (touch/point)',
+  desc:'"Touch your hands / Point to your feet" — הילד מבצע ואז מוביל את לומי. מחבר לליבת touch/point.',
+  scene:'לומי מלא־גוף; פקודת־מגע → הילד מבצע על עצמו ומאשר.',
+  itemsNote:'TPR — פעולה פיזית. recognize = שומע חלק־גוף→נוגע/בוחר. משתמש במילות־ההנחיה מ־T6.',
+  have:'—', need:'גוף־לומי מלא + אודיו 4 מילים',
+  extra:'תלוי ב־touch/point מ־T6 — לתאם עם סוכן T6 (אסור לגעת בקבציו).'},
+
+ {id:'T12', g:'GB', sub:'משפחה', subEn:'Family', mech:'scene', mechName:'סצנה־נסתרת (scene-hide)', mechFile:'scene-hide.js',
+  concept:'🖼️ The Family Photo', words:'mum, dad, baby, brother, sister, grandma, grandpa', chunk:'"This is my mum. / I love you."',
+  eff:'סוכן־יום', dep:null,
+  desc:'תמונת־משפחה של לומי; "Where is grandma?" הילד מוצא בסצנה. הצ׳אנק "This is my ___" מזין chunk-comprehension.',
+  scene:'תמונת־משפחה חמה; לומי מבקש למצוא בן־משפחה.',
+  itemsNote:'7 מילים — פונקציית־שייכות. scene-hide מזין `chunk_comprehension`. discriminate: mum מול grandma / brother מול dad.',
+  have:'—', need:'בני־משפחת־לומי (7) + רקע בית + אודיו',
+  extra:'רגשי־חם. mum/dad/baby קודם (מוכרים מכל), grandma/grandpa/brother/sister גל שני.'},
+
+ {id:'T13', g:'GB', sub:'אני/אתה', subEn:'Me & You', mech:'meet', mechName:'מפגש (meet) + הפקה (produce)', mechFile:'meet.js',
+  concept:'🤝 Me & You', words:'me, you', chunk:'"This is me. / I love you."',
+  eff:'סוכן־קצר', dep:'רצוי אחרי T12',
+  desc:'דיאלוג קצר לומי↔ילד: "This is me. Who are you?" הילד מקליט את שמו. פונקציית־זהות; לא־נמדד.',
+  scene:'לומי מצביע על עצמו ואז על הילד.',
+  itemsNote:'meet/produce בלבד (2 מילים תפקודיות). בונה חיבור אישי, לא מדד.',
+  have:'לומי happy/pointing', need:'אודיו me/you',
+  extra:'הכי קצר בלוח — כמעט רק produce. משתלב בתוך T12 אם רוצים לאחד.'},
+
+ // ---- GC · Transport/Places/Home ----
+ {id:'T14', g:'GC', sub:'תחבורה', subEn:'Transport', mech:'path', mechName:'מסלול־פנסים (path-choice)', mechFile:'path-choice.js',
+  concept:'🛤️ Go by ___', words:'car, bus, bike, plane, boat, train', chunk:'"Go by bus. / I see a plane."',
+  eff:'סוכן־יום', dep:null,
+  desc:'לומי צריך לחצות; "Go by bus". הילד בוחר את הרכב שיוביל אותו — הרכב זז במסלול. path-choice נולד לזה.',
+  scene:'מסלול/מפה; כלי־רכב נבחר זז ומוביל את לומי.',
+  itemsNote:'ההתאמה המושלמת ל־path-choice (בחירה=תנועה במרחב). discriminate: car מול bus / boat מול plane.',
+  have:'—', need:'6 כלי־רכב + מסלול/מפה + אודיו',
+  extra:'משתמש ב־"go" מ־T6. הרכב הנבחר מבצע אנימציית־נסיעה = משחקיות עשירה שלא פוגעת במדידה.'},
+
+ {id:'T15', g:'GC', sub:'מקומות', subEn:'Places', mech:'path', mechName:'מסלול־פנסים (path-choice)', mechFile:'path-choice.js',
+  concept:'🗺️ The Grove Map', words:'park, shop, home', chunk:'"Let\'s go to the park."',
+  eff:'סוכן־חצי־יום', dep:'רצוי אחרי T14',
+  desc:'מפת־המסע של לומי; "Let\'s go to the park". הילד מוביל למקום הנכון. מחבר את כל החורשות למפה — המסגרת הנרטיבית.',
+  scene:'מפת־חורשות; הילד בוחר יעד.',
+  itemsNote:'3 מילים — recognize=שומע מקום→מוביל. discriminate: park מול shop.',
+  have:'—', need:'מפת־חורשות + אייקוני מקומות + אודיו',
+  extra:'🔴 חשוב־נרטיבית: זו מפת־המסע שמחברת את כל 22 המשחקונים. תאם עם המסגרת "מפת־כוכבים/עונות" (לא "חוזר הביתה").'},
+
+ {id:'T16', g:'GC', sub:'מיקום', subEn:'Position', mech:'scene', mechName:'סצנה־נסתרת (scene-hide)', mechFile:'scene-hide.js',
+  concept:'🙈 Where is Lumi?', words:'up, down, in, on, under, here, there', chunk:'"Where is Lumi? It\'s under the table."',
+  eff:'סוכן־יום', dep:null,
+  desc:'משחקון־הדגל של scene-hide (הדוגמה בקוד עצמו!). לומי מתחבא; "Lumi is under the table". הילד מוצא לפי מילת־המיקום.',
+  scene:'חדר עם רהיטים; לומי מתחבא מתחת/על/בתוך.',
+  itemsNote:'הצ׳אנק השלם נמדד כ־`chunk_comprehension`. מילות־מיקום = ה"דקדוק" האוראלי. discriminate: under מול on / in מול under.',
+  have:'מכניקת scene-hide + לומי מתחבא', need:'רהיטי־סצנה + אודיו מילות־מיקום',
+  extra:'המכניקה בנויה בדיוק בשבילו. מתחבר ל־T17/T18 (בית) — אותה סצנה.'},
+
+ {id:'T17', g:'GC', sub:'חדרים', subEn:'Rooms', mech:'path', mechName:'מסלול־פנסים (path-choice)', mechFile:'path-choice.js',
+  concept:'🚪 Which Room?', words:'bedroom, kitchen, bathroom', chunk:'"Go to the kitchen."',
+  eff:'סוכן־חצי־יום', dep:null,
+  desc:'חתך־בית עם דלתות; "Go to the kitchen" והילד מוביל את לומי לחדר הנכון. path-choice = בחירת יעד.',
+  scene:'חתך־בית 3 חדרים; הילד מוביל את לומי.',
+  itemsNote:'3 מילים — recognize=שומע חדר→מוביל. discriminate: kitchen מול bathroom.',
+  have:'—', need:'חתך־בית 3 חדרים + אודיו',
+  extra:'משתף רקע/נכסים עם T18 (חפצי־בית) — לתאם, אולי אותו רקע.'},
+
+ {id:'T18', g:'GC', sub:'חפצי־בית', subEn:'Home Objects', mech:'scene', mechName:'סצנה־נסתרת (scene-hide)', mechFile:'scene-hide.js',
+  concept:'🛋️ Find it at Home', words:'bed, door, table, chair, window', chunk:'"Where is the ___? It\'s in the ___."',
+  eff:'סוכן־יום', dep:'רצוי אחרי T16 (position)',
+  desc:'חדר מלא חפצים; "Where is the chair?" הילד מוצא בהקשר. משתלב ישירות עם מילות־המיקום.',
+  scene:'חדר עם 5 חפצים; לומי מבקש למצוא.',
+  itemsNote:'scene-hide → `chunk_comprehension`. משלב מילות־מיקום מ־T16 ("It\'s under the table"). discriminate: table מול chair.',
+  have:'—', need:'חדר + 5 חפצים + אודיו',
+  extra:'הסצנה המושלמת לחבר מילות־מיקום (T16) לחפצים. אותו עולם כמו T16/T17.'},
+
+ // ---- GD · Clothes/Toys/Nature ----
+ {id:'T19', g:'GD', sub:'בגדים', subEn:'Clothes', mech:'scene', mechName:'סצנה־נסתרת (scene-hide) + הפקה', mechFile:'scene-hide.js',
+  concept:'🧥 Dress Lumi', words:'hat, shoes, shirt, coat, socks', chunk:'"Put on your shoes. / I like your hat."',
+  eff:'סוכן־יום', dep:null,
+  desc:'לומי יוצא למסע; "Put on your coat". הילד מוצא ומלביש את הפריט על לומי. הזיהוי עצמו נמדד נקי.',
+  scene:'לומי + ארון־בגדים; drag-to-Lumi.',
+  itemsNote:'המשחקיות (הלבשה) לא פוגעת במדידה — הזיהוי (איזה פריט) נמדד נקי, ההלבשה = חגיגה/produce. discriminate: hat מול coat.',
+  have:'לומי כבסיס', need:'5 פריטי־לבוש + אודיו',
+  extra:'הלבשת לומי = משחקיות עשירה. מחבר ל־"I like ___" ולצבעים ("I like your red hat").'},
+
+ {id:'T20', g:'GD', sub:'צעצועים', subEn:'Toys', mech:'beam', mechName:'אלומת־אור (light-beam)', mechFile:'light-beam.js',
+  concept:'🎁 The Toy Box', words:'ball, teddy, car, doll, book, blocks', chunk:'"Let\'s play! / It\'s my ball."',
+  eff:'סוכן־יום', dep:null,
+  desc:'ארגז־צעצועים חשוך; הילד מאיר ומוצא את הצעצוע ששמע. "It\'s my ball" = שייכות.',
+  scene:'ארגז־צעצועים; אלומה חושפת צעצוע.',
+  itemsNote:'discriminate: ball מול doll. שים לב: car חוזר מ־T14 (תחבורה) — הקשר שני לאותה מילה = מצוין לכלל־השליטה הרב־הקשרי.',
+  have:'—', need:'6 צעצועים + רקע ארגז + אודיו',
+  extra:'car מופיע גם ב־Transport — נצל כהקשר שני (≥2 הקשרים = תנאי שליטה).'},
+
+ {id:'T21', g:'GD', sub:'טבע', subEn:'Nature', mech:'beam', mechName:'אלומת־אור (light-beam)', mechFile:'light-beam.js',
+  concept:'✨ Sky & Grove', words:'sun, moon, star, sky, rain, tree, flower', chunk:'"Look at the sun! / It\'s raining."',
+  eff:'סוכן־יום', dep:null,
+  desc:'שמי־שקיעה של לומי; "Look at the sun/moon/star!" הילד מאיר ומוצא ברקיע/בחורשה. הכי קרוב לזהות־המותג.',
+  scene:'שמי־שקיעה (ה־DNA עצמו); כל כוכב שנמצא מדליק פנס.',
+  itemsNote:'discriminate: sun מול moon / star מול flower. מנצל את שמי־ה־DNA הקיימים כרקע.',
+  have:'שמי־שקיעה (DNA)', need:'שמש/ירח/כוכב/עץ/פרח/גשם + אודיו',
+  extra:'🔴 סוגר על ה־DNA — כל כוכב שנמצא מדליק פנס אמיתי במסע. הכי קרוב למטאפורת "כל מילה מאירה את הדרך".'}
+];
+
+// ---- פרומפט סוכן־תזמורת ----
+const ORCH_PROMPT =
+'אתה **סוכן־התזמורת** לבניית משחקוני Lumi (אנגלית גיל 6). אתה לא בונה משחקונים בעצמך — אתה מנהל סוכני־בנייה מקביליים, אוכף כללים, ואוסף push מאוחד.\n\n'+
+'━━ קרא קודם ━━\n'+
+'1. `lumi/lumi-minigames-tasks-board.html` (הלוח הזה) — 21 המשימות + הפרומפט המדויק של כל אחת.\n'+
+'2. `lumi/lumi-minigames-pack.html` — הרציונל (מכניקה פר תת־נושא).\n'+
+'3. מקורות־אמת: `_handoff/2026-07-13-lumi-STATE-handoff.md` · `...-v2-redirect...` · `...-learning-model.md`.\n\n'+
+'━━ דפוס העבודה (מוכח באבני יסוד) ━━\n'+
+'1. **Single ownership:** משחקון אחד = סוכן אחד. לפני הפעלת סוכן — ודא שאף סוכן אחר לא על אותו תת־נושא (parallel evolution = בזבוז).\n'+
+'2. **סדר גלים (תלויות):** G0 → GA → GB → GC → GD. בתוך גל אפשר מקבילית. כבד תלויות רכות (T8→T9, T6→T11, T14→T15, T16→T18, T12→T13).\n'+
+'3. **חלוקה:** לכל סוכן העתק את הפרומפט המלא של המשימה מהלוח (כפתור "העתק פרומפט"). הרץ ב־VS Code נפרד (working tree נפרד) או דרך כלי Agent.\n'+
+'4. **bootstrap כל סוכן כולל אסור־לגעת מפורש:** `avnei-yesod/` · `_measured-core.js`/`bkt.js` (נעול) · קבצי סוכנים אחרים · אסור `git push`.\n'+
+'5. **אף סוכן לא דוחף.** אתה (התזמורת) אוסף מה־disk המשותף (`git status`), מריץ `lumi/app/tests/lantern-grove.test.html`, ודוחף ב־1–2 commits מאוחדים.\n\n'+
+'━━ שער־איכות לפני push (חובה כל התנאים) ━━\n'+
+'✅ בדיקות עוברות (`tests/lantern-grove.test.html` 16/16 + כל בדיקה חדשה).\n'+
+'✅ **no_read מאומת** — אפס טקסט־תוכן (אנגלי/תרגום) מוצג לילד (בדוק ויזואלית `?peek=1`).\n'+
+'✅ **אודיו מוקלט** (Jessica) מתנגן — לא TTS־דפדפן.\n'+
+'✅ scope ה־disk תואם ל־handoff (לא יותר, לא פחות) · קונסולה נקייה.\n'+
+'❌ **אסור push** אם יש אוצר שסומן ASK/`age_flag` (כמו sheep) או קטע־תוכן שדורש אישור פדגוגי — **המתן לאישור מפורש של מיטל** על ה־batch.\n'+
+'❌ **אסור פוליש חזותי** לפני שמיטל אישרה שהמכניקות/מדידה נכונות (נעול ב־STATE-handoff §5).\n\n'+
+'━━ תחזוקת הלוח + דיווח ━━\n'+
+'• אחרי כל משחקון שעבר, ודא שהסוכן עדכן בלוח: `BAKED_STATUS[<id>]=\'done\'` **וגם** `BAKED_NOTES[<id>]=[...]` (הערות/משימות־המשך). אם סוכן שכח — השלם בעצמך לפני push.\n'+
+'• **קרא את כל `BAKED_NOTES`** כדי לאסוף את כל הפתוחים: אוצר שסומן ASK/`age_flag` · איורים חסרים (ART-BRIEFs) · אודיו חלקי · תלויות חדשות שהתגלו. אלה ה־backlog של הגל הבא.\n'+
+'• עדכן את `BAKED_NOTES` גם בשם התזמורת כשצריך (למשל "T14 חוסם את T15 — הרץ טורית", "איחדנו רקע T17+T18").\n'+
+'• **סיכום למיטל בסוף כל גל:** טבלה — מה נבנה ונדחף · מה ASK ממתין להחלטתה (רכז מ־BAKED_NOTES) · אילו ART-BRIEFs צריכים איורי־GPT · מה נשאר לגל הבא.\n'+
+'🔴 בכל ספק פדגוגי — עצור ושאל את מיטל. מקורות־האמת גוברים.';
+
+// ---- מנוע פרומפטי GPT לנכסים (בפורמט בריפי-האמנות הקיימים של לומי) ----
+const GPT_STYLE =
+'ART STYLE: soft 3D storybook / Pixar-like rendering, the SAME magical world as the existing "Lumi" character set. Rounded friendly shapes, big gentle eyes with a white sparkle, subtle warm inner glow, premium and adorable. NOT saturated / neon, NOT flat, NO hard outlines, NO text anywhere in the image, no baked ground shadow.\n'+
+'PALETTE: mint #9fe8d8 · aqua #78d8d0 · seafoam #bff3ea · warm-glow #f6e8a6 · cream #f8f3e8 · lavender #dccdf8 · twilight #516a82.\n'+
+'CONSISTENCY (critical): attach an existing Lumi / pet PNG as a style reference and say "match this exact style". Everything must read as one coherent set.\n'+
+'OUTPUT: large canvas (~3× display size), subject centered & front-facing, plain white background — transparency is cut later with rembg, so do NOT worry about the background. One subject per image.';
+
+const GPT_ASSETS = {
+ T1:{objs:['cow — friendly, standing, front-facing','horse — gentle, standing','duck — small, front-facing','pig — round & cute','sheep — 🔴 confirm with Meytal (age_flag) BEFORE generating'], bg:{name:'farm-bg.png', desc:'A magical twilight farm / pasture with a soft wooden fence and a hay bale, a gentle glowing path receding into depth, soft floating lantern-lights blurred in the background.'}},
+ T2:{objs:['lion — soft mane, friendly','elephant — big & gentle (size contrast)','monkey — small, playful','bear — round, cozy'], bg:{name:'jungle-bg.png', desc:'A magical night jungle with soft glowing plants and gentle fireflies, layered leafy depth, a soft path.'}},
+ T3:{optional:true, objs:['a happy companion face','a sad companion face','a hungry companion face','a tired companion face','a scared companion face (soft, NOT frightening)','an okay / neutral companion face'], note:'OPTIONAL — the default is to reuse Lumi\'s 7 existing expression states as the faces. Only generate these if you want distinct non-Lumi emotion cards. Keep them one consistent little companion, same size, only the expression changes.'},
+ T4:{objs:['the SAME simple soft glowing balloon-orb — red','the same orb — blue','the same orb — yellow','the same orb — green','the same orb — orange','the same orb — purple','the same orb — pink','the same orb — black','the same orb — white','the same orb — brown'], note:'Keep the object IDENTICAL across all 10 — only the color changes (this isolates "color" as the tested variable). Start with the first 6; the rest are wave-2.'},
+ T5:{none:true},
+ T6:{objs:['Lumi jumping (mid-air, joyful)','Lumi stopping (one hand up, clear "stop" gesture)','Lumi coming forward (walking toward the viewer)'], note:'Same Lumi character as the existing set — identical creature, size and centered position; ONLY the pose changes. Best generated together as a sheet then cut.'},
+ T7:{objs:['a friendly companion creature — idle / standing','the same companion — waving hello'], note:'A NEW companion character (a friend Lumi meets), distinct from Lumi but clearly the same art world. Keep it consistent across its own poses.'},
+ T8:{objs:['apple — red, glossy-soft','banana','orange'], bg:{name:'fruit-bg.png', desc:'A cozy fruit basket / small fruit tree at magical twilight, warm and inviting.'}},
+ T9:{objs:['a loaf / slice of bread','an egg','a slice of cake','a glass or small carton of milk','a cup or bottle of water'], bg:{name:'picnic-bg.png', desc:'A soft picnic blanket laid out in a magical twilight grove clearing.'}},
+ T10:{none:true},
+ T11:{optional:true, objs:['Lumi full-body, front-facing, standing, clearly showing hands, feet, head and hair'], note:'OPTIONAL — only if the existing Lumi crop doesn\'t clearly show a full body for the "touch your ___" hotspots. Same character, same style.'},
+ T12:{objs:['a Lumi-family MUM creature','a Lumi-family DAD creature','a BABY creature (smallest)','a BROTHER creature','a SISTER creature','a GRANDMA creature (soft, gently older)','a GRANDPA creature (soft, gently older)'], bg:{name:'family-bg.png', desc:'A warm cozy home interior at twilight with a soft photo-frame vignette.'}, note:'All are the SAME glowing-creature species as Lumi — a family. Vary size / age / a tiny accessory (glasses for grandparents, a bow, etc.) but keep the shared Lumi identity and palette.'},
+ T13:{optional:true, objs:['a friendly, warm, neutral cartoon child avatar (generic, non-specific)'], note:'OPTIONAL — can instead reuse Lumi + a simple silhouette. Keep it generic and inclusive.'},
+ T14:{objs:['a car','a bus','a bike','a plane','a boat','a train'], bg:{name:'route-bg.png', desc:'A gentle winding path / map across a magical twilight landscape with soft crossing points (a small bridge, a stretch of water).'}, note:'Vehicles = same soft storybook toy-like style, front / three-quarter view, cute rounded.'},
+ T15:{objs:['a park vignette icon (trees + bench)','a shop vignette icon (little storefront)','a home vignette icon (cozy cottage)'], bg:{name:'journey-map.png', desc:'A soft storybook journey MAP of glowing groves connected by a gentle path, with a star-map / seasons feeling (an ongoing journey — NOT a "going home" dead-end).'}, note:'🔴 This map is the narrative frame that links all 22 minigames — coordinate with the "star-map / seasons" story.'},
+ T16:{objs:['a small round table','a chair','a wooden box / chest (to hide inside)','a low bush or shelf (to hide behind/under)'], bg:{name:'room-bg.png (shared with T17/T18)', desc:'A cozy room interior at twilight with open floor space and a few hiding spots.'}, note:'Props that Lumi can hide UNDER / ON / IN / BEHIND — for the position words. Lumi already exists for the hiding.'},
+ T17:{bg:{name:'house-cutaway.png', desc:'A cute dollhouse-style CROSS-SECTION of a home with 3 clearly separated rooms — bedroom, kitchen, bathroom — each with its own door, soft twilight lighting.'}, note:'Rooms distinguishable at a glance by 1–2 icons each (bed / stove / bath). No text labels.'},
+ T18:{objs:['a bed','a door','a table','a chair','a window'], note:'These props drop into the shared room-bg (T16/T17). Same soft storybook style.'},
+ T19:{objs:['a hat','a pair of shoes','a shirt','a coat','a pair of socks'], note:'Each item sized & shaped to fit ONTO the Lumi character (for the dress-Lumi mechanic). Match Lumi proportions; clean front view.'},
+ T20:{objs:['a ball','a teddy bear','a toy car','a doll','a book','a set of building blocks'], bg:{name:'toybox-bg.png', desc:'An open cozy toy box / a playroom corner at magical twilight.'}, note:'The toy car can reuse T14\'s car asset.'},
+ T21:{objs:['a sun','a moon','a star','a tree','a flower','a soft rain cloud'], note:'Reuse the EXISTING grove / sunset sky as the background (the brand DNA) — only these objects are new. Each glows softly against the twilight sky.'}
+};
+
+function GPT_PROMPT(g, subEn){
+  if(!g || g.none) return null;
+  let p='=== GPT IMAGE PROMPT · Lumi · '+subEn+' ===\n'+(g.optional?'(OPTIONAL asset set — see note)\n':'')+'\n'+GPT_STYLE+'\n';
+  if(g.objs && g.objs.length){
+    p+='\nOBJECTS — run ONCE PER ITEM, swapping the name; attach a Lumi reference each time:\n';
+    p+='PROMPT: "Create a cute [ITEM] in the EXACT same art style as the attached Lumi reference — soft 3D storybook, calm magical palette (mint / aqua / cream / warm-glow), rounded friendly shapes, big gentle eyes with a white sparkle, subtle warm inner glow, front-facing and centered, same size and soft lighting as the reference. Plain white background, no shadow, no text."\n';
+    p+='ITEMS:\n'+g.objs.map(o=>'  • '+o).join('\n')+'\n';
+  }
+  if(g.bg){
+    p+='\nBACKGROUND SCENE ('+g.bg.name+') — full-bleed, no transparency needed:\n';
+    p+='PROMPT: "'+g.bg.desc+' Soft 3D storybook style, same magical twilight world as the Lumi grove, calm palette with warm light accents, dreamy and safe (not scary). Vertical mobile composition 1170×2532. Keep the center area relatively open. No text, no characters baked in."\n';
+  }
+  if(g.note) p+='\nNOTE: '+g.note+'\n';
+  return p;
+}
+
+// כל פרומפט מסתיים בהנחיה לעדכן את הסטטוס הצרוב בלוח
+TASKS.forEach(t=>{t.gpt=GPT_ASSETS[t.id]; t.gptPrompt=GPT_PROMPT(t.gpt,t.subEn); t.prompt=MINIGAME(Object.assign({file:t.id.toLowerCase()+'-'+t.subEn.toLowerCase().replace(/[^a-z]/g,'')},t))
+  +"\n\n━━ 🔴 צעד אחרון — עדכון דף־המשימות (חובה, אחרי שהכול עובד) ━━\n"+
+  "קרא את `lumi/lumi-minigames-tasks-board.html` מחדש ממש לפני העריכה (סוכנים מקבילים עורכים אותו גם — ערוך רק את השורות של "+t.id+"):\n"+
+  "1. **סטטוס:** הוסף `"+t.id+":'done'` לאובייקט `BAKED_STATUS`.\n"+
+  "2. **הערות/משימות־המשך:** הוסף שורה ל־`BAKED_NOTES`, למשל `BAKED_NOTES['"+t.id+"']=['ASK מיטל: <מילה> age_flag','חסר איור <X> — ART-BRIEF-"+t.id.toLowerCase()+"* נפתח','אודיו הופק ל־N/M מילים'];`. כתוב כאן כל דבר פתוח: אוצר לאישור, נכסים חסרים, החלטות שדחית, תלות שהתגלתה.\n"+
+  "3. כלול את שתי העריכות בקומיט שלך (בלי push — התזמורת אוספת).\n"+
+  "4. **דווח לסוכן־התזמורת** (בסיכום הסשן): מה נבנה · מה ASK ממתין למיטל · אילו ART-BRIEFs נפתחו · תלויות חדשות שהתגלו. אל תדחוף בעצמך.";});
+
+const LS_KEY='lumi-minigames-board-v1';
+// pets כבר חי (baked). השאר todo.
+const BAKED_STATUS={T0:'done', T1:'done', T2:'done', T3:'done'};
+// הערות/משימות־המשך שסוכנים כותבים בסיום (נשמר בקובץ → נראה בכל דפדפן, לא רק localStorage).
+// כל סוכן מוסיף: BAKED_NOTES['T1']=['ASK: sheep age_flag','חסר איור cow — ART-BRIEF נפתח'];
+const BAKED_NOTES={};
+BAKED_NOTES['T1']=[
+  '🔴 ASK מיטל: sheep (כבשה) age_flag — לאשר אוצר לפני הפקת איור/הרחבה',
+  'איורים חסרים — ART-BRIEF-t1-farm.md נפתח: 5 חיות (cow/horse/duck/pig/sheep) + farm-bg. בינתיים placeholder אמוג׳י (בר-בדיקה)',
+  'אודיו מוקלט הופק ל-5/5 המילים (ElevenLabs · Jessica) ואומת ב-Whisper (cow/horse/duck/pig/sheep — מבטא תקין)',
+  'משחקון: lumi/app/farm-path.html + css/farm-path.css (path-choice, פלטת שקיעה). QA headless: no_read נקי · קונסולה 0 שגיאות · 5 פנסים · סבב מלא',
+  'חיווט PNG→path-choice = צעד פוליש עתידי (כשהאיורים יאושרו); כרגע אמוג׳י כמו שאושר בבריף',
+  'שופר audio.js (playClip catch על autoplay-block) — קונסולה נקייה בכל המשחקונים',
+];
+BAKED_NOTES['T2']=[
+  'אוצר: 4 המילים (lion/elephant/monkey/bear) מוכרות לגיל 6 — אין age_flag, אין ASK אוצר',
+  'אודיו מוקלט הופק ל-4/4 המילים (ElevenLabs · Jessica · multilingual_v2) ואומת ב-Whisper: Lion/Elephant/monkey/Bear תקין. + הסבר/סיום עברית בקול נוני (eleven_v3): safari-intro-he / safari-done-he',
+  'איורים חסרים — ART-BRIEF-t2-wild.md נפתח: 4 חיות (animals/wild/*.png) + worlds/safari/backgrounds/jungle-bg.png. בינתיים placeholder אמוג׳י + gradient ג׳ונגל־לילה (בר-בדיקה עכשיו)',
+  'משחקון: lumi/app/safari-beam.html (light-beam, סצנת ג׳ונגל־לילה, פלטת שקיעה). QA headless (Playwright): no_read נקי (אפס אנגלית נראית — רק אמוג׳י) · 0 שגיאות קונסולה (רק jungle-bg.png 404 הצפוי) · 4/4 פנסים · סבב מלא · אודיו מוקלט מתנגן · ?peek=1 צ׳יפים שקופים',
+  'items/t2-wild.json נוצר (חילוץ subtopic=wild מ-animals.json): כיסוי מלא meet+recognize×3+discriminate×1+produce לכל 4 המילים, מיקומי-תשובה מאוזנים',
+  'תלות/follow-up: light-beam.js מציג אמוג׳י (משותפת T2–T5). חיווט PNG→.beam-animal = פוליש עתידי כשהאיורים יאושרו — לא לגעת במכניקה המשותפת בלי תיאום',
+  'ניגוד גודל (elephant גדול / monkey קטן) תועד ב-ART-BRIEF כמנוצל ל-discriminate',
+];
+BAKED_NOTES['T3']=[
+  'אוצר: 6 המילים (happy/sad/hungry/tired/scared/okay) מוכרות לגיל 6 (שמח/עצוב/רעב/עייף/מפחד/בסדר) — אין age_flag, אין ASK אוצר',
+  'אודיו מוקלט הופק ל-6/6 המילים + 6 צ׳אנקים "I\'m ___" (ElevenLabs · Jessica · multilingual_v2) ואומת ב-Whisper: happy/sad/hungry/tired/scared/okay + I\'m ___ תקין. + הסבר/סיום עברית בקול נוני (eleven_v3): intro-emotions-he / done-emotions-he',
+  'איורים חסרים — ART-BRIEF-t3-emotions.md נפתח: 6 פרצופי-רגש (emotions/faces/*.png, דמות אחת עקבית). בינתיים placeholder אמוג׳י (😄😢😋🥱😨🙂) + רקע דמדומים חם (בר-בדיקה עכשיו)',
+  'משחקון: lumi/app/find-the-feeling.html (light-beam, סצנת "פרצופים בחושך", פלטת שקיעה). מכניקה + קליפת-איכות זהות ל-T2 safari-beam. QA: syntax נקי · no_read נקי (אפס אנגלית נראית — רק אמוג׳י) · makeItem 12K ריצות ללא בעיה (הקונפיוזבל לא דולף לרקוגניז) · 6/6 פנסים · צ׳אנק "I\'m happy!" מתנגן בהצלחה',
+  'items/t3-emotions.json נוצר (topic=emotions): כיסוי מלא meet+recognize×3+discriminate×1+produce לכל 6 המילים, מיקומי-תשובה מאוזנים 0/1/2. discriminate = זוגות-פנים מבלבלים (happy↔sad הליבה). _build-data.js הורחב לכלול אותו → data.js',
+  'המשגה: recognize מציג פרצופים מובחנים (הקונפיוזבל מוחרג); הזוג הקשה (happy↔sad וכו\') חי בבנק discriminate בלבד. חיבור ל-Food דרך הצ׳אנק "I\'m hungry"',
+  'תלות/follow-up: light-beam.js מציג אמוג׳י (משותפת T2–T5). חיווט PNG→.beam-animal = פוליש עתידי כשהאיורים יאושרו — לא לגעת במכניקה המשותפת בלי תיאום. לומי-מגיב על-הסצנה נדחה (ידרוש mount-companion במכניקה המשותפת) — כרגע הרגש נישא ע"י הפרצוף המואר + הצ׳אנק המוקלט',
+  'לא נבדק בדפדפן חי (אין Playwright/jsdom בסביבה) — QA סטטי בלבד; מומלץ סבב-עין אנושי לפני push',
+];
+let state={};
+try{state=JSON.parse(localStorage.getItem(LS_KEY)||'{}');}catch(e){state={};}
+function save(){localStorage.setItem(LS_KEY,JSON.stringify(state));}
+function st(id){return (state[id]&&state[id].s)||BAKED_STATUS[id]||'todo';}
+const MECHCHIP={beam:['m-beam','אלומת־אור'],path:['m-path','מסלול'],scene:['m-scene','סצנה'],meet:['m-meet','מפגש']};
+
+function render(){
+  const root=document.getElementById('groups');
+  root.innerHTML=GROUPS.map(g=>{
+    const tasks=TASKS.filter(t=>t.g===g.id);
+    const done=tasks.filter(t=>st(t.id)==='done').length;
+    return '<div class="group"><h2>'+g.name+' <span class="gc">'+done+'/'+tasks.length+' · '+g.chip+'</span></h2>'+
+      '<div class="gdesc">'+g.desc+'</div>'+
+      tasks.map(t=>{
+        const s=st(t.id), note=(state[t.id]&&state[t.id].n)||'', mc=MECHCHIP[t.mech];
+        const baked=(BAKED_NOTES[t.id]||[]);
+        return '<div class="task mech-'+t.mech+' st-'+s+'" id="task-'+t.id+'">'+
+          '<div class="t-head"><div class="t-title"><span class="tid">'+t.id+'</span>'+t.sub+' <span class="en">'+t.subEn+'</span></div>'+
+          '<div class="t-chips"><span class="chip '+mc[0]+'">'+mc[1]+'</span><span class="chip eff">'+t.eff+'</span>'+(t.dep?'<span class="chip dep">תלות: '+t.dep+'</span>':'')+'</div></div>'+
+          '<div class="t-desc">'+t.desc+' <span class="words">'+t.words+'</span></div>'+
+          '<div class="assets-row"><span class="ak have">✓ קיים: '+t.have+'</span><span class="ak need">🎨 נכסים להשיג: '+t.need+'</span></div>'+
+          (baked.length?'<div class="baked-notes"><b>📌 הערות סוכן / משימות־המשך:</b><ul>'+baked.map(n=>'<li>'+n+'</li>').join('')+'</ul></div>':'')+
+          '<div class="t-foot">'+
+            '<select class="st-sel v-'+s+'" data-id="'+t.id+'">'+
+              '<option value="todo"'+(s==='todo'?' selected':'')+'>◻ טרם התחיל</option>'+
+              '<option value="doing"'+(s==='doing'?' selected':'')+'>◐ בעבודה</option>'+
+              '<option value="done"'+(s==='done'?' selected':'')+'>✓ הושלם</option>'+
+            '</select>'+
+            '<button class="btn copy" data-id="'+t.id+'">📋 העתק פרומפט בנייה</button>'+
+            (t.gptPrompt?'<button class="btn copygpt" data-id="'+t.id+'">🎨 העתק פרומפט GPT</button>':(t.gpt&&t.gpt.none?'<span class="nogpt">🎨 אין צורך בנכסי GPT — נכסים קיימים</span>':''))+
+            '<input class="note" data-id="'+t.id+'" placeholder="הערה (איזה סוכן, איפה עומד…)" value="'+note.replace(/"/g,'&quot;')+'">'+
+          '</div>'+
+          '<details class="prompt"><summary>הצג פרומפט בנייה</summary><pre></pre></details>'+
+          (t.gptPrompt?'<details class="gptprompt"><summary>🎨 הצג פרומפט GPT לנכסים'+(t.gpt&&t.gpt.optional?' (אופציונלי)':'')+'</summary><pre></pre></details>':'')+
+        '</div>';
+      }).join('')+'</div>';
+  }).join('');
+  TASKS.forEach(t=>{
+    document.querySelector('#task-'+t.id+' details.prompt pre').textContent=t.prompt;
+    if(t.gptPrompt){const gp=document.querySelector('#task-'+t.id+' details.gptprompt pre'); if(gp) gp.textContent=t.gptPrompt;}
+  });
+  updateProgress();
+}
+function updateProgress(){
+  const all=TASKS.length;
+  const done=TASKS.filter(t=>st(t.id)==='done').length;
+  const doing=TASKS.filter(t=>st(t.id)==='doing').length;
+  document.getElementById('nAll').textContent=all;
+  document.getElementById('nDone').textContent=done;
+  document.getElementById('nDoing').textContent=doing;
+  document.getElementById('nTodo').textContent=all-done-doing;
+  document.getElementById('fDone').style.width=(done/all*100)+'%';
+  document.getElementById('fDoing').style.width=(doing/all*100)+'%';
+}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200);}
+function copyText(txt,btn,label){
+  const done=()=>{if(btn){const o=btn.textContent;btn.classList.add('copied');btn.textContent='✓ הועתק';setTimeout(()=>{btn.classList.remove('copied');btn.textContent=o;},1800);}toast(label+' הועתק');};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done,()=>fb());}else fb();
+  function fb(){const ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done();}catch(e){toast('ההעתקה נכשלה — פתחי "הצג פרומפט" והעתיקי ידנית');}document.body.removeChild(ta);}
+}
+
+document.getElementById('orchPre').textContent=ORCH_PROMPT;
+document.getElementById('orchCopy').addEventListener('click',e=>copyText(ORCH_PROMPT,e.currentTarget,'פרומפט התזמורת'));
+
+document.getElementById('groups').addEventListener('change',e=>{
+  const sel=e.target.closest('.st-sel');
+  if(sel){const id=sel.dataset.id;(state[id]=state[id]||{}).s=sel.value;save();render();}
+});
+document.getElementById('groups').addEventListener('input',e=>{
+  const n=e.target.closest('.note');
+  if(n){const id=n.dataset.id;(state[id]=state[id]||{}).n=n.value;save();}
+});
+document.getElementById('groups').addEventListener('click',e=>{
+  const gb=e.target.closest('.btn.copygpt');
+  if(gb){const t=TASKS.find(x=>x.id===gb.dataset.id);copyText(t.gptPrompt,gb,'פרומפט GPT של '+gb.dataset.id);return;}
+  const b=e.target.closest('.btn.copy');
+  if(!b)return;
+  const t=TASKS.find(x=>x.id===b.dataset.id);
+  copyText(t.prompt,b,'הפרומפט של '+t.id);
+});
+
+render();
+</script>
+</body>
+</html>

@@ -88,7 +88,10 @@ window.LumiAudio = (function () {
       var a = new Audio(src);
       a.onended = function () { resolve(true); };
       a.onerror = function () { resolve(false); };
-      a.play();
+      // play() rejects when the autoplay policy blocks it (no user gesture yet).
+      // Swallow it so it never surfaces as an unhandled rejection in the console.
+      var pr = a.play();
+      if (pr && pr.catch) pr.catch(function () { resolve(false); });
     } catch (e) { resolve(false); }
   }
 
