@@ -112,5 +112,33 @@
       "native": []
     },
     "needs_rebuild": "לא — ערכתי רק src/js/templates/mechanic-missing-slot.js. לא נגעתי ב-data/ / packs / משותף / HTML → אין צורך ב-rebuild. התיקון עובד ישירות מול data.js הקיים (class כבר בנוי בו עם slots-מחרוזות + lexicon)."
+  },
+  "EPA": {
+    "status": "done", "agent": "epa", "updated": "14.7",
+    "orchestrator": "14.7 · אומת ותועד: תחביר נקי (node --check), סדר-סקריפטים תקין ב-3 הדפים (data→loader→bkt→scaffold→epa→flow), flow.js מוגן fail-safe (guards ל-EPA/overlay/URLSearchParams חסרים → לא שובר דף). לא הרצתי console חי (אין playwright בסביבת-התזמורת) — הסתמכתי על Playwright של סוכן-EPA + אימות מבני/סטטי + עיצוב-נכשל-בטוח. committed (epa.js+flow.js+3 script-tags). asks.meytal שנותרו = שלב-עתידי (כתיבת-תוכן-אינטרבנציות, כיול-סף, דשבורד-מורה), לא חוסמי-v1.",
+    "notes": "שכבת EPA (Error Pattern Analysis · אבחון-כשל→תגבור) — הועתקה למישמיש לפי מודל אבני-יסוד (architecture-mvp.md §4.3.5c + underwater-app/interventions/*.json). מיטל אישרה: הפלט = **שניהם** (ראוטר בתוך-אפליקציה + המלצת-מורה). חדש: src/js/shared/epa.js → window.MishmishEPA. 🔴 כלל-הברזל נשמר: EPA = ספירה תיאורית בלבד (בלי אחוזים/הסתברות); ה-BKT נשאר הבייסיאני היחיד. v1 קורא read-only מ-BKT.snapshot() (האגרגט הקיים) — לא נגעתי ב-bkt.js/מכניקות/HTML/data. 3 צירים: Failure=miss.{sound,pattern,vocab} · Context=pb.{onset,sentence} · Task=דרגה. API: diagnose(snap?)→{byAxis,perKc,pb,dominant} · recommendNext(diag)→תגבור-בתוך-אפליקציה {mechanic,pattern,interventionId,reason} · teacherPlan(diag)→המלצת-אינטרבנציה {interventionId,title_he,goal_he,tier,group_size,minutes,evidence}. מיפוי-כשל→תגבור (טיוטה, מוטבע כ-FALLBACK): vocab→lantern (Tier-1) · sound→same-different/הבחנת-בּ/פּ (Tier-2) · pattern→missing-slot/חיזוק-תבנית (Tier-2) · pb_sentence (onset תקין אך sentence חלש)→missing-slot/בּ-פּ-בתוך-משפט (Tier-2). אומת ב-node (4 תרחישים): vocab-dominant→lantern, sound-dominant→same-different, pb-onset-ok+sentence-weak→pb_sentence (גובר נכון), clean→אין-דומיננטי+אין-teacherPlan. שני הפלטים מיוצרים, ספירות בלבד, אפס תלות-כתיבה. ✅ מיטל אישרה את הטבלה 14.7. ✅ הראוטר חוּוט לזרימת-התלמיד: חדש src/js/shared/flow.js → window.MishmishFlow (self-attaching): מזהה #doneOverlay ומזריק כפתור 'הַמְשֵׁךְ →' בסיום → decideNext() קורא EPA.recommendNext ובונה URL (מכניקה→דף, שומר ?pack; אחרי מיפוי→נושא class). חוּוט ב-3 דפים (2 script-tags בלבד, בלי לגעת בלוגיקה): lantern.html (מקור-מיפוי + יעד-vocab), missing-slot.html (יעד-pattern/pb + default), same-different.html (יעד-sound). אומת בדפדפן (Playwright): (א) מיפוי-נקי→missing-slot?pack=class, (ב) נושא-נקי→missing-slot?pack=class, (ג) vocab-dominant→lantern?pack=class; + playthrough מלא של missing-slot עד סיום → 'הַמְשֵׁךְ →' מופיע (התלמיד טעה→vocab→נותב לפנס), אפס pageerrors.",
+    "asks": {
+      "meytal": [
+        "🔴 תוכן-אינטרבנציות = טיוטה-שלד בלבד (pattern_id/title/goal/tier/group/minutes). ה-stages המלאים (hook/model/practice + 'מה המורה אומרת/עושה' + דוגמאות) דורשים כתיבה פדגוגית — כמו 'deepened by סוכן פדגוגי' באבני-יסוד. לאשר מי כותב את התוכן.",
+        "🔴 סף-דומיננטיות (MIN_DOMINANT=2): באבני-יסוד זה חלון-שבוע ('8 כשלים'); כאן קטן ל-MVP/מפגש-בודד. לכייל לפי אורך-הפעילות הרצוי.",
+        "דשבורד-מורה: teacherPlan() מוכן אך אין עדיין מסך-מורה שמציג אותו — שלב עתידי (הפלט השני של 'שניהם')."
+      ],
+      "native": []
+    },
+    "needs_rebuild": "לא — קבצים חדשים src/js/shared/epa.js + flow.js (read-only מעל BKT), + 2 script-tags ב-3 דפי-HTML (additive, בלי שינוי לוגיקה). לא נגעתי ב-data/ / packs / bkt.js / מכניקות-JS. 🔴 פתוח: (1) ✅ ראוטר-בתוך-אפליקציה חוּוט (flow.js). נותר: דשבורד-מורה שקורא teacherPlan. (2) v1 קורא אגרגט snapshot; רזולוציית Failure×Context×Task מלאה פר-אירוע (יומן-אירועים כמו אבני-יסוד) דורשת tap ב-ingest — שדרוג עתידי. (3) 🔜 task 'מיפוי→נקודת-התחלה' (הבא): פריטי-מסגרת ב-pack-mapping (pattern:this_that/want... dimension:recognize) — החלטת-תוכן. (4) grammar-toggle.html + index.html טרם מחווטים ל-flow (לא ביעדי-הטבלה)."
+  },
+  "MAP-STARTPOINT": {
+    "status": "doing", "agent": "epa", "updated": "14.7",
+    "orchestrator": "14.7 · אומת מבנית ומוחזק לא-committed: pack-mapping.json (16 פריטים=6 אוצר+10 מסגרת) + data.js המבונה מאומתים (loader מזהה mapping=16, כל 21 תמונות-האופציות קיימות, bkt-KC נזרעים). 🔴 לא committed — חסום על החלטת-אורך של מיטל (16/11/פיצול) שמשנה את הדאטה שנשלחת. עם הכרעה → rebuild+commit מיידי. עברית מנוקדת של 10 המשפטים גם ממתינה לאישור.",
+    "notes": "task 'מיפוי→נקודת-התחלה' (מיטל אישרה 14.7: כל 5 תבניות-השדרה, 2 פריטים כל אחת). הבעיה: משחקון-המיפוי מדד רק אוצר-מילים (pattern:'mapping', spine:false) → 5 תבניות-השדרה קיבלו אפס ראיה → אין נקודת-התחלה פר-תבנית. פתרון — **דאטה בלבד** (בלי שינוי קוד): הוספתי 10 פריטי-מסגרת ל-data/pack-mapping.json (items[]), 2 פר-תבנית-שדרה (this_that: זֶה סֵפֶר/זֹאת מַחְבֶּרֶת · have: יֵשׁ לִי כַּדּוּר/סֵפֶר · want: אֲנִי רוֹצֶה בָּנָנָה/תַּפּוּחַ · give_me: תֵּן לִי מִשְׁמֵשׁ/פֶּרַח · see_hear: אֲנִי רוֹאֶה צִפּוֹר/חָתוּל). כל פריט: pattern:<שדרה> + dimension:recognize + prompt.he מנוקד (audio_he לא-מנוקד ל-TTS) + 3 אופציות (נכון+2 מסיחים) עם תמונות/אמוג'י קיימים בלבד. lantern.js כבר קורא item.pattern → שולח ל-BKT את ה-KC האמיתי (בלי לגעת בקוד). 2 מילות-יעד שונות פר-תבנית → מאפשר גם 'נרכשה'. אומת ב-node מול bkt.js האמיתי (סימולציית lantern ingest): ילד-חזק (הכל נכון) → כל 5 השדרה מגיעות ל-identifies (seen:2/correct:2/distinctWords:2/reached:true); ילד-חלש (הכל שגוי) → כולן נשארות 'new' (נקודת-התחלה נמוכה תקינה); probe::mapping (אוצר-מילים) נשמר. סינרגיה: המיפוי זורע L1 → flow.js/EPA משתמשים ב-snapshot להחלטת התגבור הבא.",
+    "asks": {
+      "meytal": [
+        "🔴 אישור עברית מנוקדת ל-10 משפטי-המסגרת (טיוטה): 'זֶה סֵפֶר' · 'זֹאת מַחְבֶּרֶת' · 'יֵשׁ לִי כַּדּוּר' · 'יֵשׁ לִי סֵפֶר' · 'אֲנִי רוֹצֶה בָּנָנָה' · 'אֲנִי רוֹצֶה תַּפּוּחַ' · 'תֵּן לִי מִשְׁמֵשׁ' · 'תֵּן לִי פֶּרַח' · 'אֲנִי רוֹאֶה צִפּוֹר' · 'אֲנִי רוֹאֶה חָתוּל'.",
+        "🔴 אורך-המיפוי: כעת 16 פריטים (6 אוצר + 10 מסגרת) — אולי כבד לגיל 5-8 כפעילות-ראשונה. אופציות: (א) להשאיר 16, (ב) לצמצם ל-1 מסגרת פר-תבנית (11 פריטים, זורע 'emerging' לא 'נרכשה'), (ג) לפצל את המיפוי ל-2 מפגשים קצרים. להכריע.",
+        "מגבלה ידועה: כשלון בפריט-מסגרת מתויג היום axis='vocab' (pb_focus=false), לא 'pattern' — כי הגזירה האוטומטית ב-BKT היא pb_focus→sound אחרת vocab. להבחין 'כשל-תבנית' צריך errorAxis מפורש (שדרוג עתידי)."
+      ],
+      "native": []
+    },
+    "needs_rebuild": "🔴 כן — ערכתי data/pack-mapping.json (הוספת 10 items). data.js המיוצר טרם נבנה מחדש; 🔴 לא הרצתי _build-data.js בעצמי (מריץ אחד יבשל גם שינויי-data/ של סוכנים מקבילים — לפי הקונבנציה התזמורת מריצה באינטגרציה). עד rebuild הפריטים לא ב-runtime. הלוגיקה אומתה מול ה-JSON הגולמי + bkt.js. לא נגעתי בקוד (lantern.js קורא item.pattern כבר היום)."
   }
 }
