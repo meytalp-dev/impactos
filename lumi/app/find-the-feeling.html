@@ -76,6 +76,9 @@
   .beam-animal { position: absolute; transform: translate(50%,-50%); width: clamp(66px,17vw,96px); height: clamp(66px,17vw,96px);
     border-radius: 50%; display: grid; place-items: center; font-size: clamp(42px,11vw,60px);
     opacity: .26; filter: grayscale(.75) brightness(.5); transition: opacity .25s, filter .25s, transform .2s; }
+  /* recorded storybook faces replace the emoji placeholder (JS adds .has-face) */
+  .beam-animal.has-face { background-repeat: no-repeat; background-position: center; background-size: contain; }
+  .beam-animal.has-face .ba-emoji { opacity: 0; }
   .beam-animal.found { opacity: 1; filter: none; }
   .beam-animal.armed { transform: translate(50%,-50%) scale(1.14); }
   .beam-animal.chosen { opacity: 1; filter: none; }
@@ -163,12 +166,25 @@
     if (/[?&]frame=1/.test(q)) document.body.classList.add('frame');
 
     var D = window.LUMI_DATA || { emoji: {}, reps: {} };
-    var WORDS = ['happy', 'sad', 'hungry', 'tired', 'scared', 'okay'];   // T3 · Emotions
+    var WORDS = ['happy', 'sad', 'scared', 'tired', 'surprised', 'okay'];   // T3 · Emotions
     // the visually-confusable partner (kept OUT of recognize distractors → the tough
     // pair lives in the discriminate bank, not this playable recognize loop).
-    var CONFUSE = { happy: 'sad', sad: 'tired', hungry: 'happy', tired: 'okay', scared: 'sad', okay: 'happy' };
-    // "I'm ___" communicative chunk — Lumi mirrors the found feeling (connects to Food).
-    var CHUNK = { happy: "I'm happy!", sad: "I'm sad!", hungry: "I'm hungry!", tired: "I'm tired!", scared: "I'm scared!", okay: "I'm okay!" };
+    var CONFUSE = { happy: 'okay', sad: 'tired', scared: 'surprised', tired: 'sad', surprised: 'scared', okay: 'happy' };
+    // "I'm ___" communicative chunk — Lumi mirrors the found feeling.
+    var CHUNK = { happy: "I'm happy!", sad: "I'm sad!", scared: "I'm scared!", tired: "I'm tired!", surprised: "I'm surprised!", okay: "I'm okay!" };
+    // recorded storybook faces (sliced from Meytal's 6-face sheet → rembg → assets/emotions/faces/).
+    var glyphWord = {};
+    WORDS.forEach(function (w) { var g = D.emoji && D.emoji[w]; if (g) glyphWord[g] = w; });
+    function paintFaces(root) {
+      var faces = root.querySelectorAll('.beam-animal');
+      Array.prototype.forEach.call(faces, function (btn) {
+        var span = btn.querySelector('.ba-emoji');
+        var w = span && glyphWord[span.textContent.trim()];
+        if (!w) return;                                 // unknown glyph → keep emoji fallback
+        btn.classList.add('has-face');
+        btn.style.backgroundImage = 'url(assets/emotions/faces/' + w + '.png)';
+      });
+    }
 
     var stageEl = document.getElementById('stage');
     var progEl = document.getElementById('prog');
@@ -226,6 +242,7 @@
           setTimeout(nextRound, 1050);
         },
       });
+      paintFaces(stageEl);   // swap the emoji placeholders for the recorded storybook faces
     }
 
     function sayHe(clipFile, fallbackText) {

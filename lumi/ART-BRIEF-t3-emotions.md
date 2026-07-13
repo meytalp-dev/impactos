@@ -1,6 +1,10 @@
 # בריף אמנות · Lumi — T3 · Find the Feeling / Emotions 🔦
 מיועד להעברה ל-GPT (gpt-image / DALL·E). מטרה: **6 פרצופי-רגש** drop-in למשחקון "מָה מַרְגִּישִׁים?" (מכניקת אלומת-אור).
-**סטטוס נוכחי:** המשחקון **בר-בדיקה עכשיו** עם placeholder אמוג׳י (😄😢😋🥱😨🙂). הפרצופים למטה מחליפים אותם לאיכות פרימיום.
+
+## ✅ סטטוס: הפרצופים סופקו וחוּוְּטוּ (13.7)
+מיטל ייצרה גיליון 6-פרצופים; חתכתי (PIL) → **rembg** לשקיפות אמיתית → `lumi/app/assets/emotions/faces/{happy,sad,scared,tired,surprised,okay}.png`. מחוּוָּטים במשחקון (החלפת ה-placeholder אמוג׳י ב-CSS/JS).
+**🔴 שינוי אוצר (מיטל):** `hungry` הוחלף ב-`surprised` — הגיליון כלל פרצוף "מופתע/מודאג", לא "רעב". **מחיר:** נופל חיבור-Food ("I'm hungry"→"I want ___"). אם רוצים להחזיר את hungry: לייצר פרצוף "רעב" (מלקק שפתיים/יד-על-בטן) באותו סגנון ולהחזיר את המילה.
+הבריף למטה נשמר כרשומת-מקור וכתבנית לפרצוף-רעב עתידי.
 
 ---
 
@@ -21,13 +25,13 @@
 ```
 lumi/app/assets/emotions/faces/
 ├── happy.png     (😄 placeholder)
-├── sad.png       (😢)
-├── hungry.png    (😋)
-├── tired.png     (🥱)
-├── scared.png    (😨)
-└── okay.png      (🙂)
+├── sad.png       ✅
+├── scared.png    ✅
+├── tired.png     ✅
+├── surprised.png ✅
+└── okay.png      ✅   (hungry.png — עתידי, אם מחזירים)
 ```
-> **הערה למפתח:** `light-beam.js` מציג כרגע glyph אמוג׳י בתוך `.ba-emoji`. חיווט ה-PNG הוא **משימת-המשך קלה** (להוסיף ל-CSS רקע לפי מזהה-רגש, כמו `.lg-animal[data-animal]` בפֶּטס). עד אז — placeholder אמוג׳י.
+> **חיווט (בוצע):** `find-the-feeling.html` ממפה את glyph-האמוג׳י שב-`.ba-emoji` חזרה למילה ומציב `background-image` של ה-PNG על `.beam-animal` (page-local — בלי לגעת ב-`light-beam.js` המשותפת). האמוג׳י נשאר fallback אם PNG חסר.
 
 ---
 
@@ -38,10 +42,11 @@ lumi/app/assets/emotions/faces/
 |---|---|---|---|
 | `happy.png`  | שמח   | "happy" · "I'm happy!"   | חיוך רחב, עיניים קורנות, זוהר מעט חזק יותר |
 | `sad.png`    | עצוב  | "sad" · "I'm sad!"       | פה נפול, גבות פנימה-למעלה, דמעה קטנה עדינה (לא בכי מר) |
-| `hungry.png` | רעב   | "hungry" · "I'm hungry!" | מלקק שפתיים / יד על בטן, עיניים על "אוכל" — **לא חיוך שמח** |
-| `tired.png`  | עייף  | "tired" · "I'm tired!"   | עיניים חצי-עצומות, פיהוק קטן, גוף רפוי — **רגוע, לא עצוב** |
-| `scared.png` | מפחד  | "scared" · "I'm scared!" | עיניים גדולות, ידיים קרובות לגוף, "אופס" — **רך וחמוד, לא מפחיד** |
-| `okay.png`   | בסדר  | "okay" · "I'm okay!"     | חיוך קל ניטרלי, רגוע, אגודל-למעלה קטן — "הכול טוב" |
+| `scared.png` | מפחד  | "scared" · "I'm scared!" | גבות מודאגות, פה קטן, ידיים מחבקות את הגוף — **רך, לא מפחיד** |
+| `tired.png`  | עייף  | "tired" · "I'm tired!"   | עיניים חצי-עצומות, פיהוק, יד לפה — **רגוע, לא עצוב** |
+| `surprised.png` | מופתע | "surprised" · "I'm surprised!" | עיניים גדולות, פה פתוח, שתי ידיים ללחיים — הפתעה/גאסְפּ |
+| `okay.png`   | בסדר  | "okay" · "I'm okay!"     | חיוך קל ניטרלי, רגוע — "הכול טוב" |
+| *(עתידי)* `hungry.png` | רעב | "hungry" · "I'm hungry!" | מלקק שפתיים / יד על בטן — **לא חיוך שמח**. רק אם מחזירים את hungry לחיבור-Food |
 
 **Prompt seed ל-GPT:**
 > A small glowing storybook creature, soft 3D children's-book style, warm inner glow (peach/gold/warm-glow palette), big friendly eyes, rounded soft shapes, premium and adorable, **transparent background, no baked shadow**. Generate the SAME character in these 6 facial expressions, identical size and centered position: **happy** (big warm smile) / **sad** (droopy mouth, one gentle tear) / **hungry** (licking lips, hand on tummy — not a happy smile) / **tired** (half-closed eyes, small yawn, relaxed) / **scared** (big eyes, hands close, soft & cute — NOT frightening) / **okay** (calm neutral little smile, tiny thumbs-up).
@@ -52,6 +57,7 @@ lumi/app/assets/emotions/faces/
 זוהר-הסצנה · אלומת-האור · ניצוצות (LumiFx) · האורות שנדלקים בפס-ההתקדמות · הצללות.
 
 ## ✅ צ'קליסט מסירה
-- [ ] 6 × emotions/faces/*.png (אותה דמות, אותו עיגון, רקע שקוף, אחרי rembg)
-- [ ] כל הבעה חד-משמעית (happy≠hungry · sad≠tired · scared רך)
-- [ ] (מפתח) חיווט PNG ב-CSS של light-beam במקום glyph
+- [x] 6 × emotions/faces/*.png (אותה דמות, רקע שקוף אחרי rembg) — happy/sad/scared/tired/surprised/okay
+- [x] כל הבעה חד-משמעית (scared מודאג-רך ≠ surprised גאספ ≠ sad דמעה)
+- [x] חיווט PNG במשחקון (page-local, בלי לגעת ב-light-beam המשותפת)
+- [ ] *(עתידי)* `hungry.png` — אם מיטל רוצה להחזיר את hungry לחיבור-Food
