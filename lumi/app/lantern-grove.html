@@ -2,151 +2,167 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Lumi · חורשת הפנסים</title>
-<link rel="stylesheet" href="css/tokens.css">
-<link rel="stylesheet" href="css/components.css">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#233c52">
+<title>Lumi · חוֹרְשַׁת הַפַּנָּסִים</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/lantern-grove.css">
 <style>
-  /* page shell only — the minigame's look lives in lantern-grove.css (Codex). */
-  html, body { height: 100%; margin: 0; }
-  /* ?frame=1 — deterministic 390×844 device box for accurate screenshots */
-  body.frame { width: 390px; height: 844px; margin: 24px auto; box-shadow: 0 20px 60px rgba(0,0,0,.5); overflow: hidden; }
-  html:has(body.frame) { height: auto; background: #111; }
+  :root { --coral: #ff9f7e; --coral-deep: #f27a52; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; overflow: hidden; }
   body {
-    font-family: system-ui, -apple-system, "Segoe UI", Rubik, sans-serif;
-    /* full-bleed grove atmosphere for the pilot (final composition = Codex) */
+    font-family: Heebo, system-ui, sans-serif;
     background: #233c52 url(assets/worlds/lantern-grove/backgrounds/grove-bg.png) center top / cover no-repeat fixed;
     color: #fff6ec; display: flex; flex-direction: column;
   }
-  .app { flex: 1; min-height: 0; display: flex; flex-direction: column; max-width: 640px; width: 100%;
-         margin: 0 auto; padding: 12px 14px 18px; box-sizing: border-box; }
-  .top { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-  .beat-label { font-size: 14px; font-weight: 800; background: rgba(0,0,0,.22);
-                padding: 5px 12px; border-radius: 999px; min-width: 70px; text-align: center; }
-  .peek-toggle { margin-inline-start: auto; font-size: 12px; font-weight: 700;
-                 background: rgba(0,0,0,.22); border-radius: 999px; padding: 5px 10px;
-                 border: 0; color: inherit; cursor: pointer; }
-  .path { display: flex; justify-content: center; gap: 8px; min-height: 34px; margin-bottom: 4px; }
-  .path .lantern { width: 26px; height: 30px; display: grid; place-items: center; font-size: 15px; opacity: .5; }
-  .path .lantern--lit, .path .lantern--full, .path .lantern--partial { opacity: 1; }
-  #stage { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
-  /* intro */
-  .intro { position: fixed; inset: 0; display: grid; place-items: center; z-index: 5;
-           background: linear-gradient(180deg, #516a82, #233c52); text-align: center; padding: 24px; }
-  .intro--hidden { display: none; }
-  .intro h1 { font-size: 22px; margin: 8px 0; }
-  .intro p { opacity: .85; max-width: 320px; line-height: 1.5; }
-  .btn-big { margin-top: 18px; font-size: 18px; font-weight: 800; padding: 12px 28px;
-             border: 0; border-radius: 999px; background: var(--lg-warm-glow, #f6e8a6);
-             color: #233c52; cursor: pointer; }
-  #introLumi { width: 120px; height: 120px; margin: 0 auto; }
-  /* peek (grown-ups) — reuse journey styles if present; minimal here */
-  .peek { position: fixed; inset-inline-end: 0; bottom: 0; max-height: 0; overflow: hidden;
-          background: #fff; color: #233; width: min(420px, 92vw); transition: max-height .3s ease;
-          border-radius: 14px 0 0 0; font-size: 12px; }
-  .peek--open { max-height: 60vh; overflow: auto; padding: 12px; }
+  /* ?frame=1 — deterministic 390×844 device box for screenshots */
+  body.frame { width: 390px; height: 844px; margin: 24px auto; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+  html:has(body.frame) { height: auto; background: #111; overflow: auto; }
+
+  /* ---- HUD: lantern progress rail ---- */
+  .lg-hud { position: absolute; top: 0; inset-inline: 0; z-index: 40;
+    display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; }
+  .lg-prog { display: flex; gap: 7px; background: rgba(35,60,82,.42); padding: 8px 14px; border-radius: 999px;
+    backdrop-filter: blur(6px); box-shadow: 0 4px 14px rgba(0,0,0,.25); }
+  .lg-pip { width: 15px; height: 20px; border-radius: 4px 4px 5px 5px; background: rgba(255,255,255,.22);
+    position: relative; transition: background .4s ease, box-shadow .4s ease; }
+  .lg-pip::before { content: ""; position: absolute; inset-inline: 4px; top: -3px; height: 4px; border-radius: 3px 3px 0 0; background: rgba(255,255,255,.3); }
+  .lg-pip.lit { background: var(--lg-warm-glow, #f6e8a6); box-shadow: 0 0 10px 2px rgba(246,232,166,.7); }
+  .lg-home { font-size: 22px; filter: drop-shadow(0 2px 4px rgba(0,0,0,.4)); opacity: .9; }
+
+  /* ---- game stage (mechanic mounts here) ---- */
+  #stage { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; padding-top: 44px; }
+
+  /* ---- overlays (intro / done) — avnei card style ---- */
+  .lg-overlay { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; gap: 18px; padding: 28px;
+    background: radial-gradient(circle at 50% 34%, rgba(35,70,92,.82), rgba(20,40,56,.94)); }
+  .lg-overlay.hidden { display: none; }
+  .lg-hero { width: clamp(150px, 42vw, 210px); aspect-ratio: 1; background: center/contain no-repeat;
+    filter: drop-shadow(0 14px 20px rgba(0,0,0,.45)); animation: heroFloat 4s ease-in-out infinite; }
+  .lg-hero[data-mood="idle"] { background-image: url(assets/character/lumi/lumi-idle.png); }
+  .lg-hero[data-mood="celebrate"] { background-image: url(assets/character/lumi/lumi-celebrate.png); }
+  @keyframes heroFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+  .lg-overlay h1 { margin: 0; font-size: clamp(24px, 6.5vw, 34px); font-weight: 900; color: #2a4e63;
+    background: rgba(255,255,255,.95); padding: 10px 24px; border-radius: 20px; box-shadow: 0 10px 26px rgba(0,0,0,.4); }
+  .lg-overlay p { margin: 0; font-size: clamp(17px, 4.4vw, 21px); font-weight: 500; line-height: 1.55; color: #2a4e63;
+    background: rgba(255,255,255,.9); padding: 14px 22px; border-radius: 18px; max-width: 460px; }
+  .lg-overlay p b { color: var(--coral-deep); font-weight: 800; }
+  .lg-btn-big { font-size: 21px; font-weight: 800; color: #fff; border: 0; cursor: pointer;
+    background: linear-gradient(180deg, var(--coral), var(--coral-deep)); padding: 15px 42px; border-radius: 999px;
+    box-shadow: 0 10px 24px rgba(242,122,82,.5); min-height: 56px; transition: transform .15s ease; }
+  .lg-btn-big:active { transform: scale(.96); }
+  .lg-btn-ghost { display: inline-flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 700; cursor: pointer;
+    color: #2a4e63; background: rgba(255,255,255,.85); border: 0; padding: 11px 26px; border-radius: 999px; min-height: 48px; }
+  .lg-btn-ghost:active { transform: scale(.96); }
 </style>
 </head>
 <body>
-  <div class="intro" id="intro">
-    <div>
-      <div id="introLumi"></div>
-      <h1 lang="he">חוֹרְשַׁת הַפַּנָּסִים</h1>
-      <p lang="he">לוּמִי אִבֵּד אֶת הַדֶּרֶךְ הַבַּיְתָה. כָּל מִלָּה שֶׁתִּלְמְדוּ מַדְלִיקָה עוֹד אוֹר בַּדֶּרֶךְ.</p>
-      <button class="btn-big" id="startBtn" type="button" lang="he">קָדִימָה ➜</button>
+  <main class="lg-stage">
+    <div class="lg-hud">
+      <div class="lg-prog" id="prog" aria-label="פנסים שנדלקו"></div>
+      <div class="lg-home" title="הבית של לומי">🏠</div>
     </div>
-  </div>
-
-  <div class="app">
-    <div class="top">
-      <div class="beat-label" id="beatLabel" lang="he">מַסָּע</div>
-      <button class="peek-toggle" id="peekToggle" type="button" lang="he">רֶגַע לַהוֹרֶה</button>
-    </div>
-    <div class="path" id="path" aria-hidden="true"></div>
     <div id="stage"></div>
+  </main>
+
+  <div class="lg-overlay" id="introOverlay">
+    <div class="lg-hero" data-mood="idle"></div>
+    <h1>חוֹרְשַׁת הַפַּנָּסִים</h1>
+    <p>לוּמִי אִבֵּד אֶת הַדֶּרֶךְ הַבַּיְתָה 🌙<br>כָּל מִלָּה שֶׁתִּלְמְדוּ מַדְלִיקָה עוֹד <b>פַּנָּס</b> בַּדֶּרֶךְ.<br>הַקְשִׁיבוּ לַמִּלָּה וּבְחַרוּ אֶת הַפַּנָּס הַנָּכוֹן.</p>
+    <button class="lg-btn-ghost" id="introSpeaker">🔊 הַקְשִׁיבוּ לַהֶסְבֵּר</button>
+    <button class="lg-btn-big" id="startBtn">בּוֹאוּ נַתְחִיל ➜</button>
   </div>
 
-  <aside class="peek" id="peek"><div id="peekBody"></div></aside>
+  <div class="lg-overlay hidden" id="doneOverlay">
+    <div class="lg-hero" data-mood="celebrate"></div>
+    <h1>כָּל הַפַּנָּסִים דּוֹלְקִים! 🎉</h1>
+    <p>הֶאַרְתֶּם אֶת כָּל הַדֶּרֶךְ הַבַּיְתָה לְלוּמִי!</p>
+    <button class="lg-btn-big" id="againBtn">עוֹד פַּעַם ➜</button>
+  </div>
 
-  <!-- data + engine (order matters) -->
   <script src="js/data.js"></script>
   <script src="js/audio.js"></script>
+  <script src="js/audio-clips.js"></script>
   <script src="js/lumi-character.js"></script>
-  <script src="js/bkt.js"></script>
-  <script src="js/resolve-practice.js"></script>
-  <script src="js/scene.js"></script>
   <script src="js/mechanics/_measured-core.js"></script>
-  <script src="js/mechanics/_choice.js"></script>
-  <script src="js/mechanics/meet.js"></script>
-  <script src="js/mechanics/path-choice.js"></script>
-  <script src="js/mechanics/light-beam.js"></script>
-  <script src="js/mechanics/scene-hide.js"></script>
-  <script src="js/mechanics/lantern-grove-recognize.js"></script>
-  <script src="js/mechanics/function.js"></script>
-  <script src="js/mechanics/produce.js"></script>
   <script src="js/engine.js"></script>
+  <script src="js/mechanics/lantern-grove-recognize.js"></script>
   <script>
   (function () {
     'use strict';
-    window.LUMI_WORLD = 'lantern-grove';               // route recognize → Lantern Grove
-    var LEARNER = 'pilot-lantern';
     var q = location.search;
-
     if (/[?&]frame=1/.test(q)) document.body.classList.add('frame');
-    if (/[?&]probe=1/.test(q)) setTimeout(function () {
-      function r(s){var e=document.querySelector(s);if(!e)return s+':none';var b=e.getBoundingClientRect();return s+' '+Math.round(b.top)+'→'+Math.round(b.bottom);}
-      document.title = 'innerH='+window.innerHeight+' scrollH='+document.documentElement.scrollHeight+' | '+
-        ['#stage','.measure-scene','.lg-grove','.lumi-companion','.lg-lanterns'].map(r).join(' | ');
-    }, 1600);
-    if (/[?&]reset=1/.test(q)) { try { localStorage.clear(); } catch (e) {} }
-    if (/[?&]autoplay=1/.test(q)) window.LUMI_AUTOPLAY = true;
 
-    var introCtrl = LumiCharacter.mount(document.getElementById('introLumi'));
-    introCtrl.setMood('glow');
-    var lumiCtrl = LumiCharacter.mount(document.createElement('div')); // rail Lumi (unused in grove)
+    var D = window.LUMI_DATA;
+    var WORDS = ['dog', 'cat', 'fish', 'bird', 'rabbit'];
+    var stageEl = document.getElementById('stage');
+    var progEl = document.getElementById('prog');
 
-    var peek = document.getElementById('peek');
-    document.getElementById('peekToggle').addEventListener('click', function () { peek.classList.toggle('peek--open'); });
+    function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
 
-    // dev: ?warm=1 pre-Meets the pets so the first beat is a lantern recognize
-    // (skips the Meet intros — for fast visual iteration, NOT a pedagogy change).
-    function warmMeet() {
-      ['dog','cat','fish','bird','rabbit'].forEach(function (w) {
-        try { LumiBKT.markMet(LEARNER, w); } catch (e) {}
+    // build the lantern progress rail
+    var pips = WORDS.map(function () { var p = document.createElement('span'); p.className = 'lg-pip'; progEl.appendChild(p); return p; });
+    function lightPips(n) { pips.forEach(function (p, i) { p.classList.toggle('lit', i < n); }); }
+
+    // recorded-audio unlock (autoplay policy) — touch every clip once on first gesture
+    function unlockAudio() {
+      Object.keys(LumiAudio.clipMap).forEach(function (k) {
+        try { var a = new Audio(LumiAudio.clipMap[k]); a.preload = 'auto'; var pr = a.play(); if (pr) pr.then(function () { a.pause(); a.currentTime = 0; }).catch(function () {}); } catch (e) {}
       });
     }
 
-    function boot() {
-      document.getElementById('intro').classList.add('intro--hidden');
-      if (/[?&]warm=1/.test(q)) warmMeet();
-      LumiEngine.start({
-        learnerId: LEARNER, subtopic: 'pets', lumi: lumiCtrl,
-        stageRoot: document.getElementById('stage'),
-        pathRoot: document.getElementById('path'),
-        headerRoot: document.getElementById('beatLabel'),
-        peekRoot: document.getElementById('peekBody'),
-      });
+    // an item for `word`: correct = that animal, 2 distractors = OTHER pets (all real PNGs)
+    function makeItem(word) {
+      var others = shuffle(WORDS.filter(function (w) { return w !== word; })).slice(0, 2);
+      var opts = shuffle([{ img: word, correct: true }, { img: others[0], correct: false }, { img: others[1], correct: false }]);
+      return { prompt: { audio_en: word }, options: opts, help_he: 'לוּמִי מְחַפֵּשׂ אֶת הַפַּנָּס', target: [word] };
     }
-    document.getElementById('startBtn').addEventListener('click', boot);
 
-    // ---- QA: ?qa=lantern renders ONE lantern-recognize screen in isolation for
-    //      headless screenshots (idle → autoplay drives it through the states).
-    if (/[?&]qa=lantern/.test(q)) {
-      document.getElementById('intro').classList.add('intro--hidden');
-      var D = window.LUMI_DATA;
-      var item = D.items.filter(function (it) {
-        return it.subtopic === 'pets' && it.dimension === 'recognize' && it.target[0] === 'dog';
-      })[0];
-      LumiLanternGrove.present(document.getElementById('stage'), {
-        item: item, lumi: lumiCtrl, emoji: D.emoji, reps: (D.reps || {}),
-        targetRep: (D.reps && D.reps.dog && D.reps.dog[0]) || null,
-        instructionHe: (D.instructions.listen_and_choose || {}).he, showInstruction: true,
-        onMeasured: function () {}, onDone: function () {},
+    var order = shuffle(WORDS), idx = 0, lit = 0, autoplay = /[?&]autoplay=1/.test(q);
+    if (autoplay) window.LUMI_AUTOPLAY = true;
+
+    function nextRound() {
+      if (idx >= order.length) return showDone();
+      var word = order[idx++];
+      stageEl.innerHTML = '';
+      LumiLanternGrove.present(stageEl, {
+        item: makeItem(word), emoji: D.emoji, reps: D.reps || {},
+        targetRep: { glyph: (D.emoji && D.emoji[word]) || '❔' },
+        instructionHe: idx === 1 ? 'הַקְשִׁיבוּ וּבְחַרוּ' : null, showInstruction: idx === 1,
+        onMeasured: function () {},
+        onDone: function () {
+          lit++; lightPips(lit);
+          try { LumiAudio.english('You found it!'); } catch (e) {}
+          setTimeout(nextRound, 950);
+        },
       });
-    } else if (/[?&]auto=1/.test(q)) {
-      boot();
     }
+
+    function showDone() {
+      document.getElementById('doneOverlay').classList.remove('hidden');
+      try { LumiAudio.clipMap['done'] = 'assets/audio/words/done-he.mp3'; LumiAudio.speak('done'); } catch (e) {}
+    }
+
+    document.getElementById('introSpeaker').addEventListener('click', function () {
+      unlockAudio();
+      try { LumiAudio.clipMap['intro'] = 'assets/audio/words/intro-he.mp3'; LumiAudio.speak('intro'); } catch (e) {}
+    });
+    document.getElementById('startBtn').addEventListener('click', function () {
+      unlockAudio();
+      document.getElementById('introOverlay').classList.add('hidden');
+      lightPips(0); nextRound();
+    });
+    document.getElementById('againBtn').addEventListener('click', function () {
+      order = shuffle(WORDS); idx = 0; lit = 0; lightPips(0);
+      document.getElementById('doneOverlay').classList.add('hidden'); nextRound();
+    });
+
+    // QA: skip the intro and drive automatically
+    if (autoplay) { document.getElementById('introOverlay').classList.add('hidden'); nextRound(); }
   })();
   </script>
 </body>
