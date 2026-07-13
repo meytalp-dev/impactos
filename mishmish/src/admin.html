@@ -72,6 +72,12 @@
       background: linear-gradient(90deg, rgba(155,202,228,0.14), rgba(255,255,255,0) 60%);
     }
     .topic .t-title { display: flex; align-items: baseline; gap: var(--space-3); flex-wrap: wrap; }
+    .topic .t-num {
+      font-size: var(--font-size-xs); font-weight: 800; color: #fff;
+      background: var(--color-apricot-500); border-radius: var(--radius-pill);
+      padding: 3px 12px; white-space: nowrap; align-self: center;
+    }
+    .topic .t-num.tool { background: var(--color-sky-500); }
     .topic .t-title .he { font-size: var(--font-size-lg); font-weight: 800; color: var(--color-ink-900); }
     .topic .t-title .en { font-size: var(--font-size-xs); color: var(--color-ink-500); }
     .topic .meta-chips { display: flex; gap: var(--space-2); flex-wrap: wrap; }
@@ -352,8 +358,17 @@
     var CLIPS = {};
     if (A && A.setClipMap) A.setClipMap(CLIPS);
 
+    /* ---------- סדר התוכנית השנתית ---------- */
+    /* נושא 1→8 לפי התוכנית; mapping = משחק-הצבה (לא נושא) → נפרד בסוף */
+    var PLAN_ORDER = { class: 1, family: 2, colors: 3, body: 4, market: 5, home: 6, nature: 7, hobbies: 8 };
+    function planNum(p) {
+      var id = (p.meta && p.meta.id) || p.pack;
+      return PLAN_ORDER.hasOwnProperty(id) ? PLAN_ORDER[id] : 99;   // לא-נושא (mapping) → סוף
+    }
+    function isTopic(p) { return planNum(p) < 99; }
+
     /* ---------- render ---------- */
-    var packs = (DATA.packs || []).slice();
+    var packs = (DATA.packs || []).slice().sort(function (a, b) { return planNum(a) - planNum(b); });
 
     var totalGames = 0, totalOpen = 0, totalAudio = 0;
 
@@ -409,9 +424,12 @@
       if (sw) chips.push('<span class="chip wave">🔉 גַּל ' + esc(sw) + '</span>');
       if (p.meta && p.meta.amir) chips.push('<span class="chip amir">🫧 אָמִיר</span>');
 
+      var numHe = isTopic(p) ? ('נוֹשֵׂא ' + planNum(p)) : '🗺️ מִיפּוּי';
       return '<section class="topic" data-space="' + esc(space) + '">' +
         '<header>' +
-          '<div class="t-title"><span class="he">' + esc(topicTitle(p)) + '</span>' +
+          '<div class="t-title">' +
+            '<span class="t-num' + (isTopic(p) ? '' : ' tool') + '">' + numHe + '</span>' +
+            '<span class="he">' + esc(topicTitle(p)) + '</span>' +
             '<span class="en">' + esc(topicEn(p)) + ' · <code>' + esc(p.pack) + '</code></span></div>' +
           '<div class="meta-chips">' + chips.join('') + '</div>' +
         '</header>' +
