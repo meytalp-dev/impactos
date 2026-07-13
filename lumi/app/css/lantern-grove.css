@@ -1,0 +1,142 @@
+/* ============================================================
+   lantern-grove.css — Lantern Grove / Recognize.
+   ⚠️ SKELETON ONLY (by Claude). This provides LAYOUT + STATE HOOKS so the pilot
+   runs and is testable. It is intentionally plain. CODEX owns the craft: the
+   soft-3D storybook look, real assets, glows, motion, depth.
+
+   Every selector below is part of the CONTRACT. Codex: restyle freely, but keep
+   these selectors + the [data-state]/[data-mood]/[data-phase] values, because the
+   JS (lantern-grove-recognize.js) drives them. Do NOT edit the .js.
+
+   Palette tokens (brief §7) live in tokens.css as --lumi-*. Use them.
+   ============================================================ */
+
+:root {
+  --lg-mint: #9fe8d8; --lg-aqua: #78d8d0; --lg-seafoam: #bff3ea;
+  --lg-warm-glow: #f6e8a6; --lg-cream: #f8f3e8; --lg-lavender: #dccdf8;
+  --lg-lilac-shadow: #bdaee6; --lg-eye-deep: #2a4e63;
+  --lg-grove-night: #233c52; --lg-grove-twilight: #516a82;
+}
+
+/* ---- scene ------------------------------------------------------------ */
+.lg-grove {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center;
+  gap: clamp(12px, 4vh, 32px);
+  min-height: 60vh; padding: 8px 12px 24px;
+}
+/* CODEX: grove-bg.png here (WebP), layered depth. Skeleton = flat twilight. */
+.lg-bg {
+  position: absolute; inset: 0; z-index: 0; border-radius: 20px;
+  background: linear-gradient(180deg, var(--lg-grove-twilight), var(--lg-grove-night));
+}
+.lg-grove > * { position: relative; z-index: 1; }
+
+/* ---- Lumi companion (placeholder = SVG; CODEX: lumi-*.png via [data-mood]) --- */
+.lumi-companion { width: clamp(96px, 26vw, 148px); aspect-ratio: 1; }
+.lumi-companion .lc-figure { width: 100%; height: 100%; }
+/* constrain the placeholder SVG Lumi (inline <svg> defaults to 300px otherwise) */
+.lumi-companion .lumi, .lumi-companion .lumi-stage { width: 100%; height: 100%; }
+.lumi-companion .lumi-svg { width: 100%; height: 100%; display: block; }
+/* CODEX: swap .lc-figure for background-image per state, e.g.
+   .lumi-companion[data-mood="listening"] { background-image:url(../assets/character/lumi/lumi-listening.png) }
+   …and hide .lc-figure. Same size/anchor across all moods (no jump). */
+.lc-bubble {
+  position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+  background: #fff; border-radius: 12px; padding: 4px 10px; font-size: 20px;
+}
+
+/* ---- lanterns row ---------------------------------------------------- */
+.lg-lanterns {
+  display: flex; justify-content: center; align-items: flex-end;
+  gap: clamp(8px, 3vw, 22px); width: 100%; box-sizing: border-box; padding: 0 4px;
+}
+
+/* one lantern = 4 stacked layers. Tap target ≥ 56px (brief §11).
+   flex-shrink so all three fit the mobile width (no clipping/overflow). */
+.lg-lantern {
+  position: relative; flex: 1 1 0; min-width: 0; max-width: 132px;
+  aspect-ratio: 3 / 4; height: auto; min-height: 56px;
+  border: 0; background: transparent; padding: 0; cursor: pointer;
+  transition: transform .28s ease, opacity .28s ease;
+}
+.lg-lantern[disabled] { cursor: default; }
+.lg-lantern > span { position: absolute; inset: 0; display: grid; place-items: center; }
+
+/* layer order — CODEX paints each; skeleton just makes them legible */
+.lg-glow  { border-radius: 50%; opacity: 0; transition: opacity .3s ease;
+            background: radial-gradient(circle, var(--lg-warm-glow) 0%, transparent 62%); }
+.lg-shell { /* CODEX: lantern-shell.png. Skeleton = a soft rounded frame. */
+            inset: 6% 12%; border: 3px solid var(--lg-warm-glow); border-radius: 26px;
+            background: rgba(255,255,255,.06); }
+.lg-animal{ font-size: clamp(34px, 12vw, 56px); /* CODEX: [data-animal] → animal PNG, hide emoji */ }
+.lg-glass { /* CODEX: glass overlay/highlight. */ pointer-events: none;
+            background: linear-gradient(135deg, rgba(255,255,255,.18), transparent 55%);
+            border-radius: 26px; inset: 6% 12%; }
+
+/* ---- lantern STATES (driven by JS — keep the values) ----------------- */
+.lg-lantern[data-state="idle"]      .lg-animal { opacity: .55; filter: saturate(.7) brightness(.92); }
+.lg-lantern[data-state="active"]                { transform: translateY(-4px) scale(1.03); }
+.lg-lantern[data-state="active"]    .lg-glow    { opacity: .5; }
+.lg-lantern[data-state="revealing"]             { transform: scale(1.08); }
+.lg-lantern[data-state="revealing"] .lg-glow    { opacity: .85; }
+.lg-lantern[data-state="revealing"] .lg-animal  { opacity: 1; filter: none; }
+.lg-lantern[data-state="success"]               { transform: scale(1.1); }
+.lg-lantern[data-state="success"]   .lg-glow    { opacity: 1; }
+.lg-lantern[data-state="success"]   .lg-animal  { opacity: 1; filter: none; }
+.lg-lantern[data-state="retry"]                 { animation: lg-soft .7s ease; }   /* NO red, NO X */
+.lg-lantern[data-state="hint"]      .lg-glow    { opacity: .7; animation: lg-beckon 1s ease infinite; }
+.lg-lantern[data-state="dimmed"]                { opacity: .35; }
+
+@keyframes lg-soft   { 0%,100%{transform:none} 30%{transform:translateY(-3px)} 60%{transform:translateY(1px)} }
+@keyframes lg-beckon { 0%,100%{opacity:.5} 50%{opacity:.85} }
+
+/* ============================================================
+   ASSET WIRING — baseline drop-in (by Claude, verifies the pipeline).
+   Real art now shows. CODEX refines composition/choreography/depth.
+   ============================================================ */
+.lg-bg {
+  /* grove art is on the page (full-bleed); here we lay a soft readability scrim
+     so lanterns/Lumi pop. CODEX: compose grove + scrim however reads best. */
+  background: radial-gradient(120% 90% at 50% 60%, transparent 30%, rgba(35,60,82,.45) 100%);
+}
+/* Lumi companion → real PNG per mood (hide the placeholder SVG) */
+.lumi-companion .lumi-svg { display: none; }
+.lumi-companion .lc-figure { background: center/contain no-repeat; }
+.lumi-companion[data-mood="idle"]      .lc-figure { background-image: url(../assets/character/lumi/lumi-idle.png); }
+.lumi-companion[data-mood="listening"] .lc-figure { background-image: url(../assets/character/lumi/lumi-listening.png); }
+.lumi-companion[data-mood="pointing"]  .lc-figure { background-image: url(../assets/character/lumi/lumi-pointing.png); }
+.lumi-companion[data-mood="curious"]   .lc-figure { background-image: url(../assets/character/lumi/lumi-curious.png); }
+.lumi-companion[data-mood="happy"]     .lc-figure { background-image: url(../assets/character/lumi/lumi-happy.png); }
+.lumi-companion[data-mood="celebrate"] .lc-figure { background-image: url(../assets/character/lumi/lumi-celebrate.png); }
+.lumi-companion[data-mood="try-again"] .lc-figure { background-image: url(../assets/character/lumi/lumi-try-again.png); }
+
+/* lantern shell → real PNG (drop the skeleton frame) */
+.lg-shell {
+  inset: 0; border: 0; background: center/contain no-repeat;
+  background-image: url(../assets/worlds/lantern-grove/lanterns/lantern-shell.png);
+}
+.lg-glass { display: none; }   /* the real lantern already has its own glass/glow */
+
+/* animal → real PNG per data-animal (hide the emoji placeholder). Object
+   distractors (star/cup/…) have no PNG yet, so they keep their emoji. */
+.lg-animal { background: center/contain no-repeat; }
+.lg-animal[data-animal="dog"],    .lg-animal[data-animal="cat"],
+.lg-animal[data-animal="fish"],   .lg-animal[data-animal="bird"],
+.lg-animal[data-animal="rabbit"] { color: transparent; text-shadow: none; }
+.lg-animal[data-animal="dog"]    { background-image: url(../assets/animals/pets/dog.png); }
+.lg-animal[data-animal="cat"]    { background-image: url(../assets/animals/pets/cat.png); }
+.lg-animal[data-animal="fish"]   { background-image: url(../assets/animals/pets/fish.png); }
+.lg-animal[data-animal="bird"]   { background-image: url(../assets/animals/pets/bird.png); }
+.lg-animal[data-animal="rabbit"] { background-image: url(../assets/animals/pets/rabbit.png); }
+/* the animal sits slightly smaller, centered in the lantern */
+.lg-lantern .lg-animal { inset: 14% 16% 20%; }
+
+/* ---- reduced motion (brief §13) -------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .lg-lantern, .lg-glow { transition: opacity .12s linear; }
+  .lg-lantern[data-state="retry"] { animation: none; }
+  .lg-lantern[data-state="hint"] .lg-glow { animation: none; opacity: .8; }
+  .lg-lantern[data-state="active"], .lg-lantern[data-state="revealing"],
+  .lg-lantern[data-state="success"] { transform: none; }
+}

@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Lumi · חורשת הפנסים</title>
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/lantern-grove.css">
+<style>
+  /* page shell only — the minigame's look lives in lantern-grove.css (Codex). */
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Rubik, sans-serif;
+    /* full-bleed grove atmosphere for the pilot (final composition = Codex) */
+    background: #233c52 url(assets/worlds/lantern-grove/backgrounds/grove-bg.png) center top / cover no-repeat fixed;
+    color: #fff6ec; display: flex; flex-direction: column;
+  }
+  .app { flex: 1; display: flex; flex-direction: column; max-width: 640px; width: 100%;
+         margin: 0 auto; padding: 12px 14px 18px; box-sizing: border-box; }
+  .top { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .beat-label { font-size: 14px; font-weight: 800; background: rgba(0,0,0,.22);
+                padding: 5px 12px; border-radius: 999px; min-width: 70px; text-align: center; }
+  .peek-toggle { margin-inline-start: auto; font-size: 12px; font-weight: 700;
+                 background: rgba(0,0,0,.22); border-radius: 999px; padding: 5px 10px;
+                 border: 0; color: inherit; cursor: pointer; }
+  .path { display: flex; justify-content: center; gap: 8px; min-height: 34px; margin-bottom: 4px; }
+  .path .lantern { width: 26px; height: 30px; display: grid; place-items: center; font-size: 15px; opacity: .5; }
+  .path .lantern--lit, .path .lantern--full, .path .lantern--partial { opacity: 1; }
+  #stage { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  /* intro */
+  .intro { position: fixed; inset: 0; display: grid; place-items: center; z-index: 5;
+           background: linear-gradient(180deg, #516a82, #233c52); text-align: center; padding: 24px; }
+  .intro--hidden { display: none; }
+  .intro h1 { font-size: 22px; margin: 8px 0; }
+  .intro p { opacity: .85; max-width: 320px; line-height: 1.5; }
+  .btn-big { margin-top: 18px; font-size: 18px; font-weight: 800; padding: 12px 28px;
+             border: 0; border-radius: 999px; background: var(--lg-warm-glow, #f6e8a6);
+             color: #233c52; cursor: pointer; }
+  #introLumi { width: 120px; height: 120px; margin: 0 auto; }
+  /* peek (grown-ups) — reuse journey styles if present; minimal here */
+  .peek { position: fixed; inset-inline-end: 0; bottom: 0; max-height: 0; overflow: hidden;
+          background: #fff; color: #233; width: min(420px, 92vw); transition: max-height .3s ease;
+          border-radius: 14px 0 0 0; font-size: 12px; }
+  .peek--open { max-height: 60vh; overflow: auto; padding: 12px; }
+</style>
+</head>
+<body>
+  <div class="intro" id="intro">
+    <div>
+      <div id="introLumi"></div>
+      <h1 lang="he">חוֹרְשַׁת הַפַּנָּסִים</h1>
+      <p lang="he">לוּמִי אִבֵּד אֶת הַדֶּרֶךְ הַבַּיְתָה. כָּל מִלָּה שֶׁתִּלְמְדוּ מַדְלִיקָה עוֹד אוֹר בַּדֶּרֶךְ.</p>
+      <button class="btn-big" id="startBtn" type="button" lang="he">קָדִימָה ➜</button>
+    </div>
+  </div>
+
+  <div class="app">
+    <div class="top">
+      <div class="beat-label" id="beatLabel" lang="he">מַסָּע</div>
+      <button class="peek-toggle" id="peekToggle" type="button" lang="he">רֶגַע לַהוֹרֶה</button>
+    </div>
+    <div class="path" id="path" aria-hidden="true"></div>
+    <div id="stage"></div>
+  </div>
+
+  <aside class="peek" id="peek"><div id="peekBody"></div></aside>
+
+  <!-- data + engine (order matters) -->
+  <script src="js/data.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/lumi-character.js"></script>
+  <script src="js/bkt.js"></script>
+  <script src="js/resolve-practice.js"></script>
+  <script src="js/scene.js"></script>
+  <script src="js/mechanics/_measured-core.js"></script>
+  <script src="js/mechanics/_choice.js"></script>
+  <script src="js/mechanics/meet.js"></script>
+  <script src="js/mechanics/path-choice.js"></script>
+  <script src="js/mechanics/light-beam.js"></script>
+  <script src="js/mechanics/scene-hide.js"></script>
+  <script src="js/mechanics/lantern-grove-recognize.js"></script>
+  <script src="js/mechanics/function.js"></script>
+  <script src="js/mechanics/produce.js"></script>
+  <script src="js/engine.js"></script>
+  <script>
+  (function () {
+    'use strict';
+    window.LUMI_WORLD = 'lantern-grove';               // route recognize → Lantern Grove
+    var LEARNER = 'pilot-lantern';
+    var q = location.search;
+
+    if (/[?&]reset=1/.test(q)) { try { localStorage.clear(); } catch (e) {} }
+    if (/[?&]autoplay=1/.test(q)) window.LUMI_AUTOPLAY = true;
+
+    var introCtrl = LumiCharacter.mount(document.getElementById('introLumi'));
+    introCtrl.setMood('glow');
+    var lumiCtrl = LumiCharacter.mount(document.createElement('div')); // rail Lumi (unused in grove)
+
+    var peek = document.getElementById('peek');
+    document.getElementById('peekToggle').addEventListener('click', function () { peek.classList.toggle('peek--open'); });
+
+    // dev: ?warm=1 pre-Meets the pets so the first beat is a lantern recognize
+    // (skips the Meet intros — for fast visual iteration, NOT a pedagogy change).
+    function warmMeet() {
+      ['dog','cat','fish','bird','rabbit'].forEach(function (w) {
+        try { LumiBKT.markMet(LEARNER, w); } catch (e) {}
+      });
+    }
+
+    function boot() {
+      document.getElementById('intro').classList.add('intro--hidden');
+      if (/[?&]warm=1/.test(q)) warmMeet();
+      LumiEngine.start({
+        learnerId: LEARNER, subtopic: 'pets', lumi: lumiCtrl,
+        stageRoot: document.getElementById('stage'),
+        pathRoot: document.getElementById('path'),
+        headerRoot: document.getElementById('beatLabel'),
+        peekRoot: document.getElementById('peekBody'),
+      });
+    }
+    document.getElementById('startBtn').addEventListener('click', boot);
+
+    // ---- QA: ?qa=lantern renders ONE lantern-recognize screen in isolation for
+    //      headless screenshots (idle → autoplay drives it through the states).
+    if (/[?&]qa=lantern/.test(q)) {
+      document.getElementById('intro').classList.add('intro--hidden');
+      var D = window.LUMI_DATA;
+      var item = D.items.filter(function (it) {
+        return it.subtopic === 'pets' && it.dimension === 'recognize' && it.target[0] === 'dog';
+      })[0];
+      LumiLanternGrove.present(document.getElementById('stage'), {
+        item: item, lumi: lumiCtrl, emoji: D.emoji, reps: (D.reps || {}),
+        targetRep: (D.reps && D.reps.dog && D.reps.dog[0]) || null,
+        instructionHe: (D.instructions.listen_and_choose || {}).he, showInstruction: true,
+        onMeasured: function () {}, onDone: function () {},
+      });
+    } else if (/[?&]auto=1/.test(q)) {
+      boot();
+    }
+  })();
+  </script>
+</body>
+</html>

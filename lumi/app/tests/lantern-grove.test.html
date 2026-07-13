@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>lantern-grove tests</title>
+<link rel="stylesheet" href="../css/lantern-grove.css">
+</head>
+<body>
+<div id="root"></div>
+<pre id="result">running…</pre>
+
+<script src="../js/data.js"></script>
+<script src="../js/audio.js"></script>
+<script src="../js/lumi-character.js"></script>
+<script src="../js/bkt.js"></script>
+<script src="../js/mechanics/_measured-core.js"></script>
+<script src="../js/mechanics/lantern-grove-recognize.js"></script>
+<script>
+(function () {
+  'use strict';
+  // ---- deterministic audio: resolve fast so the prompt-gate lifts quickly ----
+  var origEnglish = LumiAudio.english;
+  LumiAudio.english = function () { return new Promise(function (r) { setTimeout(function () { r(true); }, 15); }); };
+  LumiAudio.hebrew  = function () { return Promise.resolve(true); };
+  LumiAudio.sequence= function () { return new Promise(function (r) { setTimeout(function () { r(true); }, 15); }); };
+
+  var results = [];
+  function ok(name, cond, extra) { results.push({ name: name, pass: !!cond, extra: extra || '' }); }
+  var lumiStub = { setMood: function () {}, say: function () {}, pulse: function () {} };
+
+  function fresh() { var d = document.createElement('div'); document.getElementById('root').appendChild(d); return d; }
+  function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+  // build a measured item with 3 options, `correctIdx` marks the answer
+  function mountMeasured(correctIdx, onMeasured, onDone) {
+    var counts = { measured: 0, done: 0 };
+    var m = LumiMeasured.mount(fresh(), {
+      lumi: lumiStub, targetAudio: 'dog', gestureMood: 'listen', gateOnPrompt: true,
+      onMeasured: function (p) { counts.measured++; if (onMeasured) onMeasured(p); },
+      onDone: function (r) { counts.done++; if (onDone) onDone(r); },
+    });
+    var opts = [0,1,2].map(function (i) {
+      return m.ctl.registerOption({ isCorrect: i === correctIdx, img: 'x'+i, key: i,
+        onArm:function(){}, disarm:function(){}, onCorrect:function(){}, onWrong:function(){},
+        beckon:function(){}, fade:function(){} });
+    });
+    return { ctl: m.ctl, opts: opts, counts: counts };
+  }
+
+  async function run() {
+    // ── Test 1: locked during audio → pick ignored; then first CORRECT measures
+    //    once {firstCorrect:true}; onDone once ──
+    var t1 = mountMeasured(0, function () {});
+    t1.ctl.pick(t1.opts[0]);                 // ignored (locked)
+    ok('T1 locked: immediate pick ignored', t1.counts.measured === 0);
+    await wait(360);
+    ok('T1 gate lifted', t1.ctl.isLocked() === false);
+    t1.ctl.pick(t1.opts[0]);                 // correct
+    ok('T1 first-correct measured once', t1.counts.measured === 1, 'm=' + t1.counts.measured);
+    await wait(1000);
+    ok('T1 onDone once', t1.counts.done === 1, 'd=' + t1.counts.done);
+
+    // ── Test 2: first WRONG → measured once {false}; learning picks NOT re-fed ──
+    var p2 = null;
+    var t2 = mountMeasured(0, function (p) { p2 = p; });
+    await wait(360);
+    t2.ctl.pick(t2.opts[1]);                 // wrong first
+    ok('T2 first-wrong measured once', t2.counts.measured === 1, 'm=' + t2.counts.measured);
+    ok('T2 firstCorrect=false', p2 && p2.firstCorrect === false);
+    // now in learning — several more picks must NOT feed BKT again
+    t2.ctl.pick(t2.opts[2]);
+    t2.ctl.pick(t2.opts[0]);
+    t2.ctl.pick(t2.opts[0]);
+    await wait(50);
+    ok('T2 learning picks NOT re-measured', t2.counts.measured === 1, 'm=' + t2.counts.measured);
+
+    // ── Test 3: replay is NOT an attempt ──
+    var t3 = mountMeasured(0, function () {});
+    await wait(360);
+    t3.ctl.playTarget(); t3.ctl.playTarget(); t3.ctl.playTarget();
+    await wait(30);
+    ok('T3 replay not measured', t3.counts.measured === 0, 'm=' + t3.counts.measured);
+    t3.ctl.pick(t3.opts[0]);
+    ok('T3 pick after replays still measures once', t3.counts.measured === 1);
+
+    // ── Test 4: correct position is NOT fixed across items (bank-driven) ──
+    (function () {
+      var D = window.LUMI_DATA;
+      var recog = D.items.filter(function (it) { return it.subtopic === 'pets' && it.dimension === 'recognize'; });
+      var positions = {};
+      recog.forEach(function (it) {
+        var idx = (it.options || []).findIndex(function (o) { return o.correct; });
+        positions[idx] = (positions[idx] || 0) + 1;
+      });
+      ok('T4 correct answer appears in >1 position across bank', Object.keys(positions).length > 1, JSON.stringify(positions));
+    })();
+
+    // ── Test 5: Lantern Grove reaches success state; others dim; grove=success ──
+    var D = window.LUMI_DATA;
+    var item = D.items.filter(function (it) { return it.subtopic==='pets' && it.dimension==='recognize' && it.target[0]==='dog'; })[0];
+    var groveRoot = fresh();
+    LumiLanternGrove.present(groveRoot, { item: item, lumi: lumiStub, emoji: D.emoji, reps: D.reps || {},
+      targetRep: (D.reps && D.reps.dog && D.reps.dog[0]) || null, instructionHe: 'x', showInstruction: false,
+      onMeasured: function () {}, onDone: function () {} });
+    await wait(520);
+    var lanterns = groveRoot.querySelectorAll('.lg-lantern');
+    ok('T5 three lanterns rendered', lanterns.length === 3, 'n=' + lanterns.length);
+    ok('T5 lanterns interactive after gate (not disabled)', lanterns[0] && lanterns[0].disabled === false);
+    // find the correct lantern (its data-animal === dog) and click it
+    var correct = Array.prototype.filter.call(lanterns, function (b) {
+      return b.querySelector('.lg-animal').getAttribute('data-animal') === 'dog'; })[0];
+    correct.click();
+    await wait(700);
+    ok('T5 chosen lantern → success', correct.getAttribute('data-state') === 'success', correct.getAttribute('data-state'));
+    var others = Array.prototype.filter.call(lanterns, function (b) { return b !== correct; });
+    ok('T5 other lanterns → dimmed', others.every(function (b) { return b.getAttribute('data-state') === 'dimmed'; }));
+    ok('T5 grove phase → success', groveRoot.querySelector('.lg-grove').getAttribute('data-phase') === 'success');
+
+    // ── Test 6: no English word-text is rendered on screen (child sees no EN) ──
+    var txt = groveRoot.textContent || '';
+    ok('T6 no English word rendered in grove', !/\b(dog|cat|fish|bird|rabbit)\b/i.test(txt), JSON.stringify(txt.slice(0,60)));
+
+    // ---- report ----
+    var passed = results.filter(function (r) { return r.pass; }).length;
+    var total = results.length;
+    var lines = results.map(function (r) { return (r.pass ? '✓' : '✗') + ' ' + r.name + (r.extra ? '  [' + r.extra + ']' : ''); });
+    var head = (passed === total ? 'ALL PASS ' : 'FAIL ') + passed + '/' + total;
+    document.getElementById('result').textContent = head + '\n' + lines.join('\n');
+    document.title = head;
+    void origEnglish;
+  }
+  run().catch(function (e) {
+    document.getElementById('result').textContent = 'ERROR ' + (e && e.message);
+    document.title = 'ERROR';
+  });
+})();
+</script>
+</body>
+</html>
