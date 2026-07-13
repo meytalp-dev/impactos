@@ -55,6 +55,17 @@ lumi/app/assets/colors/orbs/
 
 ---
 
+## 1.1 🎨 פרומפט GPT — 4 כדורי גל־שני (pink/black/white/brown) — התאמה 1:1 לסט הקיים
+**חשוב:** צרפי כתמונת־רפרנס אחד מ-6 הכדורים הקיימים (למשל `orb-red.png`) → *"match this exact orb style/shape/lighting, only change the color"*. כך העקביות מובטחת.
+
+> A set of **4 identical magical glowing orbs**, soft 3D storybook style, matching this reference orb exactly: a glossy translucent crystal sphere with a **bright glowing spiral-flame symbol at the center**, tiny sparkles/stars floating inside, delicate faint filigree swirls along the lower edges, smooth premium lighting with a soft highlight at the upper-left. The orbs must be **IDENTICAL in shape, size, inner symbol, lighting and style — ONLY the hue changes**. Front view, centered, each on a **plain solid white background, no text, no ground shadow**. Generate large (~900×900). The 4 colors:
+> - **pink** — soft rosy pink, clearly **lighter/cooler than red** (so pink↔red stay distinct).
+> - **black** — deep soft **anthracite / midnight** sphere with a **warm golden inner glow** so it stays alive and friendly (NOT dead-black, NOT scary); keep a subtly lit rim so the shape reads.
+> - **white** — pearly **ivory-white** with a faint **cool blue-ish rim + inner glow** so the sphere shape reads clearly (must not disappear on a white background).
+> - **brown** — warm cozy **amber-brown / caramel**, clearly **deeper/earthier than orange** (so brown↔orange stay distinct).
+
+אחרי ההורדה: `rembg` על כל קובץ → שקיפות → הקטנה ל~320px → `assets/colors/orbs/orb-{pink,black,white,brown}.png`. אז הם ייכנסו למשחקון אוטומטית (הוסיפי את 4 המילים ל-`WORDS` ב-`color-beam.html`).
+
 ## ❌ אל תייצרי (נעשה ב-CSS/קוד)
 אלומת־האור · הזוהר שנדלק בבחירה · ניצוצות · רצועת־ההתקדמות · רקע־החורשה (נעשה ב-gradient). אלה תאורה/אפקט.
 
