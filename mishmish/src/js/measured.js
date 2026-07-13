@@ -23,6 +23,29 @@ window.MishmishMeasured = (function () {
       ctx.mishmish.classList.toggle('celebrate', mood === 'celebrate');
     }
 
+    // ── פיגום-עמית (אמיר) דרך הרכיב המשותף js/shared/amir.js, אם נטען ──────
+    // מדרג-רמז נעול: שלב 1 = השמעה-חוזרת (מישמיש) · שלב 2 = הצבעה חזותית ·
+    // שלב ≥3 = אמיר-עאמייה. אמיר-כדמות מופיע *רק* במדרג "עאמייה" (הרמז האחרון).
+    // בלי הרכיב (למשל דף שלא טוען amir.js) — fallback לחוזה-הישן (toggle hidden),
+    // כך שהתנהגות דפים קיימים אינה משתנה. הטקסט he/ar מגיע מ-scaffold.json.
+    function amirCtl() {
+      if (!ctx.scaffold) return null;
+      var Amir = window.MishmishAmir;
+      return Amir ? Amir.attach(ctx.scaffold) : null;
+    }
+    function scaffoldHint(step) {
+      if (!ctx.scaffold) return;
+      var a = amirCtl();
+      if (a) { if (step >= 3) a.show('amiya'); else a.hide(); return; }
+      ctx.scaffold.hidden = false;                 // חוזה-ישן: אין רכיב-אמיר
+    }
+    function scaffoldHide() {
+      if (!ctx.scaffold) return;
+      var a = amirCtl();
+      if (a) { a.hide(); return; }
+      ctx.scaffold.hidden = true;
+    }
+
     // בניית האריחים מהאופציות (סדר קבוע — לא לערבב מחדש; מוגדר בבנק)
     function renderTiles() {
       ctx.tiles.innerHTML = '';
@@ -66,6 +89,9 @@ window.MishmishMeasured = (function () {
     function awaitingAnswer() {
       st.phase = 'awaitingAnswer';
       setMishmish('listening');
+      // אם אמיר כבר על המסך (הגענו למדרג-עאמייה) — הוא מקשיב בזמן שהילד עונה.
+      var a = amirCtl();
+      if (a && a.el.classList.contains('show')) a.listening();
       enableTiles(true);
     }
 
@@ -93,8 +119,11 @@ window.MishmishMeasured = (function () {
       clearMarks();
       btn.classList.add('correct');
       setMishmish('celebrate');
+      // אם אמיר הופיע (מדרג-עאמייה) — מגיב בשמחה, ואז נעלם (הפיגום נעלם בהצלחה).
+      var a = amirCtl();
+      if (a && a.el.classList.contains('show')) a.happy();
       // בלי "יופי" — שבח קולי יגיע כקליפ מוקלט (מצוין/מעולה). כרגע חזותי בלבד.
-      window.setTimeout(function () { setMishmish('happy'); complete(); }, 900);
+      window.setTimeout(function () { setMishmish('happy'); scaffoldHide(); complete(); }, 900);
     }
 
     // טעות ראשונה → מצב-למידה (לא נמדד): מישמיש מתבלבל בעדינות, מזמין להאזין שוב
@@ -116,8 +145,9 @@ window.MishmishMeasured = (function () {
       st.phase = 'hint';
       st.hintStep++;
       setMishmish('hint');
-      // פיגום עמית מופיע (טקסט ערבי מגודר; מוצג רק אם אושר)
-      if (ctx.scaffold) ctx.scaffold.hidden = false;
+      // פיגום-עמית: אמיר מופיע רק במדרג "עאמייה" (step≥3) — אחרי השמעה-חוזרת
+      // (step1) והצבעה חזותית (step2). טקסט ערבי מגודר; מוצג/מושמע רק אם אושר.
+      scaffoldHint(st.hintStep);
       playTarget(true).then(function () {
         if (st.hintStep >= 2) {
           var t = tileFor(function (o) { return o.correct; });
@@ -142,7 +172,7 @@ window.MishmishMeasured = (function () {
     // ----- אתחול -----
     renderTiles();
     setMishmish('idle');
-    if (ctx.scaffold) ctx.scaffold.hidden = true;
+    scaffoldHide();
     window.setTimeout(introPlaying, 250);
 
     // בקר חיצוני לשורת שפת-הישרדות
