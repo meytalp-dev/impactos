@@ -6,6 +6,11 @@ const path = require('path');
 
 const itemsDir = path.join(__dirname, '..', '..', 'items');
 const items = JSON.parse(fs.readFileSync(path.join(itemsDir, 'animals.json'), 'utf8'));
+// Additive topic banks (each self-contained; not duplicated in animals.json).
+['t3-emotions.json', 't4-colors.json'].forEach((f) => {
+  const p = path.join(itemsDir, f);
+  if (fs.existsSync(p)) items.push.apply(items, JSON.parse(fs.readFileSync(p, 'utf8')));
+});
 const emoji = JSON.parse(fs.readFileSync(path.join(itemsDir, '_emoji.json'), 'utf8'));
 const instructions = JSON.parse(fs.readFileSync(path.join(itemsDir, 'instructions-he.json'), 'utf8'));
 // v2 §4: multi-representation glyphs per word (additive; does not touch item fields).
