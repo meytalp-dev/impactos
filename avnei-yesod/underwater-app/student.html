@@ -250,6 +250,14 @@
   // student_id from cloud is a UUID; existing localStorage assumed string id — that's fine
   window.localStorage.setItem('avnei-yesod-current-student', profile.student_id);
 
+  // כניסה ראשונה → הפרופיל האורייני (מבדק הצבה BOY) לפני המפה, אם עוד לא הוצב.ה.
+  // המבדק נשמר בענן; המורה מאשרת את אי-הפתיחה. דגל מקומי מונע הצגה חוזרת עד אישור.
+  if (!profile.placement_confirmed &&
+      window.localStorage.getItem('avnei-boy-done-' + profile.student_id) !== '1') {
+    window.location.replace('boy-check.html?token=' + encodeURIComponent(token));
+    throw new Error('redirect to boy-check');
+  }
+
   // אי-הפתיחה שהמורה אישרה בפרופיל האורייני (students.start_island · מיגרציות 0005/0006)
   // → מזריק currentStageId על מצב טרי בלבד (applyPlacement שומר על התקדמות קיימת).
   try {

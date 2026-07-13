@@ -208,13 +208,15 @@
           <div>הַתּוֹצָאוֹת נִשְׁלְחוּ <b>לַמּוֹרָה</b> — הִיא תְּאַשֵּׁר מֵאֵיפֹה מַתְחִילִים.</div>
         </div>
         <div class="acts">
-          <a class="cta" href="teacher-literacy-profile.html">למסך המורה <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></a>
-          <button class="cta ghost" data-go="s-intro">מהתחלה</button>
+          <a class="cta" href="map.html">לְהַתְחִיל לְתַרְגֵּל <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></a>
+          <button class="cta ghost" data-go="s-intro">מֵהַתְחָלָה</button>
         </div>
       </div>
     </section>
   </main>
 
+  <!-- state.js (classic) → window.applyPlacement זמין כדי להתחיל תרגול באי-הפתיחה -->
+  <script src="js/state.js"></script>
   <script>
     var $=function(s){return document.querySelector(s);};
     var $$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s));};
@@ -276,6 +278,13 @@
           placement:{start_island:pl.start_island,island_name:pl.island_name,skill:pl.skill,on_border:pl.on_border},
           scores:{letters:SC.letters,letters_total:SC.lettersTotal,syllable:SC.r2,word:SC.rw,story:SC.r3} },
         p_taken_at:new Date().toISOString() });
+      // דגל מקומי (מונע הצגה חוזרת של המבדק בכניסה הבאה) + הזרקת אי-הפתיחה לתרגול מיידי.
+      try {
+        if(CHILD.id){
+          localStorage.setItem('avnei-boy-done-'+CHILD.id,'1');
+          if(typeof window.applyPlacement==='function') window.applyPlacement(pl.start_island, CHILD.id);
+        }
+      } catch(e){}
     }
 
     /* rounds data — mockup: taps advance, correct answer glows */
