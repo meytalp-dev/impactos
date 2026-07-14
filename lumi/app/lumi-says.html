@@ -87,7 +87,7 @@
 
   <script src="js/data.js"></script>
   <script src="js/audio.js"></script>
-  <script src="js/audio-clips.js"></script>
+  <script src="js/audio-clips.js"></script>\n  <script src="js/profile.js"></script>
   <script src="js/mechanics/_measured-core.js"></script>
   <script src="js/engine.js"></script>
   <script src="js/mechanics/path-choice.js"></script>
@@ -123,8 +123,8 @@
     // The target audio is the COMMAND ("Go!"); options are Lumi POSES (jump/stop/go real
     // PNGs, come = emoji placeholder until its art lands — see ART-BRIEF-t6-actioninstruction.md).
     function makeItem(word) {
-      var others = shuffle(WORDS.filter(function (w) { return w !== word; })).slice(0, 2);
-      var opts = shuffle([{ img: word, correct: true }, { img: others[0], correct: false }, { img: others[1], correct: false }]);
+      var others = shuffle(WORDS.filter(function (w) { return w !== word; })).slice(0, (window.LumiProfile ? LumiProfile.distractors() : 2));
+      var opts = shuffle([{ img: word, correct: true }].concat(others.map(function (o) { return { img: o, correct: false }; })));
       return { prompt: { audio_en: CMD[word] }, options: opts, help_he: HELP[word], target: [word] };
     }
 
