@@ -1,0 +1,549 @@
+{
+  "_comment": "ערוץ הדיווח החי של סוכני-הבנייה בפִּיצִיק. כל סוכן מעדכן כאן את המשימה שלו (status: todo/doing/blocked/done + agent + updated + notes + asks + needs_rebuild). 🔴 קרא מחדש ממש לפני עריכה — סוכנים מקבילים כותבים לכאן (VS Codes נפרדים, בעלות 'אל-תיגע'). סוכן-התזמורת קורא, מאמת בדפדפן, וצורב את הלוח (build-board.html) — לא בונה בעצמו ולא נוגע בקבצים של סוכן אחר.",
+  "_channels": {
+    "meytal": "אישור עברית + פדגוגיה + נעילת פלטה/גופנים/קול פִּיצִיק + הכרעות RTL של מניפולטיבים",
+    "math_reviewer": "בודק/ת פדגוגי/ת למתמטיקה יסודי — מאמת/ת KC ומאפיינים לפני שמשימה עוברת ל-done (מקביל לבודק-ילידי במישמיש)"
+  },
+  "_meta": {
+    "project": "פִּיצִיק · מתמטיקה א'-ג'",
+    "grade_active": 1,
+    "source_plan": "pitzik/curriculum/mastery-criteria-grade1.json (61 מאפיינים / 18 תתי-נושאים)",
+    "engine": "BKT+EPA משותף + תבנית Lantern Grove",
+    "tone_lock": "בלי טיימר מאיים · בלי כישלון-פומבי/צבעי-סטטוס · מסגור-שגיאה כלמידה · retry בלתי-מוגבל · מדוד גמישות לא מהירות",
+    "asset_policy": "🎨 כל האיורים = נכסי-GPT (יפים, בסגנון פִּיצִיק). הקוד לא מצייר איורים — הוא רק מניח שכבת-מספרים מדויקת מעל הנכס ומטפל באינטראקציה+מדידה. GPT לעולם לא מצייר ספרה/משוואה (למניעת שגיאות-מתמטיקה); האפליקציה מזריקה אותן כטקסט/SVG מעל החלק הפיזי היפה.",
+    "updated": "14.7.2026",
+    "parallelization": "גל 1 (12 משימות · אפס תלות זו-בזו · במקביל מיידית): כל התשתית F1-F7 + כל נכסי-GPT GA1-GA5. גל 2 (7 משחקונים · במקביל זה-עם-זה): כל R* משתלב בקליפת-השלד (F1) + רכיבי-מניפולטיב (F4) + מדידה (F5); R4 חולק את ציר-המספרים של R2. הסוכנים עובדים ב-VS Codes נפרדים עם בעלות 'אל-תיגע' → אפס קונפליקטים."
+  },
+  "tasks": [
+    {
+      "id": "F1",
+      "group": "תשתית",
+      "title": "שלד-משחקון פִּיצִיק (התאמת Lantern Grove)",
+      "kind": "infra",
+      "mechanic": "מסך-פתיחה + HUD + round-driver + מסך-סיום, DNA פִּיצִיק",
+      "kcs": [],
+      "epa_axes": [],
+      "status": "done",
+      "agent": "F1-shell",
+      "updated": "14.7.2026",
+      "owns": [
+        "pitzik/app/pitzik.html",
+        "pitzik/app/shell.js"
+      ],
+      "depends_on": [],
+      "notes": "✅ אומת בדפדפן (Chrome headless, אפס שגיאות-קונסולה): מחזור-מלא 4 סבבים→round-start→measured→solved→done, 4 ניצוצות נדלקו, מסך-סיום נחשף. חוזה-כרטיס: Pitzik.defineGame({id,world,title,intro{html,audioKey},done,sparks,makeRound(i,api),mount(stage,round,api)}) + Pitzik.boot({game}) (בוחר גם מ-?game=). api ל-mount: {index,total,round,character(בקר-פִּיצִיק setMood/say),manip(F4),audio.play/target/praise,measured(payload),hint(text),solved(),isAutoplay()}. 🔴 חוזה-מדידה: api.measured({kc,firstCorrect,task,epa}) נקרא פעם-אחת בניסיון-ראשון→מנותב ל-window.PitzikMeasured.record (F5) + __pitzik.events(); epa=null אם נכון, אחרת {what,where,task} מטבלת-הבאגים (אומת: מסיח→תיוג-EPA זורם, guard measuredOnce מונע מדידה-כפולה). טון נעול נאכף: retry בלתי-מוגבל, בלי צבע-סטטוס/X, מסגור-שגיאה=פִּיצִיק חושב+'בּוֹאוּ נְנַסֶּה יַחַד'+רמז, בלי טיימר. feature-detect: PitzikAudio(F6, בלי TTS fallback)/PitzikMeasured(F5)/PitzikManip(F4) — היעדרם לא שובר. DNA §1: פלטת-מהנדס (טורקיז/חרדל/כתום/זית), Heebo, טקסט-ילד מנוקד+רבים, דמות=placeholder SVG (מוחלף PNG של GA3/F7 דרך data-mood). כולל משחקון-demo מובנה (game=demo, subitizing) שמוכיח את הצינור — R1-R7 מחליפים אותו ב-defineGame משלהם. QA: ?frame=1 (קופסת-מכשיר), ?autoplay=1.",
+      "asks": {
+        "meytal": [
+          "placeholder-דמות פִּיצִיק הוא SVG פנימי זמני עד GA3/F7 (PNG שקוף) — החלפה דרך data-mood ב-CSS של הדף, בלי נגיעה בקליפה. אישור שהמבנה תואם את גיליון-המצבים."
+        ],
+        "math_reviewer": []
+      },
+      "needs_rebuild": ""
+    },
+    {
+      "id": "F2",
+      "group": "תשתית",
+      "title": "מחוללי-פריטים פרוצדורליים פר-KC",
+      "kind": "infra",
+      "mechanic": "יצירת תרגילים/כמויות מקוד לפי טווח ומגבלות (עד 10 / בלי מעבר-עשרת וכו')",
+      "kcs": [
+        "הכל"
+      ],
+      "epa_axes": [],
+      "status": "done",
+      "agent": "F2-item-gen",
+      "updated": "14.7.2026",
+      "owns": [
+        "pitzik/app/item-gen.js"
+      ],
+      "depends_on": [],
+      "notes": "✅ item-gen.js בנוי: 61/61 engine_labels (כל המאפיינים), 15 משפחות-מחולל (quantity/compareMagnitude/sequence/readWrite/numberline/order/arithmetic/decompose/equation/wordProblem/categorical/clock/data/notInstrumented). RNG דטרמיניסטי ניתן-לזריעה (שחזור-פריט ל-QA). API: generate/generateBatch(מגוון, בלי כפילויות)/list/KCS/SPECS. כל Item חושף: answer קנוני + operands + epaTags{what,where,task,hint} (F3 גוזר מסיחים) + kc (F5 מתייג BKT). 🔒 seams: item-gen לא מייצר מסיחים (F3), לא מרנדר טקסט-ילד/ניקוד (F1/F4); בעיה-מילולית=מבנה schema+operands בלבד עם needsApprovedText=true (ניסוח מנוקד מאושר=המשחקון). numberline=LTR נעול. 4 מאפיינים לא-מדידים (compose_decompose_shapes/measure_nonstandard/measure_cm_ruler/sequence_daily_events)=instrumented:false→דגל-מורה לא BKT. אימות: self-test Node 32,600/32,600 אסרשנים (כל תשובה נכונה + כל מגבלות-הטווח: within5/bridge/borrow/no-regroup/whole-tens≤100/part-whole/balance); Chrome headless=נטען כ-window.PitzikItemGen, 61×6 batch, 0 bad items, 0 שגיאות-קונסולה. 🔴 E2E מלא (כתיבת BKT בפועל) ממתין ל-F1(שלד)+F5(measured) שטרם קיימים — זה infra טהור בלי UI.",
+      "asks": {
+        "meytal": [],
+        "math_reviewer": [
+          "✅ טווחים יושרו לתכה\"ל (א' עד 100, בלי המרה כללית); נותר אימות פדגוגי שהמאפיינים/EPA נכונים לפני חיווט תוכן"
+        ]
+      },
+      "needs_rebuild": ""
+    },
+    {
+      "id": "F3",
+      "group": "תשתית",
+      "title": "בנק מסיחי-EPA (מטבלת הבאגים)",
+      "kind": "infra",
+      "mechanic": "מסיח = תשובת-באג ידועה (קטן-מגדול, off-by-one, MakeTenFail, EqualSign)",
+      "kcs": [],
+      "epa_axes": [
+        "Failure×Context×Task"
+      ],
+      "status": "done",
+      "agent": "claude·F3",
+      "updated": "14.7.2026",
+      "owns": [
+        "pitzik/app/epa-distractors.js"
+      ],
+      "depends_on": [],
+      "notes": "✅ נבנה+אומת. window.PitzikEPADistractors — API טהור אפס-תלות אפס-DOM. generate(item)→[{value,epa:{what,where,task},detail,source}] מוצמד ישירות לאופציית-תשובה; epa תואם 1:1 לחוזה measured.recordEpa (F5). 11 מחוללי-באג מטבלת Brown&Burton: OffByOne·CountError·OneToOne·Cardinality·SmallerFromLarger(חיסור-עמודה+כללי-אפס+n−n)·MakeTenFail(עצירה-ב-10/הוספה-חוזרת/משלים-שגוי)·PlaceValue(עשרות↔יחידות·no-regroup)·TeenInversion(14→41)·EqualSign(סכום-נראה/צד-שמאל)·MagnitudeCompare·Keyword. 3 מסלולי-מקור: item.errors (אותנטי מ-KC.common_errors_epa, where/task/detail מדויקים) > item.whats > TASK_PRIORITY(חתימת-task). סינון-'לא-רעש': ==תשובה/מחוץ-לטווח/כפול נזרק; dedup לפי-ערך עם עדיפות; בלי ריפוד — פחות מסיחים עדיף מרעש. אימות: node 30/30 (13−5→12·7−0→0·6−6→6·8+5→10/15/18·20+60→8·80−30→5·13+4→53·14→41·☐+3=7→10·8+4=☐+5→12·34/43→34·2,4,6→7) + Chrome headless: נטען כ-global, אפס שגיאות-קונסולה, allTagged=true.",
+      "asks": {
+        "meytal": [],
+        "math_reviewer": [
+          "🔴 ממתין סימון-ידני: אימות שכל 11 דפוסי-הבאג מבטאים מיסקונספציה אמיתית ולא רעש (הקוד גוזר טרנספורמטיבית מ-common_errors_epa; חסר אישור פדגוגי אנושי לפני חיווט-תוכן)"
+        ]
+      },
+      "needs_rebuild": ""
+    },
+    {
+      "id": "F4",
+      "group": "תשתית",
+      "title": "רכיבי-מניפולטיב אינטראקטיביים (מרכיב נכסי-GPT)",
+      "kind": "infra",
+      "mechanic": "עוטף את חלקי-ה-GPT (GA4) לרכיבים אינטראקטיביים + שכבת-מספרים מדויקת מקוד; ten-frame · ציר · number-bond · בסיס-עשר",
+      "kcs": [],
+      "epa_axes": [],
+      "status": "doing",
+      "agent": "F4-manipulatives",
+      "updated": "14.7.2026",
+      "owns": [
+        "pitzik/app/manipulatives/"
+      ],
+      "depends_on": [],
+      "notes": "✅ נבנה + אומת בדפדפן (Chrome headless, 22/22 self-tests ירוקים, אפס שגיאות-קונסולה מהדף; screenshot מאשר רינדור). ספריית ES-modules עצמאית (bez build), נקודת-כניסה pitzik/app/manipulatives/index.js. 4 רכיבים: TenFrame · NumberLine · NumberBond · BaseTen (+ createManipulative(kind,...) מפעל-לפי-שם). כל רכיב: value · check(expected,meta) · hint() · destroy(). 🔒 גיאומטריה מדויקת=SVG/קוד (לא תמונה); הספרות תמיד מוזרקות מקוד (injectDigit) — GPT לעולם לא מצייר מספר. 🔒 ציר-מספרים LTR נעול (0 בשמאל→גדל ימינה; ה-SVG כופה direction:ltr גם במעטפת RTL) — אומת x(0)<x(max). feature-detect לנכסי-GA4: resolveAsset מנסה לטעון PNG (counter/path-stone/bond-board/unit-cube/ten-rod/hundred-flat); אין נכס=נשאר על ה-SVG placeholder (GA4 עדיין todo, לא חוסם). מדידה: check() פולט CustomEvent('pitzik:measure') + onMeasure callback עם {manipulative,task,correct,expected,given,epa,kc} — חוזה תואם ל-PitzikMeasured.ingest של F5 (המשחקון ממפה onMeasure→ingest). מסיחי-EPA מזוהים מהתשובה-השגויה ומתויגים {what,where,task,detail}: OffByOne (ten-frame/ציר), MagnitudeCompare (ציר 0-100 לוגריתמי), MakeTenFail (number-bond), TeenInversion+PlaceValue (base-ten), SmallerFromLarger (ציר-חיסור/jump). טון: אין צבע-טעות/אדום במסך-ילד — hint=טורקיז רגוע, אישור=זית; retry חופשי (רכיב לא ננעל); prefers-reduced-motion מכובד. CPA: base()/fade() ל-fading מבוקר, אסור לשרוף את המוחשי. טוקנים משלנו ב-manipulatives/tokens.css (DNA תעשייתי-חמים). קבצים: base.js·ten-frame.js·number-line.js·number-bond.js·base-ten.js·index.js·tokens.css·manipulatives.css·demo.html(הרצת-בדיקה).",
+      "asks": {
+        "meytal": [
+          "האם להסיר את demo.html לפני deploy או להשאירו כ-harness פנימי? (לא נטען ע\"י המשחקונים)"
+        ],
+        "math_reviewer": [
+          "אימות שהמסיח MagnitudeCompress בציר 0-100 (סף שגיאה >15% מהטווח + כיוון-דחיסה) מבטא דחיסה-לוגריתמית אמיתית ולא רעש; ואימות שטולרנס-המיקום בציר-מקורב (5% מהטווח) תואם ציפיית place_on_line_100_approx (n6b)"
+        ]
+      },
+      "needs_rebuild": ""
+    },
+    {
+      "id": "F5",
+      "group": "תשתית",
+      "title": "חיווט BKT (KC פר-מיומנות) + מנוע-הצבה Give-a-Number",
+      "kind": "infra",
+      "mechanic": "ingest firstTry/correct → KC; אבחון knower-level + השוואה סימבולית כ-stealth-screening",
+      "kcs": [
+        "N2",
+        "הכל"
+      ],
+      "epa_axes": [],
+      "status": "done",
+      "agent": "F5-measured",
+      "updated": "14.7.2026",
+      "owns": [
+        "pitzik/app/measured.js"
+      ],
+      "depends_on": [],
+      "notes": "✅ נבנה + אומת בדפדפן (Chrome headless, 21/21 checks, אפס שגיאות-קונסולה). window.PitzikMeasured — מקבילה מתמטית ל-LumiBKT אך פר-KC (engine_label) לא פר-מילה. (1) BKT פר-רצועה: רק firstTry מזין דיוק; retry=engagement בלבד (טון: retry בלתי-מוגבל, מדוד דיוק). שער-שליטה=pKnown≥0.82 + ≥2 הצלחות-ראשונות + ≥1 הקשר. (2) EPA=ספירה תיאורית (לא בייסיאני, FRAME-STORY §6): מסיח-באג→recordEpa לפי {what,where,task}+byKC, epaReport ממוין. (3) Give-a-Number knower-levels (Sarnecka&Carey): knowerProfile→subset/CP/pre/insufficient; giveN מצטבר גם ב-retry. (4) placement() חושף השוואה-סימבולית (compare_symbolic_100=n7b) כ-stealth-screening + עוגני-KC. offline-first/file://-safe (fallback לזיכרון). hooks: window.__pitzik.{measured,events,snapshot,placement,reset}. חוזה-חיווט למשחקונים: onMeasured({firstCorrect,usedHelp})→ingest({learnerId,kc,strand,task,is_correct,firstTry,usedHelp,context,epa,giveN}).",
+      "asks": {
+        "meytal": [],
+        "math_reviewer": [
+          "אימות ספי knower-level (GN_KNOWER_THRESH=0.67, GN_MIN_TRIALS=2, GN_CP_LEVEL=5) מול פרוטוקול Give-N; ואימות פרמטרי-BKT פר-רצועה (pL0/pT/pG/pS) — כרגע ערכי-פתיחה שמרניים בהשראת Lumi, טרם כיול פדגוגי למתמטיקה"
+        ]
+      },
+      "needs_rebuild": ""
+    },
+    {
+      "id": "F6",
+      "group": "תשתית",
+      "title": "אודיו פִּיצִיק (מוקלט, לא TTS)",
+      "kind": "infra",
+      "mechanic": "ElevenLabs; קול פִּיצִיק ננעל; QA-Whisper; manifest",
+      "kcs": [],
+      "epa_axes": [],
+      "status": "blocked",
+      "agent": "F6-audio",
+      "updated": "14.7.2026",
+      "owns": [
+        "pitzik/assets/audio/",
+        "pitzik/scripts/generate-pitzik-audio.py"
+      ],
+      "depends_on": [],
+      "notes": "🟢 הצינור נבנה ואומת במצב-הזמין (voice עדיין חסום). generate-pitzik-audio.py = self-contained (shim ElevenLabs eleven_v3 + QA-Whisper inline, בלי קובץ-חוץ — נשאר בבעלות). כי הפריטים פרוצדורליים (מספרים בקוד), האודיו = **בנק-ביטויים רב-שימושי** ולא קליפ-פר-פריט: 67 קליפים — num/0-20+עשרות (29), give-n/1-10 (Give-a-Number/N2d, ניסוח מופשט), ui/* (10 הנחיות ברבים), praise/* (5, בלי 'יופי'), hint/* (6 מסגורי-שגיאה נעולים §4: 'בּוֹאוּ נְנַסֶּה'/פִּיצִיק חושב), region/1-7. שער-קול קשיח: בלי PITZIK_VOICE_ID → מסרב לסנתז (exit 2) ולעולם לא נופל לקול-נוני. אומת: `--plan` רץ נקי ללא elevenlabs/whisper (import עצל) → assets/audio/audio-plan.json (67, review_flags) + manifest.json ריק (contract ל-shell, בלי 404). QA-Whisper (skeleton-compare) + כתיבת manifest פר-קליפ-קיים = מוכנים, ירוצו עם נעילת-הקול. 🔴 טרם: סינתזה בפועל + QA-אוזן (חסום). audio-plan.json = מסמך-האמת למה-שיוקלט.",
+      "asks": {
+        "meytal": [
+          "🔴 נעילת קול פִּיצִיק — הגדר PITZIK_VOICE_ID (רובוט-מהנדס ידידותי, נבדל מנוני-התמנון ומקול-מישמיש). ברירת-מחדל ריקה בכוונה → אין סינתזה עד נעילה",
+          "review-pass ניקוד מלא ל-audio-plan.json (67 קליפים)",
+          "אישור מוסכמה: מילת-מספר = צורת-ספירה נקבית (אַחַת/שְׁתַּיִם/שָׁלוֹשׁ), ו-Give-a-Number מנוסח מופשט ('תְּנוּ לְפִיצִיק שָׁלוֹשׁ', בלי שם-עצם)",
+          "מילת-WATCH 'בּוֹאוּ' — באבני-יסוד הוחלפה ל'קָדִימָה' עקב הגייה; נשמרה (נעולה §4), תיבדק ב-QA — החלפה אם WARN"
+        ],
+        "math_reviewer": [
+          "אימות פדגוגי שצורת-הספירה הנקבית היא הצורה הנלמדת-ראשונה בכיתה א' לקריאת-מספר ול-Give-a-Number"
+        ]
+      },
+      "needs_rebuild": "",
+      "blocked_on": "meytal: נעילת קול (PITZIK_VOICE_ID)"
+    },
+    {
+      "id": "F7",
+      "group": "תשתית",
+      "title": "נכסים → rembg (דמות + props + scene-bg)",
+      "kind": "infra",
+      "mechanic": "חיתוך-רקע לדמות ול-props מהגיליונות; scene-bg נשארים מלאים",
+      "kcs": [],
+      "epa_axes": [],
+      "status": "todo",
+      "agent": null,
+      "owns": [
+        "pitzik/assets/"
+      ],
+      "depends_on": [],
+      "notes": "מקור: pitzik/_refs/ (2 גיליונות). מסך-הפנים = מקור-אמת, לשמור זהה.",
+      "asks": {
+        "meytal": [],
+        "math_reviewer": []
+      },
+      "needs_rebuild": ""
+    },
+    {
+      "id": "R1",
+      "group": "כפר הכמויות",
+      "title": "משחקון: תפיסת-כמות + Give-a-Number",
+      "kind": "minigame",
+      "mechanic": "flash-then-hide (1-5) + גרירת N פריטים",
+      "kcs": [
+        "N1",
+        "N2",
+        "N5"
+      ],
+      "epa_axes": [
+        "Cardinality",
+        "OffByOne"
+      ],
+      "status": "todo",
+      "agent": null,
+      "owns": [
+        "pitzik/app/games/quantities.js"
+      ],
+      "depends_on": [
+        "F1",
+        "F2",
+        "F4",
+        "F5"
+      ],
+      "notes": "פריט-הצבה טבעי (knower-levels). טווח subitizing 1-5.",
+      "asks": {
+        "meytal": [],
+        "math_reviewer": []
+      },
+      "needs_rebuild": ""
+    },
+    {
+      "id": "R2",
+      "group": "יער הרצפים",
+      "title": "🥇 משחקון: קפיצה על ציר-מספרים ליניארי",
+      "kind": "minigame",
+      "mechanic": "מסלול ממוספר 1→10/100, מרחק=גודל, קפיצות; דילוגי-ספירה",
+      "kcs": [
+        "N3",
+        "N4",
+        "N6",
+        "N7",
+        "N8"
+      ],
+      "epa_axes": [
+        "MagnitudeCompare",
+        "OffByOne",
+        "TeenInversion"
+      ],
+      "status": "todo",
+      "agent": null,
+      "owns": [
+        "pitzik/app/games/number-line.js"
+      ],
+      "depends_on": [
+        "F1",
+        "F4",
+        "F5"
+      ],
+      "notes": "🥇 מכניקת-הזהב (Siegler & Ramani, RCT). ליניארי לא מעגלי; הרמז המספרי נוכח. 🔒 כיוון-ציר = LTR (ר' F4, נעל מיטל 14.7).",
+      "asks": {
+        "meytal": [],
+        "math_reviewer": []
+      },
+      "needs_rebuild": ""
+    },
+    {
+      "id": "R3",
+      "group": "גשר החיבור",
+      "title": "משחקון: חיבור עם ten-frame / number-bond (make-ten)",
+      "kind": "minigame",
+      "mechanic": "מילוי ten-frame + פירוק/הרכבה; אנימציית מעבר-עשרת",
+      "kcs": [
+        "O1",
+        "O2",
+        "O3"
+      ],
+      "epa_axes": [
+        "MakeTenFail",
+        "CountError"
+      ],
+      "status": "todo",
+      "agent": null,
+      "owns": [
+        "pitzik/app/games/add-bridge.js"
+      ],
+      "depends_on": [
+        "F1",
+        "F2",
+        "F3",
+        "F4",
+        "F5"
+      ],
+      "notes": "מדוד make-ten מול ספירה-מ-1. 'חיבור עד 10' = פיילוט קצה-לקצה מומלץ ראשון.",
+      "asks": {
+        "meytal": [],
+        "math_reviewer": []
+      },
+      "needs_rebuild": ""
+    },
+    {
+      "id": "R4",
+      "group": "מערת החיסור",
+      "title": "משחקון: חיסור — קפיצות-אחורה + bonds",
+      "kind": "minigame",
+      "mechanic": "קפיצות-אחורה על הציר; כמה נשאר / כמה חסר / הפרש",
+      "kcs": [
+        "O1",
+        "O3",
+        "O4"
+      ],
+      "epa_axes": [
+        "SmallerFromLarger"
+      ],
+      "status": "todo",
+      "agent": null,
+      "owns": [
+        "pitzik/app/games/subtract.js"
+      ],
+      "depends_on": [
+        "F1",
+        "F4",
+        "F5",
+        "F3"
+      ],
+      "notes": "חולק את רכיב ציר-המספרים של R2 (F4), אך ניתן במקביל ל-R2. מסיח מרכזי = קטן-מגדול (SmallerFromLarger) + באגי-אפס.",
+      "asks": {
+        "meytal": [],
+        "math_reviewer": []
+      },
+      "needs_rebuild": ""
+    },
+    {
+      "id": "R5",
+      "group": "עיר הצורות",
+      "title": "משחקון: זיהוי/מיון/הרכבת מצולעים",
+      "kind": "minigame",
+      "mechanic": "מיון לפי צלעות; הרכבת צורות (טנגרם-גרירה)",
+      "kcs": [
+        "G1",
+        "G2"
+      ],
+      "epa_axes": [
+        "MagnitudeCompare"
+      ],
+      "status": "todo",
+      "agent": null,
+      "owns": [
+        "pitzik/app/games/shapes.js"
+      ],
+      "depends_on": [
+        "F1",
+        "F5"
+      ],
+      "notes": "g1d (הרכבה חופשית) + מדידה פיזית = דגל-מורה, לא BKT.",
+      "asks": {
+        "meytal": [],
+        "math_reviewer": []
+      },
+      "needs_rebuild": ""
+    },
+    {
+      "id": "R6",
+      "group": "שוק החלוקה",
+      "title": "משחקון: קבוצות שוות (בסיס לכפל)",
+      "kind": "minigame",
+      "mechanic": "חלוקה לקבוצות/זוגות, שוויון, יותר/פחות → מערך",
+      "kcs": [
+        "הכנה"
+      ],
+      "epa_axes": [],
+      "status": "todo",
+      "agent": null,
+      "owns": [
+        "pitzik/app/games/equal-groups.js"
+      ],
+      "depends_on": [
+        "F1"
+      ],
+      "notes": "בכיתה א' רק הכנה (קבוצות שוות); עיקר הכפל/חילוק בכיתות ב'-ג'.",
+      "asks": {
+        "meytal": [],
+        "math_reviewer": []
+      },
+      "needs_rebuild": ""
+    },
+    {
+      "id": "R7",
+      "group": "מגדל הבעיות",
+      "title": "משחקון: בעיות מילוליות עם bar-model",
+      "kind": "minigame",
+      "mechanic": "סיפור קצר → מודל-מלבן → פעולה; schema change/combine/compare",
+      "kcs": [
+        "O1f",
+        "O4e"
+      ],
+      "epa_axes": [
+        "Keyword"
+      ],
+      "status": "todo",
+      "agent": null,
+      "owns": [
+        "pitzik/app/games/word-problems.js"
+      ],
+      "depends_on": [
+        "F1",
+        "F2",
+        "F3"
+      ],
+      "notes": "מסיח = מילות-מפתח/התעלמות ממבנה. אוצר-מילים מוכר-לגיל, פנייה ברבים.",
+      "asks": {
+        "meytal": [
+          "אישור ניסוחי-בעיה מנוקדים, פנייה ברבים"
+        ],
+        "math_reviewer": []
+      },
+      "needs_rebuild": ""
+    },
+    {
+      "id": "GA1",
+      "group": "נכסי-GPT",
+      "title": "7 רקעי-אזור (scene-bg)",
+      "kind": "gpt-asset",
+      "mechanic": "רקע מלא פר-אזור (בלי rembg); 16:9; בלי טקסט/מספרים",
+      "kcs": [],
+      "epa_axes": [],
+      "status": "doing",
+      "agent": null,
+      "owns": [
+        "pitzik/assets/scenes/"
+      ],
+      "depends_on": [],
+      "notes": "רקע-מלא = בלי rembg. 6/7 נחתו ב-assets/scenes/ (village·forest·cave·city·market·tower). 🔴 חסר bridge.png (גשר החיבור) — קובץ ה-batch נכשל בהורדה (190B error). מיטל: להוריד שוב מ-GPT את וריאציה (3).",
+      "asks": {
+        "meytal": [
+          "🔴 להוריד שוב את גשר-החיבור (bridge) — נכשל בהורדה"
+        ],
+        "math_reviewer": []
+      },
+      "needs_rebuild": "",
+      "gpt_prompt": "סדרת 7 רקעי-רקע (background scenes) לאפליקציית מתמטיקה לילדים בעולם 'פִּיצִיק'. סגנון אחיד: איור תלת-ממד רך וחמים (soft 3D, toy/claymation feel), עולם תעשייתי-ידידותי (סדנה/מפעל/אתר-בנייה). פלטה: טורקיז #1C7C8C, צהוב-חרדל #C98E1E, כתום #E06A2A, ירוק-זית #6E8E38, בז'/קרם. תאורה רכה, קצוות מעוגלים, ידידותי לגיל 6. חשוב: בלי טקסט, בלי מספרים ובלי משוואות בתמונה (למניעת שגיאות). ללא דמויות (רקע בלבד). פורמט לרוחב 16:9, מקום ריק במרכז לתוכן. --- 7 הווריאציות: (1) 'כפר הכמויות' — כפר קטן בנוי מארגזים ומדפים מלאי חפצים לספירה, אווירת שוק חמים. (2) 'יער הרצפים' — יער/שביל מתפתל עם עמודי-סימון ומסילת-רכבת מתפתלת שנמשכת למרחק. (3) 'גשר החיבור' — גשר תעשייתי המורכב מחלקים, מנוף רך מרכיב קורות. (4) 'מערת החיסור' — מערה/מנהרה נעימה עם מסוע שמעביר חפצים החוצה. (5) 'עיר הצורות' — עיר קטנה שבתיה בנויים מצורות גיאומטריות (משולש/מרובע/מעגל). (6) 'שוק החלוקה' — דוכני-שוק חמימים עם סלים ריקים לחלוקה שווה. (7) 'מגדל הבעיות' — מגדל/מגדלור רב-קומות, כל קומה חדר-חידה קטן. צור כל אחת כתמונה נפרדת."
+    },
+    {
+      "id": "GA2",
+      "group": "נכסי-GPT",
+      "title": "פריטי-איסוף ומסיחים (collectibles)",
+      "kind": "gpt-asset",
+      "mechanic": "אובייקטים מבודדים לספירה/subitizing + 'ניצוצות מספר' → rembg",
+      "kcs": [
+        "N1",
+        "N2",
+        "N5"
+      ],
+      "epa_axes": [],
+      "status": "done",
+      "agent": null,
+      "owns": [
+        "pitzik/assets/items/"
+      ],
+      "depends_on": [],
+      "notes": "🔴 rembg חובה (שקוף). גדלים אחידים, מבט-חזית, מבודדים על קרם. משמשים לספירה/כמות → צריכים להיות מובחנים וניתנים-לספירה בקלות. | ✅ 8 פריטים חתוכים (rembg/color-key שקוף) ב-assets/items/: gear,screw,nut,battery,spring,bulb,chip,spark. גיליון-מקור ב-_refs.",
+      "asks": {
+        "meytal": [
+          "הורדת ה-batch מ-GPT"
+        ],
+        "math_reviewer": []
+      },
+      "needs_rebuild": "",
+      "gpt_prompt": "גיליון אובייקטים מבודדים (item sheet) לאפליקציית מתמטיקה 'פִּיצִיק', כל אובייקט על רקע קרם אחיד (#F1EEE4), מופרד היטב לחיתוך-רקע. סגנון: תלת-ממד רך וחמים כמו צעצוע-עץ, פלטה טורקיז/חרדל/כתום/זית. מבט-חזית, גדלים אחידים, קצוות מעוגלים, ידידותי לגיל 6. בלי טקסט ובלי מספרים. אובייקטים (כל אחד בכמה עותקים זהים לספירה): גלגל-שיניים קטן, בורג, אום משושה, סוללה, קפיץ, נורה קטנה, ז'יטון עגול, וגץ/ניצוץ זוהר ('ניצוץ-מספר' — spark נעים בכתום-זהב). כל אובייקט חייב להיות מובחן וקל-לספירה במבט. סדר אותם ברשת מסודרת."
+    },
+    {
+      "id": "GA3",
+      "group": "נכסי-GPT",
+      "title": "מצבי-פִּיצִיק נוספים לפעולה",
+      "kind": "gpt-asset",
+      "mechanic": "פוזות ייעודיות למשחקונים → rembg; שמירה על מסך-הפנים הקנוני",
+      "kcs": [],
+      "epa_axes": [],
+      "status": "done",
+      "agent": "claude·GA3",
+      "updated": "14.7.2026",
+      "owns": [
+        "pitzik/assets/pitzik/"
+      ],
+      "depends_on": [],
+      "notes": "✅ 3 פוזות נחתו ב-pitzik/assets/pitzik/ (rembg שקוף, מסך-הפנים הקנוני נשמר): pitzik-point.png (מצביע על שביל-ציר — data-mood='point'), pitzik-celebrate.png (חוגג זרועות-מורמות — 'celebrate'), pitzik-think.png (חושב-חזק גלגלים+נורה — 'think'). QA-שקיפות: alpha_min=0 בשלושתם. celebrate עובד-מחדש עם isnet-general-use (u2net אכל יד-ימין מורמת→alpha 10; isnet החזיר→165) + ניקוי 2 פתיתי-קונפטי מנותקים. השמות תואמים data-mood ב-shell.js §154. 🔴 טרם: חיווט בפועל ל-shell (החלפת ה-SVG placeholder דרך CSS data-mood) = תלוי-F7/שלד-F1.",
+      "asks": {
+        "meytal": [],
+        "math_reviewer": []
+      },
+      "needs_rebuild": "",
+      "gpt_prompt": "3 פוזות נוספות של הדמות פִּיצִיק (רובוט-מהנדס ידידותי: ראש-מסך צהוב עם פנים כחולות-זוהרות מחייכות, גוף טורקיז עם סימן + כתום, גלגלי-שיניים כתום+טורקיז על הראש — זהה בדיוק לעיצוב הקיים). כל פוזה על רקע קרם אחיד, מבודדת לחיתוך, אותו סגנון תלת-ממד רך. הפוזות: (1) פִּיצִיק מצביע על שביל/ציר לצידו (מזמין את הילד לקפוץ). (2) פִּיצִיק חוגג בגדול עם קונפטי וזרועות מורמות. (3) פִּיצִיק 'חושב חזק' — גלגלי-השיניים שעל ראשו מסתובבים ונורה קטנה מעל. שמור על מסך-הפנים והפרופורציות זהים למקור. בלי טקסט ובלי מספרים."
+    },
+    {
+      "id": "GA4",
+      "group": "נכסי-GPT",
+      "title": "חלקי-מניפולטיב CPA (יפים) — הקוד מכסה מספרים",
+      "kind": "gpt-asset",
+      "mechanic": "החלקים הפיזיים היפים לרכיבי F4 → rembg; האפליקציה מזריקה ספרות מעל",
+      "kcs": [
+        "N6",
+        "O1",
+        "O2",
+        "O3"
+      ],
+      "epa_axes": [],
+      "status": "todo",
+      "agent": null,
+      "owns": [
+        "pitzik/assets/manipulatives/"
+      ],
+      "depends_on": [],
+      "notes": "🔴 rembg חובה. 🔴 בלי מספרים מצוירים — הקוד מזריק ספרות מדויקות מעל (מונע שגיאות-מתמטיקה). rekenrek = 2×10 עם 5 אדום+5 לבן (Treffers).",
+      "asks": {
+        "meytal": [
+          "הורדת ה-batch מ-GPT"
+        ],
+        "math_reviewer": []
+      },
+      "needs_rebuild": "",
+      "gpt_prompt": "גיליון חלקי-מניפולטיב למתמטיקה בעולם 'פִּיצִיק', כל חלק מבודד על רקע קרם (#F1EEE4) לחיתוך-רקע, סגנון תלת-ממד רך וחמים תעשייתי-ידידותי (טורקיז #1C7C8C, צהוב-חרדל #C98E1E, כתום #E06A2A, ירוק-זית). 🔴 חשוב מאוד: אל תצייר שום ספרה, מספר או משוואה על אף חלק — הם יתווספו בקוד. החלקים: (1) לוח 'עשר' ריק — מסגרת 2×5 תאים ריקים. (2) בלוקי בסיס-עשר: קובייה בודדת, מוט של 10 (עשר קוביות מחוברות), לוח של 100 — בלי מספרים. (3) לוח פירוק-מספר (number-bond): עיגול-שלם גדול מחובר בקווים לשני עיגולי-חלקים ריקים. (4) ז'יטונים/מונים עגולים בשני צבעים (5 בצבע אחד, 5 בשני) לסוביטיזציה. (5) אריחי-נקודות בתבנית קוביה/דומינו (1 עד 6 נקודות). (6) חשבונייה rekenrek — שתי שורות של 10 חרוזים, בכל שורה 5 חרוזים אדומים ו-5 לבנים בדיוק. (7) מקטע-שביל של ציר-מספרים: שלט/עמוד-דרך ריק ואבני-קפיצה על שביל (בלי מספרים). סדר ברשת מסודרת, גדלים עקביים, מבט-חזית."
+    },
+    {
+      "id": "GA5",
+      "group": "נכסי-GPT",
+      "title": "רהיטי-משחקון פר-אזור (יפים)",
+      "kind": "gpt-asset",
+      "mechanic": "אלמנטים אינטראקטיביים פר-אזור → rembg",
+      "kcs": [],
+      "epa_axes": [],
+      "status": "todo",
+      "agent": null,
+      "owns": [
+        "pitzik/assets/game-props/"
+      ],
+      "depends_on": [],
+      "notes": "🔴 rembg חובה. 🔴 בלי מספרים מצוירים. משלים את הרקעים (GA1) באלמנטים שהילד מפעיל.",
+      "asks": {
+        "meytal": [
+          "הורדת ה-batch מ-GPT"
+        ],
+        "math_reviewer": []
+      },
+      "needs_rebuild": "",
+      "gpt_prompt": "גיליון אלמנטי-משחק אינטראקטיביים לעולם 'פִּיצִיק', כל אלמנט מבודד על רקע קרם לחיתוך-רקע, אותו סגנון תלת-ממד רך תעשייתי-ידידותי (טורקיז/חרדל/כתום/זית). 🔴 בלי מספרים/משוואות מצוירים. אלמנטים פר-אזור: (גשר החיבור) מקטעי-גשר וקורות שמתחברים + מנוף רך עם וו. (מערת החיסור) מסוע/רצועה + ארגזים ריקים שיוצאים. (שוק החלוקה) סלים/דוכנים ריקים לחלוקה שווה + מטבעות-צעצוע. (עיר הצורות) אריחי-צורות גיאומטריות נקיים (משולש/מרובע/מעגל/מחומש) להרכבה. (מגדל הבעיות) פסי מודל-מלבן (bar-model) ריקים בשני גדלים + כרטיס-סיפור ריק. (כפר הכמויות) סלסלות/ארגזים לאיסוף. סדר ברשת מסודרת, גדלים עקביים."
+    }
+  ]
+}
