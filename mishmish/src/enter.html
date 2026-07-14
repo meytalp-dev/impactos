@@ -87,6 +87,17 @@
       font-weight: 800; font-size: 14px; padding: 6px 15px; border-radius: var(--radius-pill); }
     .gate-note b { color: var(--color-ink-700); }
 
+    /* שבב "נושא-הכיתה עכשיו" (חצי A) — עוגן נראה מתחת לכותרת-המשנה.
+       מסגור-שייכות: הילד/ה על אותו נושא כמו הכיתה. בלי אדום/ירוק. */
+    .topic-now { display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,250,241,.92); color: var(--color-ink-700);
+      font-weight: 800; font-size: clamp(14px, 3.6vw, 18px); line-height: var(--line-height-normal);
+      padding: 9px 18px; border-radius: var(--radius-pill); box-shadow: var(--shadow-soft); }
+    .topic-now .dot { width: 10px; height: 10px; border-radius: 50%;
+      background: var(--color-apricot-500); box-shadow: 0 0 0 4px rgba(217,121,61,.18); flex: none; }
+    .topic-now b { color: var(--color-apricot-500); font-weight: 900; }
+    .topic-now:empty { display: none; }
+
     /* שער-עאמייה: כל טקסט ערבי מוסתר עד אישור בודק/ת ילידי/ת */
     [data-arabic-verified="false"] .ar { display: none; }
 
@@ -113,6 +124,8 @@
       </div>
       <h1 class="welcome">שְׂמֵחִים שֶׁ<span class="em">בָּאתֶם</span>!</h1>
       <p class="subtitle">קֹדֶם נֵצֵא לְטִיּוּל קָטָן עִם הַפַּנָּס וְנַכִּיר אֶתְכֶם —<br>בְּלִי מִבְחָן, רַק גִּלּוּי בְּיַחַד. 🔦</p>
+      <!-- עוגן חצי A: נושא-הכיתה עכשיו (מוזרק מ-MishmishClassPlan.label()) -->
+      <p class="topic-now" id="topic-now" aria-live="polite"></p>
     </section>
 
     <!-- הכפתור הגדול → מיפוי (משחקון הפנס · lantern.html, pack ברירת-מחדל = mapping) -->
@@ -125,5 +138,22 @@
       <span class="gate-note">מַתְחִילִים בְּ<b>טִיּוּל הַכָּרוּת</b> · פַּנָּס</span>
     </div>
   </main>
+
+  <!-- offline-first: data.js מוטבע (בלי fetch) → data-loader → class-plan -->
+  <script src="js/data.js"></script>
+  <script src="js/data-loader.js"></script>
+  <script src="js/shared/class-plan.js"></script>
+  <script>
+    /* עוגן חצי A — "הַכִּתָּה שֶׁלָּכֶם עַכְשָׁיו בְּ<X>". שכבת-תצוגה בלבד.
+       X מגיע מ-MishmishClassPlan (נגזר מ-data/class-plan.json). ניקוד מלא,
+       לשון-רבים, בלי אדום/ירוק. אם אין נתונים — נשאר ריק (:empty מסתיר). */
+    (function () {
+      var el = document.getElementById('topic-now');
+      if (!el || !window.MishmishClassPlan) return;
+      var cur = window.MishmishClassPlan.current();
+      el.innerHTML = '<span class="dot" aria-hidden="true"></span>' +
+        'הַכִּתָּה שֶׁלָּכֶם עַכְשָׁיו בְּ<b>' + cur.he + '</b>';
+    })();
+  </script>
 </body>
 </html>

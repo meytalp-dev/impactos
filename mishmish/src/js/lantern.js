@@ -28,10 +28,17 @@ window.MishmishLantern = (function () {
     BKT.beginSession();
     MOODS.forEach(function (m) { var im = new Image(); im.src = '../assets/characters/mishmish/mishmish-' + m + '.png'; });
 
-    // בחירת-pack בזמן-ריצה דרך ה-loader (?pack=/?mechanic=). ברירת-מחדל = mapping = מה שרץ היום.
-    // fallback לבחירה-הישנה אם ה-loader לא נטען — כדי לא לשבור התנהגות קיימת.
+    // חצי A: ברירת-המחדל = הנושא הנוכחי של הכיתה (MishmishClassPlan) — פרקטיס בתוך נושא-הכיתה.
+    // 🔴 כלל-בטיחות (בלי רגרסיה): רק pack שתומך במכניקת הפנס (mechanic:'lantern' + items) ראוי;
+    //    חבילות-נושא עשירות (class/home/…) אין להן items → data-loader.pick לא נופל עבורן
+    //    (הוא נופל רק כשה-id חסר), לכן מסננים כאן ידנית ונשארים על 'mapping'. כך כשהנושא
+    //    ='mapping' או כל נושא-לא-פנס — ההתנהגות זהה לקיים. ?pack= ב-URL עדיין גובר (loader).
+    var topic = window.MishmishClassPlan ? window.MishmishClassPlan.current().pack : 'mapping';
+    var topicPack = window.MishmishData ? window.MishmishData.pack(topic) : null;
+    var supportsLantern = topicPack && topicPack.mechanic === 'lantern' && topicPack.items && topicPack.items.length;
+    if (!supportsLantern) topic = 'mapping';
     var sel = window.MishmishData &&
-      window.MishmishData.pick({ pack: 'mapping', mechanic: 'lantern' });
+      window.MishmishData.pick({ pack: topic, mechanic: 'lantern' });
     var pack = sel ? sel.pack : DATA.packs.filter(function (p) { return p.pack === 'mapping'; })[0];
     if (!pack) { console.error('mapping pack missing'); return; }
     var items = pack.items, idx = 0;

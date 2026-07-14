@@ -35,6 +35,19 @@
     }
     .yr b { color: var(--color-apricot-500); }
 
+    /* עוגן "נושא-הכיתה עכשיו" (חצי A) — שבב ליד תיבת-השנה. בלי אדום/ירוק */
+    .topline { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; justify-content: flex-end; }
+    .topic-now {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      background: rgba(217,121,61,0.12); border: 2px solid rgba(217,121,61,0.3);
+      border-radius: var(--radius-pill); padding: var(--space-2) var(--space-4);
+      font-weight: 800; font-size: var(--font-size-sm); color: var(--color-ink-700);
+      box-shadow: var(--shadow-soft); white-space: nowrap;
+    }
+    .topic-now .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--color-apricot-500); flex: none; }
+    .topic-now b { color: var(--color-apricot-500); }
+    .topic-now:empty { display: none; }
+
     /* ---------- לוח המפה המצויר ---------- */
     .board {
       position: relative; width: 100%;
@@ -145,7 +158,11 @@
 
     <div class="top">
       <h1>מַפַּת הַשְּׁכוּנָה <span class="ar" lang="ar">خريطة الحارة</span></h1>
-      <div class="yr">שָׁנָה א' · <b>סֶפְּטֶמְבֶּר → יוּנִי</b></div>
+      <div class="topline">
+        <!-- עוגן חצי A: נושא-הכיתה עכשיו (מוזרק מ-MishmishClassPlan). :empty מסתיר -->
+        <div class="topic-now" id="topic-now" aria-live="polite"></div>
+        <div class="yr">שָׁנָה א' · <b>סֶפְּטֶמְבֶּר → יוּנִי</b></div>
+      </div>
     </div>
 
     <section class="board" aria-label="מפת השכונה">
@@ -174,6 +191,10 @@
     </nav>
   </main>
 
+  <!-- offline-first: data.js מוטבע (בלי fetch) → data-loader → class-plan -->
+  <script src="js/data.js"></script>
+  <script src="js/data-loader.js"></script>
+  <script src="js/shared/class-plan.js"></script>
   <script>
     /* ============================================================
        PLACES = מקור-אמת יחיד (View מעל ה-packs).
@@ -181,24 +202,34 @@
        screen: קובץ המשחקון (null = בקרוב). lit/dots = דמה.
        current: הצומת שהילד/ה נמצא/ת בו כעת (טבעת פועמת).
        ============================================================ */
+    // pack = מיפוי הצומת לחבילת-תוכן (data/pack-<id>.json) → הצומת ש-pack===current().pack
+    // מקבל את הטבעת הפועמת. 🔴 המיפוי טיוטה לאישור מיטל; צמתים ללא pack ברצף לא נדלקים.
     const PLACES = [
       // --- על השביל / מרכז ---
-      { emo:'🗺️', pl:'הֶחָצֵר בָּעֶרֶב', ar:'الحارة', space:'hara',   x:50, y:52, screen:'lantern.html',        lit:'full', dots:5, of:5, week:'פתיחה' },
+      { emo:'🗺️', pl:'הֶחָצֵר בָּעֶרֶב', ar:'الحارة', space:'hara',   x:50, y:52, screen:'lantern.html',        lit:'full', dots:5, of:5, week:'פתיחה', pack:'mapping' },
       // --- הַשְּׁכוּנָה שֶׁלִּי (ימין) ---
-      { emo:'🏫', pl:'הַגָּן וְהַכִּתָּה',   ar:'الصف',    space:'hara',   x:63, y:17, screen:'index.html',          lit:'warm', dots:3, of:5, week:'ספט׳', current:true },
-      { emo:'🏠', pl:'הַבַּיִת וְהֶחָצֵר',   ar:'البيت',   space:'hara',   x:87, y:27, screen:'missing-slot.html',   lit:'dim',  dots:1, of:5, week:'אוק׳' },
-      { emo:'🩹', pl:'הַמִּרְפָּאָה',        ar:'العيادة', space:'hara',   x:70, y:55, screen:'same-different.html', lit:'dim',  dots:1, of:5, week:'נוב׳' },
-      { emo:'🕰️', pl:'הָרְחוֹב וְהַשִּׁגְרָה', ar:'الشارع', space:'hara',   x:86, y:76, screen:'grammar-toggle.html', lit:null,   dots:0, of:5, week:'דצמ׳' },
+      { emo:'🏫', pl:'הַגָּן וְהַכִּתָּה',   ar:'الصف',    space:'hara',   x:63, y:17, screen:'index.html',          lit:'warm', dots:3, of:5, week:'ספט׳', pack:'class' },
+      { emo:'🏠', pl:'הַבַּיִת וְהֶחָצֵר',   ar:'البيت',   space:'hara',   x:87, y:27, screen:'missing-slot.html',   lit:'dim',  dots:1, of:5, week:'אוק׳', pack:'home' },
+      { emo:'🩹', pl:'הַמִּרְפָּאָה',        ar:'العيادة', space:'hara',   x:70, y:55, screen:'same-different.html', lit:'dim',  dots:1, of:5, week:'נוב׳', pack:'body' },
+      { emo:'🕰️', pl:'הָרְחוֹב וְהַשִּׁגְרָה', ar:'الشارع', space:'hara',   x:86, y:76, screen:'grammar-toggle.html', lit:null,   dots:0, of:5, week:'דצמ׳', pack:'family' },
       // --- הַמֶּרְחָב הַמְּשֻׁתָּף (שמאל) ---
-      { emo:'🛒', pl:'הַמַּכֹּלֶת',          ar:'الدكّان', space:'shared', x:12, y:23, screen:null,                  lit:null,   dots:0, of:5, week:'ינו׳' },
-      { emo:'🧺', pl:'הַשּׁוּק וְהַמַּאֲפִיָּה', ar:'السوق', space:'shared', x:32, y:19, screen:'index.html',          lit:'warm', dots:3, of:6, week:'מרץ' },
-      { emo:'🌿', pl:'הַגִּנָּה וְהַוָּאדִי',  ar:'الوادي',  space:'shared', x:11, y:56, screen:null,                  lit:null,   dots:0, of:5, week:'אפר׳' },
-      { emo:'🎈', pl:'מִגְרַשׁ הַמִּשְׂחָקִים', ar:'الملعب', space:'shared', x:22, y:78, screen:null,                  lit:null,   dots:0, of:5, week:'יוני' },
+      { emo:'🛒', pl:'הַמַּכֹּלֶת',          ar:'الدكّان', space:'shared', x:12, y:23, screen:null,                  lit:null,   dots:0, of:5, week:'ינו׳', pack:'colors' },
+      { emo:'🧺', pl:'הַשּׁוּק וְהַמַּאֲפִיָּה', ar:'السوق', space:'shared', x:32, y:19, screen:'index.html',          lit:'warm', dots:3, of:6, week:'מרץ', pack:'market' },
+      { emo:'🌿', pl:'הַגִּנָּה וְהַוָּאדִי',  ar:'الوادي',  space:'shared', x:11, y:56, screen:null,                  lit:null,   dots:0, of:5, week:'אפר׳', pack:'nature' },
+      { emo:'🎈', pl:'מִגְרַשׁ הַמִּשְׂחָקִים', ar:'الملعب', space:'shared', x:22, y:78, screen:null,                  lit:null,   dots:0, of:5, week:'יוני', pack:'hobbies' },
     ];
+
+    /* הצומת הנוכחי מונע מ-MishmishClassPlan (חצי A) — לא קשיח.
+       הצומת ש-pack === current().pack מקבל data-current (טבעת פועמת).
+       נפילה בטוחה: אם ה-loader לא נטען או אין התאמה — הצומת הראשון, כהתנהגות הקיימת. */
+    const currentPack = (window.MishmishClassPlan &&
+      window.MishmishClassPlan.current().pack) || null;
+    let currentIdx = PLACES.findIndex(p => p.pack && p.pack === currentPack);
+    if (currentIdx < 0) currentIdx = 0;   // fallback לצומת הראשון (בלי רגרסיה)
 
     const board = document.querySelector('.board');
     const mish  = board.querySelector('.mishmish-walk');
-    PLACES.forEach(p => {
+    PLACES.forEach((p, i) => {
       const tag  = p.screen ? 'a' : 'div';
       const node = document.createElement(tag);
       node.className = 'node';
@@ -206,7 +237,7 @@
       node.style.top  = p.y + '%';
       if (p.screen) node.setAttribute('href', p.screen);
       if (p.lit)    node.setAttribute('data-lit', p.lit);
-      if (p.current) node.setAttribute('data-current', '');
+      if (i === currentIdx) node.setAttribute('data-current', '');
       if (!p.screen) node.setAttribute('data-soon', '');
       node.setAttribute('aria-label', p.pl);
       const dots = Array.from({length:p.of}, (_,i)=>`<i class="${i<p.dots?'on':''}"></i>`).join('');
@@ -216,6 +247,15 @@
          <span class="dots" aria-hidden="true">${dots}</span>`;
       board.insertBefore(node, mish);   /* מתחת למישמיש בסדר-הערימה */
     });
+
+    /* עוגן חצי A — באנר "הַכִּתָּה שֶׁלָּכֶם עַכְשָׁיו: <X>". :empty מסתיר אם אין נתונים. */
+    (function () {
+      const el = document.getElementById('topic-now');
+      if (!el || !window.MishmishClassPlan) return;
+      const cur = window.MishmishClassPlan.current();
+      el.innerHTML = '<span class="dot" aria-hidden="true"></span>' +
+        'הַכִּתָּה שֶׁלָּכֶם עַכְשָׁיו: <b>' + cur.he + '</b>';
+    })();
   </script>
 </body>
 </html>

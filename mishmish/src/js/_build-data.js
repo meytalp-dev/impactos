@@ -28,6 +28,7 @@ const DATA = {
   instructions: readJson('instructions-he.json'),
   packs,
   scaffold: readJson('scaffold.json'),   // שכבת שפת-הישרדות הרוחבית (F1) → MishmishScaffold
+  classPlan: readJson('class-plan.json'),// חצי A: מקור-אמת ל"נושא הכיתה עכשיו" → MishmishClassPlan
 };
 
 const banner =
