@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" data-arabic-verified="false">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>מישמיש · مشمش — בִּיצוּעַ הוֹרָאוֹת</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700&family=Heebo:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <style>
+    /* ── בִּיצוּעַ הוֹרָאוֹת (follow-instr) — CSS עצמאי; טוקנים מ-tokens.css ──
+       מישמיש נותן הוראה מדוברת, הילד גורר/מקיש את הפריט אל יעד-המיקום.
+       שמיעתי-קודם, בלי אדום/ירוק, ניקוד מלא, Heebo, יעדי-מגע ≥56px. */
+    * { box-sizing: border-box; margin: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; overflow: hidden; font-family: var(--font-he); }
+    body { background: #1d2b22; }
+
+    .stage { position: fixed; inset: 0; overflow: hidden; touch-action: none; }
+    .scene-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+    .scrim { position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, rgba(255,250,241,.10) 0%, rgba(255,250,241,.40) 44%, rgba(255,250,241,.70) 100%); pointer-events: none; }
+
+    /* שורה עליונה: התקדמות + שם-מקום (מסגור-גשר) */
+    .topbar { position: absolute; top: 0; inset-inline: 0; z-index: 40; display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; gap: 10px; }
+    .progress { display: flex; gap: 7px; background: rgba(255,250,241,.9); padding: 8px 12px; border-radius: var(--radius-pill); box-shadow: var(--shadow-soft); }
+    .paw { width: 13px; height: 13px; border-radius: 50%; background: var(--color-sand-200); transition: transform .3s var(--ease-soft), background .3s; }
+    .paw.done { background: var(--color-mint-500); }
+    .paw.current { background: var(--color-apricot-500); transform: scale(1.25); }
+    .place-chip { background: rgba(38,55,70,.72); color: #fff; font-weight: 700; font-size: 14px; padding: 6px 14px; border-radius: var(--radius-pill); }
+    .place-chip .ar { font-family: var(--font-ar); opacity: .75; margin-inline-start: 6px; }
+
+    /* אזור-ההוראה: המשפט המנוקד + כפתור-האזנה */
+    .prompt { position: absolute; top: 62px; inset-inline: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 0 16px; }
+    .sentence { display: inline-flex; align-items: center; justify-content: center; flex-wrap: wrap;
+      background: rgba(255,250,241,.96); color: var(--color-ink-900); font-weight: 800;
+      font-size: clamp(22px,5.6vw,36px); line-height: 1.3; padding: 12px 26px; border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card); max-width: 92vw; text-align: center; }
+    .listen { display: inline-flex; align-items: center; gap: 8px; background: var(--color-sky-500); color: #fff;
+      font-family: var(--font-he); font-weight: 700; font-size: 17px; border: none; padding: 11px 24px;
+      border-radius: var(--radius-pill); box-shadow: var(--shadow-button); min-height: 56px; }
+    .listen:active { transform: scale(.95); }
+    .listen[data-audio="playing"] { animation: pulse 1s ease infinite; }
+    @keyframes pulse { 50%{ box-shadow: 0 0 0 8px rgba(79,157,200,.25), var(--shadow-button);} }
+    .listen svg { width: 24px; height: 24px; }
+
+    /* יעדי-מיקום (drop-zones) */
+    .zones { position: absolute; inset-inline: 0; top: 50%; transform: translateY(-42%); z-index: 20;
+      display: flex; gap: clamp(12px,3.5vw,30px); justify-content: center; align-items: flex-end; padding: 0 14px; flex-wrap: wrap; }
+    .zone { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer;
+      width: clamp(104px,27vw,168px); min-height: 56px; background: rgba(255,250,241,.82); border: 3px dashed var(--color-border-strong);
+      border-radius: var(--radius-lg); padding: 14px 10px 10px; box-shadow: var(--shadow-soft);
+      transition: transform .16s var(--ease-soft), box-shadow .2s, border-color .2s, background .2s; }
+    .zone[aria-disabled="true"] { opacity: .6; pointer-events: none; }
+    .zone img { width: clamp(72px,18vw,120px); height: clamp(72px,18vw,120px); object-fit: contain; }
+    .zone .zcap { font-weight: 800; font-size: clamp(17px,4.4vw,23px); color: var(--color-ink-900); }
+    .zone.point { border-color: var(--color-apricot-500); border-style: solid; background: rgba(233,154,103,.18); animation: bob .8s ease infinite; }
+    @keyframes bob { 50%{ transform: translateY(-8px);} }
+    .zone.retry { border-color: var(--color-state-retry); border-style: solid; animation: wobble .5s ease; }
+    @keyframes wobble { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-7px) rotate(-3deg);} 75%{transform:translateX(7px) rotate(3deg);} }
+    .zone.selected { border-color: var(--color-state-selected); border-style: solid; box-shadow: var(--shadow-selected); background: rgba(85,162,146,.14); transform: translateY(-4px); }
+    /* חריץ-הנחתה: הפריט "מתיישב" ביעד בהצלחה */
+    .zone .drop { position: absolute; inset: 0; display: grid; place-items: center; border-radius: var(--radius-lg); pointer-events: none; opacity: 0; transition: opacity .3s; }
+    .zone .drop.filled { opacity: 1; animation: gapFill .5s var(--ease-soft); background: rgba(255,250,241,.35); }
+    .zone .drop img { width: clamp(56px,14vw,88px); height: clamp(56px,14vw,88px); }
+    .zone .drop .emoji { font-size: clamp(44px,11vw,72px); }
+    @keyframes gapFill { 0%{transform:scale(.5);} 60%{transform:scale(1.15);} 100%{transform:scale(1);} }
+
+    /* טרֵיי + פריט-נגרר */
+    .tray { position: absolute; inset-inline: 0; bottom: clamp(84px,20vh,132px); z-index: 18; display: flex; justify-content: center; pointer-events: none; }
+    .tray-pad { width: clamp(120px,32vw,180px); height: 12px; border-radius: var(--radius-pill); background: rgba(38,55,70,.16); }
+    .item { position: absolute; bottom: clamp(88px,20.6vh,138px); left: 50%; transform: translateX(-50%); z-index: 30;
+      display: flex; flex-direction: column; align-items: center; gap: 4px; width: clamp(96px,25vw,150px); min-height: 56px;
+      background: rgba(255,250,241,.98); border: 3px solid var(--color-apricot-300); border-radius: var(--radius-lg);
+      padding: 12px 10px 8px; box-shadow: var(--shadow-card); user-select: none; touch-action: none; cursor: grab; }
+    .item.draggable { border-color: var(--color-apricot-500); }
+    .item.dragging { cursor: grabbing; z-index: 50; box-shadow: var(--shadow-selected); transition: none; }
+    .item.placed { opacity: 0; pointer-events: none; }
+    .item img { width: clamp(64px,17vw,104px); height: clamp(64px,17vw,104px); object-fit: contain; pointer-events: none; }
+    .item .emoji { font-size: clamp(48px,13vw,80px); line-height: 1; }
+    .item .cap { font-weight: 800; font-size: clamp(17px,4.4vw,23px); color: var(--color-ink-900); }
+
+    /* מישמיש (דמות חיה) */
+    .mishmish { position: absolute; bottom: 6px; inset-inline-start: 8px; width: clamp(88px,21vw,132px); z-index: 28; filter: drop-shadow(0 6px 12px rgba(0,0,0,.28)); transition: transform .25s; }
+    .mishmish.celebrate { animation: cheer .7s ease; }
+    @keyframes cheer { 30%{transform:translateY(-14px) rotate(-4deg) scale(1.06);} 60%{transform:translateY(0) rotate(3deg);} }
+
+    /* פיגום-עמית (אמיר) — טקסט ערבי מגודר עד אימות בודק ילידי */
+    .scaffold { position: absolute; bottom: 10px; inset-inline-end: 12px; z-index: 30; display: none; align-items: center; gap: 8px;
+      background: rgba(255,250,241,.95); padding: 8px 14px 8px 8px; border-radius: var(--radius-pill); box-shadow: var(--shadow-soft); max-width: 62vw; }
+    .scaffold.show { display: flex; }
+    .scaffold img { width: 46px; height: 46px; }
+    .scaffold .he { font-weight: 700; font-size: 13px; color: var(--color-ink-700); }
+    .scaffold .ar { font-family: var(--font-ar); font-size: 14px; color: var(--color-ink-500); }
+    /* שער-עאמייה: עד אישור בודק/ת ילידי/ת — כל טקסט ערבי מוחבא. */
+    [data-arabic-verified="false"] .place-chip .ar,
+    [data-arabic-verified="false"] .scaffold .ar { display: none; }
+
+    /* שורת שפת-הישרדות (רוחבית) — מוזרקת מ-data/scaffold.json דרך MishmishScaffold */
+    .survival { position: absolute; bottom: 0; inset-inline: 0; z-index: 32; display: flex; gap: 8px; justify-content: center; padding: 8px; }
+    .survival button { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,250,241,.88); color: var(--color-ink-700);
+      font-family: var(--font-he); font-weight: 700; font-size: 14px; border: none; padding: 9px 15px; border-radius: var(--radius-pill);
+      box-shadow: var(--shadow-soft); min-height: 40px; }
+    .survival button:active { transform: scale(.95); }
+    .survival .sv-ico { font-size: 17px; }
+
+    /* overlays: פתיחה + סיום */
+    .overlay { position: absolute; inset: 0; z-index: 60; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; gap: 18px; padding: 28px; background: radial-gradient(circle at 50% 35%, rgba(46,60,50,.86), rgba(20,28,22,.95)); }
+    .overlay.hidden { display: none; }
+    .overlay img.hero { width: clamp(120px,30vw,180px); filter: drop-shadow(0 10px 18px rgba(0,0,0,.5)); }
+    .overlay h2 { font-size: clamp(26px,7vw,42px); color: var(--color-ink-900); background: rgba(255,250,241,.95); padding: 10px 24px; border-radius: var(--radius-lg); box-shadow: var(--shadow-card); }
+    .overlay p { font-size: clamp(17px,4.4vw,22px); color: var(--color-ink-900); line-height: 1.5; max-width: 480px; background: rgba(255,250,241,.9); padding: 12px 20px; border-radius: var(--radius-md); }
+    .btn-big { font-family: var(--font-he); font-size: 22px; font-weight: 800; color: #fff; background: var(--color-apricot-500); border: none; padding: 15px 42px; border-radius: var(--radius-pill); box-shadow: var(--shadow-button); min-height: 56px; }
+    .btn-big:active { transform: scale(.96); }
+    .btn-ghost { font-family: var(--font-he); font-size: 16px; font-weight: 700; color: var(--color-ink-900); background: rgba(255,255,255,.85); border: none; padding: 12px 26px; border-radius: var(--radius-pill); text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; }
+    .peek { position: fixed; inset-block-end: 8px; inset-inline-start: 8px; max-width: 340px; max-height: 46vh; overflow: auto; background: var(--color-cream-50); border: 1px solid var(--color-border-soft); border-radius: 12px; padding: 10px; font-size: 12px; z-index: 90; direction: ltr; text-align: left; white-space: pre-wrap; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+    @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:.01ms!important; animation-iteration-count:1!important; } }
+  </style>
+</head>
+<body>
+  <main class="stage" id="stage">
+    <img class="scene-bg" id="scene-bg" src="../assets/backgrounds/bg-hara-courtyard.png" alt="" aria-hidden="true" onerror="this.style.display='none'">
+    <div class="scrim" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <div id="progress" class="progress" aria-label="הִתְקַדְּמוּת"></div>
+      <div class="place-chip"><span id="place-he" class="he">בֶּחָצֵר</span><span id="place-ar" class="ar" lang="ar"></span></div>
+    </header>
+
+    <div class="prompt">
+      <div id="sentence" class="sentence" aria-live="polite"></div>
+      <button id="listen" class="listen" type="button">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/><path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span>הַאֲזָנָה</span>
+      </button>
+    </div>
+
+    <div id="zones" class="zones" role="group" aria-label="בַּחֲרוּ אֶת הַמָּקוֹם הַנָּכוֹן"></div>
+
+    <div class="tray" aria-hidden="true"><span class="tray-pad"></span></div>
+    <div id="item" class="item" role="button" tabindex="0" aria-label="גִּרְרוּ אֶת הַפְּרִיט אֶל הַמָּקוֹם"></div>
+
+    <img class="mishmish" id="mishmish" src="../assets/characters/mishmish/mishmish-idle.png" alt="מישמיש">
+
+    <div class="scaffold" id="scaffold">
+      <img src="../assets/characters/peers/amir-hint.png" alt="">
+      <span class="he"></span>
+      <span class="ar" lang="ar"></span>
+    </div>
+
+    <!-- שורת שפת-הישרדות מוזרקת מ-data/scaffold.json דרך MishmishScaffold.bind -->
+    <nav id="survival" class="survival" aria-label="עזרה"></nav>
+
+    <!-- overlay פתיחה -->
+    <div class="overlay" id="introOverlay">
+      <img class="hero" src="../assets/characters/mishmish/mishmish-idle.png" alt="מישמיש">
+      <h2>בִּיצוּעַ הוֹרָאוֹת 🎯</h2>
+      <p>מִישְׁמִישׁ אוֹמֵר לָכֶם מָה לַעֲשׂוֹת.<br>הַקְשִׁיבוּ, וְשִׂימוּ אֶת הַפְּרִיט בַּמָּקוֹם הַנָּכוֹן!</p>
+      <button class="btn-big" id="startBtn">בּוֹאוּ נַתְחִיל</button>
+    </div>
+
+    <!-- overlay סיום -->
+    <div class="overlay hidden" id="doneOverlay">
+      <img class="hero" src="../assets/characters/mishmish/mishmish-celebrate.png" alt="מישמיש">
+      <h2>מְצֻיָּן! 🎉</h2>
+      <p id="doneMsg">בִּצַּעְתֶּם אֶת כָּל הַהוֹרָאוֹת שֶׁל מִישְׁמִישׁ!</p>
+      <button class="btn-big" id="againBtn">עוֹד פַּעַם</button>
+      <a class="btn-ghost" href="index.html">לֶחָצֵר ←</a>
+    </div>
+  </main>
+
+  <!-- ============================================================
+       🔴 fixture-דמו לתבנית (draft) — חי בדף (הקורא), לא במכניקה ולא ב-pack.
+       עד שסוכן ה-pack יזרים pack.follow_instr לפי pack-schema, המכניקה
+       נופלת לכאן כדי שהמסך יהיה נגיש/בדיק standalone.
+         · placements[].item = מזהה-lexeme → נפתר קודם מול pack.lexicon
+           (עם ?pack=class → תמונות אמיתיות מ-assets/items/class/), אחרת
+           מול items המוטבע כאן (גיבוי).
+         · placements[].he = משפט-ההוראה המנוקד (טיוטת מיטל — asks.meytal).
+         · locations = 3 יעדים עם נכסים קיימים (assets/items/locations/).
+       עברית = טיוטה פדגוגית לאישור מיטל. ערבית = עאמייה מגודרת (מ-scaffold.json).
+       ============================================================ -->
+  <script>
+    window.MISHMISH_FOLLOW_INSTR_DEMO = {
+      scene: { bg: 'bg-hara-courtyard', place_he: 'בֶּחָצֵר', place_ar: 'بالحارة', space: 'hara' },
+      verb: 'שִׂימוּ',
+      // יעדי-מיקום (סדר קבוע ל-QA): שֻׁלְחָן · מַדָּף · סַל
+      locations: [
+        { id: 'table',  he: 'הַשֻּׁלְחָן', prep: 'עַל', phrase: 'עַל הַשֻּׁלְחָן', img: 'locations/loc-table' },
+        { id: 'shelf',  he: 'הַמַּדָּף',   prep: 'עַל', phrase: 'עַל הַמַּדָּף',   img: 'locations/loc-shelf' },
+        { id: 'basket', he: 'הַסַּל',      prep: 'בַּ',  phrase: 'בַּסַּל',         img: 'locations/loc-basket' }
+      ],
+      // פריטי-גיבוי (אם pack.lexicon לא מכיל את ה-id) — כולם עם תמונות קיימות.
+      items: {
+        sefer:     { he: 'סֵפֶר',      img: 'class/item-sefer',     emoji: '📖' },
+        iparon:    { he: 'עִפָּרוֹן',   img: 'class/item-iparon',    emoji: '✏️' },
+        machberet: { he: 'מַחְבֶּרֶת',  img: 'class/item-machberet', emoji: '📓' },
+        yalkut:    { he: 'יַלְקוּט',    img: 'class/item-yalkut',    emoji: '🎒' },
+        machak:    { he: 'מַחַק',       img: 'class/item-machak',    emoji: '🧽' }
+      },
+      // placements: פריט → יעד. הנכון מתחלף בין יעדים (לא תמיד אותו מקום),
+      // 5 פריטים שונים → סף ≥2-מילים-שונות. he = משפט מנוקד מאושר-טיוטה.
+      placements: [
+        { item: 'sefer',     loc: 'table',  he: 'שִׂימוּ אֶת הַסֵּפֶר עַל הַשֻּׁלְחָן' },
+        { item: 'iparon',    loc: 'basket', he: 'שִׂימוּ אֶת הָעִפָּרוֹן בַּסַּל' },
+        { item: 'machberet', loc: 'shelf',  he: 'שִׂימוּ אֶת הַמַּחְבֶּרֶת עַל הַמַּדָּף' },
+        { item: 'yalkut',    loc: 'table',  he: 'שִׂימוּ אֶת הַיַּלְקוּט עַל הַשֻּׁלְחָן' },
+        { item: 'machak',    loc: 'basket', he: 'שִׂימוּ אֶת הַמַּחַק בַּסַּל' }
+      ]
+    };
+  </script>
+
+  <!-- אותה תשתית: data → data-loader → audio → bkt → scaffold → amir → epa → flow → מכניקה -->
+  <script src="js/data.js"></script>
+  <script src="js/data-loader.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/bkt.js"></script>
+  <script src="js/shared/scaffold.js"></script>
+  <script src="js/shared/amir.js"></script>
+  <script src="js/shared/epa.js"></script>
+  <script src="js/shared/flow.js"></script>
+  <script src="js/templates/mechanic-follow-instr.js"></script>
+  <script>
+    MishmishScaffold.render('#survival');   /* מזריק את שורת ההישרדות לפני start() → #sv-* קיימים */
+    window.MishmishFollowInstr.start();
+  </script>
+</body>
+</html>

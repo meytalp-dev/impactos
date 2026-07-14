@@ -1,0 +1,293 @@
+<title>כלי בדיקת ערבית · מישמיש</title>
+<style>
+  :root {
+    --bg: #F1E9DA; --surface: #FCF8F0; --surface-2: #F5EEE0; --ink: #43362A; --ink-soft: #7C6B56;
+    --line: #E4D8C2; --line-strong: #D3C3A6; --apricot: #D97E3F; --apricot-deep: #B4611F; --apricot-tint: #FaE7D2;
+    --olive: #6E8A48; --olive-tint: #E4ECD3; --clay: #BE4E38; --clay-tint: #F5DDD5; --gold: #B08528; --gold-tint: #F3E8C9;
+    --radius: 16px; --radius-s: 11px; --shadow: 0 1px 2px rgba(80,55,25,.05), 0 12px 30px -16px rgba(120,80,30,.25);
+    --font: "Segoe UI", system-ui, "Arial Hebrew", "Noto Sans Hebrew", Arial, sans-serif;
+    --ar-font: "Segoe UI", "Tahoma", "Noto Naskh Arabic", "Arial", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #201811; --surface: #2B2118; --surface-2: #33281D; --ink: #F0E7D6; --ink-soft: #B4A288;
+      --line: #3B2E21; --line-strong: #4B3B2A; --apricot: #E9975A; --apricot-deep: #F2B67F; --apricot-tint: #38271A;
+      --olive: #9DBA6E; --olive-tint: #222A17; --clay: #E1795F; --clay-tint: #2E1913; --gold: #D3A94F; --gold-tint: #2A2412;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 14px 32px -16px rgba(0,0,0,.6); }
+  }
+  :root[data-theme="light"] { --bg: #F1E9DA; --surface: #FCF8F0; --surface-2: #F5EEE0; --ink: #43362A; --ink-soft: #7C6B56;
+    --line: #E4D8C2; --line-strong: #D3C3A6; --apricot: #D97E3F; --apricot-deep: #B4611F; --apricot-tint: #FaE7D2;
+    --olive: #6E8A48; --olive-tint: #E4ECD3; --clay: #BE4E38; --clay-tint: #F5DDD5; --gold: #B08528; --gold-tint: #F3E8C9;
+    --shadow: 0 1px 2px rgba(80,55,25,.05), 0 12px 30px -16px rgba(120,80,30,.25); }
+  :root[data-theme="dark"] { --bg: #201811; --surface: #2B2118; --surface-2: #33281D; --ink: #F0E7D6; --ink-soft: #B4A288;
+    --line: #3B2E21; --line-strong: #4B3B2A; --apricot: #E9975A; --apricot-deep: #F2B67F; --apricot-tint: #38271A;
+    --olive: #9DBA6E; --olive-tint: #222A17; --clay: #E1795F; --clay-tint: #2E1913; --gold: #D3A94F; --gold-tint: #2A2412;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 14px 32px -16px rgba(0,0,0,.6); }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); line-height: 1.55; direction: rtl; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 0 18px; }
+
+  header { background: var(--surface); border-bottom: 1px solid var(--line); padding: 26px 0 20px; }
+  .eyebrow { font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--apricot-deep); margin: 0 0 8px; }
+  h1 { font-size: clamp(23px, 4vw, 30px); margin: 0 0 8px; font-weight: 800; }
+  .intro { font-size: 14.5px; color: var(--ink-soft); margin: 0; max-width: 60ch; }
+  .warn { margin-top: 14px; background: var(--clay-tint); border-inline-start: 3px solid var(--clay); border-radius: 0 var(--radius-s) var(--radius-s) 0; padding: 11px 15px; font-size: 13.5px; }
+  .warn b { color: var(--clay); }
+
+  .meta-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+  .field { display: flex; flex-direction: column; gap: 3px; }
+  .field label { font-size: 11px; font-weight: 700; color: var(--ink-soft); }
+  .field input, .field select { font-family: inherit; font-size: 14px; padding: 7px 11px; border: 1px solid var(--line-strong); border-radius: 9px; background: var(--surface); color: var(--ink); min-width: 150px; }
+
+  .summary { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); padding: 12px 0; }
+  .summary .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+  .counts { display: flex; gap: 8px; flex-wrap: wrap; }
+  .cnt { font-size: 12.5px; font-weight: 800; padding: 5px 11px; border-radius: 100px; font-variant-numeric: tabular-nums; }
+  .cnt.tot { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .cnt.ok { background: var(--olive-tint); color: var(--olive); }
+  .cnt.fix { background: var(--clay-tint); color: var(--clay); }
+  .cnt.pend { background: var(--gold-tint); color: var(--gold); }
+  .bar { flex: 1; min-width: 120px; height: 9px; background: var(--surface-2); border-radius: 100px; overflow: hidden; border: 1px solid var(--line); }
+  .bar > i { display: block; height: 100%; background: var(--olive); width: 0; transition: width .3s; }
+  .actions { display: flex; gap: 8px; margin-inline-start: auto; }
+  button.btn { font-family: inherit; font-size: 13px; font-weight: 700; padding: 8px 14px; border-radius: 9px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); cursor: pointer; }
+  button.btn.primary { background: var(--apricot); border-color: var(--apricot); color: #fff; }
+  button.btn:hover { border-color: var(--apricot); }
+
+  .filters { display: flex; gap: 6px; padding: 14px 0 4px; flex-wrap: wrap; }
+  .filters button { font-family: inherit; font-size: 12.5px; font-weight: 700; padding: 6px 13px; border-radius: 100px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-soft); cursor: pointer; }
+  .filters button[aria-pressed="true"] { background: var(--apricot-tint); color: var(--apricot-deep); border-color: var(--apricot); }
+
+  main { padding: 8px 0 40px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 18px; margin-bottom: 14px; border-inline-start: 4px solid var(--line-strong); }
+  .card[data-status="approved"] { border-inline-start-color: var(--olive); }
+  .card[data-status="fix"] { border-inline-start-color: var(--clay); }
+  .card[data-status="pending"] { border-inline-start-color: var(--gold); }
+  .card .top { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .cat { font-size: 11px; font-weight: 800; color: var(--apricot-deep); background: var(--apricot-tint); padding: 3px 10px; border-radius: 100px; }
+  .reg, .channel { font-size: 11px; font-weight: 700; color: var(--ink-soft); background: var(--surface-2); border: 1px solid var(--line); padding: 3px 10px; border-radius: 100px; }
+  .channel { color: var(--apricot-deep); background: var(--apricot-tint); border-color: transparent; }
+  .regrec-wrap { display: inline-flex; align-items: center; gap: 6px; }
+  .regrec-wrap label { font-size: 11px; font-weight: 700; color: var(--ink-soft); }
+  .regrec { font-family: inherit; font-size: 13px; padding: 6px 10px; border: 1px solid var(--line-strong); border-radius: 9px; background: var(--surface); color: var(--ink); }
+  .status-pill { margin-inline-start: auto; font-size: 11.5px; font-weight: 800; padding: 4px 11px; border-radius: 100px; }
+  .status-pill.pending { background: var(--gold-tint); color: var(--gold); }
+  .status-pill.approved { background: var(--olive-tint); color: var(--olive); }
+  .status-pill.fix { background: var(--clay-tint); color: var(--clay); }
+
+  .intent { font-size: 15px; margin: 0 0 10px; }
+  .intent .k { font-size: 11px; font-weight: 800; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .04em; display: block; margin-bottom: 2px; }
+  .ar-line { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-s); padding: 12px 14px; margin-bottom: 10px; }
+  .ar-line .ar { font-family: var(--ar-font); font-size: 24px; font-weight: 700; direction: rtl; }
+  .checks { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; margin-bottom: 12px; }
+  .chk { font-size: 13px; }
+  .chk .k { font-size: 10.5px; font-weight: 800; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .04em; }
+  .chk .v { color: var(--ink-soft); }
+  .chk .v.translit { font-weight: 700; color: var(--ink); }
+
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding-top: 10px; border-top: 1px dashed var(--line); }
+  .controls button { font-family: inherit; font-size: 13px; font-weight: 700; padding: 7px 14px; border-radius: 9px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); cursor: pointer; }
+  .controls button.approve[aria-pressed="true"] { background: var(--olive); border-color: var(--olive); color: #fff; }
+  .controls button.needfix[aria-pressed="true"] { background: var(--clay); border-color: var(--clay); color: #fff; }
+  .fixbox { margin-top: 10px; display: none; }
+  .card[data-status="fix"] .fixbox { display: block; }
+  .fixbox textarea { width: 100%; font-family: inherit; font-size: 14px; padding: 10px 12px; border: 1px solid var(--line-strong); border-radius: 9px; background: var(--surface); color: var(--ink); resize: vertical; min-height: 44px; direction: rtl; }
+  .fixbox textarea.ar { font-family: var(--ar-font); font-size: 17px; }
+  .fixbox label { font-size: 11px; font-weight: 700; color: var(--ink-soft); display: block; margin: 8px 0 3px; }
+
+  footer { padding: 24px 0 50px; color: var(--ink-soft); font-size: 12.5px; }
+  @media (max-width: 560px) { .checks { grid-template-columns: 1fr; } .actions { margin-inline-start: 0; width: 100%; } }
+</style>
+
+<header>
+  <div class="wrap">
+    <p class="eyebrow">מישמיש · מסלול B · אימות עאמייה</p>
+    <h1>כלי בדיקת ערבית — לבודק/ת ילידי/ת</h1>
+    <p class="intro">כל מחרוזת ערבית (עאמייה) שנועדה לילדים מופיעה כאן עם <b>הכוונה בעברית</b>, <b>תרגום־חוזר</b>, ו<b>תעתיק עברי</b> — כדי שגם מי שאינו/ה קורא/ת ערבית יוכל/תוכל לפקח. הבודק/ת הילידי/ת מאשר/ת או מתקן/ת כל שורה.</p>
+    <div class="warn"><b>חשוב:</b> כל הערבית כאן היא טיוטה שנוצרה ב־AI ו<b>אינה מאושרת</b>. AI לא אמין לעאמייה פלסטינית אותנטית לילדים — לכן קיים הכלי הזה. שום שורה לא נכנסת לבנק בלי אישור דובר/ת ילידי/ת <b>מאזור הפיילוט</b>.</div>
+    <div class="warn" style="border-inline-start-color:var(--gold);background:var(--gold-tint)"><b>רגיסטר תלוי־ערוץ:</b> ערבית דיגלוסית — <b>אודיו (מדובר) → עאמייה</b> (אחרת ילד בן 5 לא יבין); <b>טקסט (כתוב) → לרוב פוצחא</b> (דיאלקט לא נכתב באופן תקני). פוצחא <b>אינה טעות</b> — הרגיסטר הוא החלטה של הבודק/ת, לא דגל אוטומטי. יש גם משקל־זהות (לפוצחא מעמד גבוה).</div>
+    <div class="meta-row">
+      <div class="field"><label for="reviewer">שם הבודק/ת</label><input id="reviewer" placeholder="שם מלא"></div>
+      <div class="field"><label for="region">אזור/דיאלקט</label>
+        <select id="region"><option value="">בחר/י…</option><option>גליל</option><option>משולש</option><option>נגב (בדואי)</option><option>ירושלים והסביבה</option><option>ערים מעורבות</option></select>
+      </div>
+      <div class="field"><label for="policy">מדיניות רגיסטר (פרויקט)</label>
+        <select id="policy"><option value="">להכרעה עם הקהילה…</option><option>עאמייה לאודיו · פוצחא לטקסט</option><option>עאמייה בלבד</option><option>פוצחא בלבד</option><option>רגיסטר ביניים (מדובר־משכיל)</option></select>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="summary">
+  <div class="wrap">
+    <div class="counts">
+      <span class="cnt tot" id="c-tot">0 סה"כ</span>
+      <span class="cnt ok" id="c-ok">0 אושרו</span>
+      <span class="cnt fix" id="c-fix">0 לתיקון</span>
+      <span class="cnt pend" id="c-pend">0 ממתינים</span>
+    </div>
+    <div class="bar"><i id="bar"></i></div>
+    <div class="actions">
+      <button class="btn" id="reset">איפוס</button>
+      <button class="btn primary" id="export">⬇️ הורד דוח</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="filters">
+    <button data-f="all" aria-pressed="true">הכול</button>
+    <button data-f="pending" aria-pressed="false">ממתינים</button>
+    <button data-f="fix" aria-pressed="false">לתיקון</button>
+    <button data-f="approved" aria-pressed="false">אושרו</button>
+  </div>
+</div>
+
+<main><div class="wrap" id="list"></div></main>
+
+<footer><div class="wrap">כלי בדיקה · מישמיש · impactos. השמירה מקומית בדפדפן (localStorage). "⬇️ הורד דוח" יוצר קובץ Markdown ב-Downloads. הערבית = טיוטת AI, ממתינה לאישור ילידי.</div></footer>
+
+<script>
+  var STRINGS = [
+    { id:"welcome", cat:"פתיחה", intent:"שלום! אני מישמיש. בוא נשחק.", ar:"أهلا! أنا مشمش. تعال نلعب.", back:"שלום! אני מישמיש. בוא נשחק.", translit:"אַהְלַא! אַנַא מִשְׁמִשׁ. תַּעַאל נִלְעַב.", reg:"عامية" },
+    { id:"listen-choose", cat:"הוראה", intent:"תקשיב טוב ואז בחר.", ar:"اسمع منيح وبعدين اختار.", back:"תשמע טוב ואחר כך תבחר.", translit:"אִסְמַע מְנִיח וּבַעְדֵין אִחְתַאר.", reg:"عامية" },
+    { id:"hint-what", cat:"רמז אסטרטגי", intent:"הקשב מה הוא רוצה, ואז בחר את התמונה.", ar:"اسمع شو بدّه، وبعدين اختار الصورة.", back:"תשמע מה הוא רוצה, ואחר כך תבחר את התמונה.", translit:"אִסְמַע שׁוּ בִּדֹּה, וּבַעְדֵין אִחְתַאר אֶ־צּוּרַה.", reg:"عامية" },
+    { id:"hint-cognate", cat:"רמז קוגנט", intent:"המילה הזו קרובה למילה שאנחנו מכירים.", ar:"هاي الكلمة قريبة من كلمة مِنعرفها.", back:"המילה הזו קרובה למילה שאנחנו מכירים.", translit:"הַאי אֶל־כַּלְמֶה קְרִיבֶּה מִן כַּלְמֶה מִנְעַרְפְהַא.", reg:"عامية" },
+    { id:"hint-pb", cat:"הפרעה פּ/בּ", intent:"תתרכז בצליל הראשון: יש אוויר או לא?", ar:"ركّز عالصوت الأول: في هوا ولا لأ؟", back:"תתרכז על הצליל הראשון: יש אוויר או לא?", translit:"רַכֵּז עַ-אֶ־צּוֹת אֶל-אַוַּל: פִי הַוַא וַלַא לַאְ?", reg:"عامية" },
+    { id:"encourage-effort", cat:"עידוד (מאמץ)", intent:"כל הכבוד! ניסית יפה.", ar:"برافو! حاولت منيح.", back:"בראבו! ניסית טוב.", translit:"בְּרַאבוֹ! חַאוַלְת מְנִיח.", reg:"عامية" },
+    { id:"soft-retry", cat:"אחרי טעות", intent:"לא נורא, בוא נשמע עוד פעם.", ar:"ولا يهمّك، تعال نسمع كمان مرة.", back:"אל תדאג, בוא נשמע עוד פעם.", translit:"וַלַא יְהִמַּכּ, תַּעַאל נִסְמַע כַּמַאן מַרַّה.", reg:"عامية" },
+    { id:"try-again", cat:"נסה שוב", intent:"נסה עוד פעם.", ar:"جرّب كمان مرة.", back:"נסה עוד פעם.", translit:"גַ׳רֵّב כַּמַאן מַרַّה.", reg:"عامية" },
+    { id:"slower", cat:"האטה", intent:"בוא נשמע לאט.", ar:"خلّينا نسمعها بشوَي.", back:"בוא נשמע אותה לאט.", translit:"חַ׳לֵّינַא נִסְמַעְהַא בִּשְׁוַי.", reg:"عامية" },
+    { id:"need-help", cat:"עזרה זמינה", intent:"רוצה עזרה?", ar:"بدّك مساعدة؟", back:"רוצה עזרה?", translit:"בִּדַّכּ מְסַאעַדֶה?", reg:"عامية" },
+    { id:"your-turn", cat:"תור/משחק", intent:"תורך!", ar:"دورك!", back:"תורך!", translit:"דּוֹרַכּ!", reg:"عامية" },
+    { id:"found-it", cat:"חיזוק הצלחה", intent:"מצוין! מצאת.", ar:"ممتاز! لقيتها.", back:"מצוין! מצאת אותה.", translit:"מֻמְתַאז! לַקֵּתְהַא.", reg:"عامية" },
+    { id:"wants-blue", cat:"תיאור מצב", intent:"הוא רוצה משהו שצבעו כחול.", ar:"هو بدّه شي لونه أزرق.", back:"הוא רוצה משהו שצבעו כחול.", translit:"הֻוֶّה בִּדֹّה שִׁי לוֹנֹה אַזְרַק.", reg:"عامية" },
+    { id:"finish", cat:"סיום", intent:"סיימנו! כל הכבוד.", ar:"خلّصنا! مبروك عليك.", back:"סיימנו! מזל טוב לך.", translit:"חַ׳לַّצְנַא! מַבְּרוּכּ עַלֵיכּ.", reg:"عامية" }
+  ];
+
+  // ערוץ (דבור/כתוב) קובע את הרגיסטר המתאים. רוב הפיגום כאן שמיעתי.
+  var CHANNEL = { "need-help": "דבור + כתוב", "try-again": "דבור + כתוב" };
+  STRINGS.forEach(function (s) { s.channel = CHANNEL[s.id] || "דבור (אודיו)"; });
+
+  var KEY = "mishmish-arabic-review-v1";
+  var state = load();
+  var filter = "all";
+
+  function load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function rec(id) { if (!state[id]) state[id] = { status: "pending", correction: "", notes: "", regRec: "" }; if (state[id].regRec === undefined) state[id].regRec = ""; return state[id]; }
+
+  var list = document.getElementById("list");
+  var STAT_HE = { pending: "ממתין", approved: "אושר", fix: "לתיקון" };
+
+  function render() {
+    list.innerHTML = "";
+    STRINGS.forEach(function (s) {
+      var r = rec(s.id);
+      if (filter !== "all" && r.status !== filter) return;
+      var card = document.createElement("div");
+      card.className = "card";
+      card.setAttribute("data-status", r.status);
+      card.innerHTML =
+        '<div class="top"><span class="cat">' + s.cat + '</span>' +
+        '<span class="channel">' + s.channel + '</span>' +
+        '<span class="reg">טיוטה: ' + s.reg + '</span>' +
+        '<span class="status-pill ' + r.status + '">' + STAT_HE[r.status] + '</span></div>' +
+        '<p class="intent"><span class="k">כוונה (עברית)</span>' + esc(s.intent) + '</p>' +
+        '<div class="ar-line"><span class="ar" dir="rtl" lang="ar">' + esc(s.ar) + '</span></div>' +
+        '<div class="checks">' +
+          '<div class="chk"><span class="k">תרגום־חוזר</span> <span class="v">' + esc(s.back) + '</span></div>' +
+          '<div class="chk"><span class="k">תעתיק עברי</span> <span class="v translit">' + esc(s.translit) + '</span></div>' +
+        '</div>' +
+        '<div class="controls">' +
+          '<button class="approve" aria-pressed="' + (r.status === "approved") + '">✓ אושר</button>' +
+          '<button class="needfix" aria-pressed="' + (r.status === "fix") + '">✎ צריך תיקון</button>' +
+          '<span class="regrec-wrap"><label>רגיסטר מומלץ</label><select class="regrec">' + regOpts(r.regRec) + '</select></span>' +
+          '<div class="fixbox">' +
+            '<label>תיקון (ערבית נכונה)</label><textarea class="ar corr" placeholder="הקלד/י את הניסוח הנכון">' + esc(r.correction) + '</textarea>' +
+            '<label>הערות</label><textarea class="notes" placeholder="למשל: משלב, אזור, ניואנס">' + esc(r.notes) + '</textarea>' +
+          '</div>' +
+        '</div>';
+
+      card.querySelector(".approve").addEventListener("click", function () {
+        r.status = r.status === "approved" ? "pending" : "approved"; save(); render();
+      });
+      card.querySelector(".needfix").addEventListener("click", function () {
+        r.status = r.status === "fix" ? "pending" : "fix"; save(); render();
+      });
+      card.querySelector(".corr").addEventListener("input", function (e) { r.correction = e.target.value; save(); updateCounts(); });
+      card.querySelector(".notes").addEventListener("input", function (e) { r.notes = e.target.value; save(); });
+      card.querySelector(".regrec").addEventListener("change", function (e) { r.regRec = e.target.value; save(); });
+      list.appendChild(card);
+    });
+    updateCounts();
+  }
+
+  function updateCounts() {
+    var ok = 0, fix = 0, pend = 0;
+    STRINGS.forEach(function (s) { var st = rec(s.id).status; if (st === "approved") ok++; else if (st === "fix") fix++; else pend++; });
+    document.getElementById("c-tot").textContent = STRINGS.length + ' סה"כ';
+    document.getElementById("c-ok").textContent = ok + " אושרו";
+    document.getElementById("c-fix").textContent = fix + " לתיקון";
+    document.getElementById("c-pend").textContent = pend + " ממתינים";
+    document.getElementById("bar").style.width = (ok / STRINGS.length * 100) + "%";
+  }
+
+  function esc(t) { return (t || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function regOpts(v) {
+    return ["", "عامية", "فصحى", "ביניים"].map(function (o) {
+      return '<option value="' + o + '"' + (v === o ? " selected" : "") + '>' + (o || "—") + "</option>";
+    }).join("");
+  }
+
+  document.querySelectorAll(".filters button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      filter = b.getAttribute("data-f");
+      document.querySelectorAll(".filters button").forEach(function (x) { x.setAttribute("aria-pressed", x === b); });
+      render();
+    });
+  });
+
+  document.getElementById("reset").addEventListener("click", function () {
+    if (confirm("לאפס את כל האישורים והתיקונים?")) { state = {}; save(); render(); }
+  });
+
+  document.getElementById("export").addEventListener("click", function () {
+    var rev = document.getElementById("reviewer").value || "(לא צוין)";
+    var reg = document.getElementById("region").value || "(לא צוין)";
+    var pol = document.getElementById("policy").value || "(להכרעה)";
+    var ok = 0, fix = 0, pend = 0;
+    STRINGS.forEach(function (s) { var st = rec(s.id).status; if (st === "approved") ok++; else if (st === "fix") fix++; else pend++; });
+    var md = "# דוח בדיקת ערבית · מישמיש\n\n";
+    md += "- בודק/ת: " + rev + "\n- אזור/דיאלקט: " + reg + "\n- מדיניות רגיסטר: " + pol + "\n";
+    md += "- סיכום: " + ok + " אושרו · " + fix + " לתיקון · " + pend + " ממתינים (מתוך " + STRINGS.length + ")\n\n---\n\n";
+    STRINGS.forEach(function (s) {
+      var r = rec(s.id);
+      md += "## [" + STAT_HE[r.status] + "] " + s.cat + " · " + s.channel + "\n";
+      md += "- כוונה: " + s.intent + "\n";
+      md += "- ערבית (טיוטה): " + s.ar + "\n";
+      md += "- תרגום־חוזר: " + s.back + "\n";
+      md += "- תעתיק: " + s.translit + "\n";
+      md += "- רגיסטר מומלץ: " + (r.regRec || "—") + "\n";
+      if (r.correction) md += "- **תיקון:** " + r.correction + "\n";
+      if (r.notes) md += "- הערות: " + r.notes + "\n";
+      md += "\n";
+    });
+    var blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "mishmish-arabic-review-report.md";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  var rv = document.getElementById("reviewer"), rg = document.getElementById("region"), pl = document.getElementById("policy");
+  rv.value = localStorage.getItem(KEY + "-rev") || "";
+  rg.value = localStorage.getItem(KEY + "-reg") || "";
+  pl.value = localStorage.getItem(KEY + "-pol") || "";
+  rv.addEventListener("input", function () { localStorage.setItem(KEY + "-rev", rv.value); });
+  rg.addEventListener("change", function () { localStorage.setItem(KEY + "-reg", rg.value); });
+  pl.addEventListener("change", function () { localStorage.setItem(KEY + "-pol", pl.value); });
+
+  render();
+</script>

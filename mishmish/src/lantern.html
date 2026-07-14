@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" data-arabic-verified="false">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>מישמיש · مشمش — פָּנָס הַמִּיפּוּי</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700&family=Heebo:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <style>
+    /* ── משחקון-הפנס (מיפוי) — CSS עצמאי; טוקנים מ-tokens.css ──
+       השראה: avnei-yesod/underwater-app/stage-3-flashlight-demo.html
+       ההבדל: אין 'מתחיל באות' — מוצאים את מה ששמעו את שמו. */
+    * { box-sizing: border-box; margin: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; overflow: hidden; font-family: var(--font-he); }
+    body { background: #14202a; }
+
+    .stage { position: fixed; inset: 0; overflow: hidden; touch-action: none; }
+    .scene-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+
+    /* שורה עליונה: התקדמות (סל) + שם-מקום */
+    .topbar { position: absolute; top: 0; inset-inline: 0; z-index: 40; display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; gap: 10px; }
+    .basket { display: flex; gap: 6px; background: rgba(255,250,241,.9); padding: 7px 12px; border-radius: var(--radius-pill); box-shadow: var(--shadow-soft); }
+    .slot { width: clamp(30px,8vw,40px); height: clamp(30px,8vw,40px); border-radius: 12px; border: 2px dashed var(--color-border-soft); background: rgba(255,255,255,.4); display: grid; place-items: center; font-size: clamp(20px,5vw,28px); transition: transform .3s var(--ease-soft), background .3s; }
+    .slot.filled { border-style: solid; border-color: var(--color-mint-500); background: rgba(145,204,188,.35); animation: pop .5s var(--ease-soft); }
+    @keyframes pop { 0%{transform:scale(.4);} 60%{transform:scale(1.22);} 100%{transform:scale(1);} }
+    .place-chip { background: rgba(38,55,70,.72); color: #fff; font-weight: 700; font-size: 14px; padding: 6px 14px; border-radius: var(--radius-pill); }
+    .place-chip .ar { font-family: var(--font-ar); opacity: .7; margin-inline-start: 6px; }
+
+    /* בועת-היעד + כפתור האזנה */
+    .prompt { position: absolute; top: 66px; inset-inline: 0; z-index: 41; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+    .word { background: rgba(255,250,241,.95); color: var(--color-ink-900); font-weight: 900; font-size: clamp(22px,6vw,34px); padding: 8px 26px; border-radius: var(--radius-pill); box-shadow: var(--shadow-card); }
+    .listen { pointer-events: auto; display: inline-flex; align-items: center; gap: 8px; background: var(--color-sky-500); color: #fff; font-weight: 700; font-size: 16px; border: none; padding: 9px 20px; border-radius: var(--radius-pill); box-shadow: var(--shadow-button); }
+    .listen:active { transform: scale(.95); }
+    .listen[data-audio="playing"] { animation: pulse 1s ease infinite; }
+    @keyframes pulse { 50%{ box-shadow: 0 0 0 8px rgba(79,157,200,.25), var(--shadow-button);} }
+    .listen svg { width: 22px; height: 22px; }
+
+    /* שדה-המשחק: אובייקטים חבויים בחושך */
+    .field { position: absolute; inset: 0; z-index: 10; }
+    .obj { position: absolute; width: clamp(84px,20vw,128px); height: clamp(84px,20vw,128px);
+      display: grid; place-items: center; font-size: clamp(48px,12vw,78px); line-height: 1;
+      background: rgba(255,255,255,.96); border: 4px solid #fff; border-radius: 50%;
+      box-shadow: 0 8px 22px rgba(0,0,0,.35), inset 0 0 0 2px rgba(145,204,188,.4);
+      cursor: pointer; user-select: none; will-change: transform;
+      animation: bob var(--bob,3.4s) ease-in-out infinite; transition: transform .18s var(--ease-soft); }
+    .obj img { width: 76%; height: 76%; object-fit: contain; }
+    @keyframes bob { 0%,100%{transform:translateY(0) rotate(-3deg);} 50%{transform:translateY(-9px) rotate(3deg);} }
+    .obj:active { transform: scale(.9); }
+    .obj.startle { animation: startle .6s ease; }        /* מסיח שנבחר → נבהל ובורח (בלי אדום) */
+    @keyframes startle { 0%{transform:rotate(0);} 20%{transform:translateX(-8px) rotate(-12deg) scale(1.1);} 45%{transform:translateX(10px) rotate(12deg) scale(1.1);} 70%{transform:translateX(-6px) rotate(-8deg);} 100%{transform:rotate(0);} }
+    .obj.caught { pointer-events: none; animation: caught .55s ease forwards; }
+    @keyframes caught { 0%{transform:scale(1);} 35%{transform:scale(1.32); box-shadow:0 0 26px var(--color-sun-300),0 0 46px rgba(243,202,103,.8);} 100%{transform:scale(.2); opacity:0;} }
+    .obj.hint { animation: hintPulse 1.2s ease-in-out infinite; }
+    @keyframes hintPulse { 0%,100%{box-shadow:0 0 0 4px rgba(176,207,128,.5),0 0 18px rgba(176,207,128,.6);} 50%{box-shadow:0 0 0 7px rgba(176,207,128,.95),0 0 30px rgba(176,207,128,1);} }
+
+    /* ── שכבת-החושך + הפנס (מסכה רדיאלית שעוקבת אחרי האצבע) ── */
+    .dark { position: absolute; inset: 0; z-index: 20; pointer-events: none;
+      background: radial-gradient(circle at 30% 20%, rgba(20,32,42,.82), rgba(9,16,22,.95));
+      -webkit-mask: radial-gradient(circle var(--r,130px) at var(--mx,50%) var(--my,45%), transparent 0, transparent 60%, #000 100%);
+      mask: radial-gradient(circle var(--r,130px) at var(--mx,50%) var(--my,45%), transparent 0, transparent 60%, #000 100%);
+      transition: -webkit-mask-position .04s linear; }
+    .beam { position: absolute; z-index: 21; pointer-events: none; width: calc(var(--r,130px)*2); height: calc(var(--r,130px)*2);
+      left: var(--mx,50%); top: var(--my,45%); transform: translate(-50%,-50%); border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(243,202,103,.35), 0 0 40px 10px rgba(243,202,103,.18) inset; opacity: .85; }
+
+    /* מישמיש (דמות חיה) + בועת-שם צפה */
+    .mishmish { position: absolute; bottom: 8px; inset-inline-start: 6px; width: clamp(96px,24vw,150px); z-index: 28; filter: drop-shadow(0 6px 12px rgba(0,0,0,.5)); transition: transform .25s; }
+    .mishmish.celebrate { animation: cheer .7s ease; }
+    @keyframes cheer { 30%{transform:translateY(-14px) rotate(-4deg) scale(1.06);} 60%{transform:translateY(0) rotate(3deg);} }
+    .name-pop { position: absolute; z-index: 35; background: #fff; color: var(--color-ink-900); font-weight: 900; font-size: clamp(18px,4.4vw,26px); padding: 6px 16px; border-radius: var(--radius-pill); box-shadow: 0 6px 18px rgba(0,0,0,.4); transform: translate(-50%,-50%) scale(.6); opacity: 0; pointer-events: none; animation: namePop 1.3s ease forwards; }
+    @keyframes namePop { 15%{opacity:1;transform:translate(-50%,-50%) scale(1.08);} 30%{transform:translate(-50%,-50%) scale(1);} 75%{opacity:1;transform:translate(-50%,-90%) scale(1);} 100%{opacity:0;transform:translate(-50%,-140%) scale(.9);} }
+
+    /* פיגום-עמית (אמיר) — טקסט ערבי מגודר עד אימות בודק ילידי */
+    .scaffold { position: absolute; bottom: 12px; inset-inline-end: 12px; z-index: 30; display: none; align-items: center; gap: 8px; background: rgba(255,250,241,.94); padding: 8px 12px 8px 8px; border-radius: var(--radius-pill); box-shadow: var(--shadow-soft); max-width: 62vw; }
+    .scaffold.show { display: flex; }
+    .scaffold img { width: 44px; height: 44px; }
+    .scaffold .tag { font-weight: 700; font-size: 13px; color: var(--color-ink-700); }
+    .scaffold .ar { font-family: var(--font-ar); font-size: 14px; color: var(--color-ink-500); }
+    /* שער-עאמייה: עד אישור בודק/ת ילידי/ת — כל טקסט ערבי מוחבא (place-chip + פיגום). */
+    [data-arabic-verified="false"] .place-chip .ar,
+    [data-arabic-verified="false"] .scaffold .ar { display: none; }
+
+    /* שורת שפת-הישרדות (רוחבית, זמינה-תמיד) */
+    .survival { position: absolute; bottom: 0; inset-inline: 0; z-index: 32; display: flex; gap: 8px; justify-content: center; padding: 8px; }
+    .survival button { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,250,241,.85); color: var(--color-ink-700); font-family: var(--font-he); font-weight: 700; font-size: 14px; border: none; padding: 8px 14px; border-radius: var(--radius-pill); box-shadow: var(--shadow-soft); }
+    .survival button:active { transform: scale(.95); }
+    .survival svg { width: 18px; height: 18px; }
+
+    /* overlays: פתיחה + סיום */
+    .overlay { position: absolute; inset: 0; z-index: 60; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 18px; padding: 28px; background: radial-gradient(circle at 50% 35%, rgba(30,46,60,.88), rgba(9,16,22,.96)); }
+    .overlay.hidden { display: none; }
+    .overlay img.hero { width: clamp(120px,30vw,180px); filter: drop-shadow(0 10px 18px rgba(0,0,0,.5)); }
+    .overlay h2 { font-size: clamp(26px,7vw,42px); color: var(--color-ink-900); background: rgba(255,250,241,.95); padding: 10px 24px; border-radius: var(--radius-lg); box-shadow: var(--shadow-card); }
+    .overlay p { font-size: clamp(17px,4.4vw,22px); color: var(--color-ink-900); line-height: 1.5; max-width: 460px; background: rgba(255,250,241,.9); padding: 12px 20px; border-radius: var(--radius-md); }
+    .btn-big { font-family: var(--font-he); font-size: 22px; font-weight: 800; color: #fff; background: var(--color-apricot-500); border: none; padding: 15px 42px; border-radius: var(--radius-pill); box-shadow: var(--shadow-button); }
+    .btn-big:active { transform: scale(.96); }
+    .btn-ghost { font-family: var(--font-he); font-size: 16px; font-weight: 700; color: var(--color-ink-900); background: rgba(255,255,255,.85); border: none; padding: 11px 26px; border-radius: var(--radius-pill); text-decoration: none; }
+    .peek { position: fixed; inset-block-end: 8px; inset-inline-start: 8px; max-width: 340px; max-height: 46vh; overflow: auto; background: var(--color-cream-50); border: 1px solid var(--color-border-soft); border-radius: 12px; padding: 10px; font-size: 12px; z-index: 90; direction: ltr; text-align: left; white-space: pre-wrap; }
+    @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:.01ms!important; animation-iteration-count:1!important; } }
+  </style>
+</head>
+<body>
+  <main class="stage" id="stage">
+    <img class="scene-bg" src="../assets/backgrounds/bg-hara-courtyard.png" alt="" aria-hidden="true" onerror="this.style.display='none'">
+
+    <header class="topbar">
+      <div id="basket" class="basket" aria-label="הַסַּל"></div>
+      <div class="place-chip"><span id="place-he" class="he"></span><span class="ar">بالحارة</span></div>
+    </header>
+
+    <div class="prompt">
+      <span id="word" class="word"></span>
+      <button id="listen" class="listen" type="button">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor"/><path d="M15.5 8.5a4 4 0 0 1 0 7M18 6a7 7 0 0 1 0 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span>הַאֲזָנָה</span>
+      </button>
+    </div>
+
+    <div class="field" id="field"></div>
+    <div class="dark" id="dark"></div>
+    <div class="beam" id="beam"></div>
+
+    <img class="mishmish" id="mishmish" src="../assets/characters/mishmish/mishmish-idle.png" alt="מישמיש">
+
+    <div class="scaffold" id="scaffold">
+      <img src="../assets/characters/peers/amir-hint.png" alt="">
+      <span class="tag">עֶזְרָה · مساعدة</span>
+      <span class="ar" lang="ar">دَوّر عليها بالضو</span>
+    </div>
+
+    <!-- שורת שפת-הישרדות מוזרקת מ-data/scaffold.json דרך MishmishScaffold.render
+         (מקור-אמת יחיד, לא מקודדת פה). #sv-* נשמרים → lantern.js מחווט כרגיל. -->
+    <nav id="survival" class="survival" aria-label="עזרה"></nav>
+
+    <!-- overlay פתיחה -->
+    <div class="overlay" id="introOverlay">
+      <img class="hero" src="../assets/characters/mishmish/mishmish-idle.png" alt="מישמיש">
+      <h2>פָּנָס הַמִּיפּוּי 🔦</h2>
+      <p>בֶּחָצֵר חָשׁוּךְ! הַזִּיזוּ אֶת הַפַּנָּס עִם הָאֶצְבַּע.<br>מִישְׁמִישׁ יַגִּיד מִלָּה — מִצְאוּ מָה שֶׁשְּׁמַעְתֶּם.</p>
+      <button class="btn-big" id="startBtn">בּוֹאוּ נַתְחִיל</button>
+    </div>
+
+    <!-- overlay סיום -->
+    <div class="overlay hidden" id="doneOverlay">
+      <img class="hero" src="../assets/characters/mishmish/mishmish-celebrate.png" alt="מישמיש">
+      <h2>הַסַּל מָלֵא! 🎉</h2>
+      <p id="doneMsg">מָצָאתֶם בַּחֹשֶׁךְ אֶת כָּל מָה שֶׁמִּישְׁמִישׁ בִּקֵּשׁ!</p>
+      <button class="btn-big" id="againBtn">עוֹד פַּעַם</button>
+      <a class="btn-ghost" href="index.html">לַשּׁוּק ←</a>
+    </div>
+  </main>
+
+  <!-- אותה תשתית כמו index.html: data → data-loader → audio → bkt → lantern -->
+  <script src="js/data.js"></script>
+  <script src="js/data-loader.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/bkt.js"></script>
+  <script src="js/shared/scaffold.js"></script>
+  <script src="js/shared/epa.js"></script>
+  <script src="js/shared/flow.js"></script>
+  <script src="js/shared/class-plan.js"></script>
+  <script src="js/lantern.js"></script>
+  <script>
+    MishmishScaffold.render('#survival');   /* מזריק את שורת ההישרדות לפני start() → #sv-* קיימים ל-lantern.js */
+    window.MishmishLantern.start();
+  </script>
+</body>
+</html>

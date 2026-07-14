@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" data-arabic-verified="false">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>מישמיש · amir-demo</title>
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <style>
+    /* דף-הדגמה/בדיקה לרכיב-הפיגום אמיר (js/shared/amir.js) מחובר למנוע measured.js.
+       CSS מינימלי; מוסכמת-הצגה מודרנית: .scaffold מוסתר, .show מגלה (כמו same-different). */
+    * { box-sizing: border-box; margin: 0; }
+    body { font-family: var(--font-he); background: #14202a; color: #fff; padding: 16px; min-height: 100vh; }
+    .stage { position: relative; max-width: 520px; margin: 0 auto; }
+    .bubble { background: rgba(255,250,241,.96); color: var(--color-ink-900); font-weight: 900;
+      font-size: 24px; padding: 8px 22px; border-radius: var(--radius-pill); display: inline-block; margin: 8px 0; }
+    #mishmish { width: 110px; display: block; }
+    .listen { min-height: 56px; padding: 10px 20px; border-radius: var(--radius-pill); border: none; font-weight: 800; }
+    .tiles { display: flex; gap: 14px; margin: 14px 0; flex-wrap: wrap; }
+    .tile { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 120px; min-height: 120px;
+      background: rgba(255,250,241,.97); color: var(--color-ink-900); border: 4px solid var(--color-border-soft);
+      border-radius: var(--radius-xl); font-weight: 900; font-size: 26px; cursor: pointer; padding: 12px; }
+    .tile img { width: 60px; height: 60px; }
+    .tile[aria-disabled="true"] { opacity: .5; pointer-events: none; }
+    .tile.correct { border-color: var(--color-mint-500); }
+    .tile.retry { border-color: var(--color-sun-500); }
+    .tile.selected { border-color: var(--color-sky-500); }
+
+    /* פיגום-אמיר — מוסתר כברירת-מחדל; .show מגלה. עאמייה מגודרת ב-root. */
+    .scaffold { display: none; align-items: center; gap: 8px; background: rgba(255,250,241,.94);
+      color: var(--color-ink-900); padding: 8px 14px; border-radius: var(--radius-pill); margin-top: 12px; max-width: 90%; }
+    .scaffold.show { display: flex; }
+    .scaffold[hidden] { display: none !important; }
+    .scaffold img { width: 46px; height: 46px; }
+    .scaffold .he { font-weight: 700; font-size: 15px; }
+    .scaffold .ar { font-family: var(--font-ar); font-size: 15px; color: var(--color-ink-500); }
+    [data-arabic-verified="false"] .scaffold .ar { display: none; }
+
+    #result { margin-top: 20px; direction: ltr; text-align: left; white-space: pre-wrap; font: 13px/1.5 monospace;
+      background: #0c1319; border: 1px solid #2b3a47; border-radius: 10px; padding: 12px; }
+    .pass { color: #7fdca0; } .fail { color: #ff8a8a; }
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <img id="mishmish" src="../assets/characters/mishmish/mishmish-idle.png" alt="מישמיש">
+    <div class="bubble"><span id="bubble-he"></span></div>
+    <button id="listen" class="listen" type="button">הַאֲזָנָה</button>
+    <div id="tiles" class="tiles" role="group" aria-label="בחרו"></div>
+
+    <!-- container-פיגום מינימלי בסגנון same-different; אמיר ממלא אותו -->
+    <div id="scaffold" class="scaffold" hidden>
+      <img id="amir-img" src="../assets/characters/peers/amir-idle.png" alt="">
+      <span id="amir-text" class="he"></span>
+      <span class="ar" lang="ar" data-arabic-verified="false"></span>
+    </div>
+
+    <nav id="survival" aria-label="עזרה"></nav>
+    <div id="result">running…</div>
+  </main>
+
+  <!-- מקור-אמת ל-scaffold.json בלי data.js המלא (scaffold.js נופל ל-window.MISHMISH_SCAFFOLD) -->
+  <script>
+    window.MISHMISH_SCAFFOLD = {
+      survival_bar: { buttons: [
+        { id: 'sv-again', action: 'replay', arg: false, emoji: '🔁', label_he: 'עוֹד פַּעַם' },
+        { id: 'sv-slow',  action: 'replay', arg: true,  emoji: '🐢', label_he: 'לְאַט' },
+        { id: 'sv-help',  action: 'hint',   arg: null,  emoji: '❔', label_he: 'לֹא הֵבַנְתִּי' }
+      ] },
+      amir_hints: { tiers: [
+        { tier: 'encourage', state: 'listening', he: 'עוֹד פַּעַם — הַקְשִׁיבוּ טוֹב, אַתֶּם קְרוֹבִים!', ar: 'كمان مرّة — اسمعوا منيح، قرّبتوا!', ar_verified: false },
+        { tier: 'point',     state: 'hint',      he: 'הִסְתַּכְּלוּ — מִישְׁמִישׁ מַרְאֶה לָכֶם אֵיפֹה.', ar: 'تطلّعوا — مشمش بيوريكم وين.', ar_verified: false },
+        { tier: 'amiya',     state: 'hint',      he: 'אָמִיר לוֹחֵשׁ לָכֶם בַּעֲרָבִית…', ar: 'أمير بيوشوشلكم بالعربي…', ar_verified: false }
+      ] }
+    };
+  </script>
+  <script src="js/audio.js"></script>
+  <script src="js/bkt.js"></script>
+  <script src="js/shared/scaffold.js"></script>
+  <script src="js/shared/amir.js"></script>
+  <script src="js/measured.js"></script>
+  <script>
+  (function () {
+    var log = [], failed = 0;
+    function check(name, cond) { log.push((cond ? '✓ ' : '✗ ') + name); if (!cond) failed++; }
+    function render() {
+      var r = document.getElementById('result');
+      r.className = failed ? 'fail' : 'pass';
+      r.textContent = (failed ? 'FAIL (' + failed + ')\n' : 'PASS\n') + log.join('\n');
+      window.__AMIR_DEMO__ = { failed: failed, log: log };
+      document.title = failed ? 'AMIR-FAIL' : 'AMIR-PASS';
+    }
+
+    // פריט-בדיקה למנוע: 3 אריחים, יעד = הראשון
+    var item = {
+      id: 'demo1', target: 'apple', dimension: 'produce_supported', pb_focus: false,
+      prompt: { he: 'אֲנִי רוֹצֶה תַּפּוּחַ', audio_he: 'אֲנִי רוֹצֶה תַּפּוּחַ' },
+      options: [
+        { cap: 'תַּפּוּחַ', img: 'apple', correct: true },
+        { cap: 'בָּנָנָה', img: 'banana' },
+        { cap: 'תַּפּוּז', img: 'orange' }
+      ]
+    };
+    var ctx = {
+      pattern: 'want',
+      mishmish: document.getElementById('mishmish'),
+      bubbleHe: document.getElementById('bubble-he'),
+      listen: document.getElementById('listen'),
+      tiles: document.getElementById('tiles'),
+      scaffold: document.getElementById('scaffold'),
+      instr: null,
+      onMeasured: function () {},
+      onDone: function () { doneCalled = true; }
+    };
+    var doneCalled = false;
+    var scaffold = document.getElementById('scaffold');
+    var active = window.MishmishMeasured.mount(item, ctx);
+
+    function tiles() { return ctx.tiles.children; }
+    function wrongTile() { return tiles()[1]; }   // בָּנָנָה
+    function correctTile() { return tiles()[0]; }  // תַּפּוּחַ
+    function enabled() { return tiles().length && tiles()[0].getAttribute('aria-disabled') === 'false'; }
+    function shown() { return scaffold.classList.contains('show') && !scaffold.hidden; }
+
+    // מכונת-מצב לבדיקה — פולינג עד שהאריחים נפתחים, ואז מריצה את התרחיש
+    var phase = 'wait-enable', ticks = 0, waitFrom = 0;
+    var poll = setInterval(function () {
+      ticks++;
+      if (ticks > 400) { check('timeout — התרחיש לא הושלם', false); clearInterval(poll); render(); return; }
+
+      if (phase === 'wait-enable') {
+        // בזמן intro — אמיר חייב להיות מוסתר (שמיעתי-קודם; אין פיגום עדיין)
+        if (ticks === 1) check('אתחול: אמיר מוסתר לפני תשובה', !shown());
+        if (enabled()) {
+          check('שמיעתי-קודם: האריחים נפתחו אחרי ההשמעה', true);
+          check('לפני רמז: אמיר מוסתר', !shown());
+          wrongTile().click();          // טעות ראשונה → enterLearning → hint(step1) אחרי 700ms
+          waitFrom = ticks;
+          phase = 'wait-autohint';
+        }
+        return;
+      }
+      if (phase === 'wait-autohint') {
+        // ממתינים ש-hint האוטומטי (step1, +700ms) יירה — אז מדרג-1 פעיל.
+        if (active.phase() === 'hint') {
+          check('מדרג 1 (השמעה-חוזרת): אמיר מוסתר', !shown());
+          active.hint();                // step2 = הצבעה חזותית. אמיר עדיין מוסתר.
+          check('מדרג 2 (הצבעה חזותית): אמיר מוסתר', !shown());
+          active.hint();                // step3 = פיגום-עאמייה → אמיר מופיע
+          phase = 'check-amiya';
+        }
+        return;
+      }
+      if (phase === 'check-amiya') {
+        check('מדרג-עאמייה: אמיר מופיע', shown());
+        var amirImg = scaffold.querySelector('img');
+        check('מצב-דמות: amir-hint בעאמייה', amirImg.src.indexOf('amir-hint.png') !== -1);
+        var he = scaffold.querySelector('.he').textContent;
+        check('בועה: רמז-עברי מוצג', he.indexOf('לוֹחֵשׁ') !== -1);
+        var ar = scaffold.querySelector('.ar');
+        check('עאמייה נכתבה ל-DOM (לבודק ילידי)', ar.textContent.length > 0);
+        check('🔴 עאמייה מגודרת: data-arabic-verified=false', ar.getAttribute('data-arabic-verified') === 'false');
+        // בדיקת-שער-CSS: display:none בפועל כשה-root לא מאומת
+        check('🔴 עאמייה מוחבאת ב-CSS (root לא מאומת)', getComputedStyle(ar).display === 'none');
+        check('אין כפתור "תרגום" קבוע בפיגום', scaffold.querySelectorAll('button').length === 0);
+        correctTile().click();          // תשובה נכונה → commitCorrect → happy → hide
+        phase = 'after-correct';
+        return;
+      }
+      if (phase === 'after-correct') {
+        // אמיר מגיב בשמחה מיד, ואז נעלם אחרי חלון-החגיגה (900ms)
+        if (doneCalled) {
+          check('הצלחה: מנוע השלים (onDone)', true);
+          check('פיגום נעלם: אמיר מוסתר אחרי הצלחה', !shown());
+          clearInterval(poll);
+          render();
+        }
+        return;
+      }
+    }, 20);
+  })();
+  </script>
+</body>
+</html>
