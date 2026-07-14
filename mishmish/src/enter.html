@@ -65,6 +65,20 @@
       font-weight: 700; font-size: clamp(16px, 4.2vw, 21px); line-height: var(--line-height-normal);
       padding: 12px 22px; border-radius: var(--radius-md); box-shadow: var(--shadow-soft); }
 
+    /* כפתור-האזנה לפתיחת-מישמיש (רמקול פועם — מזמין נגיעה אם autoplay נחסם) */
+    .hear { display: inline-flex; align-items: center; gap: 9px; cursor: pointer;
+      font-family: var(--font-he); font-weight: 800; font-size: clamp(15px, 4vw, 19px);
+      color: var(--color-ink-700); background: rgba(255,250,241,.92);
+      border: 2px solid var(--color-apricot-300); border-radius: var(--radius-pill);
+      padding: 9px 20px; box-shadow: var(--shadow-soft);
+      transition: transform var(--motion-fast) var(--ease-soft), box-shadow var(--motion-normal); }
+    .hear .ico { font-size: 20px; line-height: 1; }
+    .hear:hover { transform: translateY(-1px); }
+    .hear:active { transform: translateY(1px) scale(.98); }
+    .hear.speaking { border-color: var(--color-apricot-500); box-shadow: 0 0 0 5px rgba(217,121,61,.16), var(--shadow-soft); }
+    .hear.speaking .ico { animation: hearPulse 1s var(--ease-soft) infinite; }
+    @keyframes hearPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.18); } }
+
     /* אזור תחתון: הכפתור הגדול → מיפוי */
     .gate { position: relative; z-index: 20; display: flex; flex-direction: column; align-items: center;
       gap: 10px; padding: 0 20px calc(20px + env(safe-area-inset-bottom)); }
@@ -124,9 +138,15 @@
       </div>
       <h1 class="welcome">שְׂמֵחִים שֶׁ<span class="em">בָּאתֶם</span>!</h1>
       <p class="subtitle">קֹדֶם נֵצֵא לְטִיּוּל קָטָן עִם הַפַּנָּס וְנַכִּיר אֶתְכֶם —<br>בְּלִי מִבְחָן, רַק גִּלּוּי בְּיַחַד. 🔦</p>
+      <!-- כפתור-האזנה לפתיחת-מישמיש (קול נוני) -->
+      <button class="hear" id="hearBtn" type="button" aria-label="הַאֲזִינוּ לְמִישְׁמִישׁ">
+        <span class="ico" aria-hidden="true">🔊</span><span>הַאֲזִינוּ לְמִישְׁמִישׁ</span>
+      </button>
       <!-- עוגן חצי A: נושא-הכיתה עכשיו (מוזרק מ-MishmishClassPlan.label()) -->
       <p class="topic-now" id="topic-now" aria-live="polite"></p>
     </section>
+    <!-- פתיחה קולית (קול נוני, ElevenLabs). נגינה בנגיעה; ניסיון-אוטומטי בטעינה. -->
+    <audio id="introAudio" preload="auto" src="../assets/audio/he/gate-intro.mp3"></audio>
 
     <!-- הכפתור הגדול → מיפוי (משחקון הפנס · lantern.html, pack ברירת-מחדל = mapping) -->
     <div class="gate">
@@ -153,6 +173,32 @@
       var cur = window.MishmishClassPlan.current();
       el.innerHTML = '<span class="dot" aria-hidden="true"></span>' +
         'הַכִּתָּה שֶׁלָּכֶם עַכְשָׁיו בְּ<b>' + cur.he + '</b>';
+    })();
+
+    /* פתיחה קולית — מישמיש מציג את עצמו (קול נוני). autoplay-with-sound נחסם
+       בכניסה ראשונה ⇒ הכפתור הפועם מזמין נגיעה; נגיעה כלשהי גם משחררת. */
+    (function () {
+      var audio = document.getElementById('introAudio');
+      var btn = document.getElementById('hearBtn');
+      if (!audio) return;
+      var started = false;
+      function play() {
+        try { audio.currentTime = 0; } catch (e) {}
+        var p = audio.play();
+        if (p && p.then) p.then(function () { started = true; }).catch(function () {});
+      }
+      if (btn) { btn.addEventListener('click', function (e) { e.stopPropagation(); play(); }); }
+      audio.addEventListener('playing', function () { if (btn) btn.classList.add('speaking'); });
+      audio.addEventListener('ended',  function () { if (btn) btn.classList.remove('speaking'); });
+      audio.addEventListener('pause',  function () { if (btn) btn.classList.remove('speaking'); });
+      // ניסיון-אוטומטי בטעינה (יעבוד אם האודיו כבר שוחרר בסשן; אחרת נחסם בשקט)
+      window.addEventListener('load', function () { setTimeout(play, 350); });
+      // נגיעה ראשונה כלשהי (מלבד הכפתור/הכפתור-הגדול) משחררת ומנגנת פעם אחת
+      document.addEventListener('pointerdown', function once(ev) {
+        if (started) { document.removeEventListener('pointerdown', once); return; }
+        if (ev.target.closest('#hearBtn') || ev.target.closest('.start')) return;
+        play(); document.removeEventListener('pointerdown', once);
+      });
     })();
   </script>
 </body>
