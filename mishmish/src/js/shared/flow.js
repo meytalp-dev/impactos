@@ -18,7 +18,7 @@
      window.MISHMISH_FLOW = { topic:'class', defaultNext:'missing-slot' };
    ============================================================ */
 window.MishmishFlow = (function () {
-  var DEFAULTS = { topic: 'class', defaultNext: 'missing-slot', mapping: 'mapping' };
+  var DEFAULTS = { topic: 'class', defaultNext: 'missing-slot', mapping: 'mapping', mapPage: 'map.html' };
 
   // מכניקה → דף. swim-hunt/lantern חולקים דף (הפנס).
   var PAGE = {
@@ -34,7 +34,8 @@ window.MishmishFlow = (function () {
     var o = window.MISHMISH_FLOW || {};
     return { topic: o.topic || DEFAULTS.topic,
              defaultNext: o.defaultNext || DEFAULTS.defaultNext,
-             mapping: o.mapping || DEFAULTS.mapping };
+             mapping: o.mapping || DEFAULTS.mapping,
+             mapPage: o.mapPage || DEFAULTS.mapPage };
   }
   function param(n) { try { return new URLSearchParams(location.search).get(n); } catch (e) { return null; } }
   function currentPack() { return param('pack') || null; }
@@ -43,6 +44,12 @@ window.MishmishFlow = (function () {
   // ── decideNext — ההחלטה: לאן ממשיכים ──
   function decideNext() {
     var c = cfg();
+    // אחרי המיפוי → המפה (hub). הילד/ה רואה את השכונה כולה ובוחר/ת תחנה,
+    // במקום קפיצה ישירה למשחק. הצומת הפועם נגזר מ-MishmishClassPlan (בלי ?pack).
+    if (isMapping()) {
+      return { mechanic: 'map', pack: c.topic, url: c.mapPage,
+               reason: 'after-mapping→map', rec: { mechanic: 'map' } };
+    }
     var EPA = window.MishmishEPA;
     var rec = (EPA && EPA.recommendNext) ? EPA.recommendNext() : { mechanic: null, reason: null };
     var mech = rec.mechanic || c.defaultNext;                 // אין דפוס דומיננטי → התקדמות רגילה
@@ -68,7 +75,7 @@ window.MishmishFlow = (function () {
       btn.className = 'btn-big flow-next';                        // מנצל את סגנון-הכפתור של הדף
       btn.href = n.url;
       btn.style.textDecoration = 'none';                         // <a> בסגנון-כפתור — בלי קו-תחתון
-      btn.textContent = 'הַמְשֵׁךְ →';
+      btn.textContent = (n.mechanic === 'map') ? 'לַמַּפָּה →' : 'הַמְשֵׁךְ →';
       btn.setAttribute('data-flow-mechanic', n.mechanic);
       btn.setAttribute('data-flow-pack', n.pack);
       var again = ov.querySelector('#againBtn');                  // ממקמים אחרי "עוד פעם"
