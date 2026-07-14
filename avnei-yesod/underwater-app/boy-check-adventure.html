@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#FFFFFF">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>צוֹלֶלֶת הַפְּלָאִים שֶׁל נוֹנִי · אבני יסוד</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;800;900&family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--ink:#143A42;--soft:#577179;--mut:#8AA0A6;--line:#E7EDEE;--noni:#7363C4;--ease:cubic-bezier(.32,.72,0,1);}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Heebo',sans-serif;color:var(--ink);min-height:100dvh;overflow-x:hidden;background:#EAF8FE;}
+    /* רקע השונית — כמו בכל המשחקונים (DNA אבני יסוד) */
+    .scene-bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;object-position:center bottom;z-index:0;pointer-events:none;}
+    .veil{position:fixed;inset:0;z-index:1;pointer-events:none;background:rgba(255,255,255,.35);}
+    .wrap{position:relative;z-index:2;min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:34px clamp(16px,4vw,48px) 60px;}
+
+    /* top bar: progress + child */
+    .top{width:100%;max-width:820px;display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:10px;}
+    .who{display:inline-flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px 6px 6px;
+      box-shadow:0 6px 18px -12px rgba(20,58,66,.3);}
+    .who .av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:16px;
+      font-family:'Frank Ruhl Libre',serif;background:linear-gradient(145deg,#1F9E92,#36C2B2);}
+    .who .nm{font-size:15px;font-weight:700;color:var(--ink);}
+    .tag-boy{font-size:12px;font-weight:700;color:var(--soft);background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 15px;
+      box-shadow:0 6px 18px -12px rgba(20,58,66,.3);}
+    @media(max-width:640px){.tag-boy{display:none;}}
+    .steps{display:flex;gap:8px;}
+    .steps .dot{width:34px;height:8px;border-radius:999px;background:#E7EDEE;transition:background .4s var(--ease);}
+    .steps .dot.on{background:var(--noni);} .steps .dot.done{background:#5FBFA4;}
+
+    /* screens */
+    .screen{width:100%;max-width:820px;display:none;flex-direction:column;align-items:center;}
+    .screen.on{display:flex;animation:fadeUp .6s var(--ease) both;}
+
+    /* Noni + speech bubble */
+    .noni-row{display:flex;align-items:flex-end;gap:16px;margin:26px 0 30px;max-width:660px;}
+    .noni{width:clamp(96px,15vw,132px);height:auto;flex:0 0 auto;filter:drop-shadow(0 14px 24px rgba(115,99,196,.28));animation:bob 4s ease-in-out infinite;}
+    @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+    .bubble{position:relative;background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px 22px;
+      box-shadow:0 16px 34px -22px rgba(20,58,66,.4);}
+    .bubble::after{content:"";position:absolute;bottom:18px;inset-inline-start:-9px;width:18px;height:18px;background:#fff;
+      border-inline-start:1px solid var(--line);border-bottom:1px solid var(--line);transform:rotate(45deg);}
+    .bubble .say{font-size:clamp(17px,2.4vw,21px);font-weight:700;color:var(--ink);line-height:1.5;}
+    .bubble .spk{margin-top:12px;display:inline-flex;align-items:center;gap:9px;height:44px;padding:0 18px;cursor:pointer;
+      background:#F3F0FC;border:1px solid #E3DCF7;border-radius:999px;color:var(--noni);font-family:inherit;font-weight:700;font-size:14.5px;}
+    .bubble .spk:hover{background:#ECE6FA;} .bubble .spk svg{width:20px;height:20px;}
+    .bubble .spk.playing .wv i{animation:wv .9s ease-in-out infinite;}
+    .wv{display:inline-flex;align-items:center;gap:3px;height:18px;}
+    .wv i{width:3px;height:7px;border-radius:2px;background:var(--noni);display:block;}
+    .wv i:nth-child(2){height:13px;animation-delay:.15s;} .wv i:nth-child(3){height:18px;animation-delay:.3s;}
+    .wv i:nth-child(4){height:11px;animation-delay:.45s;}
+    @keyframes wv{0%,100%{transform:scaleY(.5)}50%{transform:scaleY(1)}}
+
+    /* answer options — letters / syllables */
+    .opts{display:grid;gap:16px;width:100%;}
+    .opts.g-letters{grid-template-columns:repeat(3,1fr);max-width:560px;}
+    .opts.g-syl{grid-template-columns:repeat(3,1fr);max-width:560px;}
+    .opts.g-pic{grid-template-columns:repeat(3,1fr);max-width:620px;}
+    @media(max-width:560px){.opts.g-letters,.opts.g-syl{grid-template-columns:repeat(2,1fr);}.opts.g-pic{grid-template-columns:1fr;}}
+    .opt{position:relative;cursor:pointer;font-family:'Frank Ruhl Libre',serif;background:#fff;border:2px solid var(--line);
+      border-radius:22px;min-height:104px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+      font-size:clamp(40px,6vw,58px);font-weight:800;color:var(--ink);transition:transform .3s var(--ease),border-color .3s,box-shadow .3s;
+      box-shadow:0 10px 26px -18px rgba(20,58,66,.3);}
+    .opt:hover{transform:translateY(-4px);border-color:#CFE0E3;}
+    .opt.pic{font-family:'Heebo',sans-serif;font-size:15px;font-weight:700;padding:16px;}
+    .opt.pic .emo{font-size:46px;line-height:1;}
+    .opt .cap{font-family:'Heebo',sans-serif;font-size:13px;font-weight:600;color:var(--mut);}
+    .opt.right{border-color:#5FBFA4;background:#F1FBF7;box-shadow:0 0 0 4px #E3F6EC;transform:translateY(-4px);}
+    .opt.dim{opacity:.4;pointer-events:none;}
+    .opt .chk{position:absolute;top:10px;inset-inline-end:10px;width:26px;height:26px;border-radius:50%;background:#5FBFA4;color:#fff;
+      display:none;place-items:center;font-size:15px;} .opt.right .chk{display:grid;}
+
+    /* generic pill/CTA */
+    .cta{display:inline-flex;align-items:center;justify-content:center;gap:9px;height:58px;padding:0 30px;cursor:pointer;border:none;
+      background:linear-gradient(145deg,#5FBFA4,#3E9E9A);color:#fff;font-family:inherit;font-weight:800;font-size:18px;border-radius:999px;
+      box-shadow:0 16px 30px -14px rgba(63,158,154,.7);transition:transform .3s var(--ease),filter .3s;margin-top:6px;}
+    .cta:hover{transform:translateY(-3px);filter:brightness(1.04);} .cta svg{width:22px;height:22px;}
+    .ghost{background:#fff;color:var(--soft);border:1px solid var(--line);box-shadow:0 6px 18px -12px rgba(20,58,66,.3);height:48px;font-size:15px;font-weight:700;}
+
+    /* word-reading round */
+    .word-show{font-family:'Frank Ruhl Libre',serif;font-size:clamp(44px,7vw,64px);font-weight:900;color:var(--ink);
+      background:#fff;border:2px solid var(--line);border-radius:22px;padding:8px 38px;margin:0 0 20px;
+      box-shadow:0 10px 26px -18px rgba(20,58,66,.3);}
+    .opt.img{padding:14px;min-height:132px;}
+    .opt.img img{width:100%;max-width:112px;height:auto;display:block;}
+    .sub-count{font-family:'Heebo',sans-serif;font-size:13px;font-weight:600;color:var(--mut);margin-inline-start:10px;}
+
+    /* intro / done big text */
+    .big{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:clamp(34px,6vw,58px);text-align:center;margin-top:10px;}
+    .lead{font-size:clamp(15px,2vw,18px);color:var(--soft);text-align:center;margin:14px 0 30px;max-width:52ch;line-height:1.6;}
+    .task-list{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:34px;}
+    .task-list .t{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px 18px;
+      box-shadow:0 8px 20px -16px rgba(20,58,66,.35);font-size:15px;font-weight:700;color:var(--ink);}
+    .task-list .t .n{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:15px;}
+
+    /* result card */
+    .rescard{width:100%;max-width:560px;background:#fff;border:1px solid var(--line);border-radius:26px;padding:28px;text-align:center;
+      box-shadow:0 24px 50px -30px rgba(20,58,66,.45);margin-top:8px;}
+    .rescard .isl{width:88px;height:88px;border-radius:24px;margin:0 auto 16px;display:grid;place-items:center;color:#fff;line-height:1;
+      background:linear-gradient(150deg,#5FBFA4,#3E9E9A);box-shadow:0 16px 30px -14px rgba(63,158,154,.7);}
+    .rescard .isl .t{font-size:13px;font-weight:700;opacity:.9;} .rescard .isl .b{font-family:'Frank Ruhl Libre',serif;font-size:40px;font-weight:900;}
+    .rescard .rn{font-family:'Frank Ruhl Libre',serif;font-size:26px;font-weight:900;color:var(--ink);}
+    .rescard .rs{font-size:15px;color:var(--soft);margin-top:6px;line-height:1.5;}
+    .teacher-note{display:flex;align-items:center;gap:12px;background:#F3F0FC;border:1px solid #E3DCF7;border-radius:16px;padding:14px 16px;
+      margin-top:20px;text-align:right;font-size:14px;color:#4b3f86;line-height:1.5;}
+    .teacher-note b{color:var(--noni);}
+    .acts{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:22px;}
+
+
+    /* Batch 1 — adventure intro skin. Scoped to #s-intro so assessment rounds stay untouched. */
+    #s-intro{max-width:1040px;}
+    #s-intro .intro-shell{position:relative;width:100%;overflow:hidden;border:1px solid rgba(255,255,255,.82);border-radius:36px;
+      background:linear-gradient(150deg,rgba(255,255,255,.91),rgba(242,252,255,.76));box-shadow:0 30px 80px -42px rgba(20,58,66,.52);
+      padding:clamp(22px,4vw,42px);isolation:isolate;}
+    #s-intro .intro-shell::before{content:"";position:absolute;z-index:-1;width:360px;height:360px;inset:-170px auto auto -110px;
+      border-radius:50%;background:rgba(217,210,255,.55);filter:blur(4px);}
+    #s-intro .intro-shell::after{content:"";position:absolute;z-index:-1;width:310px;height:310px;inset:auto -130px -190px auto;
+      border-radius:50%;background:rgba(184,242,207,.56);}
+    #s-intro .intro-bubbles{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:-1;}
+    #s-intro .intro-bubbles i{position:absolute;border:2px solid rgba(255,255,255,.82);border-radius:50%;background:rgba(168,232,255,.18);
+      box-shadow:inset 3px 3px 8px rgba(255,255,255,.65);animation:introFloat 6s ease-in-out infinite;}
+    #s-intro .intro-bubbles i:nth-child(1){width:32px;height:32px;top:14%;left:7%;}
+    #s-intro .intro-bubbles i:nth-child(2){width:18px;height:18px;top:24%;left:12%;animation-delay:-2s;}
+    #s-intro .intro-bubbles i:nth-child(3){width:24px;height:24px;top:8%;right:8%;animation-delay:-4s;}
+    #s-intro .intro-kicker{display:flex;align-items:center;justify-content:center;gap:8px;width:max-content;max-width:100%;margin:0 auto 10px;
+      padding:7px 16px;border-radius:999px;background:#F3F0FC;border:1px solid #E3DCF7;color:#5A4CA4;font-size:13px;font-weight:800;letter-spacing:.02em;}
+    #s-intro .intro-kicker::before{content:"✦";color:#E8A55F;}
+    #s-intro .big{font-size:clamp(36px,5.5vw,62px);line-height:1.08;margin:0;color:#173F48;text-shadow:0 2px 0 rgba(255,255,255,.85);}
+    #s-intro .lead{margin:12px auto 22px;font-size:clamp(16px,2vw,19px);line-height:1.65;color:#466A73;max-width:58ch;}
+    #s-intro .intro-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(250px,.72fr);align-items:center;gap:clamp(20px,4vw,44px);}
+    #s-intro .intro-copy{text-align:center;}
+    #s-intro .noni-row{position:relative;display:block;margin:0;min-height:240px;}
+    #s-intro .noni-row::before{content:"";position:absolute;width:190px;height:74px;left:50%;bottom:4px;transform:translateX(-50%);
+      border-radius:50%;background:rgba(99,207,229,.25);filter:blur(9px);}
+    #s-intro .noni{position:absolute;width:clamp(172px,20vw,238px);max-width:82%;left:50%;bottom:18px;transform:translateX(-50%);
+      filter:drop-shadow(0 20px 26px rgba(115,99,196,.28));animation:introNoni 4s ease-in-out infinite;}
+    #s-intro .bubble{position:absolute;z-index:2;inset:4px auto auto 0;max-width:250px;padding:14px 16px;border-color:rgba(217,210,255,.9);
+      box-shadow:0 14px 34px -22px rgba(70,57,137,.5);}
+    #s-intro .bubble::after{bottom:16px;inset-inline-start:auto;inset-inline-end:-9px;border-inline-start:0;border-inline-end:1px solid #E3DCF7;}
+    #s-intro .bubble .say{font-size:15px;line-height:1.55;}
+    #s-intro .bubble .spk{height:40px;margin-top:8px;padding:0 14px;font-size:13px;}
+    #s-intro .reef-route{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:8px 0 24px;padding-top:12px;}
+    #s-intro .reef-route::before{content:"";position:absolute;z-index:-1;top:38px;left:9%;right:9%;height:4px;border-radius:999px;
+      background:repeating-linear-gradient(90deg,#92D8D2 0 14px,transparent 14px 22px);}
+    #s-intro .reef-stop{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0;}
+    #s-intro .reef-mark{width:56px;height:56px;display:grid;place-items:center;border:4px solid rgba(255,255,255,.92);border-radius:19px;
+      color:#fff;font-family:'Frank Ruhl Libre',serif;font-size:25px;font-weight:900;box-shadow:0 10px 22px -12px rgba(20,58,66,.5);transform:rotate(3deg);}
+    #s-intro .reef-stop:nth-child(even) .reef-mark{transform:rotate(-3deg);}
+    #s-intro .reef-stop:nth-child(1) .reef-mark{background:#65BDA8;}
+    #s-intro .reef-stop:nth-child(2) .reef-mark{background:#779BD0;}
+    #s-intro .reef-stop:nth-child(3) .reef-mark{background:#E6A064;}
+    #s-intro .reef-stop:nth-child(4) .reef-mark{background:#8B78D2;}
+    #s-intro .reef-name{font-size:clamp(12px,1.5vw,14px);font-weight:800;line-height:1.35;text-align:center;color:#234D57;}
+    #s-intro .intro-actions{display:flex;flex-direction:column;align-items:center;gap:10px;}
+    #s-intro .cta{height:62px;min-width:min(100%,270px);margin:0;background:linear-gradient(145deg,#6D60C5,#5549A5);
+      box-shadow:0 18px 34px -15px rgba(85,73,165,.72);font-size:19px;}
+    #s-intro .intro-note{font-size:13px;font-weight:700;color:#607D85;}
+    @keyframes introFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-12px) scale(1.05)}}
+    @keyframes introNoni{0%,100%{transform:translateX(-50%) translateY(0) rotate(-1deg)}50%{transform:translateX(-50%) translateY(-9px) rotate(1deg)}}
+    @media(max-width:900px){
+      .wrap{padding-top:18px;}
+      #s-intro .intro-shell{border-radius:28px;}
+      #s-intro .intro-hero{grid-template-columns:1fr;}
+      #s-intro .noni-row{min-height:210px;max-width:390px;width:100%;margin:0 auto;}
+      #s-intro .noni{width:190px;}
+      #s-intro .bubble{max-width:210px;left:0;}
+      #s-intro .reef-route{gap:7px;}
+      #s-intro .reef-mark{width:48px;height:48px;border-radius:16px;font-size:22px;}
+      #s-intro .reef-route::before{top:34px;}
+    }
+    @media(max-width:460px){
+      .wrap{padding:12px 10px 34px;}
+      .top{gap:8px;margin-bottom:8px;}
+      .who{padding-inline-end:9px}.who .nm{font-size:13px;}
+      .steps{gap:4px}.steps .dot{width:22px;height:7px;}
+      #s-intro .intro-shell{padding:20px 12px 22px;border-radius:24px;}
+      #s-intro .intro-kicker{font-size:11px;padding:6px 12px;}
+      #s-intro .lead{font-size:15px;margin-bottom:12px;}
+      #s-intro .noni-row{min-height:190px;}
+      #s-intro .noni{width:168px;bottom:8px;}
+      #s-intro .bubble{max-width:168px;padding:10px 11px;}
+      #s-intro .bubble .say{font-size:12.5px;}
+      #s-intro .bubble .spk{height:36px;padding:0 10px;}
+      #s-intro .reef-route{margin-top:0;margin-bottom:18px;gap:4px;}
+      #s-intro .reef-mark{width:42px;height:42px;border-width:3px;border-radius:14px;font-size:19px;}
+      #s-intro .reef-route::before{top:31px;left:8%;right:8%;}
+      #s-intro .reef-name{font-size:10px;}
+      #s-intro .cta{height:58px;font-size:17px;min-width:230px;}
+      #s-intro .intro-note{font-size:11.5px;}
+    }
+
+    /* Wonder submarine overrides — intentionally last in the intro cascade. */
+    #s-intro{max-width:1060px;}
+    #s-intro .sub-shell{position:relative;width:100%;overflow:hidden;isolation:isolate;border:1px solid rgba(255,255,255,.86);border-radius:38px;
+      padding:clamp(22px,3.5vw,38px);background:linear-gradient(148deg,rgba(249,255,255,.96),rgba(225,248,249,.9));
+      box-shadow:0 34px 84px -44px rgba(16,63,71,.62),inset 0 0 0 7px rgba(255,255,255,.4);}
+    #s-intro .sub-shell::before,#s-intro .sub-shell::after{content:"";position:absolute;z-index:-2;border-radius:50%;pointer-events:none;}
+    #s-intro .sub-shell::before{width:420px;height:420px;inset:-240px -130px auto auto;background:rgba(217,210,255,.52);}
+    #s-intro .sub-shell::after{width:360px;height:360px;inset:auto auto -250px -100px;background:rgba(184,242,207,.55);}
+    #s-intro .sub-rivets{position:absolute;inset:14px;z-index:5;pointer-events:none;border:2px dashed rgba(38,80,92,.16);border-radius:29px;}
+    #s-intro .sub-head{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:18px;margin-bottom:18px;}
+    #s-intro .sub-status{display:flex;align-items:center;gap:7px;width:max-content;padding:7px 13px;border-radius:999px;background:#EAF8F4;
+      border:1px solid #CBE9DF;color:#267469;font-size:12px;font-weight:800;}
+    #s-intro .sub-status i{width:9px;height:9px;border-radius:50%;background:#62CBB0;box-shadow:0 0 0 4px rgba(98,203,176,.16);animation:subPulse 1.8s ease-in-out infinite;}
+    #s-intro .sub-kicker{text-align:center;color:#6556AF;font-size:13px;font-weight:900;letter-spacing:.03em;}
+    #s-intro .sub-depth{justify-self:end;direction:ltr;font-variant-numeric:tabular-nums;color:#5C747B;font-size:12px;font-weight:800;
+      padding:7px 12px;border:1px solid #D7E6E8;border-radius:10px;background:rgba(255,255,255,.72);}
+    #s-intro .cockpit{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(270px,.75fr);align-items:center;gap:clamp(24px,4vw,48px);}
+    #s-intro .sub-copy{text-align:right;}
+    #s-intro .big{margin:0;font-size:clamp(38px,5vw,60px);line-height:1.06;color:#173F48;text-align:right;}
+    #s-intro .lead{margin:13px 0 18px;max-width:46ch;text-align:right;font-size:clamp(16px,1.8vw,19px);line-height:1.65;color:#496C75;}
+    #s-intro .mission-strip{display:flex;align-items:center;gap:10px;width:max-content;max-width:100%;padding:10px 14px;border-radius:14px;
+      border:1px solid #E6DCF7;background:#F5F1FC;color:#574A94;font-size:13px;font-weight:800;}
+    #s-intro .mission-strip::before{content:"⌁";display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:#7867C7;color:#fff;font-size:21px;}
+    #s-intro .porthole-wrap{position:relative;min-height:270px;display:grid;place-items:center;}
+    #s-intro .porthole{position:relative;width:clamp(218px,24vw,270px);aspect-ratio:1;border-radius:50%;overflow:hidden;border:15px solid #F3D4A5;
+      outline:7px solid #7A69C7;background:linear-gradient(#8EE4EE 0 48%,#4ABFC7 48% 100%);box-shadow:0 22px 38px -24px rgba(53,55,115,.62),inset 0 0 0 5px rgba(255,255,255,.52);}
+    #s-intro .porthole::before{content:"";position:absolute;inset:7px;border:2px solid rgba(255,255,255,.62);border-radius:50%;z-index:3;}
+    #s-intro .porthole::after{content:"";position:absolute;width:140%;height:45%;left:-20%;bottom:-18%;border-radius:50%;background:rgba(35,145,151,.25);box-shadow:0 -20px 0 rgba(255,255,255,.08);}
+    #s-intro .porthole .noni{position:absolute;z-index:2;width:78%;height:auto;left:50%;bottom:-3%;transform:translateX(-50%);filter:drop-shadow(0 15px 17px rgba(54,48,114,.28));animation:subNoni 4s ease-in-out infinite;}
+    #s-intro .porthole-bubbles i{position:absolute;z-index:1;border:2px solid rgba(255,255,255,.76);background:rgba(255,255,255,.1);border-radius:50%;animation:subBubble 4.8s ease-in-out infinite;}
+    #s-intro .porthole-bubbles i:nth-child(1){width:24px;height:24px;top:23%;left:12%;}
+    #s-intro .porthole-bubbles i:nth-child(2){width:14px;height:14px;top:13%;left:25%;animation-delay:-1.5s;}
+    #s-intro .porthole-bubbles i:nth-child(3){width:18px;height:18px;top:34%;right:12%;animation-delay:-3s;}
+    #s-intro .bubble{position:absolute;z-index:4;width:230px;inset:10px auto auto -78px;padding:13px 15px;border-color:#E3DCF7;box-shadow:0 17px 34px -23px rgba(63,53,123,.52);}
+    #s-intro .bubble::after{inset-inline-start:auto;inset-inline-end:-9px;border-inline-start:0;border-inline-end:1px solid #E3DCF7;}
+    #s-intro .bubble .say{font-size:14px;line-height:1.5;}
+    #s-intro .bubble .spk{height:38px;margin-top:8px;padding:0 13px;font-size:12.5px;}
+    #s-intro .console-title{display:flex;align-items:center;justify-content:center;gap:10px;margin:15px 0 10px;color:#315963;font-size:13px;font-weight:900;}
+    #s-intro .console-title::before,#s-intro .console-title::after{content:"";height:1px;flex:1;background:#CDE1E4;}
+    #s-intro .sub-console{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:12px;border-radius:23px;border:1px solid rgba(76,112,119,.16);
+      background:rgba(29,70,78,.9);box-shadow:inset 0 2px 5px rgba(9,35,41,.28),0 16px 32px -26px #143A42;}
+    #s-intro .system{position:relative;display:grid;grid-template-columns:46px minmax(0,1fr);align-items:center;gap:10px;min-height:76px;padding:10px;border:1px solid rgba(255,255,255,.15);border-radius:16px;background:rgba(255,255,255,.09);color:#fff;}
+    #s-intro .system-display{display:grid;place-items:center;width:46px;height:46px;border-radius:13px;background:#D9F4F1;color:#21535D;font-family:'Frank Ruhl Libre',serif;font-size:23px;font-weight:900;box-shadow:inset 0 0 0 3px rgba(255,255,255,.55);}
+    #s-intro .system:nth-child(2) .system-display{background:#E5E0FF;color:#574A94;} #s-intro .system:nth-child(3) .system-display{background:#FFE3C9;color:#9A5B2E;} #s-intro .system:nth-child(4) .system-display{background:#FFE5E9;color:#9A5260;}
+    #s-intro .system-name{display:block;font-size:12.5px;font-weight:900;line-height:1.35;} #s-intro .system-state{display:flex;align-items:center;gap:5px;margin-top:4px;color:#BDEADC;font-size:10.5px;font-weight:700;}
+    #s-intro .system-state::before{content:"";width:6px;height:6px;border-radius:50%;background:#71D5B8;box-shadow:0 0 8px #71D5B8;}
+    #s-intro .intro-actions{display:flex;align-items:center;justify-content:center;gap:15px;margin-top:16px;} #s-intro .cta{height:61px;min-width:min(100%,310px);margin:0;background:linear-gradient(145deg,#7060C8,#51449C);box-shadow:0 18px 34px -15px rgba(81,68,156,.74);font-size:18px;}
+    #s-intro .intro-note{display:flex;align-items:center;gap:8px;color:#526F77;font-size:12.5px;font-weight:800;} #s-intro .intro-note::before{content:"";width:9px;height:9px;border-radius:50%;background:#65C9B0;box-shadow:0 0 0 4px rgba(101,201,176,.16);}
+    @keyframes subPulse{0%,100%{opacity:.55}50%{opacity:1;box-shadow:0 0 0 5px rgba(98,203,176,.2),0 0 12px #71D5B8}} @keyframes subNoni{0%,100%{transform:translateX(-50%) translateY(0) rotate(-1deg)}50%{transform:translateX(-50%) translateY(-8px) rotate(1deg)}} @keyframes subBubble{0%,100%{transform:translateY(8px);opacity:.45}50%{transform:translateY(-8px);opacity:1}}
+    @media(max-width:900px){#s-intro .sub-shell{border-radius:30px;}#s-intro .cockpit{grid-template-columns:1fr 250px;gap:22px;}#s-intro .big{font-size:clamp(34px,6vw,48px);}#s-intro .bubble{width:195px;left:-40px;}#s-intro .sub-console{grid-template-columns:repeat(2,minmax(0,1fr));}}
+    @media(max-width:650px){.wrap{padding:12px 10px 34px;}.top{gap:7px;margin-bottom:8px;}.who{padding-inline-end:9px}.who .nm{font-size:13px;}.steps{gap:4px}.steps .dot{width:22px;height:7px;}
+      #s-intro .sub-shell{padding:20px 12px 22px;border-radius:25px;}#s-intro .sub-rivets{inset:9px;border-radius:19px;}#s-intro .sub-head{grid-template-columns:1fr auto;margin-bottom:10px;}#s-intro .sub-kicker{grid-column:1/-1;grid-row:1;text-align:center;}#s-intro .sub-status{grid-row:2;font-size:10.5px;padding:6px 9px;}#s-intro .sub-depth{grid-row:2;font-size:10.5px;padding:6px 9px;}
+      #s-intro .cockpit{grid-template-columns:1fr;text-align:center;}#s-intro .sub-copy{display:contents;}#s-intro .big{text-align:center;font-size:clamp(31px,10vw,42px);order:1;}#s-intro .lead{text-align:center;font-size:14.5px;margin:9px auto 8px;order:2;}#s-intro .mission-strip{margin:0 auto;order:4;font-size:11.5px;padding:8px 10px;}#s-intro .porthole-wrap{min-height:230px;order:3;}#s-intro .porthole{width:205px;border-width:12px;outline-width:6px;}#s-intro .bubble{width:168px;left:0;top:12px;padding:10px 11px;}#s-intro .bubble .say{font-size:11.5px;}#s-intro .bubble .spk{height:34px;padding:0 9px;}
+      #s-intro .console-title{margin-top:13px;font-size:11.5px;}#s-intro .sub-console{gap:7px;padding:8px;border-radius:18px;}#s-intro .system{grid-template-columns:38px minmax(0,1fr);gap:7px;min-height:65px;padding:7px;border-radius:13px;}#s-intro .system-display{width:38px;height:38px;border-radius:11px;font-size:19px;}#s-intro .system-name{font-size:10.5px;}#s-intro .system-state{font-size:9px;}#s-intro .intro-actions{flex-direction:column;gap:8px;margin-top:12px;}#s-intro .cta{height:56px;min-width:250px;font-size:16px;}#s-intro .intro-note{font-size:10.5px;}}
+
+    /* Batch 2 sample — Letter Window system + Noni swim transition. */
+    #s-r1{max-width:1000px;}
+    #s-r1 .letter-window{position:relative;width:100%;overflow:hidden;isolation:isolate;padding:clamp(18px,3vw,30px);border:1px solid rgba(255,255,255,.86);
+      border-radius:34px;background:linear-gradient(150deg,rgba(249,255,255,.96),rgba(229,248,249,.92));box-shadow:0 30px 76px -42px rgba(17,61,70,.58),inset 0 0 0 6px rgba(255,255,255,.38);}
+    #s-r1 .letter-window::before{content:"";position:absolute;z-index:-2;width:380px;height:380px;border-radius:50%;inset:-230px auto auto -120px;background:rgba(217,210,255,.52);}
+    #s-r1 .letter-window::after{content:"";position:absolute;z-index:-2;width:330px;height:330px;border-radius:50%;inset:auto -120px -240px auto;background:rgba(184,242,207,.5);}
+    #s-r1 .r1-system-head{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px;margin-bottom:14px;}
+    #s-r1 .r1-system-id{display:flex;align-items:center;gap:7px;width:max-content;padding:7px 12px;border-radius:999px;background:#EAF8F4;border:1px solid #CBE9DF;color:#267469;font-size:11.5px;font-weight:900;}
+    #s-r1 .r1-system-id i{width:8px;height:8px;border-radius:50%;background:#65C9B0;box-shadow:0 0 0 4px rgba(101,201,176,.17),0 0 9px #65C9B0;}
+    #s-r1 .r1-system-title{font-family:'Frank Ruhl Libre',serif;color:#263F49;font-size:clamp(25px,3vw,34px);font-weight:900;text-align:center;}
+    #s-r1 .r1-progress{justify-self:end;direction:rtl;padding:7px 12px;border:1px solid #DED7F3;border-radius:11px;background:#F5F1FC;color:#5C4EA0;font-size:12px;font-weight:900;font-variant-numeric:tabular-nums;}
+    #s-r1 .r1-workspace{display:grid;grid-template-columns:260px minmax(0,1fr);align-items:center;gap:clamp(20px,4vw,42px);min-height:228px;}
+    #s-r1 .r1-noni-stage{position:relative;height:220px;display:grid;place-items:center;transform-origin:center;}
+    #s-r1.on .r1-noni-stage{animation:r1SwimIn 1.1s cubic-bezier(.18,.86,.25,1) both;}
+    #s-r1 .r1-mini-porthole{position:relative;width:188px;aspect-ratio:1;border-radius:50%;overflow:hidden;border:11px solid #F3D4A5;outline:6px solid #7968C6;
+      background:linear-gradient(#91E6EE 0 52%,#55C4C9 52%);box-shadow:0 20px 30px -21px rgba(68,55,134,.65),inset 0 0 0 4px rgba(255,255,255,.48);}
+    #s-r1 .r1-mini-porthole::after{content:"";position:absolute;inset:7px;border:2px solid rgba(255,255,255,.55);border-radius:50%;z-index:3;}
+    #s-r1 .r1-mini-porthole .noni{position:absolute;z-index:2;width:82%;height:auto;left:50%;bottom:-3%;transform:translateX(-50%);filter:drop-shadow(0 12px 14px rgba(72,55,145,.25));animation:r1NoniBob 3.6s ease-in-out 1.05s infinite;}
+    #s-r1 .swim-bubble{position:absolute;border:2px solid rgba(255,255,255,.9);border-radius:50%;background:rgba(141,223,255,.2);box-shadow:inset 2px 2px 5px rgba(255,255,255,.7);animation:r1TrailBubble 2.2s ease-in-out infinite;}
+    #s-r1 .swim-bubble.b1{width:24px;height:24px;left:8px;top:54px;}#s-r1 .swim-bubble.b2{width:14px;height:14px;left:34px;top:31px;animation-delay:-.7s;}#s-r1 .swim-bubble.b3{width:18px;height:18px;left:26px;bottom:31px;animation-delay:-1.3s;}
+    #s-r1 .r1-instruction-panel{display:grid;grid-template-columns:170px minmax(0,1fr);align-items:center;gap:16px;padding:15px;border-radius:23px;border:1px solid #D7E6E8;background:rgba(255,255,255,.7);}
+    #s-r1 .signal-readout{position:relative;min-height:142px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:18px;border:1px solid #9CD9D4;
+      background:linear-gradient(155deg,#E8FBF8,#D5F2F1);box-shadow:inset 0 0 0 5px rgba(255,255,255,.5);}
+    #s-r1 .signal-readout span{color:#457078;font-size:10.5px;font-weight:900;}#s-r1 .signal-readout b{font-family:'Frank Ruhl Libre',serif;font-size:clamp(54px,7vw,76px);line-height:1;color:#214A54;}
+    #s-r1 .signal-readout i{position:absolute;width:9px;height:9px;top:12px;right:12px;border-radius:50%;background:#65C9B0;box-shadow:0 0 10px #65C9B0;animation:subPulse 1.6s ease-in-out infinite;}
+    #s-r1 .bubble{position:relative;width:auto;inset:auto;padding:16px 18px;border-color:#E3DCF7;background:#fff;box-shadow:0 15px 32px -24px rgba(61,52,122,.48);}
+    #s-r1 .bubble::after{bottom:24px;inset-inline-start:-9px;inset-inline-end:auto;border-inline-start:1px solid #E3DCF7;border-inline-end:0;}
+    #s-r1 .bubble .say{font-size:clamp(15px,1.7vw,18px);line-height:1.6;}#s-r1 .bubble .spk{height:42px;margin-top:10px;padding:0 15px;font-size:13px;}
+    #s-r1 .signal-console{padding:12px 14px 14px;border-radius:23px;background:rgba(29,70,78,.92);border:1px solid rgba(255,255,255,.18);box-shadow:inset 0 2px 6px rgba(7,33,39,.32),0 18px 32px -27px #143A42;}
+    #s-r1 .signal-console-head{display:flex;align-items:center;justify-content:space-between;padding:0 4px 9px;color:#D5F3ED;font-size:11px;font-weight:900;}
+    #s-r1 .signal-console-head span:first-child{display:flex;align-items:center;gap:7px;}#s-r1 .signal-console-head i{width:7px;height:7px;border-radius:50%;background:#75D5BB;box-shadow:0 0 8px #75D5BB;}
+    #s-r1 .opts.g-letters{grid-template-columns:repeat(6,minmax(0,1fr));max-width:none;gap:10px;}
+    #s-r1 .opt{min-height:100px;border:1px solid rgba(255,255,255,.46);border-radius:17px;background:linear-gradient(155deg,#F9FFFF,#DFF5F3);color:#234D57;font-size:clamp(40px,5vw,56px);box-shadow:inset 0 -5px 0 rgba(38,80,92,.1),0 10px 18px -14px #071F24;}
+    #s-r1.on .opt{animation:r1KeyIn .48s var(--ease) both;}#s-r1.on .opt:nth-child(2){animation-delay:.08s}#s-r1.on .opt:nth-child(3){animation-delay:.16s}#s-r1.on .opt:nth-child(4){animation-delay:.24s}#s-r1.on .opt:nth-child(5){animation-delay:.32s}#s-r1.on .opt:nth-child(6){animation-delay:.4s}
+    #s-r1 .opt:hover{transform:translateY(-3px);border-color:#FFF;}#s-r1 .opt.right{border-color:#9B89E2;background:#F1EDFF;box-shadow:inset 0 -4px 0 rgba(91,73,168,.12),0 0 0 4px rgba(217,210,255,.72);transform:translateY(-3px);}
+    #s-r1 .opt.dim{opacity:.56;filter:saturate(.55);}.opt .chk{font-size:0;color:transparent;}#s-r1 .opt .chk{background:#7564C2;}#s-r1 .opt .chk::after{content:"◉";color:#fff;font-size:15px;}
+    #s-r1 .r1-neutral-note{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:11px;color:#5C767D;font-size:11px;font-weight:800;}#s-r1 .r1-neutral-note i{width:8px;height:8px;border-radius:50%;background:#65C9B0;box-shadow:0 0 0 4px rgba(101,201,176,.14);}
+    #s-r1 .r1-bubble-trail{position:absolute;inset:0;pointer-events:none;z-index:6;overflow:hidden;}#s-r1 .r1-bubble-trail i{position:absolute;border:2px solid rgba(255,255,255,.86);border-radius:50%;opacity:0;}
+    #s-r1.on .r1-bubble-trail i{animation:r1ScreenBubble 1.15s ease-out both;}#s-r1 .r1-bubble-trail i:nth-child(1){width:46px;height:46px;left:7%;top:28%;}#s-r1 .r1-bubble-trail i:nth-child(2){width:24px;height:24px;left:18%;top:12%;animation-delay:.1s}#s-r1 .r1-bubble-trail i:nth-child(3){width:34px;height:34px;left:30%;top:42%;animation-delay:.2s}#s-r1 .r1-bubble-trail i:nth-child(4){width:18px;height:18px;left:42%;top:21%;animation-delay:.28s}
+    #s-r1 .submarine-cockpit{min-height:min(760px,calc(100vh - 116px));padding:clamp(22px,3vw,34px);border:10px solid #8f806e;outline:4px solid #d9c9a9;background:linear-gradient(180deg,rgba(12,42,50,.18),rgba(15,48,57,.34)),url('assets/submarine-cockpit-bg.png') center/cover no-repeat;box-shadow:0 34px 80px -34px rgba(8,36,44,.8),inset 0 0 0 4px rgba(255,255,255,.35),inset 0 -90px 120px rgba(10,48,58,.22);}
+    #s-r1 .submarine-cockpit::before{inset:14px;width:auto;height:auto;border-radius:24px;border:2px solid rgba(255,246,216,.55);background:none;box-shadow:inset 0 0 48px rgba(7,49,61,.24);}
+    #s-r1 .submarine-cockpit::after{inset:auto 7% 9px;width:86%;height:58px;border-radius:50% 50% 16px 16px;background:linear-gradient(#7e6c59,#51483f);opacity:.9;}
+    #s-r1 .submarine-cockpit .r1-system-head,#s-r1 .submarine-cockpit .r1-instruction-panel,#s-r1 .submarine-cockpit .signal-console,#s-r1 .submarine-cockpit .r1-neutral-note{position:relative;z-index:2;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+    #s-r1 .submarine-cockpit .r1-system-head{padding:10px 14px;border-radius:18px;background:rgba(244,250,240,.88);border:2px solid rgba(234,211,165,.9);}
+    #s-r1 .submarine-cockpit .r1-workspace{position:relative;z-index:2;}
+    #s-r1 .submarine-cockpit .r1-instruction-panel{width:82%;max-width:510px;justify-self:end;grid-template-columns:112px minmax(0,1fr);padding:10px;gap:10px;border:2px solid #b69a68;border-radius:19px;background:rgba(248,252,242,.9);box-shadow:0 18px 30px rgba(10,46,55,.22);}
+    #s-r1 .submarine-cockpit .signal-readout{min-height:112px;border-radius:15px;}
+    #s-r1 .submarine-cockpit .signal-readout b{font-size:56px;}
+    #s-r1 .submarine-cockpit .r1-instruction-panel .bubble{padding:12px 14px;border-radius:17px;}
+    #s-r1 .submarine-cockpit .r1-instruction-panel .say{font-size:13px;line-height:1.55;}
+    #s-r1 .submarine-cockpit .r1-instruction-panel .spk{height:38px;margin-top:8px;}
+    #s-r1 .submarine-cockpit .signal-console{background:linear-gradient(180deg,rgba(49,91,94,.96),rgba(30,66,73,.97));border:5px solid #b69a68;box-shadow:0 20px 34px rgba(5,33,40,.38),inset 0 0 0 2px rgba(255,255,255,.18);}
+    #s-r1 .submarine-cockpit .signal-console-head{color:#fff7dc;}
+    #s-r1 .submarine-cockpit .r1-neutral-note{color:#fff7dc;text-shadow:0 2px 4px rgba(10,44,52,.7);}
+    @keyframes r1SwimIn{0%{opacity:0;transform:translateX(-55vw) translateY(35px) rotate(-9deg) scale(.78)}62%{opacity:1;transform:translateX(14px) translateY(-8px) rotate(2deg) scale(1.04)}100%{opacity:1;transform:translateX(0) translateY(0) rotate(0) scale(1)}}
+    @keyframes r1NoniBob{0%,100%{transform:translateX(-50%) translateY(0) rotate(-1deg)}50%{transform:translateX(-50%) translateY(-7px) rotate(1deg)}}@keyframes r1TrailBubble{0%,100%{transform:translateY(8px);opacity:.45}50%{transform:translateY(-8px);opacity:1}}@keyframes r1KeyIn{from{opacity:0;transform:translateY(14px) scale(.94)}to{opacity:1;transform:translateY(0) scale(1)}}@keyframes r1ScreenBubble{0%{opacity:0;transform:translate(-80px,70px) scale(.55)}35%{opacity:.9}100%{opacity:0;transform:translate(210px,-90px) scale(1.2)}}
+    @media(max-width:820px){#s-r1 .r1-workspace{grid-template-columns:220px minmax(0,1fr);gap:16px;}#s-r1 .r1-instruction-panel{grid-template-columns:135px minmax(0,1fr);gap:11px;}#s-r1 .opts.g-letters{grid-template-columns:repeat(3,1fr);}#s-r1 .opt{min-height:84px;}#s-r1 .r1-mini-porthole{width:170px;}}
+    @media(max-width:560px){#s-r1 .letter-window{padding:17px 10px 19px;border-radius:25px;}#s-r1 .r1-system-head{grid-template-columns:1fr auto;margin-bottom:9px;}#s-r1 .r1-system-title{grid-column:1/-1;grid-row:1;font-size:28px;}#s-r1 .r1-system-id{grid-row:2;font-size:9.5px;padding:6px 8px;}#s-r1 .r1-progress{grid-row:2;font-size:10px;padding:6px 8px;}#s-r1 .r1-workspace{grid-template-columns:1fr;gap:6px;}#s-r1 .r1-noni-stage{height:170px;}#s-r1 .r1-mini-porthole{width:145px;border-width:9px;outline-width:5px;}#s-r1 .r1-instruction-panel{grid-template-columns:95px minmax(0,1fr);padding:9px;gap:8px;border-radius:17px;}#s-r1 .signal-readout{min-height:108px;border-radius:14px;}#s-r1 .signal-readout b{font-size:50px;}#s-r1 .bubble{padding:10px 11px;border-radius:16px;}#s-r1 .bubble .say{font-size:12px;}#s-r1 .bubble .spk{height:34px;margin-top:7px;padding:0 10px;font-size:11px;}#s-r1 .signal-console{padding:9px;border-radius:18px;}#s-r1 .opts.g-letters{grid-template-columns:repeat(3,1fr);gap:7px;}#s-r1 .opt{min-height:70px;border-radius:14px;font-size:38px;}#s-r1 .r1-neutral-note{font-size:9.5px;text-align:center;}#s-r1 .submarine-cockpit{min-height:auto;padding:14px 12px 20px;border-width:6px;background-position:38% center;}#s-r1 .submarine-cockpit .r1-system-head{padding:8px;}#s-r1 .submarine-cockpit .signal-console{border-width:3px;}#s-r1 .submarine-cockpit .r1-instruction-panel{width:100%;max-width:none;justify-self:stretch;}}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+    /* ===== פס-עיצוב · 14.7 (Claude): נוני יוצאת מהאשנב · טקסט גדול יותר · תיקון רווח לוח-האותיות ===== */
+    /* INTRO — נוני שוחה מלפני החלון, גדולה יותר; האשנב נשאר חלון-צוללת מאחוריה */
+    #s-intro .porthole-wrap{overflow:visible;}
+    #s-intro .porthole{width:clamp(196px,21vw,246px);}
+    #s-intro .porthole-wrap > .noni{position:absolute;z-index:5;left:50%;bottom:0;width:clamp(214px,25vw,296px);height:auto;
+      transform:translateX(-50%);filter:drop-shadow(0 22px 26px rgba(54,48,114,.36));animation:subNoni 4s ease-in-out infinite;}
+    /* INTRO — טקסט גדול יותר שתואם לצוללת הגדולה */
+    #s-intro .lead{font-size:clamp(18px,2.1vw,22px);max-width:44ch;}
+    #s-intro .sub-kicker{font-size:15px;}
+    #s-intro .mission-strip{font-size:14.5px;}
+    #s-intro .console-title{font-size:15px;}
+    #s-intro .bubble .say{font-size:16px;line-height:1.55;}
+    #s-intro .system{grid-template-columns:50px minmax(0,1fr);min-height:82px;}
+    #s-intro .system-display{width:50px;height:50px;font-size:26px;}
+    #s-intro .system-name{font-size:14px;}
+    #s-intro .system-state{font-size:11.5px;}
+    /* INTRO — עמודת נוני נערמת אנכית: חלון+נוני למעלה, בועה מתחת (בלי חיתוך) */
+    #s-intro .porthole-wrap{overflow:visible;position:relative;display:block;min-height:392px;padding-top:6px;}
+    #s-intro .porthole{margin:0 auto;}
+    #s-intro .porthole-wrap > .noni{top:6px;bottom:auto;width:clamp(200px,23vw,272px);}
+    #s-intro .bubble{position:absolute;z-index:4;left:50%;right:auto;top:auto;bottom:0;transform:translateX(-50%);
+      width:min(300px,98%);inset-inline:auto;padding:13px 16px;}
+    #s-intro .bubble::after{left:50%;right:auto;inset-inline:auto;top:-9px;bottom:auto;
+      transform:translateX(-50%) rotate(45deg);border:0;border-inline-start:1px solid #E3DCF7;border-top:1px solid #E3DCF7;}
+
+    /* ROUND 1 — נוני מחוץ לחלון; ביטול הגובה-המאולץ שהשאיר את לוח-האותיות תלוי באמצע */
+    #s-r1 .submarine-cockpit{min-height:auto;}
+    #s-r1 .r1-noni-stage{overflow:visible;}
+    #s-r1 .r1-noni-stage > .noni{position:absolute;z-index:4;left:50%;bottom:-2%;width:clamp(168px,20vw,208px);height:auto;
+      transform:translateX(-50%);filter:drop-shadow(0 16px 18px rgba(72,55,145,.32));animation:r1NoniBob 3.6s ease-in-out infinite;}
+    #s-r1 .r1-system-title{font-size:clamp(28px,3.4vw,38px);}
+    #s-r1 .submarine-cockpit .r1-instruction-panel .say{font-size:15.5px;line-height:1.55;}
+    #s-r1 .signal-console-head{font-size:12.5px;}
+    #s-r1 .r1-neutral-note{font-size:12.5px;}
+
+    /* ===== v2 — נוני שוחה חופשי (בלי מסגרת עיגול) בכל המסכים + סבבים 2-4 בסגנון-צוללת ===== */
+    /* INTRO — מסירים את האשנב; נוני שוחה חופשי מעל הרקע, הבועה מתחת בלי חיתוך */
+    #s-intro .porthole{display:none;}
+    #s-intro .porthole-wrap{min-height:392px;}
+    #s-intro .porthole-wrap > .noni{top:0;bottom:auto;width:clamp(214px,25vw,300px);}
+    #s-intro .bubble{bottom:0;}
+    /* ROUND 1 — מסירים את האשנב-הקטן; נוני שוחה חופשי בתא-הטייס */
+    #s-r1 .r1-mini-porthole{display:none;}
+    #s-r1 .r1-noni-stage{height:224px;}
+    #s-r1 .r1-noni-stage > .noni{bottom:2%;width:clamp(184px,21vw,226px);}
+
+    /* ROUNDS 2-4 — סקין-צוללת משותף (רקע תא-הטייס + נוני חופשית + קונסולת-בחירה) */
+    .round-cockpit{position:relative;z-index:0;width:100%;isolation:isolate;
+      display:flex;flex-direction:column;align-items:center;gap:clamp(14px,2.4vw,22px);padding:clamp(20px,3vw,34px);
+      border:10px solid #8f806e;outline:4px solid #d9c9a9;border-radius:34px;
+      background:linear-gradient(180deg,rgba(12,42,50,.18),rgba(15,48,57,.34)),url('assets/submarine-cockpit-bg.png') center/cover no-repeat;
+      box-shadow:0 34px 80px -34px rgba(8,36,44,.8),inset 0 0 0 4px rgba(255,255,255,.35),inset 0 -90px 120px rgba(10,48,58,.22);}
+    .round-cockpit .noni-row{position:relative;z-index:2;margin:0;width:100%;max-width:none;justify-content:center;align-items:center;
+      gap:clamp(14px,3vw,26px);}
+    .round-cockpit .noni{width:clamp(128px,16vw,176px);flex:0 0 auto;filter:drop-shadow(0 18px 22px rgba(72,55,145,.42));}
+    .round-cockpit .bubble{background:rgba(255,255,255,.95);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);max-width:460px;
+      border-color:rgba(234,211,165,.9);}
+    .round-cockpit .bubble .say{font-size:clamp(16px,2vw,20px);line-height:1.55;}
+    .round-cockpit .bubble .spk{height:42px;font-size:13.5px;}
+    .round-cockpit .word-show{position:relative;z-index:2;margin:0;background:rgba(255,255,255,.96);border-color:rgba(234,211,165,.95);}
+    .round-cockpit .rc-console{position:relative;z-index:2;width:100%;max-width:660px;padding:14px;border-radius:23px;
+      background:linear-gradient(180deg,rgba(49,91,94,.96),rgba(30,66,73,.97));border:5px solid #b69a68;
+      box-shadow:inset 0 2px 6px rgba(7,33,39,.32),0 18px 32px -26px #143A42;}
+    .round-cockpit .rc-console-head{display:flex;align-items:center;gap:8px;justify-content:center;margin:0 0 10px;color:#fff7dc;font-size:12.5px;font-weight:900;}
+    .round-cockpit .rc-console-head i{width:8px;height:8px;border-radius:50%;background:#75D5BB;box-shadow:0 0 8px #75D5BB;}
+    .round-cockpit .opts{margin:0;}
+    @media(max-width:560px){
+      .round-cockpit{border-width:6px;padding:16px 12px 20px;border-radius:26px;min-height:auto;}
+      .round-cockpit .noni{width:118px;left:-8px;bottom:auto;top:-58px;}
+      .round-cockpit .rc-console{border-width:3px;padding:10px;}
+    }
+
+    /* ===== INTRO v3 — תא-טייס אמיתי: רקע-צוללת + מסגרת-מתכת + פאנל-זכוכית לקריאוּת ===== */
+    #s-intro .sub-shell{border:12px solid #8f806e;outline:5px solid #d9c9a9;
+      background:linear-gradient(180deg,rgba(12,42,50,.22),rgba(15,48,57,.42)),url('assets/submarine-cockpit-bg.png') center/cover no-repeat;
+      box-shadow:0 40px 92px -40px rgba(8,36,44,.85),inset 0 0 0 5px rgba(255,255,255,.30),inset 0 -120px 150px rgba(10,48,58,.30);}
+    #s-intro .sub-shell::before,#s-intro .sub-shell::after{display:none;}
+    #s-intro .sub-rivets{border-color:rgba(255,246,216,.42);}
+    #s-intro .sub-status,#s-intro .sub-depth{background:rgba(255,255,255,.9);box-shadow:0 8px 18px -12px rgba(8,36,44,.5);}
+    #s-intro .sub-kicker{color:#fff;text-shadow:0 2px 7px rgba(8,40,48,.75);font-size:15.5px;}
+    /* קופסת-הטקסט = זכוכית-תצפית מוארת, נשארת קריאה מעל הצוללת */
+    #s-intro .sub-copy{background:rgba(248,252,250,.88);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+      border:2px solid rgba(234,211,165,.9);border-radius:22px;padding:clamp(18px,2.4vw,28px);
+      box-shadow:0 22px 44px -26px rgba(8,36,44,.65),inset 0 0 0 3px rgba(255,255,255,.5);}
+    #s-intro .lead{color:#3C5D66;}
+    #s-intro .console-title{color:#fff;text-shadow:0 2px 7px rgba(8,40,48,.75);}
+    #s-intro .console-title::before,#s-intro .console-title::after{background:rgba(255,255,255,.42);}
+    #s-intro .sub-console{border:5px solid #b69a68;background:linear-gradient(180deg,rgba(49,91,94,.96),rgba(30,66,73,.97));
+      box-shadow:inset 0 2px 6px rgba(7,33,39,.34),0 20px 34px -26px #0a2c34;}
+    #s-intro .intro-note{color:#EAF8F4;text-shadow:0 2px 6px rgba(8,40,48,.6);}
+
+    /* ===== v4 — צוללת גדולה שממלאת את הדף + נוני שוחה מחוץ לריבוע ===== */
+    .wrap{padding-left:clamp(12px,2vw,30px);padding-right:clamp(12px,2vw,30px);}
+    .top{max-width:1260px;} .screen{max-width:1260px;} #s-intro{max-width:1260px;} #s-r1{max-width:1260px;}
+    #s-r2,#s-rw,#s-r3{max-width:1260px;}
+    /* קוקפיט גדול וגבוה */
+    .round-cockpit{
+      min-height:min(620px,calc(100vh - 150px));justify-content:center;gap:clamp(20px,2.8vw,34px);padding:clamp(28px,3.4vw,48px);}
+    .round-cockpit .rc-console{max-width:760px;}
+    /* נוני מחוץ לריבוע — שוחה בשונית משמאל לצוללת */
+    .round-cockpit{position:relative;overflow:visible;}
+    .round-cockpit .noni{position:absolute;z-index:6;left:clamp(-134px,-8vw,-78px);bottom:8%;
+      width:clamp(196px,19vw,270px);filter:drop-shadow(0 26px 30px rgba(16,55,63,.55));animation:bob 4s ease-in-out infinite;}
+    .round-cockpit .noni-row{justify-content:center;width:100%;max-width:820px;}
+    .round-cockpit .rc-console{width:100%;max-width:820px;}
+
+    /* ===== אחידות סופית — פס-כותרת זהה + התאמות אינטרו/סיום ===== */
+    .rc-headbar{position:relative;z-index:2;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;width:100%;max-width:820px;}
+    .rc-headbar .rc-id{justify-self:start;display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:999px;background:rgba(255,255,255,.92);border:1px solid #CBE9DF;color:#22685E;font-size:12.5px;font-weight:900;white-space:nowrap;}
+    .rc-headbar .rc-id i{width:8px;height:8px;border-radius:50%;background:#65C9B0;box-shadow:0 0 0 4px rgba(101,201,176,.2),0 0 8px #65C9B0;}
+    .rc-headbar .rc-title{font-family:'Frank Ruhl Libre',serif;color:#fff;font-size:clamp(22px,2.7vw,32px);font-weight:900;text-align:center;text-shadow:0 2px 9px rgba(8,40,48,.78);white-space:nowrap;}
+    .rc-headbar .rc-prog{justify-self:end;padding:8px 13px;border-radius:11px;background:rgba(255,255,255,.92);border:1px solid #DED7F3;color:#5C4EA0;font-size:12.5px;font-weight:900;white-space:nowrap;font-variant-numeric:tabular-nums;}
+    /* אינטרו: כותרת+לוֹד קצרים במרכז, רשת-המערכות בתוך הקונסולה האחידה */
+    #s-intro .big{text-align:center;color:#173F48;margin:0;font-size:clamp(30px,4vw,46px);text-shadow:0 2px 0 rgba(255,255,255,.55);}
+    #s-intro .lead{text-align:center;margin:8px auto 0;max-width:52ch;}
+    #s-intro .intro-copy-panel{position:relative;z-index:2;width:100%;max-width:820px;text-align:center;
+      background:rgba(248,252,250,.9);-webkit-backdrop-filter:blur(9px);backdrop-filter:blur(9px);
+      border:2px solid rgba(234,211,165,.9);border-radius:20px;padding:clamp(14px,2vw,22px);
+      box-shadow:0 20px 40px -26px rgba(8,36,44,.6),inset 0 0 0 3px rgba(255,255,255,.5);}
+    #s-intro .sub-console{background:none;border:none;box-shadow:none;padding:0;}
+    #s-intro .cta{margin-top:2px;}
+    /* סיום: כרטיס-התוצאה יושב על הצוללת, באותו רוחב */
+    #s-done .rescard{position:relative;z-index:2;margin:0;width:100%;max-width:560px;background:rgba(255,255,255,.97);}
+    /* תיקון מיקום נוני — ביחס לצוללת (לא לשורה), שוחה מחוץ לריבוע בפינה השמאלית */
+    .round-cockpit .noni-row{position:static;}
+    .round-cockpit .noni{left:clamp(-92px,-5vw,-52px);bottom:5%;z-index:7;}
+    /* ביטול חוקי-נוני הישנים (ספציפיות-id) של אינטרו/סבב-1 שגרמו למרכוז מעל הבועה */
+    #s-intro .noni-row,#s-r1 .noni-row{position:static!important;display:flex;min-height:0;margin:0;width:100%;max-width:820px;}
+    #s-intro .noni-row::before{display:none;}
+    #s-intro .noni,#s-r1 .noni{position:absolute;left:clamp(-92px,-5vw,-52px);right:auto;top:auto;bottom:5%;
+      transform:none;width:clamp(200px,18vw,264px);max-width:none;z-index:7;filter:drop-shadow(0 26px 30px rgba(16,55,63,.55));}
+    /* ביטול הבועה-absolute הישנה של האינטרו — תשב בזרימה במרכז כמו בשאר המסכים */
+    #s-intro .bubble{position:static;inset:auto;left:auto;right:auto;top:auto;bottom:auto;width:auto;max-width:600px;transform:none;
+      box-shadow:0 16px 34px -22px rgba(20,58,66,.4);}
+    #s-intro .bubble::after{inset-inline-start:-9px;inset-inline-end:auto;left:auto;right:auto;top:auto;bottom:18px;
+      transform:rotate(45deg);border:0;border-inline-start:1px solid var(--line);border-bottom:1px solid var(--line);}
+
+    /* ===== קומפוזיציה מאוזנת (מפרט מיטל) — צוללת ממורכזת + תוכן באזור-הדשבורד ===== */
+    /* טופ-בר מעט גדול יותר (לא זעיר ביחס לצוללת) */
+    .wrap{padding:12px clamp(12px,2vw,28px) 16px;align-items:center;}
+    .top{width:min(88vw,1520px);max-width:none;min-height:60px;margin:0 auto 8px;}
+    .who{padding:7px 16px 7px 7px;} .who .av{width:40px;height:40px;font-size:18px;} .who .nm{font-size:17px;}
+    .tag-boy{font-size:13.5px;padding:9px 18px;} .steps .dot{width:44px;height:10px;}
+    .screen{max-width:none;width:100%;align-items:center;}
+    /* ביטול תקרות-רוחב ישנות (ספציפיות-id) שכלאו את ה-screens ל-1260 וגרמו להיסט */
+    #s-intro,#s-r1,#s-r2,#s-rw,#s-r3,#s-done{max-width:none;width:100%;}
+    /* מעטפת מרכזית — ממורכזת אופקית (margin-inline:auto), בלי הזזות/עמודות ריקות */
+    .round-cockpit{
+      position:relative;
+      width:min(78vw,1450px);max-width:none;
+      aspect-ratio:2.05 / 1;height:auto;min-height:0;max-height:calc(100dvh - 100px);
+      margin-inline:auto;margin-block:0;
+      background-size:cover;background-position:center;overflow:visible;
+      /* התוכן יושב באזור-הדשבורד הפנימי (top≈14% right≈11% bottom≈11% left≈17% ← אחוזי-רוחב) */
+      display:flex;flex-direction:column;justify-content:center;align-items:center;
+      gap:clamp(18px,3vh,42px);
+      padding:5.4% 11% 3.4% 17%;}
+    /* שכבת-התוכן מוגדלת ~18% */
+    .rc-headbar{width:100%;max-width:none;}
+    .rc-headbar .rc-title{font-size:clamp(26px,2.2vw,40px);}
+    .rc-headbar .rc-id,.rc-headbar .rc-prog{font-size:14px;padding:10px 16px;}
+    .round-cockpit .noni-row,#s-intro .noni-row,#s-r1 .noni-row{max-width:none;width:100%;}
+    .round-cockpit .bubble{max-width:min(46vw,720px);}
+    .round-cockpit .bubble .say{font-size:clamp(17px,1.4vw,23px);}
+    .round-cockpit .bubble .spk{height:46px;font-size:15px;}
+    .round-cockpit .rc-console{max-width:none;width:100%;padding:clamp(16px,2vh,28px);}
+    .round-cockpit .rc-console-head{font-size:14px;margin-bottom:14px;}
+    /* פאנל-המשימות גבוה יותר — כרטיסים גבוהים וברורים */
+    .round-cockpit .opt{min-height:clamp(140px,18vh,204px);}
+    #s-r1 .opt{min-height:clamp(130px,16.5vh,192px);font-size:clamp(50px,4.2vw,70px);}
+    .round-cockpit .opt.pic .emo{font-size:clamp(48px,4.6vw,64px);}
+    .round-cockpit .word-show{font-size:clamp(50px,4.2vw,72px);padding:12px 46px;}
+    #s-done .rescard{max-width:none;width:100%;padding:30px;}
+    #s-intro .cta{height:66px;font-size:20px;min-width:min(30vw,340px);}
+    /* נוני: קטנה, ~25% מחוץ למסגרת בפינה שמאלית-תחתונה, חופפת לבמה, לא נחתכת */
+    .round-cockpit .noni,#s-intro .noni,#s-r1 .noni{width:clamp(175px,11vw,220px);left:clamp(-46px,-2.6vw,-24px);
+      right:auto;bottom:8%;top:auto;transform:none;z-index:20;}
+    @media(max-width:820px){
+      .round-cockpit{width:min(94vw,620px);aspect-ratio:auto;height:auto;max-height:none;padding:18px 14px 22px;}
+      .round-cockpit .noni,#s-intro .noni,#s-r1 .noni{width:120px;left:-6px;bottom:auto;top:-58px;}
+      .round-cockpit .opt{min-height:86px;} #s-r1 .opt{min-height:76px;}
+    }
+    @media(max-width:560px){.rc-headbar .rc-title{font-size:19px;}.rc-headbar .rc-id,.rc-headbar .rc-prog{font-size:10.5px;padding:6px 9px;}}
+    /* ===== שיפורי פידבק-עיצוב (docx 14.7) — הקלה · קומפקטיות · אינטראקטיביות ===== */
+    /* #1 הקלת הפאנל הכהה: שקוף יותר, מסגרת דקה, צל רך */
+    .round-cockpit .rc-console{background:linear-gradient(180deg,rgba(41,80,84,.84),rgba(26,60,66,.9));border-width:3px;
+      box-shadow:inset 0 1px 4px rgba(7,33,39,.24),0 14px 26px -22px #0a2c34;}
+    #s-intro .sub-console{border-width:3px;background:linear-gradient(180deg,rgba(41,80,84,.84),rgba(26,60,66,.9));}
+    /* #6 בועת-הוראה קומפקטית — רוחב לפי התוכן */
+    .round-cockpit .bubble{width:fit-content;max-width:min(46vw,680px);padding:14px 20px;}
+    /* #7 כפתור-שמע נראה ומרגיש כפעולה לחיצה */
+    .round-cockpit .bubble .spk{background:#EFEAFB;border:1.5px solid #D8CEF3;font-weight:800;
+      transition:transform .14s var(--ease),background .18s,box-shadow .18s;box-shadow:0 6px 16px -10px rgba(108,89,208,.55);}
+    .round-cockpit .bubble .spk:hover{background:#E6DEF8;transform:translateY(-2px);box-shadow:0 11px 20px -10px rgba(108,89,208,.65);}
+    .round-cockpit .bubble .spk:active{transform:translateY(0) scale(.97);}
+    /* #8/#9 מצבי-אינטראקציה ברורים לכרטיסים (בלי אדום/כישלון — זה מבדק-הצבה) */
+    .round-cockpit .opt{cursor:pointer;}
+    .round-cockpit .opt:active{transform:translateY(-1px) scale(.985);}
+    .round-cockpit .opt:focus-visible,.round-cockpit .bubble .spk:focus-visible,#s-intro .cta:focus-visible,#s-done .cta:focus-visible{outline:3px solid #7C6BD0;outline-offset:3px;}
+    /* #5/#10 פישוט מסך-סיום — הישג אחד + כפתור ראשי; מידע-מורה קטן ומשני */
+    #s-done .teacher-note{font-size:12px;padding:8px 12px;opacity:.85;background:rgba(243,240,252,.68);border-color:rgba(227,220,247,.7);}
+    #s-done .acts{gap:16px;align-items:center;}
+    #s-done .acts .cta.ghost{height:40px;font-size:13px;opacity:.7;box-shadow:none;}
+    /* #9 מסך-הרגשות: תמונות נוני מאוירות במקום אימוג'ים */
+    .round-cockpit .opt.pic{gap:10px;padding:16px 14px;}
+    .round-cockpit .opt.pic .opt-noni{width:clamp(80px,7.5vw,124px);height:auto;display:block;filter:drop-shadow(0 8px 12px rgba(72,55,145,.3));}
+    .round-cockpit .opt.pic .cap{font-size:clamp(15px,1.4vw,19px);font-weight:800;color:var(--ink);}
+    @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+  </style>
+</head>
+<body>
+  <img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" aria-hidden="true" onerror="this.style.display='none'">
+  <div class="veil" aria-hidden="true"></div>
+  <main class="wrap">
+    <div class="top">
+      <span class="who"><span class="av" id="w-av">נ</span><span class="nm" id="w-nm">נֹעָה</span></span>
+      <span class="tag-boy">מִפְגַּשׁ הֶכֵּרוּת · תְּחִלַּת שָׁנָה</span>
+      <div class="steps"><span class="dot on" data-s="1"></span><span class="dot" data-s="2"></span><span class="dot" data-s="3"></span><span class="dot" data-s="4"></span></div>
+    </div>
+
+    <!-- INTRO -->
+    <section class="screen on" id="s-intro">
+      <div class="round-cockpit">
+        <div class="rc-headbar">
+          <span class="rc-id"><i aria-hidden="true"></i> מוּכָנִים לִצְלִילָה</span>
+          <span class="rc-title">צוֹלֶלֶת הַפְּלָאִים</span>
+          <span class="rc-prog">DEPTH · 04</span>
+        </div>
+        <div class="noni-row">
+          <img class="noni" id="noni-intro" src="assets/noni-happy.png" alt="נוני" onerror="this.style.display='none'">
+          <div class="bubble">
+            <div class="say">שָׁלוֹם! מְגַלִּים יַחַד אֶת הָאִי שֶׁלָּכֶם — אַרְבַּע מַעֲרָכוֹת, וּבַסּוֹף הַמַּפָּה נִפְתַּחַת.</div>
+            <button class="spk" data-spk><span class="wv"><i></i><i></i><i></i><i></i></span> הַקְשִׁיבוּ</button>
+          </div>
+        </div>
+        <div class="rc-console">
+          <div class="rc-console-head"><i aria-hidden="true"></i> מַעֲרְכוֹת הַנִּוּוּט</div>
+          <div class="sub-console" aria-label="אַרְבַּע מַעֲרְכוֹת הַצּוֹלֶלֶת">
+            <div class="system"><span class="system-display">א</span><span><span class="system-name">חַלּוֹן הָאוֹתוֹת</span><span class="system-state">מַמְתִּין</span></span></div>
+            <div class="system"><span class="system-display">לָ</span><span><span class="system-name">מַכְשִׁיר הַצְּלִילִים</span><span class="system-state">מַמְתִּין</span></span></div>
+            <div class="system"><span class="system-display">גַּל</span><span><span class="system-name">הֶגֶה הַמִּלִּים</span><span class="system-state">מַמְתִּין</span></span></div>
+            <div class="system"><span class="system-display">◉</span><span><span class="system-name">רַדָּאר הַסִּפּוּרִים</span><span class="system-state">מַמְתִּין</span></span></div>
+          </div>
+        </div>
+        <button class="cta" data-go="s-r1">מַפְעִילִים אֶת הַצּוֹלֶלֶת <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+      </div>
+    </section>
+
+    <!-- ROUND 1 — letters -->
+    <section class="screen" id="s-r1">
+      <div class="round-cockpit">
+        <div class="rc-headbar">
+          <span class="rc-id"><i aria-hidden="true"></i> מַעֲרֶכֶת 1 מִתּוֹךְ 4</span>
+          <span class="rc-title">חַלּוֹן הָאוֹתוֹת</span>
+          <span class="rc-prog">שִׁדּוּר <span id="r1-count">1</span>/<span id="r1-total">8</span></span>
+        </div>
+        <div class="noni-row">
+          <img class="noni" src="assets/noni-thinking.png" alt="נוני" onerror="this.src='assets/noni-happy.png'">
+          <div class="bubble">
+            <div class="say">הַקְשִׁיבוּ לַשִּׁדּוּר וּגְעוּ בַּכַּפְתּוֹר שֶׁל הָאוֹת שֶׁשְּׁמַעְתֶּם.</div>
+            <button class="spk" data-spk><span class="wv"><i></i><i></i><i></i><i></i></span> הַשְׁמִיעוּ שׁוּב</button>
+          </div>
+        </div>
+        <b id="r1-target" hidden>ל</b>
+        <div class="rc-console">
+          <div class="rc-console-head"><i aria-hidden="true"></i> לוּחַ הָאוֹתוֹת · בַּחֲרוּ אוֹת</div>
+          <div class="opts g-letters" id="r1-opts"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ROUND 2 — syllables -->
+    <section class="screen" id="s-r2">
+      <div class="round-cockpit">
+        <div class="rc-headbar">
+          <span class="rc-id"><i aria-hidden="true"></i> מַעֲרֶכֶת 2 מִתּוֹךְ 4</span>
+          <span class="rc-title">מַכְשִׁיר הַצְּלִילִים</span>
+          <span class="rc-prog">הֲבָרוֹת</span>
+        </div>
+        <div class="noni-row">
+          <img class="noni" src="assets/noni-thinking.png" alt="נוני" onerror="this.src='assets/noni-happy.png'">
+          <div class="bubble">
+            <div class="say">אֵיזוֹ הֲבָרָה שְׁמַעְתֶּם?</div>
+            <button class="spk" data-spk><span class="wv"><i></i><i></i><i></i><i></i></span> הַשְׁמִיעוּ שׁוּב</button>
+          </div>
+        </div>
+        <div class="rc-console">
+          <div class="rc-console-head"><i aria-hidden="true"></i> בַּחֲרוּ הֲבָרָה</div>
+          <div class="opts g-syl" id="r2-opts"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ROUND 3 — word reading (נפתח רק כשהשלבים הקודמים חזקים — המבדק אדפטיבי) -->
+    <section class="screen" id="s-rw">
+      <div class="round-cockpit">
+        <div class="rc-headbar">
+          <span class="rc-id"><i aria-hidden="true"></i> מַעֲרֶכֶת 3 מִתּוֹךְ 4</span>
+          <span class="rc-title">הֶגֶה הַמִּלִּים</span>
+          <span class="rc-prog">מִלִּים</span>
+        </div>
+        <div class="noni-row">
+          <img class="noni" src="assets/noni-thinking.png" alt="נוני" onerror="this.src='assets/noni-happy.png'">
+          <div class="bubble">
+            <div class="say">קִרְאוּ אֶת הַמִּלָּה וּבַחֲרוּ אֶת הַתְּמוּנָה הַנְּכוֹנָה.</div>
+            <button class="spk" data-spk><span class="wv"><i></i><i></i><i></i><i></i></span> הַשְׁמִיעוּ שׁוּב</button>
+          </div>
+        </div>
+        <div class="word-show">בַּיִת</div>
+        <div class="rc-console">
+          <div class="rc-console-head"><i aria-hidden="true"></i> בַּחֲרוּ תְּמוּנָה</div>
+          <div class="opts g-pic" id="rw-opts"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ROUND 4 — comprehension -->
+    <section class="screen" id="s-r3">
+      <div class="round-cockpit">
+        <div class="rc-headbar">
+          <span class="rc-id"><i aria-hidden="true"></i> מַעֲרֶכֶת 4 מִתּוֹךְ 4</span>
+          <span class="rc-title">רַדָּאר הַסִּפּוּרִים</span>
+          <span class="rc-prog">הֲבָנָה</span>
+        </div>
+        <div class="noni-row">
+          <img class="noni" src="assets/noni-happy.png" alt="נוני" onerror="this.style.display='none'">
+          <div class="bubble">
+            <div class="say">נוֹנִי מְצָאָה צְדָפָה עַל הַחוֹל וְשָׂמְחָה מְאוֹד.<br>אֵיךְ נוֹנִי מַרְגִּישָׁה?</div>
+            <button class="spk" data-spk><span class="wv"><i></i><i></i><i></i><i></i></span> הַשְׁמִיעוּ שׁוּב</button>
+          </div>
+        </div>
+        <div class="rc-console">
+          <div class="rc-console-head"><i aria-hidden="true"></i> בַּחֲרוּ תְּשׁוּבָה</div>
+          <div class="opts g-pic" id="r3-opts"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DONE / RESULT -->
+    <section class="screen" id="s-done">
+      <div class="round-cockpit">
+        <div class="rc-headbar">
+          <span class="rc-id"><i aria-hidden="true"></i> סִיּוּם הַצְּלִילָה</span>
+          <span class="rc-title">הָאִי שֶׁלָּכֶם</span>
+          <span class="rc-prog">✓ עָגַנּוּ</span>
+        </div>
+        <div class="noni-row">
+          <img class="noni" src="assets/noni-happy.png" alt="נוני" onerror="this.style.display='none'">
+          <div class="bubble">
+            <div class="say">כָּל הַכָּבוֹד! הַצּוֹלֶלֶת עָגְנָה — גִּלִּינוּ אֶת הָאִי שֶׁלָּכֶם 🎉</div>
+            <button class="spk" data-spk><span class="wv"><i></i><i></i><i></i><i></i></span> הַשְׁמִיעוּ שׁוּב</button>
+          </div>
+        </div>
+        <div class="rescard">
+        <div class="isl"><div class="t">אי</div><div class="b" id="res-num">4</div></div>
+        <div class="rn" id="res-name">הַשּׁוֹנִית הַשְּׁקֵטָה</div>
+        <div class="rs" id="res-skill">מַתְחִילִים מִכָּאן — אוֹת, נִקּוּד וְצֶלִיל</div>
+        <div class="teacher-note">
+          <span style="font-size:22px">👩‍🏫</span>
+          <div>הַתּוֹצָאוֹת נִשְׁלְחוּ <b>לַמּוֹרָה</b> — הִיא תְּאַשֵּׁר מֵאֵיפֹה מַתְחִילִים.</div>
+        </div>
+        <div class="acts">
+          <a class="cta" href="map.html">לְהַתְחִיל לְתַרְגֵּל <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></a>
+          <button class="cta ghost" data-go="s-intro">מֵהַתְחָלָה</button>
+        </div>
+      </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- state.js (classic) → window.applyPlacement זמין כדי להתחיל תרגול באי-הפתיחה -->
+  <script src="js/state.js"></script>
+  <script>
+    var $=function(s){return document.querySelector(s);};
+    var $$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s));};
+
+    /* ---------- ענן: זהות התלמיד.ה מ-token (?token=…) ---------- */
+    var SB_URL='https://ynxfszmpoppqrqocewcs.supabase.co';
+    var SB_KEY='sb_publishable_Nq1wqSAjsAZMmuOXq2afUA_f_g8CEIU';
+    var TOKEN=new URLSearchParams(location.search).get('token')||'';
+    var CHILD={id:null,nm:''};
+    function sbRpc(fn,body){
+      return fetch(SB_URL+'/rest/v1/rpc/'+fn,{method:'POST',
+        headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
+        body:JSON.stringify(body)}).then(function(r){return r.ok?r.json().catch(function(){return null;}):null;});
+    }
+    function applyName(){
+      var nm=CHILD.nm||'חֲבֵרִים'; var w=$('#w-nm'), a=$('#w-av');
+      if(w)w.textContent=nm;
+      if(a){a.textContent=nm.replace(/[^א-ת]/g,'').charAt(0)||'·';a.style.background='linear-gradient(145deg,#1F9E92,#36C2B2)';}
+    }
+    if(TOKEN){ sbRpc('get_student_profile',{p_token:TOKEN}).then(function(rows){
+      if(rows&&rows[0]){CHILD.id=rows[0].student_id;CHILD.nm=rows[0].student_name;} applyName();
+    }); } else { applyName(); }
+
+    /* שמות האיים לתצוגת התוצאה (עקבי עם map.html / הפרופיל האורייני) */
+    var ISL={
+      1:{name:'מִפְרַץ הַבּוּעוֹת הַמְּזַמֵּר',skill:'מַתְחִילִים מִכָּאן — צְלִילִים וַהֲבָרוֹת'},
+      3:{name:'אַלְמוֹגֵי הָאוֹתִיּוֹת',      skill:'מַתְחִילִים מִכָּאן — אוֹתִיּוֹת וְהַצְּלִילִים שֶׁלָּהֶן'},
+      4:{name:'הַשּׁוֹנִית הַשְּׁקֵטָה',       skill:'מַתְחִילִים מִכָּאן — אוֹת, נִקּוּד וְצֶלִיל'},
+      5:{name:'שׁוֹנִית הַצְּדָפִית',         skill:'מַתְחִילִים מִכָּאן — מְחַבְּרִים אוֹתִיּוֹת לְמִלִּים'}
+    };
+
+    /* ---------- ניקוד אמיתי ---------- */
+    var SC={letters:0,lettersTotal:0,r2:false,rw:false,r3:false};
+
+    // לוגיקת הצבה (מפרט §4): אותיות≤2→אי1 · אותיות≥3 לפי צירוף → 3/4/5. גבול→נמוך.
+    function computePlacement(){
+      var l = SC.lettersTotal ? Math.round(SC.letters/SC.lettersTotal*4) : 1;
+      if(l<1)l=1; if(l>4)l=4;
+      var obs_letters=l, obs_blending=(SC.r2&&SC.rw)?3:(SC.r2?2:1), obs_oral=SC.r3?3:2, island;
+      if(obs_letters<=2)island=1;
+      else if(obs_blending>=3)island=5;
+      else if(obs_blending===2)island=4;
+      else island=3;
+      return { obs_letters:obs_letters, obs_blending:obs_blending, obs_oral:obs_oral,
+        start_island:island, island_name:(ISL[island]||ISL[4]).name, skill:(ISL[island]||ISL[4]).skill,
+        on_border:(obs_letters===2||obs_letters===3||obs_blending===2) };
+    }
+
+    // מסך-סיום: מציג הצבה + שולח BOY לענן (assessments) פעם אחת
+    var _sent=false;
+    function finishBoy(){
+      var pl=computePlacement(), o=ISL[pl.start_island]||ISL[4];
+      if($('#res-num'))$('#res-num').textContent=pl.start_island;
+      if($('#res-name'))$('#res-name').textContent=o.name;
+      if($('#res-skill'))$('#res-skill').textContent=o.skill;
+      if(_sent||!TOKEN)return; _sent=true;
+      sbRpc('ingest_student_assessment',{ p_token:TOKEN, p_assessment_type:'BOY',
+        p_payload:{ observations:{obs_letters:pl.obs_letters,obs_blending:pl.obs_blending,obs_oral:pl.obs_oral},
+          placement:{start_island:pl.start_island,island_name:pl.island_name,skill:pl.skill,on_border:pl.on_border},
+          scores:{letters:SC.letters,letters_total:SC.lettersTotal,syllable:SC.r2,word:SC.rw,story:SC.r3} },
+        p_taken_at:new Date().toISOString() });
+      // דגל מקומי (מונע הצגה חוזרת של המבדק בכניסה הבאה) + הזרקת אי-הפתיחה לתרגול מיידי.
+      try {
+        if(CHILD.id){
+          localStorage.setItem('avnei-boy-done-'+CHILD.id,'1');
+          if(typeof window.applyPlacement==='function') window.applyPlacement(pl.start_island, CHILD.id);
+        }
+      } catch(e){}
+    }
+
+    /* rounds data — mockup: taps advance, correct answer glows */
+    /* מדגם אותיות: 3 פריטים בדמו (במבדק האמיתי ~8, כולל זוגות דומים ד/ר ב/כ) */
+    /* מדגם אותיות (מפרט §1.6): 8 פריטים מוטי-מידע — זוגות דומים ויזואלית (ד/ר · ב/כ),
+       זוגות דומים בצליל (ב/פ · ש/ס · א/ע), ואותיות שכיחות. מדגם 8 = הערכת רמה אמינה. */
+    var L_ITEMS=[
+      {t:'ד',snd:'sound-dalet.mp3',opts:['ר','ד','ך','ז','ו','ה']},   /* ד/ר ויזואלי */
+      {t:'ר',snd:'sound-resh.mp3', opts:['ד','ר','ך','נ','ו','ח']},   /* ר/ד ויזואלי */
+      {t:'ב',snd:'sound-bet.mp3',  opts:['כ','ב','פ','נ','ת','מ']},   /* ב/כ ויזואלי · ב/פ צלילי */
+      {t:'כ',snd:'sound-kaf.mp3',  opts:['ב','כ','נ','ר','ת','ל']},   /* כ/ב ויזואלי */
+      {t:'ש',snd:'sound-shin.mp3', opts:['ס','ש','מ','ע','ר','ל']},   /* ש/ס צלילי */
+      {t:'א',snd:'sound-alef.mp3', opts:['ע','א','ה','ר','מ','ל']},   /* א/ע צלילי */
+      {t:'מ',snd:'sound-mem.mp3',  opts:['נ','מ','ב','כ','ט','ק']},   /* מ/נ */
+      {t:'ל',snd:'sound-lamed.mp3',opts:['מ','ל','ש','ר','א','ד']}    /* אות שכיחה */
+    ];
+    var R2=[{t:'לָ',ok:1},{t:'לִי'},{t:'לוֹ'}];
+    /* קריאת מילה: בַּיִת — תמונות אמיתיות מהמאגר, בלי כיתוב (הכיתוב היה מסגיר) */
+    var IMGP='assets/island-03/';
+    var RW=[{img:'balon.png'},{img:'bayit.png',ok:1},{img:'mita.png'}];
+    /* מסך-הרגשות: נוני עצמה בשלוש הבעות (אחיד עם השפה האיורית) במקום אימוג'ים */
+    var R3=[{img:'noni-happy.png',cap:'שְׂמֵחָה',ok:1},{img:'noni-sad.png',cap:'עֲצוּבָה'},{img:'noni-sleep.png',cap:'עֲיֵפָה'}];
+
+    var order=['s-intro','s-r1','s-r2','s-rw','s-r3','s-done'];
+    function show(id){
+      $$('.screen').forEach(function(s){s.classList.remove('on');});
+      $('#'+id).classList.add('on');
+      window.scrollTo({top:0,behavior:'smooth'});
+      // step dots
+      var idx=order.indexOf(id); // 0..4
+      $$('.steps .dot').forEach(function(d,i){
+        d.classList.remove('on','done');
+        var stepScreen=i+1; // dot i → round i+1 → screen index i+1
+        if(idx>stepScreen) d.classList.add('done');
+        else if(idx===stepScreen) d.classList.add('on');
+        else if(idx===0&&i===0) d.classList.add('on');
+      });
+      if(id==='s-done')finishBoy();
+      playFor(id); /* נוני מדברת פעם אחת בכניסה למסך; "שמעו שוב" חוזר עליה */
+    }
+
+    var lIdx=0;
+    function buildLetters(){lIdx=0;var tt=$('#r1-total');if(tt)tt.textContent=L_ITEMS.length;renderLetterItem();}
+    function renderLetterItem(){
+      var it=L_ITEMS[lIdx];
+      $('#r1-target').textContent=it.t;
+      $('#r1-count').textContent=(lIdx+1);
+      var el=$('#r1-opts');el.innerHTML='';
+      it.opts.forEach(function(ch){var b=document.createElement('button');b.className='opt';
+        b.innerHTML=ch+'<span class="chk">✓</span>';
+        b.addEventListener('click',function(){
+          SC.lettersTotal=L_ITEMS.length; if(ch===it.t)SC.letters++;
+          Array.prototype.forEach.call(el.children,function(c){if(c!==b)c.classList.add('dim');});
+          b.classList.add('right');
+          setTimeout(function(){lIdx++;if(lIdx<L_ITEMS.length)renderLetterItem();else show('s-r2');},760);
+        });el.appendChild(b);});
+      /* האות מתחלפת בתוך אותו מסך — משמיעים את צליל האות הנוכחית (לא ל' הראשונה) */
+      if($('#s-r1').classList.contains('on'))playFor('s-r1');
+    }
+    function buildSyl(){
+      var el=$('#r2-opts');el.innerHTML='';
+      R2.forEach(function(o){var b=document.createElement('button');b.className='opt';
+        b.innerHTML=o.t+'<span class="chk">✓</span>';
+        b.addEventListener('click',function(){SC.r2=(o.ok===1);var nx=(SC.letters>=2)?'s-rw':'s-r3';pick(b,el,nx);});el.appendChild(b);});
+    }
+    function buildWord(){
+      var el=$('#rw-opts');el.innerHTML='';
+      RW.forEach(function(o){var b=document.createElement('button');b.className='opt img';
+        b.innerHTML='<img src="'+IMGP+o.img+'" alt=""><span class="chk">✓</span>';
+        b.addEventListener('click',function(){SC.rw=(o.ok===1);pick(b,el,'s-r3');});el.appendChild(b);});
+    }
+    function buildPic(){
+      var el=$('#r3-opts');el.innerHTML='';
+      R3.forEach(function(o){var b=document.createElement('button');b.className='opt pic';
+        var media=o.img?'<img class="opt-noni" src="assets/'+o.img+'" alt="" onerror="this.style.display=\'none\'">':'<span class="emo">'+o.emo+'</span>';
+        b.innerHTML=media+'<span class="cap">'+o.cap+'</span><span class="chk">✓</span>';
+        b.addEventListener('click',function(){SC.r3=(o.ok===1);pick(b,el,'s-done');});el.appendChild(b);});
+    }
+    /* any tap = gentle accept: glow the tapped card, dim siblings, advance */
+    function pick(btn,container,next){
+      Array.prototype.forEach.call(container.children,function(c){if(c!==btn)c.classList.add('dim');});
+      btn.classList.add('right');
+      setTimeout(function(){show(next);},760);
+    }
+
+    /* ---- audio: קול נוני (ElevenLabs) + קליפי CV קיימים מהאיים ---- */
+    var AUD='assets/audio/';
+    var SCREEN_AUDIO={
+      's-intro':['boy-intro.mp3'],
+      's-r1':['boy-r1-ask.mp3'],  /* צליל האות עצמו נוסף דינמית לפי הפריט הנוכחי (r1List) */
+      's-r2':['boy-r2-ask.mp3','cv-lamed-kamatz.mp3'],
+      's-rw':['boy-rw-ask.mp3'],
+      's-r3':['boy-r3.mp3'],
+      's-done':['boy-done.mp3']
+    };
+    /* רשימת האודיו לסבב האותיות משתנה לפי האות הנוכחית:
+       פריט ראשון = הנחיה + צליל; פריטים הבאים = רק צליל האות (המורה כבר שמעה את ההנחיה). */
+    function r1List(){
+      var it=L_ITEMS[lIdx]||L_ITEMS[0];
+      return (lIdx===0?['boy-r1-ask.mp3']:[]).concat(it.snd?[it.snd]:[]);
+    }
+    var curA=null,curBtn=null,pendingScreen=null;
+    function stopAudio(){
+      if(curA){curA.onended=null;curA.pause();curA=null;}
+      if(curBtn){curBtn.classList.remove('playing');curBtn=null;}
+    }
+    function playFor(id){
+      stopAudio();
+      var list=(id==='s-r1'?r1List():(SCREEN_AUDIO[id]||[]).slice());
+      if(!list.length)return;
+      var scr=document.getElementById(id);
+      curBtn=scr?scr.querySelector('[data-spk]'):null;
+      if(curBtn)curBtn.classList.add('playing');
+      (function next(){
+        var f=list.shift();
+        if(!f){stopAudio();return;}
+        curA=new Audio(AUD+f);
+        curA.onended=next;
+        curA.play().catch(function(){
+          /* autoplay לפני מגע ראשון נחסם ע"י הדפדפן — נשמיע במגע הראשון */
+          pendingScreen=id;stopAudio();
+        });
+      })();
+    }
+    /* מגע ראשון בעמוד = רשות להשמיע — מנגן את מה שנחסם (בלי לדרוס ניווט/רמקול) */
+    document.addEventListener('pointerdown',function(e){
+      if(!pendingScreen)return;
+      if(e.target.closest('[data-go],[data-spk],.opt'))return;
+      var id=pendingScreen;pendingScreen=null;
+      var scr=document.getElementById(id);
+      if(scr&&scr.classList.contains('on'))playFor(id);
+    },true);
+    document.addEventListener('click',function(e){
+      var spk=e.target.closest('[data-spk]');
+      if(spk){var scr=spk.closest('.screen');playFor(scr?scr.id:'');return;}
+      var go=e.target.closest('[data-go]');
+      if(go){var id=go.dataset.go;if(id==='s-intro'){buildLetters();buildSyl();buildWord();buildPic();}show(id);}
+    });
+
+    buildLetters();buildSyl();buildWord();buildPic();
+    show('s-intro');
+  </script>
+</body>
+</html>
