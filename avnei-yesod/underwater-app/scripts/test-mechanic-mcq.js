@@ -22,7 +22,19 @@ global.localStorage = {
   removeItem(k) { delete this._data[k]; },
 };
 global.window = {};
-global.document = { addEventListener: () => {} };
+global.document = {
+  addEventListener: () => {},
+  createElement: () => ({
+    setAttribute: () => {},
+    appendChild: () => {},
+  }),
+  head: {
+    appendChild: (node) => {
+      if (node && typeof node.onload === 'function') node.onload();
+      return node;
+    },
+  },
+};
 global.console = console;
 
 // eval חייב להיות ב-scope ה-top-level של המודול כדי ש-function declarations

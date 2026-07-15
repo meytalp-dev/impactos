@@ -207,6 +207,29 @@ adapter._seedCache(2, sampleData);
   const nullResult = adapter.recordAttempt('local', { skill: 'foo' });
   assert(nullResult === null,                             'invalid skill → null');
 
+  let loggerEvent = null;
+  global.window = {
+    AvneiEventLogger: {
+      logActivityResult: function (evt) { loggerEvent = evt; return { logged: true }; }
+    }
+  };
+  let bktCalledUnderLogger = false;
+  global.AvneiBKT = {
+    ingestEvent: function () { bktCalledUnderLogger = true; return { pKnown_skill: 0.9 }; }
+  };
+  const loggerResult = adapter.recordAttempt('local', {
+    item_id: 'isle14-l2-002', q_id: 'q2', skill: 'sequence',
+    level: 2, is_correct: false, response_time_ms: 1500,
+  });
+  assert(loggerResult && loggerResult.logged === true,      'recordAttempt prefers EventLogger when available');
+  assert(bktCalledUnderLogger === false,                    'recordAttempt does not double-write direct BKT when EventLogger exists');
+  assert(loggerEvent && loggerEvent.primary_island_id === 14,
+                                                           'EventLogger payload primary_island_id = 14');
+  assert(loggerEvent && loggerEvent.target_oral_skill === 'sequence',
+                                                           'EventLogger payload target_oral_skill = skill');
+  assert(loggerEvent && loggerEvent.characteristic_id === 'oral-skill:sequence',
+                                                           'EventLogger payload characteristic_id is stable');
+
   // ============================================================================
   // Test 7: getTopWeakSkills (forwards to BKT)
   // ============================================================================
@@ -306,6 +329,21 @@ adapter._seedCache(2, sampleData);
 
   // Invalid skill returns null
   assert(BKT.getOralSkillState('kid1', 'foo') === null,    'invalid skill → null');
+
+  // guided_trial נשמר כאירוע אך לא מזין BKT/mastery.
+  const guided = BKT.ingestEvent({
+    student_id: 'kid-guided',
+    primary_island_id: 14,
+    target_oral_skill: 'identify-hero',
+    is_correct: true,
+    response_time_ms: 2000,
+    session_id: 'sess-guided',
+    trial_type: 'guided_trial',
+  });
+  const guidedState = BKT.getOralSkillState('kid-guided', 'identify-hero');
+  assert(guided === null,                                  'guided_trial returns null from ingestEvent');
+  assert(guidedState === null || guidedState.attempts === 0,
+                                                           'guided_trial does not change oral-skill attempts');
 
   // Reject ingestEvent without target_oral_skill
   const badR = BKT.ingestEvent({

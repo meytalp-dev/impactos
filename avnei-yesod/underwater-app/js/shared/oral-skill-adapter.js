@@ -149,24 +149,42 @@
     return null;
   }
 
+  function _getEventLogger() {
+    if (typeof window !== 'undefined' && window.AvneiEventLogger) return window.AvneiEventLogger;
+    if (typeof global !== 'undefined' && global.AvneiEventLogger) return global.AvneiEventLogger;
+    return null;
+  }
+
   // recordAttempt — קולט תוצאה של ניסיון יחיד ושולח ל-AvneiBKT.
   // ctx = {q_id, item_id, skill, is_correct, response_time_ms, level, session_id?}
   function recordAttempt(studentId, ctx) {
     if (!studentId || !ctx || !_validateSkill(ctx.skill)) return null;
-    const BKT = _getBKT();
-    if (!BKT) return null;
-    return BKT.ingestEvent({
+    const evt = {
       student_id: studentId,
+      activity_type: 'listen-and-answer',
+      activity_variant: 'oral_skill_mcq',
+      item_id: ctx.q_id || ctx.item_id || null,
       primary_island_id: ISLAND_ID,
       target_oral_skill: ctx.skill,
+      characteristic_id: 'oral-skill:' + ctx.skill,
       is_correct: ctx.is_correct === true,
       response_time_ms: typeof ctx.response_time_ms === 'number' ? ctx.response_time_ms : null,
       session_id: ctx.session_id || ('isle14-' + Date.now()),
+      supportLevel: 1,
+      attempts: 1,
       // metadata לדיבאג עתידי / event-logger
-      item_id: ctx.item_id,
+      source_item_id: ctx.item_id,
       q_id: ctx.q_id,
       level: ctx.level,
-    });
+      trial_type: ctx.trial_type || 'independent_first_attempt',
+    };
+    const Logger = _getEventLogger();
+    if (Logger && typeof Logger.logActivityResult === 'function') {
+      return Logger.logActivityResult(evt);
+    }
+    const BKT = _getBKT();
+    if (!BKT) return null;
+    return BKT.ingestEvent(evt);
   }
 
   // --------------------------------------------------------------------------

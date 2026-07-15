@@ -514,7 +514,22 @@ window.AvneiBKT = (function() {
   // ============================================================
   // עדכון BKT (הליבה) — נוסחת Corbett & Anderson 1995
   // ============================================================
-  function bktUpdate(pKnown, isCorrect, params) {
+  function evidenceWeight(evt) {
+    if (!evt || !evt.trial_type || evt.trial_type === 'independent_first_attempt') return 1;
+    if (evt.trial_type === 'answer_after_replay') return 0.5;
+    if (evt.trial_type === 'answer_after_hint') return 0.25;
+    return 1;
+  }
+
+  function shouldSkipBkt(evt) {
+    return evt && (
+      evt.trial_type === 'guided_trial' ||
+      evt.trial_type === 'rapid_guess' ||
+      evt.trial_type === 'interaction_error'
+    );
+  }
+
+  function bktUpdate(pKnown, isCorrect, params, weight) {
     let pAfterObservation;
     if (isCorrect) {
       const num = pKnown * (1 - params.pS);
@@ -525,7 +540,9 @@ window.AvneiBKT = (function() {
       const den = num + (1 - pKnown) * (1 - params.pG);
       pAfterObservation = den > 0 ? num / den : pKnown;
     }
-    return pAfterObservation + (1 - pAfterObservation) * params.pT;
+    const updated = pAfterObservation + (1 - pAfterObservation) * params.pT;
+    const w = (typeof weight === 'number' && weight >= 0 && weight <= 1) ? weight : 1;
+    return pKnown + (updated - pKnown) * w;
   }
 
   // ============================================================
@@ -584,7 +601,7 @@ window.AvneiBKT = (function() {
       }
     }
 
-    letterState.pKnown = bktUpdate(letterState.pKnown, evt.is_correct === true, params);
+    letterState.pKnown = bktUpdate(letterState.pKnown, evt.is_correct === true, params, evidenceWeight(evt));
 
     // mastery פר אות
     if (
@@ -658,7 +675,7 @@ window.AvneiBKT = (function() {
       }
     }
 
-    skillState.pKnown = bktUpdate(skillState.pKnown, evt.is_correct === true, params);
+    skillState.pKnown = bktUpdate(skillState.pKnown, evt.is_correct === true, params, evidenceWeight(evt));
 
     // mastery פר skill — שטף לא נדרש בהבנת הנשמע (אין רף זמן פדגוגי לפעימה 2)
     if (
@@ -732,7 +749,7 @@ window.AvneiBKT = (function() {
       }
     }
 
-    lenState.pKnown = bktUpdate(lenState.pKnown, evt.is_correct === true, params);
+    lenState.pKnown = bktUpdate(lenState.pKnown, evt.is_correct === true, params, evidenceWeight(evt));
 
     // mastery פר bucket — בלי דרישת שטף קשיחה ב-MVP (קריאת מילה ראשונה דורשת זהירות,
     // לא מהירות). אם רוצים שטף — להוסיף hasGoodStrandFluency(times, 1) ב-V2.
@@ -834,7 +851,7 @@ window.AvneiBKT = (function() {
       }
     }
 
-    cv.pKnown = bktUpdate(cv.pKnown, evt.is_correct === true, params);
+    cv.pKnown = bktUpdate(cv.pKnown, evt.is_correct === true, params, evidenceWeight(evt));
 
     // mastery פר צירוף — בלי דרישת שטף (מקביל לאי 5).
     if (!cv.masteryAchievedAt && cv.pKnown >= MASTERY_THRESHOLD) {
@@ -895,7 +912,7 @@ window.AvneiBKT = (function() {
       }
     }
 
-    island.pKnown = bktUpdate(island.pKnown, evt.is_correct === true, params);
+    island.pKnown = bktUpdate(island.pKnown, evt.is_correct === true, params, evidenceWeight(evt));
 
     if (evt.session_id && evt.session_id !== island.lastSessionId) {
       if (island.pKnown >= MASTERY_THRESHOLD && hasGoodFluency(island.responseTimesMs, islandId)) {
@@ -957,7 +974,7 @@ window.AvneiBKT = (function() {
       }
     }
 
-    strand.pKnown = bktUpdate(strand.pKnown, evt.is_correct === true, params);
+    strand.pKnown = bktUpdate(strand.pKnown, evt.is_correct === true, params, evidenceWeight(evt));
 
     // sub-BKT פר-אות — רק עבור אי 3 (mirror של island.per_letter, חי תחת strand 1)
     if (islandId === 3 && evt.target_letter && strand.per_letter && strand.per_letter[evt.target_letter]) {
@@ -971,7 +988,7 @@ window.AvneiBKT = (function() {
           ls.responseTimesMs = ls.responseTimesMs.slice(-100);
         }
       }
-      ls.pKnown = bktUpdate(ls.pKnown, evt.is_correct === true, PARAMS_PER_ISLAND[3]);
+      ls.pKnown = bktUpdate(ls.pKnown, evt.is_correct === true, PARAMS_PER_ISLAND[3], evidenceWeight(evt));
       if (!ls.masteryAchievedAt &&
           ls.pKnown >= MASTERY_THRESHOLD &&
           hasGoodStrandFluency(ls.responseTimesMs, 1)) {
@@ -1011,6 +1028,7 @@ window.AvneiBKT = (function() {
   // הפונקציה הראשית — קולטת event (dual-write)
   // ============================================================
   function ingestEvent(evt) {
+    if (shouldSkipBkt(evt)) return null;
     const studentId = evt.student_id || 'local';
     const islandId  = evt.primary_island_id;
     if (!islandId) return null;

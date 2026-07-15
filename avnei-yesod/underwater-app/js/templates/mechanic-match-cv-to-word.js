@@ -18,6 +18,7 @@
 
 (function () {
   'use strict';
+  const DEV_TTS_FALLBACK = typeof window !== 'undefined' && window.DEV_TTS_FALLBACK === true;
 
   function shuffle(arr) {
     const a = arr.slice();
@@ -39,7 +40,11 @@
     if (!VA) return;
     const key = VA.cvAudioKey(letter, vowelId);
     if (key && window.AvneiAudio) { window.AvneiAudio.play(key); return; }
-    // fallback Web Speech
+    // fallback Web Speech — dev only.
+    if (!DEV_TTS_FALLBACK) {
+      console.warn('[audio] Missing recorded MP3 for match-cv-to-word CV:', letter, vowelId);
+      return;
+    }
     if ('speechSynthesis' in window) {
       try {
         const u = new SpeechSynthesisUtterance(VA.buildCV(letter, vowelId));
@@ -51,6 +56,10 @@
 
   function playWord(audioKey, fallbackText) {
     if (window.AvneiAudio && audioKey) { window.AvneiAudio.play(audioKey); return; }
+    if (!DEV_TTS_FALLBACK) {
+      console.warn('[audio] Missing recorded MP3 for match-cv-to-word word:', audioKey || fallbackText || '(no-key)');
+      return;
+    }
     if ('speechSynthesis' in window && fallbackText) {
       try {
         const u = new SpeechSynthesisUtterance(fallbackText);

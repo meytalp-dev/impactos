@@ -19,6 +19,7 @@
 
 (function () {
   'use strict';
+  const DEV_TTS_FALLBACK = typeof window !== 'undefined' && window.DEV_TTS_FALLBACK === true;
 
   function shuffle(arr) {
     const a = arr.slice();
@@ -45,6 +46,10 @@
       }
     }
     // Fallback — Web Speech
+    if (!DEV_TTS_FALLBACK) {
+      console.warn('[audio] Missing recorded MP3 for tap-cv:', letter, vowelId);
+      return;
+    }
     if (VA) {
       const cv = VA.buildCV(letter, vowelId);
       if (cv) speakHe(cv);
@@ -53,6 +58,7 @@
 
   function speakHe(text, opts) {
     if (typeof window === 'undefined') return;
+    if (!DEV_TTS_FALLBACK) return;
     if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) return;
     try {
       const utter = new window.SpeechSynthesisUtterance(text);

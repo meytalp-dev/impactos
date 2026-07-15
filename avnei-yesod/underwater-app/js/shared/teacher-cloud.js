@@ -102,6 +102,25 @@
     return profiles;
   }
 
+  async function fetchEventsForStudents(supabase, ids) {
+    var pageSize = 1000;
+    var from = 0;
+    var all = [];
+    while (true) {
+      var res = await supabase.from('events')
+        .select('student_id, event_type, payload, client_timestamp')
+        .in('student_id', ids)
+        .order('client_timestamp', { ascending: false })
+        .range(from, from + pageSize - 1);
+      if (res.error) throw res.error;
+      var rows = res.data || [];
+      all = all.concat(rows);
+      if (rows.length < pageSize) break;
+      from += pageSize;
+    }
+    return all;
+  }
+
   // ---- טעינה מלאה ----
   async function loadAll(supabase) {
     var userRes = await supabase.auth.getUser();
@@ -126,10 +145,7 @@
     var ids = students.map(function (s) { return s.id; });
     if (ids.length) {
       var res = await Promise.all([
-        supabase.from('events')
-          .select('student_id, event_type, payload, client_timestamp')
-          .in('student_id', ids)
-          .order('client_timestamp', { ascending: false }).limit(3000),
+        fetchEventsForStudents(supabase, ids),
         supabase.from('bkt_state')
           .select('student_id, legacy_bkt, strand_bkt').in('student_id', ids),
         supabase.from('assessments')
@@ -179,7 +195,8 @@
               var p = _state.profiles[evt.student_id];
               if (!p) return;   // לא מהכיתה שלנו
               if (!p.last || evt.client_timestamp > p.last) p.last = evt.client_timestamp;
-              p.weekCount++;
+              var weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+              if (evt.client_timestamp >= weekAgo) p.weekCount++;
               if (typeof onInsert === 'function') onInsert(evt, _state);
             })
         .subscribe();

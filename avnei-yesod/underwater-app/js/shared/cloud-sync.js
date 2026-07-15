@@ -101,10 +101,12 @@
 
   function enqueue(op, payload) {
     const q = readQueue();
+    const studentToken = client.getStudentToken ? client.getStudentToken() : null;
     q.push({
       id: makeOpId(),
       op,
       payload,
+      studentToken: studentToken || null,
       enqueued_at: new Date().toISOString(),
       attempts: 0,
       next_attempt_at: 0,  // 0 = ready
@@ -154,11 +156,19 @@
     bktPending = { legacy_bkt: legacyBkt || {}, strand_bkt: strandBkt || {} };
     if (bktDebounceTimer) clearTimeout(bktDebounceTimer);
     bktDebounceTimer = setTimeout(() => {
-      if (bktPending) {
-        enqueue('bkt', bktPending);
-        bktPending = null;
-      }
+      flushPendingBktSync();
     }, BKT_DEBOUNCE_MS);
+  }
+
+  function flushPendingBktSync() {
+    if (bktDebounceTimer) {
+      clearTimeout(bktDebounceTimer);
+      bktDebounceTimer = null;
+    }
+    if (!bktPending) return false;
+    enqueue('bkt', bktPending);
+    bktPending = null;
+    return true;
   }
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -168,7 +178,11 @@
   let flushing = false;
 
   async function flushOne(op) {
-    const token = client.getStudentToken();
+    const currentToken = client.getStudentToken();
+    if (op.studentToken && currentToken && currentToken !== op.studentToken) {
+      throw new Error('Student token changed since op was queued');
+    }
+    const token = op.studentToken || currentToken;
     const supabase = client.supabase;
 
     if (op.op === 'event') {
@@ -229,14 +243,14 @@
         try {
           await flushOne(op);
           // Remove from queue
-          q = q.filter(x => x.id !== op.id);
+          q = readQueue().filter(x => x.id !== op.id);
           writeQueue(q);
           flushed++;
         } catch (err) {
           // Update attempts + backoff
           const attempts = (op.attempts || 0) + 1;
           const next = Date.now() + backoffFor(attempts);
-          q = q.map(x => x.id === op.id
+          q = readQueue().map(x => x.id === op.id
             ? { ...x, attempts, next_attempt_at: next, last_error: String(err.message || err) }
             : x
           );
@@ -273,12 +287,19 @@
     // parked ops; leaving (hidden) is the most reliable "about to close" signal on
     // mobile, so flush there too before the page is frozen/discarded.
     window.addEventListener('visibilitychange', () => {
+      flushPendingBktSync();
       flush().catch(() => {});
     });
     // pagehide fires on real navigation/close where beforeunload is unreliable
     // (bfcache, mobile). Best-effort final flush.
-    window.addEventListener('pagehide', () => { flush().catch(() => {}); });
-    window.addEventListener('beforeunload', () => { flush().catch(() => {}); });
+    window.addEventListener('pagehide', () => {
+      flushPendingBktSync();
+      flush().catch(() => {});
+    });
+    window.addEventListener('beforeunload', () => {
+      flushPendingBktSync();
+      flush().catch(() => {});
+    });
   }
 
   // ──────────────────────────────────────────────────────────────────────────

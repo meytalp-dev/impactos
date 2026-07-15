@@ -33,6 +33,7 @@
   const SPEECH_RATE = 0.85;       // איטי לכיתה א'
   const SPEECH_PITCH = 1.0;
   const FEEDBACK_DELAY_MS = 1200; // זמן הצגת ✓/✗ לפני המעבר
+  const DEV_TTS_FALLBACK = typeof window !== 'undefined' && window.DEV_TTS_FALLBACK === true;
 
   let _state = null;
 
@@ -62,6 +63,10 @@
       try { window.AvneiAudio.play(audioKey); return Promise.resolve(true); } catch (e) {}
     }
     if (_state && _state.readMode && !force) return Promise.resolve(false);
+    if (!DEV_TTS_FALLBACK) {
+      console.warn('[audio] Missing recorded MP3 for listen-mcq:', audioKey || text || '(no-key)');
+      return Promise.resolve(false);
+    }
     return speakHebrew(text);
   }
 
@@ -232,7 +237,7 @@
     // ADAPT-8 — דיווח EPA פר-מסיח (מקביל ל-recordAttempt). חוזה זהה ל-mcq:
     // טעות → failure_type/letter_position/task_type מתוך chosen.epa. נכון → ללא EPA.
     // ⚠️ EPA נרשם רק אם לפריט יש target_letter (G4 פתוח להבנה ללא אות-יעד).
-    if (window.AvneiEventLogger) {
+    if (_state.readMode && window.AvneiEventLogger) {
       const epa = (!isCorrect && chosen && chosen.epa) ? chosen.epa : null;
       try {
         window.AvneiEventLogger.logActivityResult({

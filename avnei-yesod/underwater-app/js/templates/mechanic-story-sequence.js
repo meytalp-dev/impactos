@@ -29,6 +29,7 @@
   const FEEDBACK_DELAY_MS = 1400;
   const MIN_SENTENCES = 4;
   const MAX_SENTENCES_DISPLAYED = 5; // אם הסיפור ארוך, ניקח 5 ראשונים. לקטנות לא נעמיס.
+  const DEV_TTS_FALLBACK = typeof window !== 'undefined' && window.DEV_TTS_FALLBACK === true;
 
   let _state = null;
 
@@ -50,6 +51,10 @@
         return window.AvneiAudio.playAndWait(audioKey);
       }
       try { window.AvneiAudio.play(audioKey); return Promise.resolve(true); } catch (e) {}
+    }
+    if (!DEV_TTS_FALLBACK) {
+      console.warn('[audio] Missing recorded MP3 for story-sequence:', audioKey || text || '(no-key)');
+      return Promise.resolve(false);
     }
     return speakHebrew(text);
   }

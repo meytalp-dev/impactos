@@ -1468,7 +1468,13 @@ let viewState = {
 
 document.getElementById('exitBtn').addEventListener('click', () => {
   sessionStorage.removeItem(SESSION_AUTH_KEY);
-  location.href = 'map.html';
+  let canGoBack = false;
+  try {
+    const ref = document.referrer ? new URL(document.referrer, location.href) : null;
+    canGoBack = !!(ref && ref.origin === location.origin && /teacher-/.test(ref.pathname) && history.length > 1);
+  } catch (e) { canGoBack = false; }
+  if (canGoBack) history.back();
+  else location.href = 'teacher-dashboard.html';
 });
 
 function readJson(key, fallback) {

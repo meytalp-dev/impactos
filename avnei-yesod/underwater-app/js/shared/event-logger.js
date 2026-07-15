@@ -56,6 +56,38 @@ window.AvneiEventLogger = (function() {
 
   // session_id נוצר פעם אחת בטעינת הדף
   const SESSION_ID = 'sess-' + Date.now();
+  const pendingCloudEvents = [];
+
+  function drainPendingCloudEvents() {
+    if (!window.AvneiCloudSync || typeof window.AvneiCloudSync.queueEvent !== 'function') return 0;
+    let sent = 0;
+    while (pendingCloudEvents.length > 0) {
+      const item = pendingCloudEvents.shift();
+      try {
+        window.AvneiCloudSync.queueEvent(item.activity, item.evt, new Date(item.evt.timestamp).toISOString());
+        sent++;
+      } catch (e) {
+        pendingCloudEvents.unshift(item);
+        console.warn('Cloud sync queue failed:', e);
+        break;
+      }
+    }
+    return sent;
+  }
+
+  function scheduleCloudDrain() {
+    if (typeof setTimeout !== 'function') return;
+    setTimeout(() => {
+      if (drainPendingCloudEvents() === 0 && pendingCloudEvents.length > 0) {
+        scheduleCloudDrain();
+      }
+    }, 50);
+  }
+
+  function queueCloudEvent(activity, evt) {
+    pendingCloudEvents.push({ activity, evt });
+    if (drainPendingCloudEvents() === 0) scheduleCloudDrain();
+  }
 
   // 4.7.2026 · תרגול-בית — יום קלנדרי מקומי (YYYY-MM-DD). session_id מתחלף בכל
   // רענון-דף, בעוד ש"סשן" אמיתי במערכת הוא יום (ראו mastery-check.js) — השדה הזה
@@ -231,6 +263,7 @@ window.AvneiEventLogger = (function() {
       rama_task_alignment:  (typeof result.rama_task_alignment === 'number') ? result.rama_task_alignment : null,
       peima_target:         (typeof result.peima_target === 'number') ? result.peima_target : null,
       is_correct:           result.is_correct === true,
+      trial_type:           result.trial_type || 'independent_first_attempt',
       attempts:             typeof result.attempts === 'number' ? result.attempts : 0,
       response_time_ms:     typeof result.response_time_ms === 'number' ? result.response_time_ms : null,
       hint_used:            result.hint_used === true,
@@ -269,13 +302,7 @@ window.AvneiEventLogger = (function() {
     // Cloud sync (1.6.2026) — additive · cloud mode only · no-op in demo.
     // AvneiCloudSync queues the event to localStorage, then pushes to Supabase
     // in background (5s interval + on reconnect). Failures don't block the UI.
-    if (window.AvneiCloudSync) {
-      try {
-        AvneiCloudSync.queueEvent(activity, evt, new Date(evt.timestamp).toISOString());
-      } catch (e) {
-        console.warn('Cloud sync queue failed:', e);
-      }
-    }
+    queueCloudEvent(activity, evt);
 
     return evt;
   }
@@ -368,5 +395,6 @@ window.AvneiEventLogger = (function() {
     PRIMARY_ISLAND,
     SECONDARY_ISLANDS,
     ISLAND_TO_STRAND,
+    _flushPendingCloudEventsForTest: drainPendingCloudEvents,
   };
 })();

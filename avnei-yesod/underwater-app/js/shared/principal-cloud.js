@@ -51,6 +51,25 @@
     return window.TeacherCloud;
   }
 
+  async function fetchEventsForStudents(supabase, ids) {
+    var pageSize = 1000;
+    var from = 0;
+    var all = [];
+    while (true) {
+      var res = await supabase.from('events')
+        .select('student_id, event_type, payload, client_timestamp')
+        .in('student_id', ids)
+        .order('client_timestamp', { ascending: false })
+        .range(from, from + pageSize - 1);
+      if (res.error) throw res.error;
+      var rows = res.data || [];
+      all = all.concat(rows);
+      if (rows.length < pageSize) break;
+      from += pageSize;
+    }
+    return all;
+  }
+
   // ---- full load: כל בית-הספר ----
   async function loadAll(supabase) {
     var userRes = await supabase.auth.getUser();
@@ -85,10 +104,7 @@
     var profiles = {};
     if (ids.length) {
       var res2 = await Promise.all([
-        supabase.from('events')
-          .select('student_id, event_type, payload, client_timestamp')
-          .in('student_id', ids)
-          .order('client_timestamp', { ascending: false }).limit(6000),
+        fetchEventsForStudents(supabase, ids),
         supabase.from('bkt_state')
           .select('student_id, legacy_bkt, strand_bkt').in('student_id', ids),
         supabase.from('assessments')

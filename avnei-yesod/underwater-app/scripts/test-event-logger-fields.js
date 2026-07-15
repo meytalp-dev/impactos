@@ -24,7 +24,19 @@ global.localStorage = {
 };
 global.window = {};
 // state.js רושם DOMContentLoaded listener על document — stub no-op
-global.document = { addEventListener: () => {} };
+global.document = {
+  addEventListener: () => {},
+  createElement: () => ({
+    setAttribute: () => {},
+    appendChild: () => {},
+  }),
+  head: {
+    appendChild: (node) => {
+      if (node && typeof node.onload === 'function') node.onload();
+      return node;
+    },
+  },
+};
 global.console = console;
 
 // state.js מצפה ל-loadState/saveState ב-scope גלובלי. נטען אותו דרך eval כדי
@@ -230,6 +242,33 @@ const evtUnknown = Logger.logActivityResult({
 });
 assert('activity לא ידוע → primary_island_id = null', evtUnknown.primary_island_id === null, 'התקבל: ' + evtUnknown.primary_island_id);
 assert('activity לא ידוע → strand_id = null',         evtUnknown.strand_id === null, 'התקבל: ' + evtUnknown.strand_id);
+
+// ============================================================
+// 7. Cloud sync נטען אסינכרונית — אירוע מוקדם לא הולך לאיבוד
+// ============================================================
+divider('בדיקה 7 — אירוע לפני CloudSync נשמר עד readiness');
+
+localStorage._data = {};
+delete window.AvneiCloudSync;
+const evtBeforeCloud = Logger.logActivityResult({
+  activity_type: 'storm-quest',
+  target_letter: 'ת',
+  is_correct: true,
+  attempts: 1,
+});
+const cloudCalls = [];
+window.AvneiCloudSync = {
+  queueEvent: (eventType, payload, clientTimestamp) => {
+    cloudCalls.push({ eventType, payload, clientTimestamp });
+  },
+};
+assert('Logger חושף flush פנימי לבדיקה', typeof Logger._flushPendingCloudEventsForTest === 'function');
+if (typeof Logger._flushPendingCloudEventsForTest === 'function') {
+  Logger._flushPendingCloudEventsForTest();
+}
+assert('אירועים מוקדמים נשלחו ל-cloud כשה-sync מוכן', cloudCalls.length >= 1,
+       'התקבלו קריאות: ' + cloudCalls.length);
+assert('אותו event עבר ל-cloud', cloudCalls.some(call => call.payload === evtBeforeCloud));
 
 // ============================================================
 // סיכום

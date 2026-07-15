@@ -14,6 +14,7 @@
 
 (function () {
   'use strict';
+  const DEV_TTS_FALLBACK = typeof window !== 'undefined' && window.DEV_TTS_FALLBACK === true;
 
   function shuffle(arr) {
     const a = arr.slice();
@@ -30,6 +31,10 @@
     if (VA && AvneiAudio && typeof AvneiAudio.play === 'function') {
       const key = VA.cvAudioKey(letter, vowelId);
       if (key) { AvneiAudio.play(key); return; }
+    }
+    if (!DEV_TTS_FALLBACK) {
+      console.warn('[audio] Missing recorded MP3 for listen-cv:', letter, vowelId);
+      return;
     }
     if (VA && 'speechSynthesis' in window) {
       try {

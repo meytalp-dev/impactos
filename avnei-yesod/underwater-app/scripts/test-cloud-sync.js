@@ -64,6 +64,7 @@ function makeLocalStorage() {
 
 function setupCloud(opts = {}) {
   const ls = makeLocalStorage();
+  const listeners = {};
   global.localStorage = ls;
   global.document = { visibilityState: 'visible', addEventListener: () => {} };
   global.window = {
@@ -77,8 +78,9 @@ function setupCloud(opts = {}) {
       },
       getStudentToken: opts.getToken || (() => 'test-token-abc'),
     },
-    addEventListener: () => {},
+    addEventListener: (name, fn) => { listeners[name] = fn; },
   };
+  global.window._listeners = listeners;
 }
 
 function setupDemo() {
@@ -176,6 +178,50 @@ function loadCloudSync() {
     assert(rpcCalls === 2, `RPC called twice (got ${rpcCalls})`);
   });
 
+  await test('flush() preserves ops enqueued while an RPC is in flight', async () => {
+    let sync = null;
+    let callCount = 0;
+    setupCloud({
+      rpc: async () => {
+        callCount++;
+        if (callCount === 1) {
+          sync.queueEvent('during_flush', { marker: 'new' }, '2026-06-01T13:00:02Z');
+        }
+        return { error: null, data: 'ok' };
+      },
+    });
+    sync = loadCloudSync();
+    sync.queueEvent('before_flush', { marker: 'old' }, '2026-06-01T13:00:00Z');
+
+    const result = await sync.flush();
+    const q = JSON.parse(global.localStorage.getItem('avnei-yesod-cloud-sync-queue-v1'));
+    assert(result.flushed === 1, `only original ready op flushed (got ${result.flushed})`);
+    assert(q.length === 1, `new op survived in live queue (got ${q.length})`);
+    assert(q[0].payload.event_type === 'during_flush', 'surviving op is the one enqueued during flush');
+  });
+
+  await test('queued ops are not sent under a different student token', async () => {
+    let token = 'student-a';
+    const rpcCalls = [];
+    setupCloud({
+      getToken: () => token,
+      rpc: async (name, params) => {
+        rpcCalls.push({ name, params });
+        return { error: null, data: 'ok' };
+      },
+    });
+    const sync = loadCloudSync();
+    sync.queueEvent('student_a_event', { a: 1 }, '2026-06-01T13:10:00Z');
+    token = 'student-b';
+
+    const result = await sync.flush();
+    const q = JSON.parse(global.localStorage.getItem('avnei-yesod-cloud-sync-queue-v1'));
+    assert(result.flushed === 0, `nothing flushed after token switch (got ${result.flushed})`);
+    assert(rpcCalls.length === 0, `RPC not called under wrong token (got ${rpcCalls.length})`);
+    assert(q.length === 1, 'op remains queued for the original student');
+    assert(q[0].studentToken === 'student-a', `op captured original token (got ${q[0].studentToken})`);
+  });
+
   await test('flush() with failing RPC → op stays, attempts++', async () => {
     setupCloud({
       rpc: async () => ({ error: { message: 'simulated failure' }, data: null }),
@@ -261,6 +307,25 @@ function loadCloudSync() {
     assert(bktCalls.length === 1, `exactly 1 bkt upsert (got ${bktCalls.length})`);
     assert(bktCalls[0] && bktCalls[0].p_legacy.a === 3, 'last value wins (a=3)');
     assert(sync.getQueueLength() === 0, 'queue drained after flush');
+  });
+
+  await test('pagehide promotes pending BKT to queue before final flush', async () => {
+    let releaseRpc;
+    const rpcStarted = new Promise(resolve => { releaseRpc = resolve; });
+    setupCloud({
+      rpc: async () => {
+        await rpcStarted;
+        return { error: null, data: 'ok' };
+      },
+    });
+    const sync = loadCloudSync();
+    sync.queueBktSync({ a: 1 }, { x: 1 });
+    global.window._listeners.pagehide();
+
+    const q = JSON.parse(global.localStorage.getItem('avnei-yesod-cloud-sync-queue-v1'));
+    assert(q && q.length === 1, `pending BKT was queued synchronously (got ${q && q.length})`);
+    assert(q[0] && q[0].op === 'bkt', `queued op is bkt (got ${q[0] && q[0].op})`);
+    releaseRpc();
   });
 
   console.log('\n' + '='.repeat(60));
