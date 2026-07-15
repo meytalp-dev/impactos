@@ -80,6 +80,10 @@ window.LumiEngine = (function () {
       // one self-listening produce (engagement, unmeasured)
       var prodWord = words.filter(function (w) { return sessionWords[w] && (byDim.produce || {})[w]; })[0];
       if (prodWord) plan.push({ t: 'produce', word: prodWord });
+      // one functional-use / dialogue beat (engagement) — the "talk" rung. Was never
+      // played before: runFunction existed but no beat was ever added to the plan.
+      var fnWord = words.filter(function (w) { return sessionWords[w] && (byDim['function'] || {})[w]; })[0];
+      if (fnWord) plan.push({ t: 'function', word: fnWord });
       // the sitting always ends on a satisfying gate-of-light beat
       plan.push({ t: 'finale' });
       return plan;
