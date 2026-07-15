@@ -164,7 +164,7 @@ window.MishmishFollowInstr = (function () {
     // שורת-התקדמות (כף פר-סבב)
     els.progress.innerHTML = '';
     rounds.forEach(function () { var p = document.createElement('span'); p.className = 'paw'; els.progress.appendChild(p); });
-    var idx = 0, active = null;
+    var idx = 0, active = null, demoShown = false;   // demoShown: הדגמה-תחילה פעם אחת (סבב ראשון)
     function paintProgress() {
       Array.prototype.forEach.call(els.progress.children, function (p, i) {
         p.classList.toggle('done', i < idx);
@@ -236,7 +236,65 @@ window.MishmishFollowInstr = (function () {
       function introPlaying() {
         st.phase = 'introPlaying';
         enableZones(false);
-        playTarget(false).then(awaitingAnswer, awaitingAnswer);   // גם בשגיאת-אודיו — פותחים
+        playTarget(false).then(afterIntro, afterIntro);   // גם בשגיאת-אודיו — ממשיכים
+      }
+      // הדגמה-תחילה: אחרי ההוראה, בסבב הראשון בלבד, המערכת מדגימה את הפעולה
+      // (יד מונפשת → יעד נכון) לפני שהילד מנסה. שאר הסבבים — ישר לתשובה.
+      function afterIntro() {
+        if (idx === 0 && !demoShown) { demoShown = true; return demonstrate(awaitingAnswer); }
+        awaitingAnswer();
+      }
+
+      // demonstrate(done) — לא-מילולי, לא-נמדד: עותק-רפאים של הפריט + יד נעים
+      // ממרכז-הפריט אל מרכז-היעד-הנכון, היעד מהבהב, ואז "עַכְשָׁיו אַתֶּם".
+      function demonstrate(done) {
+        st.phase = 'demo';
+        setMishmish('thinking');
+        var zone = zoneById(round.correctLocId);
+        if (!zone) return done();
+        var ir = els.item.getBoundingClientRect(), zr = zone.getBoundingClientRect();
+        var sx = ir.left + ir.width / 2, sy = ir.top + ir.height / 2;
+        var ex = zr.left + zr.width / 2, ey = zr.top + zr.height / 2;
+
+        var ghost = document.createElement('div');
+        ghost.className = 'demo-ghost';
+        ghost.innerHTML = round.itemImg
+          ? '<img src="' + round.itemImg + '" alt="">'
+          : (round.itemEmoji ? '<span class="emoji" aria-hidden="true">' + round.itemEmoji + '</span>' : '');
+        var hand = document.createElement('div');
+        hand.className = 'demo-hand'; hand.textContent = '🫳'; hand.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(ghost); document.body.appendChild(hand);
+        function place(el, x, y) { el.style.left = x + 'px'; el.style.top = y + 'px'; }
+
+        function finishDemo() {
+          zone.classList.add('point');
+          ghost.style.opacity = '0'; hand.style.opacity = '0';
+          window.setTimeout(function () {
+            ghost.remove(); hand.remove(); zone.classList.remove('point');
+            showNowYou();
+            window.setTimeout(done, 700);
+          }, 350);
+        }
+
+        var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduce) { finishDemo(); return; }
+        // מציבים בהתחלה בלי transition, reflow, ואז מפעילים תנועה ליעד
+        ghost.style.transition = hand.style.transition = 'none';
+        place(ghost, sx, sy); place(hand, sx, sy);
+        void ghost.offsetWidth;                                   // reflow — נועל את נקודת-ההתחלה
+        ghost.style.transition = hand.style.transition = '';      // חזרה ל-transition של ה-CSS
+        place(ghost, ex, ey); place(hand, ex, ey);
+        var ended = false;
+        function onEnd() { if (ended) return; ended = true; finishDemo(); }
+        ghost.addEventListener('transitionend', onEnd);
+        window.setTimeout(onEnd, 1500);                           // fallback אם transitionend לא נורה
+      }
+      function showNowYou() {
+        var stage = document.querySelector('.stage') || document.body;
+        var c = document.createElement('div');
+        c.className = 'now-you'; c.innerHTML = '<span>עַכְשָׁיו אַתֶּם!</span>';
+        stage.appendChild(c);
+        window.setTimeout(function () { c.remove(); }, 1400);
       }
       function awaitingAnswer() {
         st.phase = 'awaitingAnswer';
