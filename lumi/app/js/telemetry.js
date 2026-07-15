@@ -17,7 +17,7 @@
 // ============================================================
 window.LumiTelemetry = (function () {
   'use strict';
-  var LEARNER = 'local';   // pilot: single local learner (real profile wiring later)
+  var LEARNER = (window.LumiBKT && LumiBKT.learnerId && LumiBKT.learnerId()) || 'local';   // per-student (unified via bkt.js)
   var EV_KEY = 'lumi-events-v1', EV_CAP = 5000;
 
   if (window.LumiBKT) { try { LumiBKT.beginSession(LEARNER); } catch (e) {} }
