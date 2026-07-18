@@ -309,13 +309,24 @@
     console.warn('[student] Could not fetch targets from cloud:', e);
   }
 
+  // צינור תרגול-יומי (0011): נתב את "בואו נתרגל" לנושא הנוכחי של הכיתה
+  // (current_lesson_seq → practice_href). ברירת-מחדל בטוחה: המפה.
+  let practiceHref = 'map.html';
+  try {
+    const { data: lesson } = await client.supabase.rpc('get_student_current_lesson', { p_token: token });
+    if (lesson && lesson.length > 0 && lesson[0].practice_href) {
+      practiceHref = lesson[0].practice_href;
+    }
+  } catch (e) {
+    console.warn('[student] Could not fetch current lesson:', e);
+  }
+
   showWelcome(profile.student_name, profile.class_name);
 
   startBtn.addEventListener('click', () => {
-    // Token + student_id are persisted in localStorage.
-    // map.html sees the active student in localStorage and skips the picker
-    // without us needing ?skip-picker=1 (which would force demo mode).
-    window.location.href = 'map.html';
+    // Token + student_id are persisted in localStorage; the practice page /
+    // map.html sees the active student and skips the picker.
+    window.location.href = practiceHref;
   });
 
   // Auto-skip welcome screen if URL says so (for daily returns — parent might want this)
