@@ -166,6 +166,7 @@
 
     <button type="submit" class="btn-primary" id="submit-btn">היכנסי</button>
     <button type="button" class="btn-link" id="forgot-btn">שכחתי סיסמה</button>
+    <a class="btn-link" href="teacher-login.html?switch=1" style="display:block;text-align:center;margin-top:4px;">התחברי עם חשבון אחר</a>
   </form>
 </div>
 
@@ -204,8 +205,14 @@
     showAlert('לא הצלחנו להתחבר לשרת. נסי לרענן.', 'error');
   }
 
-  // If already logged in → check if teacher row exists, then redirect
-  if (client && client.supabase) {
+  // ?switch=1 → מתנתקים כדי לאפשר כניסה עם חשבון אחר (במקום ניתוב-אוטומטי לדשבורד)
+  const _params = new URLSearchParams(location.search);
+  if (client && client.supabase && _params.get('switch') === '1') {
+    try { await client.supabase.auth.signOut(); } catch (e) {}
+    try { localStorage.removeItem('avnei-yesod-supabase-auth'); } catch (e) {}
+    showAlert('התנתקת. התחברי עם החשבון הרצוי.', 'info');
+  } else if (client && client.supabase) {
+    // אם כבר מחוברת → ודאי שקיימת שורת-מורה ונתבי לדשבורד
     const { data: { user } } = await client.supabase.auth.getUser();
     if (user) {
       await ensureTeacherRow(user);
