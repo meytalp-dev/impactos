@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<script src="js/shared/file-protocol-shim.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#7C6BD0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>אבני יסוד · הקמה וכניסה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Rubik:wght@400;500;600;700;800&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="js/shared/cloud-config.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --purple:#7C6BD0; --purple-deep:#5D4CB0; --purple-bright:#9A8AE0; --purple-soft:#F1EEFA; --purple-line:#E2DAF5;
+  --pink:#F274AF; --pink-deep:#E2569A; --pink-soft:#FDEBF3; --pink-line:#F7D2E4;
+  --bg:#F5F6FC; --surface:#FFFFFF; --surface-soft:#EFF2FA; --line:#E6E9F4; --line-strong:#D6DAEC;
+  --aqua:#16A89C; --aqua-soft:#E4F6F3;
+  --ink:#251F44; --ink-soft:#6C6890; --ink-faint:#9E9BB6;
+  --ok:#2FA35A; --ok-bg:#E6F6EC; --warn:#D69413; --warn-bg:#FBF1D6; --alert:#E5574F; --alert-bg:#FCE7E6;
+  --r:18px; --r-sm:12px; --r-pill:999px;
+  --font-num:'Fredoka','Heebo',sans-serif;
+  --shadow:0 18px 46px -26px rgba(37,31,68,.42); --shadow-soft:0 8px 22px -14px rgba(37,31,68,.3);
+}
+*{box-sizing:border-box;}
+body{margin:0;background:
+    radial-gradient(1100px 560px at 82% -8%, #EBE6FA 0%, rgba(235,230,250,0) 58%),
+    radial-gradient(820px 460px at -5% 108%, var(--aqua-soft) 0%, rgba(228,246,243,0) 55%),
+    var(--bg);
+  color:var(--ink);font-family:'Rubik',sans-serif;letter-spacing:-.01em;line-height:1.5;
+  -webkit-font-smoothing:antialiased;min-height:100dvh;}
+h1,h2,h3,h4{font-family:'Heebo',sans-serif;margin:0;line-height:1.12;letter-spacing:-.02em;}
+p{margin:0;} a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
+.brand-dot{display:inline-block;width:.32em;height:.32em;border-radius:50%;background:var(--pink);vertical-align:baseline;margin-inline-start:.06em;}
+[hidden]{display:none!important;}
+
+/* ===== Topbar (persistent) ===== */
+.topbar{position:sticky;inset-block-start:0;z-index:20;background:rgba(255,255,255,.86);backdrop-filter:blur(12px);
+  border-block-end:1px solid var(--line);padding:12px 22px;display:flex;align-items:center;justify-content:space-between;}
+.topbar .mark{display:flex;align-items:center;gap:10px;font-family:'Heebo';font-weight:900;font-size:18px;}
+.topbar .mark .g{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:var(--purple-soft);}
+.topbar .layer{font-size:12px;font-weight:800;color:var(--purple-deep);background:var(--purple-soft);
+  border:1px solid var(--purple-line);padding:5px 13px;border-radius:var(--r-pill);}
+.topbar .layer.hide{visibility:hidden;}
+
+.stage{max-width:680px;margin:0 auto;padding:24px 20px 70px;}
+
+/* ===== Wizard head (persistent frame) ===== */
+.wizhead{display:flex;align-items:center;gap:15px;margin:6px 0 20px;}
+.wizhead .noni{width:64px;height:auto;flex:0 0 auto;filter:drop-shadow(0 10px 18px rgba(124,107,208,.3));
+  animation:float 4.2s ease-in-out infinite;cursor:pointer;user-select:none;}
+@keyframes float{0%,100%{transform:translateY(0) rotate(-2deg);}50%{transform:translateY(-8px) rotate(2deg);}}
+.wizhead h1{font-size:clamp(23px,4vw,29px);font-weight:900;}
+.wizhead p{color:var(--ink-soft);font-size:14px;margin-top:5px;}
+@media(max-width:520px){.wizhead .noni{width:52px;}}
+
+/* ===== Stepper (labels under bars) ===== */
+.stepper{display:flex;gap:7px;margin:0 0 16px;}
+.stepper .st{flex:1;text-align:center;}
+.stepper .st .bar{height:6px;border-radius:var(--r-pill);background:var(--line);transition:background .3s;}
+.stepper .st .lb{font-size:11.5px;font-weight:700;color:var(--ink-faint);margin-top:7px;transition:color .3s;}
+.stepper .st.done .bar,.stepper .st.on .bar{background:linear-gradient(90deg,var(--purple),var(--pink));}
+.stepper .st.on .lb{color:var(--purple-deep);} .stepper .st.done .lb{color:var(--ink-soft);}
+
+/* ===== Stage tabs (connected steps 1─2─3) ===== */
+.stagetabs{display:flex;position:relative;margin:2px 0 22px;}
+.stagetabs::before{content:"";position:absolute;inset-block-start:22px;inset-inline:16%;height:3px;background:var(--line);border-radius:2px;z-index:0;}
+.stagetab{flex:1;z-index:1;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;padding:0;font-family:inherit;}
+.stagetab .num{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-family:var(--font-num);font-weight:700;font-size:18px;background:var(--surface);border:2px solid var(--line);color:var(--ink-faint);transition:.25s;}
+.stagetab .cap{display:flex;flex-direction:column;align-items:center;font-size:11px;font-weight:700;color:var(--ink-faint);line-height:1.25;transition:.2s;}
+.stagetab .cap b{font-size:14px;color:var(--ink-soft);font-weight:800;}
+.stagetab .cap small{font-size:11px;color:var(--ink-faint);font-weight:600;}
+.stagetab:hover .num{border-color:var(--purple-line);}
+.stagetab.on .num{background:linear-gradient(135deg,var(--purple),var(--pink));border-color:transparent;color:#fff;box-shadow:0 10px 22px -8px rgba(124,107,208,.55);}
+.stagetab.on .cap,.stagetab.on .cap b{color:var(--purple-deep);}
+.stagetab.done .num{background:var(--purple-soft);border-color:var(--purple-line);color:var(--purple-deep);}
+@media(max-width:520px){.stagetab .cap small{display:none;}.stagetab .num{width:38px;height:38px;font-size:16px;}.stagetabs::before{inset-block-start:19px;}}
+
+/* ===== Card (single, morphing) ===== */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:26px 26px 28px;box-shadow:var(--shadow);}
+.card.morph{animation:pop .34s cubic-bezier(.32,.72,0,1) both;}
+@keyframes pop{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+.steptag{font-size:11.5px;font-weight:800;color:var(--purple-deep);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;}
+.card h2{font-size:23px;font-weight:900;}
+.card .lead{color:var(--ink-soft);font-size:14.5px;margin-top:8px;line-height:1.6;}
+
+/* ===== Fields ===== */
+.field{margin-top:18px;}
+.field label{display:block;font-size:13px;font-weight:700;margin-bottom:7px;}
+.field input{width:100%;padding:13px 15px;border:2px solid var(--line);border-radius:var(--r-sm);font-family:'Rubik';
+  font-size:15.5px;background:var(--surface);color:var(--ink);transition:border-color .2s,box-shadow .2s;}
+.field input:focus{outline:none;border-color:var(--purple);box-shadow:0 0 0 4px rgba(124,107,208,.16);}
+.field input[dir=ltr]{text-align:left;}
+.field input.code{letter-spacing:.12em;font-weight:700;text-transform:uppercase;font-family:var(--font-num);}
+.field .hint{font-size:12.5px;color:var(--ink-faint);margin-top:6px;line-height:1.5;}
+
+/* ===== Tabs ===== */
+.tabs{display:flex;gap:5px;background:var(--surface-soft);border-radius:var(--r-sm);padding:5px;margin-top:18px;}
+.tabs button{flex:1;border:none;background:none;font-weight:700;font-size:14.5px;color:var(--ink-soft);padding:9px;border-radius:9px;transition:all .2s;}
+.tabs button.on{background:var(--surface);color:var(--purple-deep);box-shadow:var(--shadow-soft);}
+
+/* ===== Alerts ===== */
+.alert{padding:12px 15px;border-radius:var(--r-sm);font-size:13.5px;line-height:1.5;margin-top:16px;}
+.alert-error{background:var(--alert-bg);color:#B33A3A;border:1px solid #F5C7C7;}
+.alert-ok{background:var(--ok-bg);color:#1F7A4D;border:1px solid #C1E7D2;}
+.alert-info{background:var(--warn-bg);color:#7A5C0E;border:1px solid #F0DE8A;}
+
+/* ===== Bottom nav (persistent) ===== */
+.nav{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:20px;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:'Rubik';font-weight:700;font-size:15.5px;
+  padding:13px 26px;border-radius:var(--r-pill);border:2px solid transparent;transition:transform .2s,box-shadow .2s,background .2s;}
+.btn svg{width:18px;height:18px;} .btn:hover{transform:translateY(-2px);} .btn:disabled{transform:none;cursor:not-allowed;}
+.btn-primary{background:linear-gradient(135deg,#F78CC1,var(--pink-deep));color:#fff;box-shadow:0 14px 30px -14px rgba(226,86,154,.6);}
+.btn-primary:disabled{background:var(--surface-soft);color:var(--ink-faint);box-shadow:none;}
+.btn-ghost{background:transparent;color:var(--ink-soft);} .btn-ghost:hover{background:var(--surface-soft);}
+.btn-ghost:disabled{opacity:.4;} .btn-ghost:disabled:hover{background:transparent;}
+.btn-sec{background:var(--surface);color:var(--purple-deep);border-color:var(--purple-line);}
+.btn-sec:hover{border-color:var(--purple);background:var(--purple-soft);}
+.linkbtn{background:none;border:none;color:var(--purple-deep);font-weight:700;font-size:12.5px;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:0;font-family:inherit;}
+
+/* ===== Role pick (entry) ===== */
+.rolepick{text-align:center;}
+.rolepick h1{font-size:clamp(25px,4.4vw,32px);font-weight:900;}
+.rolepick .sub{color:var(--ink-soft);font-size:14.5px;margin:8px 0 22px;}
+.roles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px;text-align:start;}
+@media(max-width:640px){.roles{grid-template-columns:1fr;}}
+.role{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;
+  display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow-soft);overflow:hidden;
+  transition:transform .35s cubic-bezier(.32,.72,0,1),box-shadow .35s,border-color .3s;}
+.role::after{content:"";position:absolute;inset-block-start:0;inset-inline:0;height:4px;background:var(--c1);}
+.role:hover{transform:translateY(-6px);box-shadow:var(--shadow);border-color:transparent;}
+.role .ic{width:48px;height:48px;border-radius:13px;display:grid;place-items:center;color:#fff;background:var(--c1);}
+.role .ic svg{width:24px;height:24px;stroke-width:1.8;}
+.role .tag{font-size:11px;font-weight:800;color:var(--c2);background:color-mix(in srgb,var(--c1) 13%,#fff);padding:4px 9px;border-radius:var(--r-pill);align-self:flex-start;}
+.role h3{font-size:18.5px;font-weight:800;}
+.role p{font-size:13px;color:var(--ink-soft);line-height:1.55;flex:1;}
+.role .go{display:inline-flex;align-items:center;gap:5px;font-weight:800;font-size:13.5px;color:var(--c2);}
+.role .go svg{width:15px;height:15px;transition:transform .3s;} .role:hover .go svg{transform:translateX(-4px);}
+.role.principal{--c1:#7C6BD0;--c2:#5D4CB0;} .role.teacher{--c1:#16A89C;--c2:#0E7C73;} .role.student{--c1:#F274AF;--c2:#C13B7E;}
+
+/* ===== Code reveal ===== */
+.codebox{margin-top:20px;background:linear-gradient(135deg,var(--purple-soft),#EDE9FB);border:1px solid var(--purple-line);
+  border-radius:var(--r);padding:24px 22px;text-align:center;}
+.codebox .ring{width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--pink));
+  display:grid;place-items:center;margin:0 auto 12px;box-shadow:0 12px 24px -10px rgba(124,107,208,.6);}
+.codebox .ring .in{width:44px;height:44px;border-radius:50%;background:#fff;display:grid;place-items:center;color:var(--purple-deep);}
+.codebox .ring svg{width:21px;height:21px;stroke-width:1.8;}
+.codebox .lbl{font-size:12px;font-weight:800;color:var(--purple-deep);letter-spacing:.04em;}
+.codebox .code{font-family:var(--font-num);font-weight:700;font-size:38px;color:var(--ink);letter-spacing:.14em;margin:7px 0 4px;direction:ltr;}
+.codebox .copy{margin-top:6px;background:#fff;border:1px solid var(--purple-line);color:var(--purple-deep);font-weight:700;
+  font-size:13px;padding:8px 18px;border-radius:var(--r-pill);display:inline-flex;align-items:center;gap:7px;}
+.codebox .copy:hover{background:var(--purple-soft);} .codebox .copy svg{width:15px;height:15px;}
+.send{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;}
+@media(max-width:440px){.send{grid-template-columns:1fr;}}
+.send a{display:flex;align-items:center;justify-content:center;gap:9px;padding:12px;border-radius:var(--r-sm);
+  font-weight:700;font-size:14px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);transition:all .2s;}
+.send a:hover{border-color:var(--purple-line);background:var(--purple-soft);}
+.send svg{width:18px;height:18px;} .send .wa svg{fill:#25D366;stroke:none;}
+
+/* ===== Input methods ===== */
+.methods{display:flex;gap:9px;margin-top:16px;flex-wrap:wrap;}
+.method{flex:1;min-width:150px;border:1.5px solid var(--line);border-radius:14px;padding:13px;cursor:pointer;text-align:center;transition:.15s;background:var(--surface);}
+.method:hover{border-color:var(--purple-line);} .method.on{border-color:var(--purple);background:var(--purple-soft);}
+.method .mi{width:26px;height:26px;margin:0 auto;color:var(--purple-deep);} .method .mi svg{width:26px;height:26px;stroke-width:1.7;}
+.method .mt{font-weight:800;font-size:14px;margin-top:6px;} .method .md{font-size:11.5px;color:var(--ink-soft);margin-top:2px;}
+.method .rec{display:inline-block;font-size:10px;font-weight:800;color:#fff;background:var(--pink);border-radius:var(--r-pill);padding:1px 8px;margin-top:6px;}
+.pane{display:none;margin-top:16px;} .pane.on{display:block;}
+.drop{border:2px dashed var(--line);border-radius:14px;padding:24px;text-align:center;cursor:pointer;transition:.15s;background:var(--surface-soft);}
+.drop:hover,.drop.hot{border-color:var(--purple);background:var(--purple-soft);}
+.drop .di{width:32px;height:32px;margin:0 auto 4px;color:var(--purple-deep);} .drop .di svg{width:32px;height:32px;stroke-width:1.6;}
+.drop b{display:block;margin-top:4px;font-size:15px;} .drop small{color:var(--ink-soft);font-size:12.5px;}
+.fmt{font-size:12px;color:var(--ink-faint);margin-top:10px;text-align:center;}
+.import-msg{font-size:13px;font-weight:700;color:var(--purple-deep);margin-top:12px;}
+textarea.paste{width:100%;min-height:104px;resize:vertical;border:2px solid var(--line);border-radius:var(--r-sm);padding:12px 14px;font-family:'Rubik';font-size:14px;}
+textarea.paste:focus{outline:none;border-color:var(--purple);box-shadow:0 0 0 4px rgba(124,107,208,.16);}
+
+/* ===== Roster ===== */
+.roster{margin-top:14px;display:flex;flex-direction:column;gap:8px;}
+.roster .row{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 14px;}
+.roster .row .num{width:24px;height:24px;border-radius:50%;background:var(--purple-soft);color:var(--purple-deep);display:grid;place-items:center;font-weight:800;font-size:12px;font-family:var(--font-num);flex:0 0 auto;}
+.roster .row .nm{flex:1;font-weight:700;font-size:14.5px;}
+.roster .row .rm{color:var(--ink-faint);width:26px;height:26px;border-radius:50%;display:grid;place-items:center;}
+.roster .row .rm:hover{background:var(--alert-bg);color:var(--alert);} .roster .row .rm svg{width:15px;height:15px;}
+.addrow{display:flex;gap:9px;margin-top:12px;}
+.addrow input{flex:1;padding:12px 14px;border:2px solid var(--line);border-radius:var(--r-sm);font-family:'Rubik';font-size:15px;}
+.addrow input:focus{outline:none;border-color:var(--purple);box-shadow:0 0 0 4px rgba(124,107,208,.16);}
+.addrow button{flex:0 0 auto;width:48px;border-radius:var(--r-sm);background:var(--purple-soft);color:var(--purple-deep);border:1.5px solid var(--purple-line);display:grid;place-items:center;}
+.addrow button:hover{background:var(--purple);color:#fff;} .addrow button svg{width:20px;height:20px;}
+.roster-empty{margin-top:12px;text-align:center;color:var(--ink-faint);font-size:13px;padding:14px;border:1.5px dashed var(--line);border-radius:var(--r-sm);}
+
+/* ===== Classes builder (principal) ===== */
+.classlist{margin-top:14px;display:flex;flex-direction:column;gap:8px;}
+.clrow{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);padding:11px 14px;}
+.clrow .clinfo{flex:1;display:flex;flex-direction:column;gap:1px;min-width:0;}
+.clrow .cln{font-weight:800;font-size:14.5px;}
+.clrow .clt{font-size:12.5px;color:var(--ink-soft);}
+.clrow .clcode{font-family:var(--font-num);font-weight:700;font-size:13.5px;color:var(--purple-deep);background:var(--purple-soft);border:1px solid var(--purple-line);padding:4px 10px;border-radius:var(--r-pill);letter-spacing:.06em;direction:ltr;flex:0 0 auto;}
+.clrow .rm{color:var(--ink-faint);width:26px;height:26px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto;}
+.clrow .rm:hover{background:var(--alert-bg);color:var(--alert);} .clrow .rm svg{width:15px;height:15px;}
+.classlist-empty{margin-top:12px;text-align:center;color:var(--ink-faint);font-size:13px;padding:14px;border:1.5px dashed var(--line);border-radius:var(--r-sm);}
+.addclass{display:flex;gap:8px;margin-top:12px;}
+.addclass input{padding:12px 13px;border:2px solid var(--line);border-radius:var(--r-sm);font-family:'Rubik';font-size:14.5px;min-width:0;}
+.addclass input:focus{outline:none;border-color:var(--purple);box-shadow:0 0 0 4px rgba(124,107,208,.16);}
+.addclass .clName{flex:0 0 34%;} .addclass .clTeacher{flex:1;}
+.addclass button{flex:0 0 auto;width:48px;border-radius:var(--r-sm);background:var(--purple-soft);color:var(--purple-deep);border:1.5px solid var(--purple-line);display:grid;place-items:center;}
+.addclass button:hover{background:var(--purple);color:#fff;} .addclass button svg{width:20px;height:20px;}
+@media(max-width:480px){.addclass{flex-wrap:wrap;} .addclass .clName,.addclass .clTeacher{flex:1 1 100%;}}
+/* per-teacher send list (readiness) */
+.sendlist{margin-top:16px;display:flex;flex-direction:column;gap:8px;}
+.sendrow{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 14px;}
+.sendrow .si{font-size:13.5px;font-weight:700;min-width:0;}
+.sendrow .si .sc{font-family:var(--font-num);font-weight:700;color:var(--purple-deep);margin-inline-start:8px;letter-spacing:.06em;direction:ltr;display:inline-block;}
+.sendrow .sb{display:flex;gap:6px;flex:0 0 auto;}
+.sendrow .sb a,.sendrow .sb button{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;border:1.5px solid var(--line);background:var(--surface);color:var(--ink-soft);transition:.15s;cursor:pointer;}
+.sendrow .sb a:hover,.sendrow .sb button:hover{border-color:var(--purple-line);background:var(--purple-soft);color:var(--purple-deep);}
+.sendrow .sb svg{width:17px;height:17px;} .sendrow .sb .mini-wa svg{fill:#25D366;stroke:none;}
+
+/* ===== QR grid (per-student codes) ===== */
+.qrgrid{margin-top:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(122px,1fr));gap:14px;}
+.qrcell{border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;text-align:center;background:var(--surface);}
+.qrimg{width:100%;aspect-ratio:1;display:grid;place-items:center;background:var(--surface-soft);border-radius:8px;overflow:hidden;}
+.qrimg img{width:100%;height:100%;object-fit:contain;}
+.qrnm{font-weight:800;font-size:13.5px;margin-top:8px;color:var(--ink);}
+.qrcode{font-family:var(--font-num);font-weight:700;font-size:12px;color:var(--purple-deep);letter-spacing:.08em;direction:ltr;margin-top:3px;}
+.qrimg canvas,.qrimg img{width:100%!important;height:auto!important;max-width:150px;border-radius:6px;}
+.qracts{display:flex;gap:6px;justify-content:center;margin-top:9px;}
+.qracts button{font-size:11px;font-weight:700;padding:5px 9px;border-radius:9px;border:1.5px solid var(--line);background:var(--surface);color:var(--purple-deep);display:inline-flex;align-items:center;gap:4px;cursor:pointer;transition:.15s;}
+.qracts button:hover{border-color:var(--purple-line);background:var(--purple-soft);}
+.qracts button svg{width:13px;height:13px;}
+
+/* ===== Readiness + summary ===== */
+.ready{margin-top:16px;display:flex;flex-direction:column;gap:10px;}
+.ready .r{display:flex;align-items:center;gap:13px;padding:13px 15px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface);}
+.ready .r .bx{width:26px;height:26px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;}
+.ready .r.ok .bx{background:var(--ok-bg);color:var(--ok);} .ready .r.wait .bx{background:var(--warn-bg);color:var(--warn);}
+.ready .r .bx svg{width:15px;height:15px;stroke-width:2.6;}
+.ready .r .tx{flex:1;} .ready .r .tx .t{font-weight:800;font-size:14px;} .ready .r .tx .s{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+.ready .r .pill{font-size:11px;font-weight:800;padding:4px 11px;border-radius:var(--r-pill);}
+.ready .r.ok .pill{background:var(--ok-bg);color:var(--ok);} .ready .r.wait .pill{background:var(--warn-bg);color:var(--warn);}
+.summary{margin-top:16px;background:linear-gradient(135deg,var(--purple-deep),var(--purple));color:#fff;border-radius:var(--r);padding:20px;text-align:center;box-shadow:0 16px 34px -18px rgba(93,76,176,.6);}
+.summary .big{font-family:'Heebo';font-size:18px;font-weight:800;}
+.summary .stats{display:flex;justify-content:center;gap:24px;margin-top:12px;flex-wrap:wrap;}
+.summary .stats b{display:block;font-family:var(--font-num);font-size:28px;font-weight:700;line-height:1;}
+.summary .stats small{font-size:11px;opacity:.85;}
+
+/* ===== Student welcome ===== */
+.welcome{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:6px;}
+.welcome .noni{width:clamp(110px,26vw,150px);height:auto;filter:drop-shadow(0 14px 22px rgba(124,107,208,.3));animation:float 3.8s ease-in-out infinite;}
+.welcome .say{margin-top:8px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:11px 20px;font-family:'Heebo';font-weight:800;font-size:clamp(17px,4.2vw,20px);color:var(--purple-deep);box-shadow:var(--shadow-soft);}
+.namechips{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+@media(max-width:440px){.namechips{grid-template-columns:1fr;}}
+.namechips button{font-size:16px;font-weight:800;color:var(--ink);background:var(--surface-soft);border:2px solid var(--line);border-radius:14px;padding:14px;display:flex;align-items:center;gap:10px;transition:all .2s;}
+.namechips button:hover{border-color:var(--purple-line);}
+.namechips button.on{background:var(--purple-soft);border-color:var(--purple);color:var(--purple-deep);box-shadow:0 0 0 4px rgba(124,107,208,.16);}
+.namechips button .dot{width:24px;height:24px;border-radius:50%;background:#fff;border:1px solid var(--purple-line);display:grid;place-items:center;font-size:13px;color:var(--purple-deep);font-weight:900;flex:0 0 auto;}
+.namechips button.on .dot{background:var(--purple);color:#fff;border-color:var(--purple);}
+
+.tip{text-align:center;font-size:12.5px;color:var(--ink-faint);margin-top:14px;}
+.foot{text-align:center;margin-top:22px;font-size:12px;color:var(--ink-faint);}
+.toast{position:fixed;inset-block-end:26px;inset-inline:0;margin:0 auto;width:max-content;max-width:88%;background:var(--ink);color:#fff;font-weight:700;font-size:13.5px;padding:12px 20px;border-radius:var(--r-pill);box-shadow:var(--shadow);opacity:0;transform:translateY(12px);transition:opacity .3s,transform .3s;z-index:40;}
+.toast.on{opacity:1;transform:none;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="mark" href="gate-landing.html"><span class="g"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#5D4CB0" stroke-width="2.4" stroke-linecap="round"><path d="M6 18v-5"/><path d="M12 18V7"/><path d="M18 18v-8"/></svg></span> אבני יסוד<span class="brand-dot"></span></a>
+  <div class="layer hide" id="layer">הקמה וכניסה</div>
+</div>
+
+<main class="stage">
+  <div class="wizhead">
+    <img class="noni" src="assets/noni-crown.png" alt="נוני" draggable="false" onerror="this.onerror=null;this.src='assets/noni-hero-transparent.png'">
+    <div><h1>אשף הקמת בית ספר<span class="brand-dot"></span></h1><p>הקמה מקצה-לקצה — שלב אחר שלב, במערכת אחת.</p></div>
+  </div>
+  <div class="stagetabs" id="stagetabs"></div>
+  <div class="stepper" id="stepper" hidden></div>
+  <section class="card" id="card"></section>
+  <div class="nav" id="nav"></div>
+  <p class="tip" id="tip"></p>
+  <div class="foot">אבני יסוד · הנתונים מאובטחים לכל בית ספר בנפרד<span class="brand-dot"></span></div>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================================
+   אבני יסוד · setup.html — מנוע-אשף אחד, מסגרת קבועה + כרטיס מורף (בהשראת רצף).
+   מסגרת: topbar + wizhead(כותרת+נוני) + stepper + כרטיס-יחיד + ניווט הבא/חזרה.
+   שרשרת: מנהלת→קוד→מורה→קוד→תלמיד. קוד אחד זורם. תלמיד=בחירת-שם (גיל 6).
+   Dual-mode: ענן אם סשן; אחרת דמו לחיץ (file:// / ?demo=1). classic script.
+   ============================================================================ */
+const $  = s => document.querySelector(s);
+const $$ = s => Array.prototype.slice.call(document.querySelectorAll(s));
+const params = new URLSearchParams(location.search);
+const HAS_SB = !!(window.supabase && window.supabase.createClient && window.AvneiCloudConfig);
+const DEMO = location.protocol === 'file:' || params.has('demo') || !HAS_SB;
+let sb = null;
+if (!DEMO && HAS_SB){
+  const cfg = window.AvneiCloudConfig;
+  sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_PUBLISHABLE_KEY, {
+    auth:{ persistSession:true, autoRefreshToken:true, storage:window.localStorage, storageKey:'avnei-yesod-supabase-auth' }
+  });
+}
+
+const PEND_SCHOOL='avnei-pending-school-name', PEND_JOIN='avnei-pending-join-code';
+const DEMO_ROSTER = {
+  'בדיקה 1':'fb30c993-93ce-4753-8c99-68cefa853c02','בדיקה 2':'fbffdc0a-8646-41b0-a53e-45e81b872999',
+  'בדיקה 3':'6caf0e8e-9bbe-47b8-8fc3-e7f268a5989b','בדיקה 4':'076bf049-e3ee-4af2-bbcc-5c9f7bd4325c'
+};
+
+/* ---- state ---- */
+const S = { role:'principal', i:0, tab:'signup', stepByRole:{principal:0,teacher:0,student:0},
+  school:{name:'',city:'',code:null}, classes:[], klass:{name:'',teacher:'',id:null}, roster:[],
+  studentCodes:{}, student:{code:'',name:null} };
+
+/* ---- refs ---- */
+const elCard=$('#card'), elStepper=$('#stepper'), elNav=$('#nav'),
+      elStages=$('#stagetabs'), elLayer=$('#layer'), elTip=$('#tip');
+
+/* ---- utils ---- */
+let toastT; function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('on'),1900); }
+function copy(txt){ if(navigator.clipboard){ navigator.clipboard.writeText(txt).then(()=>toast('הקוד הועתק ✓')); } else toast(txt); }
+function demoCode(seed){ let s=(seed||'x').replace(/\s/g,''),h=0; for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))>>>0;
+  const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let o=''; for(let j=0;j<4;j++){ o+=A[h%A.length]; h=Math.floor(h/A.length)+7; } return 'AV-'+o; }
+function shareLinks(code, subject, forParents){
+  const url=location.origin+location.pathname;
+  const how = forParents ? ('תיכנסו ל־'+url+'?role=student, הזינו את הקוד, והילד.ה בוחר.ת את השם. 🐙')
+                         : ('תיכנסי ל־'+url+'?role=teacher → הרשמה, והזיני את הקוד. 🐙');
+  const msg='היי! קוד ההצטרפות של '+(subject||'הכיתה')+' לאבני יסוד: '+code+'. '+how;
+  return { wa:'https://wa.me/?text='+encodeURIComponent(msg),
+           mail:'mailto:?subject='+encodeURIComponent('קוד אבני יסוד · '+(subject||''))+'&body='+encodeURIComponent(msg) };
+}
+
+/* ---- cloud helpers ---- */
+async function getContext(){ if(DEMO||!sb) return null; const { data } = await sb.rpc('get_my_context'); return (data&&data[0])||null; }
+async function ensureTeacherRow(user){ if(DEMO||!sb||!user) return; const { data } = await sb.from('teachers').select('id').eq('id',user.id).maybeSingle();
+  if(!data) await sb.from('teachers').insert({ id:user.id, email:user.email, name:(user.email||'').split('@')[0] }); }
+/* per-class + per-student RPCs (migration 0010) */
+async function createClassCloud(name, teacher){ const { data, error } = await sb.rpc('create_class',{ p_name:name, p_teacher_name:teacher }); if(error) throw error; return (data&&data[0])||null; }
+async function joinClassCloud(code){ const { data, error } = await sb.rpc('join_class',{ p_code:code }); if(error) throw error; return (data&&data[0])||null; }
+async function resolveClassCloud(code){ try{ const { data } = await sb.rpc('resolve_class',{ p_code:code }); return (data&&data[0])||null; }catch(e){ return null; } }
+async function resolveStudentCloud(code){ try{ const { data } = await sb.rpc('resolve_student',{ p_code:code }); return (data&&data[0])||null; }catch(e){ return null; } }
+/* cloud per-student codes/tokens keyed by name (filled in rosterStep.next) */
+function cloudStudent(nm){ return (S.studentCodes && S.studentCodes[nm]) || null; }
+
+/* ============================================================
+   WIZARD ENGINE — מסגרת קבועה, כרטיס מורף
+   ============================================================ */
+function flow(){ return STEPS[S.role] || []; }
+
+/* ---- טאבים = 3 השלבים (המערכת השלמה, תמיד גלויה) ---- */
+const STAGES = [
+  {role:'principal', n:1, label:'מנהלת', hint:'בית הספר'},
+  {role:'teacher',   n:2, label:'מורה',  hint:'הכיתה'},
+  {role:'student',   n:3, label:'תלמיד', hint:'הצטרפות'}
+];
+function renderStageTabs(){
+  elStages.innerHTML = STAGES.map(function(s){
+    var prog = S.stepByRole[s.role]||0;
+    var done = prog>0 && prog >= (STEPS[s.role].length-1) && s.role!==S.role;
+    return '<button class="stagetab '+(s.role===S.role?'on':'')+' '+(done?'done':'')+'" data-stage="'+s.role+'">'+
+      '<span class="num">'+(done?'✓':s.n)+'</span>'+
+      '<span class="cap">שלב '+s.n+'<b>'+s.label+'</b><small>'+s.hint+'</small></span></button>';
+  }).join('');
+  $$('#stagetabs [data-stage]').forEach(function(b){ b.addEventListener('click', function(){ switchStage(b.getAttribute('data-stage')); }); });
+}
+function switchStage(role){ if(role===S.role) return; S.stepByRole[S.role]=S.i; S.role=role; S.i=S.stepByRole[role]||0; S.tab='signup'; renderFrame(); }
+
+function renderFrame(){
+  const f=flow(), step=f[S.i];
+  elLayer.classList.remove('hide');
+  renderStageTabs();
+  elStepper.hidden=false;
+  elStepper.innerHTML = f.map((s,k)=>`<div class="st ${k<S.i?'done':''} ${k===S.i?'on':''}"><div class="bar"></div><div class="lb">${s.label}</div></div>`).join('');
+  elCard.className='card'; void elCard.offsetWidth; elCard.className='card morph';
+  elCard.innerHTML = `<div class="steptag">צעד ${S.i+1} מתוך ${f.length}</div>` + step.render();
+  if(step.after) step.after();
+  elTip.innerHTML = step.tip || '';
+  if(step.tip && step.wireTip) step.wireTip();
+  renderNav(step);
+  S.stepByRole[S.role]=S.i;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function renderNav(step){
+  elNav.innerHTML='';
+  const prev=document.createElement('button');
+  prev.className='btn btn-ghost';
+  prev.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg> חזרה';
+  prev.addEventListener('click', ()=>{ if(S.i>0){ S.i--; renderFrame(); } });
+  prev.disabled = S.i===0;
+  elNav.appendChild(prev);
+  const next=document.createElement('button');
+  next.className='btn btn-primary'; next.id='navNext';
+  next.innerHTML = (step.nextText||'הבא') + ' <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>';
+  next.addEventListener('click', doNext);
+  elNav.appendChild(next);
+  refreshNext();
+}
+function refreshNext(){ const b=$('#navNext'); if(!b) return; const step=flow()[S.i]; b.disabled = step.valid ? !step.valid() : false; }
+
+async function doNext(){
+  const step=flow()[S.i];
+  if(step.valid && !step.valid()) return;
+  const b=$('#navNext'); if(b) b.disabled=true;
+  let advance=true;
+  if(step.next){ try{ advance = await step.next(); }catch(e){ console.error(e); advance=false; } }
+  if(advance!==false){ if(S.i < flow().length-1){ S.i++; renderFrame(); } }
+  else refreshNext();
+}
+
+/* ============================================================
+   STEP LIBRARY
+   ============================================================ */
+const WA_PATH='M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2Zm4.52 12.99c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.25-.42.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.22.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.11-.22-.17-.47-.29Z';
+const CHK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+const CLK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>';
+
+/* ---------- AUTH ---------- */
+function authStep(){
+  return {
+    label:'כניסה',
+    get nextText(){ return DEMO ? 'המשך (דמו)' : (S.tab==='signup' ? 'הרשמה והמשך' : 'כניסה והמשך'); },
+    render(){
+      const isP = S.role==='principal';
+      const lead = isP
+        ? (S.tab==='signup' ? 'ניצור חשבון לבית הספר — בשלב הבא תוסיפו כיתות וקודים.' : 'היכנסי לחשבון בית הספר שלך.')
+        : (S.tab==='signup' ? 'הזיני את קוד הכיתה שקיבלת מהמנהלת, וצרי חשבון קצר.' : 'הזיני את קוד הכיתה, והיכנסי עם המייל והסיסמה.');
+      const codeField = (!isP)
+        ? `<div class="field"><label for="fCode">קוד הכיתה מהמנהלת</label><input type="text" id="fCode" class="code" placeholder="AV-XXXX" value="${S.school.code||''}"><div class="hint">נחבר אותך ישר לכיתה שלך.</div></div>` : '';
+      return `<h2>${isP?'מנהלת · בית הספר':'מורה · הכיתה שלך'}<span class="brand-dot"></span></h2>
+        <p class="lead">${lead}</p>
+        <div class="tabs"><button id="tabSignup" class="${S.tab==='signup'?'on':''}">הרשמה</button><button id="tabLogin" class="${S.tab==='login'?'on':''}">כניסה</button></div>
+        <div id="authAlert"></div>
+        ${codeField}
+        <div class="field" id="fgName" ${S.tab==='signup'?'':'hidden'}><label for="fName">שם מלא</label><input type="text" id="fName" autocomplete="name" placeholder="שם ושם משפחה"></div>
+        <div class="field"><label for="fEmail">דואר אלקטרוני</label><input type="email" id="fEmail" dir="ltr" placeholder="name@example.com" autocomplete="email"></div>
+        <div class="field"><label for="fPass">סיסמה</label><input type="password" id="fPass" dir="ltr" placeholder="לפחות 6 תווים"></div>`;
+    },
+    after(){
+      $('#tabLogin').addEventListener('click', ()=>{ S.tab='login'; renderFrame(); });
+      $('#tabSignup').addEventListener('click', ()=>{ S.tab='signup'; renderFrame(); });
+      // מורה: תצוגה מקדימה של הכיתה מאחורי הקוד (resolve_class) לפני הרשמה
+      const cf=$('#fCode');
+      if(cf && !DEMO && sb){ let t; const h=cf.parentElement.querySelector('.hint'); const base=h?h.textContent:'';
+        cf.addEventListener('input', ()=>{ clearTimeout(t); const v=cf.value.trim().toUpperCase();
+          if(!h) return; if(v.length<4){ h.textContent=base; h.style.color=''; return; }
+          t=setTimeout(async ()=>{ const r=await resolveClassCloud(v);
+            if(r&&r.class_name){ h.textContent='כיתה '+r.class_name+(r.teacher_name?' · המורה '+r.teacher_name:'')+(r.is_claimed?' — כבר משויכת למורה':' ✓'); h.style.color=r.is_claimed?'var(--danger,#c0392b)':'var(--ok,#1a7f5a)'; }
+            else { h.textContent='קוד לא נמצא — בדקי שוב.'; h.style.color='var(--danger,#c0392b)'; }
+          }, 350); }); }
+    },
+    async next(){
+      if(DEMO){ const c=$('#fCode'); if(c && c.value.trim()){ S.school.code=c.value.trim().toUpperCase();
+        const cls=lookupClassByCode(S.school.code); if(cls){ S.klass.name=cls.name; S.klass.teacher=cls.teacher||''; } }
+        return true; }
+      const email=($('#fEmail').value||'').trim(), pass=$('#fPass').value, name=($('#fName')?$('#fName').value:'').trim();
+      const codeV=($('#fCode')?$('#fCode').value:'').trim().toUpperCase();
+      const al=$('#authAlert'); const A=(m,t)=>al.innerHTML='<div class="alert alert-'+(t||'error')+'">'+m+'</div>';
+      if(!email||!pass){ A('מלאו דוא"ל וסיסמה.'); return false; }
+      try{
+        if(S.tab==='login'){
+          const { error } = await sb.auth.signInWithPassword({ email, password:pass });
+          if(error){ A(error.message.includes('Invalid')?'דוא"ל או סיסמה שגויים':'שגיאה בכניסה.'); return false; }
+        } else {
+          if(S.role==='teacher' && !codeV){ A('הזיני את קוד הכיתה.'); return false; }
+          if(S.role==='principal') localStorage.setItem(PEND_SCHOOL,'__pending__'); else localStorage.setItem(PEND_JOIN, codeV);
+          const { data, error } = await sb.auth.signUp({ email, password:pass, options:{ data:{ name } } });
+          if(error){ A(error.message.includes('already')?'הדוא"ל כבר רשום — עברו ל״כניסה״.':('הרשמה נכשלה: '+error.message)); return false; }
+          if(data.user && name) await sb.from('teachers').upsert({ id:data.user.id, email, name }, { onConflict:'id' });
+          if(!data.session){ A('שלחנו דוא"ל לאישור. אשרו וחזרו ל״כניסה״.','info'); S.tab='login'; renderFrame(); return false; }
+        }
+        const u=await sb.auth.getUser(); const user=u.data&&u.data.user; await ensureTeacherRow(user);
+        if(S.role==='teacher'){
+          if(!codeV){ A('הזיני את קוד הכיתה.'); return false; }
+          try{ const j=await joinClassCloud(codeV); if(!j){ A('הקוד לא נמצא.'); return false; }
+            S.klass.id=j.class_id; S.klass.name=j.class_name||''; S.klass.teacher=j.teacher_name||'';
+            S.school.name=j.school_name||S.school.name; S.school.code=codeV;
+            localStorage.removeItem(PEND_JOIN);
+          }catch(e){ const msg=(e&&e.message)||''; A(msg.indexOf('claimed')>=0?'הכיתה כבר משויכת למורה אחרת.':'הקוד לא נמצא.'); return false; }
+        } else {
+          const ctx=await getContext(); if(ctx){ S.school.name=ctx.school_name||S.school.name; S.school.code=ctx.join_code||S.school.code; }
+        }
+        return true;
+      }catch(e){ console.error(e); A('אירעה שגיאה. נסו שוב.'); return false; }
+    }
+  };
+}
+
+/* ---------- PRINCIPAL: school ---------- */
+function schoolStep(){
+  return {
+    label:'בית הספר', nextText:'המשך לכיתות',
+    render(){ return `<h2>פרטי בית הספר<span class="brand-dot"></span></h2>
+      <p class="lead">נתחיל בשם. בשלב הבא תוסיפו את הכיתות והמורות — <b>ולכל כיתה יופק קוד משלה</b>.</p>
+      <div class="field"><label for="pName">שם בית הספר</label><input type="text" id="pName" value="${S.school.name||''}" placeholder="למשל: בית ספר אימפקט"></div>
+      <div class="field"><label for="pCity">יישוב <span style="color:var(--ink-faint);font-weight:600">· לא חובה</span></label><input type="text" id="pCity" value="${S.school.city||''}" placeholder="למשל: תל אביב"></div>`; },
+    after(){ $('#pName').addEventListener('input', e=>{ S.school.name=e.target.value.trim(); refreshNext(); }); $('#pCity').addEventListener('input', e=>S.school.city=e.target.value.trim()); },
+    valid(){ return (S.school.name||'').length>=2; },
+    async next(){
+      if(!DEMO && sb){ try{ const ctx=await getContext(); if(!(ctx&&ctx.join_code)){ await sb.rpc('create_school',{ p_school_name:S.school.name }); localStorage.removeItem(PEND_SCHOOL); } }catch(e){ console.warn(e); } }
+      return true;
+    }
+  };
+}
+
+/* ---------- PRINCIPAL: classes + teachers (each gets its own code) ---------- */
+function classCode(name,teacher){ return demoCode('cls|'+name+'|'+teacher); }
+function classesStep(){
+  return {
+    label:'כיתות ומורות', nextText:'המשך למוכנות',
+    tip:'טיפ: <button class="linkbtn" id="tipSampleClasses">טענו 4 כיתות לדוגמה</button>.',
+    wireTip(){ const t=$('#tipSampleClasses'); if(t) t.addEventListener('click', ()=> addClasses([['א׳1','רמה לוי'],['א׳2','דנה כהן'],['א׳3','מיכל אבני'],['א׳4','נועה שרון']])); },
+    render(){ return `<h2>כיתות ומורות<span class="brand-dot"></span></h2>
+      <p class="lead">הוסיפו את הכיתות שמשתתפות, ולכל אחת את המורה. <b>כל כיתה מקבלת קוד משלה</b> שתשלחו למורה שלה.</p>
+      <div class="classlist" id="classList"></div>
+      <div class="classlist-empty" id="classEmpty">עדיין אין כיתות — הוסיפו למטה.</div>
+      <div class="addclass"><input type="text" class="clName" id="clName" placeholder="שם הכיתה (א׳1)" maxlength="20"><input type="text" class="clTeacher" id="clTeacher" placeholder="שם המורה" maxlength="30"><button id="clAdd" title="הוספה"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button></div>`; },
+    after(){ renderClasses();
+      $('#clAdd').addEventListener('click', addClassRow);
+      $('#clTeacher').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); addClassRow(); } });
+      $('#clName').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); $('#clTeacher').focus(); } }); },
+    valid(){ return S.classes.length>0; },
+    async next(){
+      if(!DEMO && sb){
+        try{
+          for(const c of S.classes){
+            if(c.class_id) continue; // כבר נוצרה בענן (למקרה חזרה קדימה/אחורה)
+            const res=await createClassCloud(c.name, c.teacher);
+            if(res){ c.class_id=res.class_id; c.code=res.join_code; } // קוד אמיתי מחליף את הדמו
+          }
+        }catch(e){ console.error(e); toast('שמירת הכיתות בענן נכשלה — נסו שוב'); return false; }
+      }
+      try{ localStorage.setItem('avnei-principal-classes', JSON.stringify(S.classes)); }catch(e){}
+      return true;
+    }
+  };
+}
+function renderClasses(){
+  const box=$('#classList'); if(!box) return; box.innerHTML='';
+  const empty=$('#classEmpty'); if(empty) empty.hidden=S.classes.length>0;
+  S.classes.forEach((c,idx)=>{ const row=document.createElement('div'); row.className='clrow';
+    row.innerHTML='<div class="clinfo"><span class="cln"></span><span class="clt"></span></div><span class="clcode">'+c.code+'</span><button class="rm" title="הסרה"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>';
+    row.querySelector('.cln').textContent=c.name; row.querySelector('.clt').textContent='המורה '+c.teacher;
+    row.querySelector('.rm').addEventListener('click', ()=>{ S.classes.splice(idx,1); renderClasses(); refreshNext(); });
+    box.appendChild(row); });
+}
+function addClass(name,teacher){ name=(name||'').trim(); teacher=(teacher||'').trim(); if(!name||!teacher) return false;
+  if(S.classes.some(c=>c.name===name)) return false; S.classes.push({name:name,teacher:teacher,code:classCode(name,teacher)}); return true; }
+function addClasses(arr){ let n=0; arr.forEach(p=>{ if(addClass(p[0],p[1])) n++; }); renderClasses(); refreshNext(); return n; }
+function addClassRow(){ const n=$('#clName'), t=$('#clTeacher'); if(addClass(n.value,t.value)){ n.value=''; t.value=''; renderClasses(); refreshNext(); } n.focus(); }
+function lookupClassByCode(code){ try{ const arr=JSON.parse(localStorage.getItem('avnei-principal-classes')||'[]'); return arr.find(c=>String(c.code).toUpperCase()===String(code).toUpperCase())||null; }catch(e){ return null; } }
+
+/* ---------- CODE reveal ---------- */
+function codeStep(forParents){
+  return {
+    label:'הקוד', nextText: forParents ? 'המשך למוכנות' : 'שלחתי — למוכנות',
+    render(){
+      const subject = forParents ? (S.klass.name||S.school.name) : S.school.name;
+      const icon = forParents
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="M7 10.5V15c0 1.7 2.7 3 5 3s5-1.3 5-3v-4.5"/></svg>'
+        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+      return `<h2>${forParents?'הקוד לתלמידים':'הקוד מוכן'}<span class="brand-dot"></span></h2>
+        <p class="lead">${forParents?'אותו קוד פותח את הכיתה. הקרינו בכיתה או שלחו להורים — הילד.ה נכנס.ת ובוחר.ת שם.':'זה הקוד של <b>'+(subject||'בית הספר')+'</b>. שלחו אותו למורות — הן יזינו אותו בהרשמה.'}</p>
+        <div class="codebox"><div class="ring"><span class="in">${icon}</span></div>
+          <div class="lbl">${forParents?'קוד הכניסה לכיתה':'קוד בית הספר'}</div>
+          <div class="code">${S.school.code}</div>
+          <button class="copy" id="copyBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg> העתקת הקוד</button></div>
+        <div class="send"><a class="wa" id="waBtn" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="${WA_PATH}"/></svg> ${forParents?'שליחה להורים':'שליחה בוואטסאפ'}</a>
+          <a class="ml" id="mailBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg> שליחה במייל</a></div>`;
+    },
+    after(){
+      const subject = forParents ? (S.klass.name||S.school.name) : S.school.name;
+      const L=shareLinks(S.school.code, subject, forParents);
+      $('#waBtn').href=L.wa; $('#mailBtn').href=L.mail;
+      $('#copyBtn').addEventListener('click', ()=>copy(S.school.code));
+    }
+  };
+}
+
+/* ---------- TEACHER: class ---------- */
+function classStep(){
+  return {
+    label:'הכיתה', nextText:'המשך לתלמידים',
+    render(){ return `<h2>הכיתה שלך<span class="brand-dot"></span></h2>
+      <p class="lead">חוברת ל־<b>${S.school.name||'בית הספר'}</b>. תני שם לכיתה — זו הכיתה שהתלמידים יצטרפו אליה.</p>
+      <div class="field"><label for="cName">שם הכיתה</label><input type="text" id="cName" value="${S.klass.name||''}" placeholder="למשל: כיתה א׳1"></div>`; },
+    after(){ $('#cName').addEventListener('input', e=>{ S.klass.name=e.target.value.trim(); refreshNext(); }); },
+    valid(){ return (S.klass.name||'').length>=1; },
+    async next(){
+      if(!DEMO && sb){ try{ const u=await sb.auth.getUser(); const uid=u.data&&u.data.user?u.data.user.id:null; const ctx=await getContext();
+        if(ctx&&ctx.school_id && uid) await sb.from('classes').insert({ name:S.klass.name, teacher_id:uid, school_id:ctx.school_id }); }catch(e){ console.warn(e); } }
+      return true;
+    }
+  };
+}
+
+/* ---------- TEACHER: roster ---------- */
+function rosterStep(){
+  return {
+    label:'התלמידים', nextText:'המשך לקוד',
+    tip:'טיפ: <button class="linkbtn" id="tipSample">טענו רשימה לדוגמה (5 תלמידים)</button> כדי לראות איך זה נראה מלא.',
+    wireTip(){ const ts=$('#tipSample'); if(ts) ts.addEventListener('click', ()=> addNames(['רוני אלקבץ','מאיה כהן','דנה בר-און','איתי לוי','נועה שרון'])); },
+    render(){ return `<h2>הכיתה שלך · תלמידים<span class="brand-dot"></span></h2>
+      <p class="lead">${S.klass.name?('הקוד חיבר אותך לכיתה <b>'+S.klass.name+'</b>'+(S.klass.teacher?' · המורה '+S.klass.teacher:'')+' — עכשיו רק מוסיפים תלמידים. '):''}<b>לכל ילד.ה יופק קוד QR משלו.ה.</b> העלו קובץ, הדביקו, או הוסיפו ידנית.</p>
+      <div class="methods">
+        <div class="method on" data-method="file"><span class="mi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v5h5"/><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M9 13h6M9 17h4"/></svg></span><div class="mt">העלאת קובץ</div><div class="md">Excel / CSV</div><span class="rec">מומלץ</span></div>
+        <div class="method" data-method="manual"><span class="mi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span><div class="mt">הדבקה ידנית</div><div class="md">שם בכל שורה</div></div>
+      </div>
+      <div class="pane on" data-pane="file">
+        <div class="drop" id="drop"><span class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg></span><b>גררו קובץ לכאן, או לחצו לבחירה</b><small>עמודה אחת: שם התלמיד/ה (שורת-כותרת תדולג)</small></div>
+        <input type="file" id="file" accept=".csv,.xlsx,.xls,.txt" hidden>
+        <div class="fmt">נתמך: .xlsx · .csv</div>
+      </div>
+      <div class="pane" data-pane="manual">
+        <textarea class="paste" id="paste" placeholder="רוני אלקבץ&#10;מאיה כהן&#10;דנה בר-און"></textarea>
+        <div style="margin-top:12px"><button class="btn btn-sec" id="pasteBtn">הוספת השמות</button></div>
+      </div>
+      <div class="import-msg" id="importMsg"></div>
+      <div class="roster" id="roster"></div>
+      <div class="roster-empty" id="rosterEmpty">עדיין אין תלמידים — העלו/הדביקו למעלה, או דלגו.</div>
+      <div class="addrow"><input type="text" id="addName" placeholder="הוספת שם בודד…" maxlength="30"><button id="addBtn" title="הוספה"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button></div>`; },
+    after(){
+      renderRoster();
+      $$('#card [data-method]').forEach(m=>m.addEventListener('click', ()=>{ const k=m.getAttribute('data-method');
+        $$('#card [data-method]').forEach(x=>x.classList.toggle('on',x===m));
+        $$('#card [data-pane]').forEach(p=>p.classList.toggle('on', p.getAttribute('data-pane')===k)); }));
+      $('#addBtn').addEventListener('click', addOne);
+      $('#addName').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); addOne(); } });
+      $('#pasteBtn').addEventListener('click', ()=>{ addNames(($('#paste').value||'').split(/\r?\n/)); $('#paste').value=''; });
+      wireDrop();
+    },
+    async next(){
+      if(!S.school.code) S.school.code=demoCode(S.klass.name||'class');
+      if(!DEMO && sb && S.roster.length){
+        const cid=S.klass.id;
+        if(!cid){ toast('לא זוהתה כיתה — היכנסי שוב עם קוד הכיתה'); return false; }
+        try{
+          const toAdd=S.roster.filter(n=>!cloudStudent(n));
+          if(toAdd.length){
+            const { data, error } = await sb.from('students')
+              .insert(toAdd.map(n=>({ class_id:cid, name:n }))).select('name,join_code,token');
+            if(error) throw error;
+            (data||[]).forEach(r=>{ S.studentCodes[r.name]={ code:r.join_code, token:r.token }; });
+          }
+        }catch(e){ console.error(e); toast('הוספת התלמידים בענן נכשלה — נסו שוב'); return false; }
+      }
+      try{ localStorage.setItem('avnei-teacher-setup', JSON.stringify({ class:S.klass.name, roster:S.roster, code:S.school.code }));
+        const m=JSON.parse(localStorage.getItem('avnei-rosters')||'{}'); m[S.school.code]=S.roster.slice(); localStorage.setItem('avnei-rosters', JSON.stringify(m));
+        const sc={}; S.roster.forEach(function(nm){ sc[studentCode(nm)]=nm; }); localStorage.setItem('avnei-student-codes', JSON.stringify(sc)); }catch(e){}
+      return true;
+    }
+  };
+}
+function renderRoster(){
+  const box=$('#roster'); if(!box) return; box.innerHTML='';
+  const empty=$('#rosterEmpty'); if(empty) empty.hidden = S.roster.length>0;
+  S.roster.forEach((nm,idx)=>{ const row=document.createElement('div'); row.className='row';
+    row.innerHTML='<span class="num">'+(idx+1)+'</span><span class="nm"></span><button class="rm" title="הסרה"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>';
+    row.querySelector('.nm').textContent=nm;
+    row.querySelector('.rm').addEventListener('click', ()=>{ S.roster.splice(idx,1); renderRoster(); });
+    box.appendChild(row); });
+}
+function addNames(names){ let added=0;
+  names.map(n=>String(n||'').trim()).filter(Boolean).forEach(n=>{ if(/^שם|תלמיד|name$/i.test(n)) return; if(S.roster.indexOf(n)===-1){ S.roster.push(n); added++; } });
+  renderRoster(); const m=$('#importMsg'); if(m&&added) m.textContent='נוספו '+added+' תלמידים · '+S.roster.length+' ברשימה.'; return added;
+}
+function addOne(){ const inp=$('#addName'); if(!inp) return; const v=inp.value.trim(); if(v){ addNames([v]); inp.value=''; } inp.focus(); }
+function readNamesFile(file){ const ext=(file.name.split('.').pop()||'').toLowerCase(); const reader=new FileReader();
+  if(ext==='xlsx'||ext==='xls'){ reader.onload=e=>{ if(typeof XLSX==='undefined'){ $('#importMsg').textContent='ספריית האקסל לא נטענה. נסו CSV.'; return; }
+    try{ const wb=XLSX.read(e.target.result,{type:'array'}); const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,blankrows:false}); addNames(rows.map(r=>r&&r[0])); }catch(err){ $('#importMsg').textContent='שגיאה בקריאת הקובץ.'; } };
+    reader.readAsArrayBuffer(file);
+  } else { reader.onload=e=>addNames(String(e.target.result).split(/\r?\n/).map(l=>l.split(',')[0])); reader.readAsText(file,'UTF-8'); } }
+function wireDrop(){ const drop=$('#drop'), input=$('#file'); if(!drop||!input) return;
+  drop.addEventListener('click', ()=>input.click());
+  input.addEventListener('change', e=>{ if(e.target.files[0]) readNamesFile(e.target.files[0]); });
+  ['dragover','dragenter'].forEach(ev=>drop.addEventListener(ev,e=>{ e.preventDefault(); drop.classList.add('hot'); }));
+  ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{ e.preventDefault(); drop.classList.remove('hot'); }));
+  drop.addEventListener('drop', e=>{ if(e.dataTransfer.files[0]) readNamesFile(e.dataTransfer.files[0]); });
+}
+
+/* ---------- READINESS ---------- */
+function readyStep(){
+  return {
+    label:'מוכנות',
+    get nextText(){ return S.role==='principal' ? 'כניסה לדשבורד המנהלת' : 'כניסה לכיתה שלי'; },
+    render(){
+      if(S.role==='principal'){
+        const n=S.classes.length;
+        const rows=[
+          {ok:true, t:'בית הספר נוצר', s:(S.school.name||'בית הספר')+(S.school.city?' · '+S.school.city:'')},
+          {ok:n>0, t:n+' כיתות עם מורות', s:n?'לכל כיתה קוד משלה — שלחו לכל מורה למטה':'הוסיפו כיתות בשלב הקודם'}
+        ];
+        const list=rows.map(r=>`<div class="r ${r.ok?'ok':'wait'}"><span class="bx">${r.ok?CHK:CLK}</span><div class="tx"><div class="t">${r.t}</div><div class="s">${r.s}</div></div><span class="pill">${r.ok?'מוכן':'ממתין'}</span></div>`).join('');
+        const cards=S.classes.map((c,idx)=>`<div class="sendrow"><div class="si">${c.name} · המורה ${c.teacher}<span class="sc">${c.code}</span></div><div class="sb"><a class="mini-wa" data-i="${idx}" target="_blank" rel="noopener" title="וואטסאפ"><svg viewBox="0 0 24 24"><path d="${WA_PATH}"/></svg></a><a class="mini-ml" data-i="${idx}" title="מייל"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></a><button class="mini-cp" data-i="${idx}" title="העתקה"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button></div></div>`).join('');
+        const summary=`<div class="summary"><div class="big">בית הספר מוכן להפעלה ✓</div><div class="stats"><div><b>${n}</b><small>כיתות</small></div><div><b>${n}</b><small>מורות</small></div><div><b>${n}</b><small>קודים</small></div></div></div>`;
+        return `<h2>בדיקת מוכנות<span class="brand-dot"></span></h2><p class="lead">בית הספר מוכן. שלחו לכל מורה את <b>קוד הכיתה שלה</b>.</p><div class="ready">${list}</div><div class="sendlist">${cards}</div>${summary}`;
+      }
+      const rows=[
+        {ok:true, t:'הכיתה שלך', s:S.klass.name||'—'},
+        {ok:S.roster.length>0, t:'תלמידים ברשימה', s:S.roster.length?S.roster.length+' תלמידים':'הוסיפו תלמידים'},
+        {ok:S.roster.length>0, t:'קודי-QR לתלמידים', s:S.roster.length?(S.roster.length+' קודים מוכנים להדפסה'):'—'},
+        {ok:false,t:'מיפוי ראשון לכל ילד.ה', s:'כשילד.ה סורק.ת את הקוד שלו.ה — פוגש.ת קודם מיפוי קצר שבונה את המסלול.'}
+      ];
+      const list=rows.map(r=>`<div class="r ${r.ok?'ok':'wait'}"><span class="bx">${r.ok?CHK:CLK}</span><div class="tx"><div class="t">${r.t}</div><div class="s">${r.s}</div></div><span class="pill">${r.ok?'מוכן':'ממתין'}</span></div>`).join('');
+      const summary=`<div class="summary"><div class="big">הכיתה מוכנה להפעלה ✓</div><div class="stats"><div><b>1</b><small>כיתה</small></div><div><b>${S.roster.length}</b><small>תלמידים</small></div><div><b>${S.roster.length}</b><small>קודי QR</small></div></div></div>`;
+      return `<h2>בדיקת מוכנות<span class="brand-dot"></span></h2><p class="lead">הכיתה מוכנה. הנה התמונה לפני שנכנסים.</p><div class="ready">${list}</div>${summary}`;
+    },
+    after(){
+      if(S.role!=='principal') return;
+      $$('#card .sendrow .mini-wa, #card .sendrow .mini-ml, #card .sendrow .mini-cp').forEach(el=>{
+        const c=S.classes[+el.getAttribute('data-i')]; if(!c) return;
+        const L=shareLinks(c.code, c.name, false);
+        if(el.classList.contains('mini-wa')) el.href=L.wa;
+        else if(el.classList.contains('mini-ml')) el.href=L.mail;
+        else el.addEventListener('click', ()=>copy(c.code));
+      });
+    },
+    async next(){
+      if(S.role==='principal'){ try{ localStorage.setItem('avnei-principal-setup', JSON.stringify({name:S.school.name,city:S.school.city,code:S.school.code})); }catch(e){}
+        location.href = DEMO ? 'gate-landing.html' : 'principal-avnei.html'; }
+      else location.href = DEMO ? 'gate-landing.html' : 'teacher-home.html';
+      return false;
+    }
+  };
+}
+
+/* ---------- STUDENT ---------- */
+/* ---------- TEACHER: QR codes per student ---------- */
+function siblingURL(page){ const p=location.pathname; const dir=p.slice(0, p.lastIndexOf('/')+1); return location.origin+dir+page; }
+function studentCode(name){ const c=cloudStudent(name); if(c&&c.code) return c.code; return demoCode('stu|'+(S.school.code||'x')+'|'+name); }
+function qrURL(name){
+  const c=cloudStudent(name);
+  if(c&&c.token) return siblingURL('student.html')+'?token='+encodeURIComponent(c.token)+'&remap=1'; // QR = טוקן ישיר
+  return location.origin+location.pathname+'?role=student&scode='+encodeURIComponent(studentCode(name)); // דמו
+}
+function cssId(s){ let h=0; for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))>>>0; return 'x'+h; }
+function qrStep(){
+  return {
+    label:'קודים לתלמידים', nextText:'המשך למוכנות',
+    tip:'טיפ: <button class="linkbtn" id="qrPrint">הדפסת דף הקודים</button> — לתלייה בכיתה או חלוקה להורים.',
+    wireTip(){ const p=$('#qrPrint'); if(p) p.addEventListener('click', printQRSheet); },
+    render(){
+      if(!S.roster.length) return `<h2>קודים לתלמידים<span class="brand-dot"></span></h2><p class="lead">אין עדיין תלמידים — חזרו לצעד הקודם והוסיפו רשימה.</p>`;
+      const cells=S.roster.map(function(nm){ return `<div class="qrcell"><div class="qrimg" id="qr_${cssId(nm)}"></div><div class="qrnm">${nm}</div><div class="qrcode">${studentCode(nm)}</div>`+
+        `<div class="qracts"><button class="qr-cp" data-code="${studentCode(nm)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg> קוד</button>`+
+        `<button class="qr-copy" data-nm="${nm}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M20 14v.01M14 20v.01M20 20v.01M17 17v.01"/></svg> QR</button></div></div>`; }).join('');
+      return `<h2>קודים לתלמידים<span class="brand-dot"></span></h2>
+        <p class="lead"><b>לכל ילד.ה קוד QR משלו.ה.</b> מדפיסים ותולים בכיתה, שולחים להורים, או מעתיקים קוד/QR בודד — הילד.ה סורק.ת (או מקליד.ה את הקוד) ונכנס.ת ישר למיפוי.</p>
+        <div class="qrgrid">${cells}</div>`;
+    },
+    after(){
+      renderQRs();
+      $$('#card .qr-cp').forEach(function(b){ b.addEventListener('click', function(){ copy(b.getAttribute('data-code')); }); });
+      $$('#card .qr-copy').forEach(function(b){ b.addEventListener('click', function(){ copyQR(b.getAttribute('data-nm')); }); });
+    }
+  };
+}
+function copyQR(nm){
+  const c=document.querySelector('#qr_'+cssId(nm)+' canvas'); if(!c){ toast('ה-QR עדיין נטען — רגע'); return; }
+  if(c.toBlob && navigator.clipboard && window.ClipboardItem){
+    try{ c.toBlob(function(blob){ if(!blob){ downloadCanvas(c,nm); return; }
+      navigator.clipboard.write([new ClipboardItem({'image/png':blob})]).then(function(){ toast('ה-QR הועתק ✓'); }).catch(function(){ downloadCanvas(c,nm); }); }); }
+    catch(e){ downloadCanvas(c,nm); }
+  } else downloadCanvas(c,nm);
+}
+function downloadCanvas(c,nm){ try{ const a=document.createElement('a'); a.href=c.toDataURL('image/png'); a.download='QR-'+nm+'.png'; document.body.appendChild(a); a.click(); a.remove(); toast('ירד קובץ QR'); }catch(e){ toast('לא הצלחתי להעתיק'); } }
+function renderQRs(tries){
+  tries = tries||0;
+  if(typeof QRCode==='undefined' || !QRCode.CorrectLevel){ if(tries<12) setTimeout(function(){ renderQRs(tries+1); }, 300); return; }
+  S.roster.forEach(function(nm){ const el=document.getElementById('qr_'+cssId(nm)); if(!el) return; el.innerHTML='';
+    try{ new QRCode(el, { text:qrURL(nm), width:150, height:150, correctLevel:QRCode.CorrectLevel.M }); }catch(e){} });
+}
+function printQRSheet(){
+  const items=S.roster.map(function(nm){ const c=document.querySelector('#qr_'+cssId(nm)+' canvas'); return { nm:nm, code:studentCode(nm), u:(c?c.toDataURL('image/png'):'') }; });
+  const cells=items.map(function(it){ return '<div class="c">'+(it.u?'<img src="'+it.u+'">':'')+'<div class="n">'+it.nm+'</div><div class="cd">'+it.code+'</div></div>'; }).join('');
+  const w=window.open('','_blank'); if(!w){ toast('הדפדפן חסם חלון — אפשרו חלונות קופצים'); return; }
+  w.document.write('<!doctype html><html dir="rtl" lang="he"><head><meta charset="utf-8"><title>קודי כניסה · '+((S.klass.name||'הכיתה'))+'</title>'+
+    '<style>body{font-family:Arial,Helvetica,sans-serif;padding:24px;color:#251F44;} h1{font-size:20px;margin:0 0 4px;} p{color:#6C6890;margin:0 0 18px;} .g{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;} .c{border:1px solid #E6E9F4;border-radius:12px;padding:14px;text-align:center;page-break-inside:avoid;} .c img{width:100%;max-width:200px;} .n{font-weight:700;margin-top:8px;font-size:16px;} .cd{font-family:monospace;color:#5D4CB0;font-size:14px;letter-spacing:2px;margin-top:2px;}</style></head><body>'+
+    '<h1>קודי כניסה · '+((S.klass.name||'הכיתה'))+'</h1><p>כל ילד.ה סורק.ת את הריבוע שלו.ה, או מקליד.ה את הקוד, כדי להיכנס.</p><div class="g">'+cells+'</div>'+
+    '<scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},350);};</scr'+'ipt></body></html>');
+  w.document.close();
+}
+
+/* ---------- STUDENT: scan own QR (demo = tap your name) ---------- */
+function studentEntryStep(){
+  return {
+    label:'הצטרפות', nextText:'מַתְחִילִים',
+    render(){
+      let names=[]; try{ const m=JSON.parse(localStorage.getItem('avnei-rosters')||'{}'); const keys=Object.keys(m);
+        const byCode = m[(S.student.code||'').toUpperCase()] || (keys.length?m[keys[keys.length-1]]:null);
+        if(byCode&&byCode.length) names=byCode.slice(); }catch(e){}
+      if(!names.length) names=Object.keys(DEMO_ROSTER);
+      const chips=names.map((nm,i)=>`<button type="button" data-name="${nm}"><span class="dot">${i+1}</span>${nm}</button>`).join('');
+      return `<div class="welcome"><img class="noni" src="assets/noni-hero-transparent.png" alt="נוני מקבלת פנים" draggable="false"><div class="say">סִרְקוּ אֶת הַקּוֹד שֶׁלָּכֶם!</div></div>
+        <p class="lead" style="text-align:center">לְכָל יֶלֶד.ה יֵשׁ רִבּוּעַ QR מִשֶּׁלּוֹ.ה. כָּאן בַּדֶּמוֹ — בַּחֲרוּ אֶת הַשֵּׁם שֶׁלָּכֶם<span class="brand-dot"></span></p>
+        <div class="namechips" id="sNames">${chips}</div>
+        <p class="tip">הכניסה מתועדת · התוצאות יישלחו למחנכת</p>`;
+    },
+    after(){ $$('#sNames button').forEach(b=>b.addEventListener('click', ()=>{ S.student.name=b.getAttribute('data-name');
+      $$('#sNames button').forEach(x=>x.classList.toggle('on',x===b)); refreshNext(); })); },
+    valid(){ return !!S.student.name; },
+    async next(){
+      try{ localStorage.setItem('avnei-gate-student-registration', JSON.stringify({ student_name:S.student.name, registered_at:new Date().toISOString() })); }catch(e){}
+      const token=DEMO_ROSTER[S.student.name];
+      location.href = token ? ('student.html?token='+encodeURIComponent(token)+'&remap=1') : 'boy-check-adventure.html';
+      return false;
+    }
+  };
+}
+
+/* ---------- flows ---------- */
+const STEPS = {
+  principal: [ authStep(), schoolStep(), classesStep(), readyStep() ],
+  teacher:   [ authStep(), rosterStep(), qrStep(), readyStep() ],
+  student:   [ studentEntryStep() ]
+};
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+(async function boot(){
+  const qRole=params.get('role'), qCode=params.get('code'), qScode=params.get('scode');
+  if(qCode) S.student.code=qCode.toUpperCase();
+  // הקלדת/סריקת קוד-תלמיד קצר (S-XXXXX) → זיהוי ישיר ומעבר לכניסה.
+  // (בענן ה-QR מקודד student.html?token= ישירות ולא עובר כאן; scode = גיבוי-הקלדה.)
+  if(qScode){
+    if(!DEMO && sb){
+      const r=await resolveStudentCloud(qScode.toUpperCase());
+      if(r&&r.token){ location.href=siblingURL('student.html')+'?token='+encodeURIComponent(r.token)+'&remap=1'; return; }
+      S.role='student';
+    } else {
+      try{ const m=JSON.parse(localStorage.getItem('avnei-student-codes')||'{}'); const nm=m[qScode];
+        if(nm){ localStorage.setItem('avnei-gate-student-registration', JSON.stringify({ student_name:nm, registered_at:new Date().toISOString() }));
+          const tok=DEMO_ROSTER[nm]; location.href = tok?('student.html?token='+encodeURIComponent(tok)+'&remap=1'):'boy-check-adventure.html'; return; } }catch(e){}
+      S.role='student';
+    }
+  }
+  try{ const sv=JSON.parse(localStorage.getItem('avnei-principal-setup')||'null'); if(sv&&sv.name){ S.school=Object.assign(S.school,sv); } }catch(e){}
+
+  if(!DEMO && sb){
+    try{ const u=await sb.auth.getUser(); const user=u.data&&u.data.user;
+      if(user && !params.has('home')){
+        const ctx=await getContext();
+        if(ctx){ S.school.name=ctx.school_name||''; S.school.code=ctx.join_code||null;
+          if(ctx.role==='principal'){ S.role='principal'; S.i=1; renderFrame(); return; }
+          const { data:classes } = await sb.from('classes').select('id,name').limit(1);
+          if(classes&&classes.length){ location.href='teacher-home.html'; return; }
+          // מורה מחוברת אך עדיין לא שויכה לכיתה → חזרה לצעד-הקוד (authStep) להזין קוד-כיתה.
+          S.role='teacher'; S.i=0; renderFrame(); return;
+        }
+      }
+    }catch(e){}
+  }
+  if(qRole==='student'||qRole==='principal'||qRole==='teacher'){ S.role=qRole; }
+  S.i = S.stepByRole[S.role]||0;
+  renderFrame();
+})();
+
+/* נוני נדנוד */
+document.addEventListener('click', e=>{ const n=e.target.closest('.noni'); if(n){ n.style.animation='none'; void n.offsetWidth; n.style.animation='float 4s ease-in-out infinite'; } });
+</script>
+</body>
+</html>
