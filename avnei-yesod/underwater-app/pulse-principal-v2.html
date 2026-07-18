@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#FFFFFF">
+  <title>פולס בית-ספרי · מנהלת · אבני יסוד · DESIGN-LOCK</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Rubik:wght@400;500;600;700;800;900&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="dashboard-v2.css">
+  <script src="../../demo/demo-icons.js" defer></script>
+  <link rel="preconnect" href="https://esm.sh" crossorigin>
+  <link rel="preconnect" href="https://ynxfszmpoppqrqocewcs.supabase.co" crossorigin>
+  <link rel="modulepreload" href="https://esm.sh/@supabase/supabase-js@2.45.4">
+  <script src="js/shared/cloud-config.js"></script>
+  <script src="js/shared/teacher-cloud.js"></script>
+  <script src="js/shared/principal-cloud.js"></script>
+  <script src="js/shared/pulse-cloud.js"></script>
+  <script src="js/shared/teacher-cloud-soft.js"></script>
+  <style>
+  /* ---- page-specific (פולס בית-ספרי) ---- */
+  .hero{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 24px;box-shadow:var(--shadow-flat);margin-bottom:20px;border-inline-start:6px solid var(--pink);}
+  .hero .q{font-size:12px;font-weight:800;color:var(--pink-deep);background:var(--pink-soft);display:inline-block;padding:4px 13px;border-radius:var(--pill);margin-bottom:10px;}
+  .hero h1{font-size:clamp(20px,2.4vw,25px);font-weight:800;color:var(--ink);}
+  .hero p{font-size:13.5px;color:var(--ink-soft);margin-top:7px;max-width:74ch;line-height:1.5;} .hero p b{color:var(--ink);}
+  .hero .acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;}
+
+  /* dimension tiles */
+  .dims{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;}
+  .dim{display:flex;align-items:flex-start;gap:13px;}
+  .dtile{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;flex:0 0 auto;}
+  .dtile .tic svg{width:24px;height:24px;}
+  .dim h3{font-size:15.5px;font-weight:800;color:var(--ink);}
+  .dim .st{font-size:13.5px;font-weight:700;margin-top:3px;}
+  .dim .st.ok{color:var(--ok-tx);} .dim .st.watch{color:var(--watch-tx);} .dim .st.care{color:var(--care-tx);} .dim .st.new{color:var(--ink-soft);}
+  .dim small{display:block;font-size:12.5px;color:var(--ink-soft);line-height:1.45;margin-top:5px;}
+  .dim .bar{height:6px;border-radius:4px;background:var(--surface-soft);margin-top:9px;overflow:hidden;}
+  .dim .bar>i{display:block;height:100%;border-radius:4px;}
+
+  /* per-class pulse cards */
+  .clsgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));gap:14px;}
+  .ccls{display:flex;flex-direction:column;gap:11px;position:relative;min-height:150px;}
+  .ctile{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-size:20px;font-weight:800;font-family:'Heebo',sans-serif;flex:0 0 auto;}
+  .ccls.ok .ctile{background:var(--okbg);color:var(--ok-tx);}
+  .ccls.watch .ctile{background:var(--watchbg);color:var(--watch-tx);}
+  .ccls.care .ctile{background:var(--carebg);color:var(--care-tx);}
+  .ccls.new .ctile{background:var(--purple-soft);color:var(--purple-deep);}
+  .ccls h3{font-size:18px;font-weight:800;color:var(--ink);}
+  .ccls h3 small{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-top:2px;}
+  .ccls p{font-size:13.5px;color:var(--ink-soft);line-height:1.5;flex:1;margin:0;}
+  .ccls p b{color:var(--ink);}
+  .ccls .flag{font-size:12.5px;font-weight:800;}
+  .ccls.ok .flag{color:var(--ok-tx);} .ccls.watch .flag{color:var(--watch-tx);} .ccls.care .flag{color:var(--care-tx);} .ccls.new .flag{color:var(--ink-soft);}
+  .ccls .done{position:absolute;top:14px;left:14px;display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:var(--pill);white-space:nowrap;}
+  .ccls .done.full{color:var(--ok-tx);background:var(--okbg);} .ccls .done.part{color:var(--watch-tx);background:var(--watchbg);}
+  .ccls .done .tic svg{width:13px;height:13px;}
+
+  /* attention children */
+  .kids{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;}
+  .kid{border-inline-start:5px solid var(--c);}
+  .kid.care{--c:var(--care);--cbg:var(--carebg);--ctx:var(--care-tx);} .kid.watch{--c:var(--watch);--cbg:var(--watchbg);--ctx:var(--watch-tx);}
+  .kid .top{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .kid .av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-size:17px;font-weight:800;color:var(--ctx);background:var(--cbg);flex:0 0 auto;font-family:'Heebo',sans-serif;}
+  .kid h3{font-size:17.5px;font-weight:800;color:var(--ink);flex:1;}
+  .kid .pill{font-size:11px;font-weight:800;padding:4px 11px;border-radius:var(--pill);white-space:nowrap;background:var(--cbg);color:var(--ctx);}
+  .kid .chip{font-size:11px;font-weight:700;padding:3px 10px;border-radius:var(--pill);background:var(--purple-soft);color:var(--purple-deep);}
+  .kid .seen{font-size:14px;color:var(--ink-soft);line-height:1.5;margin:3px 0;} .kid .seen b{color:var(--ink);}
+  .kid .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+
+  .note{font-size:13px;color:var(--ink-soft);line-height:1.55;background:var(--surface-soft);border:1px solid var(--line);border-radius:14px;padding:13px 16px;} .note b{color:var(--ink);}
+  .rt-cloud{background:var(--okbg);color:var(--ok-tx);} .rt-cloud .d{background:var(--ok);}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <nav class="rail" aria-label="ניווט">
+      <a class="logo" href="principal-avnei-v2.html"><span class="gm"><svg viewBox="0 0 24 24" fill="none" stroke="#5D4CB0" stroke-width="2.3" stroke-linecap="round"><path d="M6 18v-5"/><path d="M12 18V7"/><path d="M18 18v-8"/></svg></span><b>אבני<br>יסוד</b></a>
+      <a class="item" href="principal-avnei-v2.html"><span class="ic" data-ic="home"></span><span class="t">דף הבית</span></a>
+      <a class="item" href="principal-avnei-v2.html#sec-classes"><span class="ic" data-ic="classes"></span><span class="t">מפת כיתות</span></a>
+      <a class="item" href="principal-avnei-v2.html#sec-usage"><span class="ic" data-ic="people"></span><span class="t">צוות</span></a>
+      <a class="item" href="mavat-meshulav-v2.html"><span class="ic" data-ic="learn"></span><span class="t">למידה ורגש</span></a>
+      <a class="item active" href="pulse-principal-v2.html"><span class="ic" data-ic="pulse"></span><span class="t">פולס</span></a>
+      <div class="me"><div class="av" id="meAv">נ</div><small id="meNm">ד״ר נעה שרון<span id="meSchool">בית ספר אימפקט</span></small></div>
+    </nav>
+
+    <main class="main"><div class="main-inner">
+      <div class="topbar">
+        <a class="backhome" href="gate-landing.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>למסך הראשי</a>
+        <div class="crumbs" id="crumbs">בית ספר אימפקט · אבני יסוד<span class="brand-dot"></span> · מנהלת · פולס</div>
+        <div class="date" id="todayDate">היום</div>
+      </div>
+
+      <div class="hero">
+        <span class="q">מצב רגשי-חברתי · בית-ספרי</span>
+        <h1 id="heroTitle">פולס — איך בית הספר מרגיש<span class="brand-dot"></span></h1>
+        <p id="heroLine">תמונת הרווחה מהפולס האחרון של השכבה — ברמת הממד, הכיתה והילד.ה. הפולס לא מדרג ולא מתייג; הוא מסמן איפה כדאי להקשיב קודם.</p>
+        <div class="acts"><a class="btn btn-soft" href="mavat-meshulav-v2.html"><span class="tic" data-ic="link"></span>למבט המשולב</a></div>
+      </div>
+
+      <section class="sec" id="dimsSec">
+        <div class="sec-title"><span class="tic" data-ic="waves"></span> תמונת בית הספר<span class="brand-dot"></span> <span class="tag" id="dimsTag">4 ממדים</span></div>
+        <div class="dims" id="dims"></div>
+      </section>
+
+      <section class="sec" id="clsSec">
+        <div class="sec-title"><span class="tic" data-ic="classes"></span> לפי כיתות<span class="brand-dot"></span> <span class="tag" id="clsTag">פולס אחרון</span></div>
+        <div class="clsgrid" id="clsgrid"></div>
+      </section>
+
+      <section class="sec" id="kidsSec">
+        <div class="sec-title"><span class="tic" data-ic="heart"></span> ילדים לתשומת לב רגשית<span class="brand-dot"></span> <span class="tag" id="kidsTag">מכל הכיתות</span></div>
+        <div class="kids" id="kids"></div>
+      </section>
+
+      <div class="note"><b>חשוב:</b> הפולס לא מדרג כיתות ולא מתייג ילדים — הוא מסמן איפה כדאי להקשיב קודם, והמורה תמיד רואה לפני המנהלת.</div>
+    </div></main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="rt-badge rt-demo" id="rtBadge"><span class="d"></span><span id="rtTx">נתוני דמו</span></div>
+
+  <script>
+    function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},2600);}
+    function initial(n){return (n||'').replace(/[^א-ת]/g,'').charAt(0)||'·';}
+    function fillTics(){if(!window.DemoIcons)return;document.querySelectorAll('.tic[data-ic]').forEach(function(el){if(!el.firstChild&&DemoIcons[el.dataset.ic])el.innerHTML=DemoIcons[el.dataset.ic];});}
+
+    function levelOf(mean){ if(mean==null)return 'new'; if(mean>=2.4)return 'ok'; if(mean>=1.8)return 'watch'; return 'care'; }
+    var stTx={ok:'יציב',watch:'לתשומת לב',care:'זקוק להקשבה','new':'טרם נאסף'};
+    var stFace={ok:'רוב הילדים מדווחים חיובי.',watch:'חלק מהילדים מסמנים קושי.',care:'ילדים אחדים מבקשים הקשבה.','new':'עדיין אין מספיק תשובות.'};
+    var barCol={ok:'var(--ok)',watch:'var(--watch)',care:'var(--care)','new':'var(--ink-faint)'};
+    var dimTint={adjust:{bg:'var(--aqua-soft)',fg:'var(--aqua-deep)'},friend:{bg:'var(--pink-soft)',fg:'var(--pink-deep)'},emotion:{bg:'var(--purple-soft)',fg:'var(--purple-deep)'},joy:{bg:'var(--okbg)',fg:'var(--ok-tx)'}};
+
+    /* ---------- SEED — פולס בית-ספרי (בית ספר אימפקט) ---------- */
+    var DIMS=[
+      {id:'adjust', label:'הסתגלות לכיתה', icon:'leaf',      mean:2.6, n:21},
+      {id:'friend', label:'חברוּת וקשרים', icon:'handshake', mean:2.1, n:21},
+      {id:'emotion',label:'ויסות רגשי',    icon:'heart',     mean:2.3, n:21},
+      {id:'joy',    label:'שמחה בלמידה',   icon:'star',      mean:2.5, n:21}
+    ];
+    var CLS=[
+      {name:'א׳1',teacher:'מיטל פלג',   total:6,answered:6,care:1,watch:1},
+      {name:'א׳2',teacher:'רונית לוי',  total:6,answered:6,care:0,watch:1},
+      {name:'א׳3',teacher:'דנה בר-און', total:5,answered:4,care:1,watch:1},
+      {name:'א׳4',teacher:'טרם הצטרפה', total:0,answered:0,care:0,watch:0}
+    ];
+    var KIDS=[
+      {name:'יונתן ס.',className:'א׳3',status:'care',dimLabel:'ויסות רגשי'},
+      {name:'איתי כ.', className:'א׳1',status:'care',dimLabel:'שמחה בלמידה'},
+      {name:'נטע פ.',  className:'א׳2',status:'watch',dimLabel:'חברוּת וקשרים'},
+      {name:'ליה מ.',  className:'א׳3',status:'watch',dimLabel:'הסתגלות לכיתה'},
+      {name:'יעל ב.',  className:'א׳1',status:'watch',dimLabel:'חברוּת וקשרים'}
+    ];
+
+    function classStatus(o){ if(!o.answered)return 'new'; var careShare=o.care/o.answered; return careShare>=0.34?'care':((o.care+o.watch)>0?'watch':'ok'); }
+
+    /* ---------- render ---------- */
+    function renderDims(){
+      var totalN=DIMS.reduce(function(m,d){return Math.max(m,d.n);},0);
+      document.getElementById('dimsTag').textContent='4 ממדים · '+totalN+' ילדים ענו';
+      document.getElementById('dims').innerHTML=DIMS.map(function(m){
+        var cls=levelOf(m.mean); var pct=m.mean!=null?Math.round((m.mean-1)/2*100):0;
+        var tint=dimTint[m.id]||{bg:'var(--purple-soft)',fg:'var(--purple-deep)'};
+        var desc=m.n?stFace[cls]:'טרם נאספו תשובות בממד זה.';
+        return '<div class="card dim">'+
+          '<span class="dtile" style="background:'+tint.bg+';color:'+tint.fg+'"><span class="tic" data-ic="'+m.icon+'"></span></span>'+
+          '<div style="flex:1"><h3>'+m.label+'</h3>'+
+          '<div class="st '+cls+'">'+stTx[cls]+(m.n?' · '+m.mean.toFixed(1)+'/3':'')+'</div>'+
+          '<small>'+desc+'</small>'+
+          '<div class="bar"><i style="width:'+pct+'%;background:'+barCol[cls]+'"></i></div></div></div>';
+      }).join('');
+    }
+    function renderClasses(){
+      document.getElementById('clsgrid').innerHTML=CLS.map(function(o){
+        var st=classStatus(o); var flagged=o.care+o.watch;
+        var line=st==='new'?'טרם התקבל פולס מהכיתה.':(flagged?'<b>'+flagged+' '+(flagged===1?'ילד.ה':'ילדים')+' לתשומת לב</b> רגשית מתוך '+o.answered+' שענו.':'תמונה יציבה — אין ילדים במעקב רגשי.');
+        var flagTx=st==='new'?'ממתין לפולס':(flagged?flagged+' במעקב':'שגרה טובה');
+        var doneCls=o.total&&o.answered>=o.total?'full':'part';
+        var doneTx=o.total?o.answered+'/'+o.total+' ענו':'אין תלמידים';
+        return '<div class="card ccls '+st+'">'+
+          '<span class="done '+doneCls+'"><span class="tic" data-ic="checkcircle"></span>'+doneTx+'</span>'+
+          '<span class="ctile">'+(o.name||'').replace(/[^0-9]/g,'')+'</span>'+
+          '<h3>'+o.name+' <small>'+o.teacher+'</small></h3>'+
+          '<p>'+line+'</p>'+
+          '<span class="flag">'+flagTx+'</span></div>';
+      }).join('');
+      document.getElementById('clsTag').textContent='פולס אחרון · '+CLS.length+' כיתות';
+    }
+    function renderKids(){
+      if(!KIDS.length){document.getElementById('kidsSec').hidden=true;return;}
+      document.getElementById('kidsSec').hidden=false;
+      document.getElementById('kidsTag').textContent=KIDS.length+' השבוע · מכל הכיתות';
+      document.getElementById('kids').innerHTML=KIDS.map(function(x){
+        var seen=x.status==='care'?'מסמן.ת קושי חוזר ב<b>'+x.dimLabel+'</b> בפולס האחרון. שווה הקשבה קרובה.':'סימון של קושי מתון ב<b>'+x.dimLabel+'</b> — לשים לב שלא מעמיק.';
+        return '<div class="card kid '+x.status+'">'+
+          '<div class="top"><div class="av">'+initial(x.name)+'</div><h3>'+x.name+'</h3>'+
+          '<span class="chip">'+x.className+'</span><span class="pill">'+x.dimLabel+'</span></div>'+
+          '<div class="seen">'+seen+'</div>'+
+          '<div class="acts"><a class="btn btn-soft btn-sm" href="mavat-meshulav-v2.html"><span class="tic" data-ic="link"></span>למבט המשולב</a></div></div>';
+      }).join('');
+    }
+    function renderAll(){renderDims();renderClasses();renderKids();fillTics();}
+    renderAll();
+    document.addEventListener('click',function(e){var b=e.target.closest('[data-toast]');if(b&&b.dataset.toast)toast(b.dataset.toast);});
+    window.addEventListener('load',fillTics);
+    if(window.DemoIcons)fillTics();else setTimeout(fillTics,400);
+
+    /* ---- dual-mode רך: פולס בית-ספרי אמיתי (PrincipalCloud × PulseCloud) ---- */
+    TeacherCloudSoft.tryWith(window.PrincipalCloud, function(st){
+      if(!st||!st.students||!window.PulseCloud)return;
+      document.getElementById('meSchool').textContent=st.school.name||'בית ספר';
+      var ids=st.students.map(function(s){return s.id;});
+      (ids.length?PulseCloud.loadForStudents(st.supabase,ids):Promise.resolve([])).then(function(rows){
+        var BYS=PulseCloud.perStudent(rows);
+        var answered=Object.keys(BYS).filter(function(sid){return BYS[sid].hasData;}).length;
+        if(!answered)return;  // אין פולס עדיין — נשאר הדמו
+        // ממדים בית-ספריים
+        var sd=PulseCloud.schoolDims(BYS);
+        DIMS=PulseCloud.DIMENSIONS.map(function(m){var d=sd[m.id]||{};return {id:m.id,label:m.label,icon:m.icon,mean:(d.mean!=null?d.mean:null),n:d.n||0};});
+        // פר-כיתה
+        function classNameOf(sid){var s=st.students.filter(function(x){return x.id===sid;})[0];if(!s)return '';var c=st.classes.filter(function(x){return x.id===s.class_id;})[0];return c?c.name:'';}
+        var byCid={};
+        st.classes.forEach(function(c){byCid[c.id]={name:c.name,teacher:(st.byClass[c.id]||{}).teacherName||'—',total:0,answered:0,care:0,watch:0};});
+        st.students.forEach(function(s){var o=byCid[s.class_id];if(!o)return;o.total++;var ps=BYS[s.id];if(!ps||!ps.hasData)return;o.answered++;var cl=ps.level.cls;if(cl==='care')o.care++;else if(cl==='watch')o.watch++;});
+        CLS=st.classes.map(function(c){return byCid[c.id];});
+        // ילדים לתשומת-לב
+        var kw=PulseCloud.kidsToWatch(st.students,BYS,classNameOf,9);
+        KIDS=kw.map(function(x){return {name:x.name,className:x.className,status:x.status,dimLabel:(x.weakDimMeta?x.weakDimMeta.label:'רווחה כללית')};});
+        renderAll();
+        document.getElementById('crumbs').innerHTML=(st.school.name||'בית ספר')+' · אבני יסוד<span class="brand-dot"></span> · מנהלת · פולס';
+        document.getElementById('heroTitle').innerHTML='פולס — איך בית הספר מרגיש · '+(st.school.name||'')+'<span class="brand-dot"></span>';
+        document.getElementById('heroLine').innerHTML=KIDS.length
+          ? 'תמונת הרווחה מ-'+answered+' ילדים שענו. <b>'+KIDS.length+' ילדים כדאי להקשיב להם קרוב</b> — ראו למטה, לצד תמונת הכיתות והממדים.'
+          : 'תמונת הרווחה מ-'+answered+' ילדים שענו — יציבה ברוב הממדים. אין כרגע ילדים שדורשים הקשבה קרובה.';
+        TeacherCloudSoft.setBadge();
+      }).catch(function(e){console.warn('[pulse-principal] pulse',e);});
+    });
+  </script>
+</body>
+</html>
