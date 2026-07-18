@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>מישמיש · مشمش — שער</title>
+  <meta name="description" content="מישמיש · مشمش — עברית כשפה שנייה לגיל 5–8 במגזר הערבי. שמיעתי-קודם, מסלול אישי אדפטיבי, הכלה בכיתה במקום הסללה.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Heebo (עברית) · Cairo (שם-המותג مشمش) · Fraunces (מספרים — סריף-רך) -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700&family=Fraunces:opsz,wght@9..144,600&family=Heebo:wght@500;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   מישמיש · مشمش — שער (דף-נחיתה שיווקי · רב-דפי, router JS)
+   ------------------------------------------------------------
+   חתימה: קשת-דלת (שלד) + אור-הפנס החושף (רגע-פתיחה).
+   טוקנים מקומיים לדף — נגזרים מ-styles/tokens.css. RTL, בלי אדום/ירוק.
+   מקור-בנייה היסטורי: c:\tmp\build_landing.py (18.7.2026).
+   ============================================================ */
+:root{
+  --cream:#fffaf1; --cream-2:#fdf3e2; --sand:#ead4ad; --line:#f0e2c8; --surface:#fff;
+  --ink:#33261c; --ink-soft:#6b5847; --ink-faint:#a08b73;
+  --apricot:#d9793d; --apricot-deep:#b7561f; --apricot-lite:#eea15e; --apricot-soft:#fbe6d2;
+  --sun:#f3ca67; --sun-deep:#dda936; --terra:#c95f3f; --mint:#55a292; --sky:#32799f;
+  --pill:999px; --r:22px; --ease:cubic-bezier(.22,1,.36,1); --sh:0 20px 46px -24px rgba(77,40,20,.5);
+}
+*{box-sizing:border-box;margin:0;}
+html{direction:rtl;} html,body{min-height:100%;}
+body{direction:rtl;text-align:right;font-family:'Heebo',system-ui,sans-serif;color:var(--ink);background:var(--cream);line-height:1.5;-webkit-font-smoothing:antialiased;letter-spacing:-.01em;overflow-x:hidden;}
+h1,h2,h3,h4{margin:0;font-weight:900;letter-spacing:-.03em;line-height:1.05;}
+p{margin:0;} a{color:inherit;text-decoration:none;}
+.arname{font-family:'Cairo',sans-serif;font-weight:700;opacity:.85;}
+.num{font-family:'Fraunces',Georgia,serif;font-weight:600;}
+.wrap{max-width:1040px;margin:0 auto;padding:0 22px;}
+
+/* ===== topbar (persistent across all pages) ===== */
+.topbar{position:fixed;inset-block-start:0;inset-inline:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:10px 14px;flex-wrap:wrap;padding:12px 20px;
+  background:linear-gradient(180deg, rgba(92,48,20,.5) 0%, rgba(92,48,20,.16) 62%, rgba(92,48,20,0) 100%);transition:background .3s,box-shadow .3s,backdrop-filter .3s;}
+.topbar::after{content:"";position:absolute;inset-block-end:0;inset-inline:6%;height:2px;pointer-events:none;background:linear-gradient(90deg, transparent, var(--sun) 22%, var(--apricot) 50%, var(--sun) 78%, transparent);opacity:.9;transition:opacity .3s;}
+.topbar.solid{background:rgba(255,250,241,.94);backdrop-filter:blur(14px);box-shadow:0 4px 22px -16px rgba(77,40,20,.5);border-block-end:1px solid rgba(234,212,173,.6);}
+.topbar.solid::after{opacity:.55;}
+.mark{display:inline-flex;align-items:center;gap:10px;font-weight:900;font-size:19px;color:#fff;text-shadow:0 2px 8px rgba(120,60,20,.4);cursor:pointer;transition:color .3s,text-shadow .3s;}
+.topbar.solid .mark{color:var(--ink);text-shadow:none;}
+.mark .g{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(160deg,var(--sun),var(--apricot));box-shadow:0 8px 18px -8px rgba(183,86,31,.8);}
+.mark .g i{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff6df,#fff);display:block;box-shadow:0 0 8px rgba(255,240,200,.9);}
+.mark .arname{font-size:16px;}
+.nav{display:flex;gap:4px;flex-wrap:wrap;}
+.nav a{position:relative;font-weight:800;font-size:14.5px;color:#fff;padding:8px 14px;border-radius:10px;cursor:pointer;text-shadow:0 1px 7px rgba(88,44,14,.5);transition:color .2s;}
+.topbar.solid .nav a{color:var(--ink-soft);text-shadow:none;}
+.nav a::after{content:"";position:absolute;inset-inline:14px;inset-block-end:3px;height:2.5px;border-radius:3px;background:linear-gradient(90deg,var(--sun),var(--apricot));transform:scaleX(0);transform-origin:center;transition:transform .25s var(--ease);}
+.nav a:hover::after,.nav a.on::after{transform:scaleX(1);}
+.nav a.on,.topbar.solid .nav a.on{color:#fff;}
+.topbar.solid .nav a:hover{color:var(--ink);}
+.topbar.solid .nav a.on{color:var(--apricot-deep);}
+.acts{display:flex;align-items:center;gap:10px;}
+.plan{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:13.5px;color:#fff;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.6);backdrop-filter:blur(8px);padding:10px 16px;border-radius:var(--pill);cursor:pointer;text-shadow:0 1px 6px rgba(88,44,14,.4);transition:transform .2s,background .2s,color .2s,border-color .2s;}
+.plan:hover{transform:translateY(-2px);background:rgba(255,255,255,.24);border-color:#fff;}
+.plan .badge{font-size:10px;font-weight:900;background:var(--sun);color:#5e3a06;padding:2px 8px;border-radius:var(--pill);}
+.plan svg{width:16px;height:16px;}
+.topbar.solid .plan{color:var(--apricot-deep);background:var(--cream-2);border-color:var(--sand);text-shadow:none;}
+@media(max-width:560px){.plan .ptext{display:none;}}
+.enter{display:inline-flex;align-items:center;gap:8px;font-weight:900;font-size:15.5px;color:#fff;background:linear-gradient(180deg,var(--apricot-lite),var(--apricot));border:none;padding:13px 26px;border-radius:var(--pill);cursor:pointer;box-shadow:0 14px 26px -12px rgba(183,86,31,.75),0 0 0 4px rgba(255,250,241,.4);transition:transform .2s;}
+.enter:hover{transform:translateY(-2px);}
+.enter svg{width:16px;height:16px;}
+@media(max-width:560px){.enter .etext{display:none;}}
+
+/* ===== pages ===== */
+.page{display:none;min-height:100vh;}
+.page.active{display:block;animation:fadeUp .45s var(--ease);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+
+/* gate (home) */
+#page-gate{position:relative;display:none;}
+#page-gate.active{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:100vh;
+  padding:104px 22px 56px;background:radial-gradient(130% 82% at 50% 0%, #ffe6bd 0%, #f6c88d 28%, #eaa15e 60%, #d9843f 100%);}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:8px 18px;border-radius:var(--pill);background:rgba(255,244,224,.3);border:1px solid rgba(255,255,255,.55);color:#5e3410;font-weight:800;font-size:13px;backdrop-filter:blur(4px);margin-bottom:6px;}
+.eyebrow .d{width:7px;height:7px;border-radius:50%;background:var(--apricot-deep);}
+.gate{position:relative;width:min(560px,94%);margin-top:16px;border-radius:280px 280px 26px 26px;overflow:hidden;background:linear-gradient(180deg,#fffdf8,var(--cream));border:2px solid var(--sand);padding:42px 34px 38px;box-shadow:0 34px 64px -26px rgba(77,40,20,.6);}
+.gate .glow{position:absolute;inset-block-start:-8%;left:50%;transform:translateX(-50%);width:130%;height:64%;pointer-events:none;background:radial-gradient(58% 66% at 50% 30%, rgba(255,226,150,.82), rgba(243,202,103,.32) 34%, rgba(243,202,103,0) 68%);}
+.gate .cat{position:relative;width:min(190px,46vw);filter:drop-shadow(0 18px 22px rgba(58,31,26,.32));}
+.gate h1{position:relative;margin-top:12px;font-size:clamp(44px,10vw,72px);color:var(--ink);display:flex;align-items:baseline;gap:.28em;justify-content:center;flex-wrap:wrap;}
+.gate h1 .arname{font-size:.6em;color:var(--apricot-deep);}
+.gate .slogan{position:relative;margin-top:12px;font-weight:900;font-size:clamp(18px,4vw,24px);color:var(--apricot-deep);text-wrap:balance;}
+.gate .lead{position:relative;margin:12px auto 0;max-width:44ch;font-weight:500;font-size:clamp(14px,3.4vw,16px);color:var(--ink-soft);line-height:1.6;}
+.cta-main{position:relative;margin-top:24px;display:inline-flex;align-items:center;gap:13px;font-weight:900;font-size:clamp(22px,5.4vw,30px);color:#fff;background:linear-gradient(180deg,var(--apricot-lite),var(--apricot));padding:24px 60px;border-radius:var(--pill);min-height:82px;cursor:pointer;box-shadow:0 24px 46px -14px rgba(183,86,31,.9), 0 0 0 8px rgba(255,250,241,.6);transition:transform .22s var(--ease);animation:beat 2.6s ease-in-out infinite;}
+.cta-main:hover{transform:translateY(-3px) scale(1.02);}
+.cta-main svg{width:26px;height:26px;}
+@keyframes beat{0%,100%{box-shadow:0 24px 46px -14px rgba(183,86,31,.9),0 0 0 8px rgba(255,250,241,.6);}50%{box-shadow:0 26px 52px -12px rgba(183,86,31,.95),0 0 0 15px rgba(255,250,241,.34);}}
+
+/* subpage shell — each stands on its own */
+.subpage{padding:130px 0 70px;min-height:100vh;}
+#page-why{background:linear-gradient(180deg,#fff,var(--cream));}
+#page-how{background:linear-gradient(180deg,var(--cream),#f7ecd8);}
+#page-roles{background:radial-gradient(120% 50% at 50% 0%, #fff3e0, var(--cream) 60%);}
+#page-plan{background:linear-gradient(180deg,#fff,#f5ecdb);}
+.phead{text-align:center;max-width:60ch;margin:0 auto 44px;}
+.phead .n{font-weight:900;font-size:13px;color:var(--apricot);letter-spacing:.05em;}
+.phead h2{font-size:clamp(30px,5.2vw,46px);color:var(--ink);margin:10px 0 12px;text-wrap:balance;}
+.phead p{color:var(--ink-soft);font-size:17px;line-height:1.6;}
+.phead .line{width:200px;height:3px;margin:20px auto 0;border-radius:3px;background:linear-gradient(90deg,transparent,var(--sun),var(--apricot),var(--sun),transparent);}
+.pain{font-size:clamp(15.5px,3.7vw,18.5px);color:var(--ink-soft);line-height:1.75;max-width:58ch;margin:0 auto;}
+.pain b{color:var(--apricot-deep);font-weight:800;}
+.valhead{text-align:center;font-weight:900;font-size:clamp(22px,4.2vw,32px);color:var(--ink);margin:6px 0 6px;text-wrap:balance;}
+.valsub{text-align:center;color:var(--ink-soft);font-size:15.5px;margin:0 auto 32px;}
+.vals{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+@media(max-width:820px){.vals{grid-template-columns:1fr 1fr;}}
+@media(max-width:560px){.vals{grid-template-columns:1fr;max-width:420px;margin-inline:auto;}}
+.vals .door{cursor:default;border-radius:92px 92px 20px 20px;padding:30px 22px 24px;}
+.vals .door h3{font-size:19px;margin-bottom:8px;}
+.vals .door p{min-height:0;font-size:14px;}
+.backhome{display:block;text-align:center;margin-top:48px;}
+.backhome button{font-family:inherit;font-weight:800;font-size:14.5px;color:var(--apricot-deep);background:var(--cream);border:2px solid var(--sand);border-radius:var(--pill);padding:12px 26px;cursor:pointer;transition:transform .2s,border-color .2s;}
+.backhome button:hover{transform:translateY(-2px);border-color:var(--apricot-lite);}
+
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+@media(max-width:780px){.tiles{grid-template-columns:1fr;max-width:420px;margin-inline:auto;}}
+.tile{background:var(--surface);border:1px solid var(--sand);border-radius:var(--r);padding:28px 24px;box-shadow:var(--sh);}
+.tile .ic{width:54px;height:54px;border-radius:15px;display:grid;place-items:center;color:#fff;margin-bottom:15px;background:linear-gradient(160deg,var(--apricot-lite),var(--apricot));box-shadow:0 12px 22px -10px rgba(183,86,31,.6);}
+.tile.b .ic{background:linear-gradient(160deg,#6fb7d6,var(--sky));}.tile.c .ic{background:linear-gradient(160deg,#7bc2af,var(--mint));}
+.tile .ic svg{width:27px;height:27px;stroke-width:1.9;}
+.tile h4{font-size:20px;margin-bottom:8px;}
+.tile p{font-size:14.5px;color:var(--ink-soft);line-height:1.6;}
+
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+@media(max-width:860px){.flow{grid-template-columns:1fr 1fr;}}
+@media(max-width:480px){.flow{grid-template-columns:1fr;max-width:360px;margin-inline:auto;}}
+.step{background:var(--surface);border:1px solid var(--sand);border-radius:var(--r);padding:24px 20px;box-shadow:var(--sh);}
+.step .sn{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:20px;color:#fff;background:linear-gradient(160deg,var(--sun-deep),var(--apricot));margin-bottom:14px;}
+.step h4{font-size:17.5px;margin-bottom:7px;}
+.step p{font-size:14px;color:var(--ink-soft);line-height:1.55;}
+
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+@media(max-width:820px){.cards{grid-template-columns:1fr;max-width:400px;margin-inline:auto;}}
+.door{position:relative;display:block;background:var(--cream);border:1px solid var(--sand);border-radius:110px 110px 22px 22px;padding:36px 24px 28px;text-align:center;box-shadow:var(--sh);overflow:hidden;transition:transform .4s var(--ease),box-shadow .4s;cursor:pointer;}
+.door::before{content:"";position:absolute;inset-block-start:0;inset-inline:0;height:120px;pointer-events:none;background:radial-gradient(120% 90% at 50% 0%, rgba(243,202,103,.28), rgba(243,202,103,0) 60%);}
+.door:hover{transform:translateY(-8px);box-shadow:0 30px 56px -24px rgba(77,40,20,.55);}
+.door .tag{display:inline-block;font-size:11.5px;font-weight:800;color:var(--apricot-deep);background:var(--apricot-soft);padding:4px 12px;border-radius:var(--pill);margin-bottom:12px;}
+.door.mint .tag{color:var(--mint);background:#e2f2ee;}.door.sky .tag{color:var(--sky);background:#eaf3f8;}
+.door .disc{position:relative;width:70px;height:70px;margin:2px auto 16px;border-radius:50%;display:grid;place-items:center;color:#fff;background:linear-gradient(160deg,var(--apricot-lite),var(--apricot));box-shadow:0 12px 22px -10px rgba(183,86,31,.7),inset 0 0 0 5px rgba(255,255,255,.28);}
+.door.mint .disc{background:linear-gradient(160deg,#7bc2af,var(--mint));}.door.sky .disc{background:linear-gradient(160deg,#6fb7d6,var(--sky));}
+.door .disc svg{width:33px;height:33px;stroke-width:1.9;}
+.door h3{font-size:22px;margin-bottom:9px;}
+.door p{font-size:14.5px;color:var(--ink-soft);line-height:1.6;min-height:70px;}
+.door .go{display:inline-flex;align-items:center;gap:7px;margin-top:14px;font-weight:800;font-size:15px;color:var(--apricot-deep);}
+.door.mint .go{color:var(--mint);}.door.sky .go{color:var(--sky);}
+.door .go svg{width:16px;height:16px;}
+
+/* plan (yearly timeline demo) */
+.timeline{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:12px;}
+.tl{display:flex;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--sand);border-radius:18px;padding:16px 20px;box-shadow:var(--sh);}
+.tl .mo{font-family:'Fraunces',serif;font-weight:600;font-size:15px;color:var(--apricot-deep);min-width:80px;}
+.tl .dot{width:14px;height:14px;border-radius:50%;background:linear-gradient(160deg,var(--sun),var(--apricot));box-shadow:0 0 0 4px rgba(243,202,103,.24);flex:0 0 auto;}
+.tl .topic{font-weight:800;font-size:16px;}
+.tl .topic small{display:block;font-weight:600;font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+.tl.head-row{background:linear-gradient(160deg,#fff,var(--cream));border-color:var(--apricot-lite);}
+
+footer.foot{padding:34px 22px 30px;text-align:center;color:var(--ink-faint);font-size:12.5px;}
+footer.foot .mk{display:inline-flex;align-items:center;gap:9px;color:var(--ink);font-weight:900;font-size:16px;margin-bottom:6px;}
+footer.foot .mk .g{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(160deg,var(--sun),var(--apricot));}
+footer.foot .mk .g i{width:10px;height:10px;border-radius:50%;background:#fff;display:block;}
+
+/* lantern reveal (gate only) */
+.veil{position:fixed;inset:0;z-index:60;pointer-events:none;display:none;backdrop-filter:saturate(.42) brightness(1.12);
+  background:radial-gradient(circle at 30% 18%, rgba(255,255,255,.34), rgba(255,255,255,0) 46%), linear-gradient(160deg, rgba(255,248,235,.5), rgba(250,234,208,.44));
+  -webkit-mask:radial-gradient(circle var(--r,160px) at var(--x,50vw) var(--y,50vh), transparent 0, transparent calc(var(--r,160px) * .70), #000 var(--r,160px));
+          mask:radial-gradient(circle var(--r,160px) at var(--x,50vw) var(--y,50vh), transparent 0, transparent calc(var(--r,160px) * .70), #000 var(--r,160px));}
+.halo{position:fixed;inset-block-start:0;inset-inline-start:0;z-index:61;pointer-events:none;mix-blend-mode:screen;background:radial-gradient(circle, rgba(255,232,158,.75) 0%, rgba(243,202,103,.26) 42%, rgba(243,202,103,0) 68%);transform:translate(var(--x,50vw),var(--y,50vh));opacity:0;}
+@media (prefers-reduced-motion: reduce){.veil,.halo{display:none!important;}}
+</style>
+</head>
+<body>
+
+<div class="topbar" id="topbar">
+  <div class="mark" data-go="gate"><span class="g"><i></i></span><span>מִישְׁמִישׁ</span><span class="arname" lang="ar">مشمش</span></div>
+  <nav class="nav">
+    <a data-go="why">מה מייחד</a>
+    <a data-go="how">איך זה עובד</a>
+    <a data-go="roles">קהלים</a>
+  </nav>
+  <div class="acts">
+    <a class="plan" data-go="plan"><span class="badge">דמו</span> <span class="ptext">תוכנית שנתית</span> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2.4"/><path d="M8 2v4M16 2v4M3 10h18M8 14h4M8 18h6"/></svg></a>
+    <a class="enter" data-go="roles"><span class="etext">כניסה למערכת</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></a>
+  </div>
+</div>
+
+<!-- ===== PAGE: gate ===== -->
+<section class="page active" id="page-gate">
+  <div class="eyebrow"><span class="d"></span> עברית כשפה שנייה · גיל 5–8 · המגזר הערבי</div>
+  <div class="gate">
+    <span class="glow"></span>
+    <img class="cat" src="../assets/characters/mishmish/mishmish-happy.png" alt="מישמיש" width="190" height="190">
+    <h1><span>מִישְׁמִישׁ</span><span class="arname" lang="ar">مشمش</span></h1>
+    <div class="slogan">עברית מתחילה בשכונה שלך</div>
+    <p class="lead">מישמיש מזהה איפה כל ילד וילדה נמצאים, ובונה מסלול אישי שמתקדם בעצמו — שמיעתי-קודם, בהומור, בלי מבחנים.</p>
+    <a class="cta-main" data-go="roles">בואו נתחיל <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></a>
+  </div>
+</section>
+
+<!-- ===== PAGE: why ===== -->
+<section class="page subpage" id="page-why"><div class="wrap">
+  <div class="phead">
+    <div class="n">הבעיה</div>
+    <h2>ילד שמתחיל עברית לא צריך להיזרק למים — הוא צריך יד</h2>
+    <p class="pain">בכיתה אחת יושבים ילדים עם פערים עצומים בעברית. הכלים מתחילים מרמה אחידה, אז <b>חלק אבודים וחלק משתעממים</b>. התגבור לרוב <b>מוציא את הילד מהכיתה</b> במקום לחזק אותו בתוכה, והמורה לא באמת רואה מי צריך מה. והילד? מרגיש שמבקשים ממנו <b>להחליף את השפה שלו</b> — לא לגשר אליה.</p>
+    <div class="line"></div>
+  </div>
+
+  <div class="valhead">מה מישמיש עושה אחרת</div>
+  <div class="valsub">שישה עקרונות שמתרגמים את הכאב לפתרון — ומנחים כל משחקון.</div>
+  <div class="vals">
+    <div class="door"><span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg></span><h3>מתחיל מאיפה שהילד נמצא</h3><p>טיול-פנס קצר ממפה כל ילד/ה, והמסלול נבנה אליו/ה. לא רמה אחידה — התאמה אמיתית.</p></div>
+    <div class="door mint"><span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4h4l5 5V5L7 10H3Z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19.5 6a9 9 0 0 1 0 12"/></svg></span><h3>שמיעתי-קודם</h3><p>קודם האוזן, אחר כך העין. הכתב המנוקד מגיע רק כתמיכה — כי טקסט-first מַצִיף לומד/ת עברית כשפה שנייה.</p></div>
+    <div class="door sky"><span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 2"/><path d="M16 3h5v5"/></svg></span><h3>מדייק את מוקדי-ההפרעה</h3><p>פּ/בּ, ח/ע וחבריהם — הצלילים שהכי מאתגרים דובר/ת ערבית — מתורגלים בהדרגה, בבחירת המסיחים, לא במבחן.</p></div>
+    <div class="door"><span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 5.5a3 3 0 0 1 0 5.4"/><path d="M18.5 20a6.4 6.4 0 0 0-3-5.4"/></svg></span><h3>הכלה בכיתה, לא הסללה</h3><p>אותו נושא כמו כל הכיתה — תגבור <b>בתוך</b> השיעור, לא מסלול נפרד שמוציא את הילד החוצה.</p></div>
+    <div class="door mint"><span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17H6a4 4 0 0 1 0-8h3M15 7h3a4 4 0 0 1 0 8h-3M8 12h8"/></svg></span><h3>גשר, לא החלפה</h3><p>עברית לצד השפה והזהות של הילד. אמיר, החבר הדו-לשוני, נותן פיגום בשפת-האם — עד שכבר לא צריך.</p></div>
+    <div class="door sky"><span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v13H4z"/><path d="M8 21h8M12 17v4"/><path d="M8 9l2.5 2.5L16 7"/></svg></span><h3>המורה רואה בשפה פשוטה</h3><p>מי מתקדם, מי תקוע, ומה לעשות עכשיו — בשורה-תחתונה אחת, בלי טבלאות ובלי ז'רגון.</p></div>
+  </div>
+  <div class="backhome"><button data-go="gate">‹ חזרה לשער</button></div>
+</div></section>
+
+<!-- ===== PAGE: how ===== -->
+<section class="page subpage" id="page-how"><div class="wrap">
+  <div class="phead"><div class="n">איך זה עובד</div><h2>ארבעה צעדים, מסלול אחד</h2><p>מהכניסה הראשונה ועד שהמורה רואה את התמונה.</p><div class="line"></div></div>
+  <div class="flow">
+    <div class="step"><div class="sn">1</div><h4>טיול-פנס</h4><p>משחקון-מיפוי קצר שמכיר את הילד ומזהה מאיפה מתחילים.</p></div>
+    <div class="step"><div class="sn">2</div><h4>מסלול אישי</h4><p>המערכת בונה רצף תרגול שמתאים בול — ומתקדם בעצמו.</p></div>
+    <div class="step"><div class="sn">3</div><h4>תרגול בשכונה</h4><p>משחקונים בעולם מוכר: הבית, השוק, הגינה — אותו נושא כמו הכיתה.</p></div>
+    <div class="step"><div class="sn">4</div><h4>המורה רואה</h4><p>שורה-תחתונה בשפה פשוטה: מי מתקדם ולמי לשים לב.</p></div>
+  </div>
+  <div class="backhome"><button data-go="gate">‹ חזרה לשער</button></div>
+</div></section>
+
+<!-- ===== PAGE: roles ===== -->
+<section class="page subpage" id="page-roles"><div class="wrap">
+  <div class="phead"><div class="n">כניסה למערכת</div><h2>שלושה קהלים, שער אחד</h2><p>כל אחד נכנס לעולם שמתאים לו — והכול מחובר לאותה כיתה.</p><div class="line"></div></div>
+  <div class="cards">
+    <a class="door" href="enter.html"><span class="tag">מתחילים כאן</span>
+      <span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/></svg></span>
+      <h3>ילד/ה</h3><p>העולם של מישמיש: קודם טיול-פנס שמכיר אותו/ה, ואז תרגול שמתאים בול — בלי לחץ.</p>
+      <span class="go">נכנסים <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></span></a>
+    <a class="door mint">
+      <span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="1.6"/><path d="M8.5 20h7M12 16v4"/></svg></span>
+      <h3>מורה</h3><p>שורה-תחתונה על הכיתה בשפה פשוטה, בלי טבלאות ובלי מונחים. מי מתקדם ולמי לשים לב.</p>
+      <span class="go">כניסה / הרשמה <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></span></a>
+    <a class="door sky" data-go="plan">
+      <span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4h4l5 5V5L7 10H3Z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19.5 6a9 9 0 0 1 0 12"/></svg></span>
+      <h3>שותף · מממן</h3><p>הדגמה חיה של המערכת והעמדה הפדגוגית, לפני כניסה.</p>
+      <span class="go">להדגמה <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></span></a>
+  </div>
+  <div class="backhome"><button data-go="gate">‹ חזרה לשער</button></div>
+</div></section>
+
+<!-- ===== PAGE: plan (yearly demo) ===== -->
+<section class="page subpage" id="page-plan"><div class="wrap">
+  <div class="phead"><div class="n">תוכנית שנתית · דמו</div><h2>מסע השנה בשכונה</h2><p>שבעה עולמות לאורך כיתה א׳ — כל נושא הוא תפאורה, והגב האדפטיבי חוזר בכולם.</p><div class="line"></div></div>
+  <div class="timeline">
+    <div class="tl head-row"><span class="mo">פתיחה</span><span class="dot"></span><span class="topic">טיול-הפנס<small>מיפוי והיכרות — מאיפה מתחילים</small></span></div>
+    <div class="tl"><span class="mo">ספטמבר</span><span class="dot"></span><span class="topic">הגן והכיתה<small>שלום · שמות · מה יש בכיתה</small></span></div>
+    <div class="tl"><span class="mo">אוקטובר</span><span class="dot"></span><span class="topic">הבית והחצר<small>המשפחה · חפצים · "יש לי / תן לי"</small></span></div>
+    <div class="tl"><span class="mo">נובמבר</span><span class="dot"></span><span class="topic">המרפאה והגוף<small>איברים · הרגשה · הוראות</small></span></div>
+    <div class="tl"><span class="mo">מרץ</span><span class="dot"></span><span class="topic">השוק והמכולת<small>אוכל · כמויות · "אני רוצה"</small></span></div>
+    <div class="tl"><span class="mo">אפריל</span><span class="dot"></span><span class="topic">הגינה והוואדי<small>טבע · צבעים · תיאור</small></span></div>
+    <div class="tl"><span class="mo">יוני</span><span class="dot"></span><span class="topic">מגרש המשחקים<small>משחק · פעולות · דיאלוג</small></span></div>
+  </div>
+  <div class="backhome"><button data-go="gate">‹ חזרה לשער</button></div>
+</div></section>
+
+<footer class="foot">
+  <div class="mk"><span class="g"><i></i></span><span>מִישְׁמִישׁ</span><span class="arname" lang="ar">مشمش</span></div>
+  <div>אנכי שלישי במשפחת impactos · עברית כשפה שנייה למגזר הערבי · הנתונים מאובטחים לכל כיתה בנפרד</div>
+</footer>
+
+<div class="veil" id="veil"></div>
+<div class="halo" id="halo"></div>
+
+<script>
+/* ===== page router — each page stands on its own ===== */
+(function(){
+  var pages=document.querySelectorAll('.page'), navlinks=document.querySelectorAll('.nav a'), bar=document.getElementById('topbar');
+  function solidFor(id){ bar.classList.toggle('solid', id!=='gate'); }
+  function go(id){
+    pages.forEach(function(p){ p.classList.toggle('active', p.id==='page-'+id); });
+    navlinks.forEach(function(a){ a.classList.toggle('on', a.getAttribute('data-go')===id); });
+    solidFor(id);
+    window.scrollTo(0,0);
+    if(id==='gate') reveal();
+  }
+  /* data-go נטען רק על אלמנטים ללא href אמיתי (אחרת ניווט-דף גובר) */
+  document.querySelectorAll('[data-go]').forEach(function(el){
+    if(el.getAttribute('href')) return;
+    el.addEventListener('click', function(){ go(el.getAttribute('data-go')); });
+  });
+  window.__go=go;
+})();
+
+/* ===== lantern reveal (gate page) ===== */
+function reveal(){
+  var veil=document.getElementById('veil'), halo=document.getElementById('halo');
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){ veil.style.display='none'; return; }
+  var HALO=460; halo.style.width=HALO+'px'; halo.style.height=HALO+'px'; halo.style.margin=(-HALO/2)+'px 0 0 '+(-HALO/2)+'px';
+  veil.style.display='block'; veil.style.opacity='1';
+  var W=innerWidth,H=innerHeight,cx=W/2,cy=H/2, pool=Math.min(W,H)*0.26, orbit=Math.hypot(W,H)/2*0.98, turns=2, a0=-Math.PI/2, dur=2600, start=null;
+  halo.style.opacity='1';
+  function put(x,y,r,op){ veil.style.setProperty('--x',x+'px'); veil.style.setProperty('--y',y+'px'); veil.style.setProperty('--r',r+'px'); halo.style.setProperty('--x',x+'px'); halo.style.setProperty('--y',y+'px'); if(op!=null) veil.style.opacity=op; }
+  function step(ts){ if(start===null)start=ts; var e=Math.min(1,(ts-start)/dur);
+    var a=a0+turns*2*Math.PI*e, r=orbit*(0.06+0.94*e), x=cx+Math.cos(a)*r, y=cy+Math.sin(a)*r;
+    var op=e<0.74?1:Math.max(0,1-(e-0.74)/0.26); put(x,y,pool,op);
+    var fade=Math.max(0,1-Math.max(0,(e-0.82))/0.18); halo.style.opacity=String(fade);
+    if(e<1){ requestAnimationFrame(step); } else { veil.style.opacity='0'; veil.style.display='none'; halo.style.opacity='0'; }
+  }
+  requestAnimationFrame(step);
+}
+setTimeout(reveal, 240);
+</script>
+</body>
+</html>
