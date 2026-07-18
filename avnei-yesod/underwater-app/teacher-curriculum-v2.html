@@ -444,15 +444,22 @@
     }
 
     /* ---------- render ---------- */
+    // מצב-ענן: השיעור הנוכחי של הכיתה (classes.current_lesson_seq). ברירת-מחדל בדמו = יום 1.
+    var CUR_SEQ=null, KLASS=null, SB=null;
+    function currentDay(){
+      if(CUR_SEQ!=null && ALLDAYS.length){ var m=ALLDAYS.filter(function(d){return d.day===CUR_SEQ;}); if(m.length)return m[0]; }
+      return ALLDAYS[0];
+    }
     function renderNow(){
-      var v=ALLDAYS[0]; if(!v){return;}
+      var v=currentDay(); if(!v){return;}
       var pr=dayPractice(v);
       var isl=v.island||1;
       var big='<span>אי '+isl+'</span>';
       if(v.letters[0]) big=esc(v.letters[0])+'<small>אי '+isl+'</small>';
       var btn=(pr.state==='ok'||pr.state==='sum')?'<a class="btn btn-primary btn-sm" href="'+pr.href+'" target="_blank" rel="noopener">פתיחת תרגול · '+esc(pr.tag)+'</a>':'';
       var det='<button class="btn btn-soft btn-sm" data-detail="'+v.day+'"><span class="tic" data-ic="learn"></span>שלושת הצירים</button>';
-      document.getElementById('nowCard').innerHTML='<div class="big">'+big+'</div><div><span class="lab">פתיחת השנה · יום 1</span><h2>'+esc(v.topic)+'</h2>'+(v.sub_skill?'<p>'+esc(v.sub_skill)+'</p>':'')+'<div class="btns">'+btn+det+'</div></div>';
+      var lab=(CUR_SEQ!=null)?('הנושא הנוכחי של הכיתה · יום '+v.day+' — זה מה שהתלמידים מקבלים'):'פתיחת השנה · יום 1';
+      document.getElementById('nowCard').innerHTML='<div class="big">'+big+'</div><div><span class="lab">'+lab+'</span><h2>'+esc(v.topic)+'</h2>'+(v.sub_skill?'<p>'+esc(v.sub_skill)+'</p>':'')+'<div class="btns">'+btn+det+'</div></div>';
     }
     function render(){
       var M=SCHOOL[cur]; if(!M){return;}
@@ -475,12 +482,16 @@
         cov[pr.state==='ok'?'ok':pr.state==='sum'?'sum':pr.state==='offline'?'off':pr.state==='oral'?'oral':'gap']++;
         var dn = v.weekday? ('יום '+(WD[v.weekday]||esc(v.weekday))) : 'יום';
         var dd = v.date? ddm(v.date) : (''+v.day);
-        var tag = v.assessment? '<span class="nowtag" style="background:var(--watchbg);color:var(--watch-tx)">'+esc(v.assessment)+'</span>' : (v.island?'<span class="nowtag">אי '+v.island+'</span>':'');
-        html+='<div class="daycard" data-key="'+key+'" data-day="'+v.day+'">'+
+        var here=(CUR_SEQ!=null && v.day===CUR_SEQ);
+        var tag = here? '<span class="nowtag" style="background:var(--purple-soft);color:var(--purple-deep)">הכיתה כאן</span>'
+                : (v.assessment? '<span class="nowtag" style="background:var(--watchbg);color:var(--watch-tx)">'+esc(v.assessment)+'</span>' : (v.island?'<span class="nowtag">אי '+v.island+'</span>':''));
+        // קביעת נושא-הכיתה: רק במצב-ענן (KLASS), ורק על ימים שאינם הנוכחי
+        var setBtn = (KLASS && !here)? '<button data-setnow="'+v.day+'" title="קבעו כנושא הנוכחי של הכיתה"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></button>' : '';
+        html+='<div class="daycard'+(here?' today':'')+'" data-key="'+key+'" data-day="'+v.day+'">'+
           '<div class="dchead"><span class="dn">'+dn+'</span><span class="dd">'+dd+'</span>'+tag+'</div>'+
           '<div class="dcbody"><span class="ttext" data-detail="'+v.day+'">'+esc(v.topic)+'</span>'+extras+'</div>'+
           '<div class="dcfoot">'+pracHTML(pr)+'<button class="prac axes" data-detail="'+v.day+'"><span class="tic" data-ic="learn"></span><span class="pt">'+(v.skeleton?'פרטים':'3 צירים')+'</span></button></div>'+
-          '<div class="dayacts"><button data-edit="'+key+'" title="שינוי נושא"><span class="tic" data-ic="edit"></span></button><button data-add="'+key+'" title="הוספת נושא"><span class="tic" data-ic="plus"></span></button></div>'+
+          '<div class="dayacts">'+setBtn+'<button data-edit="'+key+'" title="שינוי נושא"><span class="tic" data-ic="edit"></span></button><button data-add="'+key+'" title="הוספת נושא"><span class="tic" data-ic="plus"></span></button></div>'+
           '</div>';
       });
       if(grid)html+='</div>';
@@ -541,11 +552,21 @@
 
     /* ---------- events ---------- */
     document.getElementById('caldays').addEventListener('click',function(e){
+      var sn=e.target.closest('[data-setnow]');if(sn){setClassLesson(+sn.dataset.setnow);return;}
       var dt=e.target.closest('[data-detail]');if(dt){openDetail(+dt.dataset.detail);return;}
       var ed=e.target.closest('[data-edit]');if(ed){beginEdit(ed.dataset.edit);return;}
       var ad=e.target.closest('[data-add]');if(ad){beginAdd(ad.dataset.add);return;}
       var rm=e.target.closest('[data-rm]');if(rm){var p=rm.dataset.rm.split('|');if(EXTRAS[p[0]]){EXTRAS[p[0]].splice(+p[1],1);}render();return;}
     });
+    // קביעת הנושא הנוכחי של הכיתה בענן (set_current_lesson) — התלמידים יקבלו אותו בכניסה הבאה
+    function setClassLesson(day){
+      if(!SB||!KLASS){return;}
+      SB.rpc('set_current_lesson',{p_class_id:KLASS.id,p_seq:day}).then(function(res){
+        if(res&&res.error){toast('שמירה נכשלה — נסי שוב');return;}
+        CUR_SEQ=day; renderNow(); render();
+        toast('הכיתה עודכנה לנושא זה · התלמידים יקבלו אותו');
+      }).catch(function(){toast('שמירה נכשלה — נסי שוב');});
+    }
     document.getElementById('nowCard').addEventListener('click',function(e){var dt=e.target.closest('[data-detail]');if(dt)openDetail(+dt.dataset.detail);});
     document.getElementById('modal').addEventListener('click',function(e){if(e.target.closest('[data-close]'))closeDetail();});
     document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDetail();});
@@ -568,7 +589,16 @@
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fillTics);else fillTics();
     window.addEventListener('load',fillTics);
     /* dual-mode רך: ענן רק כשמחובר.ת (אחרת נשאר דמו) — כאן רק שם-הכיתה בפירורים */
-    TeacherCloudSoft.try(function(st){ if(st&&st.klass){TeacherCloudSoft.setCrumb('תוכנית שנתית · '+st.klass.name);} });
+    TeacherCloudSoft.try(function(st){
+      if(!st||!st.klass)return;
+      TeacherCloudSoft.setCrumb('תוכנית שנתית · '+st.klass.name);
+      SB=st.supabase; KLASS=st.klass;
+      // קריאת השיעור הנוכחי של הכיתה + הצגת יכולת-הקביעה בכל יום
+      SB.from('classes').select('current_lesson_seq').eq('id',KLASS.id).single().then(function(res){
+        CUR_SEQ=(res&&res.data&&res.data.current_lesson_seq)||1;
+        if(ALLDAYS.length){renderNow();render();}
+      }).catch(function(){ CUR_SEQ=1; if(ALLDAYS.length){renderNow();render();} });
+    });
   </script>
 </body>
 </html>
