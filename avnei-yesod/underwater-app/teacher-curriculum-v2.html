@@ -15,7 +15,8 @@
   <script src="js/shared/teacher-cloud-soft.js"></script>
   <style>
   /* =====================================================================
-     teacher-curriculum · DESIGN COPY — שפת DESIGN-LOCK. מצב-דמו קשיח.
+     teacher-curriculum · DESIGN COPY — שפת DESIGN-LOCK.
+     נתונים אמיתיים: curriculum/yearly-plan/grade1-daily-tashpaz.json (3 צירים).
      ===================================================================== */
   :root{
     --purple:#7C6BD0; --purple-deep:#5D4CB0; --purple-bright:#9A8AE0; --purple-soft:#F1EEFA; --purple-line:#E2DAF5;
@@ -84,11 +85,18 @@
 
   /* "now" card */
   .now{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center;border-inline-start:6px solid var(--purple);margin-bottom:26px;}
-  .now .big{width:78px;height:78px;border-radius:20px;display:grid;place-items:center;font-size:42px;font-weight:900;background:var(--purple-soft);color:var(--purple-deep);font-family:'Heebo',sans-serif;}
+  .now .big{width:78px;height:78px;border-radius:20px;display:grid;place-items:center;font-size:34px;font-weight:900;background:var(--purple-soft);color:var(--purple-deep);font-family:'Heebo',sans-serif;line-height:1;text-align:center;}
+  .now .big small{display:block;font-size:11px;font-weight:800;margin-top:2px;}
   .now .lab{font-size:13px;font-weight:800;color:var(--purple-deep);background:var(--purple-soft);display:inline-block;padding:3px 12px;border-radius:999px;margin-bottom:6px;}
   .now h2{font-size:21px;font-weight:900;color:var(--ink);}
   .now p{font-size:15px;color:var(--ink-soft);margin-top:6px;}
   .now .btns{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;}
+
+  /* 3-axis legend */
+  .axleg{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-soft);margin-bottom:18px;}
+  .axleg span{display:inline-flex;align-items:center;gap:6px;}
+  .axleg .n{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;font-size:11px;font-weight:900;color:#fff;}
+  .axleg .a1{background:var(--purple);} .axleg .a2{background:var(--pink-deep);} .axleg .a3{background:var(--aqua);}
 
   /* calendar bar */
   .calbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;}
@@ -100,6 +108,8 @@
   .calnav .mname{font-size:21px;font-weight:900;color:var(--ink);min-width:120px;text-align:center;}
   .calfocus{font-size:13.5px;color:var(--ink-soft);background:var(--surface-soft);border:1px solid var(--line);border-radius:12px;padding:10px 15px;margin-bottom:16px;line-height:1.55;}
   .calfocus b{color:var(--purple-deep);}
+  .calvac{font-size:12.5px;color:var(--watch-tx);background:var(--watchbg);border:1px solid #F1E2BE;border-radius:10px;padding:7px 13px;margin-bottom:16px;display:flex;align-items:center;gap:7px;}
+  .calvac .tic svg{width:15px;height:15px;}
 
   /* week grid + day cards */
   .wkgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:11px;margin-bottom:18px;}
@@ -108,13 +118,14 @@
   .daycard:hover{box-shadow:0 10px 24px -14px rgba(37,31,68,.3);transform:translateY(-2px);}
   .daycard.today{border-color:var(--purple);box-shadow:0 2px 16px -4px rgba(124,107,208,.4);}
   .dchead{display:flex;align-items:baseline;gap:7px;} .dchead .dn{font-size:12px;font-weight:800;color:var(--purple-bright);} .dchead .dd{font-size:16.5px;font-weight:900;color:var(--ink);font-family:var(--font-num);}
-  .daycard.today .dchead .dn{color:var(--purple-deep);} .dchead .nowtag{font-size:10px;font-weight:800;background:var(--purple-soft);color:var(--purple-deep);border-radius:999px;padding:1px 8px;margin-inline-start:auto;}
-  .dcbody{flex:1;min-width:0;} .dcbody .ttext{display:block;font-size:13.8px;color:var(--ink);font-weight:600;line-height:1.45;}
+  .daycard.today .dchead .dn{color:var(--purple-deep);} .dchead .nowtag{font-size:10px;font-weight:800;background:var(--aqua-soft);color:var(--aqua-deep);border-radius:999px;padding:1px 8px;margin-inline-start:auto;}
+  .dcbody{flex:1;min-width:0;} .dcbody .ttext{display:block;font-size:13.8px;color:var(--ink);font-weight:600;line-height:1.45;cursor:pointer;}
+  .dcbody .ttext:hover{color:var(--purple-deep);}
   .dcbody .ed{font-family:inherit;font-size:13.5px;color:var(--ink);border:1px solid var(--line-strong);border-radius:8px;padding:6px 9px;width:100%;outline:none;margin-bottom:4px;}
   .dcbody .ed:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(124,107,208,.16);}
   .xtopic{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--purple-deep);background:var(--purple-soft);border-radius:8px;padding:4px 9px;margin-top:6px;margin-inline-end:5px;}
   .xtopic .rm{cursor:pointer;color:var(--purple-bright);font-weight:900;font-size:11px;} .xtopic .rm:hover{color:var(--care);}
-  .dcfoot{margin-top:auto;}
+  .dcfoot{margin-top:auto;display:flex;flex-direction:column;gap:5px;align-items:flex-start;}
   .dayacts{position:absolute;top:9px;left:9px;display:flex;gap:5px;opacity:0;transition:opacity .15s;}
   .daycard:hover .dayacts,.daycard:focus-within .dayacts{opacity:1;}
   .dayacts button{width:29px;height:29px;border-radius:8px;border:1px solid var(--line);background:var(--surface);cursor:pointer;color:var(--ink-soft);display:grid;place-items:center;}
@@ -137,6 +148,8 @@
   .prac.sum{color:var(--ok-tx);background:var(--okbg);border-color:#CBE9D5;} .prac.sum:hover{filter:brightness(.97);}
   .prac.offline,.prac.oral{color:var(--ink-soft);background:var(--surface-soft);border-color:var(--line);cursor:default;}
   .prac.gap{color:var(--watch-tx);background:var(--watchbg);border-color:#EAD7A6;border-style:dashed;cursor:help;}
+  .prac.axes{color:var(--ink-soft);background:var(--surface);border-color:var(--line);}
+  .prac.axes:hover{background:var(--surface-soft);color:var(--ink);}
   .praccov{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--ink-soft);background:var(--surface-soft);border:1px solid var(--line);border-radius:12px;padding:9px 15px;margin-bottom:14px;}
   .praccov span{display:inline-flex;align-items:center;gap:6px;} .praccov b{font-weight:800;} .praccov .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
   .praccov .cok{color:var(--purple-deep);} .praccov .cok .dot{background:var(--purple);}
@@ -144,6 +157,31 @@
   .praccov .coff{color:var(--ink-soft);} .praccov .coff .dot{background:var(--ink-faint);}
   .praccov .csum{color:var(--ok-tx);} .praccov .csum .dot{background:var(--ok);}
   .praccov .coral{color:var(--aqua-deep);} .praccov .coral .dot{background:var(--aqua);}
+
+  /* day-detail modal (3 axes) */
+  .modal{position:fixed;inset:0;z-index:90;display:none;}
+  .modal.open{display:block;}
+  .modal .ov{position:absolute;inset:0;background:rgba(37,31,68,.44);}
+  .modal .sheet{position:absolute;inset-inline:0;bottom:0;margin:0 auto;max-width:640px;max-height:90vh;overflow:auto;background:var(--surface);border-radius:22px 22px 0 0;padding:22px clamp(18px,4vw,28px) 30px;box-shadow:var(--shadow);}
+  @media (min-width:640px){.modal .sheet{inset:auto 0;top:50%;transform:translateY(-50%);border-radius:22px;max-height:86vh;}}
+  .modal .mdhd{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;}
+  .modal .mdhd .kick{font-size:12px;font-weight:800;color:var(--purple-deep);}
+  .modal .mdhd h3{font-size:18px;font-weight:900;color:var(--ink);line-height:1.3;margin-top:3px;}
+  .modal .x{width:36px;height:36px;flex:0 0 auto;border-radius:10px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:20px;color:var(--ink-soft);display:grid;place-items:center;}
+  .modal .x:hover{background:var(--surface-soft);}
+  .ax{border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:12px;}
+  .ax .axh{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:900;margin-bottom:8px;color:var(--ink);}
+  .ax .axh .n{width:24px;height:24px;border-radius:8px;display:grid;place-items:center;font-size:12px;font-weight:900;color:#fff;flex:0 0 auto;}
+  .ax .axh small{font-weight:700;color:var(--ink-soft);font-size:12px;}
+  .ax1{background:var(--purple-soft);border-color:var(--purple-line);} .ax1 .axh .n{background:var(--purple);}
+  .ax2{background:var(--pink-soft);border-color:var(--pink-line);} .ax2 .axh .n{background:var(--pink-deep);}
+  .ax3{background:var(--aqua-soft);border-color:#C7EAE4;} .ax3 .axh .n{background:var(--aqua);}
+  .ax p{font-size:13.5px;color:var(--ink);line-height:1.5;margin:3px 0;}
+  .ax .mut{color:var(--ink-soft);font-size:12.5px;}
+  .ax ul{list-style:none;margin:5px 0 0;padding:0;} .ax li{font-size:13px;color:var(--ink);padding:3px 0 3px 0;line-height:1.45;}
+  .ax li b{color:var(--pink-deep);font-weight:800;}
+  .ax .words{display:inline-block;font-weight:800;color:var(--purple-deep);}
+  .ax .mdact{margin-top:10px;}
 
   /* toast + badge */
   .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);z-index:80;background:var(--ink);color:#fff;padding:14px 24px;border-radius:var(--pill);font-weight:600;font-size:15px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;max-width:90vw;text-align:center;}
@@ -194,10 +232,16 @@
 
       <div class="page-h">
         <h1>התוכנית השנתית<span class="brand-dot"></span></h1>
-        <p>לוח שנה לכל ימי הלימוד — שיעור אחד בכל יום, כרטיס לכל יום. אפשר לשנות את נושא היום או להוסיף נושא, ישירות על הכרטיס. לכל נושא — קישור לתרגול הדיגיטלי המתאים.</p>
+        <p>התוכנית האמיתית של כיתה א׳ (תשפ״ז) — לכל יום לימוד שלושה צירים: <b>מה המורה מלמדת</b>, <b>מה אבני יסוד מתרגלת</b> (ארבע רמות, מותאם לכל ילד.ה), ו<b>העשרות</b>. לחיצה על יום פותחת את שלושת הצירים; לכל נושא — קישור לתרגול הדיגיטלי המתאים.</p>
       </div>
 
       <div class="card now" id="nowCard"></div>
+
+      <div class="axleg">
+        <span><span class="n a1">1</span> מה המורה מלמדת</span>
+        <span><span class="n a2">2</span> מה אבני יסוד מתרגלת</span>
+        <span><span class="n a3">3</span> העשרות</span>
+      </div>
 
       <div class="calbar">
         <div class="calnav">
@@ -205,72 +249,48 @@
           <span class="mname" id="mname"></span>
           <button id="nextM" aria-label="חודש הבא"><span class="tic" data-ic="chevleft"></span></button>
         </div>
-        <button class="btn btn-soft btn-sm" id="todayBtn"><span class="tic" data-ic="calendar"></span>היום</button>
+        <button class="btn btn-soft btn-sm" id="todayBtn"><span class="tic" data-ic="calendar"></span>פתיחת השנה</button>
       </div>
       <div class="calfocus" id="calfocus"></div>
+      <div class="calvac" id="calvac" hidden></div>
       <div class="praccov" id="praccov"></div>
       <div id="caldays"></div>
     </div></main>
   </div>
+
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mdTitle">
+    <div class="ov" data-close></div>
+    <div class="sheet">
+      <div class="mdhd"><div><div class="kick" id="mdKick"></div><h3 id="mdTitle"></h3></div><button class="x" data-close aria-label="סגירה">×</button></div>
+      <div id="mdBody"></div>
+    </div>
+  </div>
+
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <div class="rt-badge rt-demo" id="rtBadge"><span class="d"></span><span id="rtTx">נתוני דמו</span></div>
+  <div class="rt-badge rt-demo" id="rtBadge"><span class="d"></span><span id="rtTx">התוכנית האמיתית · תשפ״ז</span></div>
 
   <script>
-    var WD=['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
-    var SCHOOL=[
-      {y:2026,m:8,name:'ספטמבר',tag:'פתיחת שנה',focus:'הכרת האותיות הראשונות, קשר אות–צליל, וראשית הכתיבה',
-        days:['האות ת — צורה וצליל','האות מ — צורה וצליל','האות ר — צורה וצליל (הבחנה ת/ר)','האזנה לסיפור + אוצר מילים','כתיבת ת/מ/ר + סיכום שבועי',
-              'האות ב','האות ק (הבחנה ב/כ)','תרגול חמש האותיות שנלמדו','הצליל הראשון והאחרון במילה','כתיבת ב/ק + מבדק קצר',
-              'האות א','האות י','הבחנה בין אותיות דומות','תיאור תמונה + משחקי הברות','כתיבת א/י + סיכום',
-              'האות ל','האות ש','האות ח','האות נ','סיכום 11 אותיות + כתיבה']},
-      {y:2026,m:9,name:'אוקטובר',focus:'השלמת כל האותיות והתנועה הראשונה (אַ), קריאת הברה',
-        days:['האות ד (הבחנה ד/ר)','האות פ','האות ה (הבחנה ה/ח)','האות ס','כתיבה + מבדק זיהוי',
-              'האות ג','האות ע','האות כ (הבחנה כ/ב)','האות צ','כתיבה + הבחנת אותיות',
-              'האות ט','האות ז','האות ו — כל 22 האותיות!','משחק זיהוי מהיר של כל הא״ב','כתיבה + מבדק 22 אותיות',
-              'התנועה אַ — "איזה צליל שומעים?"','קריאת הברה: מָ רָ תָ בָ קָ','אותיות סופיות בתוך מילים','שפה דבורה + אוצר מילים','כתיבת הברות + מבדק קצר']},
-      {y:2026,m:10,name:'נובמבר',tag:'אנחנו כאן',focus:'קריאת מילים שלמות ודיוק בצלילים',
-        days:['הבנת משפט כן/לא','קריאת הברה סגורה: קַר מַר רַק בַּת','הבחנת תנועות באות א','שאלות מי/מה על הנשמע','כתיבת מילים קצרות + סיכום',
-              'בניית מילה מהברות','תרגול קריאת מילים סגורות','קריאת פעלים בעבר (תָּלָה, קָרָה)','משמעות פעלים + אוצר','כתיבת פועל קצר + סיכום',
-              'מילים קטנות: שֶׁל, אֶת, לֹא, כֵּן','קריאת משפט קצר','הבחנה בין מילים דומות (בָּרָק/מָרָק)','"איזו מילה שמעת?"','כתיבת זוג מילים + סיכום',
-              'סיכום צלילים + חיבור תמונה-מילה','קריאת מילים שלמות','חזרה ותחזוקה','הקראה + הבנת הנשמע','מבדק חודשי + כתיבה']},
-      {y:2026,m:11,name:'דצמבר',focus:'השווא (תנועה שנעלמת), זכר/נקבה, והתנועה אִי',
-        days:['השווא — "איפה שומעים בְּ/שְׁ/תְּ?"','קריאת הברה עם שווא','התחילית לְ (לְנָדָב)','התאמת מילה לאיור','כתיבת מילה עם שווא + סיכום',
-              'זוגות זכר/נקבה (רָכַב/רָכְבָה)','קריאת שווא נח באמצע מילה','השווא שמסמן נקבה','זכר/נקבה בדיבור','כתיבת זוג זכר/נקבה + סיכום',
-              'הרכבת משפט מסדר מילים','קריאת משפט שלם','התחיליות וְ, בְּ, לְ','מילות מקום בדיבור','כתיבת משפט + סיכום',
-              'התנועה אִי — הצגת הצליל','קריאת הברה: מִי, שִׁי','בחירת משפט לאיור','מילים עם חיריק','כתיבת הברת חיריק + סיכום']},
-      {y:2027,m:0,name:'ינואר',tag:'מבדק אמצע שנה',focus:'יחיד/רבים, מילים ארוכות, כינויי גוף',
-        days:['יחיד/רבים (שִׁיר/שִׁירִים)','קריאת מילה ארוכה','ריבוי מיוחד (אִישׁ/אֲנָשִׁים)','"מה יוצא דופן?" + יש/אין','כתיבת זוג יחיד/רבים',
-              'הָיָה/הָיְתָה','קריאת משפט עם פועל עבר','אַתְּ/אַתָּה (עבר)','מי עשה מה? (הבנה)','כתיבת היה/הייתה',
-              'אֲנִי/אַתָּה/אַתְּ + פעלים','מהברה למילה','משחק התאמת חיריק','הרחבת אוצר','משפט קצר עצמאי',
-              'הבחנת צ/ץ','"מילים אמיתיות או בדויות?"','חזרה — חיריק','מבדק אמצע שנה — משימות דבורות','כתיבה + סיכום אמצע שנה']},
-      {y:2027,m:1,name:'פברואר',focus:'האותיות שׁ/שׂ והתנועה אוֹ, מיון מילים',
-        days:['שׁ ימנית מול שׂ שמאלית (שָׁר/שָׂר)','קריאת מילים עם שׁ/שׂ','בחירת משפט לתמונה','אבחנה שמיעתית שׁ/שׂ','כתיבת שׁ/שׂ + סיכום',
-              'התנועה אוֹ + מילות מקום עַל/לְיַד','קריאת הברה: מוֹ, בּוֹ','בניית מילים מהברות','מיקום ומרחב בדיבור','כתיבת הברת חולם',
-              'מיון מילים לקבוצות','קריאת מילים מהקבוצות','חיפוש פריטים + צבעים','שדות סמנטיים (אוצר)','כתיבת מילה עם חולם חסר',
-              'חריזה','השלמת מילה (חולם)','אסוציאציות וקטגוריות','הבנת הנשמע — סיפור קצר','מבדק חודשי + כתיבה']},
-      {y:2027,m:2,name:'מרץ',focus:'התנועה אֶה וקריאת הבנה ראשונה, מילות שאלה',
-        days:['קריאת תיאור + התאמה לדמות','קריאת תיאור ארוך','השלמת הברה חסרה','תיאור דמות (אוצר)','כתיבת תיאור קצר',
-              'התאמת מילה לתמונה (מהירות)','קריאה מהירה (תחילת שטף)','מילות שאלה: מָה/מִי/אֵיפֹה/לָמָה','שאלות ותשובות (דיאלוג)','כתיבת שאלה',
-              'בחירת משפט לאיור','התנועה אֶה (צירי-סגול)','פעלים בהווה (הוֹלֵךְ/הוֹלֶכֶת)','התאמת מין בדיבור','כתיבת הברת צירי-סגול',
-              'טקסט מידע + ארבע שאלות','קריאה חוזרת (שטף)','שאלות מי/מה/איפה','שאלות למה/מה יקרה','כתיבת תשובה במשפט']},
-      {y:2027,m:3,name:'אפריל',focus:'התנועה אוּ — מערכת התנועות שלמה, שטף',
-        days:['קריאת מילים ארוכות','קריאה חוזרת (שטף)','השלמת משפט בחריזה','זיהוי חרוזים (אוצר)','כתיבת מילה חורזת',
-              'התנועה אוּ — הצגת הצליל','קריאת הברה: מֻ, בּוּ','בחירת מילה עם אוּ','מילים עם אוּ (אוצר)','מערכת התנועות שלמה — כתיבת הברה',
-              'כינוי גוף (נושא-נשוא)','קריאת משפט עם כינוי גוף','שמות תואר + עַל','תיאור בעזרת תארים','כתיבת משפט עם תואר',
-              'יֵשׁ/אֵין — מה בתמונה','קריאת משפט יֵשׁ/אֵין','חזרה — כל התנועות','הבנת הנשמע — סיפור','מבדק חודשי + כתיבה']},
-      {y:2027,m:4,name:'מאי',tag:'מבדק סוף שנה',focus:'קריאת טקסטים שלמים והבנת הנקרא',
-        days:['קריאת סיפור "יום שוק בגינה"','קריאה חוזרת (שטף)','רצף אירועים בסיפור','שאלות הבנה על הסיפור','סיכום הסיפור במשפט',
-              'מילת הדימוי כְּמוֹ','קריאת טקסט מידע (לווייתנים)','מבנה טקסט מידע','איתור מידע בטקסט','כתיבת משפט דימוי',
-              'טקסט מידע על דבורים','קריאה חוזרת (שטף)','משחק יחיד/רבים','שני תרגילי הבנה','כתיבת משפט מידע',
-              'טקסט הוראות (קֹדֶם/אַחַר כָּךְ)','טקסט סיפורי + ציטוט','מבדק סוף שנה — קריאה','מבדק סוף שנה — הבנה וכתיבה','כתיבת רצף הוראות']},
-      {y:2027,m:5,name:'יוני',focus:'שטף, הבנת פסקה וסיכום שנה',
-        days:['קריאה חוזרת של טקסט מוכר','מדידת מילים לדקה','קריאה בזוגות','הבנת הנשמע + אוצר','כתיבה חופשית',
-              'קריאת פסקה עצמית','שאלות הבנה (מי/מה/איפה)','שאלות חשיבה (למה/מה יקרה)','השוואה בין שני טקסטים','כתיבת תשובה מנומקת',
-              'הכתבת מילים שכיחות','כתיבת "אני ___"','מבדק סיום שנה','פרופיל אורייני לכל ילד','חגיגת סיום + קריאה משותפת']}
-    ];
-    var cur=2;
-    var TODAY={mi:2,di:1};
-    var EXTRAS={};
+    var DATA_URL='../curriculum/yearly-plan/grade1-daily-tashpaz.json';
+    var WD={'א':'א׳','ב':'ב׳','ג':'ג׳','ד':'ד׳','ה':'ה׳','ו':'ו׳','ש':'ש׳'};
+    var MONTH_ORDER=['ספטמבר','אוקטובר','נובמבר','דצמבר','ינואר','פברואר','מרץ','אפריל','מאי','יוני'];
+    var MONTH_META={
+      'ספטמבר':{tag:'פתיחת שנה',focus:'הכרת האותיות הראשונות, קשר אות–צליל, וראשית הכתיבה'},
+      'אוקטובר':{focus:'השלמת כל האותיות והתנועה הראשונה (אַ), קריאת הברה'},
+      'נובמבר':{tag:'אנחנו כאן',focus:'קריאת מילים שלמות ודיוק בצלילים'},
+      'דצמבר':{focus:'השווא, זכר/נקבה, והתנועה אִי'},
+      'ינואר':{tag:'מבדק אמצע שנה',focus:'יחיד/רבים, מילים ארוכות, כינויי גוף'},
+      'פברואר':{focus:'האותיות שׁ/שׂ והתנועה אוֹ, מיון מילים'},
+      'מרץ':{focus:'התנועה אֶה וקריאת הבנה ראשונה, מילות שאלה'},
+      'אפריל':{focus:'התנועה אוּ — מערכת התנועות שלמה, שטף'},
+      'מאי':{tag:'מבדק סוף שנה',focus:'קריאת טקסטים שלמים והבנת הנקרא'},
+      'יוני':{focus:'שטף, הבנת פסקה וסיכום שנה'}
+    };
+    var MON2NUM={'ספטמבר':8,'אוקטובר':9,'נובמבר':10,'דצמבר':11,'ינואר':0,'פברואר':1,'מרץ':2,'אפריל':3,'מאי':4,'יוני':5};
+
+    var SCHOOL=[];   // [{name,tag,focus,vacs:[],days:[dayObj]}]
+    var ALLDAYS=[];  // flat sorted
+    var VACS=[];     // [{name,dates:[...]}]
+    var cur=0, EXTRAS={};
 
     var APP='./';
     var LETTERS={
@@ -282,127 +302,217 @@
       'ש':'stage-3-shin.html','ת':'stage-3-tav.html'
     };
     function normFinal(c){return {'ך':'כ','ם':'מ','ן':'נ','ף':'פ','ץ':'צ'}[c]||c;}
-    function lettersLearnedUpTo(mi,di){
+    function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+    function ddm(dateStr){var p=String(dateStr||'').split('-');return p.length===3?(+p[2])+'.'+(+p[1]):'';}
+
+    // נרמול שני מבני-יום: מפורט (axis_1_teaching…) + שלד (topic_short, primary_island…)
+    function normalizeDay(d){
+      var a1=d.axis_1_teaching||{}, a2=d.axis_2_practice_avnei_yesod||{}, a3=d.axis_3_enrichment||{};
+      var detailed=!!a1.topic;
+      return {
+        day:d.day, date:d.date||'', weekday:d.weekday||'', month:d.month, pack:a2.pack||d.pack_id||'',
+        topic:a1.topic||d.topic_short||'',
+        sub_skill:a1.sub_skill||d.sub_skill||'',
+        island:a1.macro_island||a2.primary_island||d.primary_island||null,
+        letters:(a1.letters_introduced_today&&a1.letters_introduced_today.length?a1.letters_introduced_today:a1.letters_featured)||[],
+        words:a1.words_to_introduce||[], notes:a1.teaching_notes||'',
+        game:a2.game_to_play||'', tiers:[a2.tier_1,a2.tier_2,a2.tier_3,a2.tier_4],
+        enrich:a3, skeleton:!detailed,
+        assessment:(d.is_assessment_day?(d.assessment_type||'מבדק'):''), milestone:d.milestone||''
+      };
+    }
+    // אילו אותיות הוצגו עד (וכולל) יום גלובלי מסוים — לפי הנתונים
+    function lettersLearnedUpTo(dayNum){
       var seen=[];
-      for(var m=0;m<=mi&&m<SCHOOL.length;m++){
-        var days=SCHOOL[m].days, lim=(m===mi)?di:days.length;
-        for(var d=0;d<lim;d++){var lm=(days[d]||'').match(/האות\s+([א-ת])/);if(lm){var L=normFinal(lm[1]);if(seen.indexOf(L)<0)seen.push(L);}}
-      }
+      ALLDAYS.forEach(function(v){
+        if(v.day>dayNum) return;
+        v.letters.forEach(function(c){var L=normFinal(c);if(L&&seen.indexOf(L)<0)seen.push(L);});
+      });
       return seen;
     }
-    function resolvePractice(topic,mi,di){
-      var t=topic;
-      if(/תרגול\s+חמש\s+האותיות|סיכום\s+\S*\s*אותיות|זיהוי מהיר של כל הא|חזרה ותחזוקה|חזרה, תרגול והעמקה/.test(t)){
-        var learned=lettersLearnedUpTo(mi,di);
+
+    function vw(v,tag){return {state:'ok',cat:'syll',href:APP+'stage-4-cv-build.html?vowel='+v,tag:tag};}
+    // מיפוי נושא → תרגול דיגיטלי (גיבוי כשאין game_to_play מפורש בנתונים)
+    function resolvePractice(t,dayNum){
+      t=t||'';
+      // סיכום / חזרה על אותיות → משחק סיכום מצטבר
+      if(/^סיכום|סיכום\s|סינתז|תרגול\s+\d+\s+האות|תרגול\s+האות|כל\s+22|כל הא|זיהוי מהיר של כל|תחזוקה/.test(t)){
+        var learned=lettersLearnedUpTo(dayNum||999);
         if(learned.length>0){return {state:'sum',href:APP+'stage-summary-cv.html?letters='+encodeURIComponent(learned.join(',')),tag:learned.length<=5?'סיכום · '+learned.join(' '):'סיכום '+learned.length+' אותיות'};}
       }
-      var lm=t.match(/האות\s+([א-ת])/);
-      if(lm){var L=normFinal(lm[1]);return LETTERS[L] ? {state:'ok',cat:'letter',href:APP+LETTERS[L],tag:'אות '+lm[1]} : {state:'gap',tag:'אות '+lm[1]};}
-      if(/מבדק/.test(t))                                    return {state:'ok',cat:'test',href:'../engine/screener.html',tag:'מבדק'};
+      // מבדקים ואבחונים
+      if(/מבדק|אבחון|אבחוני|ראמ|\bBOY\b|\bMOY\b|\bEOY\b|הכנה ל-?(EOY|MOY|BOY)/.test(t)) return {state:'ok',cat:'test',href:'../engine/screener.html',tag:'מבדק'};
+      // אות סופית / אות בודדת
+      if(/סופי[תו]/.test(t)){var ls=t.match(/([א-ת])\s*סופי/);if(ls){var Ls=normFinal(ls[1]);if(LETTERS[Ls])return {state:'ok',cat:'letter',href:APP+LETTERS[Ls],tag:'אות '+ls[1]};}return {state:'ok',cat:'letter',href:APP+'stage-3-shell.html',tag:'אותיות סופיות'};}
+      // כתיבה
       if(/הכתבת מילים שכיחות/.test(t))                      return {state:'ok',cat:'word',href:APP+'stage-8-word-write.html',tag:'איך כותבים · אי 8'};
       if(/כתיבת מילים קצרות/.test(t))                       return {state:'ok',cat:'word',href:APP+'stage-20-spell.html',tag:'בּוֹנִים מִלִּים · אי 20'};
-      if(/כתיב|הכתב/.test(t))                               return {state:'offline',tag:'כתיבה'};
-      if(/חריזה|חרוז/.test(t)){var rcid=/זיהוי חרוזים/.test(t)?'apr-w1-d4-c1':'feb-w4-d1-c2';return {state:'ok',cat:'syll',href:APP+'stage-rhyme.html?cid='+rcid,tag:'חריזה'};}
-      if(/פרופיל אורייני/.test(t))                          return {state:'ok',cat:'test',href:'teacher-literacy-profile.html',tag:'כלי מורה'};
-      if(/חגיגת סיום/.test(t))                              return {state:'oral',tag:'אירוע כיתתי'};
-      if(/בדיבור|דיאלוג|שפה דבורה|תיאור דמות|תיאור בעזרת תארים/.test(t)) return {state:'oral',tag:'שיח בכיתה'};
-      if(/שטף|קריאה חוזרת|מילים לדקה|הקראה|בזוגות/.test(t)) return {state:'ok',cat:'fluency',href:APP+'stage-read-aloud.html',tag:'שטף קריאה'};
-      if(/^קריאת\s+(סיפור|טקסט|תיאור|פסקה)|^טקסט\s+מידע|איתור מידע בטקסט|מבנה טקסט מידע/.test(t)){var rtxt=/שוק/.test(t)?'shuk':/לוו?יי?ת[נן]/.test(t)?'whales':/דבור/.test(t)?'bees':null;return {state:'ok',cat:'read',href:APP+'stage-14-read-and-answer.html'+(rtxt?'?text='+rtxt:''),tag:'הבנת הנקרא'};}
-      if(/רצף אירועים בסיפור/.test(t))                      return {state:'ok',cat:'read',href:APP+'stage-16-paragraph.html',tag:'שרשרת משפטים · אי 16'};
-      if(/שאלות (הבנה )?\(?מי\/מה\/איפה\)?/.test(t))        return {state:'ok',cat:'read',href:APP+'stage-14-read-and-answer.html',tag:'הבנת הנקרא'};
-      if(/סיפור|רצף אירועים/.test(t))                       return {state:'ok',cat:'listen',href:APP+'stage-14-story-sequence.html',tag:'הבנת הנשמע'};
-      if(/הנשמע|האזנה|טקסט|הבנה|שאלות/.test(t))             return {state:'ok',cat:'listen',href:APP+'stage-14-listen-and-answer.html',tag:'הבנת הנשמע'};
-      if(/חיריק/.test(t))                                   return {state:'ok',cat:'syll',href:APP+'stage-4-cv-build.html?vowel=hiriq',tag:'חיריק'};
-      if(/שווא/.test(t))                                    return {state:'ok',cat:'syll',href:APP+'stage-4-cv-build.html?vowel=shva',tag:'שווא'};
-      if(/חולם/.test(t))                                    return {state:'ok',cat:'syll',href:APP+'stage-4-cv-build.html?vowel=holam',tag:'חולם'};
-      if(/צירי|סגול/.test(t))                               return {state:'ok',cat:'syll',href:APP+'stage-4-cv-build.html?vowel=tzere',tag:'צירי-סגול'};
-      function bank(key,tag){return {state:'ok',cat:'word',href:APP+'stage-bank-play.html?unitKey='+key+'&tag='+encodeURIComponent(tag),tag:tag};}
-      if(/יוצא דופן/.test(t))                               return bank('jan-w1-d4','מָה יוֹצֵא דֹּפֶן? + יֵשׁ/אֵין');
-      if(/שמות תואר/.test(t))                               return bank('apr-w3-d3','שְׁמוֹת תֹּאַר + עַל');
-      if(/התחילית לְ|התחילית ל\b|התחיליות/.test(t))         return {state:'ok',cat:'word',href:APP+'stage-10-little-start.html',tag:'הַהַתְחָלָה הַקְּטַנָּה · אי 10'};
-      if(/אֲנִי\/אַתָּה\/אַתְּ/.test(t))                     return bank('jan-w3-d1','כִּנּוּיֵי גּוּף');
-      if(/הָיָה\/הָיְתָה|היה\/הי?יתה/.test(t))               return bank('jan-w2-d1','הָיָה/הָיְתָה');
-      if(/אַתְּ\/אַתָּה|אַתָּה\/אַתְּ/.test(t))               return bank('jan-w2-d3','אַתְּ/אַתָּה');
-      if(/מילות שאלה/.test(t))                              return bank('mar-w2-d3','מִלּוֹת שְׁאֵלָה');
-      if(/יֵשׁ\/אֵין/.test(t))                               return bank('apr-w4-d1-c2,apr-w4-d2-c1,apr-w4-d2-c2','יֵשׁ/אֵין');
-      if(/מילת הדימוי|כְּמוֹ/.test(t))                       return bank('may-w2-d1','מִלַּת הַדִּמּוּי כְּמוֹ');
-      if(/יחיד\/רבים|ריבוי מיוחד/.test(t))                  return {state:'ok',cat:'word',href:APP+'stage-10-one-or-many.html',tag:'אֶחָד אוֹ הַרְבֵּה · אי 10'};
-      function disc(pair,tag){return {state:'ok',cat:'syll',href:APP+'stage-discrimination.html?pair='+pair+'&tag='+encodeURIComponent(tag),tag:tag};}
-      if(/הבחנה בין אותיות דומות/.test(t))                  return disc('tav-resh,bet-kaf,hey-het','אוֹתִיּוֹת דּוֹמוֹת');
-      if(/הבחנת צ\/ץ/.test(t))                              return disc('tzadi-final','צ / ץ');
-      if(/ימנית מול/.test(t))                               return disc('shin-sin','שׁ / שׂ');
-      if(/אבחנה שמיעתית/.test(t))                           return disc('shin-sin-listen','הַאֲזָנָה שׁ / שׂ');
-      if(/קריאת מילים עם/.test(t))                          return disc('shin-sin-words','מִלִּים עִם שׁ / שׂ');
-      if(/משמעות פעלים/.test(t))                            return {state:'ok',cat:'word',href:APP+'stage-9-island.html',tag:'משפחות מילים · אי 9'};
-      if(/מילים קטנות/.test(t))                             return {state:'ok',cat:'word',href:APP+'stage-8-flash-words.html',tag:'מילים שכיחות · אי 8'};
-      if(/קריאת משפט קצר/.test(t))                          return {state:'ok',cat:'word',href:APP+'stage-8-sentence-catch.html',tag:'המשפט של נוני · אי 8'};
-      if(/שדות סמנטיים|אסוציאציות וקטגוריות/.test(t))       return {state:'ok',cat:'word',href:APP+'stage-vocab-match.html?mode=sort&island=12',tag:'אוצר מילים · אי 12'};
-      if(/חיפוש פריטים/.test(t))                            return {state:'ok',cat:'word',href:APP+'stage-vocab-match.html?mode=word&island=12',tag:'אוצר מילים · אי 12'};
-      if(/הרחבת אוצר/.test(t))                              return {state:'ok',cat:'word',href:APP+'stage-vocab-match.html?island=12',tag:'אוצר מילים · אי 12'};
-      if(/בחירת משפט ל(איור|תמונה)/.test(t))                return {state:'ok',cat:'read',href:APP+'stage-15-sentence.html?mode=image',tag:'משפט ותמונה · אי 15'};
-      if(/הבנת משפט כן\/לא/.test(t))                        return {state:'ok',cat:'read',href:APP+'stage-15-sentence.html?mode=question',tag:'קוראים ועונים · אי 15'};
-      if(/זוגות זכר\/נקבה/.test(t))                         return {state:'ok',cat:'word',href:APP+'stage-10-he-or-she.html',tag:'הוּא אוֹ הִיא · אי 10'};
-      if(/קריאת מיל(ה|ים) ארוכ/.test(t))                    return {state:'ok',cat:'word',href:APP+'stage-7-chunks.html',tag:'מעלית הצ׳אנקים · אי 7'};
-      if(/קריאת מילים שלמות|התאמת מילה לתמונה \(מהירות\)/.test(t)) return {state:'ok',cat:'fluency',href:APP+'stage-6-fast-fish.html',tag:'דָּג מָהִיר · אי 6'};
+      if(/^כתיב|כתיבת|הכתב|המשך כתיבה/.test(t))             return {state:'offline',tag:'כתיבה'};
+      if(/חריזה|חרוז/.test(t))                              return {state:'ok',cat:'syll',href:APP+'stage-rhyme.html',tag:'חריזה'};
+      if(/פרופיל אורייני/.test(t))                          return {state:'ok',cat:'test',href:'teacher-literacy-profile-v2.html',tag:'כלי מורה'};
+      if(/חגיגת סיום|טקס סיום|סיום שנת/.test(t))            return {state:'oral',tag:'אירוע כיתתי'};
+      if(/בדיבור|דיאלוג|שפה דבורה|תיאור דמות|תיאור בעזרת תארים|שיח/.test(t)) return {state:'oral',tag:'שיח בכיתה'};
+      // ניקוד / תנועות
+      if(/חיריק|\/i\//.test(t))                             return vw('hiriq','חיריק');
+      if(/שווא/.test(t))                                    return vw('shva','שווא');
+      if(/חולם/.test(t))                                    return vw('holam','חולם');
+      if(/צירי|סגול|\/e\//.test(t))                         return vw('tzere','צירי-סגול');
+      if(/קמץ|פתח|\/a\//.test(t))                           return vw('patach','קמץ-פתח');
+      if(/שורוק|קובוץ|\/u\//.test(t))                       return vw('shuruk','שורוק-קובוץ');
+      if(/ניקוד/.test(t))                                   return vw('','ניקוד');
+      // שטף
+      if(/שטף|קריאה חוזרת|מילים לדקה|הקראה|בזוגות|קריאה אוראל|מהיר|דקודינג|מילות תפל/.test(t)) return {state:'ok',cat:'fluency',href:APP+'stage-read-aloud.html',tag:'שטף קריאה'};
+      // הבנת הנקרא / טקסטים
+      if(/רצף אירועים/.test(t))                             return {state:'ok',cat:'read',href:APP+'stage-16-paragraph.html',tag:'שרשרת משפטים · אי 16'};
+      if(/טקסט|הבנת הנקרא|תרגול הבנה|קריא(ת|ה)\s+(סיפור|תיאור|פסק|פסקא)|פסקא|איתור מידע|מבנה טקסט/.test(t)) return {state:'ok',cat:'read',href:APP+'stage-14-read-and-answer.html',tag:'הבנת הנקרא'};
+      if(/הנשמע|האזנה|הבנת הנ|שאלות הבנה/.test(t))          return {state:'ok',cat:'listen',href:APP+'stage-14-listen-and-answer.html',tag:'הבנת הנשמע'};
+      // מורפולוגיה / תחביר
+      if(/יחיד\/רבים|יחיד ורבים|ריבוי/.test(t))             return {state:'ok',cat:'word',href:APP+'stage-10-one-or-many.html',tag:'אֶחָד אוֹ הַרְבֵּה · אי 10'};
+      if(/זכר\/נקבה|זכר ונקבה|התאמת מין/.test(t))           return {state:'ok',cat:'word',href:APP+'stage-10-he-or-she.html',tag:'הוּא אוֹ הִיא · אי 10'};
+      if(/מילות שאלה/.test(t))                              return {state:'ok',cat:'word',href:APP+'stage-bank-play.html?unitKey=mar-w2-d3',tag:'מִלּוֹת שְׁאֵלָה'};
       if(/מילות מקום/.test(t))                              return {state:'ok',cat:'word',href:APP+'stage-11-island.html',tag:'מילות מקום · אי 11'};
-      if(/משחקי הברות/.test(t))                             return {state:'ok',cat:'syll',href:APP+'stage-1-island.html',tag:'משחקי הברות · אי 1'};
-      if(/הרכבת משפט/.test(t))                              return {state:'ok',cat:'word',href:APP+'stage-21-dictation.html',tag:'דיקטה בבנייה · אי 21'};
-      if(/מהברות|מהברה|בניית מילה|הרכבת|מיזוג/.test(t))     return {state:'ok',cat:'word',href:APP+'stage-5-word-merge.html',tag:'הרכבת מילה'};
-      if(/הברה|הברות|תנוע/.test(t))                         return {state:'ok',cat:'syll',href:APP+'stage-4-cv-build.html',tag:'הברה'};
-      if(/צליל הראשון|צליל האחרון/.test(t))                 return {state:'ok',cat:'syll',href:APP+'stage-2-island.html',tag:'צלילים · אי 2'};
-      if(/מילה|מילים|משפט|פועל|פעלים|זכר|נקבה|רבים|יחיד|ריבוי|כינוי/.test(t)) return {state:'ok',cat:'word',href:APP+'stage-5-word-build.html',tag:'קריאת מילים'};
+      if(/תחיל|לְנָדָב/.test(t))                            return {state:'ok',cat:'word',href:APP+'stage-10-little-start.html',tag:'הַהַתְחָלָה הַקְּטַנָּה · אי 10'};
+      if(/מילים קטנות|מיל(ות|ים) שכיח|שֶׁל|אֶת/.test(t))    return {state:'ok',cat:'word',href:APP+'stage-8-flash-words.html',tag:'מילים שכיחות · אי 8'};
+      if(/הבחנה|הבחנת|אבחנה|דומ(ה|ות)/.test(t))            return {state:'ok',cat:'syll',href:APP+'stage-discrimination.html',tag:'הַבְחָנָה'};
+      if(/בחירת משפט ל(איור|תמונה)/.test(t))                return {state:'ok',cat:'read',href:APP+'stage-15-sentence.html?mode=image',tag:'משפט ותמונה · אי 15'};
+      if(/משפט כן\/לא|קוראים ועונים/.test(t))               return {state:'ok',cat:'read',href:APP+'stage-15-sentence.html?mode=question',tag:'קוראים ועונים · אי 15'};
+      if(/קריאת מיל(ה|ים) ארוכ|צ׳אנק|צ'אנק/.test(t))       return {state:'ok',cat:'word',href:APP+'stage-7-chunks.html',tag:'מעלית הצ׳אנקים · אי 7'};
+      if(/קריאת מילים שלמות|התאמת מילה לתמונה/.test(t))     return {state:'ok',cat:'fluency',href:APP+'stage-6-fast-fish.html',tag:'דָּג מָהִיר · אי 6'};
+      if(/משחקי הברות|מודעות הברתית|ספירת הברות|חלוקת מילה|הברה סגורה|הברה פתוחה/.test(t)) return {state:'ok',cat:'syll',href:APP+'stage-1-island.html',tag:'הברות · אי 1'};
+      if(/הרכבת משפט|מסדר מילים/.test(t))                   return {state:'ok',cat:'word',href:APP+'stage-21-dictation.html',tag:'דיקטה בבנייה · אי 21'};
+      if(/מהברות|מהברה|בניית מיל|הרכבת|מיזוג/.test(t))      return {state:'ok',cat:'word',href:APP+'stage-5-word-merge.html',tag:'הרכבת מילה'};
+      if(/בידוד צליל|צליל ראשון|צליל אחרון|מודעות פונ|צליל פותח/.test(t)) return {state:'ok',cat:'syll',href:APP+'stage-2-island.html',tag:'צלילים · אי 2'};
+      if(/פתיחת שנה|היכרות/.test(t))                        return {state:'ok',cat:'syll',href:APP+'stage-1-island.html',tag:'הברות · אי 1'};
+      if(/הברה|תנוע/.test(t))                               return vw('','הברה');
+      // אוצר מילים (רשימת מילים מופרדת בפסיקים או "אוצר")
+      if(/אוצר/.test(t)||(/,/.test(t)&&!/מבדק/.test(t)))    return {state:'ok',cat:'word',href:APP+'stage-vocab-match.html?island=12',tag:'אוצר מילים · אי 12'};
+      if(/מילה|מילים|משפט|פועל|פעלים|תואר|כינוי/.test(t))   return {state:'ok',cat:'word',href:APP+'stage-5-word-build.html',tag:'קריאת מילים'};
+      // ימי תרגול/חזרה כלליים → תרגול חופשי מותאם (BKT מנווט)
+      if(/^תרגול|תרגול\s*\d*$|תרגול חזרתי|תרגול חופשי|חזרה( לפני|$| ותרגול)|תרגול\s+כללי|^סוף\s/.test(t)) return {state:'ok',cat:'word',href:APP+'map.html?guest=1',tag:'תרגול מותאם'};
       return {state:'gap',tag:''};
     }
-    function pracHTML(pr){
-      if(pr.state==='ok')      return '<a class="prac ok c-'+(pr.cat||'word')+'" href="'+pr.href+'" target="_blank" rel="noopener"><span class="tic" data-ic="playcircle"></span><span class="pt">פתח תרגול · '+pr.tag+'</span></a>';
-      if(pr.state==='sum')     return '<a class="prac sum" href="'+pr.href+'" target="_blank" rel="noopener"><span class="tic" data-ic="star"></span><span class="pt">תרגול '+pr.tag+'</span></a>';
-      if(pr.state==='offline') return '<span class="prac offline"><span class="tic" data-ic="edit"></span><span class="pt">כתיבה במחברת</span></span>';
-      if(pr.state==='oral')    return '<span class="prac oral"><span class="tic" data-ic="people"></span><span class="pt">'+pr.tag+'</span></span>';
-      return '<span class="prac gap" title="עדיין אין תרגול דיגיטלי לנושא הזה — מסומן כחסר לבנייה"><span class="tic" data-ic="alert"></span><span class="pt">חסר תרגול'+(pr.tag?' · '+pr.tag:'')+'</span></span>';
+
+    // תרגול היום: קודם game_to_play מהנתונים, אז אות מהנתונים, אז מיפוי-נושא
+    function dayPractice(v){
+      if(v.game){
+        var g=v.game, mm=g.match(/([A-Za-z0-9_\-]+\.html)(\?[^\s)]*)?/);
+        if(mm){var tg=(g.match(/\(([^)]+)\)/)||[])[1]||'תרגול';return {state:'ok',cat:'letter',href:APP+mm[1]+(mm[2]||''),tag:tg};}
+      }
+      for(var k=0;k<v.letters.length;k++){var L=normFinal(v.letters[k]);if(LETTERS[L])return {state:'ok',cat:'letter',href:APP+LETTERS[L],tag:'אות '+v.letters[k]};}
+      return resolvePractice(v.topic||'', v.day);
     }
-    function schoolDays(y,m){var out=[];var last=new Date(y,m+1,0).getDate();for(var d=1;d<=last;d++){var wd=new Date(y,m,d).getDay();if(wd>=0&&wd<=4)out.push({d:d,wd:wd});}return out;}
+    function pracHTML(pr){
+      if(pr.state==='ok')      return '<a class="prac ok c-'+(pr.cat||'word')+'" href="'+pr.href+'" target="_blank" rel="noopener"><span class="tic" data-ic="playcircle"></span><span class="pt">פתח תרגול · '+esc(pr.tag)+'</span></a>';
+      if(pr.state==='sum')     return '<a class="prac sum" href="'+pr.href+'" target="_blank" rel="noopener"><span class="tic" data-ic="star"></span><span class="pt">תרגול '+esc(pr.tag)+'</span></a>';
+      if(pr.state==='offline') return '<span class="prac offline"><span class="tic" data-ic="edit"></span><span class="pt">כתיבה במחברת</span></span>';
+      if(pr.state==='oral')    return '<span class="prac oral"><span class="tic" data-ic="people"></span><span class="pt">'+esc(pr.tag)+'</span></span>';
+      return '<span class="prac gap" title="עדיין אין תרגול דיגיטלי לנושא הזה — מסומן כחסר לבנייה"><span class="tic" data-ic="alert"></span><span class="pt">חסר תרגול'+(pr.tag?' · '+esc(pr.tag):'')+'</span></span>';
+    }
     function fillTics(){if(!window.DemoIcons)return;document.querySelectorAll('.tic[data-ic]').forEach(function(el){if(!el.firstChild&&DemoIcons[el.dataset.ic])el.innerHTML=DemoIcons[el.dataset.ic];});}
 
+    /* ---------- build model from JSON ---------- */
+    function buildModel(data){
+      ALLDAYS=(data.days||[]).filter(function(d){return d&&MONTH_ORDER.indexOf(d.month)>=0;})
+        .map(normalizeDay).sort(function(a,b){return a.day-b.day;});
+      VACS=(data.calendar_meta&&data.calendar_meta.vacations)||[];
+      var byMonth={};
+      ALLDAYS.forEach(function(v){(byMonth[v.month]=byMonth[v.month]||[]).push(v);});
+      SCHOOL=MONTH_ORDER.filter(function(m){return byMonth[m];}).map(function(m){
+        var meta=MONTH_META[m]||{};
+        return {name:m,tag:meta.tag||'',focus:meta.focus||'',days:byMonth[m]};
+      });
+    }
+    function monthVacations(mName){
+      var num=MON2NUM[mName], out=[];
+      VACS.forEach(function(v){(v.dates||[]).forEach(function(ds){var mm=+String(ds).split('-')[1]-1;if(mm===num&&out.indexOf(v.name)<0)out.push(v.name);});});
+      return out;
+    }
+
+    /* ---------- render ---------- */
     function renderNow(){
-      var M=SCHOOL[TODAY.mi],topic=M.days[TODAY.di]||'';
-      var nextM=SCHOOL[TODAY.mi+1];
-      var tomorrow=M.days[TODAY.di+1]||(nextM?nextM.days[0]:'');
-      var pr=resolvePractice(topic,TODAY.mi,TODAY.di);
-      var big,ml=topic.match(/האות\s+(\S)/);
-      if(ml){big=ml[1];}
-      else if(topic.indexOf(':')>=0){big=topic.split(':')[1].trim().split(/\s+/)[0];}
-      else {big='◆';}
-      var btn=(pr.state==='ok'||pr.state==='sum')?'<a class="btn btn-primary btn-sm" href="'+pr.href+'" target="_blank" rel="noopener">פתיחת תרגול לכיתה'+(pr.tag?' · '+pr.tag:'')+'</a>':'';
-      document.getElementById('nowCard').innerHTML='<div class="big">'+big+'</div><div><span class="lab">היום בכיתה</span><h2>'+topic+'</h2>'+(tomorrow?'<p>מחר: '+tomorrow+'</p>':'')+'<div class="btns">'+btn+'</div></div>';
+      var v=ALLDAYS[0]; if(!v){return;}
+      var pr=dayPractice(v);
+      var isl=v.island||1;
+      var big='<span>אי '+isl+'</span>';
+      if(v.letters[0]) big=esc(v.letters[0])+'<small>אי '+isl+'</small>';
+      var btn=(pr.state==='ok'||pr.state==='sum')?'<a class="btn btn-primary btn-sm" href="'+pr.href+'" target="_blank" rel="noopener">פתיחת תרגול · '+esc(pr.tag)+'</a>':'';
+      var det='<button class="btn btn-soft btn-sm" data-detail="'+v.day+'"><span class="tic" data-ic="learn"></span>שלושת הצירים</button>';
+      document.getElementById('nowCard').innerHTML='<div class="big">'+big+'</div><div><span class="lab">פתיחת השנה · יום 1</span><h2>'+esc(v.topic)+'</h2>'+(v.sub_skill?'<p>'+esc(v.sub_skill)+'</p>':'')+'<div class="btns">'+btn+det+'</div></div>';
     }
     function render(){
-      var M=SCHOOL[cur];
+      var M=SCHOOL[cur]; if(!M){return;}
       document.getElementById('mname').textContent=M.name;
-      document.getElementById('calfocus').innerHTML='<b>מוקד החודש:</b> '+M.focus+(M.tag?' · <b>'+M.tag+'</b>':'');
+      document.getElementById('calfocus').innerHTML='<b>מוקד החודש:</b> '+esc(M.focus)+(M.tag?' · <b>'+esc(M.tag)+'</b>':'');
+      var vac=monthVacations(M.name), vEl=document.getElementById('calvac');
+      if(vac.length){vEl.hidden=false;vEl.innerHTML='<span class="tic" data-ic="calendar"></span><span>חופשות החודש: '+esc(vac.join(' · '))+'</span>';}
+      else vEl.hidden=true;
       document.getElementById('prevM').disabled=(cur===0);
       document.getElementById('nextM').disabled=(cur===SCHOOL.length-1);
-      var days=schoolDays(M.y,M.m),html='',wk=0,grid=false,cov={ok:0,gap:0,off:0,sum:0,oral:0};
-      days.forEach(function(day,i){
-        if(day.wd===0){wk++;if(grid)html+='</div>';html+='<div class="wklabel">שבוע '+wk+'</div><div class="wkgrid">';grid=true;}
-        if(!grid){html+='<div class="wkgrid">';grid=true;}
-        var topic=M.days[i]||'חזרה, תרגול והעמקה';
-        var isToday=(cur===TODAY.mi&&i===TODAY.di);
+      var html='',wk=0,grid=false,cov={ok:0,gap:0,off:0,sum:0,oral:0},sincewk=0;
+      M.days.forEach(function(v,i){
+        // גבול-שבוע: לפי יום-א׳ (חודשים מפורטים) או כל 5 ימים (חודשי-שלד ללא תאריך)
+        var newWeek = v.weekday? (v.weekday==='א') : (sincewk>=5);
+        if(!grid||newWeek){wk++;sincewk=0;if(grid)html+='</div>';html+='<div class="wklabel">שבוע '+wk+'</div><div class="wkgrid">';grid=true;}
+        sincewk++;
         var key=cur+'-'+i;
-        var extras=(EXTRAS[key]||[]).map(function(x,xi){return '<span class="xtopic">'+x+'<span class="rm" data-rm="'+key+'|'+xi+'">✕</span></span>';}).join('');
-        var pr=resolvePractice(topic,cur,i);
+        var extras=(EXTRAS[key]||[]).map(function(x,xi){return '<span class="xtopic">'+esc(x)+'<span class="rm" data-rm="'+key+'|'+xi+'">✕</span></span>';}).join('');
+        var pr=dayPractice(v);
         cov[pr.state==='ok'?'ok':pr.state==='sum'?'sum':pr.state==='offline'?'off':pr.state==='oral'?'oral':'gap']++;
-        html+='<div class="daycard'+(isToday?' today':'')+'" data-key="'+key+'"><div class="dchead"><span class="dn">יום '+WD[day.wd]+'</span><span class="dd">'+day.d+'.'+(M.m+1)+'</span>'+(isToday?'<span class="nowtag">היום</span>':'')+'</div><div class="dcbody"><span class="ttext">'+topic+'</span>'+extras+'</div><div class="dcfoot">'+pracHTML(pr)+'</div><div class="dayacts"><button data-edit="'+key+'" title="שינוי נושא"><span class="tic" data-ic="edit"></span></button><button data-add="'+key+'" title="הוספת נושא"><span class="tic" data-ic="plus"></span></button></div></div>';
+        var dn = v.weekday? ('יום '+(WD[v.weekday]||esc(v.weekday))) : 'יום';
+        var dd = v.date? ddm(v.date) : (''+v.day);
+        var tag = v.assessment? '<span class="nowtag" style="background:var(--watchbg);color:var(--watch-tx)">'+esc(v.assessment)+'</span>' : (v.island?'<span class="nowtag">אי '+v.island+'</span>':'');
+        html+='<div class="daycard" data-key="'+key+'" data-day="'+v.day+'">'+
+          '<div class="dchead"><span class="dn">'+dn+'</span><span class="dd">'+dd+'</span>'+tag+'</div>'+
+          '<div class="dcbody"><span class="ttext" data-detail="'+v.day+'">'+esc(v.topic)+'</span>'+extras+'</div>'+
+          '<div class="dcfoot">'+pracHTML(pr)+'<button class="prac axes" data-detail="'+v.day+'"><span class="tic" data-ic="learn"></span><span class="pt">'+(v.skeleton?'פרטים':'3 צירים')+'</span></button></div>'+
+          '<div class="dayacts"><button data-edit="'+key+'" title="שינוי נושא"><span class="tic" data-ic="edit"></span></button><button data-add="'+key+'" title="הוספת נושא"><span class="tic" data-ic="plus"></span></button></div>'+
+          '</div>';
       });
       if(grid)html+='</div>';
       document.getElementById('caldays').innerHTML=html;
       document.getElementById('praccov').innerHTML='<span class="cok"><span class="dot"></span>יש תרגול דיגיטלי: <b>'+cov.ok+'</b></span>'+(cov.sum?'<span class="csum"><span class="dot"></span>תרגול סיכום: <b>'+cov.sum+'</b></span>':'')+'<span class="cgap"><span class="dot"></span>חסר תרגול: <b>'+cov.gap+'</b></span>'+'<span class="coff"><span class="dot"></span>כתיבה במחברת: <b>'+cov.off+'</b></span>'+(cov.oral?'<span class="coral"><span class="dot"></span>שיח בכיתה: <b>'+cov.oral+'</b></span>':'');
       fillTics();
     }
+
+    /* ---------- day-detail modal (3 axes) ---------- */
+    function openDetail(dayNum){
+      var v=null;for(var i=0;i<ALLDAYS.length;i++){if(ALLDAYS[i].day===dayNum){v=ALLDAYS[i];break;}}
+      if(!v)return;
+      var pr=dayPractice(v);
+      var words=v.words.length?'<p><span class="words">מילים:</span> '+esc(v.words.join(' · '))+'</p>':'';
+      var notes=v.notes?'<p class="mut">'+esc(v.notes)+'</p>':'';
+      var tiers=v.tiers.map(function(t,i){return t?'<li><b>רמה '+(i+1)+':</b> '+esc(t)+'</li>':'';}).join('');
+      var e=v.enrich||{};
+      var games=(e.quick_class_games||[]).map(function(g){return '<li>'+esc(g)+'</li>';}).join('');
+      var adv=e.advanced?'<li><b>מתקדמים:</b> '+esc(e.advanced)+'</li>':'';
+      var strg=e.struggling?'<li><b>מתקשים:</b> '+esc(e.struggling)+'</li>':'';
+      var ax3inner=(games+adv+strg);
+      var skelNote=v.skeleton?'<p class="mut" style="margin-top:6px">שלד שבועי — הפירוט המלא של שלושת הצירים יושלם בסבב הבא.</p>':'';
+      var html=
+        '<div class="ax ax1"><div class="axh"><span class="n">1</span>מה המורה מלמדת <small>ציר 1</small></div>'+
+          (v.sub_skill?'<p><b>'+esc(v.sub_skill)+'</b></p>':'')+words+notes+
+          (!v.sub_skill&&!words&&!notes?'<p class="mut">'+esc(v.topic)+'</p>':'')+'</div>'+
+        '<div class="ax ax2"><div class="axh"><span class="n">2</span>מה אבני יסוד מתרגלת <small>ציר 2 · לפי רמה, מותאם אישית</small></div>'+
+          (v.island?'<p class="mut">אי '+esc(v.island)+(v.pack?' · פאק '+esc(v.pack):'')+'</p>':'')+
+          (tiers?'<ul>'+tiers+'</ul>':'')+
+          '<div class="mdact">'+pracHTML(pr)+'</div></div>'+
+        '<div class="ax ax3"><div class="axh"><span class="n">3</span>העשרות <small>ציר 3 · לא חובה</small></div>'+
+          (ax3inner?'<ul>'+ax3inner+'</ul>':'<p class="mut">אין העשרות מוגדרות ליום זה.</p>')+'</div>'+
+        skelNote;
+      document.getElementById('mdKick').textContent='יום '+v.day+(v.weekday?' · '+(WD[v.weekday]||v.weekday):'')+(v.date?' · '+ddm(v.date):'');
+      document.getElementById('mdTitle').textContent=v.topic||'';
+      document.getElementById('mdBody').innerHTML=html;
+      document.getElementById('modal').classList.add('open');
+      fillTics();
+    }
+    function closeDetail(){document.getElementById('modal').classList.remove('open');}
+
+    /* ---------- edit / add (in-memory demo) ---------- */
     function cardOf(key){return document.querySelector('.daycard[data-key="'+key+'"]');}
     function beginEdit(key){
       var i=+key.split('-')[1],card=cardOf(key),mid=card.querySelector('.dcbody'),t=card.querySelector('.ttext'),done=false;
       var inp=document.createElement('input');inp.className='ed';inp.value=t.textContent;mid.insertBefore(inp,t);t.style.display='none';inp.focus();inp.select();
-      function commit(save){if(done)return;done=true;if(save){var v=inp.value.trim();if(v)SCHOOL[cur].days[i]=v;}render();}
+      function commit(save){if(done)return;done=true;if(save){var val=inp.value.trim();if(val){SCHOOL[cur].days[i].topic=val;}}render();}
       inp.addEventListener('keydown',function(ev){if(ev.key==='Enter')commit(true);else if(ev.key==='Escape')commit(false);});
       inp.addEventListener('blur',function(){commit(true);});
     }
@@ -413,22 +523,37 @@
       inp.addEventListener('keydown',function(ev){if(ev.key==='Enter')commit(true);else if(ev.key==='Escape')commit(false);});
       inp.addEventListener('blur',function(){commit(true);});
     }
+
+    /* ---------- events ---------- */
     document.getElementById('caldays').addEventListener('click',function(e){
+      var dt=e.target.closest('[data-detail]');if(dt){openDetail(+dt.dataset.detail);return;}
       var ed=e.target.closest('[data-edit]');if(ed){beginEdit(ed.dataset.edit);return;}
       var ad=e.target.closest('[data-add]');if(ad){beginAdd(ad.dataset.add);return;}
       var rm=e.target.closest('[data-rm]');if(rm){var p=rm.dataset.rm.split('|');if(EXTRAS[p[0]]){EXTRAS[p[0]].splice(+p[1],1);}render();return;}
     });
+    document.getElementById('nowCard').addEventListener('click',function(e){var dt=e.target.closest('[data-detail]');if(dt)openDetail(+dt.dataset.detail);});
+    document.getElementById('modal').addEventListener('click',function(e){if(e.target.closest('[data-close]'))closeDetail();});
+    document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDetail();});
     document.getElementById('prevM').addEventListener('click',function(){if(cur>0){cur--;render();}});
     document.getElementById('nextM').addEventListener('click',function(){if(cur<SCHOOL.length-1){cur++;render();}});
-    document.getElementById('todayBtn').addEventListener('click',function(){cur=TODAY.mi;render();var t=document.querySelector('.daycard.today');if(t)t.scrollIntoView({behavior:'smooth',block:'center'});});
+    document.getElementById('todayBtn').addEventListener('click',function(){cur=0;render();window.scrollTo({top:0,behavior:'smooth'});});
 
-    renderNow();render();
+    function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},2600);}
+
+    /* ---------- boot: load real data ---------- */
+    function fail(msg){document.getElementById('caldays').innerHTML='<div class="calfocus" style="text-align:center">'+esc(msg)+'</div>';}
+    fetch(DATA_URL).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(function(data){
+      buildModel(data);
+      if(!SCHOOL.length){fail('לא נמצאו נתוני תוכנית.');return;}
+      renderNow();render();
+    }).catch(function(err){
+      fail('לא הצלחנו לטעון את התוכנית השנתית. (נדרשת גישה לרשת · '+esc(err.message||'')+')');
+    });
+
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fillTics);else fillTics();
     window.addEventListener('load',fillTics);
-    function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},2600);}
-    document.addEventListener('click',function(e){var b=e.target.closest('button[data-toast]');if(b)toast(b.dataset.toast);});
     /* dual-mode רך: ענן רק כשמחובר.ת (אחרת נשאר דמו) — כאן רק שם-הכיתה בפירורים */
-    TeacherCloudSoft.try(function(st){ if(st&&st.klass){TeacherCloudSoft.setCrumb('תוכנית שנתית · '+st.klass.name);TeacherCloudSoft.setBadge();} });
+    TeacherCloudSoft.try(function(st){ if(st&&st.klass){TeacherCloudSoft.setCrumb('תוכנית שנתית · '+st.klass.name);} });
   </script>
 </body>
 </html>
