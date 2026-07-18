@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#FFFFFF">
+  <title>דוחות · מורה · אבני יסוד · DESIGN-LOCK</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Rubik:wght@400;500;600;700;800;900&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="dashboard-v2.css">
+  <script src="../../demo/demo-icons.js" defer></script>
+  <link rel="preconnect" href="https://esm.sh" crossorigin>
+  <link rel="preconnect" href="https://ynxfszmpoppqrqocewcs.supabase.co" crossorigin>
+  <link rel="modulepreload" href="https://esm.sh/@supabase/supabase-js@2.45.4">
+  <script src="js/shared/teacher-cloud.js"></script>
+  <script src="js/shared/teacher-cloud-soft.js"></script>
+  <style>
+  /* ---- page-specific (דוחות) ---- */
+  .lift{transition:transform .16s,box-shadow .16s;} .lift:hover{transform:translateY(-3px);box-shadow:0 12px 28px -16px rgba(37,31,68,.28);}
+  .tile{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;flex:0 0 auto;} .tile .tic svg{width:24px;height:24px;}
+  .hero{background:var(--surface);border:1px solid var(--line);border-inline-start:6px solid var(--purple);border-radius:var(--radius);padding:20px 24px;box-shadow:var(--shadow-flat);margin-bottom:20px;}
+  .hero .top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+  .hero .q{font-size:13px;font-weight:800;color:var(--purple-deep);background:var(--purple-soft);display:inline-block;padding:5px 15px;border-radius:var(--pill);}
+  .hero .range{font-size:12.5px;font-weight:700;color:var(--ink-soft);background:var(--surface-soft);padding:5px 14px;border-radius:var(--pill);}
+  .hero h1{font-size:clamp(20px,2.4vw,25px);font-weight:800;color:var(--ink);}
+  .hero p{font-size:13.5px;color:var(--ink-soft);margin-top:7px;max-width:64ch;line-height:1.5;} .hero p b{color:var(--purple-deep);}
+
+  .rtypes{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-bottom:30px;}
+  .rt{display:flex;flex-direction:column;gap:12px;padding:20px;}
+  .rt h3{font-size:16.5px;font-weight:800;color:var(--ink);} .rt p{font-size:13px;color:var(--ink-soft);line-height:1.45;flex:1;} .rt .btn{align-self:flex-start;}
+
+  .stitle{display:flex;align-items:center;gap:11px;margin:0 0 16px;}
+  .stitle .tile{width:38px;height:38px;border-radius:11px;} .stitle .tile .tic svg{width:20px;height:20px;}
+  .stitle h2{font-size:19px;font-weight:900;color:var(--ink);} .stitle .s{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+  .rcard{padding:24px 26px;margin-bottom:22px;}
+
+  /* donuts */
+  .donuts{display:flex;flex-wrap:wrap;gap:22px 30px;justify-content:center;}
+  .du{display:flex;flex-direction:column;align-items:center;gap:9px;} .du .name{font-size:13.5px;font-weight:700;color:var(--ink);text-align:center;}
+  .donut{width:var(--sz,120px);height:var(--sz,120px);border-radius:50%;background:conic-gradient(var(--c) calc(var(--p)*1%),var(--surface-soft) 0);display:grid;place-items:center;position:relative;}
+  .donut::before{content:"";position:absolute;inset:13px;border-radius:50%;background:var(--surface);}
+  .donut .v{position:relative;z-index:1;text-align:center;line-height:1.15;}
+  .donut .pv{font-family:var(--font-num);font-size:23px;font-weight:700;color:var(--ink);display:block;}
+  .donut .v small{font-size:10.5px;color:var(--ink-soft);font-weight:600;}
+  .take{display:flex;align-items:flex-start;gap:11px;background:var(--surface-soft);border:1px solid var(--line);border-radius:12px;padding:12px 15px;margin-top:22px;font-size:13.5px;color:var(--ink);line-height:1.55;}
+  .take .tic{color:var(--ok);flex:0 0 auto;margin-top:1px;} .take .tic svg{width:20px;height:20px;} .take b{color:var(--ink);}
+
+  /* bar chart */
+  .chart{display:flex;align-items:flex-end;gap:16px;height:190px;padding:8px 8px 0;border-bottom:2px solid var(--line);}
+  .col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px;height:100%;}
+  .col .bar{width:100%;max-width:52px;border-radius:10px 10px 4px 4px;background:linear-gradient(180deg,var(--purple-bright),var(--purple));position:relative;transition:height .5s ease;}
+  .col:last-child .bar{background:linear-gradient(180deg,#F78CC1,var(--pink-deep));}
+  .col .val{font-family:var(--font-num);font-size:12.5px;font-weight:700;color:var(--purple-deep);}
+  .xlabels{display:flex;gap:16px;margin-top:10px;} .xlabels span{flex:1;text-align:center;font-size:12px;font-weight:700;color:var(--ink-soft);}
+  .insight{display:flex;align-items:flex-start;gap:11px;background:var(--okbg);border:1px solid #CFE9DF;border-radius:12px;padding:12px 15px;margin-top:20px;font-size:13.5px;color:var(--ok-tx);line-height:1.55;}
+  .insight .tic{color:var(--ok);flex:0 0 auto;margin-top:1px;} .insight .tic svg{width:20px;height:20px;} .insight b{color:var(--ok-tx);}
+  .acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <nav class="rail" aria-label="ניווט">
+      <a class="logo" href="teacher-home-v2.html"><span class="gm"><svg viewBox="0 0 24 24" fill="none" stroke="#5D4CB0" stroke-width="2.3" stroke-linecap="round"><path d="M6 18v-5"/><path d="M12 18V7"/><path d="M18 18v-8"/></svg></span><b>אבני<br>יסוד</b></a>
+      <a class="item" href="teacher-home-v2.html"><span class="ic" data-ic="home"></span><span class="t">דף הבית</span></a>
+      <a class="item" href="teacher-my-class-v2.html"><span class="ic" data-ic="people"></span><span class="t">הכיתה שלי</span></a>
+      <a class="item" href="teacher-literacy-profile-v2.html"><span class="ic" data-ic="learn"></span><span class="t">פרופיל אורייני</span></a>
+      <a class="item" href="../../pulse-grade1/pulse-dashboard.html"><span class="ic" data-ic="pulse"></span><span class="t">פולס</span></a>
+      <a class="item" href="teacher-mavat-v2.html"><span class="ic" data-ic="link"></span><span class="t">למידה ורגש</span></a>
+      <a class="item active" href="teacher-reports-v2.html"><span class="ic" data-ic="report"></span><span class="t">דוחות</span></a>
+      <a class="item" href="teacher-curriculum-v2.html"><span class="ic" data-ic="calendar"></span><span class="t">תוכנית שנתית</span></a>
+      <a class="item" href="teacher-settings-v2.html"><span class="ic" data-ic="settings"></span><span class="t">הגדרות</span></a>
+      <div class="me"><div class="av">מ</div><small>מיטל פלג<span>מורה · א׳1</span></small></div>
+    </nav>
+
+    <main class="main"><div class="main-inner">
+      <div class="topbar"><a class="backhome" href="gate-landing.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>למסך הראשי</a><div class="crumbs">אבני יסוד<span class="brand-dot"></span> · דוחות · א׳1</div><div class="date">טווח: החודש</div></div>
+
+      <div class="hero">
+        <div class="top"><span class="q">דוחות וניתוחים</span><span class="range">טווח: החודש</span></div>
+        <h1>דוחות הכיתה<span class="brand-dot"></span></h1>
+        <p>תמונות נתונים שמסייעות להבין <b>איפה הכיתה נמצאת</b> ולאן ממשיכים. כל דוח בשורה תחתונה אחת, בלי מונחים טכניים.</p>
+      </div>
+
+      <div class="rtypes">
+        <div class="card rt lift">
+          <span class="tile" style="background:var(--aqua-soft);color:var(--aqua-deep)"><span class="tic" data-ic="trend"></span></span>
+          <h3>התקדמות לאורך זמן</h3><p>איך הכיתה מתקדמת משבוע לשבוע ומאיפה התחילה.</p>
+          <button class="btn btn-primary btn-sm" data-toast="דוח התקדמות לאורך זמן — נפתח">פתחו דוח</button>
+        </div>
+        <div class="card rt lift">
+          <span class="tile" style="background:var(--watchbg);color:var(--watch-tx)"><span class="tic" data-ic="scale"></span></span>
+          <h3>חוזקות וקשיים</h3><p>במה הכיתה חזקה ואיפה כדאי להשקיע עוד תרגול.</p>
+          <button class="btn btn-primary btn-sm" data-toast="דוח חוזקות וקשיים — נפתח">פתחו דוח</button>
+        </div>
+        <div class="card rt lift">
+          <span class="tile" style="background:var(--purple-soft);color:var(--purple-deep)"><span class="tic" data-ic="target"></span></span>
+          <h3>מיומנויות קריאה</h3><p>זיהוי אותיות, הברות, שטף והבנה — כל אחת בנפרד.</p>
+          <button class="btn btn-primary btn-sm" data-toast="דוח מיומנויות קריאה — נפתח">פתחו דוח</button>
+        </div>
+        <div class="card rt lift">
+          <span class="tile" style="background:var(--pink-soft);color:var(--pink-deep)"><span class="tic" data-ic="heart"></span></span>
+          <h3>למידה ורגש יחד</h3><p>הקשר בין ההתקדמות הלימודית לתמונת הפולס הרגשית.</p>
+          <button class="btn btn-primary btn-sm" data-toast="דוח למידה ורגש יחד — נפתח">פתחו דוח</button>
+        </div>
+      </div>
+
+      <div class="card rcard">
+        <div class="stitle"><span class="tile" style="background:var(--aqua-soft);color:var(--aqua-deep)"><span class="tic" data-ic="chart"></span></span>
+          <div><h2>דוח לדוגמה — התקדמות הכיתה</h2><div class="s">שיעור השליטה הממוצע של הכיתה בכל מיומנות · החודש</div></div></div>
+        <div class="donuts" id="donuts">
+          <div class="du" data-skill="letters"><div class="donut" style="--p:88;--c:var(--ok);--sz:120px"><div class="v"><span class="pv">88%</span><small>זיהוי אותיות</small></div></div><div class="name">זיהוי אותיות</div></div>
+          <div class="du" data-skill="decoding"><div class="donut" style="--p:76;--c:var(--ok);--sz:120px"><div class="v"><span class="pv">76%</span><small>פענוח</small></div></div><div class="name">פענוח (כולל הברות)</div></div>
+          <div class="du" data-skill="fluency"><div class="donut" style="--p:64;--c:var(--watch);--sz:120px"><div class="v"><span class="pv">64%</span><small>שטף</small></div></div><div class="name">שטף קריאה</div></div>
+          <div class="du" data-skill="comprehension"><div class="donut" style="--p:58;--c:var(--care);--sz:120px"><div class="v"><span class="pv">58%</span><small>הבנה</small></div></div><div class="name">הבנת הנקרא</div></div>
+        </div>
+        <div class="take" id="reportTake"><span class="tic" data-ic="checkcircle"></span><div><b>שורה תחתונה:</b> הכיתה שולטת יפה בזיהוי אותיות ובקריאת הברות. שטף קריאה והבנה עדיין מתפתחים — כדאי לתת להם דגש בשבועות הקרובים.</div></div>
+      </div>
+
+      <div class="card rcard">
+        <div class="stitle"><span class="tile" style="background:var(--purple-soft);color:var(--purple-deep)"><span class="tic" data-ic="trend"></span></span>
+          <div><h2>מגמת החודש</h2><div class="s">שיעור השליטה הכיתתי הממוצע לאורך 6 שבועות</div></div></div>
+        <div class="chart" id="chart">
+          <div class="col"><div class="val">52%</div><div class="bar" style="height:52%"></div></div>
+          <div class="col"><div class="val">58%</div><div class="bar" style="height:58%"></div></div>
+          <div class="col"><div class="val">61%</div><div class="bar" style="height:61%"></div></div>
+          <div class="col"><div class="val">67%</div><div class="bar" style="height:67%"></div></div>
+          <div class="col"><div class="val">73%</div><div class="bar" style="height:73%"></div></div>
+          <div class="col"><div class="val">79%</div><div class="bar" style="height:79%"></div></div>
+        </div>
+        <div class="xlabels"><span>שבוע 1</span><span>שבוע 2</span><span>שבוע 3</span><span>שבוע 4</span><span>שבוע 5</span><span>שבוע 6</span></div>
+        <div class="insight"><span class="tic" data-ic="trend"></span><div><b>מגמה חיובית:</b> הכיתה עלתה מ‑52% ל‑79% תוך חודש — עלייה עקבית של כ‑5 נקודות בשבוע. הקצב שמור, אפשר להמשיך באותה תוכנית.</div></div>
+      </div>
+
+      <div class="acts">
+        <button class="btn btn-primary btn-sm" data-toast="ייצוא PDF — הדוח יורד למכשיר"><span class="tic" data-ic="doc"></span>ייצוא PDF</button>
+        <button class="btn btn-soft btn-sm" data-toast="שיתוף עם המנהלת — נשלח"><span class="tic" data-ic="handshake"></span>שיתוף עם המנהלת</button>
+        <button class="btn btn-chip btn-sm" data-toast="דוח פר תלמיד/ה — בחרו ילד/ה מהכיתה"><span class="tic" data-ic="people"></span>דוח פר תלמיד/ה</button>
+      </div>
+    </div></main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="rt-badge rt-demo" id="rtBadge"><span class="d"></span><span id="rtTx">נתוני דמו</span></div>
+
+  <script>
+    function paintIcons(){var I=window.DemoIcons||{};document.querySelectorAll('[data-ic]').forEach(function(el){var k=el.getAttribute('data-ic');if(!el.firstChild&&I[k])el.innerHTML=I[k];});}
+    function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},2600);}
+    document.addEventListener('click',function(e){var b=e.target.closest('[data-toast]');if(b)toast(b.getAttribute('data-toast'));});
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',paintIcons);else paintIcons();
+    window.addEventListener('load',paintIcons);
+
+    /* dual-mode רך: מיומנויות כיתתיות אמיתיות מ-BKT (אותיות/פענוח/הבנה) · שטף עדיין לא נמדד */
+    TeacherCloudSoft.try(function(st){
+      var sk=(window.TeacherCloud&&TeacherCloud.classSkills&&TeacherCloud.classSkills())||{};
+      var MAP={letters:sk.letters,decoding:sk.decoding,comprehension:sk.comprehension};
+      function tone(p){return p>=75?'var(--ok)':p>=55?'var(--watch)':'var(--care)';}
+      document.querySelectorAll('#donuts .du').forEach(function(du){
+        var key=du.dataset.skill,donut=du.querySelector('.donut'),pv=du.querySelector('.pv');
+        if(key==='fluency'){ if(pv)pv.textContent='—'; if(donut)donut.style.setProperty('--p',0); du.title='שטף עדיין לא נמדד — אין לו תא-BKT'; return; }
+        var v=MAP[key];
+        if(v&&typeof v.pct==='number'){ if(pv)pv.textContent=v.pct+'%'; if(donut){donut.style.setProperty('--p',v.pct);donut.style.setProperty('--c',tone(v.pct));} }
+        else { if(pv)pv.textContent='—'; if(donut)donut.style.setProperty('--p',0); du.title='אין עדיין מספיק תרגול'; }
+      });
+      var hasAny=(sk.letters||sk.decoding||sk.comprehension);
+      var take=document.getElementById('reportTake');
+      if(take){ take.innerHTML='<span class="tic" data-ic="checkcircle"></span><div><b>שורה תחתונה:</b> '+
+        (hasAny?'הנתונים נאספים מהתרגול בזמן אמת. שטף עדיין לא נמדד — יתחבר כשמנוע-השטף יופעל.'
+               :'אין עדיין מספיק תרגול להצגת ממוצעים — הדוח יתמלא ככל שהילדים מתרגלים.')+'</div>'; }
+      var dc=document.getElementById('donuts'), rc=dc&&dc.closest('.rcard'), h2=rc&&rc.querySelector('h2');
+      if(h2&&/לדוגמה/.test(h2.textContent)) h2.textContent='התקדמות הכיתה';
+      var chart=document.getElementById('chart'), trc=chart&&chart.closest('.rcard'), ts=trc&&trc.querySelector('.s');
+      if(ts) ts.textContent='נתוני דוגמה — יתמלא לאורך זמן ככל שתצטבר היסטוריה שבועית';
+      if(st&&st.klass)TeacherCloudSoft.setCrumb('דוחות · '+st.klass.name);
+      TeacherCloudSoft.setBadge();
+      paintIcons();
+    });
+  </script>
+</body>
+</html>
