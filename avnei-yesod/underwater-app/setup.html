@@ -779,10 +779,11 @@ function renderQRs(tries){
 function printQRSheet(){
   const items=S.roster.map(function(nm){ const c=document.querySelector('#qr_'+cssId(nm)+' canvas'); return { nm:nm, code:studentCode(nm), u:(c?c.toDataURL('image/png'):'') }; });
   const cells=items.map(function(it){ return '<div class="c">'+(it.u?'<img src="'+it.u+'">':'')+'<div class="n">'+it.nm+'</div><div class="cd">'+it.code+'</div></div>'; }).join('');
+  const entryURL=(!DEMO&&sb)?(siblingURL('setup.html')+'?role=student'):(location.origin+location.pathname+'?role=student');
   const w=window.open('','_blank'); if(!w){ toast('הדפדפן חסם חלון — אפשרו חלונות קופצים'); return; }
   w.document.write('<!doctype html><html dir="rtl" lang="he"><head><meta charset="utf-8"><title>קודי כניסה · '+((S.klass.name||'הכיתה'))+'</title>'+
-    '<style>body{font-family:Arial,Helvetica,sans-serif;padding:24px;color:#251F44;} h1{font-size:20px;margin:0 0 4px;} p{color:#6C6890;margin:0 0 18px;} .g{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;} .c{border:1px solid #E6E9F4;border-radius:12px;padding:14px;text-align:center;page-break-inside:avoid;} .c img{width:100%;max-width:200px;} .n{font-weight:700;margin-top:8px;font-size:16px;} .cd{font-family:monospace;color:#5D4CB0;font-size:14px;letter-spacing:2px;margin-top:2px;}</style></head><body>'+
-    '<h1>קודי כניסה · '+((S.klass.name||'הכיתה'))+'</h1><p>כל ילד.ה סורק.ת את הריבוע שלו.ה, או מקליד.ה את הקוד, כדי להיכנס.</p><div class="g">'+cells+'</div>'+
+    '<style>body{font-family:Arial,Helvetica,sans-serif;padding:24px;color:#251F44;} h1{font-size:20px;margin:0 0 4px;} p{color:#6C6890;margin:0 0 6px;} .u{color:#5D4CB0;font-weight:700;direction:ltr;unicode-bidi:embed;} .g{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:14px;} .c{border:1px solid #E6E9F4;border-radius:12px;padding:14px;text-align:center;page-break-inside:avoid;} .c img{width:100%;max-width:200px;} .n{font-weight:700;margin-top:8px;font-size:16px;} .cd{font-family:monospace;color:#5D4CB0;font-size:14px;letter-spacing:2px;margin-top:2px;}</style></head><body>'+
+    '<h1>קודי כניסה · '+((S.klass.name||'הכיתה'))+'</h1><p>כל ילד.ה סורק.ת את הריבוע שלו.ה כדי להיכנס.</p><p>אין מצלמה? היכנסו אל <span class="u">'+entryURL+'</span> והקלידו את הקוד.</p><div class="g">'+cells+'</div>'+
     '<scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},350);};</scr'+'ipt></body></html>');
   w.document.close();
 }
@@ -792,18 +793,52 @@ function studentEntryStep(){
   return {
     label:'הצטרפות', nextText:'מַתְחִילִים',
     render(){
-      let names=[]; try{ const m=JSON.parse(localStorage.getItem('avnei-rosters')||'{}'); const keys=Object.keys(m);
-        const byCode = m[(S.student.code||'').toUpperCase()] || (keys.length?m[keys[keys.length-1]]:null);
-        if(byCode&&byCode.length) names=byCode.slice(); }catch(e){}
-      if(!names.length) names=Object.keys(DEMO_ROSTER);
-      const chips=names.map((nm,i)=>`<button type="button" data-name="${nm}"><span class="dot">${i+1}</span>${nm}</button>`).join('');
+      const cloud = !DEMO && !!sb;
+      // מצב-ענן: אין רשימת-שמות (privacy) — כניסה ב-QR או בהקלדת-קוד. דמו: chips.
+      let chipsHtml='';
+      if(!cloud){
+        let names=[]; try{ const m=JSON.parse(localStorage.getItem('avnei-rosters')||'{}'); const keys=Object.keys(m);
+          const byCode = m[(S.student.code||'').toUpperCase()] || (keys.length?m[keys[keys.length-1]]:null);
+          if(byCode&&byCode.length) names=byCode.slice(); }catch(e){}
+        if(!names.length) names=Object.keys(DEMO_ROSTER);
+        const chips=names.map((nm,i)=>`<button type="button" data-name="${nm}"><span class="dot">${i+1}</span>${nm}</button>`).join('');
+        chipsHtml=`<div class="namechips" id="sNames">${chips}</div>`;
+      }
+      const lead = cloud
+        ? 'סִרְקוּ אֶת רִבּוּעַ הַ-QR שֶׁלָּכֶם. אֵין מַצְלֵמָה? הַקְלִידוּ אֶת הַקּוֹד שֶׁמִּתַּחַת לַרִבּוּעַ.'
+        : 'לְכָל יֶלֶד.ה יֵשׁ רִבּוּעַ QR מִשֶּׁלּוֹ.ה. כָּאן בַּדֶּמוֹ — בַּחֲרוּ אֶת הַשֵּׁם שֶׁלָּכֶם';
       return `<div class="welcome"><img class="noni" src="assets/noni-hero-transparent.png" alt="נוני מקבלת פנים" draggable="false"><div class="say">סִרְקוּ אֶת הַקּוֹד שֶׁלָּכֶם!</div></div>
-        <p class="lead" style="text-align:center">לְכָל יֶלֶד.ה יֵשׁ רִבּוּעַ QR מִשֶּׁלּוֹ.ה. כָּאן בַּדֶּמוֹ — בַּחֲרוּ אֶת הַשֵּׁם שֶׁלָּכֶם<span class="brand-dot"></span></p>
-        <div class="namechips" id="sNames">${chips}</div>
+        <p class="lead" style="text-align:center">${lead}<span class="brand-dot"></span></p>
+        ${chipsHtml}
+        <div class="field" style="max-width:320px;margin:14px auto 0">
+          <label for="sCode">יֵשׁ לָכֶם קוֹד? הַקְלִידוּ כָּאן</label>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="sCode" class="code" dir="ltr" placeholder="S-XXXXX" autocomplete="off" style="flex:1">
+            <button type="button" id="sCodeGo" class="btn btn-sec">כְּנִיסָה</button>
+          </div>
+          <div id="sCodeMsg" class="hint"></div>
+        </div>
         <p class="tip">הכניסה מתועדת · התוצאות יישלחו למחנכת</p>`;
     },
-    after(){ $$('#sNames button').forEach(b=>b.addEventListener('click', ()=>{ S.student.name=b.getAttribute('data-name');
-      $$('#sNames button').forEach(x=>x.classList.toggle('on',x===b)); refreshNext(); })); },
+    after(){
+      $$('#sNames button').forEach(b=>b.addEventListener('click', ()=>{ S.student.name=b.getAttribute('data-name');
+        $$('#sNames button').forEach(x=>x.classList.toggle('on',x===b)); refreshNext(); }));
+      const go=$('#sCodeGo'), inp=$('#sCode'), msg=$('#sCodeMsg');
+      async function enterByCode(){
+        const v=(inp.value||'').trim().toUpperCase(); if(!v){ inp.focus(); return; }
+        if(msg){ msg.textContent='רֶגַע…'; msg.style.color=''; }
+        if(!DEMO && sb){
+          const r=await resolveStudentCloud(v);
+          if(r&&r.token){ location.href=siblingURL('student.html')+'?token='+encodeURIComponent(r.token)+'&remap=1'; return; }
+        } else {
+          try{ const m=JSON.parse(localStorage.getItem('avnei-student-codes')||'{}'); const nm=m[v];
+            if(nm){ const tok=DEMO_ROSTER[nm]; location.href = tok?('student.html?token='+encodeURIComponent(tok)+'&remap=1'):'boy-check-adventure.html'; return; } }catch(e){}
+        }
+        if(msg){ msg.textContent='הַקּוֹד לֹא נִמְצָא — בִּדְקוּ שׁוּב.'; msg.style.color='var(--danger,#c0392b)'; }
+      }
+      if(go) go.addEventListener('click', enterByCode);
+      if(inp) inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); enterByCode(); } });
+    },
     valid(){ return !!S.student.name; },
     async next(){
       try{ localStorage.setItem('avnei-gate-student-registration', JSON.stringify({ student_name:S.student.name, registered_at:new Date().toISOString() })); }catch(e){}
