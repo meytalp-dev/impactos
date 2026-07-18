@@ -18,7 +18,84 @@
 --
 -- How to run: Supabase Dashboard -> SQL Editor -> הדביקי -> Run. (אידמפוטנטי.)
 -- בטוח: הוספת עמודה + RPC חדש; הלקוח קורא לפי שם-שדה. current_lesson_seq נשמר.
+--
+-- ⚠️ עצמאי: כולל את תשתית 0003 (טבלה + current_lesson_seq + RPCs למורה) עם
+--    IF NOT EXISTS / CREATE OR REPLACE — בטוח להריץ גם אם 0003 כבר רצה וגם אם לא.
 -- ============================================================================
+
+
+-- 0. תשתית (מ-0003 · אידמפוטנטי — נוצרת רק אם טרם קיימת)
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.curriculum_lessons (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  seq_index     INT NOT NULL UNIQUE,
+  title         TEXT NOT NULL,
+  objective     TEXT,
+  default_units JSONB NOT NULL DEFAULT '[]'::jsonb,
+  notes         TEXT,
+  active        BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS curriculum_lessons_seq_idx
+  ON public.curriculum_lessons(seq_index) WHERE active = TRUE;
+
+ALTER TABLE public.classes
+  ADD COLUMN IF NOT EXISTS current_lesson_seq INT NOT NULL DEFAULT 1;
+
+ALTER TABLE public.curriculum_lessons ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS curriculum_lessons_select_all ON public.curriculum_lessons;
+CREATE POLICY curriculum_lessons_select_all ON public.curriculum_lessons
+  FOR SELECT USING (auth.role() = 'authenticated');
+
+-- RPCs למורה (קידום הכיתה) — get / set / advance
+CREATE OR REPLACE FUNCTION public.get_current_lesson(p_class_id UUID)
+RETURNS TABLE(id UUID, seq_index INT, title TEXT, objective TEXT, default_units JSONB, notes TEXT)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE v_seq INT;
+BEGIN
+  SELECT c.current_lesson_seq INTO v_seq FROM public.classes c
+  WHERE c.id = p_class_id AND c.teacher_id = auth.uid();
+  IF v_seq IS NULL THEN
+    RAISE EXCEPTION 'Class not found or not owned by caller' USING ERRCODE = '42501';
+  END IF;
+  RETURN QUERY SELECT l.id, l.seq_index, l.title, l.objective, l.default_units, l.notes
+  FROM public.curriculum_lessons l WHERE l.seq_index = v_seq AND l.active = TRUE;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.set_current_lesson(p_class_id UUID, p_seq INT)
+RETURNS VOID LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM public.classes WHERE id = p_class_id AND teacher_id = auth.uid()) THEN
+    RAISE EXCEPTION 'Class not found or not owned by caller' USING ERRCODE = '42501';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.curriculum_lessons WHERE seq_index = p_seq AND active = TRUE) THEN
+    RAISE EXCEPTION 'Lesson seq_index % not found', p_seq USING ERRCODE = '22023';
+  END IF;
+  UPDATE public.classes SET current_lesson_seq = p_seq WHERE id = p_class_id;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.advance_lesson(p_class_id UUID)
+RETURNS INT LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE v_current INT; v_next INT;
+BEGIN
+  SELECT current_lesson_seq INTO v_current FROM public.classes
+  WHERE id = p_class_id AND teacher_id = auth.uid();
+  IF v_current IS NULL THEN
+    RAISE EXCEPTION 'Class not found or not owned by caller' USING ERRCODE = '42501';
+  END IF;
+  SELECT MIN(seq_index) INTO v_next FROM public.curriculum_lessons
+  WHERE seq_index > v_current AND active = TRUE;
+  IF v_next IS NULL THEN RETURN v_current; END IF;
+  UPDATE public.classes SET current_lesson_seq = v_next WHERE id = p_class_id;
+  RETURN v_next;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.get_current_lesson  TO authenticated;
+GRANT EXECUTE ON FUNCTION public.set_current_lesson  TO authenticated;
+GRANT EXECUTE ON FUNCTION public.advance_lesson      TO authenticated;
 
 
 -- 1. practice_href — קישור-תרגול מוכן פר-שיעור
