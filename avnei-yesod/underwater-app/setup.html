@@ -315,7 +315,8 @@ const DEMO_ROSTER = {
 
 /* ---- state ---- */
 const S = { role:'principal', i:0, tab:'signup', stepByRole:{principal:0,teacher:0,student:0},
-  school:{name:'',city:'',code:null}, classes:[], klass:{name:'',teacher:''}, roster:[], student:{code:'',name:null} };
+  school:{name:'',city:'',code:null}, classes:[], klass:{name:'',teacher:'',id:null}, roster:[],
+  studentCodes:{}, student:{code:'',name:null} };
 
 /* ---- refs ---- */
 const elCard=$('#card'), elStepper=$('#stepper'), elNav=$('#nav'),
@@ -339,6 +340,13 @@ function shareLinks(code, subject, forParents){
 async function getContext(){ if(DEMO||!sb) return null; const { data } = await sb.rpc('get_my_context'); return (data&&data[0])||null; }
 async function ensureTeacherRow(user){ if(DEMO||!sb||!user) return; const { data } = await sb.from('teachers').select('id').eq('id',user.id).maybeSingle();
   if(!data) await sb.from('teachers').insert({ id:user.id, email:user.email, name:(user.email||'').split('@')[0] }); }
+/* per-class + per-student RPCs (migration 0010) */
+async function createClassCloud(name, teacher){ const { data, error } = await sb.rpc('create_class',{ p_name:name, p_teacher_name:teacher }); if(error) throw error; return (data&&data[0])||null; }
+async function joinClassCloud(code){ const { data, error } = await sb.rpc('join_class',{ p_code:code }); if(error) throw error; return (data&&data[0])||null; }
+async function resolveClassCloud(code){ try{ const { data } = await sb.rpc('resolve_class',{ p_code:code }); return (data&&data[0])||null; }catch(e){ return null; } }
+async function resolveStudentCloud(code){ try{ const { data } = await sb.rpc('resolve_student',{ p_code:code }); return (data&&data[0])||null; }catch(e){ return null; } }
+/* cloud per-student codes/tokens keyed by name (filled in rosterStep.next) */
+function cloudStudent(nm){ return (S.studentCodes && S.studentCodes[nm]) || null; }
 
 /* ============================================================
    WIZARD ENGINE — מסגרת קבועה, כרטיס מורף
@@ -437,6 +445,15 @@ function authStep(){
     after(){
       $('#tabLogin').addEventListener('click', ()=>{ S.tab='login'; renderFrame(); });
       $('#tabSignup').addEventListener('click', ()=>{ S.tab='signup'; renderFrame(); });
+      // מורה: תצוגה מקדימה של הכיתה מאחורי הקוד (resolve_class) לפני הרשמה
+      const cf=$('#fCode');
+      if(cf && !DEMO && sb){ let t; const h=cf.parentElement.querySelector('.hint'); const base=h?h.textContent:'';
+        cf.addEventListener('input', ()=>{ clearTimeout(t); const v=cf.value.trim().toUpperCase();
+          if(!h) return; if(v.length<4){ h.textContent=base; h.style.color=''; return; }
+          t=setTimeout(async ()=>{ const r=await resolveClassCloud(v);
+            if(r&&r.class_name){ h.textContent='כיתה '+r.class_name+(r.teacher_name?' · המורה '+r.teacher_name:'')+(r.is_claimed?' — כבר משויכת למורה':' ✓'); h.style.color=r.is_claimed?'var(--danger,#c0392b)':'var(--ok,#1a7f5a)'; }
+            else { h.textContent='קוד לא נמצא — בדקי שוב.'; h.style.color='var(--danger,#c0392b)'; }
+          }, 350); }); }
     },
     async next(){
       if(DEMO){ const c=$('#fCode'); if(c && c.value.trim()){ S.school.code=c.value.trim().toUpperCase();
@@ -451,7 +468,7 @@ function authStep(){
           const { error } = await sb.auth.signInWithPassword({ email, password:pass });
           if(error){ A(error.message.includes('Invalid')?'דוא"ל או סיסמה שגויים':'שגיאה בכניסה.'); return false; }
         } else {
-          if(S.role==='teacher' && !codeV){ A('הזיני את קוד בית הספר.'); return false; }
+          if(S.role==='teacher' && !codeV){ A('הזיני את קוד הכיתה.'); return false; }
           if(S.role==='principal') localStorage.setItem(PEND_SCHOOL,'__pending__'); else localStorage.setItem(PEND_JOIN, codeV);
           const { data, error } = await sb.auth.signUp({ email, password:pass, options:{ data:{ name } } });
           if(error){ A(error.message.includes('already')?'הדוא"ל כבר רשום — עברו ל״כניסה״.':('הרשמה נכשלה: '+error.message)); return false; }
@@ -459,8 +476,16 @@ function authStep(){
           if(!data.session){ A('שלחנו דוא"ל לאישור. אשרו וחזרו ל״כניסה״.','info'); S.tab='login'; renderFrame(); return false; }
         }
         const u=await sb.auth.getUser(); const user=u.data&&u.data.user; await ensureTeacherRow(user);
-        if(S.role==='teacher' && codeV){ const { error:jErr } = await sb.rpc('join_school',{ p_code:codeV }); if(jErr){ A('הקוד לא נמצא.'); return false; } localStorage.removeItem(PEND_JOIN); }
-        const ctx=await getContext(); if(ctx){ S.school.name=ctx.school_name||S.school.name; S.school.code=ctx.join_code||S.school.code; }
+        if(S.role==='teacher'){
+          if(!codeV){ A('הזיני את קוד הכיתה.'); return false; }
+          try{ const j=await joinClassCloud(codeV); if(!j){ A('הקוד לא נמצא.'); return false; }
+            S.klass.id=j.class_id; S.klass.name=j.class_name||''; S.klass.teacher=j.teacher_name||'';
+            S.school.name=j.school_name||S.school.name; S.school.code=codeV;
+            localStorage.removeItem(PEND_JOIN);
+          }catch(e){ const msg=(e&&e.message)||''; A(msg.indexOf('claimed')>=0?'הכיתה כבר משויכת למורה אחרת.':'הקוד לא נמצא.'); return false; }
+        } else {
+          const ctx=await getContext(); if(ctx){ S.school.name=ctx.school_name||S.school.name; S.school.code=ctx.join_code||S.school.code; }
+        }
         return true;
       }catch(e){ console.error(e); A('אירעה שגיאה. נסו שוב.'); return false; }
     }
@@ -502,8 +527,15 @@ function classesStep(){
       $('#clName').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); $('#clTeacher').focus(); } }); },
     valid(){ return S.classes.length>0; },
     async next(){
-      if(!DEMO && sb){ try{ const u=await sb.auth.getUser(); const uid=u.data&&u.data.user?u.data.user.id:null; const ctx=await getContext();
-        if(ctx&&ctx.school_id){ for(const c of S.classes){ await sb.from('classes').insert({ name:c.name, teacher_id:uid, school_id:ctx.school_id }); } } }catch(e){ console.warn(e); } }
+      if(!DEMO && sb){
+        try{
+          for(const c of S.classes){
+            if(c.class_id) continue; // כבר נוצרה בענן (למקרה חזרה קדימה/אחורה)
+            const res=await createClassCloud(c.name, c.teacher);
+            if(res){ c.class_id=res.class_id; c.code=res.join_code; } // קוד אמיתי מחליף את הדמו
+          }
+        }catch(e){ console.error(e); toast('שמירת הכיתות בענן נכשלה — נסו שוב'); return false; }
+      }
       try{ localStorage.setItem('avnei-principal-classes', JSON.stringify(S.classes)); }catch(e){}
       return true;
     }
@@ -605,8 +637,19 @@ function rosterStep(){
     },
     async next(){
       if(!S.school.code) S.school.code=demoCode(S.klass.name||'class');
-      if(!DEMO && sb && S.roster.length){ try{ const { data:cls } = await sb.from('classes').select('id').order('created_at',{ascending:false}).limit(1);
-        const cid=cls&&cls[0]&&cls[0].id; if(cid) await sb.from('students').insert(S.roster.map(n=>({ class_id:cid, name:n }))); }catch(e){ console.warn(e); } }
+      if(!DEMO && sb && S.roster.length){
+        const cid=S.klass.id;
+        if(!cid){ toast('לא זוהתה כיתה — היכנסי שוב עם קוד הכיתה'); return false; }
+        try{
+          const toAdd=S.roster.filter(n=>!cloudStudent(n));
+          if(toAdd.length){
+            const { data, error } = await sb.from('students')
+              .insert(toAdd.map(n=>({ class_id:cid, name:n }))).select('name,join_code,token');
+            if(error) throw error;
+            (data||[]).forEach(r=>{ S.studentCodes[r.name]={ code:r.join_code, token:r.token }; });
+          }
+        }catch(e){ console.error(e); toast('הוספת התלמידים בענן נכשלה — נסו שוב'); return false; }
+      }
       try{ localStorage.setItem('avnei-teacher-setup', JSON.stringify({ class:S.klass.name, roster:S.roster, code:S.school.code }));
         const m=JSON.parse(localStorage.getItem('avnei-rosters')||'{}'); m[S.school.code]=S.roster.slice(); localStorage.setItem('avnei-rosters', JSON.stringify(m));
         const sc={}; S.roster.forEach(function(nm){ sc[studentCode(nm)]=nm; }); localStorage.setItem('avnei-student-codes', JSON.stringify(sc)); }catch(e){}
@@ -689,8 +732,13 @@ function readyStep(){
 
 /* ---------- STUDENT ---------- */
 /* ---------- TEACHER: QR codes per student ---------- */
-function studentCode(name){ return demoCode('stu|'+(S.school.code||'x')+'|'+name); }
-function qrURL(name){ return location.origin+location.pathname+'?role=student&scode='+encodeURIComponent(studentCode(name)); }
+function siblingURL(page){ const p=location.pathname; const dir=p.slice(0, p.lastIndexOf('/')+1); return location.origin+dir+page; }
+function studentCode(name){ const c=cloudStudent(name); if(c&&c.code) return c.code; return demoCode('stu|'+(S.school.code||'x')+'|'+name); }
+function qrURL(name){
+  const c=cloudStudent(name);
+  if(c&&c.token) return siblingURL('student.html')+'?token='+encodeURIComponent(c.token)+'&remap=1'; // QR = טוקן ישיר
+  return location.origin+location.pathname+'?role=student&scode='+encodeURIComponent(studentCode(name)); // דמו
+}
 function cssId(s){ let h=0; for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))>>>0; return 'x'+h; }
 function qrStep(){
   return {
@@ -779,11 +827,20 @@ const STEPS = {
 (async function boot(){
   const qRole=params.get('role'), qCode=params.get('code'), qScode=params.get('scode');
   if(qCode) S.student.code=qCode.toUpperCase();
-  // סריקת QR של תלמיד → זיהוי ישיר ומעבר למיפוי
-  if(qScode){ try{ const m=JSON.parse(localStorage.getItem('avnei-student-codes')||'{}'); const nm=m[qScode];
-    if(nm){ localStorage.setItem('avnei-gate-student-registration', JSON.stringify({ student_name:nm, registered_at:new Date().toISOString() }));
-      const tok=DEMO_ROSTER[nm]; location.href = tok?('student.html?token='+encodeURIComponent(tok)+'&remap=1'):'boy-check-adventure.html'; return; } }catch(e){}
-    S.role='student'; }
+  // הקלדת/סריקת קוד-תלמיד קצר (S-XXXXX) → זיהוי ישיר ומעבר לכניסה.
+  // (בענן ה-QR מקודד student.html?token= ישירות ולא עובר כאן; scode = גיבוי-הקלדה.)
+  if(qScode){
+    if(!DEMO && sb){
+      const r=await resolveStudentCloud(qScode.toUpperCase());
+      if(r&&r.token){ location.href=siblingURL('student.html')+'?token='+encodeURIComponent(r.token)+'&remap=1'; return; }
+      S.role='student';
+    } else {
+      try{ const m=JSON.parse(localStorage.getItem('avnei-student-codes')||'{}'); const nm=m[qScode];
+        if(nm){ localStorage.setItem('avnei-gate-student-registration', JSON.stringify({ student_name:nm, registered_at:new Date().toISOString() }));
+          const tok=DEMO_ROSTER[nm]; location.href = tok?('student.html?token='+encodeURIComponent(tok)+'&remap=1'):'boy-check-adventure.html'; return; } }catch(e){}
+      S.role='student';
+    }
+  }
   try{ const sv=JSON.parse(localStorage.getItem('avnei-principal-setup')||'null'); if(sv&&sv.name){ S.school=Object.assign(S.school,sv); } }catch(e){}
 
   if(!DEMO && sb){
@@ -792,9 +849,10 @@ const STEPS = {
         const ctx=await getContext();
         if(ctx){ S.school.name=ctx.school_name||''; S.school.code=ctx.join_code||null;
           if(ctx.role==='principal'){ S.role='principal'; S.i=1; renderFrame(); return; }
-          const { data:classes } = await sb.from('classes').select('id').limit(1);
+          const { data:classes } = await sb.from('classes').select('id,name').limit(1);
           if(classes&&classes.length){ location.href='teacher-home.html'; return; }
-          S.role='teacher'; S.i=1; renderFrame(); return;
+          // מורה מחוברת אך עדיין לא שויכה לכיתה → חזרה לצעד-הקוד (authStep) להזין קוד-כיתה.
+          S.role='teacher'; S.i=0; renderFrame(); return;
         }
       }
     }catch(e){}
