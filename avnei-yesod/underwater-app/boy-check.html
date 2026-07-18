@@ -68,6 +68,7 @@
     .opt:hover{transform:translateY(-4px);border-color:#CFE0E3;}
     .opt.pic{font-family:'Heebo',sans-serif;font-size:15px;font-weight:700;padding:16px;}
     .opt.pic .emo{font-size:46px;line-height:1;}
+    .opt.pic .opt-noni{width:72px;height:72px;object-fit:contain;}
     .opt .cap{font-family:'Heebo',sans-serif;font-size:13px;font-weight:600;color:var(--mut);}
     .opt.right{border-color:#5FBFA4;background:#F1FBF7;box-shadow:0 0 0 4px #E3F6EC;transform:translateY(-4px);}
     .opt.dim{opacity:.4;pointer-events:none;}
@@ -111,6 +112,94 @@
     .acts{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:22px;}
 
     @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+    /* ===================================================================
+       מסך פתיחה (BOY) — כרטיס-היכרות מאוחד. מחלקות ייעודיות intro-* בלבד,
+       כדי לא לפגוע במסכי הסבבים שחולקים את .noni-row/.bubble/.cta.
+       =================================================================== */
+    #s-intro{flex:1;justify-content:center;}
+    .intro-card{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;
+      width:clamp(300px,46vw,760px);min-height:400px;margin:44px auto 0;padding:56px clamp(22px,4vw,54px) 38px;
+      border-radius:34px;background:rgba(255,255,255,.95);border:1px solid rgba(255,255,255,.9);
+      box-shadow:0 28px 75px -30px rgba(20,58,66,.35),0 8px 24px -16px rgba(20,58,66,.2);
+      backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+      animation:introCard .5s var(--ease) both;}
+    @keyframes introCard{from{opacity:0;transform:translateY(14px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .intro-noni{position:absolute;top:-64px;inset-inline-start:44px;width:clamp(120px,15vw,156px);height:auto;z-index:3;
+      filter:drop-shadow(0 14px 20px rgba(115,99,196,.28));animation:introNoni .55s .12s var(--ease) both;}
+    @keyframes introNoni{from{opacity:0;transform:translateY(10px) scale(.94)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .intro-title{font-family:'Frank Ruhl Libre',serif;font-size:clamp(30px,3vw,42px);font-weight:900;line-height:1.2;
+      letter-spacing:-.01em;color:var(--ink);margin:12px 0 12px;}
+    .intro-desc{max-width:44ch;margin:0 auto;font-size:clamp(17px,1.6vw,21px);line-height:1.6;font-weight:500;color:var(--soft);}
+
+    /* כפתור הקראה — משני, לא מתחרה בכפתור ההתחלה */
+    .intro-audio{margin-top:18px;min-height:46px;padding:0 18px;border-radius:999px;cursor:pointer;
+      border:1px solid #E3DCF7;background:#F3F0FC;color:var(--noni);font-family:inherit;font-weight:700;font-size:15px;
+      display:inline-flex;align-items:center;justify-content:center;gap:9px;
+      transition:transform .16s var(--ease),background .16s,box-shadow .16s;}
+    .intro-audio:hover{background:#ECE6FA;transform:translateY(-1px);}
+    .intro-audio:active{transform:translateY(1px);}
+    .intro-audio:focus-visible{outline:4px solid rgba(115,99,196,.22);outline-offset:3px;}
+    .intro-audio.playing{background:#ECE6FA;box-shadow:0 0 0 5px rgba(115,99,196,.08);}
+    .intro-audio .wv{display:inline-flex;align-items:flex-end;gap:3px;height:16px;}
+    .intro-audio .wv i{width:3px;height:6px;border-radius:2px;background:var(--noni);display:block;}
+    .intro-audio .wv i:nth-child(2){height:12px;} .intro-audio .wv i:nth-child(3){height:16px;} .intro-audio .wv i:nth-child(4){height:10px;}
+    .intro-audio.playing .wv i{animation:wv .9s ease-in-out infinite;}
+    .intro-audio.playing .wv i:nth-child(2){animation-delay:.15s;} .intro-audio.playing .wv i:nth-child(3){animation-delay:.3s;} .intro-audio.playing .wv i:nth-child(4){animation-delay:.45s;}
+    .intro-audio .lbl::before{content:attr(data-idle);}
+    .intro-audio.playing .lbl::before{content:attr(data-playing);}
+
+    /* מסלול המסע — 4 תחנות בשונית. ללא מסגרות-כפתור (נחיתה במסלול, לא בחירה) */
+    .intro-journey{list-style:none;position:relative;width:100%;max-width:580px;margin:36px auto 30px;padding:0;
+      display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+    /* קו-שחייה מקווקו רך שעובר מאחורי התחנות */
+    .intro-journey::before{content:"";position:absolute;top:56px;inset-inline:11%;height:0;border-top:3px dashed #CFE6DF;z-index:0;}
+    .jstop{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:6px;background:none;border:0;}
+    .jemo{font-size:26px;line-height:1;filter:drop-shadow(0 4px 6px rgba(20,58,66,.12));transition:font-size .3s var(--ease);}
+    .jpin{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;
+      font-family:'Frank Ruhl Libre',serif;font-size:18px;font-weight:800;color:var(--soft);
+      background:#EAF3F1;border:2px solid #fff;box-shadow:0 6px 14px -8px rgba(20,58,66,.4);transition:all .3s var(--ease);}
+    .jlab{font-size:14.5px;font-weight:700;color:#294F58;line-height:1.2;}
+    .jstop:nth-child(2) .jpin{background:#EDF0FC;color:#6674B8;}
+    .jstop:nth-child(3) .jpin{background:#FFF1E3;color:#C47A36;}
+    .jstop:nth-child(4) .jpin{background:#F1EAFF;color:#8065BD;}
+    /* התחנה הפעילה — "נוני כאן" */
+    .jstop.active .jemo{font-size:31px;}
+    .jstop.active .jpin{width:50px;height:50px;font-size:20px;color:#fff;
+      background:linear-gradient(150deg,#5FBFA4,#3E9E9A);box-shadow:0 10px 22px -8px rgba(63,158,154,.75);
+      animation:herePulse 2.4s var(--ease) infinite;}
+    @keyframes herePulse{0%,100%{box-shadow:0 10px 22px -8px rgba(63,158,154,.75),0 0 0 0 rgba(95,191,164,.5)}
+      50%{box-shadow:0 10px 22px -8px rgba(63,158,154,.75),0 0 0 11px rgba(95,191,164,0)}}
+    .jhere{position:absolute;top:-19px;left:50%;transform:translateX(-50%);white-space:nowrap;
+      background:#5FBFA4;color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:999px;
+      box-shadow:0 6px 14px -6px rgba(63,158,154,.8);}
+    .jhere::after{content:"";position:absolute;bottom:-3px;left:50%;transform:translateX(-50%) rotate(45deg);width:8px;height:8px;background:#5FBFA4;}
+
+    /* כפתור התחלה — האלמנט הפעיל המרכזי */
+    .intro-start{min-width:240px;min-height:62px;margin-top:6px;padding:0 32px;border:none;border-radius:22px;cursor:pointer;
+      background:linear-gradient(145deg,#5FBFA4,#3E9E9A);color:#fff;font-family:inherit;font-size:20px;font-weight:800;line-height:1;
+      display:inline-flex;align-items:center;justify-content:center;gap:12px;
+      box-shadow:0 16px 30px -14px rgba(63,158,154,.7),inset 0 1px 0 rgba(255,255,255,.3);
+      transition:transform .16s var(--ease),box-shadow .16s,filter .16s;}
+    .intro-start:hover{transform:translateY(-2px);filter:brightness(1.03);box-shadow:0 20px 34px -14px rgba(63,158,154,.7),inset 0 1px 0 rgba(255,255,255,.3);}
+    .intro-start:active{transform:translateY(1px) scale(.985);}
+    .intro-start:focus-visible{outline:4px solid rgba(95,191,164,.35);outline-offset:4px;}
+    .intro-start svg{width:22px;height:22px;}
+
+    @media(min-width:1600px){.intro-card{width:800px;min-height:440px;}.intro-noni{width:166px;}.intro-start{min-width:256px;}}
+    @media(max-width:900px){.intro-card{width:min(680px,100%);}}
+    @media(max-width:640px){
+      #s-intro{flex:1;justify-content:flex-start;}
+      .intro-card{margin-top:66px;padding:62px 18px 26px;border-radius:26px;min-height:auto;}
+      .intro-noni{inset-inline-start:auto;left:50%;top:-52px;width:112px;transform:translateX(-50%);animation:none;}
+      .intro-title{font-size:29px;}
+      .intro-desc{max-width:34ch;font-size:17px;line-height:1.55;}
+      .intro-journey{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 10px;margin-top:26px;}
+      .intro-journey::before{display:none;}
+      .intro-start{width:100%;min-width:0;min-height:58px;}
+    }
+    @media(max-width:390px){.intro-title{font-size:27px;}.intro-desc{font-size:16px;}.jlab{font-size:13.5px;}}
+
     @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
   </style>
 </head>
@@ -124,24 +213,29 @@
       <div class="steps"><span class="dot on" data-s="1"></span><span class="dot" data-s="2"></span><span class="dot" data-s="3"></span><span class="dot" data-s="4"></span></div>
     </div>
 
-    <!-- INTRO -->
+    <!-- INTRO — כרטיס-היכרות מאוחד (נוני → ברכה → מסלול 4 משימות → כפתור התחלה) -->
     <section class="screen on" id="s-intro">
-      <div class="noni-row">
-        <img class="noni" id="noni-intro" src="assets/noni-happy.png" alt="נוני" onerror="this.style.display='none'">
-        <div class="bubble">
-          <div class="say">שָׁלוֹם! אֲנִי נוֹנִי 🐙<br>בֹּאוּ נַכִּיר — יֵשׁ לִי כַּמָּה מְשִׂימוֹת קְטַנּוֹת בִּשְׁבִילְכֶם.</div>
-          <button class="spk" data-spk><span class="wv"><i></i><i></i><i></i><i></i></span> הַקְשִׁיבוּ</button>
-        </div>
+      <div class="intro-card">
+        <img class="intro-noni" src="assets/noni-happy.png" alt="נוֹנִי הַתַּמְנוּנָה" onerror="this.style.display='none'">
+        <h1 class="intro-title">שָׁלוֹם! אֲנִי נוֹנִי</h1>
+        <p class="intro-desc">בֹּאוּ נֵצֵא לְמַסָּע קָטָן בַּשּׁוֹנִית!<br>אַרְבַּע תַּחֲנוֹת מְחַכּוֹת לָנוּ — וַאֲנִי אֲלַוֶּה אֶתְכֶם בְּכָל אַחַת.</p>
+        <button type="button" class="intro-audio" data-spk aria-label="הַשְׁמָעַת הַהֶסְבֵּר שֶׁל נוֹנִי">
+          <span class="wv" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          <span class="lbl" data-idle="הַקְשִׁיבוּ" data-playing="מַקְשִׁיבִים…"></span>
+        </button>
+        <ol class="intro-journey" aria-label="הַמַּסָּע: אַרְבַּע תַּחֲנוֹת">
+          <li class="jstop active" aria-current="step">
+            <span class="jhere">כָּאן</span><span class="jemo" aria-hidden="true">🐚</span><span class="jpin">1</span><span class="jlab">אוֹתִיּוֹת</span>
+          </li>
+          <li class="jstop"><span class="jemo" aria-hidden="true">🪸</span><span class="jpin">2</span><span class="jlab">הֲבָרוֹת</span></li>
+          <li class="jstop"><span class="jemo" aria-hidden="true">🐠</span><span class="jpin">3</span><span class="jlab">מִלִּים</span></li>
+          <li class="jstop"><span class="jemo" aria-hidden="true">📖</span><span class="jpin">4</span><span class="jlab">סִפּוּר</span></li>
+        </ol>
+        <button type="button" class="intro-start" data-go="s-r1">
+          <span>יוֹצְאִים לַמַּסָּע!</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        </button>
       </div>
-      <div class="big">בֹּאוּ נַתְחִיל!</div>
-      <div class="lead">כַּמָּה מְשִׂימוֹת קְצָרוֹת — נוֹנִי תַּסְבִּיר כָּל אַחַת. אֵין נְכוֹן אוֹ לֹא נְכוֹן, וְאִם מַשֶּׁהוּ קָשֶׁה — פָּשׁוּט מְדַלְּגִים.</div>
-      <div class="task-list">
-        <div class="t"><span class="n" style="background:#5FBFA4">1</span>אוֹתִיּוֹת</div>
-        <div class="t"><span class="n" style="background:#7C9BD0">2</span>הֲבָרוֹת</div>
-        <div class="t"><span class="n" style="background:#E8A55F">3</span>מִלִּים</div>
-        <div class="t"><span class="n" style="background:#9A87E0">4</span>סִפּוּר</div>
-      </div>
-      <button class="cta" data-go="s-r1">בֹּאוּ נַתְחִיל <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
     </section>
 
     <!-- ROUND 1 — letters -->
@@ -156,28 +250,28 @@
       <div class="opts g-letters" id="r1-opts"></div>
     </section>
 
-    <!-- ROUND 2 — syllables -->
+    <!-- ROUND 2 — syllables (CV) · 3 פריטים · אות אחת, ניקוד משתנה (מודד אות+ניקוד+צליל) -->
     <section class="screen" id="s-r2">
       <div class="noni-row">
         <img class="noni" src="assets/noni-thinking.png" alt="נוני" onerror="this.src='assets/noni-happy.png'">
         <div class="bubble">
-          <div class="say">אֵיזוֹ הֲבָרָה שְׁמַעְתֶּם? <b>לָ</b></div>
+          <div class="say">אֵיזוֹ הֲבָרָה שְׁמַעְתֶּם?<span class="sub-count">הֲבָרָה <span id="r2-count">1</span> מִתּוֹךְ <span id="r2-total">3</span></span></div>
           <button class="spk" data-spk><span class="wv"><i></i><i></i><i></i><i></i></span> שִׁמְעוּ שׁוּב</button>
         </div>
       </div>
       <div class="opts g-syl" id="r2-opts"></div>
     </section>
 
-    <!-- ROUND 3 — word reading (נפתח רק כשהשלבים הקודמים חזקים — המבדק אדפטיבי) -->
+    <!-- ROUND 3 — word reading · 3 מילים (נפתח רק כשהאותיות חזקות — המבדק אדפטיבי) -->
     <section class="screen" id="s-rw">
       <div class="noni-row">
         <img class="noni" src="assets/noni-thinking.png" alt="נוני" onerror="this.src='assets/noni-happy.png'">
         <div class="bubble">
-          <div class="say">כָּתוּב כָּאן: <b>בַּיִת</b><br>קִרְאוּ אֶת הַמִּלָּה וְלַחֲצוּ עַל הַתְּמוּנָה הַנְּכוֹנָה</div>
+          <div class="say">קִרְאוּ אֶת הַמִּלָּה וְלַחֲצוּ עַל הַתְּמוּנָה הַנְּכוֹנָה<span class="sub-count">מִלָּה <span id="rw-count">1</span> מִתּוֹךְ <span id="rw-total">3</span></span></div>
           <button class="spk" data-spk><span class="wv"><i></i><i></i><i></i><i></i></span> שִׁמְעוּ שׁוּב</button>
         </div>
       </div>
-      <div class="word-show">בַּיִת</div>
+      <div class="word-show" id="rw-word">בַּיִת</div>
       <div class="opts g-pic" id="rw-opts"></div>
     </section>
 
@@ -193,23 +287,22 @@
       <div class="opts g-pic" id="r3-opts"></div>
     </section>
 
-    <!-- DONE / RESULT -->
+    <!-- DONE — מסך ילד: רק שבח + כפתור לתרגול הראשון. אין אי/רמה (הצבה = למורה בלבד). -->
     <section class="screen" id="s-done">
       <div class="noni-row">
         <img class="noni" src="assets/noni-happy.png" alt="נוני" onerror="this.style.display='none'">
         <div class="bubble"><div class="say">כָּל הַכָּבוֹד! סִיַּמְתֶּם אֶת הַהֶכֵּרוּת 🎉</div></div>
       </div>
       <div class="rescard">
-        <div class="isl"><div class="t">אי</div><div class="b" id="res-num">4</div></div>
-        <div class="rn" id="res-name">הַשּׁוֹנִית הַשְּׁקֵטָה</div>
-        <div class="rs" id="res-skill">מַתְחִילִים מִכָּאן — אוֹת, נִקּוּד וְצֶלִיל</div>
+        <div class="rn">כָּל הַכָּבוֹד!</div>
+        <div class="rs">סִיַּמְתֶּם אֶת הַהֶכֵּרוּת עִם נוֹנִי.<br>עַכְשָׁיו מַתְחִילִים לְתַרְגֵּל יַחַד! 🐚</div>
         <div class="teacher-note">
           <span style="font-size:22px">👩‍🏫</span>
-          <div>הַתּוֹצָאוֹת נִשְׁלְחוּ <b>לַמּוֹרָה</b> — הִיא תְּאַשֵּׁר מֵאֵיפֹה מַתְחִילִים.</div>
+          <div>מַה שֶּׁלְּמַדְנוּ עֲלֵיכֶם נִשְׁלַח <b>לַמּוֹרָה</b>.</div>
         </div>
         <div class="acts">
-          <a class="cta" href="map.html">לְהַתְחִיל לְתַרְגֵּל <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></a>
-          <button class="cta ghost" data-go="s-intro">מֵהַתְחָלָה</button>
+          <!-- נושא-השיעור ה-1 בתוכנית (האות ת → stage-3-tav). בעתיד: יגיע מתוכנית-המורה. -->
+          <a class="cta" id="start-btn" href="stage-3-tav.html">בֹּאוּ נַתְחִיל לְתַרְגֵּל <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></a>
         </div>
       </div>
     </section>
@@ -248,37 +341,52 @@
       5:{name:'שׁוֹנִית הַצְּדָפִית',         skill:'מַתְחִילִים מִכָּאן — מְחַבְּרִים אוֹתִיּוֹת לְמִלִּים'}
     };
 
-    /* ---------- ניקוד אמיתי ---------- */
-    var SC={letters:0,lettersTotal:0,r2:false,rw:false,r3:false};
+    /* ================= ניקוד אמיתי — שאלון מורחב + מבדק מסתעף =================
+       שלושה צירי-החלטה, כל אחד ≥3 פריטים (אין החלטת-אי על פריט בודד):
+         letters  0..8  — זיהוי אות מצליל (8 פריטים)
+         syl      0..3  — קריאת הברה CV (אות+ניקוד+צליל · 3 פריטים)
+         word     0..3  — קריאת מילה שלמה (3 פריטים)
+       ============================================================================ */
+    var SC={letters:0,lettersTotal:8,syl:0,sylTotal:3,word:0,wordTotal:3,story:false};
+    var fullPath=true; // נקבע אחרי סבב האותיות: ילד שמזהה <4 אותיות → מסלול קצר (בלי מילים)
 
-    // לוגיקת הצבה (מפרט §4): אותיות≤2→אי1 · אותיות≥3 לפי צירוף → 3/4/5. גבול→נמוך.
+    /* לוגיקת הצבה רציפה — קריאה לפי סדר הרכישה (אות → הברה → מילה). גבול → שלב נמוך + דגל למורה.
+       L=אותיות(0..8) · S=הברות(0..3) · W=מילים(0..3)
+         L<=3           → אי 1  (יסוד: צלילים והברות)
+         L<=5           → אי 3  (אותיות חלקי → מבססים אות+צליל)   [תמיד גבול]
+         L>=6 & S<=1    → אי 3  (אותיות חזק, עדיין לא מחבר CV)
+         L>=6 & S>=2 & W<=1 → אי 4  (מחבר CV, עדיין לא מילים שלמות)
+         L>=6 & S>=2 & W>=2 → אי 5  (מחבר CV + קורא מילים) */
     function computePlacement(){
-      var l = SC.lettersTotal ? Math.round(SC.letters/SC.lettersTotal*4) : 1;
-      if(l<1)l=1; if(l>4)l=4;
-      var obs_letters=l, obs_blending=(SC.r2&&SC.rw)?3:(SC.r2?2:1), obs_oral=SC.r3?3:2, island;
-      if(obs_letters<=2)island=1;
-      else if(obs_blending>=3)island=5;
-      else if(obs_blending===2)island=4;
-      else island=3;
-      return { obs_letters:obs_letters, obs_blending:obs_blending, obs_oral:obs_oral,
-        start_island:island, island_name:(ISL[island]||ISL[4]).name, skill:(ISL[island]||ISL[4]).skill,
-        on_border:(obs_letters===2||obs_letters===3||obs_blending===2) };
+      var L=SC.letters, S=SC.syl, W=SC.word, island, border=false;
+      if(L<=3){ island=1; border=(L===3); }
+      else if(L<=5){ island=3; border=true; }
+      else if(S<=1){ island=3; border=(S===1); }
+      else if(W<=1){ island=4; border=(W===1); }
+      else { island=5; }
+      // תצפיות תואמות-לאחור לסקירת-המורה (obs_letters 1..4 · obs_blending 1..3)
+      var obs_letters=Math.max(1,Math.min(4,Math.round(L/8*4)));
+      var obs_blending=(S>=2&&W>=2)?3:(S>=2?2:1);
+      var obs_oral=SC.story?3:2;
+      return { start_island:island, on_border:border,
+        obs_letters:obs_letters, obs_blending:obs_blending, obs_oral:obs_oral,
+        island_name:(ISL[island]||ISL[4]).name, skill:(ISL[island]||ISL[4]).skill };
     }
 
-    // מסך-סיום: מציג הצבה + שולח BOY לענן (assessments) פעם אחת
+    // מסך-סיום: התלמיד לא רואה אי. ההצבה נשלחת לענן (assessments) + נשמרת למורה, פעם אחת.
     var _sent=false;
     function finishBoy(){
-      var pl=computePlacement(), o=ISL[pl.start_island]||ISL[4];
-      if($('#res-num'))$('#res-num').textContent=pl.start_island;
-      if($('#res-name'))$('#res-name').textContent=o.name;
-      if($('#res-skill'))$('#res-skill').textContent=o.skill;
+      var pl=computePlacement();
       if(_sent||!TOKEN)return; _sent=true;
       sbRpc('ingest_student_assessment',{ p_token:TOKEN, p_assessment_type:'BOY',
         p_payload:{ observations:{obs_letters:pl.obs_letters,obs_blending:pl.obs_blending,obs_oral:pl.obs_oral},
           placement:{start_island:pl.start_island,island_name:pl.island_name,skill:pl.skill,on_border:pl.on_border},
-          scores:{letters:SC.letters,letters_total:SC.lettersTotal,syllable:SC.r2,word:SC.rw,story:SC.r3} },
+          scores:{ letters:SC.letters, letters_total:SC.lettersTotal,
+                   syllable:(SC.syl>=2), word:(SC.word>=2), story:SC.story,
+                   syllable_count:SC.syl, syllable_total:SC.sylTotal,
+                   word_count:SC.word, word_total:SC.wordTotal } },
         p_taken_at:new Date().toISOString() });
-      // דגל מקומי (מונע הצגה חוזרת של המבדק בכניסה הבאה) + הזרקת אי-הפתיחה לתרגול מיידי.
+      // דגל מקומי (מונע הצגה חוזרת של המבדק) + הזרקת אי-הפתיחה למצב (למפה/מורה; לא נראה לילד).
       try {
         if(CHILD.id){
           localStorage.setItem('avnei-boy-done-'+CHILD.id,'1');
@@ -287,25 +395,33 @@
       } catch(e){}
     }
 
-    /* rounds data — mockup: taps advance, correct answer glows */
-    /* מדגם אותיות: 3 פריטים בדמו (במבדק האמיתי ~8, כולל זוגות דומים ד/ר ב/כ) */
-    /* מדגם אותיות (מפרט §1.6): 8 פריטים מוטי-מידע — זוגות דומים ויזואלית (ד/ר · ב/כ),
-       זוגות דומים בצליל (ב/פ · ש/ס · א/ע), ואותיות שכיחות. מדגם 8 = הערכת רמה אמינה. */
+    /* ---- נתוני הסבבים ---- */
+    /* אותיות (§1.6): 8 פריטים מוטי-מידע — זוגות דומים ויזואלית (ד/ר · ב/כ), דומים בצליל (ש/ס), ושכיחות */
     var L_ITEMS=[
       {t:'ד',snd:'sound-dalet.mp3',opts:['ר','ד','ך','ז','ו','ה']},   /* ד/ר ויזואלי */
       {t:'ר',snd:'sound-resh.mp3', opts:['ד','ר','ך','נ','ו','ח']},   /* ר/ד ויזואלי */
       {t:'ב',snd:'sound-bet.mp3',  opts:['כ','ב','פ','נ','ת','מ']},   /* ב/כ ויזואלי · ב/פ צלילי */
       {t:'כ',snd:'sound-kaf.mp3',  opts:['ב','כ','נ','ר','ת','ל']},   /* כ/ב ויזואלי */
       {t:'ש',snd:'sound-shin.mp3', opts:['ס','ש','מ','ע','ר','ל']},   /* ש/ס צלילי */
-      {t:'א',snd:'sound-alef.mp3', opts:['ע','א','ה','ר','מ','ל']},   /* א/ע צלילי */
+      {t:'א',snd:'sound-alef.mp3', opts:['מ','א','ל','ר','ש','ד']},   /* מסיחים בעלי צליל מובחן */
       {t:'מ',snd:'sound-mem.mp3',  opts:['נ','מ','ב','כ','ט','ק']},   /* מ/נ */
       {t:'ל',snd:'sound-lamed.mp3',opts:['מ','ל','ש','ר','א','ד']}    /* אות שכיחה */
     ];
-    var R2=[{t:'לָ',ok:1},{t:'לִי'},{t:'לוֹ'}];
-    /* קריאת מילה: בַּיִת — תמונות אמיתיות מהמאגר, בלי כיתוב (הכיתוב היה מסגיר) */
+    /* הברות CV (3): אות אחת, שלוש תנועות — מבודד את זיהוי הניקוד+הצליל (מיומנות אי 4) */
+    var S_ITEMS=[
+      {snd:'cv-lamed-kamatz.mp3', opts:['לִי','לָ','לוֹ'],  ok:'לָ'},
+      {snd:'cv-mem-hiriq.mp3',    opts:['מָ','מִי','מוֹ'],  ok:'מִי'},
+      {snd:'cv-bet-holam.mp3',    opts:['בָּ','בִּי','בּוֹ'], ok:'בּוֹ'}
+    ];
+    /* קריאת מילה (3): מילים מוכרות-לגיל, מסיחים תמונתיים מעורבי-קטגוריה (מחייב קריאה, לא ניחוש) */
     var IMGP='assets/island-03/';
-    var RW=[{img:'balon.png'},{img:'bayit.png',ok:1},{img:'mita.png'}];
-    var R3=[{emo:'😄',cap:'שְׂמֵחָה',ok:1},{emo:'😢',cap:'עֲצוּבָה'},{emo:'😴',cap:'עֲיֵפָה'}];
+    var W_ITEMS=[
+      {w:'בַּיִת',   opts:['balon','bayit','mita'],       ok:'bayit'},
+      {w:'סֵפֶר',    opts:['sefer','tik','makel'],        ok:'sefer'},
+      {w:'תַּפּוּחַ', opts:['banana','tapuach','nachash'], ok:'tapuach'}
+    ];
+    /* הבנת-הנשמע (1) — אות רך למורה, לא מכריע הצבה (תמונות נוני, בלי אימוג'י) */
+    var R3=[{img:'noni-happy.png',cap:'שְׂמֵחָה',ok:1},{img:'noni-sad.png',cap:'עֲצוּבָה'},{img:'noni-sleep.png',cap:'עֲיֵפָה'}];
 
     var order=['s-intro','s-r1','s-r2','s-rw','s-r3','s-done'];
     function show(id){
@@ -325,6 +441,7 @@
       playFor(id); /* נוני מדברת פעם אחת בכניסה למסך; "שמעו שוב" חוזר עליה */
     }
 
+    /* ---- סבב 1: אותיות (8, תמיד) ---- */
     var lIdx=0;
     function buildLetters(){lIdx=0;var tt=$('#r1-total');if(tt)tt.textContent=L_ITEMS.length;renderLetterItem();}
     function renderLetterItem(){
@@ -335,37 +452,71 @@
       it.opts.forEach(function(ch){var b=document.createElement('button');b.className='opt';
         b.innerHTML=ch+'<span class="chk">✓</span>';
         b.addEventListener('click',function(){
-          SC.lettersTotal=L_ITEMS.length; if(ch===it.t)SC.letters++;
-          Array.prototype.forEach.call(el.children,function(c){if(c!==b)c.classList.add('dim');});
-          b.classList.add('right');
-          setTimeout(function(){lIdx++;if(lIdx<L_ITEMS.length)renderLetterItem();else show('s-r2');},760);
+          if(ch===it.t)SC.letters++;
+          glow(b,el);
+          setTimeout(function(){lIdx++;if(lIdx<L_ITEMS.length)renderLetterItem();else afterLetters();},760);
         });el.appendChild(b);});
       /* האות מתחלפת בתוך אותו מסך — משמיעים את צליל האות הנוכחית (לא ל' הראשונה) */
       if($('#s-r1').classList.contains('on'))playFor('s-r1');
     }
-    function buildSyl(){
+    /* מסתעף: <4 אותיות → מסלול קצר (הברה אחת לדגימה, בלי סבב מילים; ההצבה=אי 1 ממילא) */
+    function afterLetters(){
+      fullPath=(SC.letters>=4);
+      SC.sylTotal=fullPath?S_ITEMS.length:1;
+      SC.wordTotal=fullPath?W_ITEMS.length:0;
+      startSyl();
+    }
+
+    /* ---- סבב 2: הברות CV (אדפטיבי — 3 במסלול מלא, 1 במסלול קצר) ---- */
+    var syIdx=0;
+    function startSyl(){syIdx=0;SC.syl=0;renderSyl();show('s-r2');}
+    function renderSyl(){
+      var it=S_ITEMS[syIdx];
+      $('#r2-count').textContent=(syIdx+1); $('#r2-total').textContent=SC.sylTotal;
       var el=$('#r2-opts');el.innerHTML='';
-      R2.forEach(function(o){var b=document.createElement('button');b.className='opt';
-        b.innerHTML=o.t+'<span class="chk">✓</span>';
-        b.addEventListener('click',function(){SC.r2=(o.ok===1);var nx=(SC.letters>=2)?'s-rw':'s-r3';pick(b,el,nx);});el.appendChild(b);});
+      it.opts.forEach(function(cv){var b=document.createElement('button');b.className='opt';
+        b.innerHTML=cv+'<span class="chk">✓</span>';
+        b.addEventListener('click',function(){
+          if(cv===it.ok)SC.syl++;
+          glow(b,el);
+          setTimeout(function(){
+            syIdx++;
+            if(syIdx<SC.sylTotal)renderSyl();
+            else if(fullPath)startWord();
+            else show('s-r3');
+          },760);
+        });el.appendChild(b);});
+      if($('#s-r2').classList.contains('on'))playFor('s-r2');
     }
-    function buildWord(){
+
+    /* ---- סבב 3: קריאת מילה (3, רק במסלול מלא) ---- */
+    var wIdx=0;
+    function startWord(){wIdx=0;SC.word=0;renderWord();show('s-rw');}
+    function renderWord(){
+      var it=W_ITEMS[wIdx];
+      $('#rw-word').textContent=it.w;
+      $('#rw-count').textContent=(wIdx+1); $('#rw-total').textContent=SC.wordTotal;
       var el=$('#rw-opts');el.innerHTML='';
-      RW.forEach(function(o){var b=document.createElement('button');b.className='opt img';
-        b.innerHTML='<img src="'+IMGP+o.img+'" alt=""><span class="chk">✓</span>';
-        b.addEventListener('click',function(){SC.rw=(o.ok===1);pick(b,el,'s-r3');});el.appendChild(b);});
+      it.opts.forEach(function(img){var b=document.createElement('button');b.className='opt img';
+        b.innerHTML='<img src="'+IMGP+img+'.png" alt=""><span class="chk">✓</span>';
+        b.addEventListener('click',function(){
+          if(img===it.ok)SC.word++;
+          glow(b,el);
+          setTimeout(function(){wIdx++;if(wIdx<SC.wordTotal)renderWord();else show('s-r3');},760);
+        });el.appendChild(b);});
     }
+
+    /* ---- סבב 4: הבנת-הנשמע (אות רך למורה, לא מכריע הצבה) ---- */
     function buildPic(){
       var el=$('#r3-opts');el.innerHTML='';
       R3.forEach(function(o){var b=document.createElement('button');b.className='opt pic';
-        b.innerHTML='<span class="emo">'+o.emo+'</span><span class="cap">'+o.cap+'</span><span class="chk">✓</span>';
-        b.addEventListener('click',function(){SC.r3=(o.ok===1);pick(b,el,'s-done');});el.appendChild(b);});
+        b.innerHTML='<img class="opt-noni" src="assets/'+o.img+'" alt="" onerror="this.style.display=\'none\'"><span class="cap">'+o.cap+'</span><span class="chk">✓</span>';
+        b.addEventListener('click',function(){SC.story=(o.ok===1);glow(b,el);setTimeout(function(){show('s-done');},760);});el.appendChild(b);});
     }
-    /* any tap = gentle accept: glow the tapped card, dim siblings, advance */
-    function pick(btn,container,next){
+    /* any tap = gentle accept: glow tapped, dim siblings. המדידה שקטה (הילד לא רואה טעות). */
+    function glow(btn,container){
       Array.prototype.forEach.call(container.children,function(c){if(c!==btn)c.classList.add('dim');});
       btn.classList.add('right');
-      setTimeout(function(){show(next);},760);
     }
 
     /* ---- audio: קול נוני (ElevenLabs) + קליפי CV קיימים מהאיים ---- */
@@ -373,16 +524,19 @@
     var SCREEN_AUDIO={
       's-intro':['boy-intro.mp3'],
       's-r1':['boy-r1-ask.mp3'],  /* צליל האות עצמו נוסף דינמית לפי הפריט הנוכחי (r1List) */
-      's-r2':['boy-r2-ask.mp3','cv-lamed-kamatz.mp3'],
-      's-rw':['boy-rw-ask.mp3'],
+      's-rw':['boy-rw-ask.mp3'],  /* המילה מוצגת (משימת קריאה) — אין קליפ פר-מילה */
       's-r3':['boy-r3.mp3'],
       's-done':['boy-done.mp3']
     };
-    /* רשימת האודיו לסבב האותיות משתנה לפי האות הנוכחית:
-       פריט ראשון = הנחיה + צליל; פריטים הבאים = רק צליל האות (המורה כבר שמעה את ההנחיה). */
+    /* אודיו סבב-האותיות: פריט ראשון = הנחיה + צליל; הבאים = רק צליל האות. */
     function r1List(){
       var it=L_ITEMS[lIdx]||L_ITEMS[0];
       return (lIdx===0?['boy-r1-ask.mp3']:[]).concat(it.snd?[it.snd]:[]);
+    }
+    /* אודיו סבב-ההברות: פריט ראשון = הנחיה + קליפ CV; הבאים = רק קליפ CV. */
+    function r2List(){
+      var it=S_ITEMS[syIdx]||S_ITEMS[0];
+      return (syIdx===0?['boy-r2-ask.mp3']:[]).concat(it.snd?[it.snd]:[]);
     }
     var curA=null,curBtn=null,pendingScreen=null;
     function stopAudio(){
@@ -391,7 +545,7 @@
     }
     function playFor(id){
       stopAudio();
-      var list=(id==='s-r1'?r1List():(SCREEN_AUDIO[id]||[]).slice());
+      var list=(id==='s-r1'?r1List():id==='s-r2'?r2List():(SCREEN_AUDIO[id]||[]).slice());
       if(!list.length)return;
       var scr=document.getElementById(id);
       curBtn=scr?scr.querySelector('[data-spk]'):null;
@@ -419,10 +573,10 @@
       var spk=e.target.closest('[data-spk]');
       if(spk){var scr=spk.closest('.screen');playFor(scr?scr.id:'');return;}
       var go=e.target.closest('[data-go]');
-      if(go){var id=go.dataset.go;if(id==='s-intro'){buildLetters();buildSyl();buildWord();buildPic();}show(id);}
+      if(go){var id=go.dataset.go;if(id==='s-intro'){buildLetters();buildPic();}show(id);}
     });
 
-    buildLetters();buildSyl();buildWord();buildPic();
+    buildLetters();buildPic();
     show('s-intro');
   </script>
 </body>
