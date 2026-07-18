@@ -211,8 +211,13 @@
   // ?switch=1 → מתנתקים כדי לאפשר כניסה עם חשבון אחר (במקום ניתוב-אוטומטי לדשבורד)
   const _params = new URLSearchParams(location.search);
   if (client && client.supabase && _params.get('switch') === '1') {
-    try { await client.supabase.auth.signOut(); } catch (e) {}
-    try { localStorage.removeItem('avnei-yesod-supabase-auth'); } catch (e) {}
+    try { await client.supabase.auth.signOut({ scope: 'local' }); } catch (e) {}
+    // ניקוי מוחלט — כל מפתח-אימות (avnei/supabase/sb-*), לא רק אחד
+    try {
+      Object.keys(localStorage).forEach(function (k) {
+        if (/avnei-yesod-supabase-auth|supabase|^sb-/.test(k)) localStorage.removeItem(k);
+      });
+    } catch (e) {}
     showAlert('התנתקת. התחברי עם החשבון הרצוי.', 'info');
   } else if (client && client.supabase) {
     // אם כבר מחוברת → ודאי שקיימת שורת-מורה ונתבי לדשבורד
