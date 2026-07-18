@@ -387,19 +387,34 @@
       // אוצר מילים (רשימת מילים מופרדת בפסיקים או "אוצר")
       if(/אוצר/.test(t)||(/,/.test(t)&&!/מבדק/.test(t)))    return {state:'ok',cat:'word',href:APP+'stage-vocab-match.html?island=12',tag:'אוצר מילים · אי 12'};
       if(/מילה|מילים|משפט|פועל|פעלים|תואר|כינוי/.test(t))   return {state:'ok',cat:'word',href:APP+'stage-5-word-build.html',tag:'קריאת מילים'};
-      // ימי תרגול/חזרה כלליים → תרגול חופשי מותאם (BKT מנווט)
-      if(/^תרגול|תרגול\s*\d*$|תרגול חזרתי|תרגול חופשי|חזרה( לפני|$| ותרגול)|תרגול\s+כללי|^סוף\s/.test(t)) return {state:'ok',cat:'word',href:APP+'map.html?guest=1',tag:'תרגול מותאם'};
+      // ימי תרגול/חזרה כלליים → סימון 'review' (dayPractice יורש את התרגול האחרון)
+      if(/^תרגול|תרגול\s*\d*$|תרגול חזרתי|תרגול חופשי|חזרה( לפני|$| ותרגול)|תרגול\s+כללי|^סוף\s/.test(t)) return {state:'review',tag:'חזרה'};
       return {state:'gap',tag:''};
     }
-
-    // תרגול היום: קודם game_to_play מהנתונים, אז אות מהנתונים, אז מיפוי-נושא
-    function dayPractice(v){
-      if(v.game){
-        var g=v.game, mm=g.match(/([A-Za-z0-9_\-]+\.html)(\?[^\s)]*)?/);
-        if(mm){var tg=(g.match(/\(([^)]+)\)/)||[])[1]||'תרגול';return {state:'ok',cat:'letter',href:APP+mm[1]+(mm[2]||''),tag:tg};}
-      }
+    // תרגול-בסיס ליום (בלי ירושה) — למנוע רקורסיה בירושה
+    function basePractice(v){
+      if(v.game){var g=v.game,mm=g.match(/([A-Za-z0-9_\-]+\.html)(\?[^\s)]*)?/);if(mm){var tg=(g.match(/\(([^)]+)\)/)||[])[1]||'תרגול';return {state:'ok',cat:'letter',href:APP+mm[1]+(mm[2]||''),tag:tg};}}
       for(var k=0;k<v.letters.length;k++){var L=normFinal(v.letters[k]);if(LETTERS[L])return {state:'ok',cat:'letter',href:APP+LETTERS[L],tag:'אות '+v.letters[k]};}
       return resolvePractice(v.topic||'', v.day);
+    }
+    // יום-חזרה גנרי יורש את התרגול-האמיתי האחרון שלפניו (מובחן לפי המקום בשנה)
+    function inheritPrev(dayNum){
+      for(var i=ALLDAYS.length-1;i>=0;i--){var v=ALLDAYS[i];if(v.day>=dayNum)continue;
+        var p=basePractice(v);if((p.state==='ok'||p.state==='sum')&&p.href)return p;}
+      return null;
+    }
+
+    // תרגול היום: game_to_play → אות → מיפוי-נושא; יום-חזרה גנרי יורש את התרגול האחרון
+    function dayPractice(v){
+      var pr=basePractice(v);
+      if(pr.state==='review'){
+        var inh=inheritPrev(v.day);
+        if(inh) return {state:inh.state,cat:inh.cat,href:inh.href,tag:'חזרה · '+inh.tag};
+        var learned=lettersLearnedUpTo(v.day);
+        if(learned.length) return {state:'sum',href:APP+'stage-summary-cv.html?letters='+encodeURIComponent(learned.join(',')),tag:'חזרה מצטברת'};
+        return {state:'ok',cat:'word',href:APP+'map.html?guest=1',tag:'תרגול מותאם'};
+      }
+      return pr;
     }
     function pracHTML(pr){
       if(pr.state==='ok')      return '<a class="prac ok c-'+(pr.cat||'word')+'" href="'+pr.href+'" target="_blank" rel="noopener"><span class="tic" data-ic="playcircle"></span><span class="pt">פתח תרגול · '+esc(pr.tag)+'</span></a>';
