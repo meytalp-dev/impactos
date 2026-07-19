@@ -24,19 +24,23 @@
     try { return new URLSearchParams(location.search).has('demo'); }
     catch (e) { return false; }
   }
-  // מנסה ענן. מחזיר true אם ניסה (מחובר.ת), false אם נשאר דמו.
-  function tryCloud(apply, onErr) {
-    if (location.protocol === 'file:' || forceDemo() || !window.TeacherCloud || !hasSession()) return false;
-    window.TeacherCloud.init().then(function (st) {
+  // מנסה ענן מול ספק כלשהו (ns.init). מחזיר true אם ניסה (מחובר.ת), false אם נשאר דמו.
+  // ns = window.TeacherCloud | window.PrincipalCloud וכו'. שניהם חולקים storageKey ⇒ hasSession זהה.
+  function tryWith(ns, apply, onErr) {
+    if (location.protocol === 'file:' || forceDemo() || !ns || !ns.init || !hasSession()) return false;
+    ns.init().then(function (st) {
       try { apply(st); } catch (e) { console.warn('[v2-cloud] apply', e); }
     }).catch(function (e) {
       var m = (e && e.message) || '';
-      if (/no-session|no-class|cloud-unavailable-file/.test(m)) return;  // נשאר דמו בשקט
+      // no-session/no-class/no-school/not-principal/file — נשאר דמו בשקט
+      if (/no-session|no-class|no-school|not-principal|cloud-unavailable-file/.test(m)) return;
       console.warn('[v2-cloud]', m);
       if (onErr) onErr(e);
     });
     return true;
   }
+  // תאימות-לאחור: ברירת-מחדל = TeacherCloud (מסכי-המורה קוראים ל-.try).
+  function tryCloud(apply, onErr) { return tryWith(window.TeacherCloud, apply, onErr); }
   function setBadge() {
     var b = document.getElementById('rtBadge'); if (!b) return;
     b.className = 'rt-badge rt-cloud';
@@ -48,7 +52,7 @@
     cr.innerHTML = 'אבני יסוד<span class="brand-dot"></span> · ' + afterName;
   }
   window.TeacherCloudSoft = {
-    try: tryCloud, hasSession: hasSession, forceDemo: forceDemo,
+    try: tryCloud, tryWith: tryWith, hasSession: hasSession, forceDemo: forceDemo,
     setBadge: setBadge, setCrumb: setCrumb
   };
 })();
