@@ -331,12 +331,12 @@
       return seen;
     }
 
-    function vw(v,tag){return {state:'ok',cat:'syll',href:APP+'stage-4-cv-build.html?vowel='+v,tag:tag};}
+    function vw(v,tag){return {state:'ok',cat:'syll',href:APP+'stage-4-cv-build.html'+(v?'?vowel='+v:''),tag:tag};}
     // מיפוי נושא → תרגול דיגיטלי (גיבוי כשאין game_to_play מפורש בנתונים)
     function resolvePractice(t,dayNum){
       t=t||'';
-      // סיכום / חזרה על אותיות → משחק סיכום מצטבר
-      if(/^סיכום|סיכום\s|סינתז|תרגול\s+\d+\s+האות|תרגול\s+האות|כל\s+22|כל הא|זיהוי מהיר של כל|תחזוקה/.test(t)){
+      // סיכום / חזרה על אותיות → משחק סיכום מצטבר (אבל לא סיכום-כתיבה → offline)
+      if(!/כתיב/.test(t) && (/^סיכום|סיכום\s|סינתז|תרגול\s+\d+\s+האות|תרגול\s+האות|כל\s+22|כל הא|זיהוי מהיר של כל|תחזוקה/.test(t))){
         var learned=lettersLearnedUpTo(dayNum||999);
         if(learned.length>0){return {state:'sum',href:APP+'stage-summary-cv.html?letters='+encodeURIComponent(learned.join(',')),tag:learned.length<=5?'סיכום · '+learned.join(' '):'סיכום '+learned.length+' אותיות'};}
       }
@@ -347,7 +347,7 @@
       // כתיבה
       if(/הכתבת מילים שכיחות/.test(t))                      return {state:'ok',cat:'word',href:APP+'stage-8-word-write.html',tag:'איך כותבים · אי 8'};
       if(/כתיבת מילים קצרות/.test(t))                       return {state:'ok',cat:'word',href:APP+'stage-20-spell.html',tag:'בּוֹנִים מִלִּים · אי 20'};
-      if(/^כתיב|כתיבת|הכתב|המשך כתיבה/.test(t))             return {state:'offline',tag:'כתיבה'};
+      if(/^כתיב|כתיבת|הכתב|המשך כתיבה|כתיבה/.test(t))       return {state:'offline',tag:'כתיבה'};
       if(/חריזה|חרוז/.test(t))                              return {state:'ok',cat:'syll',href:APP+'stage-rhyme.html',tag:'חריזה'};
       if(/פרופיל אורייני/.test(t))                          return {state:'ok',cat:'test',href:'teacher-literacy-profile-v2.html',tag:'כלי מורה'};
       if(/חגיגת סיום|טקס סיום|סיום שנת/.test(t))            return {state:'oral',tag:'אירוע כיתתי'};
