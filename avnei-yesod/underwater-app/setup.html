@@ -279,6 +279,7 @@ textarea.paste:focus{outline:none;border-color:var(--purple);box-shadow:0 0 0 4p
     <div><h1>אשף הקמת בית ספר<span class="brand-dot"></span></h1><p>הקמה מקצה-לקצה — שלב אחר שלב, במערכת אחת.</p></div>
   </div>
   <div class="stagetabs" id="stagetabs"></div>
+  <p class="demo-note" id="demoNote"><span class="di">💡</span><span>כך זה בנוי <b>לצורך הדמו</b> — שלושת השלבים גלויים יחד. <b>בפועל כל גורם מקבל מסך רק שלו</b>: המנהלת רואה רק את ההקמה, המורה רק את הכיתה שלה, והתלמיד רק את הכניסה.</span></p>
   <div class="stepper" id="stepper" hidden></div>
   <section class="card" id="card"></section>
   <div class="nav" id="nav"></div>
@@ -723,8 +724,8 @@ function readyStep(){
     },
     async next(){
       if(S.role==='principal'){ try{ localStorage.setItem('avnei-principal-setup', JSON.stringify({name:S.school.name,city:S.school.city,code:S.school.code})); }catch(e){}
-        location.href = DEMO ? 'gate-landing.html' : 'principal-avnei.html'; }
-      else location.href = DEMO ? 'gate-landing.html' : 'teacher-home.html';
+        location.href = DEMO ? 'principal-avnei-v2.html?demo=1' : 'principal-avnei-v2.html'; }
+      else location.href = DEMO ? 'teacher-home-v2.html?demo=1' : 'teacher-home-v2.html';
       return false;
     }
   };
@@ -897,8 +898,172 @@ const STEPS = {
   renderFrame();
 })();
 
+/* הערת-הדמו רלוונטית רק במצב דמו — בענן אמיתי כל גורם ממילא רואה רק את המסך שלו */
+if(!DEMO){ var _dn=document.getElementById('demoNote'); if(_dn) _dn.hidden=true; }
+
 /* נוני נדנוד */
 document.addEventListener('click', e=>{ const n=e.target.closest('.noni'); if(n){ n.style.animation='none'; void n.offsetWidth; n.style.animation='float 4s ease-in-out infinite'; } });
+</script>
+
+<!-- ============================================================
+     סיור מודרך (coach-marks) — מבהיר ש-3 הטאבים = 3 אנשים/שלבים
+     ============================================================ -->
+<style>
+#tourHelp{position:fixed;inset-block-end:20px;inset-inline-start:20px;z-index:50;height:48px;border-radius:999px;padding:0 20px 0 16px;
+  background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;font-family:'Rubik',sans-serif;font-weight:800;font-size:14.5px;
+  box-shadow:0 14px 30px -12px rgba(124,107,208,.65);display:flex;align-items:center;gap:9px;border:2px solid #fff;transition:transform .22s;white-space:nowrap;}
+#tourHelp:hover{transform:translateY(-3px) scale(1.04);}
+#tourHelp .q{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.22);display:grid;place-items:center;font-family:var(--font-num);font-weight:700;font-size:17px;flex:0 0 auto;}
+#tourHelp .rng{position:absolute;inset:-5px;border-radius:999px;border:2px solid var(--pink);opacity:0;animation:tourHelpRing 2.6s ease-out infinite;}
+@keyframes tourHelpRing{0%{opacity:.7;transform:scale(1);}70%,100%{opacity:0;transform:scale(1.12);}}
+@media(max-width:520px){#tourHelp{font-size:0;padding:0;width:48px;justify-content:center;} #tourHelp .q{margin:0;}}
+.demo-note{display:flex;align-items:flex-start;gap:9px;margin:-4px 0 20px;padding:11px 14px;
+  background:var(--purple-soft);border:1px solid var(--purple-line);border-radius:var(--r-sm);
+  font-size:12.5px;line-height:1.55;color:var(--purple-deep);font-weight:600;}
+.demo-note .di{font-size:14px;flex:0 0 auto;line-height:1.4;}
+.demo-note b{font-weight:800;color:var(--ink);}
+.tour-block{position:fixed;inset:0;z-index:9990;background:transparent;}
+.tour-spot{position:fixed;z-index:9992;border-radius:16px;box-shadow:0 0 0 9999px rgba(24,20,48,.6);pointer-events:none;
+  transition:top .36s cubic-bezier(.32,.72,0,1),left .36s cubic-bezier(.32,.72,0,1),width .36s cubic-bezier(.32,.72,0,1),height .36s cubic-bezier(.32,.72,0,1);}
+.tour-spot::after{content:"";position:absolute;inset:-3px;border-radius:19px;border:2.5px solid var(--pink);animation:tourPulse 1.7s ease-out infinite;}
+@keyframes tourPulse{0%{opacity:.85;transform:scale(1);}100%{opacity:0;transform:scale(1.05);}}
+.tour-pop{position:fixed;z-index:9995;width:min(348px,92vw);background:#fff;border-radius:18px;
+  box-shadow:0 26px 64px -22px rgba(24,20,48,.55);padding:20px 20px 15px;animation:tourIn .34s cubic-bezier(.32,.72,0,1) both;}
+@keyframes tourIn{from{opacity:0;transform:translateY(9px);}to{opacity:1;transform:none;}}
+.tour-pop.center{inset-block-start:50%;left:50%;transform:translate(-50%,-50%);animation:tourInC .34s ease both;}
+@keyframes tourInC{from{opacity:0;}to{opacity:1;}}
+.tour-pop .arw{position:absolute;width:16px;height:16px;background:#fff;transform:rotate(45deg);border-radius:3px;}
+.tour-pop .tnoni{width:60px;height:auto;float:inline-start;margin-inline-end:12px;filter:drop-shadow(0 8px 14px rgba(124,107,208,.3));}
+.tour-pop .eb{font-size:11px;font-weight:800;color:var(--purple-deep);letter-spacing:.05em;text-transform:uppercase;}
+.tour-pop h4{font-family:'Heebo',sans-serif;font-size:19px;font-weight:900;margin:5px 0 7px;line-height:1.15;color:var(--ink);}
+.tour-pop .tb{font-size:14px;line-height:1.6;color:var(--ink-soft);}
+.tour-pop .tb b{color:var(--ink);font-weight:800;}
+.tour-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:16px;clear:both;}
+.tour-skip{background:none;border:none;color:var(--ink-faint);font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;padding:6px 2px;text-decoration:underline;text-underline-offset:3px;}
+.tour-skip:hover{color:var(--ink-soft);}
+.tour-dots{display:flex;gap:6px;}
+.tour-dots i{width:7px;height:7px;border-radius:50%;background:var(--line-strong);transition:background .25s,transform .25s;}
+.tour-dots i.on{background:linear-gradient(135deg,var(--purple),var(--pink));transform:scale(1.25);}
+.tour-btns{display:flex;gap:8px;}
+.tour-btns button{font-family:inherit;font-weight:800;font-size:13.5px;border-radius:var(--r-pill);padding:9px 17px;cursor:pointer;transition:transform .18s,background .2s,box-shadow .2s;border:2px solid transparent;}
+.tour-btns button:hover{transform:translateY(-1px);}
+.tour-back{background:var(--surface);color:var(--purple-deep);border-color:var(--purple-line)!important;}
+.tour-back:hover{background:var(--purple-soft);}
+.tour-back[hidden]{display:none;}
+.tour-next{background:linear-gradient(135deg,#F78CC1,var(--pink-deep));color:#fff;box-shadow:0 12px 26px -12px rgba(226,86,154,.6);}
+@media(max-width:520px){.tour-pop .tnoni{width:48px;}}
+</style>
+<script>
+/* אבני יסוד · setup.html — מנוע סיור מודרך (coach-marks). classic script, RTL. */
+(function(){
+  var SEEN='avnei-setup-tour-v2';
+  var qp=new URLSearchParams(location.search);
+  function stagetab(n){ return function(){ return document.querySelectorAll('#stagetabs .stagetab')[n]||null; }; }
+  var STEPS=[
+    { center:true, noni:true, title:'ברוכים הבאים לאשף ההקמה',
+      body:'הקמת בית ספר באבני יסוד היא <b>שלושה שלבים</b> — וכל שלב עושה <b>אדם אחר, בזמן אחר</b>. בסיור קצר (30 שניות) נראה מי עושה מה.' },
+    { t:function(){ return document.getElementById('stagetabs'); }, title:'שלושת השלבים',
+      body:'מנהלת ← מורה ← תלמיד. שימו לב: <b>לא הכול עכשיו, ולא הכול על ידכם</b>. כל טאב הוא שלב של אדם אחר — הטאב המודגש הוא השלב שאתם בו כרגע. <b>כאן בדמו</b> שלושתם גלויים יחד; <b>בפועל כל גורם יראה רק את המסך שלו</b>.' },
+    { t:stagetab(0), title:'שלב 1 · המנהלת',
+      body:'מקימה את בית הספר, מוסיפה כיתות ומורות, ולכל כיתה מקבלת <b>קוד משלה</b>. את הקוד היא שולחת למורה בוואטסאפ או במייל.' },
+    { t:stagetab(1), title:'שלב 2 · המורה',
+      body:'מקבלת מהמנהלת את <b>קוד הכיתה</b>, נכנסת איתו, ומוסיפה את רשימת התלמידים. לכל תלמיד.ה נוצר אוטומטית <b>קוד QR</b>.' },
+    { t:stagetab(2), title:'שלב 3 · התלמיד',
+      body:'סורק.ת את ה-QR שקיבל.ה, ונכנס.ת ישר למיפוי הראשון — <b>בלי מייל ובלי סיסמה</b>.' },
+    { t:function(){ return document.getElementById('stepper')||document.getElementById('card'); }, title:'בתוך כל שלב',
+      body:'לכל שלב יש כמה צעדים קטנים. הפס שלמעלה מראה <b>איפה אתם</b> בתוך השלב — ממלאים, ולוחצים <b>הבא</b>. תמיד אפשר לחזור אחורה.' },
+    { center:true, noni:true, title:'הקוד הוא החוט המקשר',
+      body:'זכרו את השרשרת: <b>מנהלת → קוד → מורה → QR → תלמיד</b>. זה כל הסיפור. אפשר לפתוח את הסיור שוב בכל רגע מכפתור ה־<b>?</b> בפינה.' }
+  ];
+
+  var block,spot,pop,arrow,ebEl,titleEl,bodyEl,noniEl,dotsEl,backBtn,nextBtn,i=0,active=false;
+
+  function build(){
+    block=document.createElement('div'); block.className='tour-block';
+    spot=document.createElement('div'); spot.className='tour-spot';
+    pop=document.createElement('div'); pop.className='tour-pop';
+    pop.innerHTML=
+      '<span class="arw"></span>'+
+      '<img class="tnoni" src="assets/noni-hero-transparent.png" alt="נוני" draggable="false" hidden>'+
+      '<div class="eb"></div><h4></h4><div class="tb"></div>'+
+      '<div class="tour-nav"><button class="tour-skip" type="button">דילוג</button>'+
+      '<div class="tour-dots"></div>'+
+      '<div class="tour-btns"><button class="tour-back" type="button">הקודם</button><button class="tour-next" type="button">הבא</button></div></div>';
+    arrow=pop.querySelector('.arw'); noniEl=pop.querySelector('.tnoni');
+    ebEl=pop.querySelector('.eb'); titleEl=pop.querySelector('h4'); bodyEl=pop.querySelector('.tb');
+    dotsEl=pop.querySelector('.tour-dots'); backBtn=pop.querySelector('.tour-back'); nextBtn=pop.querySelector('.tour-next');
+    dotsEl.innerHTML=STEPS.map(function(){ return '<i></i>'; }).join('');
+    pop.querySelector('.tour-skip').addEventListener('click', end);
+    backBtn.addEventListener('click', function(){ if(i>0) show(i-1); });
+    nextBtn.addEventListener('click', function(){ if(i<STEPS.length-1) show(i+1); else end(); });
+    document.body.appendChild(block); document.body.appendChild(spot); document.body.appendChild(pop);
+    window.addEventListener('resize', reposition);
+    window.addEventListener('scroll', reposition, true);
+    document.addEventListener('keydown', onKey);
+  }
+  function onKey(e){ if(!active) return; if(e.key==='Escape') end();
+    else if(e.key==='ArrowLeft'){ if(i<STEPS.length-1) show(i+1); else end(); } // RTL: שמאל = הבא
+    else if(e.key==='ArrowRight'){ if(i>0) show(i-1); } }
+
+  function place(){
+    var s=STEPS[i];
+    var el = s.center ? null : (typeof s.t==='function'? s.t() : s.t);
+    if(s.center || !el){
+      pop.classList.add('center'); pop.style.top=''; pop.style.left=''; pop.style.transform='';
+      spot.style.display='none'; arrow.style.display='none';
+      block.style.background='rgba(24,20,48,.6)'; return; // בשלב ממורכז ה-block נותן את ההחשכה
+    }
+    pop.classList.remove('center');
+    block.style.background='transparent'; // בשלב-זרקור ההחשכה מגיעה מ-box-shadow של ה-spot
+    try{ el.scrollIntoView({block:'nearest',inline:'nearest'}); }catch(_){}
+    var r=el.getBoundingClientRect(), pad=8;
+    spot.style.display='block';
+    spot.style.top=(r.top-pad)+'px'; spot.style.left=(r.left-pad)+'px';
+    spot.style.width=(r.width+pad*2)+'px'; spot.style.height=(r.height+pad*2)+'px';
+    var popH=pop.offsetHeight||200, popW=pop.offsetWidth||330, vw=window.innerWidth, vh=window.innerHeight, m=14;
+    var below=(r.bottom+14+popH)<vh || (r.top-14-popH)<m;
+    var top = below ? (r.bottom+14) : (r.top-14-popH);
+    var left = r.left + r.width/2 - popW/2;
+    left=Math.max(m, Math.min(left, vw-popW-m));
+    top=Math.max(m, Math.min(top, vh-popH-m));
+    pop.style.top=top+'px'; pop.style.left=left+'px'; pop.style.transform='none';
+    arrow.style.display='block';
+    var ax=r.left + r.width/2 - left; ax=Math.max(16, Math.min(ax, popW-16));
+    arrow.style.left=ax+'px';
+    arrow.style.top = below ? '-8px' : (popH-8)+'px';
+  }
+  function reposition(){ if(active) place(); }
+
+  function show(n){
+    i=n; var s=STEPS[i];
+    ebEl.textContent='סיור מודרך · צעד '+(i+1)+' מתוך '+STEPS.length;
+    titleEl.innerHTML=s.title; bodyEl.innerHTML=s.body;
+    noniEl.hidden=!s.noni;
+    backBtn.hidden=(i===0);
+    nextBtn.textContent=(i===STEPS.length-1)?'סיימנו — בואו נתחיל':'הבא';
+    Array.prototype.forEach.call(dotsEl.children, function(d,k){ d.classList.toggle('on',k===i); });
+    // re-trigger entrance
+    pop.style.animation='none'; void pop.offsetWidth; pop.style.animation='';
+    place();
+  }
+  function start(){ if(active) return; active=true; if(!block) build();
+    block.style.display=spot.style.display=pop.style.display='block'; show(0); }
+  function end(){ active=false; try{ localStorage.setItem(SEEN,'1'); }catch(_){}
+    if(block){ block.style.display='none'; spot.style.display='none'; pop.style.display='none'; } }
+
+  // כפתור עזרה קבוע (צפייה חוזרת)
+  var help=document.createElement('button');
+  help.id='tourHelp'; help.type='button'; help.title='סיור מודרך'; help.setAttribute('aria-label','סיור מודרך');
+  help.innerHTML='<span class="q">?</span><span class="lbl">סיור מודרך</span><span class="rng"></span>';
+  help.addEventListener('click', function(){ if(active) end(); else start(); });
+  document.body.appendChild(help);
+
+  // הרצה אוטומטית בכניסה ראשונה (או ?tour=1), אחרי שהטאבים נבנו
+  function whenReady(cb){ var n=0; (function w(){ var t=document.querySelectorAll('#stagetabs .stagetab');
+    if(t.length>=3 || n>45){ cb(); } else { n++; setTimeout(w,120); } })(); }
+  if(qp.get('tour')==='1' || !localStorage.getItem(SEEN)){ whenReady(function(){ setTimeout(start,420); }); }
+  else { setTimeout(function(){ help.querySelector('.rng').style.display='none'; }, 8000); }
+})();
 </script>
 </body>
 </html>
