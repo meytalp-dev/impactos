@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#FFFFFF">
+  <title>פולס · מורה · אבני יסוד · DESIGN-LOCK</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Rubik:wght@400;500;600;700;800;900&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="dashboard-v2.css">
+  <script src="../../demo/demo-icons.js" defer></script>
+  <link rel="preconnect" href="https://esm.sh" crossorigin>
+  <link rel="preconnect" href="https://ynxfszmpoppqrqocewcs.supabase.co" crossorigin>
+  <link rel="modulepreload" href="https://esm.sh/@supabase/supabase-js@2.45.4">
+  <script src="js/shared/cloud-config.js"></script>
+  <script src="js/shared/teacher-cloud.js"></script>
+  <script src="js/shared/pulse-cloud.js"></script>
+  <script src="js/shared/teacher-cloud-soft.js"></script>
+  <style>
+  /* ---- page-specific (פולס · מורה · כיתתי) ---- */
+  .hero{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 24px;box-shadow:var(--shadow-flat);margin-bottom:20px;border-inline-start:6px solid var(--pink);}
+  .hero .q{font-size:12px;font-weight:800;color:var(--pink-deep);background:var(--pink-soft);display:inline-block;padding:4px 13px;border-radius:var(--pill);margin-bottom:10px;}
+  .hero h1{font-size:clamp(20px,2.4vw,25px);font-weight:800;color:var(--ink);}
+  .hero p{font-size:13.5px;color:var(--ink-soft);margin-top:7px;max-width:72ch;line-height:1.5;} .hero p b{color:var(--ink);}
+  .hero .acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;}
+
+  /* dimension tiles (אקלים הכיתה) */
+  .dims{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;}
+  .dim{display:flex;align-items:flex-start;gap:13px;}
+  .dtile{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;flex:0 0 auto;}
+  .dtile .tic svg{width:24px;height:24px;}
+  .dim h3{font-size:15.5px;font-weight:800;color:var(--ink);}
+  .dim .st{font-size:13.5px;font-weight:700;margin-top:3px;}
+  .dim .st.ok{color:var(--ok-tx);} .dim .st.watch{color:var(--watch-tx);} .dim .st.care{color:var(--care-tx);} .dim .st.new{color:var(--ink-soft);}
+  .dim small{display:block;font-size:12.5px;color:var(--ink-soft);line-height:1.45;margin-top:5px;}
+  .dim .bar{height:6px;border-radius:4px;background:var(--surface-soft);margin-top:9px;overflow:hidden;}
+  .dim .bar>i{display:block;height:100%;border-radius:4px;}
+
+  /* attention children — אותו כרטיס-טבעת, מודגש + כפתורי-פעולה */
+  .kids{display:flex;flex-wrap:wrap;gap:14px;}
+  .kids .kcard{flex:1 1 300px;max-width:none;padding:20px 18px 18px;}
+  .kc-acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:9px;}
+
+  /* full-class roster — כרטיס-דמות עם טבעת (חתימת "הכיתה שלי") */
+  .st-ok{background:var(--okbg)!important;color:var(--ok-tx)!important;}
+  .st-watch{background:var(--watchbg)!important;color:var(--watch-tx)!important;}
+  .st-care{background:var(--carebg)!important;color:var(--care-tx)!important;}
+  .st-new{background:var(--purple-soft)!important;color:var(--purple-deep)!important;}
+  .kgrid{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;}
+  .kcard{position:relative;flex:1 1 178px;max-width:212px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px 14px 16px;box-shadow:0 2px 8px -3px rgba(37,31,68,.09);display:flex;flex-direction:column;align-items:center;text-align:center;gap:7px;transition:transform .5s cubic-bezier(.32,.72,0,1),box-shadow .5s,border-color .3s;}
+  .kcard:hover{transform:translateY(-5px);box-shadow:0 18px 38px -20px rgba(37,31,68,.32);border-color:var(--purple-line);}
+  .kc-pill{position:absolute;top:13px;left:13px;z-index:2;font-size:10.5px;font-weight:800;padding:4px 10px;border-radius:var(--pill);white-space:nowrap;}
+  .kc-nm{font-size:18px;font-weight:800;color:var(--ink);margin-top:3px;}
+  .kc-ds{font-size:12.5px;color:var(--ink-soft);line-height:1.45;} .kc-ds b{color:var(--ink);font-weight:700;}
+
+  .note{font-size:13px;color:var(--ink-soft);line-height:1.55;background:var(--surface-soft);border:1px solid var(--line);border-radius:14px;padding:13px 16px;} .note b{color:var(--ink);}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <nav class="rail" aria-label="ניווט">
+      <a class="logo" href="teacher-home-v2.html"><span class="gm"><svg viewBox="0 0 24 24" fill="none" stroke="#5D4CB0" stroke-width="2.3" stroke-linecap="round"><path d="M6 18v-5"/><path d="M12 18V7"/><path d="M18 18v-8"/></svg></span><b>אבני<br>יסוד</b></a>
+      <a class="item" href="teacher-home-v2.html"><span class="ic" data-ic="home"></span><span class="t">דף הבית</span></a>
+      <a class="item" href="teacher-my-class-v2.html"><span class="ic" data-ic="people"></span><span class="t">הכיתה שלי</span></a>
+      <a class="item" href="teacher-literacy-profile-v2.html"><span class="ic" data-ic="learn"></span><span class="t">פרופיל אורייני</span></a>
+      <a class="item active" href="teacher-pulse-v2.html"><span class="ic" data-ic="pulse"></span><span class="t">פולס</span></a>
+      <a class="item" href="teacher-mavat-v2.html"><span class="ic" data-ic="link"></span><span class="t">למידה ורגש</span></a>
+      <a class="item" href="teacher-reports-v2.html"><span class="ic" data-ic="report"></span><span class="t">דוחות</span></a>
+      <a class="item" href="teacher-curriculum-v2.html"><span class="ic" data-ic="calendar"></span><span class="t">תוכנית שנתית</span></a>
+      <a class="item" href="teacher-settings-v2.html"><span class="ic" data-ic="settings"></span><span class="t">הגדרות</span></a>
+      <a class="item" href="teacher-login.html?switch=1"><span class="ic" data-ic="settings"></span><span class="t">החלפת חשבון / יציאה</span></a>
+      <div class="me"><div class="av">מ</div><small>מיטל פלג<span id="meClass">מורה · א׳1</span></small></div>
+    </nav>
+
+    <main class="main"><div class="main-inner">
+      <div class="topbar">
+        <a class="backhome" href="gate-landing.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>למסך הראשי</a>
+        <div class="crumbs" id="crumbs">אבני יסוד<span class="brand-dot"></span> · מורה · פולס · א׳1</div>
+        <div class="date" id="todayDate">היום</div>
+      </div>
+
+      <div class="hero">
+        <span class="q">מצב רגשי-חברתי · כיתתי</span>
+        <h1 id="heroTitle">פולס — איך הכיתה מרגישה<span class="brand-dot"></span></h1>
+        <p id="heroLine">תמונת הרווחה מהפולס האחרון של הכיתה — ברמת הממד ופר ילד.ה. הפולס לא מדרג ולא מתייג; הוא מסמן איפה כדאי להקשיב קודם. את רואה את הכיתה שלך לפני שהמנהלת רואה.</p>
+        <div class="acts"><a class="btn btn-soft" href="teacher-mavat-v2.html"><span class="tic" data-ic="link"></span>למבט המשולב · למידה ורגש</a></div>
+      </div>
+
+      <section class="sec" id="dimsSec">
+        <div class="sec-title"><span class="tic" data-ic="waves"></span> אקלים הכיתה<span class="brand-dot"></span> <span class="tag" id="dimsTag">4 ממדים</span></div>
+        <div class="dims" id="dims"></div>
+      </section>
+
+      <section class="sec" id="kidsSec">
+        <div class="sec-title"><span class="tic" data-ic="heart"></span> ילדים לתשומת לב רגשית<span class="brand-dot"></span> <span class="tag" id="kidsTag">היום</span></div>
+        <div class="kids" id="kids"></div>
+      </section>
+
+      <section class="sec" id="rosterSec">
+        <div class="sec-title"><span class="tic" data-ic="people"></span> כל הכיתה<span class="brand-dot"></span> <span class="tag" id="rosterTag">פולס אחרון</span></div>
+        <div class="kgrid" id="roster"></div>
+      </section>
+
+      <div class="note"><b>חשוב:</b> הפולס לא מדרג ולא מתייג ילדים — הוא מסמן איפה כדאי להקשיב קודם. את רואה את הכיתה שלך לפני המנהלת, ואת מחליטה עם מי מדברים ומתי.</div>
+    </div></main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="rt-badge rt-demo" id="rtBadge"><span class="d"></span><span id="rtTx">נתוני דמו</span></div>
+
+  <script>
+    function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},2600);}
+    function initial(n){return (n||'').replace(/[^א-ת]/g,'').charAt(0)||'·';}
+    function fillTics(){var I=window.DemoIcons||{};document.querySelectorAll('.tic[data-ic]').forEach(function(el){if(!el.firstChild&&I[el.dataset.ic])el.innerHTML=I[el.dataset.ic];});}
+
+    function levelOf(mean){ if(mean==null)return 'new'; if(mean>=2.4)return 'ok'; if(mean>=1.8)return 'watch'; return 'care'; }
+    var stTx={ok:'יציב',watch:'לתשומת לב',care:'זקוק להקשבה','new':'טרם נאסף'};
+    var stFace={ok:'רוב הילדים מדווחים חיובי.',watch:'חלק מהילדים מסמנים קושי.',care:'ילדים אחדים מבקשים הקשבה.','new':'עדיין אין מספיק תשובות.'};
+    var barCol={ok:'var(--ok)',watch:'var(--watch)',care:'var(--care)','new':'var(--ink-faint)'};
+    var dimTint={adjust:{bg:'var(--aqua-soft)',fg:'var(--aqua-deep)'},friend:{bg:'var(--pink-soft)',fg:'var(--pink-deep)'},emotion:{bg:'var(--purple-soft)',fg:'var(--purple-deep)'},joy:{bg:'var(--okbg)',fg:'var(--ok-tx)'}};
+    var DIM_LABEL={adjust:'הסתגלות לכיתה',friend:'חברוּת וקשרים',emotion:'ויסות רגשי',joy:'שמחה בלמידה'};
+
+    /* ---------- SEED — פולס כיתתי (א׳1 · מיטל פלג) ---------- */
+    var DIMS=[
+      {id:'adjust', label:'הסתגלות לכיתה', icon:'leaf',      mean:2.6, n:6},
+      {id:'friend', label:'חברוּת וקשרים', icon:'handshake', mean:2.1, n:6},
+      {id:'emotion',label:'ויסות רגשי',    icon:'heart',     mean:2.4, n:6},
+      {id:'joy',    label:'שמחה בלמידה',   icon:'star',      mean:2.3, n:6}
+    ];
+    /* רוסטר = מקור-יחיד; ילדים-לתשומת-לב נגזרים ממנו */
+    var ROSTER=[
+      {name:'נועה כ.', avg:2.8, weakDim:'adjust',  weakVal:2.6},
+      {name:'שירה ל.', avg:2.7, weakDim:'emotion', weakVal:2.5},
+      {name:'מאיה ד.', avg:2.4, weakDim:'friend',  weakVal:2.2},
+      {name:'דני ר.',  avg:2.5, weakDim:'joy',     weakVal:2.3},
+      {name:'איתי כ.', avg:1.9, weakDim:'joy',     weakVal:1.6},
+      {name:'יעל',     avg:2.0, weakDim:'friend',  weakVal:1.8}
+    ];
+
+    function kidsFromRoster(){
+      return ROSTER.filter(function(r){var c=levelOf(r.avg);return c==='care'||c==='watch';})
+        .sort(function(a,b){return a.avg-b.avg;})
+        .map(function(r){return {name:r.name,status:levelOf(r.avg),dimLabel:DIM_LABEL[r.weakDim]||'רווחה כללית',weakVal:r.weakVal};});
+    }
+
+    /* ---------- render ---------- */
+    function renderDims(){
+      var totalN=DIMS.reduce(function(m,d){return Math.max(m,d.n);},0);
+      document.getElementById('dimsTag').textContent='4 ממדים · '+totalN+' ילדים ענו';
+      document.getElementById('dims').innerHTML=DIMS.map(function(m){
+        var cls=levelOf(m.mean); var pct=m.mean!=null?Math.round((m.mean-1)/2*100):0;
+        var tint=dimTint[m.id]||{bg:'var(--purple-soft)',fg:'var(--purple-deep)'};
+        var desc=m.n?stFace[cls]:'טרם נאספו תשובות בממד זה.';
+        return '<div class="card dim">'+
+          '<span class="dtile" style="background:'+tint.bg+';color:'+tint.fg+'"><span class="tic" data-ic="'+m.icon+'"></span></span>'+
+          '<div style="flex:1"><h3>'+m.label+'</h3>'+
+          '<div class="st '+cls+'">'+stTx[cls]+(m.n?' · '+m.mean.toFixed(1)+'/3':'')+'</div>'+
+          '<small>'+desc+'</small>'+
+          '<div class="bar"><i style="width:'+pct+'%;background:'+barCol[cls]+'"></i></div></div></div>';
+      }).join('');
+    }
+    function renderKids(){
+      var KIDS=kidsFromRoster();
+      if(!KIDS.length){
+        document.getElementById('kidsTag').textContent='אין כרגע';
+        document.getElementById('kids').innerHTML='<div class="card" style="color:var(--ink-soft);font-size:13.5px;font-weight:600">תמונה יציבה — אין כרגע ילד.ה שמבקש.ת הקשבה קרובה. יופי של אקלים.</div>';
+        return;
+      }
+      document.getElementById('kidsTag').textContent=KIDS.length+' היום';
+      var C=2*Math.PI*41;
+      document.getElementById('kids').innerHTML=KIDS.map(function(x){
+        var T=rosterTint[x.status];
+        var pct=x.weakVal!=null?Math.round((x.weakVal-1)/2*100):0;
+        var off=(C*(1-pct/100)).toFixed(1);
+        var seen=x.status==='care'?'מסמן.ת קושי חוזר ב<b>'+x.dimLabel+'</b> בפולס האחרון ('+x.weakVal.toFixed(1)+'/3). שווה הקשבה קרובה.':'סימון של קושי מתון ב<b>'+x.dimLabel+'</b> ('+x.weakVal.toFixed(1)+'/3) — לשים לב שלא מעמיק.';
+        return '<div class="kcard" style="--c:'+T.c+'">'+
+          '<span class="kc-pill '+T.pill+'">'+x.dimLabel+'</span>'+
+          '<div class="lc-ring"><svg class="lc-svg" viewBox="0 0 100 100"><circle class="lc-track" cx="50" cy="50" r="41"/>'+
+            '<circle class="lc-arc" cx="50" cy="50" r="41" style="stroke-dasharray:'+C.toFixed(1)+';stroke-dashoffset:'+off+'"/></svg>'+
+            '<div class="lc-tile">'+initial(x.name)+'</div><span class="lc-pct">'+x.weakVal.toFixed(1)+'</span></div>'+
+          '<div class="kc-nm">'+x.name+'</div>'+
+          '<div class="kc-ds">'+seen+'</div>'+
+          '<div class="kc-acts"><a class="btn btn-soft btn-sm" href="teacher-mavat-v2.html"><span class="tic" data-ic="link"></span>למבט המשולב</a>'+
+          '<a class="btn btn-soft btn-sm" href="teacher-my-class-v2.html"><span class="tic" data-ic="eye"></span>לכרטיס בכיתה</a></div></div>';
+      }).join('');
+    }
+    var rosterTint={ok:{c:'var(--ok)',pill:'st-ok'},watch:{c:'var(--watch)',pill:'st-watch'},care:{c:'var(--care)',pill:'st-care'},'new':{c:'var(--purple)',pill:'st-new'}};
+    function renderRoster(){
+      document.getElementById('rosterTag').textContent='פולס אחרון · '+ROSTER.length+' תלמידים';
+      var C=2*Math.PI*41;
+      document.getElementById('roster').innerHTML=ROSTER.map(function(r){
+        var cls=levelOf(r.avg); var T=rosterTint[cls];
+        var pct=r.avg!=null?Math.round((r.avg-1)/2*100):0;
+        var off=(C*(1-pct/100)).toFixed(1);
+        var scoreTx=r.avg!=null?r.avg.toFixed(1):'—';
+        var line=cls==='new'?'טרם ענה.תה על הפולס':(cls==='ok'?'רווחה יציבה · ממוצע <b>'+scoreTx+'/3</b>':'הממד החלש: <b>'+(DIM_LABEL[r.weakDim]||'רווחה')+'</b> ('+r.weakVal.toFixed(1)+'/3)');
+        return '<div class="kcard" style="--c:'+T.c+'">'+
+          '<span class="kc-pill '+T.pill+'">'+stTx[cls]+'</span>'+
+          '<div class="lc-ring"><svg class="lc-svg" viewBox="0 0 100 100"><circle class="lc-track" cx="50" cy="50" r="41"/>'+
+            '<circle class="lc-arc" cx="50" cy="50" r="41" style="stroke-dasharray:'+C.toFixed(1)+';stroke-dashoffset:'+off+'"/></svg>'+
+            '<div class="lc-tile">'+initial(r.name)+'</div><span class="lc-pct">'+scoreTx+'</span></div>'+
+          '<div class="kc-nm">'+r.name+'</div>'+
+          '<div class="kc-ds">'+line+'</div></div>';
+      }).join('');
+    }
+    function renderAll(){renderDims();renderKids();renderRoster();fillTics();}
+    renderAll();
+    document.addEventListener('click',function(e){var b=e.target.closest('[data-toast]');if(b&&b.dataset.toast)toast(b.dataset.toast);});
+    window.addEventListener('load',fillTics);
+    if(window.DemoIcons)fillTics();else setTimeout(fillTics,400);
+
+    /* ---- dual-mode רך: פולס כיתתי אמיתי (TeacherCloud × PulseCloud) ---- */
+    TeacherCloudSoft.try(function(st){
+      if(!st||!st.students||!st.students.length||!window.PulseCloud)return;
+      var ids=st.students.map(function(s){return s.id;});
+      PulseCloud.loadForStudents(st.supabase,ids).then(function(rows){
+        var BYS=PulseCloud.perStudent(rows);
+        var answered=Object.keys(BYS).filter(function(sid){return BYS[sid].hasData;}).length;
+        if(!answered)return;  // אין פולס עדיין — נשאר הדמו
+
+        // ממדים כיתתיים
+        var sd=PulseCloud.schoolDims(BYS);
+        DIMS=PulseCloud.DIMENSIONS.map(function(m){var d=sd[m.id]||{};return {id:m.id,label:m.label,icon:m.icon,mean:(d.mean!=null?d.mean:null),n:d.n||0};});
+
+        // רוסטר — כל תלמיד.ה (כולל מי שטרם ענה.תה)
+        ROSTER=st.students.map(function(s){
+          var ps=BYS[s.id];
+          if(!ps||!ps.hasData)return {name:s.name,avg:null,weakDim:null,weakVal:null};
+          var weakDim=null,weakVal=99;Object.keys(ps.byDim).forEach(function(d){if(ps.byDim[d]<weakVal){weakVal=ps.byDim[d];weakDim=d;}});
+          return {name:s.name,avg:ps.avg,weakDim:weakDim,weakVal:weakVal};
+        });
+
+        renderAll();
+
+        var clsNm=st.klass?st.klass.name:'';
+        var watching=kidsFromRoster().length;
+        document.getElementById('heroTitle').innerHTML='פולס — איך '+(clsNm?'כיתה '+clsNm:'הכיתה')+' מרגישה<span class="brand-dot"></span>';
+        document.getElementById('heroLine').innerHTML=watching
+          ? 'תמונת הרווחה מ-'+answered+' ילדים שענו. <b>'+watching+' '+(watching===1?'ילד.ה כדאי':'ילדים כדאי')+' להקשיב להם קרוב</b> — ראו למטה, לצד אקלים-הכיתה ותמונת כל הילדים.'
+          : 'תמונת הרווחה מ-'+answered+' ילדים שענו — יציבה ברוב הממדים. אין כרגע ילד.ה שדורש.ת הקשבה קרובה.';
+        if(clsNm){
+          document.getElementById('crumbs').innerHTML='אבני יסוד<span class="brand-dot"></span> · מורה · פולס · '+clsNm;
+          document.getElementById('meClass').textContent='מורה · '+clsNm;
+        }
+        TeacherCloudSoft.setBadge();
+      }).catch(function(e){console.warn('[teacher-pulse] pulse',e);});
+    });
+  </script>
+</body>
+</html>
