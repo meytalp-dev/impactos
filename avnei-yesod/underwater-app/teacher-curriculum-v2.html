@@ -13,6 +13,8 @@
   <link rel="modulepreload" href="https://esm.sh/@supabase/supabase-js@2.45.4">
   <script src="js/shared/teacher-cloud.js"></script>
   <script src="js/shared/teacher-cloud-soft.js"></script>
+  <script src="js/shared/interventions.js"></script>
+  <script src="js/shared/auto-targets.js"></script>
   <style>
   /* =====================================================================
      teacher-curriculum · DESIGN COPY — שפת DESIGN-LOCK.
@@ -219,7 +221,7 @@
       <a class="item" href="teacher-home-v2.html"><span class="ic" data-ic="home"></span><span class="t">דף הבית</span></a>
       <a class="item" href="teacher-my-class-v2.html"><span class="ic" data-ic="people"></span><span class="t">הכיתה שלי</span></a>
       <a class="item" href="teacher-literacy-profile-v2.html"><span class="ic" data-ic="learn"></span><span class="t">פרופיל אורייני</span></a>
-      <a class="item" href="../../pulse-grade1/pulse-dashboard.html"><span class="ic" data-ic="pulse"></span><span class="t">פולס</span></a>
+      <a class="item" href="teacher-pulse-v2.html"><span class="ic" data-ic="pulse"></span><span class="t">פולס</span></a>
       <a class="item" href="teacher-mavat-v2.html"><span class="ic" data-ic="link"></span><span class="t">למידה ורגש</span></a>
       <a class="item" href="teacher-reports-v2.html"><span class="ic" data-ic="report"></span><span class="t">דוחות</span></a>
       <a class="item active" href="teacher-curriculum-v2.html"><span class="ic" data-ic="calendar"></span><span class="t">תוכנית שנתית</span></a>
@@ -331,12 +333,12 @@
       return seen;
     }
 
-    function vw(v,tag){return {state:'ok',cat:'syll',href:APP+'stage-4-cv-build.html?vowel='+v,tag:tag};}
+    function vw(v,tag){return {state:'ok',cat:'syll',href:APP+'stage-4-cv-build.html'+(v?'?vowel='+v:''),tag:tag};}
     // מיפוי נושא → תרגול דיגיטלי (גיבוי כשאין game_to_play מפורש בנתונים)
     function resolvePractice(t,dayNum){
       t=t||'';
-      // סיכום / חזרה על אותיות → משחק סיכום מצטבר
-      if(/^סיכום|סיכום\s|סינתז|תרגול\s+\d+\s+האות|תרגול\s+האות|כל\s+22|כל הא|זיהוי מהיר של כל|תחזוקה/.test(t)){
+      // סיכום / חזרה על אותיות → משחק סיכום מצטבר (אבל לא סיכום-כתיבה → offline)
+      if(!/כתיב/.test(t) && (/^סיכום|סיכום\s|סינתז|תרגול\s+\d+\s+האות|תרגול\s+האות|כל\s+22|כל הא|זיהוי מהיר של כל|תחזוקה/.test(t))){
         var learned=lettersLearnedUpTo(dayNum||999);
         if(learned.length>0){return {state:'sum',href:APP+'stage-summary-cv.html?letters='+encodeURIComponent(learned.join(',')),tag:learned.length<=5?'סיכום · '+learned.join(' '):'סיכום '+learned.length+' אותיות'};}
       }
@@ -347,7 +349,7 @@
       // כתיבה
       if(/הכתבת מילים שכיחות/.test(t))                      return {state:'ok',cat:'word',href:APP+'stage-8-word-write.html',tag:'איך כותבים · אי 8'};
       if(/כתיבת מילים קצרות/.test(t))                       return {state:'ok',cat:'word',href:APP+'stage-20-spell.html',tag:'בּוֹנִים מִלִּים · אי 20'};
-      if(/^כתיב|כתיבת|הכתב|המשך כתיבה/.test(t))             return {state:'offline',tag:'כתיבה'};
+      if(/^כתיב|כתיבת|הכתב|המשך כתיבה|כתיבה/.test(t))       return {state:'offline',tag:'כתיבה'};
       if(/חריזה|חרוז/.test(t))                              return {state:'ok',cat:'syll',href:APP+'stage-rhyme.html',tag:'חריזה'};
       if(/פרופיל אורייני/.test(t))                          return {state:'ok',cat:'test',href:'teacher-literacy-profile-v2.html',tag:'כלי מורה'};
       if(/חגיגת סיום|טקס סיום|סיום שנת/.test(t))            return {state:'oral',tag:'אירוע כיתתי'};
@@ -565,7 +567,43 @@
         if(res&&res.error){toast('שמירה נכשלה — נסי שוב');return;}
         CUR_SEQ=day; renderNow(); render();
         toast('הכיתה עודכנה לנושא זה · התלמידים יקבלו אותו');
+        pushAutoTargets();   // תרגול-מותאם אוטומטי לפי הכשל האישי (הכלה בתוך הנושא)
       }).catch(function(){toast('שמירה נכשלה — נסי שוב');});
+    }
+
+    // ---- הדק "פתיחת נושא" → תרגול-מותאם אוטומטי פר-תלמיד ----------------------
+    // כשהמורה קובעת את נושא-היום, המערכת גוזרת לכל תלמיד את הכשל האישי (זוג-אותיות
+    // מבולבל, מ-BKT) וכותבת אותו ל-student_targets. התלמיד מושך אותו בכניסה הבאה,
+    // והתרגול מדגיש את הכשל בתוך הנושא הכיתתי. best-effort — לא חוסם את הקביעה.
+    function pushAutoTargets(){
+      if(!SB||!KLASS||!window.AvneiAutoTargets){return;}
+      var stuIds=[];
+      SB.from('students').select('id').eq('class_id',KLASS.id).eq('active',true)
+        .then(function(sr){
+          if(sr&&sr.error){return;}
+          stuIds=(sr.data||[]).map(function(s){return s.id;});
+          if(!stuIds.length){return;}
+          return SB.from('bkt_state').select('student_id, legacy_bkt, strand_bkt').in('student_id',stuIds);
+        })
+        .then(function(br){
+          if(!br||br.error||!br.data){return;}
+          var bySid={}; br.data.forEach(function(r){ if(!bySid[r.student_id]) bySid[r.student_id]=r; });
+          var rows=[];
+          stuIds.forEach(function(sid){
+            var perLetter=window.AvneiAutoTargets.perLetterFromBkt(bySid[sid]);
+            var targets=window.AvneiAutoTargets.deriveConfusedPairTargets(perLetter);
+            targets.forEach(function(u){ rows.push({student_id:sid, unit_data:u, source:'auto-weak'}); });
+          });
+          // אידמפוטנטי: נקה auto-weak פעילים ישנים, ואז כתוב טרי
+          return SB.from('student_targets').delete()
+            .in('student_id',stuIds).eq('source','auto-weak').is('completed_at',null)
+            .then(function(){ return rows.length ? SB.from('student_targets').insert(rows) : {data:[]}; })
+            .then(function(ins){
+              if(ins&&ins.error){return;}
+              if(rows.length){ toast('נשלחו '+rows.length+' תרגולים מותאמים אישית'); }
+            });
+        })
+        .catch(function(){ /* best-effort — שקט אם נכשל */ });
     }
     document.getElementById('nowCard').addEventListener('click',function(e){var dt=e.target.closest('[data-detail]');if(dt)openDetail(+dt.dataset.detail);});
     document.getElementById('modal').addEventListener('click',function(e){if(e.target.closest('[data-close]'))closeDetail();});
