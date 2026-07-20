@@ -1,0 +1,66 @@
+/* ============================================================
+   מישמיש · مشمش — Design Language (utilities של החתימה)
+   ------------------------------------------------------------
+   נטען אחרי tokens.css. מכיל את אבני-הבניין של השפה הנעולה:
+     · קשת-דלת       → .mm-arch / .mm-arch-lg
+     · קו-חתימה מדורג → .mm-sigline (+ .center)
+     · מספרים        → .num  (Fraunces)
+     · אור-פנס חושף   → .mm-veil + .mm-halo  (עם js/shared/reveal.js)
+   מקור-אמת: DESIGN-LOCK.md. אין כאן ערכי-צבע אקראיים — רק טוקנים.
+   ============================================================ */
+
+/* ---------- מספרים: Fraunces (§3) ---------- */
+/* כל מספר "מוצג" (מונה/אחוז/תאריך/צעד/חודש). לא על ספרות בזרימת-טקסט. */
+.num { font-family: var(--font-num); font-weight: 600; font-feature-settings: "tnum" 1; }
+
+/* ---------- קשת-דלת (§1, §5) ---------- */
+/* כרטיס/פאנל עם קשת עליונה + זוהר-פנס עדין מלמעלה. */
+.mm-arch,
+.mm-arch-lg {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #fffdf8, var(--cream));
+  border: 2px solid var(--sand);
+  box-shadow: var(--sh);
+}
+.mm-arch    { border-radius: 110px 110px var(--r) var(--r); }
+.mm-arch-lg { border-radius: 280px 280px 26px 26px; }
+/* זוהר-הפנס העדין (במקום פס-אקסנט עליון — קלישאה שנטשנו) */
+.mm-arch::before,
+.mm-arch-lg::before {
+  content: "";
+  position: absolute; inset-block-start: 0; inset-inline: 0; height: 120px;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 0%, rgba(243, 202, 103, 0.28), rgba(243, 202, 103, 0) 60%);
+}
+.mm-arch > *,
+.mm-arch-lg > * { position: relative; }
+
+/* ---------- קו-החתימה המדורג (§6) ---------- */
+.mm-sigline {
+  height: 2px; border: 0; border-radius: 3px; width: 100%;
+  background: linear-gradient(90deg, transparent, var(--sun) 22%, var(--apricot) 50%, var(--sun) 78%, transparent);
+  opacity: .9;
+}
+.mm-sigline.center { width: 200px; height: 3px; margin-inline: auto; }
+
+/* ---------- אור-הפנס החושף (§1) — צריך js/shared/reveal.js ---------- */
+/* וילון עמום (לא שחור, רקע חם ובהיר) עם מסכה רדיאלית שהפנס פותח. */
+.mm-veil {
+  position: fixed; inset: 0; z-index: 60; pointer-events: none; display: none;
+  backdrop-filter: saturate(.42) brightness(1.12);
+  background:
+    radial-gradient(circle at 30% 18%, rgba(255,255,255,.34), rgba(255,255,255,0) 46%),
+    linear-gradient(160deg, rgba(255,248,235,.5), rgba(250,234,208,.44));
+  -webkit-mask: radial-gradient(circle var(--r-lantern,160px) at var(--x,50vw) var(--y,50vh), transparent 0, transparent calc(var(--r-lantern,160px) * .70), #000 var(--r-lantern,160px));
+          mask: radial-gradient(circle var(--r-lantern,160px) at var(--x,50vw) var(--y,50vh), transparent 0, transparent calc(var(--r-lantern,160px) * .70), #000 var(--r-lantern,160px));
+}
+.mm-halo {
+  position: fixed; inset-block-start: 0; inset-inline-start: 0; z-index: 61;
+  pointer-events: none; mix-blend-mode: screen; opacity: 0;
+  background: radial-gradient(circle, rgba(255,232,158,.75) 0%, rgba(243,202,103,.26) 42%, rgba(243,202,103,0) 68%);
+  transform: translate(var(--x,50vw), var(--y,50vh));
+}
+@media (prefers-reduced-motion: reduce) {
+  .mm-veil, .mm-halo { display: none !important; }
+}

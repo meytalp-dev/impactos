@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>מישמיש · مشمش — כְּנִיסָה</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700&family=Heebo:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Cairo:wght@500;600;700&family=Heebo:wght@500;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/design-language.css">
   <style>
     /* ── שער-הכניסה לתלמידים — מסך-נחיתה עצמאי (טוקנים מ-tokens.css) ──
        כפתור אחד גדול מוביל למיפוי (משחקון הפנס). ניקוד מלא, Heebo,
@@ -159,10 +160,15 @@
     </div>
   </main>
 
+  <!-- אור-הפנס החושף: רגע-הכניסה של הילד/ה לשכונה -->
+  <div class="mm-veil" id="veil"></div>
+  <div class="mm-halo" id="halo"></div>
+
   <!-- offline-first: data.js מוטבע (בלי fetch) → data-loader → class-plan -->
   <script src="js/data.js"></script>
   <script src="js/data-loader.js"></script>
   <script src="js/shared/class-plan.js"></script>
+  <script src="js/shared/reveal.js"></script>
   <script>
     /* עוגן חצי A — "הַכִּתָּה שֶׁלָּכֶם עַכְשָׁיו בְּ<X>". שכבת-תצוגה בלבד.
        X מגיע מ-MishmishClassPlan (נגזר מ-data/class-plan.json). ניקוד מלא,
@@ -193,6 +199,8 @@
       audio.addEventListener('pause',  function () { if (btn) btn.classList.remove('speaking'); });
       // ניסיון-אוטומטי בטעינה (יעבוד אם האודיו כבר שוחרר בסשן; אחרת נחסם בשקט)
       window.addEventListener('load', function () { setTimeout(play, 350); });
+      /* אור-הפנס מגלה את הסצנה ברגע-הכניסה (מכבד prefers-reduced-motion) */
+      window.addEventListener('load', function () { setTimeout(function(){ window.MMReveal && MMReveal(); }, 200); });
       // נגיעה ראשונה כלשהי (מלבד הכפתור/הכפתור-הגדול) משחררת ומנגנת פעם אחת
       document.addEventListener('pointerdown', function once(ev) {
         if (started) { document.removeEventListener('pointerdown', once); return; }

@@ -11,6 +11,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700&family=Fraunces:opsz,wght@9..144,600&family=Heebo:wght@500;700;800;900&display=swap" rel="stylesheet">
   <!-- מקור-האמת לטוקנים (צבעים/טיפו/רדיוסים/תנועה) — כולל כינויי-שער קצרים -->
   <link rel="stylesheet" href="../styles/tokens.css">
+  <!-- utilities של החתימה: קשת, קו-מדורג, .num, אור-פנס (.mm-veil/.mm-halo) -->
+  <link rel="stylesheet" href="../styles/design-language.css">
 <style>
 /* ============================================================
    מישמיש · مشمش — שער (דף-נחיתה שיווקי · רב-דפי, router JS)
@@ -156,13 +158,8 @@ footer.foot .mk{display:inline-flex;align-items:center;gap:9px;color:var(--ink);
 footer.foot .mk .g{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(160deg,var(--sun),var(--apricot));}
 footer.foot .mk .g i{width:10px;height:10px;border-radius:50%;background:#fff;display:block;}
 
-/* lantern reveal (gate only) */
-.veil{position:fixed;inset:0;z-index:60;pointer-events:none;display:none;backdrop-filter:saturate(.42) brightness(1.12);
-  background:radial-gradient(circle at 30% 18%, rgba(255,255,255,.34), rgba(255,255,255,0) 46%), linear-gradient(160deg, rgba(255,248,235,.5), rgba(250,234,208,.44));
-  -webkit-mask:radial-gradient(circle var(--r,160px) at var(--x,50vw) var(--y,50vh), transparent 0, transparent calc(var(--r,160px) * .70), #000 var(--r,160px));
-          mask:radial-gradient(circle var(--r,160px) at var(--x,50vw) var(--y,50vh), transparent 0, transparent calc(var(--r,160px) * .70), #000 var(--r,160px));}
-.halo{position:fixed;inset-block-start:0;inset-inline-start:0;z-index:61;pointer-events:none;mix-blend-mode:screen;background:radial-gradient(circle, rgba(255,232,158,.75) 0%, rgba(243,202,103,.26) 42%, rgba(243,202,103,0) 68%);transform:translate(var(--x,50vw),var(--y,50vh));opacity:0;}
-@media (prefers-reduced-motion: reduce){.veil,.halo{display:none!important;}}
+/* אור-הפנס החושף: .mm-veil + .mm-halo מוגדרים ב-design-language.css,
+   מונפשים ע"י js/shared/reveal.js (MMReveal). */
 </style>
 </head>
 <body>
@@ -267,9 +264,10 @@ footer.foot .mk .g i{width:10px;height:10px;border-radius:50%;background:#fff;di
   <div>אנכי שלישי במשפחת impactos · עברית כשפה שנייה למגזר הערבי · הנתונים מאובטחים לכל כיתה בנפרד</div>
 </footer>
 
-<div class="veil" id="veil"></div>
-<div class="halo" id="halo"></div>
+<div class="mm-veil" id="veil"></div>
+<div class="mm-halo" id="halo"></div>
 
+<script src="js/shared/reveal.js"></script>
 <script>
 /* ===== page router — each page stands on its own ===== */
 (function(){
@@ -280,7 +278,7 @@ footer.foot .mk .g i{width:10px;height:10px;border-radius:50%;background:#fff;di
     navlinks.forEach(function(a){ a.classList.toggle('on', a.getAttribute('data-go')===id); });
     solidFor(id);
     window.scrollTo(0,0);
-    if(id==='gate') reveal();
+    if(id==='gate') MMReveal();
   }
   /* data-go נטען רק על אלמנטים ללא href אמיתי (אחרת ניווט-דף גובר) */
   document.querySelectorAll('[data-go]').forEach(function(el){
@@ -290,24 +288,8 @@ footer.foot .mk .g i{width:10px;height:10px;border-radius:50%;background:#fff;di
   window.__go=go;
 })();
 
-/* ===== lantern reveal (gate page) ===== */
-function reveal(){
-  var veil=document.getElementById('veil'), halo=document.getElementById('halo');
-  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){ veil.style.display='none'; return; }
-  var HALO=460; halo.style.width=HALO+'px'; halo.style.height=HALO+'px'; halo.style.margin=(-HALO/2)+'px 0 0 '+(-HALO/2)+'px';
-  veil.style.display='block'; veil.style.opacity='1';
-  var W=innerWidth,H=innerHeight,cx=W/2,cy=H/2, pool=Math.min(W,H)*0.26, orbit=Math.hypot(W,H)/2*0.98, turns=2, a0=-Math.PI/2, dur=2600, start=null;
-  halo.style.opacity='1';
-  function put(x,y,r,op){ veil.style.setProperty('--x',x+'px'); veil.style.setProperty('--y',y+'px'); veil.style.setProperty('--r',r+'px'); halo.style.setProperty('--x',x+'px'); halo.style.setProperty('--y',y+'px'); if(op!=null) veil.style.opacity=op; }
-  function step(ts){ if(start===null)start=ts; var e=Math.min(1,(ts-start)/dur);
-    var a=a0+turns*2*Math.PI*e, r=orbit*(0.06+0.94*e), x=cx+Math.cos(a)*r, y=cy+Math.sin(a)*r;
-    var op=e<0.74?1:Math.max(0,1-(e-0.74)/0.26); put(x,y,pool,op);
-    var fade=Math.max(0,1-Math.max(0,(e-0.82))/0.18); halo.style.opacity=String(fade);
-    if(e<1){ requestAnimationFrame(step); } else { veil.style.opacity='0'; veil.style.display='none'; halo.style.opacity='0'; }
-  }
-  requestAnimationFrame(step);
-}
-setTimeout(reveal, 240);
+/* ===== אור-הפנס החושף — מנוע משותף (js/shared/reveal.js) ===== */
+setTimeout(function(){ MMReveal(); }, 240);
 </script>
 </body>
 </html>
