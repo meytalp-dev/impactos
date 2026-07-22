@@ -48,10 +48,25 @@
     );
   }
 
+  // מיפוי סוג-קושי (failure_type מ-epa.js) → משפט בשפת-מורה פשוטה (בלי ז'רגון).
+  // הערכים תואמים FAILURE_VALUES ב-epa.js; נגזרים פר-מסיח ב-mechanic-mcq.
+  var FAILURE_HE = {
+    Shape:         'בלבול בין אותיות דומות בצורה',
+    Sound:         'בלבול בין צלילים דומים',
+    Name:          'זיהוי שם האות',
+    Direction:     'כיוון האות',
+    Comprehension: 'קושי בהבנת הנקרא',
+    WrongPlural:   'צורת רבים',
+    GenderMismatch:'התאמת זכר / נקבה'
+  };
+
   // ---- חישוב פרופיל פר-תלמיד.ה (זהה למקור בדשבורד) ----
   function blankProfile() {
     return { last: null, weekCount: 0, mastered: [], inProgress: [],
-             avgKnown: null, bktStrand: null, errorLetters: [], skills: null, boy: null, placement: null };
+             avgKnown: null, bktStrand: null, errorLetters: [], skills: null, boy: null, placement: null,
+             // 22.7.2026 — הצגת "מה הקושי": ספירת טעויות פר-אות + פר סוג-קושי (failure_type),
+             // מתוכן נגזר p.difficulty (אותיות שכיחות + דפוס דומיננטי בשפה פשוטה).
+             errorCounts: {}, failures: {}, difficulty: null };
   }
 
   function computeProfiles(students, events, bktRows) {
@@ -66,9 +81,13 @@
       if (!p.last || ev.client_timestamp > p.last) p.last = ev.client_timestamp;
       if (ev.client_timestamp >= weekAgo) p.weekCount++;
       var payload = ev.payload || {};
-      if (payload.is_correct === false && payload.target_letter &&
-          p.errorLetters.indexOf(payload.target_letter) === -1) {
-        p.errorLetters.push(payload.target_letter);
+      if (payload.is_correct === false) {
+        if (payload.target_letter) {
+          if (p.errorLetters.indexOf(payload.target_letter) === -1) p.errorLetters.push(payload.target_letter);
+          p.errorCounts[payload.target_letter] = (p.errorCounts[payload.target_letter] || 0) + 1;
+        }
+        // סוג-הקושי (failure_type) — נספר גם כשאין אות-יעד (הבנה/רבים/זכר-נקבה).
+        if (payload.failure_type) p.failures[payload.failure_type] = (p.failures[payload.failure_type] || 0) + 1;
       }
     });
 
@@ -96,6 +115,21 @@
         letters:       letterVals.length ? letterVals.reduce(function(a,b){return a+b;},0) / letterVals.length : null,
         decoding:      (typeof strand1.pKnown === 'number') ? strand1.pKnown : null,
         comprehension: (typeof strand4.pKnown === 'number') ? strand4.pKnown : null
+      };
+    });
+
+    // "מה הקושי" פר-תלמיד — נגזר מהאירועים החיים (22.7.2026). אותיות מסודרות לפי
+    // תדירות-טעות + דפוס-קושי דומיננטי (failure_type ≥2 מופעים) בשפת-מורה פשוטה.
+    ids.forEach(function (sid) {
+      var p = profiles[sid]; if (!p) return;
+      p.errorLetters.sort(function (a, b) { return (p.errorCounts[b] || 0) - (p.errorCounts[a] || 0); });
+      var wrongTotal = Object.keys(p.errorCounts).reduce(function (s, l) { return s + p.errorCounts[l]; }, 0);
+      var domType = null, domN = 0;
+      Object.keys(p.failures).forEach(function (ft) { if (p.failures[ft] > domN) { domN = p.failures[ft]; domType = ft; } });
+      p.difficulty = {
+        letters:    p.errorLetters.slice(0, 3),
+        wrongCount: wrongTotal,
+        pattern:    (domN >= 2 && FAILURE_HE[domType]) ? FAILURE_HE[domType] : null
       };
     });
 

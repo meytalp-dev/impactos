@@ -384,8 +384,13 @@
         var p=profiles[s.id]||{}, r=TeacherCloud.rama(p), lvl=LVL_FROM_RAMA[r.cls]||'new';
         var k=TeacherCloud.knownRatio(p), mastered=(p.mastered||[]).length, inprog=(p.inProgress||[]).length;
         var rec,why;
-        if(k==null){rec='תרגול פתיחה — לאסוף נקודת התחלה';why='אין עדיין מספיק נתונים — בדקי שוב אחרי תרגול.';}
-        else if(r.cls==='support'||r.cls==='more'){rec=(p.errorLetters&&p.errorLetters.length)?('חיזוק אותיות: '+p.errorLetters.slice(0,3).join(' · ')):'חיזוק ממוקד לפי הקושי';why='זוהו נקודות לחיזוק מתוך התרגול.';}
+        // "מה הקושי" מהתרגול החי: אותיות שכיחות + דפוס (teacher-cloud.computeProfiles).
+        var dif=p.difficulty||{};
+        var difTxt=(dif.letters&&dif.letters.length)
+          ?('חיזוק אותיות: '+dif.letters.join(' · ')+(dif.wrongCount?(' ('+dif.wrongCount+' טעויות)'):'')):null;
+        if(difTxt){rec=difTxt;why=dif.pattern||'זוהו נקודות לחיזוק מתוך התרגול.';}
+        else if(k==null){rec='תרגול פתיחה — לאסוף נקודת התחלה';why='אין עדיין מספיק נתונים — בדקי שוב אחרי תרגול.';}
+        else if(r.cls==='support'||r.cls==='more'){rec='חיזוק ממוקד לפי הקושי';why='זוהו נקודות לחיזוק מתוך התרגול.';}
         else{rec='תרגול העשרה — לשמור על אתגר';why='שולטת יפה — אתגר שומר על מעורבות.';}
         return {
           nm:s.name, g:'f', lvl:lvl,

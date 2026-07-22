@@ -270,7 +270,20 @@
 
       await ensureTeacherRow(data.user);
 
-      // Redirect to setup if no class, else dashboard
+      // ניתוב לפי תפקיד: מנהלת → מסך-המנהלת. חובה לבדוק תפקיד לפני בדיקת-הכיתה,
+      // כי ל-RLS-מנהלת (מיגרציה 0007) שאילתת classes מחזירה את כל כיתות בית-הספר,
+      // ואז מנהלת נראית כמו "מורה עם כיתה" ונשלחת בטעות ל-teacher-home. (22.7.2026)
+      let role = null;
+      try {
+        const { data: ctx } = await client.supabase.rpc('get_my_context');
+        role = ctx && ctx[0] && ctx[0].role;
+      } catch (e) { /* אין get_my_context / אין הקשר → ממשיכים כמורה */ }
+      if (role === 'principal') {
+        window.location.href = 'principal-avnei-v2.html';
+        return;
+      }
+
+      // מורה: אם אין כיתה → אשף הקמה, אחרת → דשבורד
       const { data: classes } = await client.supabase
         .from('classes')
         .select('id')
