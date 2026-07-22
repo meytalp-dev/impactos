@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <script src="js/shared/file-protocol-shim.js"></script>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#061923">
+  <title>מְעָרַת הַהֵד · הַקְשָׁבָה</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    :root {
+      --ink:#04131d;
+      --deep:#082c3c;
+      --water:#0c6071;
+      --glow:#7ee8ef;
+      --glow-rgb:126,232,239;
+      --pearl:#eefeff;
+      --coral:#ffb46f;
+      --violet:#b399ff;
+      --safe-top:max(12px,env(safe-area-inset-top));
+      --safe-bottom:max(14px,env(safe-area-inset-bottom));
+    }
+    *{box-sizing:border-box}
+    html,body{width:100%;height:100%;margin:0;overflow:hidden}
+    body{font-family:"Heebo","Arial Hebrew",sans-serif;color:#fff;background:var(--ink)}
+    button{font:inherit;color:inherit;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    button:focus-visible{outline:4px solid #fff;outline-offset:5px}
+    .sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+    .stage{position:fixed;inset:0;isolation:isolate;overflow:hidden;touch-action:none;background:#061923}
+    .scene-bg{position:absolute;z-index:-9;inset:-4%;width:108%;height:108%;object-fit:cover;filter:saturate(.78) brightness(.45) contrast(1.18);transform:scale(1.04);transition:filter 1.1s ease,transform 1.1s ease}
+    .water-grade{position:absolute;z-index:-8;inset:0;pointer-events:none;background:
+      radial-gradient(ellipse at 50% 27%,rgba(var(--glow-rgb),.22),transparent 34%),
+      linear-gradient(180deg,rgba(2,23,34,.08),rgba(2,12,20,.72) 88%);
+      transition:background 1s ease}
+    .rock-vignette{position:absolute;z-index:-7;inset:-3%;pointer-events:none;background:
+      radial-gradient(ellipse at 50% 48%,transparent 0 37%,rgba(0,7,12,.28) 59%,rgba(0,5,9,.91) 100%),
+      radial-gradient(ellipse at 50% -7%,#01090e 0 19%,transparent 20%),
+      radial-gradient(ellipse at 50% 108%,#01090e 0 17%,transparent 18%)}
+    .caustics{position:absolute;z-index:-6;inset:-30%;opacity:.18;mix-blend-mode:screen;pointer-events:none;background:repeating-radial-gradient(ellipse at 50% 0,transparent 0 31px,rgba(var(--glow-rgb),.23) 33px,transparent 36px 62px);filter:blur(3px);animation:causticDrift 16s linear infinite}
+    @keyframes causticDrift{to{transform:translate3d(5%,-4%,0) rotate(4deg)}}
+
+    .chamber-decor{position:absolute;z-index:-5;inset:0;pointer-events:none;transition:opacity .7s ease}
+    .formation{position:absolute;bottom:-5%;width:23%;height:43%;background:linear-gradient(135deg,rgba(var(--glow-rgb),.36),#0a3441 44%,#03131c 85%);clip-path:polygon(0 100%,7% 48%,19% 73%,29% 19%,42% 64%,55% 5%,69% 72%,82% 36%,100% 100%);filter:drop-shadow(0 0 22px rgba(var(--glow-rgb),.24));transition:clip-path .8s ease,filter .8s ease}
+    .formation.left{left:-2%}.formation.right{right:-2%;transform:scaleX(-1)}
+    .stage.chamber-amber{--glow:#ffd082;--glow-rgb:255,208,130;--water:#805925}
+    .stage.chamber-amber .scene-bg{filter:sepia(.28) hue-rotate(345deg) saturate(.72) brightness(.42) contrast(1.25);transform:scale(1.09)}
+    .stage.chamber-amber .formation{clip-path:polygon(0 100%,4% 38%,17% 56%,24% 8%,35% 47%,48% 21%,58% 72%,75% 31%,100% 100%)}
+    .stage.chamber-violet{--glow:#bea3ff;--glow-rgb:190,163,255;--water:#503775}
+    .stage.chamber-violet .scene-bg{filter:hue-rotate(25deg) saturate(1.05) brightness(.38) contrast(1.2);transform:scale(1.13)}
+    .stage.chamber-violet .formation{clip-path:polygon(0 100%,10% 49%,24% 61%,33% 12%,47% 76%,59% 27%,72% 63%,86% 18%,100% 100%)}
+    .stage.chamber-garden{--glow:#86efc5;--glow-rgb:134,239,197;--water:#176b5c}
+    .stage.chamber-garden .scene-bg{filter:hue-rotate(325deg) saturate(1.05) brightness(.43) contrast(1.12);transform:scale(1.06)}
+    .stage.chamber-garden .formation{clip-path:polygon(0 100%,8% 55%,19% 35%,31% 76%,43% 18%,56% 66%,70% 31%,81% 73%,94% 42%,100% 100%);filter:drop-shadow(0 0 26px rgba(105,255,188,.38))}
+    .stage.chamber-abyss{--glow:#78bfff;--glow-rgb:120,191,255;--water:#163d72}
+    .stage.chamber-abyss .scene-bg{filter:hue-rotate(14deg) saturate(.7) brightness(.28) contrast(1.35);transform:scale(1.16)}
+    .stage.chamber-abyss .rock-vignette{background:radial-gradient(ellipse at 50% 52%,transparent 0 28%,rgba(0,5,13,.62) 61%,#01050b 100%)}
+
+    .motes{position:absolute;z-index:-4;inset:0;overflow:hidden;pointer-events:none}
+    .mote{position:absolute;bottom:-15px;width:var(--size);height:var(--size);border:1px solid rgba(220,251,255,.78);border-radius:50%;box-shadow:inset 1px 1px 3px rgba(255,255,255,.6),0 0 7px rgba(var(--glow-rgb),.36);animation:moteRise var(--duration) linear infinite;animation-delay:var(--delay)}
+    @keyframes moteRise{0%{transform:translate3d(0,5vh,0) scale(.5);opacity:0}12%{opacity:.65}100%{transform:translate3d(var(--drift),-112vh,0) scale(1.12);opacity:0}}
+
+    .hud{position:absolute;z-index:35;top:var(--safe-top);inset-inline:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;pointer-events:none}
+    .progress-shell,.replay{border:1px solid rgba(201,245,255,.4);background:linear-gradient(145deg,rgba(4,30,43,.88),rgba(10,61,72,.74));box-shadow:0 12px 28px rgba(0,0,0,.36),inset 0 1px rgba(255,255,255,.14);backdrop-filter:blur(10px)}
+    .progress-shell{display:flex;align-items:center;gap:8px;min-height:58px;padding:9px 14px;border-radius:20px;pointer-events:auto}
+    .progress-dot{width:19px;height:19px;border-radius:50%;border:2px solid rgba(208,247,255,.54);background:rgba(0,10,18,.48);box-shadow:inset 0 2px 5px rgba(0,0,0,.5);transition:.55s cubic-bezier(.2,.9,.3,1.3)}
+    .progress-dot.current{border-color:#fff;box-shadow:0 0 0 5px rgba(var(--glow-rgb),.18),0 0 18px rgba(var(--glow-rgb),.65);transform:scale(1.08)}
+    .progress-dot.done{border-color:#efffff;background:radial-gradient(circle at 35% 25%,#fff,var(--glow) 54%,#24737d);box-shadow:0 0 16px rgba(var(--glow-rgb),.72);transform:scale(1.12)}
+    .replay{width:62px;height:62px;min-width:62px;border-radius:50%;display:grid;place-items:center;pointer-events:auto;transition:transform .2s ease,filter .2s ease}
+    .replay svg{width:31px;height:31px;filter:drop-shadow(0 0 7px rgba(255,255,255,.28))}
+    .replay:active{transform:scale(.93)}
+    .replay.playing{animation:replayPulse .72s ease}
+    @keyframes replayPulse{50%{transform:scale(1.12);filter:brightness(1.5);box-shadow:0 0 35px rgba(var(--glow-rgb),.65)}}
+
+    .mission{position:absolute;z-index:31;top:max(87px,calc(env(safe-area-inset-top) + 76px));left:50%;transform:translateX(-50%);width:min(630px,calc(100vw - 116px));min-height:54px;padding:10px 24px;display:flex;align-items:center;justify-content:center;gap:11px;text-align:center;border-radius:22px;color:#123040;background:rgba(243,254,255,.95);border:1px solid #fff;box-shadow:0 12px 30px rgba(0,0,0,.34);font-size:clamp(16px,2.25vw,22px);font-weight:900;line-height:1.25;pointer-events:none;transition:transform .4s ease,opacity .4s ease}
+    .mission-icon{font-size:1.22em}.mission.ready{color:#143a35;box-shadow:0 12px 30px rgba(0,0,0,.34),0 0 26px rgba(var(--glow-rgb),.24)}
+
+    .playfield{position:absolute;z-index:5;inset:150px 0 0;overflow:hidden}
+    .cave{position:absolute;z-index:10;top:9%;width:clamp(180px,32vw,390px);height:clamp(235px,53vh,520px);padding:0;background:transparent;touch-action:manipulation;transform-origin:50% 90%}
+    .cave.left{left:clamp(-30px,3vw,65px)}.cave.right{right:clamp(-30px,3vw,65px)}
+    .cave-mouth{position:absolute;inset:2% 4% 0;border-radius:48% 52% 17% 19% / 39% 43% 12% 14%;background:
+      radial-gradient(ellipse at 50% 56%,#000 0 35%,#031019 56%,transparent 57%),
+      radial-gradient(circle at 25% 16%,rgba(139,190,185,.28) 0 4%,transparent 5%),
+      radial-gradient(circle at 72% 23%,rgba(0,8,12,.56) 0 7%,transparent 8%),
+      linear-gradient(142deg,#3b6264,#172f39 48%,#061821 82%);
+      border:clamp(8px,1.3vw,15px) solid #3a5a5c;box-shadow:inset 14px 12px 25px rgba(149,197,186,.17),inset -24px -26px 37px #000,0 20px 37px rgba(0,0,0,.6),0 0 0 3px rgba(1,11,16,.75);filter:drop-shadow(0 0 18px rgba(var(--glow-rgb),.12));transition:.32s ease}
+    .cave-mouth::before{content:"";position:absolute;inset:12% 12% 8%;border-radius:50% 50% 16% 17%;background:radial-gradient(ellipse at 50% 42%,rgba(var(--glow-rgb),.12),transparent 35%),linear-gradient(#02090e,#000);box-shadow:inset 0 0 38px #000}
+    .cave-mouth::after{content:"";position:absolute;left:9%;right:9%;bottom:-3%;height:14%;border-radius:50%;background:linear-gradient(#365254,#10262d 65%);box-shadow:0 -7px 13px rgba(0,0,0,.45)}
+    .cave-speaker{position:absolute;z-index:3;left:50%;top:47%;width:clamp(58px,7vw,82px);aspect-ratio:1;transform:translate(-50%,-50%);display:grid;place-items:center;border-radius:50%;color:#eaffff;background:radial-gradient(circle at 36% 29%,rgba(255,255,255,.34),rgba(var(--glow-rgb),.22) 42%,rgba(2,22,31,.84) 70%);border:2px solid rgba(222,252,255,.65);box-shadow:0 0 22px rgba(var(--glow-rgb),.23),inset 0 0 14px rgba(255,255,255,.13);transition:.3s ease}
+    .cave-speaker svg{width:52%;height:52%}
+    .echo-ring{position:absolute;z-index:2;left:50%;top:47%;width:25%;aspect-ratio:1;border:3px solid rgba(var(--glow-rgb),.75);border-radius:50%;transform:translate(-50%,-50%) scale(.5);opacity:0;pointer-events:none}
+    .cave.sounding .echo-ring.r1{animation:echoRing 1s ease-out}.cave.sounding .echo-ring.r2{animation:echoRing 1s .2s ease-out}.cave.sounding .echo-ring.r3{animation:echoRing 1s .4s ease-out}
+    @keyframes echoRing{0%{opacity:.9;transform:translate(-50%,-50%) scale(.55)}100%{opacity:0;transform:translate(-50%,-50%) scale(4.6)}}
+    .cave.heard .cave-speaker{background:radial-gradient(circle at 36% 29%,#fff,var(--glow) 43%,#17495a 72%);box-shadow:0 0 30px rgba(var(--glow-rgb),.66)}
+    .cave.drop-ready .cave-mouth{filter:brightness(1.25) drop-shadow(0 0 30px rgba(var(--glow-rgb),.66));transform:scale(1.025)}
+    .cave.entered .cave-mouth{animation:caveReceive .85s ease}
+    @keyframes caveReceive{35%{transform:scale(1.045);filter:brightness(1.55) drop-shadow(0 0 38px rgba(var(--glow-rgb),.78))}70%{transform:scale(.985)}}
+    .cave.wrong .cave-mouth{animation:caveNo .65s ease}
+    @keyframes caveNo{20%{transform:translateX(-7px)}42%{transform:translateX(6px)}64%{transform:translateX(-3px)}}
+
+    .noni{position:absolute;z-index:25;left:50%;top:78%;width:clamp(112px,16vw,176px);aspect-ratio:1;transform:translate(-50%,-50%);display:grid;place-items:center;background:transparent;padding:0;border-radius:50%;touch-action:none;cursor:grab;user-select:none;will-change:left,top,transform;transition:left .72s cubic-bezier(.2,.8,.2,1),top .72s cubic-bezier(.2,.8,.2,1),filter .25s ease}
+    .noni.dragging{cursor:grabbing;transition:none;filter:drop-shadow(0 0 20px rgba(var(--glow-rgb),.85));transform:translate(-50%,-50%) scale(1.06)}
+    .noni.locked{cursor:default;filter:saturate(.72) brightness(.85)}
+    .noni img{width:100%;height:100%;object-fit:contain;pointer-events:none;filter:drop-shadow(0 15px 16px rgba(0,0,0,.38));animation:noniFloat 3s ease-in-out infinite}
+    .noni::before,.noni::after{content:"";position:absolute;z-index:-1;border:2px solid rgba(215,251,255,.55);border-radius:50%;opacity:0}
+    .noni.dragging::before{width:18px;height:18px;right:6%;bottom:20%;animation:noniBubble 1.1s ease-out infinite}
+    .noni.dragging::after{width:10px;height:10px;right:-2%;bottom:34%;animation:noniBubble 1.1s .35s ease-out infinite}
+    @keyframes noniFloat{50%{transform:translateY(-7px) rotate(1.2deg)}}
+    @keyframes noniBubble{0%{opacity:.9;transform:translateY(0) scale(.6)}100%{opacity:0;transform:translateY(-58px) translateX(12px) scale(1.25)}}
+    .noni.returning{animation:noniOops .7s ease}
+    @keyframes noniOops{35%{transform:translate(-50%,-50%) rotate(-7deg) scale(.94)}65%{transform:translate(-50%,-50%) rotate(5deg)}}
+
+    .toast{position:absolute;z-index:45;left:50%;bottom:calc(var(--safe-bottom) + 7px);max-width:min(520px,calc(100vw - 40px));min-height:56px;padding:12px 23px;display:flex;align-items:center;justify-content:center;text-align:center;border-radius:20px;color:#17323e;background:rgba(246,254,255,.97);border:1px solid #fff;box-shadow:0 12px 30px rgba(0,0,0,.42);font-size:clamp(17px,2.5vw,21px);font-weight:900;transform:translate(-50%,110px);opacity:0;transition:.4s cubic-bezier(.2,.9,.3,1.2);pointer-events:none}
+    .toast.show{transform:translate(-50%,0);opacity:1}
+
+    /* הדגמה לתלמיד — נוני-רפאים חצי-שקופה שמדגימה את המהלך פעם אחת */
+    .demo-noni{position:absolute;z-index:24;left:50%;top:78%;width:clamp(112px,16vw,176px);aspect-ratio:1;transform:translate(-50%,-50%);pointer-events:none;opacity:0;transition:left 1s cubic-bezier(.2,.8,.2,1),top 1s cubic-bezier(.2,.8,.2,1),opacity .45s ease;filter:drop-shadow(0 0 20px rgba(var(--glow-rgb),.72))}
+    .demo-noni img{width:100%;height:100%;object-fit:contain}
+    .demo-noni.show{opacity:.66}
+    .demo-caption{position:absolute;z-index:47;left:50%;top:calc(50% + 60px);transform:translate(-50%,-50%) scale(.92);max-width:min(560px,calc(100vw - 60px));padding:13px 26px;text-align:center;border-radius:22px;color:#123040;background:rgba(246,254,255,.97);border:1px solid #fff;box-shadow:0 14px 34px rgba(0,0,0,.42);font-size:clamp(18px,2.8vw,25px);font-weight:900;line-height:1.3;opacity:0;pointer-events:none;transition:.42s cubic-bezier(.2,.9,.3,1.2)}
+    .demo-caption.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+
+    .transition{position:absolute;z-index:80;inset:0;display:grid;place-items:center;visibility:hidden;opacity:0;background:radial-gradient(circle at 50% 50%,rgba(var(--glow-rgb),.18),rgba(1,9,15,.95) 64%);pointer-events:none;transition:opacity .35s ease,visibility .35s}
+    .transition.show{visibility:visible;opacity:1}
+    .sonar{width:min(58vw,420px);aspect-ratio:1;border:3px solid rgba(var(--glow-rgb),.78);border-radius:50%;box-shadow:0 0 35px rgba(var(--glow-rgb),.55),inset 0 0 35px rgba(var(--glow-rgb),.28);animation:sonarTravel 1s ease-out both}
+    @keyframes sonarTravel{0%{transform:scale(.08);opacity:.9}100%{transform:scale(2.1);opacity:0}}
+
+    .overlay{position:absolute;z-index:100;inset:0;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 50% 38%,rgba(25,109,126,.48),rgba(2,11,18,.92) 67%);transition:.65s ease}
+    .overlay.hidden{opacity:0;visibility:hidden;pointer-events:none}
+    .intro-card{position:relative;width:min(620px,94vw);padding:clamp(28px,5vw,52px);text-align:center;border-radius:38px;background:linear-gradient(155deg,rgba(13,63,76,.94),rgba(3,25,38,.96));border:1px solid rgba(215,249,255,.42);box-shadow:0 28px 70px rgba(0,0,0,.58),inset 0 1px rgba(255,255,255,.16);overflow:hidden}
+    .intro-card::before{content:"";position:absolute;inset:-45%;background:conic-gradient(from 30deg,transparent,rgba(126,232,239,.1),transparent 28%);animation:introLight 9s linear infinite;pointer-events:none}
+    @keyframes introLight{to{transform:rotate(360deg)}}
+    .intro-noni{position:relative;width:clamp(118px,24vw,176px);filter:drop-shadow(0 15px 22px rgba(0,0,0,.4));animation:noniFloat 3s ease-in-out infinite}
+    .intro-card h1{position:relative;margin:8px 0 7px;font-size:clamp(31px,6vw,54px);font-weight:900;line-height:1.05;color:#ecfeff;text-shadow:0 0 22px rgba(126,232,239,.52)}
+    .intro-card p{position:relative;margin:0 auto 22px;max-width:480px;font-size:clamp(17px,2.7vw,22px);line-height:1.45;font-weight:700;color:#c9f4f6}
+    .start{position:relative;min-width:190px;min-height:62px;padding:12px 30px;border-radius:22px;color:#07313b;background:linear-gradient(180deg,#f8ffff,#9debf0);box-shadow:0 10px 24px rgba(0,0,0,.32),0 0 25px rgba(126,232,239,.3),inset 0 2px #fff;font-size:22px;font-weight:900;transition:.2s ease}
+    .start:hover{transform:translateY(-2px);filter:brightness(1.06)}.start:active{transform:translateY(1px) scale(.98)}
+
+    .complete{background:radial-gradient(circle at 50% 42%,rgba(167,125,255,.38),rgba(1,8,15,.96) 65%)}
+    .heart{position:relative;width:clamp(170px,32vw,290px);aspect-ratio:1;display:grid;place-items:center;margin:auto}
+    .heart::before,.heart::after{content:"";position:absolute;inset:8%;border:3px solid rgba(229,250,255,.65);border-radius:50%;animation:heartRing 2s ease-out infinite}
+    .heart::after{animation-delay:1s}
+    @keyframes heartRing{0%{transform:scale(.4);opacity:.9}100%{transform:scale(1.35);opacity:0}}
+    .heart-crystal{width:62%;height:73%;clip-path:polygon(50% 0,88% 21%,100% 60%,50% 100%,0 60%,12% 21%);background:linear-gradient(125deg,#5f3bb1,#cfb7ff 42%,#f8ffff 52%,#77e7ef 68%,#28597d);box-shadow:0 0 50px rgba(184,156,255,.86);animation:heartGlow 1.8s ease-in-out infinite}
+    @keyframes heartGlow{50%{transform:scale(1.07);filter:brightness(1.35)}}
+    .complete .intro-noni{width:clamp(128px,22vw,180px);margin-top:-70px}
+
+    @media (max-width:700px){
+      .hud{inset-inline:9px}.progress-shell{padding:8px 10px;gap:6px;min-height:54px}.progress-dot{width:16px;height:16px}.replay{width:56px;height:56px;min-width:56px}
+      .mission{top:max(79px,calc(env(safe-area-inset-top) + 68px));width:calc(100vw - 36px);padding:9px 14px}.playfield{inset-block-start:137px}
+      .cave{top:7%;width:48vw;height:min(53vh,410px)}.cave.left{left:-5vw}.cave.right{right:-5vw}.cave-speaker{top:43%}.echo-ring{top:43%}
+      .noni{width:clamp(104px,27vw,138px);top:79%}.formation{width:31%;height:35%}
+    }
+    @media (max-height:590px) and (orientation:landscape){
+      .mission{top:73px;min-height:44px;padding:7px 18px}.playfield{inset-block-start:118px}.cave{top:0;height:73vh;width:32vw}.cave.left{left:7vw}.cave.right{right:7vw}.cave-speaker,.echo-ring{top:42%}.noni{width:112px;top:78%}
+      .progress-shell{min-height:50px}.replay{width:52px;height:52px;min-width:52px}.toast{min-height:46px;padding:8px 18px}
+    }
+    @media (prefers-reduced-motion:reduce){
+      *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.001ms!important}
+      .caustics,.mote{display:none}.noni img{transform:none}
+    }
+  </style>
+</head>
+<body>
+  <main class="stage chamber-aqua" id="stage" aria-labelledby="gameTitle">
+    <img class="scene-bg" src="assets/scene-stage-3-bg.png" alt="" draggable="false">
+    <div class="water-grade"></div>
+    <div class="rock-vignette"></div>
+    <div class="caustics"></div>
+    <div class="chamber-decor"><i class="formation left"></i><i class="formation right"></i></div>
+    <div class="motes" id="motes" aria-hidden="true"></div>
+
+    <header class="hud" aria-label="הִתְקַדְּמוּת וְהַשְׁמָעָה חוֹזֶרֶת">
+      <div class="progress-shell" id="progress" aria-label="חֲמִשָּׁה סְבָבִים"></div>
+      <button class="replay" id="replay" type="button" aria-label="הַשְׁמִיעוּ שׁוּב אֶת צְלִיל הַיַּעַד">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14 4.3v2.05a6 6 0 1 1-6.78 2.1L5.8 7.05A8 8 0 1 0 14 4.3Z"/><path fill="currentColor" d="m14 2 5 4-5 4Z"/><path fill="currentColor" d="M9.7 9.2 7.5 11H5v2h2.5l2.2 1.8Z"/><path fill="currentColor" d="M11 10.2v3.6c1.2-.7 1.2-2.9 0-3.6Z"/></svg>
+      </button>
+    </header>
+
+    <div class="mission" id="mission" aria-live="polite"><span class="mission-icon" aria-hidden="true">👂</span><span id="missionText">הַקְשִׁיבוּ לַצְּלִיל</span></div>
+
+    <section class="playfield" id="playfield" aria-label="שְׁתֵּי מְעָרוֹת הֵד">
+      <button class="cave left" id="caveLeft" type="button" aria-label="הַשְׁמִיעוּ אֶת הַהֵד בַּמְּעָרָה הַשְּׂמָאלִית">
+        <span class="cave-mouth"></span>
+        <span class="cave-speaker" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 9v6h4l5 4V5L8 9H4Zm12.5 3a4.5 4.5 0 0 0-2.1-3.8v7.6a4.5 4.5 0 0 0 2.1-3.8Zm-2.1-8v2.1a7 7 0 0 1 0 11.8V20a9 9 0 0 0 0-16Z"/></svg></span>
+        <span class="echo-ring r1"></span><span class="echo-ring r2"></span><span class="echo-ring r3"></span>
+      </button>
+      <button class="cave right" id="caveRight" type="button" aria-label="הַשְׁמִיעוּ אֶת הַהֵד בַּמְּעָרָה הַיְּמָנִית">
+        <span class="cave-mouth"></span>
+        <span class="cave-speaker" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 9v6h4l5 4V5L8 9H4Zm12.5 3a4.5 4.5 0 0 0-2.1-3.8v7.6a4.5 4.5 0 0 0 2.1-3.8Zm-2.1-8v2.1a7 7 0 0 1 0 11.8V20a9 9 0 0 0 0-16Z"/></svg></span>
+        <span class="echo-ring r1"></span><span class="echo-ring r2"></span><span class="echo-ring r3"></span>
+      </button>
+
+      <button class="noni locked" id="noni" type="button" aria-label="נוּנִי. הַקְשִׁיבוּ לִשְׁתֵּי הַמְּעָרוֹת, וְאַחַר כָּךְ הָזִיזוּ אֶת נוּנִי לַמְּעָרָה הַמַּתְאִימָה" aria-disabled="true">
+        <img id="noniImg" src="assets/noni-idle.png" alt="" draggable="false">
+      </button>
+      <div class="demo-noni" id="demoNoni" aria-hidden="true"><img src="assets/noni-swim.png" alt="" draggable="false"></div>
+    </section>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div class="demo-caption" id="demoCaption" aria-hidden="true"></div>
+    <div class="transition" id="transition" aria-hidden="true"><div class="sonar"></div></div>
+    <div class="sr-only" id="live" aria-live="assertive"></div>
+
+    <section class="overlay" id="intro" aria-labelledby="gameTitle">
+      <div class="intro-card">
+        <img class="intro-noni" src="assets/noni-thinking.png" alt="נוּנִי מַקְשִׁיבָה" draggable="false">
+        <h1 id="gameTitle">מְעָרַת הַהֵד</h1>
+        <p>הַקְשִׁיבוּ לַצְּלִיל, הַשְׁמִיעוּ אֶת שְׁנֵי הַהֵדִים, וְהָזִיזוּ אֶת נוּנִי לַמְּעָרָה הַמַּתְאִימָה.</p>
+        <button class="start" id="start" type="button">מַתְחִילִים</button>
+      </div>
+    </section>
+
+    <section class="overlay complete hidden" id="complete" aria-labelledby="completeTitle">
+      <div class="intro-card">
+        <div class="heart" aria-hidden="true"><div class="heart-crystal"></div></div>
+        <img class="intro-noni" src="assets/noni-happy.png" alt="נוּנִי שְׂמֵחָה" draggable="false">
+        <h1 id="completeTitle">לֵב הַהֵד הִתְגַּלָּה!</h1>
+        <p>מְעֻלֶּה — הִקְשַׁבְתֶּם לְכָל הַצְּלִילִים.</p>
+        <button class="start" id="again" type="button">מְשַׂחֲקִים שׁוּב</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/state.js"></script>
+  <script src="js/shared/bkt.js"></script>
+  <script src="js/shared/epa.js"></script>
+  <script src="js/shared/event-logger.js"></script>
+  <script>
+  (function(){
+    'use strict';
+
+    var AUDIO_ROOT='assets/audio/';
+    var HOME={x:50,y:78};
+    var THEMES=['chamber-aqua','chamber-amber','chamber-violet','chamber-garden','chamber-abyss'];
+    var ROUNDS=[
+      {id:'resh-a__dalet-a',target:{key:'resh_a',letter:'ר',group:'a',audio:'cv-resh-kamatz.mp3'},distractor:{key:'dalet_a',letter:'ד',group:'a',audio:'cv-dalet-kamatz.mp3'}},
+      {id:'dalet-i__resh-i',target:{key:'dalet_i',letter:'ד',group:'i',audio:'cv-dalet-hiriq.mp3'},distractor:{key:'resh_i',letter:'ר',group:'i',audio:'cv-resh-hiriq.mp3'}},
+      {id:'resh-o__dalet-o',target:{key:'resh_o',letter:'ר',group:'o',audio:'cv-resh-holam.mp3'},distractor:{key:'dalet_o',letter:'ד',group:'o',audio:'cv-dalet-holam.mp3'}},
+      {id:'bet-a__bet-i',target:{key:'bet_a',letter:'ב',group:'a',audio:'cv-bet-patach.mp3'},distractor:{key:'bet_i',letter:'ב',group:'i',audio:'cv-bet-hiriq.mp3'}},
+      {id:'mem-a__mem-o',target:{key:'mem_a',letter:'מ',group:'a',audio:'cv-mem-patach.mp3'},distractor:{key:'mem_o',letter:'מ',group:'o',audio:'cv-mem-holam.mp3'}}
+    ];
+
+    var $=function(s){return document.querySelector(s)};
+    var stage=$('#stage'),playfield=$('#playfield'),noni=$('#noni'),noniImg=$('#noniImg');
+    var caves=[$('#caveLeft'),$('#caveRight')],mission=$('#mission'),missionText=$('#missionText');
+    var replay=$('#replay'),toast=$('#toast'),live=$('#live'),transition=$('#transition');
+    var state={round:0,layout:[],heard:[false,false],targetHeard:false,ready:false,locked:true,dragging:false,pointerId:null,x:HOME.x,y:HOME.y,startX:HOME.x,startY:HOME.y,startedAt:0,measurementCommitted:false,attempts:0,audio:null,echoTimers:[],demoActive:false,demoDone:false};
+    var audioCache={};
+    var NARRATION='echo-instr.mp3';       // הנחיה קולית בקול נוני (מוקלט בצינור ElevenLabs)
+    var NARRATE_EACH_ROUND=true;          // משמיעים את ההנחיה בפתיחת כל סבב (כמו stage-discrimination)
+
+    function getAudio(file){
+      if(!audioCache[file]){
+        audioCache[file]=new Audio(AUDIO_ROOT+file);
+        audioCache[file].preload='auto';
+      }
+      return audioCache[file];
+    }
+    function stopAudio(){
+      state.echoTimers.forEach(clearTimeout);state.echoTimers=[];
+      Object.keys(audioCache).forEach(function(k){try{audioCache[k].pause();audioCache[k].currentTime=0}catch(_){}});
+    }
+    function playClip(file,volume){
+      stopAudio();
+      var a=getAudio(file);a.volume=typeof volume==='number'?volume:1;a.currentTime=0;state.audio=a;
+      try{var p=a.play();if(p&&p.catch)p.catch(function(){})}catch(_){}
+      return a;
+    }
+    function playTarget(){
+      if(state.demoActive)return;
+      if(state.locked&&state.round>=ROUNDS.length)return;
+      var item=ROUNDS[state.round];
+      state.targetHeard=false;
+      replay.classList.remove('playing');void replay.offsetWidth;replay.classList.add('playing');
+      missionText.textContent='הַקְשִׁיבוּ לַצְּלִיל';mission.classList.remove('ready');
+      live.textContent='צְלִיל הַיַּעַד מֻשְׁמָע';
+      var targetAudio=playClip(item.target.audio,1);
+      targetAudio.onended=function(){
+        state.targetHeard=true;
+        if(state.ready){mission.classList.add('ready');missionText.textContent='הָזִיזוּ אֶת נוּנִי אֶל הַהֵד הַמַּתְאִים'}
+        else{missionText.textContent='הַשְׁמִיעוּ אֶת שְׁנֵי הַהֵדִים'}
+        live.textContent='צְלִיל הַיַּעַד הִסְתַּיֵּם. עַכְשָׁו הַשְׁמִיעוּ אֶת שְׁנֵי הַהֵדִים.';
+      };
+    }
+    function playEcho(index){
+      if(state.demoActive)return;
+      if(state.locked||!state.layout[index])return;
+      if(!state.targetHeard){live.textContent='הַמְתִּינוּ עַד שֶׁצְּלִיל הַיַּעַד יִסְתַּיֵּם.';return}
+      var cave=caves[index],choice=state.layout[index];
+      cave.classList.remove('sounding');void cave.offsetWidth;cave.classList.add('sounding','heard');
+      state.heard[index]=true;
+      playClip(choice.audio,.96);
+      state.echoTimers.push(setTimeout(function(){
+        var echo=getAudio(choice.audio);echo.volume=.38;echo.currentTime=0;try{var p=echo.play();if(p&&p.catch)p.catch(function(){})}catch(_){}
+      },430));
+      state.echoTimers.push(setTimeout(function(){cave.classList.remove('sounding')},1350));
+      live.textContent=index===0?'הַהֵד בַּמְּעָרָה הַשְּׂמָאלִית מֻשְׁמָע':'הַהֵד בַּמְּעָרָה הַיְּמָנִית מֻשְׁמָע';
+      if(state.heard[0]&&state.heard[1])unlockNoni();
+      else{missionText.textContent='הַשְׁמִיעוּ גַּם אֶת הַהֵד הַשֵּׁנִי'}
+    }
+    function unlockNoni(){
+      state.ready=true;noni.classList.remove('locked');noni.setAttribute('aria-disabled','false');
+      noniImg.src='assets/noni-swim.png';mission.classList.add('ready');missionText.textContent='הָזִיזוּ אֶת נוּנִי אֶל הַהֵד הַמַּתְאִים';
+      live.textContent='שְׁנֵי הַהֵדִים נִשְׁמְעוּ. אֶפְשָׁר לְהָזִיז אֶת נוּנִי.';
+    }
+    function setNoniPosition(x,y,immediate){
+      state.x=Math.max(5,Math.min(95,x));state.y=Math.max(8,Math.min(94,y));
+      if(immediate)noni.style.transition='none';
+      noni.style.left=state.x+'%';noni.style.top=state.y+'%';
+      if(immediate){void noni.offsetWidth;noni.style.transition=''}
+    }
+    function localPoint(e){
+      var r=playfield.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*100,y:(e.clientY-r.top)/r.height*100};
+    }
+    function caveAtPoint(clientX,clientY){
+      for(var i=0;i<caves.length;i++){
+        var r=caves[i].getBoundingClientRect();
+        var pad=Math.min(26,r.width*.08);
+        if(clientX>=r.left+pad&&clientX<=r.right-pad&&clientY>=r.top+pad&&clientY<=r.bottom)return i;
+      }
+      return -1;
+    }
+    function setDropHighlight(clientX,clientY){
+      var hit=caveAtPoint(clientX,clientY);caves.forEach(function(c,i){c.classList.toggle('drop-ready',i===hit)});
+    }
+
+    /*
+      עיקרון המדידה — שלוש שכבות נפרדות:
+      (1) הפעולה הפיזית: pointer/keyboard מזיזים את נוני; תנועה לבדה לעולם אינה מדווחת.
+      (2) התגובה הלשונית: הילד.ה משווה באוזן בין target.audio לבין choice.audio של המערה.
+      (3) ראיית BKT: רק enterCave() מקבע את המערה שנכנסו אליה, כולל target/chosen/correct.
+      measurementCommitted נועל את שכבה (3) לאחר הכניסה הראשונה. תיקון מודרך אינו ראיה חדשה.
+    */
+    function recordFirstEntrance(index,isCorrect){
+      if(state.measurementCommitted)return;
+      state.measurementCommitted=true;
+      var item=ROUNDS[state.round],chosen=state.layout[index];
+      var evidence={
+        activity_type:'echo-cave',
+        activity_variant:'auditory_cv_discrimination__chosen_'+chosen.key,
+        item_id:'echo-'+(state.round+1)+'__target_'+item.target.key+'__chosen_'+chosen.key,
+        target_letter:item.target.letter,
+        target_phoneme_group:item.target.group,
+        primary_island_id:4,
+        secondary_island_ids:[2],
+        strand_id:1,
+        is_correct:isCorrect,
+        supportLevel:1,
+        attempts:1,
+        response_time_ms:Date.now()-state.startedAt,
+        hint_used:false,
+        failure_type:isCorrect?null:'Sound',
+        letter_position:isCorrect?null:'isolation',
+        task_type:isCorrect?null:'auditory_discrimination'
+      };
+      if(window.AvneiEventLogger&&typeof window.AvneiEventLogger.logActivityResult==='function'){
+        try{window.AvneiEventLogger.logActivityResult(evidence)}catch(err){storeFallback(evidence)}
+      }else{storeFallback(evidence)}
+      try{window.dispatchEvent(new CustomEvent('avnei:echo-cave-evidence',{detail:evidence}))}catch(_){}
+    }
+    function storeFallback(evidence){
+      try{
+        var key='avnei-echo-cave-evidence';var list=JSON.parse(localStorage.getItem(key)||'[]');
+        list.push(Object.assign({timestamp:Date.now()},evidence));localStorage.setItem(key,JSON.stringify(list));
+      }catch(_){}
+    }
+    function enterCave(index){
+      if(state.locked||!state.ready||index<0)return;
+      state.locked=true;state.attempts++;
+      caves.forEach(function(c){c.classList.remove('drop-ready')});
+      var item=ROUNDS[state.round],choice=state.layout[index],correct=choice.key===item.target.key;
+      recordFirstEntrance(index,correct);
+      caves[index].classList.add('entered');
+      var r=caves[index].getBoundingClientRect(),p=playfield.getBoundingClientRect();
+      setNoniPosition((r.left+r.width*.5-p.left)/p.width*100,(r.top+r.height*.57-p.top)/p.height*100);
+      noniImg.src=correct?'assets/noni-happy.png':'assets/noni-surprised.png';
+      if(correct){
+        showToast('מְעֻלֶּה — הַהֵד מַתְאִים');live.textContent='מְעֻלֶּה. הַהֵד מַתְאִים.';
+        setTimeout(nextRound,1450);
+      }else{
+        caves[index].classList.add('wrong');showToast('נַאֲזִין שׁוּב, בְּלִי לְמַהֵר');live.textContent='הַהֵד אֵינוֹ מַתְאִים. נַאֲזִין שׁוּב, וְנַסּוּ.';
+        setTimeout(function(){
+          caves[index].classList.remove('entered','wrong','sounding');setNoniPosition(HOME.x,HOME.y);noni.classList.add('returning');noniImg.src='assets/noni-swim.png';
+          /* מוטוריקה/מדידה סלחנית: הראיה כבר נקבעה (measurementCommitted) — תיקון אינו ראיה חדשה.
+             לכן לא נועלים מחדש; נוני נשארת גרירה, וּמַשְׁמִיעִים שׁוּב אֶת הַיַּעַד כְּרֶמֶז. */
+          state.locked=false;state.ready=true;
+          noni.classList.remove('locked');noni.setAttribute('aria-disabled','false');
+          mission.classList.add('ready');missionText.textContent='הַקְשִׁיבוּ שׁוּב, וְהָזִיזוּ אֶת נוּנִי אֶל הַהֵד הַמַּתְאִים';
+          playTarget();setTimeout(function(){noni.classList.remove('returning')},750);
+        },1250);
+      }
+    }
+    function showToast(text){toast.textContent=text;toast.classList.add('show');setTimeout(function(){toast.classList.remove('show')},1250)}
+    function shufflePair(item){return Math.random()<.5?[item.target,item.distractor]:[item.distractor,item.target]}
+    function updateProgress(){
+      var root=$('#progress');root.innerHTML='';ROUNDS.forEach(function(_,i){var dot=document.createElement('span');dot.className='progress-dot '+(i<state.round?'done':i===state.round?'current':'');dot.setAttribute('aria-hidden','true');root.appendChild(dot)});
+      root.setAttribute('aria-label','סְבָב '+Math.min(state.round+1,ROUNDS.length)+' מִתּוֹךְ '+ROUNDS.length);
+    }
+    function setTheme(){THEMES.forEach(function(t){stage.classList.remove(t)});stage.classList.add(THEMES[state.round%THEMES.length])}
+    function prepareRound(){
+      stopAudio();state.layout=shufflePair(ROUNDS[state.round]);state.heard=[false,false];state.targetHeard=false;state.ready=false;state.locked=false;state.dragging=false;state.measurementCommitted=false;state.attempts=0;state.startedAt=Date.now();
+      caves.forEach(function(c){c.classList.remove('heard','sounding','drop-ready','entered','wrong')});
+      setNoniPosition(HOME.x,HOME.y,true);noni.classList.add('locked');noni.setAttribute('aria-disabled','true');noniImg.src='assets/noni-idle.png';
+      mission.classList.remove('ready');missionText.textContent='הַקְשִׁיבוּ לַצְּלִיל, וְאַחַר כָּךְ לִשְׁנֵי הַהֵדִים';
+      updateProgress();setTheme();
+      ROUNDS[state.round].target.audio&&getAudio(ROUNDS[state.round].target.audio);
+      state.layout.forEach(function(x){getAudio(x.audio)});
+      setTimeout(startRoundAudio,420);
+    }
+    function nextRound(){
+      state.round++;
+      if(state.round>=ROUNDS.length){finishGame();return}
+      transition.classList.add('show');transition.innerHTML='<div class="sonar"></div>';
+      setTimeout(function(){prepareRound()},430);setTimeout(function(){transition.classList.remove('show')},920);
+    }
+    function finishGame(){
+      stopAudio();state.locked=true;updateProgress();noniImg.src='assets/noni-happy.png';transition.classList.add('show');transition.innerHTML='<div class="sonar"></div>';
+      setTimeout(function(){transition.classList.remove('show');$('#complete').classList.remove('hidden');$('#again').focus();try{var done=getAudio('stage-done.mp3');done.volume=.9;done.currentTime=0;done.play().catch(function(){})}catch(_){}},800);
+    }
+    function resetGame(){
+      $('#complete').classList.add('hidden');state.round=0;prepareRound();
+    }
+    /* ---- הנחיה קולית (נוני) + הדגמה לתלמיד ---- */
+    function playNarration(cb){
+      var done=false;function fin(){if(done)return;done=true;if(cb)cb()}
+      var a=getAudio(NARRATION);stopAudio();a.volume=1;a.currentTime=0;state.audio=a;
+      a.onended=fin;a.onerror=fin;
+      try{var p=a.play();if(p&&p.catch)p.catch(fin)}catch(_){fin()}
+      state.echoTimers.push(setTimeout(fin,3500)); /* גיבוי אם הקובץ חסר/לא-מסתיים */
+    }
+    function showCaption(t){var c=$('#demoCaption');c.textContent=t;c.classList.add('show')}
+    function hideCaption(){$('#demoCaption').classList.remove('show')}
+
+    /* הדגמה חד-פעמית: נוני-רפאים משחקת את הסבב הראשון מול עיני הילד */
+    function runDemo(done){
+      state.demoActive=true;state.locked=true;state.round=0;
+      state.layout=shufflePair(ROUNDS[0]);updateProgress();setTheme();
+      state.layout.forEach(function(x){getAudio(x.audio)});
+      var correctIdx=state.layout[0].key===ROUNDS[0].target.key?0:1;
+      var ghost=$('#demoNoni');setNoniPosition(HOME.x,HOME.y,true);
+      caves.forEach(function(c){c.classList.remove('heard','sounding','drop-ready','entered','wrong')});
+      ghost.style.left=HOME.x+'%';ghost.style.top=HOME.y+'%';ghost.classList.add('show');
+      mission.classList.remove('ready');missionText.textContent='רְאוּ אֵיךְ מְשַׂחֲקִים';
+      showCaption('רְאוּ אֵיךְ מְשַׂחֲקִים 👀');
+      playNarration(function(){
+        playClip(ROUNDS[0].target.audio,1);
+        state.echoTimers.push(setTimeout(function(){soundCave(0,function(){soundCave(1,glide)})},1150));
+      });
+      function soundCave(i,after){
+        var c=caves[i];c.classList.remove('sounding');void c.offsetWidth;c.classList.add('sounding','heard');
+        playClip(state.layout[i].audio,.96);
+        state.echoTimers.push(setTimeout(function(){c.classList.remove('sounding');after()},1250));
+      }
+      function glide(){
+        showCaption('נוּנִי נִכְנֶסֶת לַמְּעָרָה שֶׁהַהֵד שֶׁלָּהּ מַתְאִים לַצְּלִיל');
+        var r=caves[correctIdx].getBoundingClientRect(),p=playfield.getBoundingClientRect();
+        ghost.style.left=((r.left+r.width*.5-p.left)/p.width*100)+'%';
+        ghost.style.top=((r.top+r.height*.5-p.top)/p.height*100)+'%';
+        state.echoTimers.push(setTimeout(function(){
+          caves[correctIdx].classList.remove('sounding');void caves[correctIdx].offsetWidth;caves[correctIdx].classList.add('entered');
+          showToast('כָּךְ מַתְאִימִים אֶת הַהֵד');
+          state.echoTimers.push(setTimeout(finish,1350));
+        },1100));
+      }
+      function finish(){
+        ghost.classList.remove('show');
+        caves.forEach(function(c){c.classList.remove('heard','sounding','entered')});
+        showCaption('עַכְשָׁו תּוֹרְכֶם! 🫧');
+        state.echoTimers.push(setTimeout(function(){
+          hideCaption();ghost.style.left=HOME.x+'%';ghost.style.top=HOME.y+'%';
+          state.demoActive=false;state.demoDone=true;if(done)done();
+        },1500));
+      }
+    }
+
+    function startRoundAudio(){
+      if(state.demoActive)return;
+      if(NARRATE_EACH_ROUND&&state.round>=1){playNarration(function(){state.echoTimers.push(setTimeout(playTarget,220))})}
+      else playTarget();
+    }
+
+    function beginGame(){
+      ROUNDS.forEach(function(r){getAudio(r.target.audio);getAudio(r.distractor.audio)});
+      getAudio(NARRATION);
+      $('#intro').classList.add('hidden');
+      runDemo(function(){prepareRound()});
+    }
+
+    noni.addEventListener('pointerdown',function(e){
+      if(state.locked||!state.ready)return;
+      e.preventDefault();state.dragging=true;state.pointerId=e.pointerId;state.startX=state.x;state.startY=state.y;noni.classList.add('dragging');noniImg.src='assets/noni-swim.png';
+      try{noni.setPointerCapture(e.pointerId)}catch(_){}
+    });
+    noni.addEventListener('pointermove',function(e){
+      if(!state.dragging||e.pointerId!==state.pointerId)return;e.preventDefault();var p=localPoint(e);setNoniPosition(p.x,p.y,true);setDropHighlight(e.clientX,e.clientY);
+    });
+    function endDrag(e){
+      if(!state.dragging||e.pointerId!==state.pointerId)return;e.preventDefault();state.dragging=false;state.pointerId=null;noni.classList.remove('dragging');
+      var hit=caveAtPoint(e.clientX,e.clientY);caves.forEach(function(c){c.classList.remove('drop-ready')});
+      if(hit>=0)enterCave(hit);else{setNoniPosition(HOME.x,HOME.y);noniImg.src='assets/noni-swim.png'}
+    }
+    noni.addEventListener('pointerup',endDrag);noni.addEventListener('pointercancel',endDrag);
+    noni.addEventListener('keydown',function(e){
+      if(state.locked||!state.ready)return;var step=e.shiftKey?8:4;var handled=true;
+      if(e.key==='ArrowLeft')setNoniPosition(state.x-step,state.y);else if(e.key==='ArrowRight')setNoniPosition(state.x+step,state.y);else if(e.key==='ArrowUp')setNoniPosition(state.x,state.y-step);else if(e.key==='ArrowDown')setNoniPosition(state.x,state.y+step);else if(e.key==='Enter'||e.key===' '){var nr=noni.getBoundingClientRect();enterCave(caveAtPoint(nr.left+nr.width/2,nr.top+nr.height/2))}else handled=false;
+      if(handled)e.preventDefault();
+    });
+    caves.forEach(function(c,i){c.addEventListener('click',function(){playEcho(i)})});
+    replay.addEventListener('click',playTarget);replay.addEventListener('animationend',function(){replay.classList.remove('playing')});
+    $('#start').addEventListener('click',beginGame);$('#again').addEventListener('click',resetGame);
+    window.addEventListener('resize',function(){if(!state.dragging&&state.round<ROUNDS.length)setNoniPosition(state.x,state.y,true)});
+
+    (function buildMotes(){
+      var root=$('#motes');for(var i=0;i<20;i++){var m=document.createElement('i');m.className='mote';m.style.left=(3+Math.random()*94)+'%';m.style.setProperty('--size',(3+Math.random()*8)+'px');m.style.setProperty('--duration',(7+Math.random()*10)+'s');m.style.setProperty('--delay',(-Math.random()*14)+'s');m.style.setProperty('--drift',(-40+Math.random()*80)+'px');root.appendChild(m)}
+    })();
+    updateProgress();
+  })();
+  </script>
+</body>
+</html>
