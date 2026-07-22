@@ -2,10 +2,14 @@
 // templates/mechanic-word-build.js — Standalone Word-Build mechanic (אי 5)
 // סוכן 30 · 30.5.2026
 //
-// מצב exploration pure: ילדה בוחרת CV pairs (מ-vowel-adapter) ובונה מילה.
-// אחרי כל בחירה — השמע. אין correct/wrong, אין logger — חופש לחקור.
+// שני מצבים:
+//   • mount() — exploration pure: ילדה בוחרת CV pairs ובונה מילה חופשית.
+//     אין correct/wrong, אין logger — חופש לחקור (נשאר לא-מדיד במכוון).
+//   • mountTarget() — מצב מטרה: מילה גלויה, מקישים על חלקיה לפי הסדר. יש
+//     correct/wrong → מתעד ל-event-logger (island 5 · strand 1) בכל הקשה,
+//     כדי שהמורה תראה את ההתקדמות בדשבורד (22.7.2026).
 //
-// משמש את stage-5-word-build.html (CTA משני). תבנית: mechanic-cv-build של
+// משמש את stage-5-word-build.html (mountTarget). תבנית: mechanic-cv-build של
 // אי 4 — אבל עם word-level build instead of CV-level.
 //
 // פדגוגי: ילדה לומדת לבנות מילים מתוך CV pairs שהיא כבר מכירה (מאי 4).
@@ -118,6 +122,46 @@
     const distractorCount = (opts.distractors == null) ? 2 : opts.distractors;
     const poolLetters = (opts && opts.letters) || ['מ', 'ב', 'ר', 'ק', 'ת'];
     const poolVowels = (opts && opts.vowels) || ['patach', 'kamatz', 'hiriq'];
+    // אי 5 = סטרנד 1 (פונולוגיה/דקודינג). ניתן override דרך opts.islandId (דפוס
+    // mechanic-word-spell). מתעד ל-BKT פר-אי + strand 1 per_letter — מה שהמורה קוראת.
+    const islandId = (typeof opts.islandId === 'number') ? opts.islandId : 5;
+
+    // תיעוד פר-הקשה (דפוס mechanic-word-spell.handleTap): כל הקשה על אריח היא
+    // ראיה — נכונה (החלק הבא) או שגויה (מסיח/חלק לא-בסדר). target_letter חובה
+    // אחרת event-logger.ingestEvent מדלג (מפתח-יחידה ריק). exploration pure לא מתעד.
+    const VA_LOG = getVA();
+    function phonemeGroupOf(vid) {
+      return (VA_LOG && VA_LOG.getPhonemeGroup) ? VA_LOG.getPhonemeGroup(vid) : null;
+    }
+    let partAttempts = 0;
+    let partStartTime = Date.now();
+    // אי 5 = sub-BKT פר אורך-מילה (2cv/3cv/4cv, כמו tap-word/word-merge). כל חלקי
+    // המילה חולקים את הבאקט של המילה הנוכחית = מספר חלקי-ה-CV, clamp ל-2..4.
+    function wordLengthBucket() {
+      const n = Math.max(2, Math.min(4, (parts && parts.length) || 2));
+      return n + 'cv';
+    }
+    function logPartResult(expected, isCorrect) {
+      if (!expected) return;
+      if (!window.AvneiEventLogger ||
+          typeof window.AvneiEventLogger.logActivityResult !== 'function') return;
+      try {
+        window.AvneiEventLogger.logActivityResult({
+          activity_type: 'word-build',
+          activity_variant: 'target',
+          target_word: words[wordIdx],
+          target_letter: expected.letter,
+          target_phoneme_group: phonemeGroupOf(expected.vowelId),
+          target_word_length: wordLengthBucket(),
+          item_id: 'wb-' + (wordIdx + 1) + '-part-' + (nextIdx + 1),
+          supportLevel: 1,
+          is_correct: isCorrect,
+          attempts: partAttempts + 1,
+          response_time_ms: isCorrect ? (Date.now() - partStartTime) : null,
+          primary_island_id: islandId,
+        });
+      } catch (e) { /* swallow — תיעוד לא יפיל את המשחקון */ }
+    }
 
     root.innerHTML = '';
     root.classList.add('mechanic-word-build');
@@ -177,10 +221,19 @@
       // הסחות — צירופים שאינם חלק מהמילה. השוואה ב-NFC: סדר סימני הניקוד
       // (דגש/תנועה) משתנה בין מקורות ושתי מחרוזות זהות-מראה לא ישתוו בלעדיו.
       const used = {};
-      parts.forEach(function (p) { used[nfc(p.display)] = true; });
+      // חתימת אות+קבוצת-צליל: אסור מסיח שנשמע זהה לחלק במילה (בָּ מול בַּ) —
+      // פתח וקמץ = אותו צליל (מיטל 8.7.2026).
+      const VA = getVA();
+      function grp(vid) { return (VA && VA.getPhonemeGroup) ? VA.getPhonemeGroup(vid) : vid; }
+      const partSig = {};
+      parts.forEach(function (p) {
+        used[nfc(p.display)] = true;
+        partSig[p.letter + '|' + (grp(p.vowelId) || '')] = true;
+      });
       const candidates = [];
       poolLetters.forEach(function (L) {
         poolVowels.forEach(function (vid) {
+          if (partSig[L + '|' + (grp(vid) || '')]) return; // אחות-צליל של חלק במילה
           const cv = buildCVForTile(L, vid);
           if (!used[nfc(cv)]) candidates.push({ display: cv, letter: L, vowelId: vid, orderIdx: -1 });
         });
@@ -199,14 +252,19 @@
         btn.addEventListener('click', function () {
           if (done || btn.disabled) return;
           const expected = parts[nextIdx];
-          if (expected && nfc(t.display) === nfc(expected.display)) {
+          const isCorrect = !!(expected && nfc(t.display) === nfc(expected.display));
+          logPartResult(expected, isCorrect);
+          if (isCorrect) {
             btn.disabled = true;
             btn.classList.add('used');
             nextIdx++;
+            partAttempts = 0;
+            partStartTime = Date.now();
             renderBuild();
             if (expected.vowelId) playCV(expected.letter, expected.vowelId);
             if (nextIdx >= parts.length) wordComplete();
           } else {
+            partAttempts++;
             btn.classList.remove('shake');
             void btn.offsetWidth;
             btn.classList.add('shake');
@@ -246,6 +304,8 @@
     function startWord() {
       parts = parseWordToParts(words[wordIdx]);
       nextIdx = 0;
+      partAttempts = 0;
+      partStartTime = Date.now();
       targetEl.textContent = words[wordIdx];
       progressEl.textContent = 'מִלָּה ' + (wordIdx + 1) + ' מִתּוֹךְ ' + words.length;
       renderBuild();
