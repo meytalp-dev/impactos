@@ -87,7 +87,7 @@
     .stone-slot.filled { color:#fff; border-style:solid; border-color:#eadcff; background:radial-gradient(circle at 35% 24%,#d8c3ff,#8b55ed 48%,#412078 100%); box-shadow:0 0 24px rgba(171,117,255,.85),inset 0 3px 7px rgba(255,255,255,.65); animation:stoneLand .8s cubic-bezier(.17,.89,.32,1.5); }
     @keyframes stoneLand { 0%{transform:scale(.1) rotate(-25deg);filter:brightness(3)} 65%{transform:scale(1.22) rotate(5deg)} 100%{transform:scale(1)} }
 
-    .instruction { position:absolute; z-index:26; top:max(91px,calc(env(safe-area-inset-top) + 82px)); left:50%; transform:translateX(-50%); min-height:56px; max-width:min(630px,calc(100vw - 150px)); padding:11px 25px; display:flex; align-items:center; justify-content:center; text-align:center; border-radius:22px; font-size:clamp(17px,2.5vw,23px); line-height:1.25; font-weight:800; color:#15243d; background:linear-gradient(180deg,rgba(255,255,255,.97),rgba(226,246,255,.93)); box-shadow:0 10px 30px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.6); pointer-events:none; }
+    .instruction { position:absolute; z-index:26; top:max(91px,calc(env(safe-area-inset-top) + 82px)); left:50%; transform:translateX(-50%); min-height:56px; max-width:min(630px,calc(100vw - 150px)); padding:11px 25px; display:flex; align-items:center; justify-content:center; gap:.32em; flex-wrap:wrap; text-align:center; border-radius:22px; font-size:clamp(17px,2.5vw,23px); line-height:1.25; font-weight:800; color:#15243d; background:linear-gradient(180deg,rgba(255,255,255,.97),rgba(226,246,255,.93)); box-shadow:0 10px 30px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.6); pointer-events:none; }
     .instruction b { color:#6534b5; font-size:1.2em; }
 
     .playfield { position:absolute; z-index:5; top:154px; right:0; bottom:0; left:0; }
@@ -172,6 +172,12 @@
     @keyframes wordPop { 0%{opacity:0;scale:.45} 18%{opacity:1;scale:1.12} 35%{scale:1} 75%{opacity:1;translate:0 -15px} 100%{opacity:0;translate:0 -50px;scale:.85} }
     .toast { position:absolute; z-index:42; left:50%; bottom:24px; transform:translateX(-50%) translateY(120px); opacity:0; min-height:56px; padding:12px 22px; border-radius:20px; display:flex; align-items:center; justify-content:center; text-align:center; color:#173047; background:rgba(244,252,255,.96); box-shadow:0 10px 30px rgba(0,0,0,.4); font-size:18px; font-weight:800; transition:.35s cubic-bezier(.2,.9,.3,1.2); pointer-events:none; }
     .toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+
+    /* יד־הדגמה: מראה לתלמיד איך גוררים את חבל הבועות אל התמונה (פעם אחת, בכניסה) */
+    .demo-hand { position:absolute; z-index:23; left:0; top:0; font-size:34px; line-height:1; transform:translate(-50%,-46%); opacity:0; visibility:hidden; pointer-events:none; filter:drop-shadow(0 5px 8px rgba(0,0,0,.55)); transition:opacity .3s; will-change:left,top; }
+    .demo-hand.show { opacity:1; visibility:visible; }
+    .demo-hand::after { content:""; position:absolute; left:50%; top:44%; width:46px; height:46px; transform:translate(-50%,-50%); border-radius:50%; border:3px solid rgba(157,238,255,.9); box-shadow:0 0 16px rgba(120,231,255,.7); animation:demoRing 1.15s ease-out infinite; }
+    @keyframes demoRing { 0%{transform:translate(-50%,-50%) scale(.45);opacity:.95} 100%{transform:translate(-50%,-50%) scale(1.65);opacity:0} }
 
     /* מפת המסע חיה בתחתית המסך ומתקדמת עם כל איסוף */
     .journey-track { position:absolute; z-index:29; left:50%; bottom:max(10px,env(safe-area-inset-bottom)); transform:translateX(-50%); width:min(590px,calc(100vw - 238px)); min-height:72px; display:flex; align-items:center; justify-content:space-between; padding:8px 15px; border:1px solid rgba(192,239,255,.42); border-radius:25px; background:linear-gradient(180deg,rgba(5,29,44,.88),rgba(3,17,29,.93)); box-shadow:0 13px 32px rgba(0,0,0,.5),inset 0 1px rgba(255,255,255,.13); backdrop-filter:blur(9px); pointer-events:none; direction:rtl; }
@@ -273,7 +279,7 @@
       </div>
     </header>
 
-    <div class="instruction" id="instruction" aria-live="polite">גִּרְרוּ אֶת קְצֵה חֶבֶל הַבּוּעוֹת אֶל תְּמוּנָה שֶׁמַּתְחִילָה בַּצְּלִיל <b>לְלְלְ</b></div>
+    <div class="instruction" id="instruction" aria-live="polite">מִצְאוּ תְּמוּנוֹת שֶׁמַּתְחִילוֹת בָּאוֹת <b>ל</b></div>
 
     <section class="playfield" id="playfield" aria-label="אֵזוֹר הַמִּשְׂחָק">
       <div class="rock-wall" id="rockWall" data-cracks="0" style="--crack-level:0;--crack-glow:0" aria-hidden="true">
@@ -294,6 +300,7 @@
       </div>
       <div class="noni-wrap" id="noniWrap"><img class="noni" id="noni" src="assets/noni-idle.png" alt="נוֹנִי"></div>
       <canvas id="rope" aria-label="גִּרְרוּ אֶת קְצֵה חֶבֶל הַבּוּעוֹת אֶל תְּמוּנָה וְשַׁחְרְרוּ"></canvas>
+      <div class="demo-hand" id="demoHand" aria-hidden="true">👆</div>
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
     </section>
 
@@ -318,7 +325,7 @@
     <div class="panel">
       <img class="intro-noni" src="assets/noni-thinking.png" alt="נוֹנִי">
       <h1>מְעָרַת הָאוֹת הָאֲבוּדָה</h1>
-      <p>שָׁלוֹשׁ אַבְנֵי־אוֹת מִסְתַּתְּרוֹת בַּמְּעָרָה. גִּרְרוּ אֶת קְצֵה חֶבֶל הַבּוּעוֹת אֶל תְּמוּנָה וְשַׁחְרְרוּ. אִסְפוּ רַק מִלִּים שֶׁמַּתְחִילוֹת בַּצְּלִיל שֶׁל הַחֶדֶר.</p>
+      <p>שָׁלוֹשׁ אַבְנֵי־אוֹת מִסְתַּתְּרוֹת בַּמְּעָרָה. גִּרְרוּ אֶת קְצֵה חֶבֶל הַבּוּעוֹת אֶל תְּמוּנָה וְשַׁחְרְרוּ. אִסְפוּ רַק תְּמוּנוֹת שֶׁמַּתְחִילוֹת בַּצְּלִיל שֶׁל הַחֶדֶר.</p>
       <button class="primary" id="start" type="button">בּוֹאוּ נֵצֵא לַמַּסָּע</button>
     </div>
   </div>
@@ -338,9 +345,9 @@
   (function(){
     'use strict';
     var ROOMS=[
-      {letter:'ל',sound:'לְלְלְ',find:'find-words-lamed',phoneme:'phoneme-lll',words:[['❤️','לֵב'],['🍋','לִימוֹן'],['🍞','לֶחֶם'],['📋','לוּחַ']]},
-      {letter:'נ',sound:'נְנְנְ',find:'find-words-nun',phoneme:'phoneme-nnn',words:[['🕯️','נֵר'],['🐍','נָחָשׁ'],['🐆','נָמֵר'],['👟','נַעַל']]},
-      {letter:'ר',sound:'רְרְרְ',find:'find-words-resh',phoneme:'phoneme-rrr',words:[['🚂','רַכֶּבֶת'],['🦵','רֶגֶל'],['🚦','רַמְזוֹר'],['🌪️','רוּחַ']]}
+      {letter:'ל',name:'לָמֶד',sound:'לְלְלְ',find:'find-words-lamed',phoneme:'phoneme-lll',words:[['❤️','לֵב'],['🍋','לִימוֹן'],['🍞','לֶחֶם'],['📋','לוּחַ']]},
+      {letter:'נ',name:'נוּן',sound:'נְנְנְ',find:'find-words-nun',phoneme:'phoneme-nnn',words:[['🕯️','נֵר'],['🐍','נָחָשׁ'],['🐆','נָמֵר'],['👟','נַעַל']]},
+      {letter:'ר',name:'רֵישׁ',sound:'רְרְרְ',find:'find-words-resh',phoneme:'phoneme-rrr',words:[['🚂','רַכֶּבֶת'],['🦵','רֶגֶל'],['🚦','רַמְזוֹר'],['🌪️','רוּחַ']]}
     ];
     var EXTRA=[['🐟','דָּג'],['⚽','כַּדּוּר'],['🌳','עֵץ'],['🍊','תַּפּוּז'],['🏠','בַּיִת'],['🐻','דֹּב']];
     var POSITIONS=[{x:25,y:24},{x:72,y:22},{x:18,y:59},{x:79,y:60},{x:42,y:69},{x:57,y:43}];
@@ -352,6 +359,8 @@
     var stage=$('#stage'),field=$('#playfield'),canvas=$('#rope'),ctx=canvas.getContext('2d'),noni=$('#noni'),noniWrap=$('#noniWrap'),rockWall=$('#rockWall'),rockLetter=$('#rockLetter'),guardian=$('#stoneGuardian'),guardianThought=$('#guardianMessage'),guardianLock=$('#guardianLock');
     var state={room:0,found:0,needed:3,locked:true,drag:false,hover:null,items:[],wrong:0,hintTimer:0,tip:{x:0,y:0},nodes:[],time:0};
     var dpr=1,raf=0,last=0;
+    var demoTimer=0,demoShown=false,demoActive=false,demoRAF=0,demoRestore=null;
+    var AUTO=new URLSearchParams(location.search).get('auto')==='1';
 
     function makeMotes(){var box=$('#ambient');for(var i=0;i<30;i++){var m=document.createElement('i');m.className='mote';m.style.left=Math.random()*100+'%';m.style.top=Math.random()*100+'%';m.style.setProperty('--dur',(9+Math.random()*13)+'s');m.style.setProperty('--delay',(-Math.random()*20)+'s');m.style.setProperty('--drift',(-35+Math.random()*70)+'px');box.appendChild(m)}}
     function resize(){var r=field.getBoundingClientRect();dpr=Math.min(2,Math.max(1,window.devicePixelRatio||1));canvas.width=Math.round(r.width*dpr);canvas.height=Math.round(r.height*dpr);canvas.style.width=r.width+'px';canvas.style.height=r.height+'px';ctx.setTransform(dpr,0,0,dpr,0,0);resetRope(false)}
@@ -396,17 +405,61 @@
       setTimeout(function(){guardian.classList.remove('react','happy','startled')},850);
     }
     function chooseData(){var room=ROOMS[state.room],targets=shuffle(room.words).slice(0,3).map(function(x){return{icon:x[0],word:x[1],target:true}}),others=[];ROOMS.forEach(function(r,i){if(i!==state.room)others=others.concat(r.words)});others=shuffle(others.concat(EXTRA)).slice(0,3).map(function(x){return{icon:x[0],word:x[1],target:false}});return shuffle(targets.concat(others))}
-    function buildRoom(){clearTimeout(state.hintTimer);clearItems();state.found=0;state.wrong=0;state.locked=false;state.drag=false;var room=ROOMS[state.room];$('#roomLetter').textContent=room.letter;$('#roomCount').textContent='חֶדֶר '+(state.room+1)+' מִתּוֹךְ '+ROOMS.length;$('#instruction').innerHTML=(state.room===2?'עִזְרוּ לְנוֹנִי לִפְתֹּחַ אֶת שַׁעַר הַשּׁוֹמֵר — ':'')+'גִּרְרוּ אֶת קְצֵה חֶבֶל הַבּוּעוֹת אֶל תְּמוּנָה שֶׁמַּתְחִילָה בַּצְּלִיל <b>'+room.sound+'</b>';rockLetter.textContent=room.letter;guardianLock.textContent=room.letter;guardian.classList.remove('awake','happy','startled','react');updateCaveProgress(0);updateJourney(state.room);setScene(state.room);setNoni('idle');
-      var data=chooseData(),pos=shuffle(POSITIONS);data.forEach(function(d,i){var el=document.createElement('div');el.className='choice';el.textContent=d.icon;el.setAttribute('role','img');el.setAttribute('aria-label',d.word);el.style.left=pos[i].x+'%';el.style.top=pos[i].y+'%';el.style.setProperty('--float',(3.1+(i%3)*.42)+'s');el.style.setProperty('--delay',(-i*.37)+'s');field.insertBefore(el,canvas);state.items.push({el:el,word:d.word,target:d.target,done:false})});resetRope(true);setTimeout(function(){play(room.find)},420);scheduleHint()}
+    function buildRoom(){clearTimeout(state.hintTimer);clearItems();state.found=0;state.wrong=0;state.locked=false;state.drag=false;var room=ROOMS[state.room];$('#roomLetter').textContent=room.letter;$('#roomCount').textContent='חֶדֶר '+(state.room+1)+' מִתּוֹךְ '+ROOMS.length;$('#instruction').innerHTML=(state.room===2?'עִזְרוּ לְנוֹנִי לִפְתֹּחַ אֶת שַׁעַר הַשּׁוֹמֵר — ':'')+'מִצְאוּ תְּמוּנוֹת שֶׁמַּתְחִילוֹת בָּאוֹת <b>'+room.letter+'</b>';rockLetter.textContent=room.letter;guardianLock.textContent=room.letter;guardian.classList.remove('awake','happy','startled','react');updateCaveProgress(0);updateJourney(state.room);setScene(state.room);setNoni('idle');
+      var data=chooseData(),pos=shuffle(POSITIONS);data.forEach(function(d,i){var el=document.createElement('div');el.className='choice';el.textContent=d.icon;el.setAttribute('role','img');el.setAttribute('aria-label',d.word);el.style.left=pos[i].x+'%';el.style.top=pos[i].y+'%';el.style.setProperty('--float',(3.1+(i%3)*.42)+'s');el.style.setProperty('--delay',(-i*.37)+'s');field.insertBefore(el,canvas);state.items.push({el:el,word:d.word,target:d.target,done:false})});resetRope(true);setTimeout(function(){play(room.find)},420);scheduleHint();
+      if(state.room===0&&!demoShown&&!AUTO){clearTimeout(demoTimer);demoTimer=setTimeout(runDemo,2600);}}
     function setNoni(pose){noni.src='assets/noni-'+pose+'.png'}
     function scheduleHint(){clearTimeout(state.hintTimer);state.hintTimer=setTimeout(function(){if(state.locked)return;var t=state.items.find(function(x){return x.target&&!x.done});if(t){t.el.classList.add('hint');setNoni('thinking');play(ROOMS[state.room].phoneme);setTimeout(function(){t.el.classList.remove('hint');if(!state.drag)setNoni('idle')},1700)}},8500)}
+    function stopDemo(){
+      demoActive=false;if(demoRAF)cancelAnimationFrame(demoRAF);demoRAF=0;
+      state.drag=false;setHover(null);
+      $('#demoHand').classList.remove('show');
+      noniWrap.classList.remove('pull');setNoni('idle');
+      if(demoRestore!=null){$('#instruction').innerHTML=demoRestore;demoRestore=null;}
+      state.locked=false;scheduleHint();
+    }
+    function runDemo(){
+      demoTimer=0;
+      var tItem=state.items.find(function(x){return x.target&&!x.done});
+      if(!tItem||state.found>0){demoShown=true;return;}
+      demoShown=true;demoActive=true;state.locked=true;clearTimeout(state.hintTimer);
+      demoRestore=$('#instruction').innerHTML;
+      $('#instruction').innerHTML='כָּכָה מְשַׂחֲקִים — גִּרְרוּ אֶת הַבּוּעוֹת אֶל הַתְּמוּנָה 👆';
+      var hand=$('#demoHand');hand.classList.add('show');
+      play('demo-drag');setNoni('thinking');noniWrap.classList.add('pull');
+      state.drag=true;
+      function A(){return anchor();}
+      function T(){var r=tItem.el.getBoundingClientRect(),f=field.getBoundingClientRect();return{x:r.left-f.left+r.width/2,y:r.top-f.top+r.height/2};}
+      // מסלול: נוני→תמונה (החזק), חזרה, שוב→תמונה (החזק), חזרה — הדגמה כפולה
+      var legs=[['T',1300,850],['A',800,350],['T',1200,850],['A',750,150]];
+      var idx=0,t0=null,from=A(),holding=false,holdEnd=0;
+      function ease(k){return k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;}
+      state.tip={x:from.x,y:from.y};hand.style.left=from.x+'px';hand.style.top=from.y+'px';
+      function frame(ts){
+        if(!demoActive)return;
+        var leg=legs[idx],to=leg[0]==='T'?T():A();
+        if(t0==null)t0=ts;
+        if(!holding){
+          var k=Math.min(1,(ts-t0)/leg[1]),e=ease(k);
+          state.tip={x:from.x+(to.x-from.x)*e,y:from.y+(to.y-from.y)*e};
+          hand.style.left=state.tip.x+'px';hand.style.top=state.tip.y+'px';
+          setHover(hit(state.tip));
+          if(k>=1){holding=true;holdEnd=ts+leg[2];}
+        }else if(ts>=holdEnd){
+          from=to;idx++;t0=null;holding=false;
+          if(idx>=legs.length){stopDemo();return;}
+        }
+        demoRAF=requestAnimationFrame(frame);
+      }
+      demoRAF=requestAnimationFrame(frame);
+    }
     function popWord(it){var r=it.el.getBoundingClientRect(),p=document.createElement('div');p.className='word-pop';p.textContent=it.word;p.style.left=(r.left+r.width/2)+'px';p.style.top=(r.top+r.height/2)+'px';document.body.appendChild(p);setTimeout(function(){p.remove()},1300)}
     function toast(text){var t=$('#toast');t.textContent=text;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1250)}
     function evaluate(it){if(state.locked||!it)return;clearTimeout(state.hintTimer);if(it.target){it.done=true;it.el.classList.remove('aimed','hint');it.el.classList.add('rescued');popWord(it);setNoni('happy');play(state.found%2?'praise-mealeh':'praise-metzuyan');state.found++;updateCaveProgress(state.found);guardianReaction('✨',true);var a=anchor(),r=it.el.getBoundingClientRect(),f=field.getBoundingClientRect();it.el.style.setProperty('--noni-x',(a.x-(r.left-f.left))+'px');it.el.style.setProperty('--noni-y',(a.y-(r.top-f.top))+'px');setTimeout(function(){it.el.classList.add('collecting')},180);setTimeout(function(){it.el.style.visibility='hidden'},860);if(state.found>=state.needed){state.locked=true;setTimeout(revealStone,1050)}else{setTimeout(function(){setNoni('idle')},720);scheduleHint()}}else{state.wrong++;it.el.classList.remove('aimed');it.el.classList.add('wrong','shrink-back');setNoni('surprised');guardianReaction('?',false);toast('כִּמְעַט! הַקְשִׁיבוּ לַצְּלִיל וְנַסּוּ שׁוּב.');setTimeout(function(){it.el.classList.remove('wrong','shrink-back');setNoni('idle')},680);if(state.wrong%2===0)setTimeout(function(){play(ROOMS[state.room].phoneme)},260);scheduleHint()}}
     function swimToNextRoom(){var swim=$('#swimTransition');$('#swimCopy').textContent=state.room===1?'שׂוֹחִים אֶל אֲגַם הַבּוּעוֹת...':'מַמְשִׁיכִים אֶל שׁוֹמֵר הַמְּעָרָה...';swim.classList.remove('active');void swim.offsetWidth;swim.classList.add('active');setTimeout(buildRoom,820);setTimeout(function(){swim.classList.remove('active')},1660)}
     function revealStone(){var room=ROOMS[state.room],rev=$('#reveal');if(state.room===2){guardian.classList.add('awake');guardianThought.textContent='נִפְתָּח!';guardian.classList.add('react')}$('#revealStone').textContent=room.letter;rev.classList.remove('active');void rev.offsetWidth;rev.classList.add('active');setTimeout(function(){var slot=document.querySelector('[data-slot="'+state.room+'"]');slot.textContent=room.letter;slot.classList.add('filled')},1050);setTimeout(function(){rev.classList.remove('active');state.room++;if(state.room>=ROOMS.length){updateJourney(3);setScene(3);setNoni('happy');$('#complete').classList.remove('hidden');play('praise-metzuyan')}else swimToNextRoom()},2450)}
 
-    canvas.addEventListener('pointerdown',function(e){if(state.locked)return;state.drag=true;state.wrong=Math.max(0,state.wrong);canvas.classList.add('dragging');noniWrap.classList.add('pull');setNoni('thinking');clearTimeout(state.hintTimer);var p=local(e);state.tip=p;setHover(hit(p));try{canvas.setPointerCapture(e.pointerId)}catch(_){}});
+    canvas.addEventListener('pointerdown',function(e){if(demoTimer){clearTimeout(demoTimer);demoTimer=0;demoShown=true;}if(demoActive){stopDemo();return;}if(state.locked)return;state.drag=true;state.wrong=Math.max(0,state.wrong);canvas.classList.add('dragging');noniWrap.classList.add('pull');setNoni('thinking');clearTimeout(state.hintTimer);var p=local(e);state.tip=p;setHover(hit(p));try{canvas.setPointerCapture(e.pointerId)}catch(_){}});
     canvas.addEventListener('pointermove',function(e){if(!state.drag)return;var p=local(e);state.tip=p;setHover(hit(p))});
     function end(e){if(!state.drag)return;var p=local(e),it=hit(p);state.drag=false;canvas.classList.remove('dragging');noniWrap.classList.remove('pull');setHover(null);evaluate(it);if(!it){setNoni('idle');scheduleHint()}}
     canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',end);
@@ -418,5 +471,6 @@
     if(new URLSearchParams(location.search).get('auto')==='1'){$('#intro').classList.add('hidden');state.locked=false;buildRoom()}
   })();
   </script>
+  <script src="js/shared/noni-guide.js" defer></script>
 </body>
 </html>
