@@ -879,7 +879,12 @@ const STEPS = {
   }
   try{ const sv=JSON.parse(localStorage.getItem('avnei-principal-setup')||'null'); if(sv&&sv.name){ S.school=Object.assign(S.school,sv); } }catch(e){}
 
-  if(!DEMO && sb){
+  // כניסה דרך הסנדבוקס/זרימת-הילד (התנסות מודרכת, תרגול, קוד-תלמיד) — אין להחזיר
+  // לדשבורד-מורה גם אם קיים session-מורה שמור בדפדפן. רק ביקור "קר" ב-setup.html מתחדש.
+  const sandboxIntent = params.has('noni') || params.has('sandbox')
+      || qRole==='student' || qRole==='principal' || qRole==='teacher'
+      || !!qCode || !!qScode;
+  if(!DEMO && sb && !sandboxIntent){
     try{ const u=await sb.auth.getUser(); const user=u.data&&u.data.user;
       if(user && !params.has('home')){
         const ctx=await getContext();
