@@ -137,16 +137,18 @@
   }
 
   // ---- טעינה מלאה ----
-  async function loadAll(supabase) {
+  async function loadAll(supabase, opts) {
+    // soft: נקרא דרך dual-mode הרך — לא מנווטים בכוח, רק דוחים (העוטף נשאר בדמו).
+    var soft = !!(opts && opts.soft);
     var userRes = await supabase.auth.getUser();
     var user = userRes.data && userRes.data.user;
-    if (!user) { location.replace('teacher-login.html'); throw new Error('no-session'); }
+    if (!user) { if (!soft) location.replace('teacher-login.html'); throw new Error('no-session'); }
 
     var classesRes = await supabase.from('classes')
       .select('id, name').eq('teacher_id', user.id).limit(1);
     if (classesRes.error) throw classesRes.error;
     if (!classesRes.data || !classesRes.data.length) {
-      location.replace('teacher-setup.html'); throw new Error('no-class');
+      if (!soft) location.replace('teacher-setup.html'); throw new Error('no-class');
     }
     var klass = classesRes.data[0];
 
@@ -188,12 +190,12 @@
   }
 
   // ---- API ----
-  function init() {
+  function init(opts) {
     if (_initPromise) return _initPromise;
     _initPromise = (async function () {
       if (location.protocol === 'file:') throw new Error('cloud-unavailable-file');
       var supabase = await initClient();
-      _state = await loadAll(supabase);
+      _state = await loadAll(supabase, opts);
       window.TeacherCloud._state = _state;
       document.dispatchEvent(new CustomEvent('teacher-cloud-ready', { detail: _state }));
       return _state;

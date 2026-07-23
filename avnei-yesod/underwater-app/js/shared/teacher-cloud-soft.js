@@ -28,7 +28,9 @@
   // ns = window.TeacherCloud | window.PrincipalCloud וכו'. שניהם חולקים storageKey ⇒ hasSession זהה.
   function tryWith(ns, apply, onErr) {
     if (location.protocol === 'file:' || forceDemo() || !ns || !ns.init || !hasSession()) return false;
-    ns.init().then(function (st) {
+    // soft:true — אם הסשן לא תואם לתפקיד הדף (מורה על מסך-מנהלת וכו') נשארים בדמו,
+    // בלי ניווט-בכוח לדשבורד אחר. הדפים הישנים קוראים ל-init() ישיר ועדיין מנווטים.
+    ns.init({ soft: true }).then(function (st) {
       try { apply(st); } catch (e) { console.warn('[v2-cloud] apply', e); }
     }).catch(function (e) {
       var m = (e && e.message) || '';
