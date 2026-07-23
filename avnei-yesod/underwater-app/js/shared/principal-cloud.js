@@ -52,20 +52,23 @@
   }
 
   // ---- full load: כל בית-הספר ----
-  async function loadAll(supabase) {
+  async function loadAll(supabase, opts) {
+    // soft: נקרא דרך dual-mode הרך (מסכי v2/דמו) — לא מנווטים בכוח, רק דוחים
+    // כדי שהעוטף יישאר בדמו. הדפים הישנים (init ישיר) עדיין מנווטים כשער-אמת.
+    var soft = !!(opts && opts.soft);
     var userRes = await supabase.auth.getUser();
     var user = userRes.data && userRes.data.user;
-    if (!user) { location.replace('gate.html'); throw new Error('no-session'); }
+    if (!user) { if (!soft) location.replace('gate.html'); throw new Error('no-session'); }
 
     // הקשר: תפקיד + בית-ספר
     var ctxRes = await supabase.rpc('get_my_context');
     if (ctxRes.error) throw ctxRes.error;
     var ctx = (ctxRes.data && ctxRes.data[0]) || {};
     if (ctx.role !== 'principal') {
-      location.replace(ctx.school_id ? 'teacher-home.html' : 'gate.html');
+      if (!soft) location.replace(ctx.school_id ? 'teacher-home.html' : 'gate.html');
       throw new Error('not-principal');
     }
-    if (!ctx.school_id) { location.replace('gate.html'); throw new Error('no-school'); }
+    if (!ctx.school_id) { if (!soft) location.replace('gate.html'); throw new Error('no-school'); }
     var school = { id: ctx.school_id, name: ctx.school_name, join_code: ctx.join_code };
 
     // כיתות + מורות (RLS מחזיר את כל בית-הספר בזכות policy המנהלת)
@@ -155,12 +158,12 @@
   }
 
   // ---- API ----
-  function init() {
+  function init(opts) {
     if (_initPromise) return _initPromise;
     _initPromise = (async function () {
       if (location.protocol === 'file:') throw new Error('cloud-unavailable-file');
       var supabase = await initClient();
-      _state = await loadAll(supabase);
+      _state = await loadAll(supabase, opts);
       window.PrincipalCloud._state = _state;
       document.dispatchEvent(new CustomEvent('principal-cloud-ready', { detail: _state }));
       return _state;
