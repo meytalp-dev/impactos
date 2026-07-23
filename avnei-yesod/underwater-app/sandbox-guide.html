@@ -93,7 +93,7 @@
     <div class="hat" id="hat"></div>
     <div class="bubble" id="bubble" aria-live="polite"><p id="line"></p></div>
     <img class="noni" id="noni" src="assets/noni-hero-transparent.png" alt="נוני התמנון" title="געו בי כדי להמשיך">
-    <div class="tap-hint" id="tapHint">🔊 געו בנוני כדי שתדבר ›</div>
+    <div class="tap-hint" id="tapHint">געו בי כדי להמשיך ›</div>
     <div class="ctas" id="ctas"></div>
     <div class="dots" id="dots" aria-hidden="true"></div>
   </main>
@@ -126,13 +126,12 @@
         elVoice=document.getElementById('voice'), elSound=document.getElementById('sound');
 
     var voiceOn = localStorage.getItem('noni-voice')!=='off';
-    var audioUnlocked=false;
     function paintSound(){ elSound.textContent = voiceOn?'🔊':'🔇'; }
     paintSound();
     elSound.addEventListener('click',function(){ voiceOn=!voiceOn; localStorage.setItem('noni-voice',voiceOn?'on':'off'); paintSound(); if(voiceOn) playClip(); else{ try{elVoice.pause();}catch(e){} } });
 
     document.getElementById('skipBtn').addEventListener('click',function(){
-      audioUnlocked=true; try{elVoice.pause();}catch(e){}
+      try{elVoice.pause();}catch(e){}
       go(SCRIPT.length-1); this.style.display='none';
     });
     elVoice.addEventListener('ended',function(){ elNoni.classList.remove('talking'); });
@@ -147,7 +146,7 @@
     function playClip(){ if(!voiceOn) return;
       try{ elVoice.pause(); elVoice.src=AUD+'s'+i+'.mp3?t='+Date.now(); var p=elVoice.play(); if(p&&p.catch)p.catch(function(){}); }catch(e){} }
 
-    function stopTalkIfNoAudio(){ if(!(voiceOn&&audioUnlocked)) elNoni.classList.remove('talking'); }
+    function stopTalkIfNoAudio(){ if(!voiceOn) elNoni.classList.remove('talking'); }
     function type(text){ if(typer)clearInterval(typer); typing=true; elLine.innerHTML=''; elNoni.classList.add('talking');
       if(reduce){ elLine.textContent=text; typing=false; stopTalkIfNoAudio(); renderCtas(); return; }
       var span=document.createElement('span'), caret=document.createElement('span'); caret.className='caret';
@@ -183,7 +182,6 @@
     }
 
     function advance(){ var line=SCRIPT[i];
-      if(!audioUnlocked){ audioUnlocked=true; playClip(); elTap.textContent='געו בי כדי להמשיך ›'; if(typing){ finishType(line.t); } return; }
       if(typing){ finishType(line.t); return; }
       if(line.last) return;
       if((line.ctas||[]).some(function(c){return c.next;})) return;
