@@ -23,6 +23,7 @@ function HomePage() {
       <p className="navi-kicker">מרחב לחשיבה עם בינה מלאכותית</p>
       <h1>AI NAVI</h1>
       <p className="navi-promise">לא מתחילים בכלי. מתחילים במשימה.</p>
+      <p className="navi-audience">מתאים לחינוך, ניהול, יזמות, שיווק ולכל משימה כללית.</p>
       <nav className="navi-destinations" aria-label="יעדים ראשיים">
         <Link className="navi-primary-link navi-route-peach" to="/presentation">
           למצגת <ArrowLeft aria-hidden="true" size={20} strokeWidth={2.5} />
