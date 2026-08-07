@@ -60,6 +60,20 @@ describe('metro navigation component system', () => {
     expect(screen.getByText('נדרשת בדיקה של נתוני המקור')).toBeVisible()
   })
 
+  it('renders visible written cues for current, complete, and warning stations', () => {
+    render(
+      <>
+        <Station label="יעד נוכחי" state="current" />
+        <Station label="יעד שהושלם" state="complete" />
+        <Station label="יעד לבדיקה" state="warning" />
+      </>,
+    )
+
+    for (const cue of ['נוכחי', 'הושלם', 'דורש תשומת לב']) {
+      expect(screen.getByText(cue)).not.toHaveClass('navi-sr-only')
+    }
+  })
+
   it('provides composable branded, notice, and header content', () => {
     render(
       <>

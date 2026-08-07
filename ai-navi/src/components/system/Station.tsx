@@ -2,6 +2,13 @@ import type { ButtonHTMLAttributes, HTMLAttributes, MouseEventHandler, ReactNode
 
 export type StationState = 'upcoming' | 'current' | 'complete' | 'warning'
 
+const stateLabels: Record<StationState, string> = {
+  upcoming: 'בהמשך',
+  current: 'נוכחי',
+  complete: 'הושלם',
+  warning: 'דורש תשומת לב',
+}
+
 type StationProps = {
   label: string
   index?: number
@@ -31,8 +38,7 @@ export function Station({
         {icon ?? (index === undefined ? null : <span className="navi-station__index">{index}</span>)}
       </span>
       <span className="navi-station__label">{label}</span>
-      {state === 'complete' ? <span className="navi-sr-only">הושלם</span> : null}
-      {state === 'warning' ? <span className="navi-sr-only">דורש תשומת לב</span> : null}
+      <span className="navi-station__state-label">{stateLabels[state]}</span>
     </>
   )
   const classes = `navi-station navi-station--${state}${asButton ? ' navi-station--button' : ''} ${className}`.trim()
