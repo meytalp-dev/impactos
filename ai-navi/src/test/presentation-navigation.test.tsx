@@ -127,6 +127,23 @@ describe('PresentationShell navigation', () => {
     expect(screen.getByLabelText('התקדמות במצגת')).toHaveTextContent('1 מתוך 5')
   })
 
+  it('uses the primary pointer control to reveal slide content before advancing', () => {
+    renderPresentation()
+    fireEvent.click(screen.getByRole('button', { name: 'לשקופית הבאה' }))
+
+    expect(screen.getByLabelText('מצב חשיפה')).toHaveTextContent('0 מתוך 3')
+    const revealButton = screen.getByRole('button', { name: 'חשיפה הבאה' })
+    fireEvent.click(revealButton)
+    expect(screen.getByRole('heading', { name: toolOverloadTitle })).toBeInTheDocument()
+    expect(screen.getByLabelText('מצב חשיפה')).toHaveTextContent('1 מתוך 3')
+
+    fireEvent.click(screen.getByRole('button', { name: 'חשיפה הבאה' }))
+    fireEvent.click(screen.getByRole('button', { name: 'חשיפה הבאה' }))
+    expect(screen.getByLabelText('מצב חשיפה')).toHaveTextContent('3 מתוך 3')
+    fireEvent.click(screen.getByRole('button', { name: 'לשקופית הבאה' }))
+    expect(screen.getByRole('heading', { name: 'הבעיה אינה מחסור בכלים' })).toBeInTheDocument()
+  })
+
   it('restores a safe versioned slide and reveal position from local storage', () => {
     const firstRender = renderPresentation()
     fireEvent.keyDown(window, { key: 'ArrowRight' })

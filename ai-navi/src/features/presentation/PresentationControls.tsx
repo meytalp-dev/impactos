@@ -2,6 +2,7 @@ type PresentationControlsProps = {
   currentIndex: number
   total: number
   notesOpen: boolean
+  hasPendingReveals: boolean
   onPrevious: () => void
   onNext: () => void
   onToggleNotes: () => void
@@ -12,6 +13,7 @@ export function PresentationControls({
   currentIndex,
   total,
   notesOpen,
+  hasPendingReveals,
   onPrevious,
   onNext,
   onToggleNotes,
@@ -26,8 +28,13 @@ export function PresentationControls({
           <span aria-hidden="true">→</span>
           <span>הקודמת</span>
         </button>
-        <button type="button" onClick={onNext} disabled={currentIndex === total - 1} aria-label="לשקופית הבאה">
-          <span>הבאה</span>
+        <button
+          type="button"
+          onClick={onNext}
+          disabled={currentIndex === total - 1 && !hasPendingReveals}
+          aria-label={hasPendingReveals ? 'חשיפה הבאה' : 'לשקופית הבאה'}
+        >
+          <span>{hasPendingReveals ? 'חשיפה' : 'הבאה'}</span>
           <span aria-hidden="true">←</span>
         </button>
       </div>

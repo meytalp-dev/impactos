@@ -144,8 +144,9 @@ export function PresentationShell({ slides }: { slides: SlideDefinition[] }) {
         currentIndex={slideIndex}
         total={slides.length}
         notesOpen={notesOpen}
+        hasPendingReveals={revealIndex < revealCount}
         onPrevious={previous}
-        onNext={next}
+        onNext={revealOrAdvance}
         onToggleNotes={() => setNotesOpen((open) => !open)}
         onFullscreen={requestFullscreen}
       />

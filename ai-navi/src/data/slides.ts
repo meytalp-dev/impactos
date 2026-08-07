@@ -7,6 +7,7 @@ export const slides: SlideDefinition[] = [
     title: 'AI NAVI',
     duration: 60,
     layout: 'cover',
+    variant: 'route-map',
     eyebrow: 'מפת החלטה לעבודה עם בינה מלאכותית',
     body: 'איך בוחרים את כלי הבינה הנכון למשימה הנכונה',
     speakerNotes: [
@@ -25,6 +26,7 @@ export const slides: SlideDefinition[] = [
     title: 'בכל שבוע מופיע עוד כלי. אבל האם אנחנו באמת צריכים להכיר את כולם?',
     duration: 75,
     layout: 'statement',
+    variant: 'tool-overload',
     eyebrow: 'עומס אינו אסטרטגיה',
     interaction: 'בכל חשיפה נעלמת שכבת רעש נוספת ממפת הכלים.',
     revealSteps: ['מורידים את הרעש', 'משאירים רק אפשרויות רלוונטיות', 'מתחילים במשימה'],
@@ -48,6 +50,7 @@ export const slides: SlideDefinition[] = [
     title: 'הבעיה אינה מחסור בכלים',
     duration: 75,
     layout: 'statement',
+    variant: 'problem',
     eyebrow: 'החלפת נקודת המבט',
     body: 'הבעיה היא שאין לנו שיטת בחירה.',
     bullets: ['פופולריות', 'אותו כלי לכל משימה', 'כלי לפני תוצאה'],
@@ -64,6 +67,7 @@ export const slides: SlideDefinition[] = [
     title: 'גם ב־Waze לא מתחילים מהכביש',
     duration: 75,
     layout: 'comparison',
+    variant: 'route-comparison',
     eyebrow: 'מנווטים לפני שבוחרים מסלול',
     body: 'הכלי הוא המסלול — לא היעד.',
     speakerNotes: [
@@ -83,6 +87,7 @@ export const slides: SlideDefinition[] = [
     title: 'שישה צמתים. החלטה אחת טובה יותר.',
     duration: 90,
     layout: 'map',
+    variant: 'junction-map',
     eyebrow: 'מפת הניווט של AI NAVI',
     body: 'עוברים בצמתים לפי הסדר — ורק בסוף בוחרים כלי או מסלול.',
     bullets: [

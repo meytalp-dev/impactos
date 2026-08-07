@@ -1,4 +1,5 @@
-import type { SlideDefinition } from '../../lib/presentationTypes'
+import type { ReactNode } from 'react'
+import type { SlideDefinition, SlideLayout, SlideVariant } from '../../lib/presentationTypes'
 
 type SlideRendererProps = {
   slide: SlideDefinition
@@ -39,7 +40,7 @@ function RouteSequence({ label, items, tone }: { label: string; items: string[];
 function CoverSlide({ slide }: { slide: SlideDefinition }) {
   const routes = (slide.visual as RouteVisual | undefined)?.routes ?? []
   return (
-    <div className="navi-slide-cover">
+    <div className="navi-slide-layout navi-slide-layout--mobile-stack navi-slide-cover" data-mobile-layout="stack">
       <div className="navi-slide-cover__copy">
         <p className="navi-slide__eyebrow">{slide.eyebrow}</p>
         <h2>{slide.title}</h2>
@@ -61,7 +62,7 @@ function CoverSlide({ slide }: { slide: SlideDefinition }) {
 function ToolOverloadSlide({ slide, revealIndex }: { slide: SlideDefinition; revealIndex: number }) {
   const tools = (slide.visual as RouteVisual | undefined)?.tools ?? []
   return (
-    <div className="navi-slide-overload">
+    <div className="navi-slide-layout navi-slide-layout--mobile-stack navi-slide-overload" data-mobile-layout="stack">
       <div className="navi-slide-overload__copy">
         <p className="navi-slide__eyebrow">{slide.eyebrow}</p>
         <h2>{slide.title}</h2>
@@ -80,7 +81,7 @@ function ToolOverloadSlide({ slide, revealIndex }: { slide: SlideDefinition; rev
 
 function ProblemSlide({ slide }: { slide: SlideDefinition }) {
   return (
-    <div className="navi-slide-problem">
+    <div className="navi-slide-layout navi-slide-layout--mobile-stack navi-slide-problem" data-mobile-layout="stack">
       <p className="navi-slide__eyebrow">{slide.eyebrow}</p>
       <h2>{slide.title}</h2>
       <p className="navi-slide-problem__statement">{slide.body}</p>
@@ -100,7 +101,7 @@ function ProblemSlide({ slide }: { slide: SlideDefinition }) {
 function ComparisonSlide({ slide }: { slide: SlideDefinition }) {
   const visual = slide.visual as RouteVisual | undefined
   return (
-    <div className="navi-slide-comparison">
+    <div className="navi-slide-layout navi-slide-layout--mobile-stack navi-slide-comparison" data-mobile-layout="stack">
       <p className="navi-slide__eyebrow">{slide.eyebrow}</p>
       <h2>{slide.title}</h2>
       <div className="navi-slide-comparison__routes">
@@ -114,7 +115,7 @@ function ComparisonSlide({ slide }: { slide: SlideDefinition }) {
 
 function JunctionMapSlide({ slide }: { slide: SlideDefinition }) {
   return (
-    <div className="navi-slide-junctions">
+    <div className="navi-slide-layout navi-slide-layout--mobile-stack navi-slide-junctions" data-mobile-layout="stack">
       <div className="navi-slide-junctions__heading">
         <p className="navi-slide__eyebrow">{slide.eyebrow}</p>
         <h2>{slide.title}</h2>
@@ -133,13 +134,54 @@ function JunctionMapSlide({ slide }: { slide: SlideDefinition }) {
   )
 }
 
+function StandardSlide({ slide }: { slide: SlideDefinition }) {
+  return (
+    <div className={`navi-slide-layout navi-slide-layout--mobile-stack navi-slide-generic navi-slide-generic--${slide.layout}`} data-mobile-layout="stack" aria-label={`תוכן שקופית ${slide.layout}`}>
+      <p className="navi-slide__eyebrow">{slide.eyebrow}</p>
+      <h2>{slide.title}</h2>
+      {slide.body && <p>{slide.body}</p>}
+      {slide.bullets && <ul>{slide.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul>}
+    </div>
+  )
+}
+
+function UnsupportedSlide({ layout, variant }: { layout: string; variant: string }) {
+  return (
+    <div className="navi-slide-unsupported" role="alert">
+      תצורת שקופית אינה נתמכת: {layout} / {variant}
+    </div>
+  )
+}
+
+type SlideContentRenderer = (slide: SlideDefinition, revealIndex: number) => ReactNode
+
+const slideRenderers: Record<SlideLayout, Partial<Record<SlideVariant, SlideContentRenderer>>> = {
+  cover: {
+    'route-map': (slide) => <CoverSlide slide={slide} />,
+  },
+  statement: {
+    'tool-overload': (slide, revealIndex) => <ToolOverloadSlide slide={slide} revealIndex={revealIndex} />,
+    problem: (slide) => <ProblemSlide slide={slide} />,
+  },
+  comparison: {
+    'route-comparison': (slide) => <ComparisonSlide slide={slide} />,
+  },
+  map: {
+    'junction-map': (slide) => <JunctionMapSlide slide={slide} />,
+  },
+  activity: { standard: (slide) => <StandardSlide slide={slide} /> },
+  demo: { standard: (slide) => <StandardSlide slide={slide} /> },
+  families: { standard: (slide) => <StandardSlide slide={slide} /> },
+  summary: { standard: (slide) => <StandardSlide slide={slide} /> },
+}
+
 export function SlideRenderer({ slide, revealIndex, slideNumber, totalSlides }: SlideRendererProps) {
-  let content
-  if (slide.id === 'opening-cover') content = <CoverSlide slide={slide} />
-  else if (slide.id === 'tool-overload') content = <ToolOverloadSlide slide={slide} revealIndex={revealIndex} />
-  else if (slide.id === 'real-problem') content = <ProblemSlide slide={slide} />
-  else if (slide.id === 'waze-metaphor') content = <ComparisonSlide slide={slide} />
-  else content = <JunctionMapSlide slide={slide} />
+  const runtimeLayout = slide.layout as string
+  const runtimeVariant = (slide as { variant?: string }).variant ?? 'missing-variant'
+  const renderer = slideRenderers[runtimeLayout as SlideLayout]?.[runtimeVariant as SlideVariant]
+  const content = renderer
+    ? renderer(slide, revealIndex)
+    : <UnsupportedSlide layout={runtimeLayout} variant={runtimeVariant} />
 
   return (
     <article className={`navi-slide navi-slide--${slide.layout}`} aria-roledescription="שקופית">
