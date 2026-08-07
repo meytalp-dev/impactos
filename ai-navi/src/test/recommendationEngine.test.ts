@@ -1,0 +1,97 @@
+import { describe, expect, it } from 'vitest'
+import { buildPrompt } from '../lib/promptBuilder'
+import { recommendRoute } from '../lib/recommendationEngine'
+import { scoreTool } from '../lib/scoring'
+import type { AITool, NavigatorAnswers } from '../lib/types'
+
+const baseAnswers = (overrides: Partial<NavigatorAnswers> = {}): NavigatorAnswers => ({
+  taskType: 'summarize',
+  inputType: 'documents',
+  outputType: 'presentation',
+  context: 'management',
+  privacy: 'public',
+  difficulty: 'intermediate',
+  ...overrides,
+})
+
+describe('recommendRoute', () => {
+  it('selects the document-to-presentation route with unique safe tools', () => {
+    const result = recommendRoute(baseAnswers())
+
+    expect(result.routeId).toBe('document-to-presentation')
+    expect(result.toolIds).toHaveLength(2)
+    expect(new Set(result.toolIds).size).toBe(result.toolIds.length)
+    expect(result.steps).toHaveLength(2)
+  })
+
+  it('selects the survey route for management insights', () => {
+    expect(recommendRoute(baseAnswers({ taskType: 'analyze', inputType: 'data', outputType: 'report' })).routeId)
+      .toBe('survey-to-insights')
+  })
+
+  it('selects the current-sources route for current research', () => {
+    expect(recommendRoute(baseAnswers({ taskType: 'research', inputType: 'web-links', outputType: 'report' })).routeId)
+      .toBe('current-information-with-sources')
+  })
+
+  it('selects the app-prototype route for an app idea', () => {
+    expect(recommendRoute(baseAnswers({ taskType: 'build', inputType: 'idea', outputType: 'app', context: 'entrepreneurship' })).routeId)
+      .toBe('idea-to-app')
+  })
+
+  it('ranks beginner and general tools ahead for a beginner with little time', () => {
+    const answers = baseAnswers({ difficulty: 'beginner', priority: 'speed', timeAvailable: 'under-10-minutes' })
+    const beginner = scoreTool({ ...tool('beginner-tool'), difficulty: 'beginner' }, answers, 'writer')
+    const advanced = scoreTool({ ...tool('advanced-tool'), difficulty: 'advanced' }, answers, 'writer')
+
+    expect(beginner.total).toBeGreaterThan(advanced.total)
+  })
+
+  it('filters caution tools and warns when data is sensitive or uncertain', () => {
+    const result = recommendRoute(baseAnswers({ privacy: 'sensitive' }))
+
+    expect(result.toolIds).not.toContain('excel-copilot')
+    expect(result.warnings.join(' ')).toMatch(/פרט|ארגון/i)
+  })
+
+  it('uses the tool ID as a stable tie breaker', () => {
+    const answers = baseAnswers({ taskType: 'write', inputType: 'text', outputType: 'text' })
+    const alpha = scoreTool(tool('alpha'), answers, 'writer')
+    const beta = scoreTool(tool('beta'), answers, 'writer')
+
+    expect(alpha.total).toBe(beta.total)
+    expect([alpha, beta].sort((left, right) => left.toolId.localeCompare(right.toolId)).map((score) => score.toolId))
+      .toEqual(['alpha', 'beta'])
+  })
+
+  it('builds a prompt with task, audience, I/O, priorities and applicable checks', () => {
+    const answers = baseAnswers({
+      taskText: 'סכמו את דוח הרבעון למצגת',
+      audience: 'הנהלה בכירה',
+      priorities: ['speed', 'quality'],
+      privacy: 'sensitive',
+    })
+    const result = recommendRoute(answers)
+    const prompt = buildPrompt(answers, result)
+
+    expect(result.prompt).toContain('סכמו את דוח הרבעון למצגת')
+    expect(prompt).toContain('סכמו את דוח הרבעון למצגת')
+    expect(prompt).toContain('הנהלה בכירה')
+    expect(prompt).toContain('documents')
+    expect(prompt).toContain('presentation')
+    expect(prompt).toContain('speed')
+    expect(prompt).toContain('quality')
+    expect(prompt).toMatch(/מקור|פרטיות|איכות/)
+  })
+})
+
+const tool = (id: string): AITool => ({
+  id,
+  name: id,
+  familyId: 'thinking-conversation',
+  description: 'test tool',
+  pricingModel: 'free',
+  lastReviewed: '2026-08-07',
+  caution: 'check output',
+  tags: ['write', 'text'],
+})

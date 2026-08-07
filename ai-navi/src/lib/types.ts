@@ -36,8 +36,8 @@ export type OutputType =
   | 'app'
   | 'automation'
 
-export type Priority = 'speed' | 'quality' | 'creativity' | 'control' | 'privacy'
-export type PrivacyAnswer = 'public' | 'internal' | 'sensitive'
+export type Priority = 'speed' | 'quality' | 'creativity' | 'control' | 'privacy' | 'price' | 'ease'
+export type PrivacyAnswer = 'public' | 'internal' | 'sensitive' | 'yes' | 'unsure' | 'maybe'
 export type Difficulty = 'beginner' | 'intermediate' | 'advanced'
 export type PricingModel = 'free' | 'freemium' | 'paid'
 export type AudienceContext = 'education' | 'management' | 'entrepreneurship' | 'marketing' | 'social-organizations' | 'general'
@@ -57,6 +57,15 @@ export interface AITool {
   lastReviewed: string
   caution: string
   tags: string[]
+  taskTypes?: TaskType[]
+  inputTypes?: InputType[]
+  outputTypes?: OutputType[]
+  strengths?: Priority[]
+  difficulty?: Difficulty
+  generalPurpose?: boolean
+  hebrewSupport?: boolean
+  privacyLevel?: 'standard' | 'caution' | 'organizationOnly'
+  roleKeywords?: string[]
 }
 
 export interface RouteStep {
@@ -90,6 +99,15 @@ export interface NavigatorAnswers {
   privacy?: PrivacyAnswer
   difficulty?: Difficulty
   context?: AudienceContext
+  taskText?: string
+  audience?: string
+  priorities?: Priority[]
+  timeAvailable?: 'under-10-minutes' | 'more-than-10-minutes'
+}
+
+export interface PersistedNavigatorState {
+  version: number
+  answers: NavigatorAnswers
 }
 
 export interface TaskExample {

@@ -1,0 +1,16 @@
+import type { NavigatorAnswers } from './types'
+import type { RecommendationResult } from './recommendationEngine'
+
+export function buildPrompt(answers: NavigatorAnswers, result: RecommendationResult): string {
+  const priorities = [...new Set([...(answers.priorities ?? []), ...(answers.priority ? [answers.priority] : [])])].slice(0, 2)
+  const checks = ['איכות: ודא/י דיוק, עקביות והתאמה לקהל.']
+  if (answers.taskType === 'research' || result.routeId === 'current-information-with-sources') checks.push('מקורות: צרף/י מקורות ראשוניים, קישורים ותאריכים לבדיקה.')
+  if (answers.privacy && answers.privacy !== 'public') checks.push('פרטיות: אל תכלול/י מידע רגיש ללא אישור מדיניות הארגון.')
+  return [
+    `משימה: ${answers.taskText?.trim() || result.taskSummary}`,
+    `קהל: ${answers.audience?.trim() || 'קהל היעד שנבחר'}`,
+    `קלט: ${answers.inputType ?? 'לא צוין'}; פלט רצוי: ${answers.outputType ?? 'לא צוין'}.`,
+    `עדיפויות: ${priorities.length ? priorities.join(', ') : 'איכות ובהירות'}.`,
+    ...checks,
+  ].join('\n')
+}
