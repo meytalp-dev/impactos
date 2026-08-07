@@ -58,6 +58,15 @@ describe('SlideRenderer layout dispatch', () => {
     expect(screen.getByRole('link', { name: 'מה המשימה שלך היום?' })).toHaveAttribute('href', '/navigator')
   })
 
+  it('renders the live navigator transition from typed navigator data when the slide id is unknown', () => {
+    const navigator = slides.find((slide) => slide.id === 'navigator-walkthrough')
+    expect(navigator).toBeDefined()
+
+    renderSlide({ ...navigator, id: 'unknown-live-transition' } as SlideDefinition)
+
+    expect(screen.getByRole('link', { name: 'פתיחת ה־Navigator' })).toHaveAttribute('href', '/navigator')
+  })
+
   it('fails visibly when runtime slide data contains an unsupported variant', () => {
     renderSlide({
       ...baseSlide,

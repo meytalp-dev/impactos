@@ -257,6 +257,7 @@ function NavigatorSlide({ slide }: { slide: VisualSlide<'navigator'> }) {
           <li key={example.audience}><strong>{example.audience}</strong><span>{example.task}</span></li>
         ))}
       </ul>
+      <a className="navi-slide-navigator__action" href={slide.visual.href}>{slide.visual.action}</a>
     </div>
   )
 }

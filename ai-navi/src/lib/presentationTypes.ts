@@ -68,7 +68,13 @@ export type ChoiceGridVisual = {
   footer?: string
 }
 export type FamilyMapVisual = { kind: 'family-map'; families: FamilyItem[]; message?: string }
-export type NavigatorVisual = { kind: 'navigator'; questions: string[]; examples: AudienceExample[] }
+export type NavigatorVisual = {
+  kind: 'navigator'
+  questions: string[]
+  examples: AudienceExample[]
+  action: string
+  href: string
+}
 export type TakeawaysVisual = { kind: 'takeaways'; keyPhrases: string[]; takeaways: string[]; cta: string; href: string }
 
 type SlideBase = {

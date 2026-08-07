@@ -638,6 +638,8 @@ export const slides: SlideDefinition[] = [
         { audience: 'שימוש כללי', task: 'לתכנן נסיעה מתוך מקורות עדכניים' },
         { audience: 'חינוך', task: 'להפוך משוב תלמידים לתוכנית פעולה' },
       ],
+      action: 'פתיחת ה־Navigator',
+      href: '/navigator',
     },
   },
   {

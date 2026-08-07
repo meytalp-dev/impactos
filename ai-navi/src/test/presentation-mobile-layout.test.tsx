@@ -77,4 +77,12 @@ describe('presentation mobile readability contract', () => {
       expect(cssBlock(narrowMobile, selector), selector).toMatch(/font-size:\s*0\.875rem/)
     }
   })
+
+  it('keeps budget-game cost metadata readable on projected and mobile layouts', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/styles/presentation.css'), 'utf8')
+    const narrowMobile = cssBlock(css, '@media (max-width: 40rem)')
+
+    expect(cssBlock(css, '.navi-slide-game__board li b')).toMatch(/font-size:\s*clamp\(/)
+    expect(cssBlock(narrowMobile, '.navi-slide-game__board li b')).toMatch(/font-size:\s*0\.875rem/)
+  })
 })
