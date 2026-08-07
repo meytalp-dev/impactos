@@ -28,8 +28,5 @@ export function saveNavigatorState(state: PersistedNavigatorState): void {
 export function resetNavigatorState(): void {
   const storage = availableStorage()
   if (!storage) return
-  for (let index = storage.length - 1; index >= 0; index -= 1) {
-    const key = storage.key(index)
-    if (key?.startsWith(KEY_PREFIX)) storage.removeItem(key)
-  }
+  storage.removeItem(STATE_KEY)
 }

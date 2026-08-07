@@ -29,17 +29,10 @@ export interface RecommendationResult {
   prompt: string
 }
 
-const routeOverlap = (route: PreparedRoute, answers: NavigatorAnswers) => {
-  let score = 0
-  if (answers.taskType && route.taskTypes.includes(answers.taskType)) score += 1
-  if (answers.inputType && route.inputTypes.includes(answers.inputType)) score += 1
-  if (answers.outputType === route.outputType) score += 1
-  if (answers.context === route.context) score += 0.25
-  const text = answers.taskText?.toLowerCase() ?? ''
-  if (route.id === 'survey-to-insights' && /(survey|סקר|שאלון)/.test(text)) score += 1
-  if (route.id === 'current-information-with-sources' && /(current|עדכני|מקור)/.test(text)) score += 1
-  return score
-}
+const routeOverlap = (route: PreparedRoute, answers: NavigatorAnswers) =>
+  Number(Boolean(answers.taskType && route.taskTypes.includes(answers.taskType)))
+  + Number(Boolean(answers.inputType && route.inputTypes.includes(answers.inputType)))
+  + Number(Boolean(answers.outputType === route.outputType))
 
 const findTool = (id: string) => aiTools.find((tool) => tool.id === id)
 const sortedByScore = (tools: AITool[], answers: NavigatorAnswers, role: string) =>
@@ -75,18 +68,55 @@ const toStep = (step: RouteStep, route: PreparedRoute, answers: NavigatorAnswers
   }
 }
 
-const genericRoute = (answers: NavigatorAnswers): PreparedRoute => ({
-  id: 'generic', title: 'מסלול כללי', inputTypes: [], taskTypes: [], outputType: answers.outputType ?? 'text', context: answers.context ?? 'general', audience: 'משתמשים בחינוך, ניהול, יזמות, שיווק ושימוש כללי.',
-  steps: [
-    { order: 1, title: 'הגדירו את המשימה', role: 'מנסח משימה', primaryToolIds: ['chatgpt'], alternativeToolIds: ['claude', 'gemini'], instruction: 'נסחו מטרה, קהל, קלט ותוצאה רצויה.' },
-    { order: 2, title: 'הכינו תוצר ראשון', role: 'יוצר תוצר', primaryToolIds: familyToolIds(answers), alternativeToolIds: ['chatgpt', 'canva', 'lovable'], instruction: 'הכינו טיוטה ראשונית ובקשו חלופות.' },
-  ],
-  warning: 'בדקו דיוק, פרטיות והתאמה לקהל לפני שימוש בתוצר.', finalOutput: 'טיוטה ראשונית לבדיקת אדם.', starterPrompt: 'עזור/י לי להגדיר משימה, קהל, קלט ותוצר רצוי לפני יצירת טיוטה.',
+const genericRoute = (answers: NavigatorAnswers): PreparedRoute => {
+  const ranked = sortedByScore(aiTools, answers, 'generic stage').map(({ tool }) => tool)
+  const first = ranked[0]
+  const second = ranked.find((tool) => tool.familyId !== first?.familyId) ?? ranked[1]
+  const remaining = ranked.filter((tool) => tool.id !== first?.id && tool.id !== second?.id)
+
+  return {
+    id: 'generic', title: 'מסלול כללי', inputTypes: [], taskTypes: [], outputType: answers.outputType ?? 'text', context: answers.context ?? 'general', audience: 'משתמשים בחינוך, ניהול, יזמות, שיווק ושימוש כללי.',
+    steps: [
+      { order: 1, title: 'התחילו בכלי המתאים ביותר', role: 'מוביל שלב ראשון', primaryToolIds: first ? [first.id] : [], alternativeToolIds: remaining.slice(0, 2).map((tool) => tool.id), instruction: 'הגדירו מטרה, קהל, קלט ותוצאה רצויה.' },
+      { order: 2, title: 'צרו תוצר ראשון', role: 'יוצר תוצר', primaryToolIds: second ? [second.id] : [], alternativeToolIds: remaining.slice(2, 4).map((tool) => tool.id), instruction: 'הכינו טיוטה ראשונית ובקשו חלופות.' },
+    ],
+    warning: 'בדקו דיוק, פרטיות והתאמה לקהל לפני שימוש בתוצר.', finalOutput: 'טיוטה ראשונית לבדיקת אדם.', starterPrompt: 'עזור/י לי להגדיר משימה, קהל, קלט ותוצר רצוי לפני יצירת טיוטה.',
+  }
+}
+
+const withPriority = (answers: NavigatorAnswers, priority: NavigatorAnswers['priority']): NavigatorAnswers => ({
+  ...answers,
+  priority,
+  priorities: [...new Set([...(answers.priorities ?? []), priority].filter((value): value is NonNullable<NavigatorAnswers['priority']> => Boolean(value)))],
 })
 
-function familyToolIds(answers: NavigatorAnswers): string[] {
-  const family = answers.outputType === 'app' ? 'building-code' : answers.outputType === 'presentation' ? 'presentations-design' : answers.outputType === 'image' ? 'image' : answers.outputType === 'automation' ? 'automation-agents' : 'thinking-conversation'
-  return aiTools.filter((tool) => tool.familyId === family).map((tool) => tool.id).slice(0, 3)
+const selectAlternativeTools = (
+  answers: NavigatorAnswers,
+  used: Set<string>,
+  strategy: 'fast' | 'professional' | 'budget',
+) => {
+  const strategyAnswers = strategy === 'fast' ? withPriority(answers, 'speed') : strategy === 'budget' ? withPriority(answers, 'price') : withPriority(answers, 'quality')
+  return sortedByScore(aiTools, strategyAnswers, `${strategy} alternative`)
+    .filter(({ tool }) => !used.has(tool.id))
+    .sort((left, right) => {
+      if (strategy === 'budget') {
+        const leftBudget = left.tool.pricingModel === 'free' ? 0 : left.tool.pricingModel === 'freemium' ? 1 : 2
+        const rightBudget = right.tool.pricingModel === 'free' ? 0 : right.tool.pricingModel === 'freemium' ? 1 : 2
+        if (leftBudget !== rightBudget) return leftBudget - rightBudget
+      }
+      if (strategy === 'professional') {
+        const leftSpecialized = left.tool.familyId === 'thinking-conversation' ? 1 : 0
+        const rightSpecialized = right.tool.familyId === 'thinking-conversation' ? 1 : 0
+        if (leftSpecialized !== rightSpecialized) return leftSpecialized - rightSpecialized
+      }
+      return right.score.total - left.score.total || left.tool.id.localeCompare(right.tool.id)
+    })
+    .slice(0, 2)
+    .map(({ tool }) => tool.id)
+    .map((id) => {
+      used.add(id)
+      return id
+    })
 }
 
 export function recommendRoute(answers: NavigatorAnswers): RecommendationResult {
@@ -101,10 +131,11 @@ export function recommendRoute(answers: NavigatorAnswers): RecommendationResult 
   if (answers.privacy === 'sensitive' || answers.privacy === 'internal' || answers.privacy === 'yes' || answers.privacy === 'unsure') warnings.push('מידע רגיש או לא ודאי: אל תעלו אותו לכלי ציבורי ללא אישור מדיניות הארגון.')
   if (answers.privacy === 'maybe') warnings.push('ייתכן שיש מידע רגיש: בדקו הרשאות ומדיניות ארגונית לפני העלאה.')
   if (wantedOrganizationTool) warnings.push('כלי ארגוני לא הוצג כהמלצה ציבורית; פנו למדיניות ולכלים המאושרים בארגון.')
+  const alternativeUsed = new Set(toolIds)
   const alternatives = {
-    fast: toolIds.slice(0, 2),
-    professional: [...toolIds].reverse().slice(0, 2),
-    budget: [...toolIds].filter((id) => ['free', 'freemium'].includes(findTool(id)?.pricingModel ?? '')).slice(0, 2),
+    fast: selectAlternativeTools(answers, alternativeUsed, 'fast'),
+    professional: selectAlternativeTools(answers, alternativeUsed, 'professional'),
+    budget: selectAlternativeTools(answers, alternativeUsed, 'budget'),
   }
   const result: RecommendationResult = {
     routeId: selected.id,

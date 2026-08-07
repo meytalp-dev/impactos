@@ -39,6 +39,39 @@ describe('recommendRoute', () => {
       .toBe('idea-to-app')
   })
 
+  it('never lets task-text route hints overtake a higher task/input/output overlap', () => {
+    const result = recommendRoute(baseAnswers({
+      taskType: 'present',
+      inputType: 'data',
+      outputType: 'automation',
+      taskText: 'הכינו סקר להנהלה',
+    }))
+
+    expect(result.routeId).toBe('data-to-management-report')
+  })
+
+  it('builds generic stages from ranked catalog tools instead of a hard-coded ChatGPT first stage', () => {
+    const result = recommendRoute({})
+
+    expect(result.routeId).toBe('generic')
+    expect(result.steps[0].primaryToolId).toBe('adobe-firefly')
+    expect(result.steps[0].primaryToolId).not.toBe('chatgpt')
+  })
+
+  it('provides distinct usable fast, professional and budget alternatives', () => {
+    const result = recommendRoute(baseAnswers())
+    const alternativeIds = Object.values(result.alternatives).flat()
+
+    expect(result.alternatives.fast).not.toEqual(result.toolIds)
+    expect(result.alternatives.professional).not.toEqual(result.toolIds)
+    expect(result.alternatives.budget).not.toEqual(result.toolIds)
+    expect(result.alternatives.fast.length).toBeGreaterThan(0)
+    expect(result.alternatives.professional.length).toBeGreaterThan(0)
+    expect(result.alternatives.budget.length).toBeGreaterThan(0)
+    expect(new Set(alternativeIds).size).toBe(alternativeIds.length)
+    expect(alternativeIds).not.toEqual(expect.arrayContaining(result.toolIds))
+  })
+
   it('ranks beginner and general tools ahead for a beginner with little time', () => {
     const answers = baseAnswers({ difficulty: 'beginner', priority: 'speed', timeAvailable: 'under-10-minutes' })
     const beginner = scoreTool({ ...tool('beginner-tool'), difficulty: 'beginner' }, answers, 'writer')

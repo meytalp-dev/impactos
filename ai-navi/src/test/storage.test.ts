@@ -20,7 +20,7 @@ describe('navigator storage', () => {
     expect(loadNavigatorState()).toBeNull()
   })
 
-  it('resets only versioned AI NAVI keys', () => {
+  it('resets only the versioned navigator-state key', () => {
     localStorage.setItem('ai-navi:navigator-state:v1', JSON.stringify({ version: 1, answers: {} }))
     localStorage.setItem('ai-navi:other:v1', 'remove')
     localStorage.setItem('unrelated-key', 'keep')
@@ -28,7 +28,7 @@ describe('navigator storage', () => {
     resetNavigatorState()
 
     expect(localStorage.getItem('ai-navi:navigator-state:v1')).toBeNull()
-    expect(localStorage.getItem('ai-navi:other:v1')).toBeNull()
+    expect(localStorage.getItem('ai-navi:other:v1')).toBe('remove')
     expect(localStorage.getItem('unrelated-key')).toBe('keep')
   })
 })
