@@ -1,0 +1,30 @@
+import type { AITool } from '../lib/types'
+
+const reviewed = '2026-08-07'
+
+export const aiTools: AITool[] = [
+  { id: 'chatgpt', name: 'ChatGPT', familyId: 'thinking-conversation', description: 'עשוי לסייע בחשיבה, ניסוח וטיוטות.', pricingModel: 'freemium', lastReviewed: reviewed, caution: 'בדקו עובדות והתאימו את התוצר להקשר.', tags: ['כתיבה', 'חשיבה'] },
+  { id: 'claude', name: 'Claude', familyId: 'thinking-conversation', description: 'עשוי לסייע בניתוח טקסטים ובניסוח.', pricingModel: 'freemium', lastReviewed: reviewed, caution: 'עברו על התשובה לפני שימוש חיצוני.', tags: ['כתיבה', 'ניתוח'] },
+  { id: 'gemini', name: 'Gemini', familyId: 'thinking-conversation', description: 'עשוי לסייע ברעיונות, שיחה וטיוטות.', pricingModel: 'freemium', lastReviewed: reviewed, caution: 'אמתו מידע חשוב מול מקורות מתאימים.', tags: ['חשיבה', 'טיוטה'] },
+  { id: 'notebooklm', name: 'NotebookLM', familyId: 'documents-knowledge', description: 'עשוי לסייע בשאלות ובסיכומים על בסיס חומרים שהוזנו.', pricingModel: 'freemium', lastReviewed: reviewed, caution: 'העלו רק חומרים שמותר לכם לעבד.', tags: ['מסמכים', 'סיכום'] },
+  { id: 'perplexity', name: 'Perplexity', familyId: 'research-sources', description: 'עשוי לסייע בחיפוש מידע ובהצגת מקורות לבדיקה.', pricingModel: 'freemium', lastReviewed: reviewed, caution: 'פתחו את המקורות ובדקו את איכותם ועדכניותם.', tags: ['מחקר', 'מקורות'] },
+  { id: 'canva', name: 'Canva', familyId: 'presentations-design', description: 'עשוי לסייע בהכנת עיצובים, מסמכים ומצגות.', pricingModel: 'freemium', lastReviewed: reviewed, caution: 'בדקו זכויות שימוש בנכסים ובתבניות.', tags: ['עיצוב', 'מצגת'] },
+  { id: 'gamma', name: 'Gamma', familyId: 'presentations-design', description: 'עשוי לסייע בהפיכת מתווה למצגת ראשונית.', pricingModel: 'freemium', lastReviewed: reviewed, caution: 'ערכו את המסר והעיצוב לפני הצגה.', tags: ['מצגת', 'עיצוב'] },
+  { id: 'napkin', name: 'Napkin', familyId: 'presentations-design', description: 'עשוי לסייע בהמחשה חזותית של רעיונות.', pricingModel: 'freemium', lastReviewed: reviewed, caution: 'ודאו שהתרשים מדויק וברור לקהל.', tags: ['תרשימים', 'רעיון'] },
+  { id: 'midjourney', name: 'Midjourney', familyId: 'image', description: 'עשוי לסייע ביצירת דימויים מתיאור טקסטואלי.', pricingModel: 'paid', lastReviewed: reviewed, caution: 'בדקו זכויות שימוש והימנעו מחיקוי של יוצרים חיים.', tags: ['תמונה', 'יצירה'] },
+  { id: 'adobe-firefly', name: 'Adobe Firefly', familyId: 'image', description: 'עשוי לסייע ביצירה ובעריכה של תמונות.', pricingModel: 'freemium', lastReviewed: reviewed, caution: 'בדקו את התאמת התוצר למותג ולזכויות שימוש.', tags: ['תמונה', 'עריכה'] },
+  { id: 'runway', name: 'Runway', familyId: 'video-audio', description: 'עשוי לסייע ביצירת קטעי וידאו ועריכה בסיסית.', pricingModel: 'freemium', lastReviewed: reviewed, caution: 'בדקו תוצאה, זכויות ותיאור שקוף של תוכן שנוצר.', tags: ['וידאו', 'עריכה'] },
+  { id: 'google-veo', name: 'Google Veo', familyId: 'video-audio', description: 'עשוי לסייע ביצירת וידאו מתיאור מפורט.', pricingModel: 'paid', lastReviewed: reviewed, caution: 'בדקו זמינות, זכויות ושימוש אחראי בתוכן חזותי.', tags: ['וידאו', 'יצירה'] },
+  { id: 'elevenlabs', name: 'ElevenLabs', familyId: 'video-audio', description: 'עשוי לסייע בהפקת קול ותמלול.', pricingModel: 'freemium', lastReviewed: reviewed, caution: 'קבלו הסכמה לפני שימוש בקול של אדם.', tags: ['קול', 'תמלול'] },
+  { id: 'suno', name: 'Suno', familyId: 'video-audio', description: 'עשוי לסייע ביצירת סקיצות מוזיקליות.', pricingModel: 'freemium', lastReviewed: reviewed, caution: 'בדקו זכויות שימוש לפני פרסום.', tags: ['מוזיקה', 'קול'] },
+  { id: 'excel-copilot', name: 'Excel Copilot', familyId: 'data', description: 'עשוי לסייע בניתוח טבלאות ובניסוח תובנות.', pricingModel: 'paid', lastReviewed: reviewed, caution: 'אמתו נוסחאות ומסקנות מול הנתונים המקוריים.', tags: ['נתונים', 'דוחות'] },
+  { id: 'claude-code', name: 'Claude Code', familyId: 'building-code', description: 'עשוי לסייע בקריאת קוד, תכנון ושינויים בפיתוח.', pricingModel: 'paid', lastReviewed: reviewed, caution: 'בצעו סקירת קוד ובדיקות לפני שילוב.', tags: ['קוד', 'פיתוח'] },
+  { id: 'codex', name: 'Codex', familyId: 'building-code', description: 'עשוי לסייע בכתיבה, הסבר ובדיקה של קוד.', pricingModel: 'paid', lastReviewed: reviewed, caution: 'בדקו קוד, תלויות ונתונים לפני הפעלה.', tags: ['קוד', 'פיתוח'] },
+  { id: 'lovable', name: 'Lovable', familyId: 'building-code', description: 'עשוי לסייע ביצירת אב־טיפוס של יישום.', pricingModel: 'freemium', lastReviewed: reviewed, caution: 'בדקו נגישות, אבטחת מידע והתאמה לצורך.', tags: ['אפליקציה', 'אב־טיפוס'] },
+  { id: 'bolt', name: 'Bolt', familyId: 'building-code', description: 'עשוי לסייע בבניית ממשק ואב־טיפוס מהיר.', pricingModel: 'freemium', lastReviewed: reviewed, caution: 'עברו על הקוד וההגדרות לפני פרסום.', tags: ['אפליקציה', 'ממשק'] },
+  { id: 'replit', name: 'Replit', familyId: 'building-code', description: 'עשוי לסייע בפיתוח והרצת פרויקטי קוד.', pricingModel: 'freemium', lastReviewed: reviewed, caution: 'בדקו את הגדרות הפרויקט והנתונים שנחשפים.', tags: ['קוד', 'פיתוח'] },
+  { id: 'make', name: 'Make', familyId: 'automation-agents', description: 'עשוי לסייע בחיבור שירותים לתהליכי עבודה חוזרים.', pricingModel: 'freemium', lastReviewed: reviewed, caution: 'בדקו הרשאות, תנאי הפעלה וחריגים בתהליך.', tags: ['אוטומציה', 'תהליכים'] },
+  { id: 'zapier', name: 'Zapier', familyId: 'automation-agents', description: 'עשוי לסייע באוטומציה בין כלים ותהליכים.', pricingModel: 'freemium', lastReviewed: reviewed, caution: 'בדקו הרשאות ותיעוד של כל צעד אוטומטי.', tags: ['אוטומציה', 'תהליכים'] },
+  { id: 'n8n', name: 'n8n', familyId: 'automation-agents', description: 'עשוי לסייע בבניית תהליכי אוטומציה גמישים.', pricingModel: 'freemium', lastReviewed: reviewed, caution: 'תכננו טיפול בשגיאות ובדקו הרשאות מידע.', tags: ['אוטומציה', 'סוכנים'] },
+  { id: 'microsoft-copilot', name: 'Microsoft Copilot', familyId: 'thinking-conversation', description: 'עשוי לסייע בניסוח ורעיונות במהלך עבודה.', pricingModel: 'freemium', lastReviewed: reviewed, caution: 'בדקו את הגדרות הארגון לפני עיבוד מידע פנימי.', tags: ['כתיבה', 'חשיבה'] },
+]
