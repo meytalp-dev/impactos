@@ -49,4 +49,25 @@ describe('presentation mobile readability contract', () => {
     expect(mobileSlide).toMatch(/overflow:\s*visible/)
     expect(mobileStack).toMatch(/grid-template-columns:\s*1fr/)
   })
+
+  it('sets explicit readable type floors for meaningful content at <=640px', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/styles/presentation.css'), 'utf8')
+    const narrowMobile = cssBlock(css, '@media (max-width: 40rem)')
+    const twelvePixelSelectors = [
+      '.navi-slide-cover__route',
+      '.navi-slide-overload__cards span',
+      '.navi-slide-route__label',
+    ]
+    const fourteenPixelSelectors = [
+      '.navi-slide-route li',
+      '.navi-slide-junctions__map strong',
+    ]
+
+    for (const selector of twelvePixelSelectors) {
+      expect(cssBlock(narrowMobile, selector), selector).toMatch(/font-size:\s*0\.75rem/)
+    }
+    for (const selector of fourteenPixelSelectors) {
+      expect(cssBlock(narrowMobile, selector), selector).toMatch(/font-size:\s*0\.875rem/)
+    }
+  })
 })
