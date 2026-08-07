@@ -49,8 +49,14 @@ describe('AI NAVI catalog integrity', () => {
   })
 
   it('offers examples for education, management, entrepreneurship, marketing, and general use', () => {
-    expect(new Set(taskExamples.map((example) => example.context))).toEqual(
-      new Set(['education', 'management', 'entrepreneurship', 'marketing', 'general']),
-    )
+    const contexts = new Set(taskExamples.map((example) => example.context))
+
+    for (const requiredContext of ['education', 'management', 'entrepreneurship', 'marketing', 'general'] as const) {
+      expect(contexts.has(requiredContext)).toBe(true)
+    }
+  })
+
+  it('offers a visible example for social organizations', () => {
+    expect(taskExamples.some((example) => example.context === 'social-organizations')).toBe(true)
   })
 })

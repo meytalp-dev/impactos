@@ -14,7 +14,7 @@ export const preparedRoutes: PreparedRoute[] = [
       { order: 2, title: 'המחישו את הרעיון', role: 'מעצב חומרי למידה', primaryToolIds: ['canva'], alternativeToolIds: ['napkin'], instruction: 'צרו המחשה פשוטה שמתאימה לגיל ולקשר.' },
     ], warning: 'התאימו את התוכן לגיל, לתוכנית הלימודים ולשיקול דעת פדגוגי.', finalOutput: 'תוכנית שיעור ראשונית עם פעילות וחומר המחשה.', starterPrompt: 'בנה/י שיעור בנושא [נושא] לקהל [גיל או קבוצה], עם יעד למידה, פתיחה, פעילות וסיכום.' },
   {
-    id: 'survey-to-insights', title: 'שאלון לתובנות', inputTypes: ['data', 'text'], taskTypes: ['analyze', 'summarize'], outputType: 'report', context: 'management', audience: 'מנהלים, צוותי שירות ומובילי קהילות.',
+    id: 'survey-to-insights', title: 'שאלון לתובנות', inputTypes: ['data', 'text'], taskTypes: ['analyze', 'summarize'], outputType: 'report', context: 'management', audience: 'מנהלים, צוותי שירות, ארגונים חברתיים ומובילי קהילות.',
     steps: [
       { order: 1, title: 'נקו וסקרו את הנתונים', role: 'אנליסט נתונים', primaryToolIds: ['excel-copilot'], alternativeToolIds: ['chatgpt'], instruction: 'זהו מגמות, חריגים ושאלות להמשך בדיקה.' },
       { order: 2, title: 'נסחו תובנות', role: 'יועץ החלטות', primaryToolIds: ['claude'], alternativeToolIds: ['gemini'], instruction: 'הפכו ממצאים לתובנות והמלצות זהירות.' },

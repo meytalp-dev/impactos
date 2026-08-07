@@ -40,7 +40,7 @@ export type Priority = 'speed' | 'quality' | 'creativity' | 'control' | 'privacy
 export type PrivacyAnswer = 'public' | 'internal' | 'sensitive'
 export type Difficulty = 'beginner' | 'intermediate' | 'advanced'
 export type PricingModel = 'free' | 'freemium' | 'paid'
-export type AudienceContext = 'education' | 'management' | 'entrepreneurship' | 'marketing' | 'general'
+export type AudienceContext = 'education' | 'management' | 'entrepreneurship' | 'marketing' | 'social-organizations' | 'general'
 
 export interface ToolFamily {
   id: ToolFamilyId
