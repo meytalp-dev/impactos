@@ -2,7 +2,7 @@ import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { slides } from '../data/slides'
 import { SlideRenderer } from '../features/presentation/SlideRenderer'
-import type { SlideDefinition, SlideLayout } from '../lib/presentationTypes'
+import type { SlideDefinition } from '../lib/presentationTypes'
 
 const baseSlide = {
   id: 'review-fixture',
@@ -33,15 +33,30 @@ describe('SlideRenderer layout dispatch', () => {
     expect(screen.getByLabelText('מסלולים לקטגוריות עבודה')).toBeInTheDocument()
   })
 
-  it.each<SlideLayout>(['activity', 'demo', 'families', 'summary'])(
-    'renders declared %s layouts through the standard content renderer',
-    (layout) => {
-      renderSlide({ ...baseSlide, layout, variant: 'standard' } as SlideDefinition)
+  it.each([
+    ['junction-task', 'ענן אפשרויות'],
+    ['junction-involvement', 'מצבי מעורבות'],
+    ['demo-fast-route', 'מסלול עבודה'],
+    ['game-choose-route', 'משחק החלטה'],
+    ['families-map', 'מפת משפחות כלים'],
+    ['navigator-walkthrough', 'שאלות הניווט'],
+  ])('renders %s through its typed visual variant', (id, accessibleName) => {
+    const slide = slides.find((candidate) => candidate.id === id)
+    expect(slide).toBeDefined()
 
-      expect(screen.getByLabelText(`תוכן שקופית ${layout}`)).toBeInTheDocument()
-      expect(screen.getByRole('heading', { name: 'שקופית בדיקה' })).toBeInTheDocument()
-    },
-  )
+    renderSlide({ ...slide, id: `unknown-${id}` } as SlideDefinition)
+
+    expect(screen.getByLabelText(accessibleName)).toBeInTheDocument()
+  })
+
+  it('renders the summary call to action as a real navigator link', () => {
+    const summary = slides.find((slide) => slide.id === 'summary')
+    expect(summary).toBeDefined()
+
+    renderSlide(summary as SlideDefinition)
+
+    expect(screen.getByRole('link', { name: 'מה המשימה שלך היום?' })).toHaveAttribute('href', '/navigator')
+  })
 
   it('fails visibly when runtime slide data contains an unsupported variant', () => {
     renderSlide({
@@ -54,7 +69,7 @@ describe('SlideRenderer layout dispatch', () => {
   })
 
   it('models the opening act variants explicitly instead of encoding them in ids', () => {
-    expect(slides.map(({ layout, variant }) => [layout, variant])).toEqual([
+    expect(slides.slice(0, 5).map(({ layout, variant }) => [layout, variant])).toEqual([
       ['cover', 'route-map'],
       ['statement', 'tool-overload'],
       ['statement', 'problem'],

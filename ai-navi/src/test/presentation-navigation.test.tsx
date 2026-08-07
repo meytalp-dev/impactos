@@ -10,9 +10,11 @@ function renderPresentation() {
 }
 
 describe('AI NAVI presentation data', () => {
-  it('defines the complete five-slide opening act in its approved order', () => {
-    expect(slides).toHaveLength(5)
-    expect(slides.map(({ title }) => title)).toEqual([
+  it('keeps the complete five-slide opening act at the start of the full deck', () => {
+    const openingSlides = slides.slice(0, 5)
+
+    expect(openingSlides).toHaveLength(5)
+    expect(openingSlides.map(({ title }) => title)).toEqual([
       'AI NAVI',
       toolOverloadTitle,
       'הבעיה אינה מחסור בכלים',
@@ -37,11 +39,12 @@ describe('AI NAVI presentation data', () => {
   })
 
   it('keeps the opening act projection-ready with useful notes and a five-to-eight-minute duration', () => {
-    const totalDuration = slides.reduce((sum, slide) => sum + slide.duration, 0)
+    const openingSlides = slides.slice(0, 5)
+    const totalDuration = openingSlides.reduce((sum, slide) => sum + slide.duration, 0)
 
     expect(totalDuration).toBeGreaterThanOrEqual(5 * 60)
     expect(totalDuration).toBeLessThanOrEqual(8 * 60)
-    for (const slide of slides) {
+    for (const slide of openingSlides) {
       expect(slide.speakerNotes.length).toBeGreaterThanOrEqual(2)
       expect(slide.speakerNotes.length).toBeLessThanOrEqual(5)
       expect(slide.speakerNotes.every((note) => note.trim().length > 0)).toBe(true)
@@ -92,7 +95,7 @@ describe('PresentationShell navigation', () => {
     renderPresentation()
 
     fireEvent.keyDown(window, { key: 'End' })
-    expect(screen.getByRole('heading', { name: 'שישה צמתים. החלטה אחת טובה יותר.' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'לא צריך עוד כלי. צריך החלטה טובה יותר.' })).toBeInTheDocument()
     fireEvent.keyDown(window, { key: 'Home' })
     expect(screen.getByRole('heading', { name: 'AI NAVI' })).toBeInTheDocument()
   })
@@ -102,9 +105,9 @@ describe('PresentationShell navigation', () => {
     fireEvent.keyDown(window, { key: 'n' })
 
     const drawer = screen.getByRole('complementary', { name: 'הערות מרצה' })
-    expect(within(drawer).getByText('שקופית 1 מתוך 5')).toBeInTheDocument()
+    expect(within(drawer).getByText('שקופית 1 מתוך 26')).toBeInTheDocument()
     expect(within(drawer).getByText('00:00')).toBeInTheDocument()
-    expect(within(drawer).getByText('משך מומלץ: 01:00')).toBeInTheDocument()
+    expect(within(drawer).getByText('משך מומלץ: 01:15')).toBeInTheDocument()
     expect(within(drawer).getByText('מסר מרכזי: לא צריך להכיר כל כלי; צריך לדעת לנווט.')).toBeInTheDocument()
     expect(within(drawer).getByText(`הבא: ${toolOverloadTitle}`)).toBeInTheDocument()
     expect(within(drawer).getByLabelText('מעבר לשקופית')).toBeInTheDocument()
@@ -124,7 +127,7 @@ describe('PresentationShell navigation', () => {
     expect(screen.getByRole('heading', { name: 'AI NAVI' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'הצגת הערות מרצה' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'מעבר למסך מלא' })).toBeInTheDocument()
-    expect(screen.getByLabelText('התקדמות במצגת')).toHaveTextContent('1 מתוך 5')
+    expect(screen.getByLabelText('התקדמות במצגת')).toHaveTextContent('1 מתוך 26')
   })
 
   it('uses the primary pointer control to reveal slide content before advancing', () => {
@@ -165,7 +168,7 @@ describe('PresentationShell navigation', () => {
 
     const jump = screen.getByLabelText('מעבר לשקופית')
     fireEvent.keyDown(jump, { key: 'End' })
-    expect(screen.getByLabelText('התקדמות במצגת')).toHaveTextContent('1 מתוך 5')
+    expect(screen.getByLabelText('התקדמות במצגת')).toHaveTextContent('1 מתוך 26')
 
     fireEvent.click(screen.getByRole('button', { name: 'מעבר למסך מלא' }))
     expect(await screen.findByRole('status')).toHaveTextContent('לא ניתן לעבור למסך מלא')

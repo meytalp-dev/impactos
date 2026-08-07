@@ -61,6 +61,13 @@ describe('presentation mobile readability contract', () => {
     const fourteenPixelSelectors = [
       '.navi-slide-route li',
       '.navi-slide-junctions__map strong',
+      '.navi-slide-options__content li',
+      '.navi-slide-modes__list strong',
+      '.navi-slide-plan__route strong',
+      '.navi-slide-game__board li strong',
+      '.navi-slide-families__station strong',
+      '.navi-slide-navigator__questions strong',
+      '.navi-slide-takeaways__list li',
     ]
 
     for (const selector of twelvePixelSelectors) {

@@ -1,5 +1,9 @@
 import type { ReactNode } from 'react'
-import type { SlideDefinition, SlideLayout, SlideVariant } from '../../lib/presentationTypes'
+import type {
+  SlideDefinition,
+  SlideLayout,
+  SlideVariant,
+} from '../../lib/presentationTypes'
 
 type SlideRendererProps = {
   slide: SlideDefinition
@@ -8,18 +12,26 @@ type SlideRendererProps = {
   totalSlides: number
 }
 
-type RouteVisual = {
-  waze?: string[]
-  aiNavi?: string[]
-  routes?: string[]
-  tools?: string[]
-}
+type VisualSlide<Kind extends string> = Extract<
+  SlideDefinition,
+  { visual: { kind: Kind } }
+>
 
 const mistakeDetails = [
   'בוחרים לפי מה שמדברים עליו עכשיו',
   'מכריחים כל משימה להתאים להרגל',
   'פותחים אפליקציה לפני שמגדירים הצלחה',
 ]
+
+function SlideHeading({ slide }: { slide: SlideDefinition }) {
+  return (
+    <div className="navi-slide-heading">
+      {slide.eyebrow && <p className="navi-slide__eyebrow">{slide.eyebrow}</p>}
+      <h2>{slide.title}</h2>
+      {slide.body && <p className="navi-slide-heading__body">{slide.body}</p>}
+    </div>
+  )
+}
 
 function RouteSequence({ label, items, tone }: { label: string; items: string[]; tone: string }) {
   return (
@@ -37,8 +49,7 @@ function RouteSequence({ label, items, tone }: { label: string; items: string[];
   )
 }
 
-function CoverSlide({ slide }: { slide: SlideDefinition }) {
-  const routes = (slide.visual as RouteVisual | undefined)?.routes ?? []
+function CoverSlide({ slide }: { slide: VisualSlide<'route-map'> }) {
   return (
     <div className="navi-slide-layout navi-slide-layout--mobile-stack navi-slide-cover" data-mobile-layout="stack">
       <div className="navi-slide-cover__copy">
@@ -48,7 +59,7 @@ function CoverSlide({ slide }: { slide: SlideDefinition }) {
       </div>
       <div className="navi-slide-cover__map" aria-label="מסלולים לקטגוריות עבודה">
         <span className="navi-slide-cover__hub">N</span>
-        {routes.map((route, index) => (
+        {slide.visual.routes.map((route, index) => (
           <span className={`navi-slide-cover__route navi-slide-cover__route--${index + 1}`} key={route}>
             <i aria-hidden="true" />
             <b>{route}</b>
@@ -59,17 +70,16 @@ function CoverSlide({ slide }: { slide: SlideDefinition }) {
   )
 }
 
-function ToolOverloadSlide({ slide, revealIndex }: { slide: SlideDefinition; revealIndex: number }) {
-  const tools = (slide.visual as RouteVisual | undefined)?.tools ?? []
+function ToolOverloadSlide({ slide, revealIndex }: { slide: VisualSlide<'tool-overload'>; revealIndex: number }) {
   return (
     <div className="navi-slide-layout navi-slide-layout--mobile-stack navi-slide-overload" data-mobile-layout="stack">
       <div className="navi-slide-overload__copy">
         <p className="navi-slide__eyebrow">{slide.eyebrow}</p>
         <h2>{slide.title}</h2>
-        <p>{slide.interaction}</p>
+        <p>{slide.interactionPrompt}</p>
       </div>
       <div className="navi-slide-overload__cards" aria-label="עומס כלי בינה מלאכותית">
-        {tools.map((tool, index) => {
+        {slide.visual.tools.map((tool, index) => {
           const disappearAt = 3 - (index % 3)
           const hidden = revealIndex >= disappearAt
           return <span key={tool} className={hidden ? 'is-hidden' : ''} aria-hidden={hidden}>{tool}</span>
@@ -79,7 +89,7 @@ function ToolOverloadSlide({ slide, revealIndex }: { slide: SlideDefinition; rev
   )
 }
 
-function ProblemSlide({ slide }: { slide: SlideDefinition }) {
+function ProblemSlide({ slide }: { slide: Extract<SlideDefinition, { variant: 'problem' }> }) {
   return (
     <div className="navi-slide-layout navi-slide-layout--mobile-stack navi-slide-problem" data-mobile-layout="stack">
       <p className="navi-slide__eyebrow">{slide.eyebrow}</p>
@@ -98,22 +108,21 @@ function ProblemSlide({ slide }: { slide: SlideDefinition }) {
   )
 }
 
-function ComparisonSlide({ slide }: { slide: SlideDefinition }) {
-  const visual = slide.visual as RouteVisual | undefined
+function ComparisonSlide({ slide }: { slide: VisualSlide<'route-comparison'> }) {
   return (
     <div className="navi-slide-layout navi-slide-layout--mobile-stack navi-slide-comparison" data-mobile-layout="stack">
       <p className="navi-slide__eyebrow">{slide.eyebrow}</p>
       <h2>{slide.title}</h2>
       <div className="navi-slide-comparison__routes">
-        <RouteSequence label="WAZE" items={visual?.waze ?? []} tone="blue" />
-        <RouteSequence label="AI NAVI" items={visual?.aiNavi ?? []} tone="peach" />
+        <RouteSequence label="WAZE" items={slide.visual.waze} tone="blue" />
+        <RouteSequence label="AI NAVI" items={slide.visual.aiNavi} tone="peach" />
       </div>
       <p className="navi-slide-comparison__message">{slide.body}</p>
     </div>
   )
 }
 
-function JunctionMapSlide({ slide }: { slide: SlideDefinition }) {
+function JunctionMapSlide({ slide }: { slide: Extract<SlideDefinition, { variant: 'junction-map' }> }) {
   return (
     <div className="navi-slide-layout navi-slide-layout--mobile-stack navi-slide-junctions" data-mobile-layout="stack">
       <div className="navi-slide-junctions__heading">
@@ -134,13 +143,137 @@ function JunctionMapSlide({ slide }: { slide: SlideDefinition }) {
   )
 }
 
-function StandardSlide({ slide }: { slide: SlideDefinition }) {
+function OptionCloudSlide({ slide }: { slide: VisualSlide<'option-cloud'> }) {
   return (
-    <div className={`navi-slide-layout navi-slide-layout--mobile-stack navi-slide-generic navi-slide-generic--${slide.layout}`} data-mobile-layout="stack" aria-label={`תוכן שקופית ${slide.layout}`}>
-      <p className="navi-slide__eyebrow">{slide.eyebrow}</p>
-      <h2>{slide.title}</h2>
-      {slide.body && <p>{slide.body}</p>}
-      {slide.bullets && <ul>{slide.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul>}
+    <div className="navi-slide-layout navi-slide-layout--mobile-stack navi-slide-options" data-mobile-layout="stack">
+      <SlideHeading slide={slide} />
+      <div className="navi-slide-options__content">
+        {slide.visual.instruction && <strong className="navi-slide-options__instruction">{slide.visual.instruction}</strong>}
+        <ul aria-label="ענן אפשרויות">
+          {slide.visual.items.map((item) => (
+            <li key={item.label}>
+              <span>{item.label}</span>
+              {item.meta && <small>{item.meta}</small>}
+            </li>
+          ))}
+        </ul>
+        {slide.visual.example && <p className="navi-slide-options__example">{slide.visual.example}</p>}
+        {slide.visual.message && <p className="navi-slide-options__message">{slide.visual.message}</p>}
+      </div>
+    </div>
+  )
+}
+
+function RoleModesSlide({ slide }: { slide: VisualSlide<'role-modes'> }) {
+  return (
+    <div className="navi-slide-layout navi-slide-layout--mobile-stack navi-slide-modes" data-mobile-layout="stack">
+      <SlideHeading slide={slide} />
+      <ol className="navi-slide-modes__list" aria-label="מצבי מעורבות">
+        {slide.visual.items.map((item, index) => (
+          <li key={item.label}>
+            <span>{String(index + 1).padStart(2, '0')}</span>
+            <strong>{item.label}</strong>
+            <p>{item.detail}</p>
+          </li>
+        ))}
+      </ol>
+      {slide.visual.message && <p className="navi-slide-modes__message">{slide.visual.message}</p>}
+    </div>
+  )
+}
+
+function RoutePlanSlide({ slide }: { slide: VisualSlide<'route-plan'> }) {
+  return (
+    <div className="navi-slide-layout navi-slide-layout--mobile-stack navi-slide-plan" data-mobile-layout="stack">
+      <SlideHeading slide={slide} />
+      <ol className="navi-slide-plan__route" aria-label="מסלול עבודה">
+        {slide.visual.steps.map((step, index) => (
+          <li key={`${step.label}-${index}`}>
+            <span>{String(index + 1).padStart(2, '0')}</span>
+            <strong>{step.label}</strong>
+            {step.detail && <small>{step.detail}</small>}
+            {index < slide.visual.steps.length - 1 && <i aria-hidden="true">←</i>}
+          </li>
+        ))}
+      </ol>
+      {slide.visual.outcome && <p className="navi-slide-plan__outcome">{slide.visual.outcome}</p>}
+      {slide.visual.tradeoff && <p className="navi-slide-plan__tradeoff">{slide.visual.tradeoff}</p>}
+    </div>
+  )
+}
+
+function ChoiceGridSlide({ slide }: { slide: VisualSlide<'choice-grid'> }) {
+  return (
+    <div className="navi-slide-layout navi-slide-layout--mobile-stack navi-slide-game" data-mobile-layout="stack" data-interaction={slide.interaction}>
+      <SlideHeading slide={slide} />
+      <section className="navi-slide-game__board" aria-label="משחק החלטה">
+        <h3>{slide.visual.prompt}</h3>
+        <ol>
+          {slide.visual.choices.map((choice, index) => (
+            <li key={choice.label}>
+              <span>{String.fromCharCode(65 + index)}</span>
+              <strong>{choice.label}</strong>
+              {choice.detail && <small>{choice.detail}</small>}
+              {choice.meta && <b>{choice.meta}</b>}
+            </li>
+          ))}
+        </ol>
+        <p className="navi-slide-game__answer">כיוון מומלץ: {slide.visual.answer}</p>
+        {slide.visual.footer && <p className="navi-slide-game__footer">{slide.visual.footer}</p>}
+      </section>
+    </div>
+  )
+}
+
+function FamilyMapSlide({ slide }: { slide: VisualSlide<'family-map'> }) {
+  return (
+    <div className="navi-slide-layout navi-slide-layout--mobile-stack navi-slide-families" data-mobile-layout="stack">
+      <SlideHeading slide={slide} />
+      <ol className="navi-slide-families__map" aria-label="מפת משפחות כלים">
+        {slide.visual.families.map((family, index) => (
+          <li className={`navi-slide-families__station navi-slide-families__station--${family.line}`} key={family.name}>
+            <span>{String(index + 1).padStart(2, '0')}</span>
+            <strong>{family.name}</strong>
+            <small>{family.use}</small>
+          </li>
+        ))}
+      </ol>
+      {slide.visual.message && <p className="navi-slide-families__message">{slide.visual.message}</p>}
+    </div>
+  )
+}
+
+function NavigatorSlide({ slide }: { slide: VisualSlide<'navigator'> }) {
+  return (
+    <div className="navi-slide-layout navi-slide-layout--mobile-stack navi-slide-navigator" data-mobile-layout="stack">
+      <SlideHeading slide={slide} />
+      <ol className="navi-slide-navigator__questions" aria-label="שאלות הניווט">
+        {slide.visual.questions.map((question, index) => (
+          <li key={question}><span>{index + 1}</span><strong>{question}</strong></li>
+        ))}
+      </ol>
+      <ul className="navi-slide-navigator__examples" aria-label="דוגמאות לקהלים">
+        {slide.visual.examples.map((example) => (
+          <li key={example.audience}><strong>{example.audience}</strong><span>{example.task}</span></li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+function TakeawaysSlide({ slide }: { slide: VisualSlide<'takeaways'> }) {
+  return (
+    <div className="navi-slide-layout navi-slide-layout--mobile-stack navi-slide-takeaways" data-mobile-layout="stack">
+      <SlideHeading slide={slide} />
+      <div className="navi-slide-takeaways__phrases">
+        {slide.visual.keyPhrases.map((phrase) => <strong key={phrase}>{phrase}</strong>)}
+      </div>
+      <ol className="navi-slide-takeaways__list">
+        {slide.visual.takeaways.map((takeaway, index) => (
+          <li key={takeaway}><span>{index + 1}</span>{takeaway}</li>
+        ))}
+      </ol>
+      <a className="navi-slide-takeaways__cta" href={slide.visual.href}>{slide.visual.cta}</a>
     </div>
   )
 }
@@ -155,24 +288,43 @@ function UnsupportedSlide({ layout, variant }: { layout: string; variant: string
 
 type SlideContentRenderer = (slide: SlideDefinition, revealIndex: number) => ReactNode
 
+function typedRenderer<Slide extends SlideDefinition>(
+  render: (slide: Slide, revealIndex: number) => ReactNode,
+): SlideContentRenderer {
+  return (slide, revealIndex) => render(slide as Slide, revealIndex)
+}
+
 const slideRenderers: Record<SlideLayout, Partial<Record<SlideVariant, SlideContentRenderer>>> = {
   cover: {
-    'route-map': (slide) => <CoverSlide slide={slide} />,
+    'route-map': typedRenderer<VisualSlide<'route-map'>>((slide) => <CoverSlide slide={slide} />),
   },
   statement: {
-    'tool-overload': (slide, revealIndex) => <ToolOverloadSlide slide={slide} revealIndex={revealIndex} />,
-    problem: (slide) => <ProblemSlide slide={slide} />,
+    'tool-overload': typedRenderer<VisualSlide<'tool-overload'>>((slide, revealIndex) => <ToolOverloadSlide slide={slide} revealIndex={revealIndex} />),
+    problem: typedRenderer<Extract<SlideDefinition, { variant: 'problem' }>>((slide) => <ProblemSlide slide={slide} />),
   },
   comparison: {
-    'route-comparison': (slide) => <ComparisonSlide slide={slide} />,
+    'route-comparison': typedRenderer<VisualSlide<'route-comparison'>>((slide) => <ComparisonSlide slide={slide} />),
+    'role-modes': typedRenderer<VisualSlide<'role-modes'>>((slide) => <RoleModesSlide slide={slide} />),
+    'route-kinds': typedRenderer<VisualSlide<'role-modes'>>((slide) => <RoleModesSlide slide={slide} />),
   },
   map: {
-    'junction-map': (slide) => <JunctionMapSlide slide={slide} />,
+    'junction-map': typedRenderer<Extract<SlideDefinition, { variant: 'junction-map' }>>((slide) => <JunctionMapSlide slide={slide} />),
+    'option-cloud': typedRenderer<VisualSlide<'option-cloud'>>((slide) => <OptionCloudSlide slide={slide} />),
   },
-  activity: { standard: (slide) => <StandardSlide slide={slide} /> },
-  demo: { standard: (slide) => <StandardSlide slide={slide} /> },
-  families: { standard: (slide) => <StandardSlide slide={slide} /> },
-  summary: { standard: (slide) => <StandardSlide slide={slide} /> },
+  activity: {
+    'choice-grid': typedRenderer<VisualSlide<'choice-grid'>>((slide) => <ChoiceGridSlide slide={slide} />),
+  },
+  demo: {
+    'route-plan': typedRenderer<VisualSlide<'route-plan'>>((slide) => <RoutePlanSlide slide={slide} />),
+  },
+  families: {
+    'family-map': typedRenderer<VisualSlide<'family-map'>>((slide) => <FamilyMapSlide slide={slide} />),
+    'family-group': typedRenderer<VisualSlide<'family-map'>>((slide) => <FamilyMapSlide slide={slide} />),
+  },
+  summary: {
+    navigator: typedRenderer<VisualSlide<'navigator'>>((slide) => <NavigatorSlide slide={slide} />),
+    takeaways: typedRenderer<VisualSlide<'takeaways'>>((slide) => <TakeawaysSlide slide={slide} />),
+  },
 }
 
 export function SlideRenderer({ slide, revealIndex, slideNumber, totalSlides }: SlideRendererProps) {
