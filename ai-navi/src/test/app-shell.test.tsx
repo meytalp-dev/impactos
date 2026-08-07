@@ -19,8 +19,8 @@ describe('AI NAVI application shell', () => {
     expect(screen.getByRole('main')).toBeInTheDocument()
     expect(screen.getByText('AI NAVI')).toBeInTheDocument()
     expect(screen.getByText('לא מתחילים בכלי. מתחילים במשימה.')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'למצגת' })).toHaveAttribute('href', '/presentation')
-    expect(screen.getByRole('link', { name: 'להתחלת ניווט' })).toHaveAttribute('href', '/navigator')
+    expect(screen.getByRole('link', { name: 'למצגת האינטראקטיבית' })).toHaveAttribute('href', '/presentation')
+    expect(screen.getByRole('link', { name: 'להתחלת ניווט אישי' })).toHaveAttribute('href', '/navigator')
     expect(screen.getByText(/המלצות וכלים עשויים להשתנות/)).toBeInTheDocument()
   })
 
@@ -31,12 +31,29 @@ describe('AI NAVI application shell', () => {
       </MemoryRouter>,
     )
 
-    expect(screen.getByText('מתאים לחינוך, ניהול, יזמות, שיווק ולכל משימה כללית.')).toBeInTheDocument()
+    for (const context of ['חינוך', 'ניהול', 'יזמות', 'שיווק', 'שימוש כללי']) {
+      expect(screen.getByText(context)).toBeVisible()
+    }
   })
 
   it('has a print contract that removes the persistent freshness notice', () => {
     const globalCss = readFileSync(resolve(process.cwd(), 'src/styles/global.css'), 'utf8')
 
     expect(globalCss).toMatch(/@media print\s*\{[\s\S]*\.navi-freshness\s*,\s*\.navi-skip-link\s*\{\s*display:\s*none;?\s*\}/)
+  })
+
+  it.each([
+    ['/presentation', 'בניית מצגת'],
+    ['/navigator', 'התחלת ניווט'],
+    ['/results', 'התוצאות שלך'],
+  ])('renders route content on a direct visit to %s', (route, title) => {
+    render(
+      <MemoryRouter initialEntries={[route]}>
+        <App />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByRole('heading', { name: title })).toBeInTheDocument()
+    expect(screen.queryByText('לא מתחילים בכלי. מתחילים במשימה.')).not.toBeInTheDocument()
   })
 })

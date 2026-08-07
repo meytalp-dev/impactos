@@ -1,6 +1,6 @@
-import { ArrowLeft } from 'lucide-react'
-import { MotionConfig, motion } from 'framer-motion'
-import { Link, Route, Routes } from 'react-router-dom'
+import { MotionConfig } from 'framer-motion'
+import { Route, Routes } from 'react-router-dom'
+import HomePage from './pages/HomePage'
 
 const routeContent = {
   presentation: 'בניית מצגת',
@@ -10,30 +10,6 @@ const routeContent = {
 
 function PlaceholderPage({ title }: { title: string }) {
   return <h1 className="navi-page-title">{title}</h1>
-}
-
-function HomePage() {
-  return (
-    <motion.section
-      className="navi-home"
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
-      <p className="navi-kicker">מרחב לחשיבה עם בינה מלאכותית</p>
-      <h1>AI NAVI</h1>
-      <p className="navi-promise">לא מתחילים בכלי. מתחילים במשימה.</p>
-      <p className="navi-audience">מתאים לחינוך, ניהול, יזמות, שיווק ולכל משימה כללית.</p>
-      <nav className="navi-destinations" aria-label="יעדים ראשיים">
-        <Link className="navi-primary-link navi-route-peach" to="/presentation">
-          למצגת <ArrowLeft aria-hidden="true" size={20} strokeWidth={2.5} />
-        </Link>
-        <Link className="navi-primary-link navi-route-sage" to="/navigator">
-          להתחלת ניווט <ArrowLeft aria-hidden="true" size={20} strokeWidth={2.5} />
-        </Link>
-      </nav>
-    </motion.section>
-  )
 }
 
 export default function App() {
