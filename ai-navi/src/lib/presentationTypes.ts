@@ -38,9 +38,50 @@ export type RouteStep = {
 }
 
 export type FamilyItem = {
+  id?: string
   name: string
   use: string
   line: 'blue' | 'peach' | 'sage'
+}
+
+export type PollSelectionMode = 'single' | 'multiple'
+
+export type PollOption = {
+  id: string
+  label: string
+  detail?: string
+}
+
+export type ChoiceGameVisual = {
+  kind: 'choice-game'
+  prompt: string
+  selectionMode: PollSelectionMode
+  options: PollOption[]
+  correctOptionIds?: string[]
+  unsafeOptionIds?: string[]
+  reveal: {
+    title: string
+    explanation: string
+    humanChecks?: string[]
+  }
+  disclaimer?: string
+}
+
+export type BudgetOption = PollOption & {
+  cost: number
+}
+
+export type BudgetGameVisual = {
+  kind: 'budget-game'
+  prompt: string
+  budget: number
+  options: BudgetOption[]
+  humanReviewerId: string
+  reveal: {
+    title: string
+    example: string
+    explanation: string
+  }
 }
 
 export type AudienceExample = {
@@ -60,13 +101,6 @@ export type OptionCloudVisual = {
 }
 export type RoleModesVisual = { kind: 'role-modes'; items: LabeledItem[]; message?: string }
 export type RoutePlanVisual = { kind: 'route-plan'; steps: RouteStep[]; outcome?: string; tradeoff?: string }
-export type ChoiceGridVisual = {
-  kind: 'choice-grid'
-  prompt: string
-  choices: LabeledItem[]
-  answer: string
-  footer?: string
-}
 export type FamilyMapVisual = { kind: 'family-map'; families: FamilyItem[]; message?: string }
 export type NavigatorVisual = {
   kind: 'navigator'
@@ -100,7 +134,8 @@ export type SlideDefinition =
   | (SlideBase & { layout: 'map'; variant: 'option-cloud'; visual: OptionCloudVisual })
   | (SlideBase & { layout: 'comparison'; variant: 'role-modes' | 'route-kinds'; visual: RoleModesVisual })
   | (SlideBase & { layout: 'demo'; variant: 'route-plan'; visual: RoutePlanVisual })
-  | (SlideBase & { layout: 'activity'; variant: 'choice-grid'; interaction: SlideInteraction; visual: ChoiceGridVisual })
+  | (SlideBase & { layout: 'activity'; variant: 'choice-grid'; interaction: Exclude<SlideInteraction, 'budget-game'>; visual: ChoiceGameVisual })
+  | (SlideBase & { layout: 'activity'; variant: 'choice-grid'; interaction: 'budget-game'; visual: BudgetGameVisual })
   | (SlideBase & { layout: 'families'; variant: 'family-map' | 'family-group'; visual: FamilyMapVisual })
   | (SlideBase & { layout: 'summary'; variant: 'navigator'; visual: NavigatorVisual })
   | (SlideBase & { layout: 'summary'; variant: 'takeaways'; visual: TakeawaysVisual })

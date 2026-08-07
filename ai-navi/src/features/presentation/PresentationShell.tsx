@@ -40,6 +40,8 @@ export function PresentationShell({ slides }: { slides: SlideDefinition[] }) {
   const [notesOpen, setNotesOpen] = useState(false)
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const [fullscreenMessage, setFullscreenMessage] = useState('')
+  const [interactionResetToken, setInteractionResetToken] = useState(0)
+  const [interactionMessage, setInteractionMessage] = useState('')
   const startedAt = useRef(Date.now())
   const slide = slides[slideIndex]
   const revealCount = slide?.revealSteps?.length ?? 0
@@ -63,6 +65,7 @@ export function PresentationShell({ slides }: { slides: SlideDefinition[] }) {
   const jumpTo = useCallback((index: number) => {
     setSlideIndex(clampSlideIndex(index, slides.length))
     setRevealIndex(0)
+    setInteractionMessage('')
   }, [slides.length])
 
   const previous = useCallback(() => jumpTo(slideIndex - 1), [jumpTo, slideIndex])
@@ -90,6 +93,12 @@ export function PresentationShell({ slides }: { slides: SlideDefinition[] }) {
     } catch {
       setFullscreenMessage('לא ניתן לעבור למסך מלא')
     }
+  }, [])
+
+  const resetCurrentInteraction = useCallback(() => {
+    setRevealIndex(0)
+    setInteractionResetToken((token) => token + 1)
+    setInteractionMessage('האינטראקציה בשקופית אופסה')
   }, [])
 
   useEffect(() => {
@@ -134,7 +143,14 @@ export function PresentationShell({ slides }: { slides: SlideDefinition[] }) {
   return (
     <section className="navi-presentation-shell" dir="rtl" aria-label="מצגת AI NAVI">
       <div className="navi-presentation-stage-frame">
-        <SlideRenderer slide={slide} revealIndex={revealIndex} slideNumber={slideIndex + 1} totalSlides={slides.length} />
+        <SlideRenderer
+          key={slide.id}
+          slide={slide}
+          revealIndex={revealIndex}
+          slideNumber={slideIndex + 1}
+          totalSlides={slides.length}
+          resetToken={interactionResetToken}
+        />
         {revealCount > 0 && (
           <span className="navi-reveal-status" aria-label="מצב חשיפה">{revealIndex} מתוך {revealCount}</span>
         )}
@@ -159,11 +175,12 @@ export function PresentationShell({ slides }: { slides: SlideDefinition[] }) {
           elapsedSeconds={elapsedSeconds}
           nextSlide={slides[slideIndex + 1]}
           onJump={jumpTo}
-          onReset={() => setRevealIndex(0)}
+          onReset={resetCurrentInteraction}
           onClose={() => setNotesOpen(false)}
         />
       )}
       {fullscreenMessage && <p className="navi-presentation-status" role="status">{fullscreenMessage}</p>}
+      {interactionMessage && <p className="navi-presentation-status" role="status" aria-live="polite">{interactionMessage}</p>}
     </section>
   )
 }

@@ -4,12 +4,16 @@ import type {
   SlideLayout,
   SlideVariant,
 } from '../../lib/presentationTypes'
+import { BudgetGame } from './BudgetGame'
+import { ChoiceGame } from './ChoiceGame'
+import { FamilyMap } from './FamilyMap'
 
 type SlideRendererProps = {
   slide: SlideDefinition
   revealIndex: number
   slideNumber: number
   totalSlides: number
+  resetToken?: number
 }
 
 type VisualSlide<Kind extends string> = Extract<
@@ -202,30 +206,30 @@ function RoutePlanSlide({ slide }: { slide: VisualSlide<'route-plan'> }) {
   )
 }
 
-function ChoiceGridSlide({ slide }: { slide: VisualSlide<'choice-grid'> }) {
+function ActivitySlide({ slide, resetToken }: {
+  slide: Extract<SlideDefinition, { layout: 'activity' }>
+  resetToken: number
+}) {
   return (
     <div className="navi-slide-layout navi-slide-layout--mobile-stack navi-slide-game" data-mobile-layout="stack" data-interaction={slide.interaction}>
       <SlideHeading slide={slide} />
-      <section className="navi-slide-game__board" aria-label="משחק החלטה">
-        <h3>{slide.visual.prompt}</h3>
-        <ol>
-          {slide.visual.choices.map((choice, index) => (
-            <li key={choice.label}>
-              <span>{String.fromCharCode(65 + index)}</span>
-              <strong>{choice.label}</strong>
-              {choice.detail && <small>{choice.detail}</small>}
-              {choice.meta && <b>{choice.meta}</b>}
-            </li>
-          ))}
-        </ol>
-        <p className="navi-slide-game__answer">כיוון מומלץ: {slide.visual.answer}</p>
-        {slide.visual.footer && <p className="navi-slide-game__footer">{slide.visual.footer}</p>}
-      </section>
+      {slide.visual.kind === 'budget-game'
+        ? <BudgetGame data={slide.visual} resetToken={resetToken} />
+        : <ChoiceGame data={slide.visual} resetToken={resetToken} />}
     </div>
   )
 }
 
-function FamilyMapSlide({ slide }: { slide: VisualSlide<'family-map'> }) {
+function FamilyMapSlide({ slide, resetToken }: { slide: VisualSlide<'family-map'>; resetToken: number }) {
+  return (
+    <div className="navi-slide-layout navi-slide-layout--mobile-stack navi-slide-families" data-mobile-layout="stack">
+      <SlideHeading slide={slide} />
+      <FamilyMap data={slide.visual} resetToken={resetToken} />
+    </div>
+  )
+}
+
+function FamilyGroupSlide({ slide }: { slide: VisualSlide<'family-map'> }) {
   return (
     <div className="navi-slide-layout navi-slide-layout--mobile-stack navi-slide-families" data-mobile-layout="stack">
       <SlideHeading slide={slide} />
@@ -287,12 +291,12 @@ function UnsupportedSlide({ layout, variant }: { layout: string; variant: string
   )
 }
 
-type SlideContentRenderer = (slide: SlideDefinition, revealIndex: number) => ReactNode
+type SlideContentRenderer = (slide: SlideDefinition, revealIndex: number, resetToken: number) => ReactNode
 
 function typedRenderer<Slide extends SlideDefinition>(
-  render: (slide: Slide, revealIndex: number) => ReactNode,
+  render: (slide: Slide, revealIndex: number, resetToken: number) => ReactNode,
 ): SlideContentRenderer {
-  return (slide, revealIndex) => render(slide as Slide, revealIndex)
+  return (slide, revealIndex, resetToken) => render(slide as Slide, revealIndex, resetToken)
 }
 
 const slideRenderers: Record<SlideLayout, Partial<Record<SlideVariant, SlideContentRenderer>>> = {
@@ -313,14 +317,16 @@ const slideRenderers: Record<SlideLayout, Partial<Record<SlideVariant, SlideCont
     'option-cloud': typedRenderer<VisualSlide<'option-cloud'>>((slide) => <OptionCloudSlide slide={slide} />),
   },
   activity: {
-    'choice-grid': typedRenderer<VisualSlide<'choice-grid'>>((slide) => <ChoiceGridSlide slide={slide} />),
+    'choice-grid': typedRenderer<Extract<SlideDefinition, { layout: 'activity' }>>((slide, _revealIndex, resetToken) => (
+      <ActivitySlide slide={slide} resetToken={resetToken} />
+    )),
   },
   demo: {
     'route-plan': typedRenderer<VisualSlide<'route-plan'>>((slide) => <RoutePlanSlide slide={slide} />),
   },
   families: {
-    'family-map': typedRenderer<VisualSlide<'family-map'>>((slide) => <FamilyMapSlide slide={slide} />),
-    'family-group': typedRenderer<VisualSlide<'family-map'>>((slide) => <FamilyMapSlide slide={slide} />),
+    'family-map': typedRenderer<VisualSlide<'family-map'>>((slide, _revealIndex, resetToken) => <FamilyMapSlide slide={slide} resetToken={resetToken} />),
+    'family-group': typedRenderer<VisualSlide<'family-map'>>((slide) => <FamilyGroupSlide slide={slide} />),
   },
   summary: {
     navigator: typedRenderer<VisualSlide<'navigator'>>((slide) => <NavigatorSlide slide={slide} />),
@@ -328,12 +334,12 @@ const slideRenderers: Record<SlideLayout, Partial<Record<SlideVariant, SlideCont
   },
 }
 
-export function SlideRenderer({ slide, revealIndex, slideNumber, totalSlides }: SlideRendererProps) {
+export function SlideRenderer({ slide, revealIndex, slideNumber, totalSlides, resetToken = 0 }: SlideRendererProps) {
   const runtimeLayout = slide.layout as string
   const runtimeVariant = (slide as { variant?: string }).variant ?? 'missing-variant'
   const renderer = slideRenderers[runtimeLayout as SlideLayout]?.[runtimeVariant as SlideVariant]
   const content = renderer
-    ? renderer(slide, revealIndex)
+    ? renderer(slide, revealIndex, resetToken)
     : <UnsupportedSlide layout={runtimeLayout} variant={runtimeVariant} />
 
   return (
