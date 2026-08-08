@@ -23,22 +23,38 @@ export type TaskType =
   | 'build'
   | 'automate'
 
-export type InputType = 'idea' | 'text' | 'documents' | 'data' | 'image' | 'audio' | 'video' | 'web-links'
+export type InputType =
+  | 'none'
+  | 'idea'
+  | 'short-text'
+  | 'text'
+  | 'document'
+  | 'documents'
+  | 'data'
+  | 'image'
+  | 'audio'
+  | 'video'
+  | 'web-links'
 
 export type OutputType =
   | 'text'
+  | 'answer'
   | 'document'
   | 'presentation'
   | 'image'
   | 'video'
   | 'audio'
   | 'report'
+  | 'table'
+  | 'website'
   | 'app'
+  | 'process'
   | 'automation'
 
-export type Priority = 'speed' | 'quality' | 'creativity' | 'control' | 'privacy' | 'price' | 'ease'
-export type PrivacyAnswer = 'public' | 'internal' | 'sensitive' | 'yes' | 'unsure' | 'maybe'
+export type Priority = 'speed' | 'quality' | 'accuracy' | 'sources' | 'design' | 'creativity' | 'control' | 'privacy' | 'price' | 'ease'
+export type PrivacyAnswer = 'public' | 'internal' | 'sensitive' | 'no' | 'yes' | 'unsure' | 'maybe'
 export type Difficulty = 'beginner' | 'intermediate' | 'advanced'
+export type TimeAvailable = 'under-10-minutes' | 'under-one-hour' | 'several-hours' | 'one-day-or-more' | 'more-than-10-minutes'
 export type PricingModel = 'free' | 'freemium' | 'paid'
 export type AudienceContext = 'education' | 'management' | 'entrepreneurship' | 'marketing' | 'social-organizations' | 'general'
 
@@ -93,7 +109,9 @@ export interface PreparedRoute {
 
 export interface NavigatorAnswers {
   taskType?: TaskType
+  taskTypes?: TaskType[]
   inputType?: InputType
+  inputTypes?: InputType[]
   outputType?: OutputType
   priority?: Priority
   privacy?: PrivacyAnswer
@@ -102,12 +120,17 @@ export interface NavigatorAnswers {
   taskText?: string
   audience?: string
   priorities?: Priority[]
-  timeAvailable?: 'under-10-minutes' | 'more-than-10-minutes'
+  timeAvailable?: TimeAvailable
 }
 
 export interface PersistedNavigatorState {
-  version: number
+  version: 1
   answers: NavigatorAnswers
+  mode?: 'intro' | 'questions' | 'privacy-gate'
+  currentStep?: number
+  taskText?: string
+  privacyConfirmed?: boolean
+  complete?: boolean
 }
 
 export interface TaskExample {
