@@ -162,10 +162,12 @@ describe('presentation audience interactions', () => {
   })
 
   it('makes all nine family stations focusable and reveals the selected use in place', () => {
-    render(<FamilyMap data={familyMap} resetToken={0} />)
+    const view = render(<FamilyMap data={familyMap} resetToken={0} />)
 
     const stations = screen.getAllByRole('button')
     expect(stations).toHaveLength(9)
+    expect(view.container.querySelector('.navi-family-map__lines')).toHaveAttribute('aria-hidden', 'true')
+    expect(view.container.querySelector('.navi-family-map__lines path')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /נתונים/ }))
     expect(screen.getByRole('button', { name: /נתונים/ })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('region', { name: 'שימוש במשפחת נתונים' })).toHaveTextContent('לזהות דפוסים')
@@ -193,6 +195,27 @@ describe('presentation audience interactions', () => {
 
     expect(option).toHaveAttribute('aria-pressed', 'false')
     expect(screen.getByRole('status')).toHaveTextContent('האינטראקציה בשקופית אופסה')
+    expect(screen.getByRole('button', { name: 'חשיפת הסבר' })).toBeDisabled()
+  })
+
+  it('clears local interaction state after navigating away and returning', () => {
+    const activity: SlideDefinition = {
+      id: 'activity-fixture', section: 'בדיקה', title: 'משחק מסלול', duration: 30,
+      layout: 'activity', variant: 'choice-grid', interaction: 'choice-game',
+      speakerNotes: ['בדיקת ניווט'], visual: routeGame,
+    }
+    const nextSlide: SlideDefinition = {
+      id: 'next-fixture', section: 'בדיקה', title: 'השקופית הבאה', duration: 30,
+      layout: 'statement', variant: 'problem', speakerNotes: ['בדיקת חזרה'],
+    }
+    render(<PresentationShell slides={[activity, nextSlide]} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /כלי ניתוח נתונים/ }))
+    expect(screen.getByRole('button', { name: /כלי ניתוח נתונים/ })).toHaveAttribute('aria-pressed', 'true')
+    fireEvent.click(screen.getByRole('button', { name: 'לשקופית הבאה' }))
+    fireEvent.click(screen.getByRole('button', { name: 'לשקופית הקודמת' }))
+
+    expect(screen.getByRole('button', { name: /כלי ניתוח נתונים/ })).toHaveAttribute('aria-pressed', 'false')
     expect(screen.getByRole('button', { name: 'חשיפת הסבר' })).toBeDisabled()
   })
 })

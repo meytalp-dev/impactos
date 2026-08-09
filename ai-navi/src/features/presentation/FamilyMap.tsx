@@ -18,6 +18,9 @@ export function FamilyMap({ data, resetToken }: FamilyMapProps) {
   return (
     <div className="navi-family-map">
       <div className="navi-slide-families__map" role="group" aria-label="מפת משפחות כלים">
+        <svg className="navi-family-map__lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+          <path d="M 12 16 H 88 M 12 50 H 88 M 12 84 H 88 M 12 16 V 84 M 50 16 V 84 M 88 16 V 84" />
+        </svg>
         {data.families.map((family, index) => {
           const id = family.id ?? family.name
           return (

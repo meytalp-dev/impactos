@@ -31,6 +31,16 @@ const reachPrivacyQuestion = () => {
   answerAndContinue('בינונית')
 }
 
+const expectedQuestionOptionLabels = [
+  ['חשיבה ותכנון', 'מחקר', 'כתיבה', 'ניתוח', 'עיצוב', 'תמונה', 'וידאו או אודיו', 'מצגת', 'בניית אפליקציה', 'אוטומציה'],
+  ['אין לי חומר גלם', 'רעיון', 'טקסט קצר', 'מסמך', 'כמה מסמכים', 'נתונים', 'תמונה', 'אודיו', 'וידאו', 'קישורים או אתרים'],
+  ['תשובה', 'מסמך', 'מצגת', 'תמונה', 'וידאו', 'אודיו', 'טבלה', 'דוח', 'אתר', 'אפליקציה', 'תהליך אוטומטי'],
+  ['מהירות', 'איכות', 'דיוק', 'מקורות', 'עיצוב', 'קלות', 'מחיר', 'פרטיות', 'שליטה'],
+  ['עד 10 דקות', 'עד שעה', 'כמה שעות', 'יום או יותר'],
+  ['מתחילה', 'בינונית', 'מתקדמת'],
+  ['לא', 'אולי', 'כן', 'לא בטוחה'],
+] as const
+
 describe('seven-step personal navigator', () => {
   afterEach(() => {
     cleanup()
@@ -61,14 +71,14 @@ describe('seven-step personal navigator', () => {
       expect(screen.getByRole('heading', { name: question.title })).toBeInTheDocument()
       expect(screen.getByText(`שלב ${index + 1} מתוך 7`)).toBeInTheDocument()
       expect(screen.getByRole('button', { name: 'המשך' })).toBeDisabled()
-      for (const option of question.options) {
-        expect(screen.getByRole('button', { name: option.label })).toBeInTheDocument()
+      for (const label of expectedQuestionOptionLabels[index]) {
+        expect(screen.getByRole('button', { name: label })).toBeInTheDocument()
       }
       if (index < navigatorQuestions.length - 1) {
         expect(screen.queryByRole('heading', { name: navigatorQuestions[index + 1].title })).not.toBeInTheDocument()
       }
 
-      fireEvent.click(screen.getByRole('button', { name: question.options[0].label }))
+      fireEvent.click(screen.getByRole('button', { name: expectedQuestionOptionLabels[index][0] }))
       expect(screen.getByRole('button', { name: 'המשך' })).toBeEnabled()
       fireEvent.click(screen.getByRole('button', { name: 'המשך' }))
     })

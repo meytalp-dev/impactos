@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { slides } from '../data/slides'
 import { PresentationShell } from '../features/presentation/PresentationShell'
@@ -60,6 +60,7 @@ describe('PresentationShell navigation', () => {
   afterEach(() => {
     cleanup()
     vi.restoreAllMocks()
+    vi.useRealTimers()
   })
 
   it('moves forward with Right or Down and backward with Left or Up', () => {
@@ -115,6 +116,33 @@ describe('PresentationShell navigation', () => {
 
     fireEvent.keyDown(window, { key: 'Escape' })
     expect(screen.queryByRole('complementary', { name: 'הערות מרצה' })).not.toBeInTheDocument()
+  })
+
+  it('advances the presenter timer and toggles notes repeatedly with the N shortcut', () => {
+    vi.useFakeTimers()
+    renderPresentation()
+
+    fireEvent.keyDown(window, { key: 'n' })
+    act(() => vi.advanceTimersByTime(2_000))
+    expect(screen.getByRole('complementary', { name: 'הערות מרצה' })).toHaveTextContent('00:02')
+    fireEvent.keyDown(window, { key: 'n' })
+    expect(screen.queryByRole('complementary', { name: 'הערות מרצה' })).not.toBeInTheDocument()
+    fireEvent.keyDown(window, { key: 'N' })
+    expect(screen.getByRole('complementary', { name: 'הערות מרצה' })).toBeInTheDocument()
+  })
+
+  it('requests fullscreen with the F shortcut and jumps through the presenter select', () => {
+    const requestFullscreen = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(document.documentElement, 'requestFullscreen', { configurable: true, value: requestFullscreen })
+    renderPresentation()
+
+    fireEvent.keyDown(window, { key: 'f' })
+    expect(requestFullscreen).toHaveBeenCalledOnce()
+    fireEvent.keyDown(window, { key: 'n' })
+    fireEvent.change(screen.getByLabelText('מעבר לשקופית'), { target: { value: '1' } })
+    const stage = document.querySelector<HTMLElement>('.navi-presentation-stage-frame')
+    expect(stage).not.toBeNull()
+    expect(within(stage as HTMLElement).getByRole('heading', { name: toolOverloadTitle })).toBeInTheDocument()
   })
 
   it('uses accessible RTL controls that mirror the keyboard behavior', () => {

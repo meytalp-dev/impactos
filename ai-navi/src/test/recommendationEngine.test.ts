@@ -72,6 +72,20 @@ describe('recommendRoute', () => {
     expect(alternativeIds).not.toEqual(expect.arrayContaining(result.toolIds))
   })
 
+  it.each([
+    ['prepared', baseAnswers()],
+    ['generic', {}],
+  ] as const)('returns two to four unique permitted tools and globally unique alternatives for %s routes', (_kind, answers) => {
+    const result = recommendRoute(answers)
+    const alternativeIds = Object.values(result.alternatives).flat()
+
+    expect(result.toolIds.length).toBeGreaterThanOrEqual(2)
+    expect(result.toolIds.length).toBeLessThanOrEqual(4)
+    expect(new Set(result.toolIds).size).toBe(result.toolIds.length)
+    expect(new Set(alternativeIds).size).toBe(alternativeIds.length)
+    expect(alternativeIds.some((id) => result.toolIds.includes(id))).toBe(false)
+  })
+
   it('ranks beginner and general tools ahead for a beginner with little time', () => {
     const answers = baseAnswers({ difficulty: 'beginner', priority: 'speed', timeAvailable: 'under-10-minutes' })
     const beginner = scoreTool({ ...tool('beginner-tool'), difficulty: 'beginner' }, answers, 'writer')

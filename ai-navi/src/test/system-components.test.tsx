@@ -31,6 +31,15 @@ describe('metro navigation component system', () => {
     expect(onClick).toHaveBeenCalledOnce()
   })
 
+  it('uses a native button whenever a click handler makes a station interactive', () => {
+    const onClick = vi.fn()
+
+    render(<Station label="תחנה פעילה" onClick={onClick} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /תחנה פעילה/ }))
+    expect(onClick).toHaveBeenCalledOnce()
+  })
+
   it('announces the current progress step and marks it as the current step', () => {
     render(
       <ProgressPath

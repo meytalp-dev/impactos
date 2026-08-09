@@ -3,6 +3,7 @@ import { toolFamilies } from '../data/families'
 import { preparedRoutes } from '../data/routes'
 import { taskExamples } from '../data/tasks'
 import { aiTools } from '../data/tools'
+import { isValidIsoCalendarDate } from '../lib/dateValidation'
 
 describe('AI NAVI catalog integrity', () => {
   it('provides nine unique tool families', () => {
@@ -22,10 +23,17 @@ describe('AI NAVI catalog integrity', () => {
     for (const tool of aiTools) {
       expect(familyIds.has(tool.familyId)).toBe(true)
       expect(tool.lastReviewed).toMatch(/^\d{4}-\d{2}-\d{2}$/)
-      expect(Number.isNaN(Date.parse(`${tool.lastReviewed}T00:00:00Z`))).toBe(false)
+      expect(isValidIsoCalendarDate(tool.lastReviewed)).toBe(true)
       expect(tool).not.toHaveProperty('price')
       expect(tool).not.toHaveProperty('exactPrice')
     }
+  })
+
+  it('rejects impossible dates even when JavaScript would roll them into another month', () => {
+    expect(isValidIsoCalendarDate('2026-02-28')).toBe(true)
+    expect(isValidIsoCalendarDate('2024-02-29')).toBe(true)
+    expect(isValidIsoCalendarDate('2026-02-31')).toBe(false)
+    expect(isValidIsoCalendarDate('2025-02-29')).toBe(false)
   })
 
   it('keeps every prepared route complete, ordered, and linked to catalog tools', () => {

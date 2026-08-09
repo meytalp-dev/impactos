@@ -169,10 +169,11 @@ function OptionCloudSlide({ slide }: { slide: VisualSlide<'option-cloud'> }) {
 }
 
 function RoleModesSlide({ slide }: { slide: VisualSlide<'role-modes'> }) {
+  const accessibleLabel = slide.variant === 'route-kinds' ? 'סוגי מסלולים' : 'מצבי מעורבות'
   return (
     <div className="navi-slide-layout navi-slide-layout--mobile-stack navi-slide-modes" data-mobile-layout="stack">
       <SlideHeading slide={slide} />
-      <ol className="navi-slide-modes__list" aria-label="מצבי מעורבות">
+      <ol className="navi-slide-modes__list" aria-label={accessibleLabel}>
         {slide.visual.items.map((item, index) => (
           <li key={item.label}>
             <span>{String(index + 1).padStart(2, '0')}</span>

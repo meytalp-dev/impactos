@@ -171,6 +171,18 @@ describe('explainable recommendation results', () => {
 })
 
 describe('result actions', () => {
+  it('keeps the current recommendation when a new-navigation confirmation is cancelled', () => {
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false)
+    saveCompleteState()
+    renderApp()
+
+    fireEvent.click(screen.getByRole('button', { name: 'ניווט חדש' }))
+
+    expect(confirm).toHaveBeenCalledOnce()
+    expect(localStorage.getItem('ai-navi:navigator-state:v1')).not.toBeNull()
+    expect(screen.getByRole('heading', { name: 'המסלול המומלץ עבורך' })).toBeInTheDocument()
+  })
+
   it('copies the starter prompt and announces success only after clipboard resolution', async () => {
     const writeText = vi.fn().mockResolvedValue(undefined)
     Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } })

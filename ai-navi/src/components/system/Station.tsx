@@ -32,6 +32,7 @@ export function Station({
   ariaCurrent,
   className = '',
 }: StationProps) {
+  const interactive = asButton || Boolean(onClick)
   const content = (
     <>
       <span className="navi-station__ring" aria-hidden="true">
@@ -41,9 +42,9 @@ export function Station({
       <span className="navi-station__state-label">{stateLabels[state]}</span>
     </>
   )
-  const classes = `navi-station navi-station--${state}${asButton ? ' navi-station--button' : ''} ${className}`.trim()
+  const classes = `navi-station navi-station--${state}${interactive ? ' navi-station--button' : ''} ${className}`.trim()
 
-  if (asButton) {
+  if (interactive) {
     const buttonProps: ButtonHTMLAttributes<HTMLButtonElement> = {
       type: 'button',
       className: classes,

@@ -58,6 +58,16 @@ describe('SlideRenderer layout dispatch', () => {
     expect(screen.getByRole('link', { name: 'מה המשימה שלך היום?' })).toHaveAttribute('href', '/navigator')
   })
 
+  it('labels route-kind visuals as route kinds rather than involvement modes', () => {
+    const routeKinds = slides.find((slide) => slide.id === 'junction-route-kind')
+    expect(routeKinds).toBeDefined()
+
+    renderSlide(routeKinds as SlideDefinition)
+
+    expect(screen.getByLabelText('סוגי מסלולים')).toBeInTheDocument()
+    expect(screen.queryByLabelText('מצבי מעורבות')).not.toBeInTheDocument()
+  })
+
   it('renders the live navigator transition from typed navigator data when the slide id is unknown', () => {
     const navigator = slides.find((slide) => slide.id === 'navigator-walkthrough')
     expect(navigator).toBeDefined()

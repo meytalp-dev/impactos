@@ -35,13 +35,14 @@ const routeOverlap = (route: PreparedRoute, answers: NavigatorAnswers) =>
   + Number(Boolean(answers.outputType === route.outputType))
 
 const findTool = (id: string) => aiTools.find((tool) => tool.id === id)
+const uniqueIds = (ids: string[]) => [...new Set(ids)]
 const sortedByScore = (tools: AITool[], answers: NavigatorAnswers, role: string) =>
   tools.map((tool) => ({ tool, score: scoreTool(tool, answers, role) }))
     .filter(({ tool }) => isToolPermitted(tool, answers))
     .sort((left, right) => right.score.total - left.score.total || left.tool.id.localeCompare(right.tool.id))
 
 const safeToolIds = (ids: string[], answers: NavigatorAnswers, role: string, used = new Set<string>()) => {
-  const candidates = ids.map(findTool).filter((tool): tool is AITool => Boolean(tool))
+  const candidates = uniqueIds(ids).map(findTool).filter((tool): tool is AITool => Boolean(tool))
   const first = sortedByScore(candidates, answers, role).find(({ tool }) => !used.has(tool.id))?.tool
   if (first) used.add(first.id)
   return first?.id
@@ -49,7 +50,7 @@ const safeToolIds = (ids: string[], answers: NavigatorAnswers, role: string, use
 
 const toStep = (step: RouteStep, route: PreparedRoute, answers: NavigatorAnswers, used: Set<string>): RecommendedStep => {
   const primaryToolId = safeToolIds([...step.primaryToolIds, ...step.alternativeToolIds], answers, step.role, used)
-  const alternativeToolIds = [...step.primaryToolIds, ...step.alternativeToolIds]
+  const alternativeToolIds = uniqueIds([...step.primaryToolIds, ...step.alternativeToolIds])
     .filter((id) => id !== primaryToolId)
     .map(findTool)
     .filter((tool): tool is AITool => tool !== undefined && isToolPermitted(tool, answers))
@@ -111,12 +112,12 @@ const selectAlternativeTools = (
       }
       return right.score.total - left.score.total || left.tool.id.localeCompare(right.tool.id)
     })
-    .slice(0, 2)
-    .map(({ tool }) => tool.id)
-    .map((id) => {
-      used.add(id)
-      return id
-    })
+    .reduce<string[]>((selected, { tool }) => {
+      if (selected.length >= 2 || used.has(tool.id)) return selected
+      used.add(tool.id)
+      selected.push(tool.id)
+      return selected
+    }, [])
 }
 
 export function recommendRoute(answers: NavigatorAnswers): RecommendationResult {
@@ -125,7 +126,7 @@ export function recommendRoute(answers: NavigatorAnswers): RecommendationResult 
   const selected = rankedRoutes[0]?.overlap > 0 ? rankedRoutes[0].route : genericRoute(answers)
   const used = new Set<string>()
   const steps = selected.steps.map((step) => toStep(step, selected, answers, used))
-  const toolIds = steps.flatMap((step) => step.primaryToolId ? [step.primaryToolId] : []).slice(0, 4)
+  const toolIds = uniqueIds(steps.flatMap((step) => step.primaryToolId ? [step.primaryToolId] : [])).slice(0, 4)
   const wantedOrganizationTool = selected.steps.flatMap((step) => [...step.primaryToolIds, ...step.alternativeToolIds]).map(findTool).some((tool) => tool?.privacyLevel === 'organizationOnly')
   const warnings = [selected.warning]
   if (answers.privacy === 'sensitive' || answers.privacy === 'internal' || answers.privacy === 'yes' || answers.privacy === 'unsure') warnings.push('מידע רגיש או לא ודאי: אל תעלו אותו לכלי ציבורי ללא אישור מדיניות הארגון.')
