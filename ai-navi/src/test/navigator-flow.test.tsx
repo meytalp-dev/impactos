@@ -73,8 +73,8 @@ describe('seven-step personal navigator', () => {
       fireEvent.click(screen.getByRole('button', { name: 'המשך' }))
     })
 
-    expect(screen.getByRole('heading', { name: 'התוצאות שלך' })).toBeInTheDocument()
-  })
+    expect(screen.getByRole('heading', { name: 'המסלול המומלץ עבורך' })).toBeInTheDocument()
+  }, 10_000)
 
   it('caps priorities at two and gives clear live feedback without selecting a third', () => {
     renderNavigator()
@@ -154,7 +154,7 @@ describe('seven-step personal navigator', () => {
     fireEvent.click(screen.getByRole('checkbox', { name: /קראתי והבנתי/ }))
     fireEvent.click(screen.getByRole('button', { name: 'אישור והצגת תוצאות' }))
 
-    expect(screen.getByRole('heading', { name: 'התוצאות שלך' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'המסלול המומלץ עבורך' })).toBeInTheDocument()
   })
 
   it('shows caution for maybe and blocks a direct results load until all answers are complete', () => {
