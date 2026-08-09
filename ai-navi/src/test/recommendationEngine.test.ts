@@ -159,7 +159,7 @@ describe('recommendRoute', () => {
     expect(result.prompt).toContain('סכמו את דוח הרבעון למצגת')
     expect(prompt).toContain('סכמו את דוח הרבעון למצגת')
     expect(prompt).toContain('הנהלה בכירה')
-    expect(prompt).toContain('documents')
+    expect(prompt).toContain('כמה מסמכים')
     expect(prompt).toContain('presentation')
     expect(prompt).toContain('speed')
     expect(prompt).toContain('quality')

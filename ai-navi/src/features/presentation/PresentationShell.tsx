@@ -12,10 +12,19 @@ type PresentationPosition = {
   revealIndex: number
 }
 
-function loadPosition(slides: SlideDefinition[]): PresentationPosition {
-  if (typeof localStorage === 'undefined') return { slideIndex: 0, revealIndex: 0 }
+function availableStorage(): Storage | null {
   try {
-    const value: unknown = JSON.parse(localStorage.getItem(PRESENTATION_STATE_KEY) ?? 'null')
+    return typeof localStorage === 'undefined' ? null : localStorage
+  } catch {
+    return null
+  }
+}
+
+function loadPosition(slides: SlideDefinition[]): PresentationPosition {
+  try {
+    const storage = availableStorage()
+    if (!storage) return { slideIndex: 0, revealIndex: 0 }
+    const value: unknown = JSON.parse(storage.getItem(PRESENTATION_STATE_KEY) ?? 'null')
     if (!value || typeof value !== 'object') return { slideIndex: 0, revealIndex: 0 }
     const state = value as Record<string, unknown>
     if (state.version !== 1 || typeof state.slideIndex !== 'number' || typeof state.revealIndex !== 'number') {
@@ -47,9 +56,10 @@ export function PresentationShell({ slides }: { slides: SlideDefinition[] }) {
   const revealCount = slide?.revealSteps?.length ?? 0
 
   useEffect(() => {
-    if (typeof localStorage === 'undefined') return
     try {
-      localStorage.setItem(PRESENTATION_STATE_KEY, JSON.stringify({ version: 1, slideIndex, revealIndex }))
+      const storage = availableStorage()
+      if (!storage) return
+      storage.setItem(PRESENTATION_STATE_KEY, JSON.stringify({ version: 1, slideIndex, revealIndex }))
     } catch {
       // Presentation remains fully usable if storage is unavailable.
     }

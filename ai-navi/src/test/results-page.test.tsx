@@ -154,6 +154,22 @@ describe('explainable recommendation results', () => {
     expect((screen.getByRole('textbox', { name: 'פרומפט מוכן להעתקה' }) as HTMLTextAreaElement).value).toContain('מקורות:')
   })
 
+  it('shows every selected input in Hebrew and keeps the prompt independent of selection order', () => {
+    saveCompleteState({ inputTypes: ['idea', 'documents'], inputType: 'idea' })
+    const first = renderResultsPage()
+    const firstPrompt = (screen.getByRole('textbox', { name: 'פרומפט מוכן להעתקה' }) as HTMLTextAreaElement).value
+
+    expect(first.container.querySelector('[data-route-step]')).toHaveTextContent('רעיון וכמה מסמכים')
+    expect(firstPrompt).toContain('קלט: רעיון וכמה מסמכים')
+    expect(firstPrompt).not.toMatch(/\b(?:idea|documents)\b/)
+    first.unmount()
+    localStorage.clear()
+
+    saveCompleteState({ inputTypes: ['documents', 'idea'], inputType: 'documents' })
+    renderResultsPage()
+    expect((screen.getByRole('textbox', { name: 'פרומפט מוכן להעתקה' }) as HTMLTextAreaElement).value).toBe(firstPrompt)
+  })
+
   it('uses the privacy warning and withholds public tool recommendations for sensitive work', () => {
     saveCompleteState({
       taskText: 'ניתוח תגובות רגישות מסקר עובדים',

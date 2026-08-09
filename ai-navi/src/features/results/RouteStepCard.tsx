@@ -2,20 +2,6 @@ import { aiTools } from '../../data/tools'
 import type { RecommendedStep } from '../../lib/recommendationEngine'
 
 const toolById = (id: string) => aiTools.find((tool) => tool.id === id)
-const inputLabels: Record<string, string> = {
-  none: 'אין חומר גלם',
-  idea: 'רעיון',
-  'short-text': 'טקסט קצר',
-  text: 'טקסט',
-  document: 'מסמך',
-  documents: 'כמה מסמכים',
-  data: 'נתונים',
-  image: 'תמונה',
-  audio: 'אודיו',
-  video: 'וידאו',
-  'web-links': 'קישורים או אתרים',
-}
-
 interface RouteStepCardProps {
   index: number
   step: RecommendedStep
@@ -41,7 +27,7 @@ export function RouteStepCard({ index, step, sensitive }: RouteStepCardProps) {
 
       <dl className="navi-route-step__details">
         <div><dt>למה מתאים</dt><dd>{step.whyFit}</dd></div>
-        <div><dt>מה לספק</dt><dd>{inputLabels[step.input] ?? step.input}</dd></div>
+        <div><dt>מה לספק</dt><dd>{step.input}</dd></div>
         <div><dt>התוצר הצפוי</dt><dd>{step.output}</dd></div>
         <div><dt>מה ה-AI עושה</dt><dd>{step.whatAiDoes}</dd></div>
         <div><dt>מה נשאר באחריותך</dt><dd>{step.whatHumanDoes}</dd></div>

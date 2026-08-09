@@ -186,6 +186,15 @@ describe('PresentationShell navigation', () => {
     expect(screen.getByLabelText('מצב חשיפה')).toHaveTextContent('1 מתוך 3')
   })
 
+  it('remains usable when the browser blocks access to local storage', () => {
+    vi.spyOn(window, 'localStorage', 'get').mockImplementation(() => {
+      throw new DOMException('blocked', 'SecurityError')
+    })
+
+    expect(() => renderPresentation()).not.toThrow()
+    expect(screen.getByRole('heading', { name: 'AI NAVI' })).toBeInTheDocument()
+  })
+
   it('does not hijack navigation keys from presenter controls and reports fullscreen failure', async () => {
     Object.defineProperty(document.documentElement, 'requestFullscreen', {
       configurable: true,

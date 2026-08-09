@@ -3,6 +3,7 @@ import { aiTools } from '../data/tools'
 import type { AITool, NavigatorAnswers, PreparedRoute, RouteStep } from './types'
 import { hasStrictPrivacyRequirement, isToolPermitted, scoreTool } from './scoring'
 import { buildPrompt } from './promptBuilder'
+import { formatSelectedInputs, getSelectedInputTypes } from './inputLabels'
 
 export interface RecommendedStep {
   role: string
@@ -31,12 +32,9 @@ export interface RecommendationResult {
 
 const selectedTaskTypes = (answers: NavigatorAnswers) =>
   [...new Set(answers.taskTypes?.length ? answers.taskTypes : answers.taskType ? [answers.taskType] : [])]
-const selectedInputTypes = (answers: NavigatorAnswers) =>
-  [...new Set(answers.inputTypes?.length ? answers.inputTypes : answers.inputType ? [answers.inputType] : [])]
-
 const routeOverlap = (route: PreparedRoute, answers: NavigatorAnswers) =>
   selectedTaskTypes(answers).filter((taskType) => route.taskTypes.includes(taskType)).length
-  + selectedInputTypes(answers).filter((inputType) => route.inputTypes.includes(inputType)).length
+  + getSelectedInputTypes(answers).filter((inputType) => route.inputTypes.includes(inputType)).length
   + Number(Boolean(answers.outputType === route.outputType))
 
 const findTool = (id: string) => aiTools.find((tool) => tool.id === id)
@@ -66,7 +64,7 @@ const toStep = (step: RouteStep, route: PreparedRoute, answers: NavigatorAnswers
     primaryToolId,
     alternativeToolIds,
     whyFit: `מתאים לשלב זה משום שהוא תומך ב${step.role} בהקשר שנבחר; זו התאמה למשימה ולא דירוג כללי.`,
-    input: selectedInputTypes(answers).join(', ') || 'קלט שהמשתמש מספק',
+    input: formatSelectedInputs(answers, 'קלט שהמשתמש מספק'),
     output: route.finalOutput,
     whatAiDoes: step.instruction,
     whatHumanDoes: 'מגדיר/ה הקשר, בוחן/ת את התוצר ומקבל/ת את ההחלטה הסופית.',
@@ -145,7 +143,7 @@ export function recommendRoute(answers: NavigatorAnswers): RecommendationResult 
   const result: RecommendationResult = {
     routeId: selected.id,
     selectedRouteId: selected.id,
-    taskSummary: answers.taskText?.trim() || `מסלול ${selected.title}: ${selectedInputTypes(answers).join(', ') || 'קלט'} אל ${answers.outputType ?? selected.outputType}.`,
+    taskSummary: answers.taskText?.trim() || `מסלול ${selected.title}: ${formatSelectedInputs(answers, 'קלט')} אל ${answers.outputType ?? selected.outputType}.`,
     steps,
     toolIds,
     recommendedToolIds: toolIds,

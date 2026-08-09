@@ -1,4 +1,5 @@
 import type { AITool, Difficulty, InputType, NavigatorAnswers, OutputType, Priority, TaskType, ToolFamilyId } from './types'
+import { getSelectedInputTypes } from './inputLabels'
 
 export interface ScoreReason {
   name: string
@@ -46,7 +47,7 @@ export function scoreTool(tool: AITool, answers: NavigatorAnswers, role: string)
   const generalPurpose = tool.generalPurpose ?? profile.generalPurpose
   const priorities = [...new Set([...(answers.priorities ?? []), ...(answers.priority ? [answers.priority] : [])])]
   const selectedTaskTypes = [...new Set(answers.taskTypes?.length ? answers.taskTypes : answers.taskType ? [answers.taskType] : [])]
-  const selectedInputTypes = [...new Set(answers.inputTypes?.length ? answers.inputTypes : answers.inputType ? [answers.inputType] : [])]
+  const selectedInputTypes = getSelectedInputTypes(answers)
   const reasons: ScoreReason[] = []
   const add = (name: string, points: number) => reasons.push({ name, points })
 
