@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import type { RecommendationResult } from '../../lib/recommendationEngine'
 import { hasStrictPrivacyRequirement } from '../../lib/scoring'
 import type { NavigatorAnswers } from '../../lib/types'
+import { audienceContextLabels } from '../../lib/context'
 import { AlternativeRouteCard } from './AlternativeRouteCard'
 import { PrivacyWarning } from './PrivacyWarning'
 import { PromptCard } from './PromptCard'
@@ -19,12 +20,15 @@ export function ResultRoute({ answers, result, onReset }: ResultRouteProps) {
   const sensitive = hasStrictPrivacyRequirement(answers.privacy)
   const generatedAt = new Date()
   const generatedDate = new Intl.DateTimeFormat('he-IL', { dateStyle: 'long' }).format(generatedAt)
+  const existingChecks = [...result.warnings, ...result.humanChecks]
+  const needsSourceCheck = answers.taskType === 'research' || answers.taskTypes?.includes('research') || answers.priorities?.includes('sources')
+  const hasSourceCheck = existingChecks.some((warning) => warning.includes('מקורות') || warning.includes('המקור '))
   const warnings = [...new Set([
     freshnessNotice,
     ...result.warnings,
     ...result.humanChecks,
     'בדקו שהתוצר בעברית ברור, טבעי ומתאים לקהל לפני שימוש.',
-    ...(answers.taskType === 'research' || answers.priorities?.includes('sources')
+    ...(needsSourceCheck && !hasSourceCheck
       ? ['פתחו את המקורות המקוריים ובדקו מחבר, תאריך והקשר.']
       : []),
   ])]
@@ -35,6 +39,11 @@ export function ResultRoute({ answers, result, onReset }: ResultRouteProps) {
         <p className="navi-results__eyebrow">מסלול עבודה, לא דירוג כלים</p>
         <h1>המסלול המומלץ עבורך</h1>
         <p className="navi-results__summary"><strong>המשימה שלך:</strong> {result.taskSummary}</p>
+        {answers.context || answers.audience ? (
+          <p className="navi-results__context">
+            הקשר: {answers.context ? audienceContextLabels[answers.context] : 'שימוש כללי'} · קהל: {answers.audience ?? 'קהל היעד שנבחר'}
+          </p>
+        ) : null}
         <div className="navi-print-only navi-results__print-title" aria-hidden="true">
           <strong>AI NAVI — המסלול המומלץ</strong>
           <span>תאריך הפקה: <time dateTime={generatedAt.toISOString()}>{generatedDate}</time></span>

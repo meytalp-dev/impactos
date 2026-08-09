@@ -135,6 +135,25 @@ describe('explainable recommendation results', () => {
     expect(warnings).toHaveTextContent(/עברית/)
   })
 
+  it('preserves validated marketing context and audience in the result summary and generated prompt', () => {
+    saveCompleteState({ context: 'marketing', audience: 'צוות שיווק ויזמות' })
+    renderResultsPage()
+
+    expect(screen.getByText('הקשר: שיווק · קהל: צוות שיווק ויזמות')).toBeInTheDocument()
+    const prompt = screen.getByRole('textbox', { name: 'פרומפט מוכן להעתקה' }) as HTMLTextAreaElement
+    expect(prompt.value).toContain('הקשר: שיווק')
+    expect(prompt.value).toContain('קהל: צוות שיווק ויזמות')
+  })
+
+  it('requires source checks when research is a secondary selected task', () => {
+    saveCompleteState({ taskTypes: ['present', 'research'], taskType: 'present' })
+    renderResultsPage()
+
+    expect(screen.getByRole('region', { name: 'אזהרות ובדיקות לפני שימוש' }))
+      .toHaveTextContent('פתחו את המקורות המקוריים ובדקו מחבר, תאריך והקשר')
+    expect((screen.getByRole('textbox', { name: 'פרומפט מוכן להעתקה' }) as HTMLTextAreaElement).value).toContain('מקורות:')
+  })
+
   it('uses the privacy warning and withholds public tool recommendations for sensitive work', () => {
     saveCompleteState({
       taskText: 'ניתוח תגובות רגישות מסקר עובדים',
@@ -240,6 +259,13 @@ describe('results guard and print contract', () => {
     expect(css).toMatch(/\.navi-print-only[^{]*\{[^}]*display:\s*block/s)
     expect(css).toMatch(/\.navi-prompt-card__text[^{]*\{[^}]*display:\s*none/s)
     expect(css).toMatch(/\.navi-prompt-card__print-text[^{]*\{[^}]*white-space:\s*pre-wrap[^}]*overflow-wrap:\s*anywhere/s)
+    expect(css).toMatch(/\.navi-results\s+\*[^{]*\{[^}]*color:\s*#000000\s*!important[^}]*background-color:\s*transparent\s*!important[^}]*border-color:\s*#000000\s*!important[^}]*box-shadow:\s*none\s*!important/s)
+    for (const selector of ['endpoint', 'stage']) {
+      expect(css).toMatch(new RegExp(`\\.navi-route-diagram__${selector}[^\\{]*\\{[^}]*background:\\s*#ffffff\\s*!important[^}]*border-color:\\s*#000000\\s*!important`, 's'))
+    }
+    expect(css).toMatch(/\.navi-route-step__number[^\{]*\{[^}]*color:\s*#000000\s*!important[^}]*background:\s*#ffffff\s*!important[^}]*border:\s*2px\s+solid\s+#000000\s*!important/s)
+    expect(css).toMatch(/\.navi-route-diagram__connector[^\{]*\{[^}]*color:\s*#000000\s*!important/s)
+    expect(css).toMatch(/\.navi-privacy-warning[^\{]*\{[^}]*color:\s*#000000\s*!important[^}]*background:\s*#ffffff\s*!important[^}]*border-color:\s*#000000\s*!important/s)
     expect(css).toMatch(/background:\s*#?fff(?:fff)?/i)
     expect(css).toMatch(/color:\s*#(?:000|000000)/i)
   })

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { ResultRoute } from '../features/results/ResultRoute'
 import { useNavigator } from '../features/navigator/NavigatorProvider'
 import { recommendRoute } from '../lib/recommendationEngine'
+import { isAudienceContext } from '../lib/context'
 import type { NavigatorAnswers } from '../lib/types'
 
 export default function ResultsPage() {
@@ -31,6 +32,8 @@ export default function ResultsPage() {
     timeAvailable: answers.timeAvailable,
     difficulty: answers.difficulty,
     privacy: answers.privacy,
+    context: isAudienceContext(answers.context) ? answers.context : undefined,
+    audience: typeof answers.audience === 'string' && answers.audience.trim() ? answers.audience.trim() : undefined,
   }
   const result = recommendRoute(validatedAnswers)
 

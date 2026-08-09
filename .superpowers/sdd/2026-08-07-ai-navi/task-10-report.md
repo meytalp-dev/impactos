@@ -45,3 +45,23 @@ Commit subject: `feat(ai-navi): add explainable printable recommendations`
 
 - No open product blocker. Under the full parallel suite, the pre-existing seven-step end-to-end navigator test exceeded its former 5-second limit after it began rendering the full result page; its local timeout is now 10 seconds. Focused and regression runs pass without behavioral failures.
 - Automated tests verify the print structure and CSS contract; browser-specific print-preview pagination can still vary by browser/printer driver.
+
+## Fix round 1 — Important review findings
+
+- Preserved optional `context` only when it matches the `AudienceContext` allowlist, and preserved a non-empty normalized `audience`, alongside the existing validated task/input/priority arrays and navigation nuance. The result summary and generated prompt now name the localized context and audience.
+- Source checks now inspect every selected `taskTypes` value in both the prompt builder and result warnings. A secondary `research` selection triggers source guidance; existing source guidance suppresses only a true source-term duplicate, not unrelated text such as `המקורי`.
+- Print mode now resets every result descendant to black text, transparent background, black borders, and no shadows, then explicitly restores white surfaces and black borders for route endpoints/stages, number badges, connectors, and privacy warnings. Warning text remains rendered.
+
+### Fix-round TDD evidence
+
+1. Focused RED: `npx vitest run src/test/results-page.test.tsx` — 3 expected failures for dropped context/audience, missing secondary-research source guidance, and missing descendant print reset.
+2. Focused GREEN: 12/12 passed.
+3. Results + engine + navigator regression gate: 36/36 passed.
+
+### Fix-round final verification
+
+- `npm test` — 13 test files passed, 98 tests passed, 0 failed.
+- `npm run typecheck` — exit 0.
+- `npm run build` — exit 0; Vite transformed 489 modules.
+
+Fix commit subject: `fix(ai-navi): preserve result context and print contrast`
