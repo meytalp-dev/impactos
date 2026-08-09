@@ -3,7 +3,13 @@ import type { PersistedNavigatorState } from './types'
 const KEY_PREFIX = 'ai-navi:'
 const STATE_KEY = `${KEY_PREFIX}navigator-state:v1`
 
-const availableStorage = () => typeof localStorage === 'undefined' ? null : localStorage
+const availableStorage = () => {
+  try {
+    return typeof localStorage === 'undefined' ? null : localStorage
+  } catch {
+    return null
+  }
+}
 
 export function loadNavigatorState(): PersistedNavigatorState | null {
   const storage = availableStorage()
@@ -26,13 +32,21 @@ export function loadNavigatorState(): PersistedNavigatorState | null {
 }
 
 export function saveNavigatorState(state: PersistedNavigatorState): void {
-  const storage = availableStorage()
-  if (!storage) return
-  storage.setItem(STATE_KEY, JSON.stringify({ ...state, version: 1, answers: state.answers }))
+  try {
+    const storage = availableStorage()
+    if (!storage) return
+    storage.setItem(STATE_KEY, JSON.stringify({ ...state, version: 1, answers: state.answers }))
+  } catch {
+    // Storage can be disabled, full, or blocked by browser privacy settings.
+  }
 }
 
 export function resetNavigatorState(): void {
-  const storage = availableStorage()
-  if (!storage) return
-  storage.removeItem(STATE_KEY)
+  try {
+    const storage = availableStorage()
+    if (!storage) return
+    storage.removeItem(STATE_KEY)
+  } catch {
+    // Reset is best-effort when storage access is unavailable.
+  }
 }

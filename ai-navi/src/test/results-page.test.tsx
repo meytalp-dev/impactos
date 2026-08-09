@@ -36,7 +36,7 @@ const saveCompleteState = (overrides: Partial<NavigatorAnswers> = {}) => {
     currentStep: 6,
     taskText: answers.taskText,
     answers,
-    privacyConfirmed: answers.privacy === 'yes' || answers.privacy === 'unsure',
+    privacyConfirmed: answers.privacy === 'yes' || answers.privacy === 'unsure' || answers.privacy === 'maybe',
     complete: true,
   }
   saveNavigatorState(state)
@@ -165,6 +165,15 @@ describe('explainable recommendation results', () => {
 
     expect(screen.getByRole('alert', { name: 'אזהרת פרטיות' })).toHaveTextContent(/מידע רגיש/)
     expect(screen.getByRole('alert', { name: 'אזהרת פרטיות' })).toHaveTextContent(/כלי.*ארגון/)
+    expect(view.container.querySelectorAll('[data-primary-tool]')).toHaveLength(0)
+    expect(view.container.querySelectorAll('[data-alternative-tool]')).toHaveLength(0)
+  })
+
+  it('also withholds public recommendations when the user answers maybe', () => {
+    saveCompleteState({ privacy: 'maybe' })
+    const view = renderResultsPage()
+
+    expect(screen.getByRole('alert', { name: 'אזהרת פרטיות' })).toBeInTheDocument()
     expect(view.container.querySelectorAll('[data-primary-tool]')).toHaveLength(0)
     expect(view.container.querySelectorAll('[data-alternative-tool]')).toHaveLength(0)
   })

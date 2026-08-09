@@ -1,8 +1,11 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { loadNavigatorState, resetNavigatorState, saveNavigatorState } from '../lib/storage'
 
 describe('navigator storage', () => {
-  afterEach(() => localStorage.clear())
+  afterEach(() => {
+    vi.restoreAllMocks()
+    localStorage.clear()
+  })
 
   it('round-trips a valid versioned navigator state', () => {
     const state = { version: 1, answers: { taskType: 'research', inputType: 'web-links' } } as const
@@ -30,5 +33,24 @@ describe('navigator storage', () => {
     expect(localStorage.getItem('ai-navi:navigator-state:v1')).toBeNull()
     expect(localStorage.getItem('ai-navi:other:v1')).toBe('remove')
     expect(localStorage.getItem('unrelated-key')).toBe('keep')
+  })
+
+  it('fails closed without throwing when browser storage is unavailable', () => {
+    vi.spyOn(window, 'localStorage', 'get').mockImplementation(() => {
+      throw new DOMException('blocked', 'SecurityError')
+    })
+
+    expect(() => saveNavigatorState({ version: 1, answers: {} })).not.toThrow()
+    expect(() => resetNavigatorState()).not.toThrow()
+    expect(loadNavigatorState()).toBeNull()
+  })
+
+  it('does not crash when storage writes or removals are rejected', () => {
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('quota') })
+    expect(() => saveNavigatorState({ version: 1, answers: {} })).not.toThrow()
+    vi.restoreAllMocks()
+
+    vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => { throw new Error('blocked') })
+    expect(() => resetNavigatorState()).not.toThrow()
   })
 })

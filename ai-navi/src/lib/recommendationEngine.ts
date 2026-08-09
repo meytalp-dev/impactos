@@ -1,7 +1,7 @@
 import { preparedRoutes } from '../data/routes'
 import { aiTools } from '../data/tools'
 import type { AITool, NavigatorAnswers, PreparedRoute, RouteStep } from './types'
-import { isToolPermitted, scoreTool } from './scoring'
+import { hasStrictPrivacyRequirement, isToolPermitted, scoreTool } from './scoring'
 import { buildPrompt } from './promptBuilder'
 
 export interface RecommendedStep {
@@ -29,9 +29,14 @@ export interface RecommendationResult {
   prompt: string
 }
 
+const selectedTaskTypes = (answers: NavigatorAnswers) =>
+  [...new Set(answers.taskTypes?.length ? answers.taskTypes : answers.taskType ? [answers.taskType] : [])]
+const selectedInputTypes = (answers: NavigatorAnswers) =>
+  [...new Set(answers.inputTypes?.length ? answers.inputTypes : answers.inputType ? [answers.inputType] : [])]
+
 const routeOverlap = (route: PreparedRoute, answers: NavigatorAnswers) =>
-  Number(Boolean(answers.taskType && route.taskTypes.includes(answers.taskType)))
-  + Number(Boolean(answers.inputType && route.inputTypes.includes(answers.inputType)))
+  selectedTaskTypes(answers).filter((taskType) => route.taskTypes.includes(taskType)).length
+  + selectedInputTypes(answers).filter((inputType) => route.inputTypes.includes(inputType)).length
   + Number(Boolean(answers.outputType === route.outputType))
 
 const findTool = (id: string) => aiTools.find((tool) => tool.id === id)
@@ -61,7 +66,7 @@ const toStep = (step: RouteStep, route: PreparedRoute, answers: NavigatorAnswers
     primaryToolId,
     alternativeToolIds,
     whyFit: `מתאים לשלב זה משום שהוא תומך ב${step.role} בהקשר שנבחר; זו התאמה למשימה ולא דירוג כללי.`,
-    input: answers.inputType ?? 'קלט שהמשתמש מספק',
+    input: selectedInputTypes(answers).join(', ') || 'קלט שהמשתמש מספק',
     output: route.finalOutput,
     whatAiDoes: step.instruction,
     whatHumanDoes: 'מגדיר/ה הקשר, בוחן/ת את התוצר ומקבל/ת את ההחלטה הסופית.',
@@ -129,8 +134,7 @@ export function recommendRoute(answers: NavigatorAnswers): RecommendationResult 
   const toolIds = uniqueIds(steps.flatMap((step) => step.primaryToolId ? [step.primaryToolId] : [])).slice(0, 4)
   const wantedOrganizationTool = selected.steps.flatMap((step) => [...step.primaryToolIds, ...step.alternativeToolIds]).map(findTool).some((tool) => tool?.privacyLevel === 'organizationOnly')
   const warnings = [selected.warning]
-  if (answers.privacy === 'sensitive' || answers.privacy === 'internal' || answers.privacy === 'yes' || answers.privacy === 'unsure') warnings.push('מידע רגיש או לא ודאי: אל תעלו אותו לכלי ציבורי ללא אישור מדיניות הארגון.')
-  if (answers.privacy === 'maybe') warnings.push('ייתכן שיש מידע רגיש: בדקו הרשאות ומדיניות ארגונית לפני העלאה.')
+  if (hasStrictPrivacyRequirement(answers.privacy)) warnings.push('מידע רגיש או לא ודאי: אל תעלו אותו לכלי ציבורי ללא אישור מדיניות הארגון.')
   if (wantedOrganizationTool) warnings.push('כלי ארגוני לא הוצג כהמלצה ציבורית; פנו למדיניות ולכלים המאושרים בארגון.')
   const alternativeUsed = new Set(toolIds)
   const alternatives = {
@@ -141,7 +145,7 @@ export function recommendRoute(answers: NavigatorAnswers): RecommendationResult 
   const result: RecommendationResult = {
     routeId: selected.id,
     selectedRouteId: selected.id,
-    taskSummary: answers.taskText?.trim() || `מסלול ${selected.title}: ${answers.inputType ?? 'קלט'} אל ${answers.outputType ?? selected.outputType}.`,
+    taskSummary: answers.taskText?.trim() || `מסלול ${selected.title}: ${selectedInputTypes(answers).join(', ') || 'קלט'} אל ${answers.outputType ?? selected.outputType}.`,
     steps,
     toolIds,
     recommendedToolIds: toolIds,

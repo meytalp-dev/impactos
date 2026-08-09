@@ -32,7 +32,7 @@ const profiles: Record<ToolFamilyId, ToolProfile> = {
 }
 
 export const hasStrictPrivacyRequirement = (privacy: NavigatorAnswers['privacy']) =>
-  privacy === 'internal' || privacy === 'sensitive' || privacy === 'yes' || privacy === 'unsure'
+  privacy === 'internal' || privacy === 'sensitive' || privacy === 'yes' || privacy === 'unsure' || privacy === 'maybe'
 
 export const isToolPermitted = (tool: AITool, answers: NavigatorAnswers) =>
   tool.privacyLevel !== 'organizationOnly' && !(hasStrictPrivacyRequirement(answers.privacy) && tool.privacyLevel === 'caution')
@@ -45,11 +45,17 @@ export function scoreTool(tool: AITool, answers: NavigatorAnswers, role: string)
   const difficulty = tool.difficulty ?? profile.difficulty
   const generalPurpose = tool.generalPurpose ?? profile.generalPurpose
   const priorities = [...new Set([...(answers.priorities ?? []), ...(answers.priority ? [answers.priority] : [])])]
+  const selectedTaskTypes = [...new Set(answers.taskTypes?.length ? answers.taskTypes : answers.taskType ? [answers.taskType] : [])]
+  const selectedInputTypes = [...new Set(answers.inputTypes?.length ? answers.inputTypes : answers.inputType ? [answers.inputType] : [])]
   const reasons: ScoreReason[] = []
   const add = (name: string, points: number) => reasons.push({ name, points })
 
-  if (answers.taskType && taskTypes.includes(answers.taskType)) add('task match', 5)
-  if (answers.inputType && inputTypes.includes(answers.inputType)) add('input match', 4)
+  for (const taskType of selectedTaskTypes) {
+    if (taskTypes.includes(taskType)) add(`task match: ${taskType}`, 5)
+  }
+  for (const inputType of selectedInputTypes) {
+    if (inputTypes.includes(inputType)) add(`input match: ${inputType}`, 4)
+  }
   if (answers.outputType && outputTypes.includes(answers.outputType)) add('output match', 5)
 
   const keywords = [...(tool.roleKeywords ?? []), ...tool.tags, tool.name, tool.description].map((value) => value.toLowerCase())

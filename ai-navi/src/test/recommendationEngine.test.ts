@@ -101,6 +101,41 @@ describe('recommendRoute', () => {
     expect(result.warnings.join(' ')).toMatch(/פרט|ארגון/i)
   })
 
+  it('treats maybe as sensitive and suppresses public caution tools', () => {
+    const result = recommendRoute(baseAnswers({ privacy: 'maybe' }))
+
+    expect(result.toolIds).not.toContain('excel-copilot')
+    expect(result.warnings.join(' ')).toMatch(/פרט|ארגון/i)
+  })
+
+  it('uses every multi-selected task and input independently of selection order', () => {
+    const first = recommendRoute(baseAnswers({
+      taskTypes: ['write', 'present'], taskType: 'write',
+      inputTypes: ['idea', 'documents'], inputType: 'idea',
+    }))
+    const reversed = recommendRoute(baseAnswers({
+      taskTypes: ['present', 'write'], taskType: 'present',
+      inputTypes: ['documents', 'idea'], inputType: 'documents',
+    }))
+
+    expect(first.routeId).toBe('document-to-presentation')
+    expect(reversed.routeId).toBe(first.routeId)
+    expect(reversed.toolIds).toEqual(first.toolIds)
+  })
+
+  it('scores matches found in secondary multi-select values', () => {
+    const answers = baseAnswers({
+      taskTypes: ['research', 'write'], taskType: 'research',
+      inputTypes: ['web-links', 'text'], inputType: 'web-links',
+    })
+
+    const secondaryMatch: AITool = { ...tool('secondary-match'), taskTypes: ['write'], inputTypes: ['text'] }
+    const noMatch: AITool = { ...tool('no-match'), taskTypes: ['create-image'], inputTypes: ['image'], tags: ['image'] }
+
+    expect(scoreTool(secondaryMatch, answers, 'writer').total)
+      .toBeGreaterThan(scoreTool(noMatch, answers, 'writer').total)
+  })
+
   it('uses the tool ID as a stable tie breaker', () => {
     const answers = baseAnswers({ taskType: 'write', inputType: 'text', outputType: 'text' })
     const alpha = scoreTool(tool('alpha'), answers, 'writer')

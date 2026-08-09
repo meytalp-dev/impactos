@@ -58,7 +58,7 @@ export function isStepAnswered(answers: NavigatorAnswers, step: number): boolean
 
 export function isNavigatorComplete(state: Pick<NavigatorCoreState, 'answers' | 'complete' | 'privacyConfirmed' | 'taskText'>): boolean {
   if (!state.complete || !state.taskText.trim() || !navigatorQuestions.every((_, index) => isStepAnswered(state.answers, index))) return false
-  return (state.answers.privacy !== 'yes' && state.answers.privacy !== 'unsure') || state.privacyConfirmed
+  return (state.answers.privacy !== 'yes' && state.answers.privacy !== 'unsure' && state.answers.privacy !== 'maybe') || state.privacyConfirmed
 }
 
 function firstCompletionIssue(taskText: string, answers: NavigatorAnswers): { mode: NavigatorMode; currentStep: number } | null {
@@ -73,7 +73,7 @@ function restoreState(): NavigatorCoreState {
   const taskText = (saved.taskText ?? saved.answers.taskText ?? '').trim()
   const currentStep = Math.max(0, Math.min(saved.currentStep ?? 0, navigatorQuestions.length - 1))
   const requestedMode = saved.mode ?? (taskText ? 'questions' : 'intro')
-  const mode = requestedMode === 'privacy-gate' && saved.answers.privacy !== 'yes' && saved.answers.privacy !== 'unsure'
+  const mode = requestedMode === 'privacy-gate' && saved.answers.privacy !== 'yes' && saved.answers.privacy !== 'unsure' && saved.answers.privacy !== 'maybe'
     ? 'questions'
     : requestedMode
   return {
@@ -160,7 +160,7 @@ export function NavigatorProvider({ children }: { children: ReactNode }) {
         setState((current) => ({ ...current, ...completionIssue, complete: false, privacyConfirmed: false }))
         return
       }
-      if (state.answers.privacy === 'yes' || state.answers.privacy === 'unsure') {
+      if (state.answers.privacy === 'yes' || state.answers.privacy === 'unsure' || state.answers.privacy === 'maybe') {
         setState((current) => ({ ...current, mode: 'privacy-gate', complete: false, privacyConfirmed: false }))
         return
       }

@@ -167,17 +167,15 @@ describe('seven-step personal navigator', () => {
     expect(screen.getByRole('heading', { name: 'המסלול המומלץ עבורך' })).toBeInTheDocument()
   })
 
-  it('shows caution for maybe and blocks a direct results load until all answers are complete', () => {
+  it('shows caution and requires explicit confirmation when privacy may be sensitive', () => {
     renderNavigator()
     reachPrivacyQuestion()
     fireEvent.click(screen.getByRole('button', { name: 'אולי' }))
     expect(screen.getByRole('alert')).toHaveTextContent('ייתכן שיש מידע רגיש')
-    cleanup()
+    fireEvent.click(screen.getByRole('button', { name: 'המשך' }))
 
-    renderNavigator('/results')
-    expect(screen.getByRole('heading', { name: 'התוצאות שלך' })).toBeInTheDocument()
-    expect(screen.getByRole('alert')).toHaveTextContent('צריך להשלים את הניווט')
-    expect(within(screen.getByRole('alert')).getByRole('link', { name: 'חזרה לניווט' })).toHaveAttribute('href', '/navigator')
+    expect(screen.getByRole('heading', { name: 'לפני שממשיכים לתוצאות' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'אישור והצגת תוצאות' })).toBeDisabled()
   })
 
   it('rejects a forged complete state whose task and option values are not valid questionnaire answers', () => {
