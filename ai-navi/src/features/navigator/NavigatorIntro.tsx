@@ -5,7 +5,7 @@ import { useNavigator } from './NavigatorProvider'
 const examples = ['מסמך למצגת', 'ניתוח שאלון', 'סרטון פתיחה', 'פעילות לתלמידים', 'סיכום כמה מסמכים', 'כלי דיגיטלי']
 
 export function NavigatorIntro() {
-  const { taskText, actions } = useNavigator()
+  const { taskText, validation, actions } = useNavigator()
   const [draft, setDraft] = useState(taskText)
 
   return (
@@ -34,6 +34,7 @@ export function NavigatorIntro() {
         <ul className="navi-sr-only" aria-label="דוגמאות למשימות">
           {examples.map((example) => <li key={example}>{example}</li>)}
         </ul>
+        {validation.message ? <p className="navi-validation" role="status" aria-live="polite">{validation.message}</p> : null}
         <button type="button" className="navi-action navi-action--primary" disabled={!draft.trim()} onClick={() => actions.start(draft)}>
           התחלת ניווט
         </button>

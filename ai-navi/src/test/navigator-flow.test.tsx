@@ -188,4 +188,83 @@ describe('seven-step personal navigator', () => {
 
     expect(screen.getByRole('alert')).toHaveTextContent('צריך להשלים את הניווט')
   })
+
+  it('does not enter results from restored step seven when an earlier answer is missing', () => {
+    saveNavigatorState({
+      version: 1,
+      mode: 'questions',
+      currentStep: 6,
+      taskText: 'הכנת דוח הנהלה',
+      answers: {
+        taskText: 'הכנת דוח הנהלה', inputTypes: ['data'], outputType: 'report', priorities: ['accuracy'],
+        timeAvailable: 'under-one-hour', difficulty: 'intermediate', privacy: 'no',
+      },
+    })
+    renderNavigator()
+
+    fireEvent.click(screen.getByRole('button', { name: 'המשך' }))
+
+    expect(screen.getByRole('heading', { name: navigatorQuestions[0].title })).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('צריך להשלים')
+    expect(screen.queryByRole('heading', { name: 'התוצאות שלך' })).not.toBeInTheDocument()
+  })
+
+  it('does not confirm a restored privacy gate when an earlier answer is missing', () => {
+    saveNavigatorState({
+      version: 1,
+      mode: 'privacy-gate',
+      currentStep: 6,
+      taskText: 'הכנת דוח הנהלה',
+      answers: {
+        taskText: 'הכנת דוח הנהלה', taskTypes: ['analyze'], outputType: 'report', priorities: ['privacy'],
+        timeAvailable: 'several-hours', difficulty: 'advanced', privacy: 'yes',
+      },
+    })
+    renderNavigator()
+    fireEvent.click(screen.getByRole('checkbox', { name: /קראתי והבנתי/ }))
+
+    fireEvent.click(screen.getByRole('button', { name: 'אישור והצגת תוצאות' }))
+
+    expect(screen.getByRole('heading', { name: navigatorQuestions[1].title })).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('צריך להשלים')
+    expect(screen.queryByRole('heading', { name: 'התוצאות שלך' })).not.toBeInTheDocument()
+  })
+
+  it('rejects persisted duplicate multi-select values and returns to that question', () => {
+    saveNavigatorState({
+      version: 1,
+      mode: 'questions',
+      currentStep: 6,
+      taskText: 'הכנת דוח הנהלה',
+      answers: {
+        taskText: 'הכנת דוח הנהלה', taskTypes: ['analyze', 'analyze'], inputTypes: ['data'], outputType: 'report',
+        priorities: ['accuracy'], timeAvailable: 'under-one-hour', difficulty: 'intermediate', privacy: 'no',
+      },
+    })
+    renderNavigator()
+
+    fireEvent.click(screen.getByRole('button', { name: 'המשך' }))
+
+    expect(screen.getByRole('heading', { name: navigatorQuestions[0].title })).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('צריך להשלים או לתקן')
+  })
+
+  it('rejects persisted no-material alongside another input and returns to raw material', () => {
+    saveNavigatorState({
+      version: 1,
+      mode: 'questions',
+      currentStep: 6,
+      taskText: 'הכנת דוח הנהלה',
+      answers: {
+        taskText: 'הכנת דוח הנהלה', taskTypes: ['analyze'], inputTypes: ['none', 'data'], outputType: 'report',
+        priorities: ['accuracy'], timeAvailable: 'under-one-hour', difficulty: 'intermediate', privacy: 'no',
+      },
+    })
+    renderNavigator()
+
+    fireEvent.click(screen.getByRole('button', { name: 'המשך' }))
+
+    expect(screen.getByRole('heading', { name: navigatorQuestions[1].title })).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('צריך להשלים או לתקן')
+  })
 })

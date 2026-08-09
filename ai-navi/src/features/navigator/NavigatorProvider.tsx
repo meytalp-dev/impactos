@@ -49,7 +49,9 @@ export function isStepAnswered(answers: NavigatorAnswers, step: number): boolean
     return Array.isArray(answer)
       && answer.length > 0
       && answer.length <= (question.maxSelections ?? question.options.length)
+      && new Set(answer).size === answer.length
       && answer.every((value) => allowed.has(value))
+      && (question.id !== 'inputTypes' || !answer.some((value) => value === 'none') || answer.length === 1)
   }
   return typeof answer === 'string' && allowed.has(answer)
 }
@@ -57,6 +59,12 @@ export function isStepAnswered(answers: NavigatorAnswers, step: number): boolean
 export function isNavigatorComplete(state: Pick<NavigatorCoreState, 'answers' | 'complete' | 'privacyConfirmed' | 'taskText'>): boolean {
   if (!state.complete || !state.taskText.trim() || !navigatorQuestions.every((_, index) => isStepAnswered(state.answers, index))) return false
   return (state.answers.privacy !== 'yes' && state.answers.privacy !== 'unsure') || state.privacyConfirmed
+}
+
+function firstCompletionIssue(taskText: string, answers: NavigatorAnswers): { mode: NavigatorMode; currentStep: number } | null {
+  if (!taskText.trim()) return { mode: 'intro', currentStep: 0 }
+  const invalidStep = navigatorQuestions.findIndex((_, index) => !isStepAnswered(answers, index))
+  return invalidStep === -1 ? null : { mode: 'questions', currentStep: invalidStep }
 }
 
 function restoreState(): NavigatorCoreState {
@@ -146,6 +154,12 @@ export function NavigatorProvider({ children }: { children: ReactNode }) {
         setState((current) => ({ ...current, currentStep: current.currentStep + 1 }))
         return
       }
+      const completionIssue = firstCompletionIssue(state.taskText, state.answers)
+      if (completionIssue) {
+        setMessage('צריך להשלים או לתקן את התחנה המסומנת לפני הצגת התוצאות.')
+        setState((current) => ({ ...current, ...completionIssue, complete: false, privacyConfirmed: false }))
+        return
+      }
       if (state.answers.privacy === 'yes' || state.answers.privacy === 'unsure') {
         setState((current) => ({ ...current, mode: 'privacy-gate', complete: false, privacyConfirmed: false }))
         return
@@ -176,6 +190,12 @@ export function NavigatorProvider({ children }: { children: ReactNode }) {
       navigate('/navigator')
     },
     confirmPrivacy() {
+      const completionIssue = firstCompletionIssue(state.taskText, state.answers)
+      if (completionIssue) {
+        setMessage('צריך להשלים או לתקן את התחנה המסומנת לפני הצגת התוצאות.')
+        setState((current) => ({ ...current, ...completionIssue, complete: false, privacyConfirmed: false }))
+        return
+      }
       const completed = { ...state, mode: 'questions' as const, complete: true, privacyConfirmed: true }
       saveNavigatorState(toPersisted(completed))
       setState(completed)
