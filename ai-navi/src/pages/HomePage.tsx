@@ -59,7 +59,7 @@ export default function HomePage() {
               </div>
               <h3>{destination.title}</h3>
               <p>{destination.description}</p>
-              <Link className="navi-gateway__destination-link" to={destination.to} aria-label={destination.label}>
+              <Link className="navi-gateway__destination-link navi-action-link" to={destination.to} aria-label={destination.label}>
                 <span>{destination.label}</span>
                 <span aria-hidden="true">←</span>
               </Link>

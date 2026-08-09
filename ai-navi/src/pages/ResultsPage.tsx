@@ -14,7 +14,7 @@ export default function ResultsPage() {
         <h1 className="navi-page-title">התוצאות שלך</h1>
         <div className="navi-results-blocked" role="alert">
           <p>צריך להשלים את הניווט לפני שאפשר להציג תוצאות.</p>
-          <Link to="/navigator">חזרה לניווט</Link>
+          <Link className="navi-action-link" to="/navigator">חזרה לניווט</Link>
         </div>
       </section>
     )

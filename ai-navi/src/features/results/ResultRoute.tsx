@@ -95,10 +95,10 @@ export function ResultRoute({ answers, result, onReset }: ResultRouteProps) {
       <PromptCard prompt={result.prompt} />
 
       <footer className="navi-results-actions" aria-label="פעולות לתוצאה">
-        <Link className="navi-action navi-action--secondary" to="/navigator">שינוי תשובה</Link>
+        <Link className="navi-action navi-action--secondary navi-action-link" to="/navigator">שינוי תשובה</Link>
         <button type="button" className="navi-action navi-action--secondary" onClick={onReset}>ניווט חדש</button>
         <button type="button" className="navi-action navi-action--primary" onClick={() => window.print?.()}>הדפסה / שמירה כ־PDF</button>
-        <Link className="navi-action navi-action--secondary" to="/presentation">פתיחת מצב מצגת</Link>
+        <Link className="navi-action navi-action--secondary navi-action-link" to="/presentation">פתיחת מצב מצגת</Link>
       </footer>
     </article>
   )

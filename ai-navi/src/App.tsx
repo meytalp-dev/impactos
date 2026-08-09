@@ -13,7 +13,7 @@ export default function App() {
   return (
     <MotionConfig reducedMotion="user">
       <div className={`navi-app${isPresentation ? ' navi-app--presentation' : ''}`} dir="rtl">
-        <a className="navi-skip-link" href="#main-content">דלגו לתוכן הראשי</a>
+        <a className="navi-skip-link navi-action-link" href="#main-content">דלגו לתוכן הראשי</a>
         <NavigatorProvider>
           <main id="main-content" className="navi-main" tabIndex={-1}>
             <Routes>

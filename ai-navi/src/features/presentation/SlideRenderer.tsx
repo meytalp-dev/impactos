@@ -262,7 +262,7 @@ function NavigatorSlide({ slide }: { slide: VisualSlide<'navigator'> }) {
           <li key={example.audience}><strong>{example.audience}</strong><span>{example.task}</span></li>
         ))}
       </ul>
-      <a className="navi-slide-navigator__action" href={slide.visual.href}>{slide.visual.action}</a>
+      <a className="navi-slide-navigator__action navi-action-link" href={slide.visual.href}>{slide.visual.action}</a>
     </div>
   )
 }
@@ -279,7 +279,7 @@ function TakeawaysSlide({ slide }: { slide: VisualSlide<'takeaways'> }) {
           <li key={takeaway}><span>{index + 1}</span>{takeaway}</li>
         ))}
       </ol>
-      <a className="navi-slide-takeaways__cta" href={slide.visual.href}>{slide.visual.cta}</a>
+      <a className="navi-slide-takeaways__cta navi-action-link" href={slide.visual.href}>{slide.visual.cta}</a>
     </div>
   )
 }
