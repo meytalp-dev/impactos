@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>סטודיו הזהות — IMPACT OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&family=Heebo:wght@400;500;700;800;900&family=Frank+Ruhl+Libre:wght@500;700;900&family=Secular+One&family=Suez+One&family=Assistant:wght@400;600;700;800&family=Varela+Round&family=Alef:wght@400;700&family=David+Libre:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --brand:#5FBFA4; --deep:#1E3D47; --text-main:#26505C; --text-soft:#557079;
+  --line:#ECF0F0; --card-shadow:0 1px 3px rgba(38,80,92,.05);
+  --shadow-h:0 16px 38px rgba(38,80,92,.14);
+  --okbg:#E3F6EC; --watchbg:#FCEFD9;
+  --p-green-bg:#DDF3EC; --p-green:#0F7E72;
+  --p-pink-bg:#FBEBF2;  --p-pink:#B05A86;
+  --p-purple-bg:#EEEBF8;--p-purple:#6A59B8;
+  --p-orange-bg:#FBF0E4;--p-orange:#B5611F;
+  --p-blue-bg:#EAF0F7;  --p-blue:#41689A;
+  --p-amber-bg:#FCEFD9; --p-amber:#9C6212;
+  --radius:22px; --pill:999px;
+  --ease:cubic-bezier(.32,.72,0,1);
+  /* טוקנים דינמיים של הכיוון הנבחר — מוזרקים ב-JS */
+  --k-primary:#5FBFA4; --k-deep:#143C36; --k-accent:#E8A55F; --k-soft:#E9F6F1; --k-paper:#FDFCFA;
+  --k-display:'Rubik'; --k-body:'Heebo';
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:17px;}
+body{font-family:'Rubik',sans-serif;background:#fff;color:var(--text-main);line-height:1.55;min-height:100dvh;}
+button{font-family:inherit;cursor:pointer;}
+input,textarea{font-family:inherit;}
+
+/* ---------- shell ---------- */
+.wrap{max-width:1080px;margin:0 auto;padding:26px clamp(16px,3.5vw,44px) 80px;}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:34px;}
+.brandmark{display:flex;align-items:center;gap:12px;}
+.brandmark .bm-tile{width:46px;height:46px;border-radius:14px;background:var(--p-purple-bg);display:grid;place-items:center;color:var(--p-purple);}
+.brandmark .bm-tile svg{width:24px;height:24px;}
+.brandmark b{font-size:17px;font-weight:800;color:var(--deep);display:block;line-height:1.2;}
+.brandmark small{font-size:12.5px;color:var(--text-soft);font-weight:600;}
+.top .chip{font-size:13px;font-weight:600;color:var(--text-soft);background:#F0F5F6;border:1px solid #E7EEEE;border-radius:var(--pill);padding:6px 14px;}
+
+/* ---------- screens ---------- */
+.screen{display:none;}
+.screen.active{display:block;animation:rise .5s var(--ease) both;}
+@keyframes rise{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+
+/* ---------- hero ---------- */
+.hero{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--card-shadow);
+  padding:38px clamp(22px,4vw,46px);position:relative;overflow:hidden;margin-bottom:26px;}
+.hero::after{content:'';position:absolute;top:0;bottom:0;right:0;width:4px;background:var(--brand);border-radius:4px;}
+.hero .qchip{display:inline-block;font-size:13.5px;font-weight:700;color:var(--p-green);background:var(--p-green-bg);
+  border-radius:var(--pill);padding:6px 15px;margin-bottom:14px;}
+.hero h1{font-size:clamp(26px,3.6vw,36px);font-weight:800;color:var(--deep);line-height:1.25;margin-bottom:10px;}
+.hero p{max-width:560px;font-size:16px;color:var(--text-soft);}
+
+/* ---------- path cards ---------- */
+.paths{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;}
+.path-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--card-shadow);
+  padding:26px 24px;text-align:right;transition:transform .3s var(--ease),box-shadow .3s var(--ease);
+  display:flex;flex-direction:column;gap:10px;animation:rise .55s var(--ease) both;}
+.path-card:nth-child(2){animation-delay:.08s;}
+.path-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-h);}
+.path-card .tile{width:56px;height:56px;border-radius:15px;display:grid;place-items:center;}
+.path-card .tile svg{width:28px;height:28px;}
+.path-card h3{font-size:19px;font-weight:800;color:var(--deep);}
+.path-card p{font-size:14px;color:var(--text-soft);flex:1;}
+.path-card .go{display:inline-flex;align-items:center;gap:6px;font-size:14.5px;font-weight:700;background:none;border:none;padding:0;}
+.path-card .go svg{width:16px;height:16px;transition:transform .25s var(--ease);}
+.path-card:hover .go svg{transform:translateX(-4px);}
+.path-card.p1 .tile{background:var(--p-green-bg);color:var(--p-green);} .path-card.p1 .go{color:var(--p-green);}
+.path-card.p2 .tile{background:var(--p-pink-bg);color:var(--p-pink);} .path-card.p2 .go{color:var(--p-pink);}
+
+/* ---------- wizard ---------- */
+.panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--card-shadow);
+  padding:30px clamp(20px,3.5vw,40px);}
+.steps-bar{display:flex;align-items:center;gap:8px;margin-bottom:26px;}
+.steps-bar .dot{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:14px;font-weight:800;
+  background:#F0F5F6;color:var(--text-soft);transition:all .3s var(--ease);}
+.steps-bar .dot.done{background:var(--okbg);color:var(--p-green);}
+.steps-bar .dot.now{background:var(--brand);color:#fff;box-shadow:0 6px 16px rgba(95,191,164,.35);}
+.steps-bar .seg{flex:1;height:3px;border-radius:3px;background:#F0F5F6;}
+.steps-bar .seg.done{background:var(--brand);}
+.q-title{font-size:22px;font-weight:800;color:var(--deep);margin-bottom:6px;}
+.q-sub{font-size:14.5px;color:var(--text-soft);margin-bottom:22px;}
+.field{margin-bottom:18px;}
+.field label{display:block;font-size:14px;font-weight:700;color:var(--deep);margin-bottom:7px;}
+.field input[type=text]{width:100%;font-size:16px;padding:13px 16px;border:1.5px solid var(--line);border-radius:14px;
+  color:var(--text-main);outline:none;transition:border-color .2s;background:#FDFDFD;}
+.field input[type=text]:focus{border-color:var(--brand);}
+.chips{display:flex;flex-wrap:wrap;gap:10px;}
+.chips .chip-btn{border:1.5px solid var(--line);background:#fff;border-radius:var(--pill);padding:10px 18px;
+  font-size:15px;font-weight:600;color:var(--text-soft);transition:all .2s var(--ease);}
+.chips .chip-btn:hover{border-color:var(--brand);color:var(--deep);transform:translateY(-2px);}
+.chips .chip-btn.on{background:var(--okbg);border-color:var(--brand);color:var(--p-green);font-weight:700;}
+.metas{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;}
+.meta-card{border:1.5px solid var(--line);background:#fff;border-radius:18px;padding:18px 12px;text-align:center;
+  transition:all .25s var(--ease);}
+.meta-card .em{font-size:15px;font-weight:800;color:var(--deep);display:block;margin-top:8px;}
+.meta-card small{font-size:12px;color:var(--text-soft);font-weight:600;}
+.meta-card svg{width:30px;height:30px;color:var(--text-soft);transition:color .2s;}
+.meta-card:hover{transform:translateY(-3px);border-color:#D8E4E4;}
+.meta-card.on{border-color:var(--brand);background:var(--okbg);}
+.meta-card.on svg{color:var(--p-green);}
+.tone-row{display:flex;align-items:center;gap:16px;margin-top:8px;}
+.tone-row span{font-size:14px;font-weight:700;color:var(--text-soft);white-space:nowrap;}
+input[type=range]{flex:1;accent-color:var(--brand);height:34px;}
+.wiz-nav{display:flex;justify-content:space-between;align-items:center;margin-top:28px;gap:12px;}
+.btn-primary{background:var(--brand);color:#fff;border:none;border-radius:var(--pill);padding:13px 30px;
+  font-size:16px;font-weight:700;box-shadow:0 6px 16px rgba(95,191,164,.3);transition:transform .2s var(--ease),box-shadow .2s;}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 12px 24px rgba(95,191,164,.38);}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none;}
+.btn-soft{background:#fff;color:var(--text-soft);border:1.5px solid var(--line);border-radius:var(--pill);
+  padding:12px 24px;font-size:15px;font-weight:600;transition:all .2s;}
+.btn-soft:hover{color:var(--deep);border-color:#D8E4E4;}
+
+/* ---------- upload ---------- */
+.dropzone{border:2px dashed #CFE0DE;border-radius:var(--radius);background:#FAFCFC;padding:44px 20px;text-align:center;
+  transition:all .25s var(--ease);cursor:pointer;margin-bottom:20px;}
+.dropzone:hover,.dropzone.drag{border-color:var(--brand);background:var(--okbg);}
+.dropzone svg{width:42px;height:42px;color:var(--brand);margin-bottom:10px;}
+.dropzone b{display:block;font-size:17px;font-weight:800;color:var(--deep);margin-bottom:4px;}
+.dropzone small{font-size:13.5px;color:var(--text-soft);}
+.extract-strip{display:none;align-items:center;gap:18px;background:#FAFCFC;border:1px solid var(--line);
+  border-radius:18px;padding:16px 20px;margin-bottom:20px;flex-wrap:wrap;}
+.extract-strip.show{display:flex;animation:rise .4s var(--ease) both;}
+.extract-strip img{width:74px;height:74px;object-fit:contain;border-radius:14px;background:#fff;border:1px solid var(--line);padding:6px;}
+.extract-strip .sw-group b{display:block;font-size:12.5px;font-weight:700;color:var(--text-soft);margin-bottom:6px;}
+.sw-row{display:flex;gap:7px;}
+.sw{width:34px;height:34px;border-radius:11px;border:1px solid rgba(38,80,92,.12);position:relative;}
+.sw.big{width:40px;height:40px;}
+.arrow-heal{color:var(--brand);font-size:22px;font-weight:900;}
+
+/* ---------- results ---------- */
+.dir-tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:26px;}
+.dir-tab{background:#fff;border:1.5px solid var(--line);border-radius:18px;padding:18px;text-align:right;
+  transition:all .25s var(--ease);animation:rise .5s var(--ease) both;}
+.dir-tab:nth-child(2){animation-delay:.07s;}.dir-tab:nth-child(3){animation-delay:.14s;}
+.dir-tab:hover{transform:translateY(-4px);box-shadow:var(--shadow-h);}
+.dir-tab.on{border-color:var(--k-primary);box-shadow:0 10px 26px rgba(38,80,92,.12);}
+.dir-tab .dots{display:flex;gap:6px;margin-bottom:10px;}
+.dir-tab .dots i{width:22px;height:22px;border-radius:50%;border:1px solid rgba(38,80,92,.1);}
+.dir-tab b{font-size:16.5px;font-weight:800;color:var(--deep);display:block;}
+.dir-tab small{font-size:13px;color:var(--text-soft);}
+.dir-tab .badge{display:none;font-size:11.5px;font-weight:800;color:#fff;background:var(--k-primary);
+  border-radius:var(--pill);padding:3px 10px;float:left;}
+.dir-tab.on .badge{display:inline-block;}
+
+.prev-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;}
+.prev-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--card-shadow);
+  overflow:hidden;transition:transform .3s var(--ease),box-shadow .3s var(--ease);}
+.prev-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-h);}
+.prev-card .ph{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line);}
+.prev-card .ph b{font-size:15px;font-weight:800;color:var(--deep);display:flex;align-items:center;gap:9px;}
+.prev-card .ph b .mini{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;}
+.prev-card .ph b .mini svg{width:17px;height:17px;}
+.prev-card .ph .act{font-size:12.5px;font-weight:700;border:1px solid var(--line);background:#F7FAFA;
+  color:var(--text-soft);border-radius:var(--pill);padding:5px 13px;transition:all .2s;}
+.prev-card .ph .act:hover{color:var(--deep);border-color:#CBDCDA;background:#fff;}
+.prev-body{padding:20px;}
+
+/* email signature preview */
+.sig{direction:rtl;background:var(--k-paper);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;gap:14px;align-items:center;transition:background .4s;}
+.sig .sig-logo{flex:0 0 auto;}
+.sig .sig-bar{width:3.5px;align-self:stretch;border-radius:3px;background:var(--k-accent);transition:background .4s;}
+.sig .sig-name{font-family:var(--k-display),'Rubik';font-weight:800;font-size:16.5px;color:var(--k-deep);transition:color .4s;}
+.sig .sig-role{font-size:13px;color:var(--text-soft);font-weight:600;margin-bottom:5px;}
+.sig .sig-school{font-size:13.5px;font-weight:800;color:var(--k-primary);transition:color .4s;}
+.sig .sig-contact{font-size:12px;color:var(--text-soft);margin-top:3px;}
+
+/* slide preview */
+.slide{aspect-ratio:16/9;border-radius:14px;overflow:hidden;position:relative;background:var(--k-paper);
+  border:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;padding:8% 9%;transition:background .4s;}
+.slide::before{content:'';position:absolute;inset:auto 0 0 0;height:9%;background:var(--k-primary);transition:background .4s;}
+.slide::after{content:'';position:absolute;top:-14%;left:-8%;width:38%;aspect-ratio:1;border-radius:50%;
+  background:var(--k-soft);transition:background .4s;}
+.slide .sl-chip{position:relative;z-index:1;align-self:flex-start;font-size:10.5px;font-weight:800;color:var(--k-primary);
+  background:var(--k-soft);border-radius:var(--pill);padding:3px 11px;margin-bottom:8px;transition:all .4s;}
+.slide h4{position:relative;z-index:1;font-family:var(--k-display),'Rubik';font-size:clamp(19px,2.6vw,26px);font-weight:800;color:var(--k-deep);line-height:1.25;transition:color .4s;}
+.slide p{position:relative;z-index:1;font-family:var(--k-body),'Heebo';font-size:12.5px;color:var(--text-soft);margin-top:6px;}
+.slide .sl-accent{position:absolute;bottom:15%;right:9%;width:44px;height:5px;border-radius:4px;background:var(--k-accent);transition:background .4s;}
+
+/* dashboard preview */
+.dash{border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;background:#FBFDFD;min-height:190px;}
+.dash .d-rail{flex:0 0 62px;background:var(--k-deep);display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px 0;transition:background .4s;}
+.dash .d-rail .d-logo{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.16);display:grid;place-items:center;margin-bottom:6px;}
+.dash .d-rail i{width:26px;height:26px;border-radius:8px;background:rgba(255,255,255,.14);}
+.dash .d-rail i.on{background:var(--k-primary);transition:background .4s;}
+.dash .d-main{flex:1;padding:13px 15px;}
+.dash .d-title{font-size:12.5px;font-weight:800;color:var(--k-deep);margin-bottom:9px;transition:color .4s;}
+.dash .d-cards{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.dash .d-card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 11px;}
+.dash .d-card b{display:block;font-size:15px;font-weight:900;color:var(--k-primary);transition:color .4s;}
+.dash .d-card small{font-size:10px;color:var(--text-soft);font-weight:600;}
+.dash .d-bar{grid-column:1/-1;background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 11px;}
+.dash .d-bar small{font-size:10px;color:var(--text-soft);font-weight:700;display:block;margin-bottom:5px;}
+.dash .d-track{height:8px;border-radius:6px;background:var(--k-soft);overflow:hidden;transition:background .4s;}
+.dash .d-fill{height:100%;width:68%;border-radius:6px;background:linear-gradient(90deg,var(--k-primary),var(--k-accent));transition:background .4s;}
+
+/* certificate preview */
+.cert{aspect-ratio:4/3;border-radius:14px;border:1px solid var(--line);background:var(--k-paper);position:relative;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:7%;overflow:hidden;transition:background .4s;}
+.cert::before{content:'';position:absolute;inset:9px;border:1.5px solid var(--k-soft);border-radius:9px;transition:border-color .4s;}
+.cert .c-school{font-size:11px;font-weight:800;color:var(--k-primary);letter-spacing:.4px;margin-bottom:5px;transition:color .4s;}
+.cert h4{font-family:var(--k-display),'Rubik';font-size:clamp(17px,2.2vw,22px);font-weight:800;color:var(--k-deep);transition:color .4s;}
+.cert .c-line{width:38px;height:3.5px;border-radius:3px;background:var(--k-accent);margin:9px auto;transition:background .4s;}
+.cert p{font-family:var(--k-body),'Heebo';font-size:11.5px;color:var(--text-soft);max-width:82%;}
+.cert .c-seal{position:absolute;bottom:10%;left:10%;width:34px;height:34px;border-radius:50%;background:var(--k-soft);
+  display:grid;place-items:center;font-size:13px;font-weight:900;color:var(--k-primary);transition:all .4s;}
+
+/* palette spec */
+.spec-swatches{display:flex;gap:10px;margin-bottom:16px;}
+.spec-sw{flex:1;border-radius:13px;height:64px;position:relative;border:1px solid rgba(38,80,92,.08);transition:background .4s;}
+.spec-sw code{position:absolute;bottom:6px;right:8px;font-size:10px;font-weight:700;background:rgba(255,255,255,.85);
+  border-radius:6px;padding:1px 6px;color:var(--deep);direction:ltr;}
+.spec-sw small{position:absolute;top:6px;right:8px;font-size:10px;font-weight:800;color:rgba(255,255,255,.95);text-shadow:0 1px 2px rgba(0,0,0,.18);}
+.spec-fonts .f-row{display:flex;align-items:baseline;justify-content:space-between;padding:9px 0;border-top:1px solid var(--line);}
+.spec-fonts .f-row:first-child{border-top:none;}
+.spec-fonts .f-demo{font-size:19px;color:var(--k-deep);transition:color .4s;}
+.spec-fonts .f-label{font-size:12px;font-weight:700;color:var(--text-soft);}
+
+/* logo preview */
+.logo-stage{display:flex;align-items:center;justify-content:center;gap:22px;padding:8px 0;}
+.logo-stage svg{filter:drop-shadow(0 6px 14px rgba(38,80,92,.14));}
+.logo-note{font-size:12px;color:var(--text-soft);text-align:center;margin-top:10px;}
+.uploaded-logo-stage{display:flex;align-items:center;justify-content:center;padding:8px 0;}
+.uploaded-logo-stage img{max-height:110px;max-width:80%;object-fit:contain;}
+
+/* export bar */
+.export-bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);
+  border-radius:var(--radius);box-shadow:var(--card-shadow);padding:18px 22px;margin-top:24px;}
+.export-bar .eb-title{font-size:15px;font-weight:800;color:var(--deep);margin-inline-end:auto;display:flex;align-items:center;gap:10px;}
+.export-bar .eb-title .mini{width:34px;height:34px;border-radius:10px;background:var(--p-amber-bg);color:var(--p-amber);display:grid;place-items:center;}
+.export-bar .eb-title .mini svg{width:18px;height:18px;}
+.toast{position:fixed;bottom:26px;right:50%;transform:translate(50%,20px);background:var(--deep);color:#fff;
+  font-size:14px;font-weight:700;border-radius:var(--pill);padding:11px 24px;opacity:0;pointer-events:none;
+  transition:all .35s var(--ease);z-index:50;}
+.toast.show{opacity:1;transform:translate(50%,0);}
+.footnote{margin-top:34px;font-size:12.5px;color:var(--text-soft);text-align:center;}
+@media (max-width:640px){ .prev-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brandmark">
+      <div class="bm-tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="19" cy="13" r="2"/><circle cx="6" cy="12" r="3"/><path d="M14 15.5 9 20l-3-3"/></svg></div>
+      <div><b>סטודיו הזהות</b><small>IMPACT OS · ערכת מיתוג לבית הספר</small></div>
+    </div>
+    <span class="chip">דמו · הכל נשאר במחשב שלכם</span>
+  </header>
+
+  <!-- ============ HOME ============ -->
+  <section class="screen active" id="screen-home">
+    <div class="hero">
+      <span class="qchip">כמה שאלות · ערכה שלמה</span>
+      <h1>הזהות של בית הספר שלכם,<br>מסודרת ואחידה — בעשר דקות</h1>
+      <p>עונים על כמה שאלות או מעלים את מה שכבר יש לכם — ומקבלים פלטת צבעים, לוגו, חתימת מייל, תבנית מצגת, תעודות, וקובץ עיצוב שמלביש את כל מערכות בית הספר.</p>
+    </div>
+    <div class="paths">
+      <button class="path-card p1" onclick="startWizard()">
+        <span class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>
+        <h3>מתחילים מאפס</h3>
+        <p>אין לכם עדיין זהות מגובשת? ספרו לנו על בית הספר — על החזון, הערכים והאופי — ונציע שלושה כיוונים שלמים לבחירה.</p>
+        <span class="go">לשאלון הקצר <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></span>
+      </button>
+      <button class="path-card p2" onclick="startUpload()">
+        <span class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg></span>
+        <h3>יש לנו כבר משהו</h3>
+        <p>יש לוגו או צבע שהקהילה מחוברת אליו? העלו אותו — נחלץ ממנו את הצבעים, נעשה סדר, ונשלים סביבו את כל השאר.</p>
+        <span class="go">להעלאת הלוגו <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============ WIZARD ============ -->
+  <section class="screen" id="screen-wizard">
+    <div class="panel">
+      <div class="steps-bar" id="stepsBar"></div>
+
+      <div class="wstep" data-step="0">
+        <div class="q-title">נעים להכיר 👋</div>
+        <div class="q-sub">איך קוראים לבית הספר, ובאיזה שלב הוא?</div>
+        <div class="field"><label>שם בית הספר</label>
+          <input type="text" id="inpName" placeholder="למשל: אלונים, ניצנים, אופק..." maxlength="30"></div>
+        <div class="field"><label>שלב חינוך</label>
+          <div class="chips" id="chipsStage"></div></div>
+      </div>
+
+      <div class="wstep" data-step="1" style="display:none">
+        <div class="q-title">מה הכי חשוב לכם?</div>
+        <div class="q-sub">בחרו עד שלושה ערכים שנמצאים בלב החזון שלכם — הם יכתיבו את הצבעים.</div>
+        <div class="chips" id="chipsValues"></div>
+      </div>
+
+      <div class="wstep" data-step="2" style="display:none">
+        <div class="q-title">אם בית הספר היה מקום...</div>
+        <div class="q-sub">איזה מקום הוא היה? הבחירה משפיעה על האווירה והצורות.</div>
+        <div class="metas" id="metaCards"></div>
+      </div>
+
+      <div class="wstep" data-step="3" style="display:none">
+        <div class="q-title">ואיזה טון מרגיש נכון?</div>
+        <div class="q-sub">הזיזו את הסליידר — משפיע על עוצמת הצבעים ואופי הפונטים.</div>
+        <div class="tone-row">
+          <span>רגוע ויציב</span>
+          <input type="range" id="toneSlider" min="0" max="100" value="50">
+          <span>נועז ותוסס</span>
+        </div>
+      </div>
+
+      <div class="wiz-nav">
+        <button class="btn-soft" id="btnBack" onclick="wizBack()">חזרה</button>
+        <button class="btn-primary" id="btnNext" onclick="wizNext()">המשך</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ UPLOAD ============ -->
+  <section class="screen" id="screen-upload">
+    <div class="panel">
+      <div class="q-title">העלו את מה שיש</div>
+      <div class="q-sub">לוגו, סמל, או אפילו צילום של שלט הכניסה — נחלץ מהם את הצבעים ונבנה סביבם ערכה מסודרת.</div>
+      <div class="dropzone" id="dropzone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.5-3.5a2 2 0 0 0-2.8 0L6 20"/></svg>
+        <b>גררו לכאן תמונה, או לחצו לבחירה</b>
+        <small>PNG · JPG · עדיף על רקע שקוף או בהיר</small>
+        <input type="file" id="fileInput" accept="image/*" hidden>
+      </div>
+      <div class="extract-strip" id="extractStrip">
+        <img id="uplThumb" alt="הלוגו שהועלה">
+        <div class="sw-group"><b>מה שמצאנו בלוגו</b><div class="sw-row" id="rawSwatches"></div></div>
+        <div class="arrow-heal">←</div>
+        <div class="sw-group"><b>הפלטה המסודרת</b><div class="sw-row" id="healedSwatches"></div></div>
+      </div>
+      <div class="field"><label>שם בית הספר</label>
+        <input type="text" id="inpNameUpl" placeholder="למשל: אלונים, ניצנים, אופק..." maxlength="30"></div>
+      <div class="field"><label>מה חשוב לכם? (לא חובה — עוזר לנו להשלים פונטים וצבע הדגשה)</label>
+        <div class="chips" id="chipsValuesUpl"></div></div>
+      <div class="wiz-nav">
+        <button class="btn-soft" onclick="goHome()">חזרה</button>
+        <button class="btn-primary" id="btnExtractGo" onclick="finishUpload()" disabled>בנו לנו ערכה</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RESULTS ============ -->
+  <section class="screen" id="screen-results">
+    <div class="hero" style="margin-bottom:22px">
+      <span class="qchip" id="resChip">3 כיוונים מוצעים</span>
+      <h1 id="resTitle">הזהות של בית הספר</h1>
+      <p id="resSub">בחרו כיוון — וכל התוצרים למטה מתעדכנים מיד. אפשר להתלבט, בשביל זה יש שלושה.</p>
+    </div>
+
+    <div class="dir-tabs" id="dirTabs"></div>
+
+    <div class="prev-grid">
+      <!-- logo -->
+      <div class="prev-card">
+        <div class="ph"><b><span class="mini" style="background:var(--p-purple-bg);color:var(--p-purple)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/><path d="M12 8v8"/></svg></span>לוגו</b></div>
+        <div class="prev-body">
+          <div class="logo-stage" id="logoStage"></div>
+          <div class="logo-note" id="logoNote">הצעת מונוגרמה — נקודת פתיחה למעצב, או לוגו זמני מכובד</div>
+        </div>
+      </div>
+      <!-- signature -->
+      <div class="prev-card">
+        <div class="ph"><b><span class="mini" style="background:var(--p-blue-bg);color:var(--p-blue)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m4 7 8 6 8-6"/></svg></span>חתימת מייל</b>
+          <button class="act" onclick="copySignature()">העתקת HTML</button></div>
+        <div class="prev-body">
+          <div class="sig" id="sigPreview">
+            <div class="sig-logo" id="sigLogo"></div>
+            <div class="sig-bar"></div>
+            <div>
+              <div class="sig-name">רות לוי</div>
+              <div class="sig-role">מנהלת בית הספר</div>
+              <div class="sig-school" id="sigSchool">בית ספר אלונים</div>
+              <div class="sig-contact">ruth@school.org.il · 04-6330000</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- slide -->
+      <div class="prev-card">
+        <div class="ph"><b><span class="mini" style="background:var(--p-orange-bg);color:var(--p-orange)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M12 17v4"/><path d="M8 21h8"/></svg></span>שקף מצגת</b></div>
+        <div class="prev-body">
+          <div class="slide">
+            <span class="sl-chip" id="slChip">אסיפת הורים · תשפ"ז</span>
+            <h4 id="slTitle">פותחים שנה יחד</h4>
+            <p>בית הספר שלנו — מה מחכה לנו השנה</p>
+            <span class="sl-accent"></span>
+          </div>
+        </div>
+      </div>
+      <!-- dashboard -->
+      <div class="prev-card">
+        <div class="ph"><b><span class="mini" style="background:var(--p-green-bg);color:var(--p-green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18"/><path d="M14 8h4"/><path d="M14 12h4"/></svg></span>מערכות IMPACT OS</b></div>
+        <div class="prev-body">
+          <div class="dash">
+            <div class="d-rail"><span class="d-logo" id="dashLogo"></span><i class="on"></i><i></i><i></i></div>
+            <div class="d-main">
+              <div class="d-title" id="dashTitle">בוקר טוב, רות · בית ספר אלונים</div>
+              <div class="d-cards">
+                <div class="d-card"><b>26</b><small>תלמידים תרגלו היום</small></div>
+                <div class="d-card"><b>4</b><small>ממתינים למשוב</small></div>
+                <div class="d-bar"><small>התקדמות כיתה א'1 — קריאה</small>
+                  <div class="d-track"><div class="d-fill"></div></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="logo-note">כל הדשבורדים מתלבשים אוטומטית בצבעים שלכם</div>
+        </div>
+      </div>
+      <!-- certificate -->
+      <div class="prev-card">
+        <div class="ph"><b><span class="mini" style="background:var(--p-amber-bg);color:var(--p-amber)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="6"/><path d="m9 14-1.5 7L12 18.5 16.5 21 15 14"/></svg></span>תעודת הוקרה</b></div>
+        <div class="prev-body">
+          <div class="cert">
+            <div class="c-school" id="certSchool">בית ספר אלונים</div>
+            <h4>תעודת הוקרה</h4>
+            <div class="c-line"></div>
+            <p>מוענקת לנועה כהן על התמדה יוצאת דופן ותרומה לקהילת בית הספר</p>
+            <div class="c-seal" id="certSeal">א</div>
+          </div>
+        </div>
+      </div>
+      <!-- spec -->
+      <div class="prev-card">
+        <div class="ph"><b><span class="mini" style="background:var(--p-pink-bg);color:var(--p-pink)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9c0-1.1-.9-2-2-2h-2a2 2 0 0 1-2-2V6c0-1.1-.9-2-2-2z"/><circle cx="8" cy="10" r="1"/><circle cx="12" cy="7" r="1"/><circle cx="16" cy="14" r="1"/></svg></span>פלטה ופונטים</b></div>
+        <div class="prev-body">
+          <div class="spec-swatches" id="specSwatches"></div>
+          <div class="spec-fonts" id="specFonts"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="export-bar">
+      <span class="eb-title"><span class="mini"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg></span>הערכה שלכם</span>
+      <button class="btn-soft" onclick="copySignature()">העתקת חתימת מייל</button>
+      <button class="btn-primary" onclick="downloadTokens()">הורדת tokens.css</button>
+      <button class="btn-soft" onclick="goHome()">התחלה מחדש</button>
+    </div>
+
+    <div class="footnote">דמו של סטודיו הזהות · IMPACT OS — הצבעים חולצו ונבנו כולם בדפדפן, שום דבר לא נשלח לשרת</div>
+  </section>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================================================================
+   סטודיו הזהות — מנוע: שאלון/חילוץ → 3 כיוונים → תצוגות חיות
+   ================================================================ */
+
+/* ---------- data ---------- */
+const STAGES = ['גן וצהרון','יסודי','חטיבת ביניים','תיכון','רב-גילאי'];
+const VALUES = [
+  {id:'innov', label:'חדשנות'},
+  {id:'trad',  label:'מסורת ושורשים'},
+  {id:'comm',  label:'קהילה ושייכות'},
+  {id:'nature',label:'טבע וקיימות'},
+  {id:'excel', label:'מצוינות'},
+  {id:'create',label:'יצירתיות'},
+  {id:'warm',  label:'חום ואכפתיות'},
+  {id:'lead',  label:'מנהיגות'},
+];
+const METAPHORS = [
+  {id:'forest',label:'יער',   sub:'צומחים ביחד',    icon:'M12 22v-7M9 22h6M12 15 7 9h3L7 4h10l-3 5h3l-5 6z'},
+  {id:'lab',   label:'מעבדה', sub:'חוקרים ומגלים',  icon:'M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4A2 2 0 0 0 19 18l-5-9V3'},
+  {id:'harbor',label:'נמל',   sub:'יוצאים למסע',    icon:'M12 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM12 8v13M5 13a7 7 0 0 0 14 0M3 13h4M17 13h4'},
+  {id:'home',  label:'בית',   sub:'מקום בטוח וחם',  icon:'m3 11 9-8 9 8M5 9.5V21h14V9.5M9 21v-6h6v6'},
+  {id:'stage', label:'במה',   sub:'כל אחד זורח',    icon:'M12 2l2.4 5 5.6.7-4 3.9.9 5.6-4.9-2.7-4.9 2.7.9-5.6-4-3.9 5.6-.7z'},
+  {id:'garden',label:'גן',    sub:'מטפחים כל פרח',  icon:'M12 22v-9M12 13a5 5 0 0 0 5-5V5a5 5 0 0 0-5 5 5 5 0 0 0-5-5v3a5 5 0 0 0 5 5z'},
+];
+
+/* ספריית כיוונים — כל כיוון: פלטה + פונטים + סיפור. tags=ערכים, bold=0..1 */
+const LIB = [
+  {id:'grove',   name:'חורשה',        story:'ירוק עמוק ורגוע — צמיחה, יציבות וטבע', tags:['nature','comm','warm'], bold:.35,
+   c:{primary:'#3E7E5E', deep:'#1C3A2C', accent:'#D9A441', soft:'#E7F1E9', paper:'#FBFAF6'},
+   f:{display:'Frank Ruhl Libre', body:'Assistant'}},
+  {id:'tide',    name:'גאות',         story:'טורקיז נקי וכחול עמוק — חדשנות עם שקט', tags:['innov','excel','lead'], bold:.5,
+   c:{primary:'#0E8C8C', deep:'#0F3444', accent:'#F2A25C', soft:'#E2F3F2', paper:'#FAFCFC'},
+   f:{display:'Rubik', body:'Heebo'}},
+  {id:'sunrise', name:'זריחה',        story:'טרקוטה חמה וענבר — קהילה, חום ובית', tags:['warm','comm','trad'], bold:.45,
+   c:{primary:'#C4633C', deep:'#4A2A1C', accent:'#E9B84C', soft:'#F9EBE2', paper:'#FDFAF5'},
+   f:{display:'Suez One', body:'Assistant'}},
+  {id:'heritage',name:'מורשת',        story:'כחול מלכותי וזהב — מסורת, רצינות והדר', tags:['trad','excel','lead'], bold:.4,
+   c:{primary:'#274B7A', deep:'#16263E', accent:'#C9A24B', soft:'#E8EDF5', paper:'#FBFAF7'},
+   f:{display:'David Libre', body:'Assistant'}},
+  {id:'studio',  name:'סטודיו',       story:'אלמוג תוסס וסגול — יצירתיות ובמה', tags:['create','innov','stage'], bold:.75,
+   c:{primary:'#E0685C', deep:'#3C2440', accent:'#7C63C8', soft:'#FBE9E5', paper:'#FDFBF8'},
+   f:{display:'Secular One', body:'Heebo'}},
+  {id:'meadow',  name:'אחו',          story:'ירוק תפוח ושמיים — קלילות, ילדות ושמחה', tags:['nature','create','warm'], bold:.6,
+   c:{primary:'#6FA84B', deep:'#2C4222', accent:'#4C9BD9', soft:'#EEF5E4', paper:'#FCFDF8'},
+   f:{display:'Varela Round', body:'Alef'}},
+  {id:'compass', name:'מצפן',         story:'כחול-לילה ואלמוג — מנהיגות ודרך', tags:['lead','excel','innov'], bold:.65,
+   c:{primary:'#33567E', deep:'#14202E', accent:'#E76F51', soft:'#E7EDF4', paper:'#FAFBFC'},
+   f:{display:'Rubik', body:'Assistant'}},
+  {id:'lantern', name:'פנס',          story:'חרדל חם וירוק-זית — שורשים עם אור', tags:['trad','warm','comm'], bold:.55,
+   c:{primary:'#B98A2E', deep:'#3C3018', accent:'#5E7A4A', soft:'#F7EFDC', paper:'#FCFAF4'},
+   f:{display:'Frank Ruhl Libre', body:'Heebo'}},
+  {id:'spark',   name:'ניצוץ',        story:'סגול חי וליים — חדשנות נועזת', tags:['innov','create','lead'], bold:.9,
+   c:{primary:'#6C4FC2', deep:'#241B42', accent:'#A4C24F', soft:'#EEE9F9', paper:'#FBFAFD'},
+   f:{display:'Secular One', body:'Assistant'}},
+  {id:'shore',   name:'חוף',          story:'תכלת רכה וחול — רוגע, הכלה וחום', tags:['warm','comm','nature'], bold:.3,
+   c:{primary:'#4C93B8', deep:'#1E3B4A', accent:'#E0A374', soft:'#E6F1F6', paper:'#FCFBF7'},
+   f:{display:'Alef', body:'Heebo'}},
+];
+const GF_URLS = {
+  'Frank Ruhl Libre':'Frank+Ruhl+Libre:wght@500;700;900','Assistant':'Assistant:wght@400;600;700;800',
+  'Rubik':'Rubik:wght@400;600;800','Heebo':'Heebo:wght@400;600;800','Suez One':'Suez+One',
+  'David Libre':'David+Libre:wght@500;700','Secular One':'Secular+One','Varela Round':'Varela+Round','Alef':'Alef:wght@400;700'
+};
+
+/* ---------- state ---------- */
+const S = {
+  mode:'wizard', step:0, name:'', stage:'יסודי', values:[], metaphor:null, tone:50,
+  uplLogo:null, uplRaw:[], uplHealed:null,
+  dirs:[], active:0,
+};
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const show = id => { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id).classList.add('active'); window.scrollTo({top:0,behavior:'smooth'}); };
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2400); }
+
+/* color utils */
+function hexToRgb(h){ h=h.replace('#',''); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; }
+function rgbToHex(r,g,b){ return '#'+[r,g,b].map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('').toUpperCase(); }
+function rgbToHsl(r,g,b){ r/=255;g/=255;b/=255; const mx=Math.max(r,g,b),mn=Math.min(r,g,b); let h=0,s=0,l=(mx+mn)/2;
+  if(mx!==mn){ const d=mx-mn; s=l>0.5? d/(2-mx-mn): d/(mx+mn);
+    h = mx===r? (g-b)/d+(g<b?6:0) : mx===g? (b-r)/d+2 : (r-g)/d+4; h/=6; }
+  return [h*360,s,l]; }
+function hslToHex(h,s,l){ h=((h%360)+360)%360/360;
+  const f=(p,q,t)=>{ if(t<0)t+=1; if(t>1)t-=1; if(t<1/6)return p+(q-p)*6*t; if(t<1/2)return q; if(t<2/3)return p+(q-p)*(2/3-t)*6; return p; };
+  let r,g,b; if(s===0){r=g=b=l;} else { const q=l<0.5? l*(1+s): l+s-l*s, p=2*l-q; r=f(p,q,h+1/3); g=f(p,q,h); b=f(p,q,h-1/3); }
+  return rgbToHex(r*255,g*255,b*255); }
+function shift(hex,dl,ds=0){ const [r,g,b]=hexToRgb(hex); let [h,s,l]=rgbToHsl(r,g,b); return hslToHex(h, Math.max(0,Math.min(1,s+ds)), Math.max(0,Math.min(1,l+dl))); }
+
+/* ---------- chips builders ---------- */
+function buildChips(el, items, isMulti, get, set, max){
+  el.innerHTML='';
+  items.forEach(it=>{
+    const b=document.createElement('button'); b.className='chip-btn'; b.textContent=it.label||it; b.type='button';
+    const key=it.id||it;
+    if((isMulti? get().includes(key) : get()===key)) b.classList.add('on');
+    b.onclick=()=>{
+      if(isMulti){ const cur=get(); if(cur.includes(key)) set(cur.filter(x=>x!==key));
+        else { if(max && cur.length>=max){ toast('אפשר לבחור עד '+max); return; } set([...cur,key]); } }
+      else set(key);
+      buildChips(el,items,isMulti,get,set,max); updateWizNav();
+    };
+    el.appendChild(b);
+  });
+}
+
+/* ---------- wizard ---------- */
+const WSTEPS=4;
+function startWizard(){ S.mode='wizard'; S.step=0; show('screen-wizard'); renderWizard(); }
+function startUpload(){ S.mode='upload'; show('screen-upload');
+  buildChips($('chipsValuesUpl'), VALUES, true, ()=>S.values, v=>S.values=v, 3); }
+function goHome(){ show('screen-home'); }
+
+function renderWizard(){
+  const bar=$('stepsBar'); bar.innerHTML='';
+  for(let i=0;i<WSTEPS;i++){
+    const d=document.createElement('span'); d.className='dot'+(i<S.step?' done':i===S.step?' now':''); d.textContent=i+1; bar.appendChild(d);
+    if(i<WSTEPS-1){ const s=document.createElement('span'); s.className='seg'+(i<S.step?' done':''); bar.appendChild(s); }
+  }
+  document.querySelectorAll('.wstep').forEach(w=> w.style.display = +w.dataset.step===S.step? '':'none');
+  if(S.step===0){
+    $('inpName').value=S.name;
+    buildChips($('chipsStage'), STAGES, false, ()=>S.stage, v=>S.stage=v);
+  }
+  if(S.step===1) buildChips($('chipsValues'), VALUES, true, ()=>S.values, v=>S.values=v, 3);
+  if(S.step===2){
+    const mc=$('metaCards'); mc.innerHTML='';
+    METAPHORS.forEach(m=>{
+      const b=document.createElement('button'); b.className='meta-card'+(S.metaphor===m.id?' on':''); b.type='button';
+      b.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${m.icon}"/></svg><span class="em">${m.label}</span><small>${m.sub}</small>`;
+      b.onclick=()=>{ S.metaphor=m.id; renderWizard(); updateWizNav(); };
+      mc.appendChild(b);
+    });
+  }
+  if(S.step===3) $('toneSlider').value=S.tone;
+  $('btnBack').textContent = S.step===0? 'לעמוד הראשי' : 'חזרה';
+  $('btnNext').textContent = S.step===WSTEPS-1? '✨ הציעו לנו כיוונים' : 'המשך';
+  updateWizNav();
+}
+function updateWizNav(){
+  let ok=true;
+  if(S.mode==='wizard'){
+    if(S.step===0) ok = ($('inpName')?.value.trim().length||0)>0;
+    if(S.step===1) ok = S.values.length>0;
+    if(S.step===2) ok = !!S.metaphor;
+  }
+  const btn=$('btnNext'); if(btn) btn.disabled=!ok;
+  const up=$('btnExtractGo'); if(up) up.disabled = !S.uplHealed;
+}
+$('inpName').addEventListener('input', updateWizNav);
+function wizBack(){ if(S.step===0){ goHome(); return;} S.step--; renderWizard(); }
+function wizNext(){
+  if(S.step===0) S.name=$('inpName').value.trim();
+  if(S.step===3){ S.tone=+$('toneSlider').value; finishWizard(); return; }
+  S.step++; renderWizard();
+}
+
+/* ---------- direction engine (wizard) ---------- */
+function pickDirections(){
+  const tone=S.tone/100;
+  const scored=LIB.map(d=>{
+    let sc=0;
+    S.values.forEach(v=>{ if(d.tags.includes(v)) sc+=10; });
+    if(S.metaphor && d.tags.includes(S.metaphor)) sc+=6;
+    // התאמת מטאפורה רכה
+    const metaAffinity={forest:['grove','meadow','lantern'],lab:['tide','spark','compass'],harbor:['compass','tide','shore'],
+      home:['sunrise','shore','lantern'],stage:['studio','spark','sunrise'],garden:['meadow','grove','shore']};
+    if(S.metaphor && (metaAffinity[S.metaphor]||[]).includes(d.id)) sc+=5;
+    sc -= Math.abs(d.bold-tone)*6; // קרבה לטון המבוקש
+    return {d,sc};
+  }).sort((a,b)=>b.sc-a.sc);
+  // שלושה כיוונים שונים זה מזה (לא אותו primary-hue)
+  const picked=[];
+  for(const {d} of scored){
+    if(picked.length===3) break;
+    const [r,g,b]=hexToRgb(d.c.primary); const [h]=rgbToHsl(r,g,b);
+    if(picked.some(p=>{ const [r2,g2,b2]=hexToRgb(p.c.primary); const [h2]=rgbToHsl(r2,g2,b2); return Math.min(Math.abs(h-h2),360-Math.abs(h-h2))<40; })) continue;
+    picked.push(d);
+  }
+  let i=0; while(picked.length<3 && i<scored.length){ if(!picked.includes(scored[i].d)) picked.push(scored[i].d); i++; }
+  return picked.map(d=>({...d, c:{...d.c}, f:{...d.f}, lockedLogo:false}));
+}
+function finishWizard(){ S.dirs=pickDirections(); S.active=0; renderResults(); }
+
+/* ---------- upload path: extraction ---------- */
+const dz=$('dropzone'), fi=$('fileInput');
+dz.onclick=()=>fi.click();
+dz.ondragover=e=>{e.preventDefault(); dz.classList.add('drag');};
+dz.ondragleave=()=>dz.classList.remove('drag');
+dz.ondrop=e=>{e.preventDefault(); dz.classList.remove('drag'); if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);};
+fi.onchange=()=>{ if(fi.files[0]) handleFile(fi.files[0]); };
+
+function handleFile(file){
+  const url=URL.createObjectURL(file);
+  const img=new Image();
+  img.onload=()=>{
+    S.uplLogo=url;
+    const raw=extractColors(img);
+    S.uplRaw=raw;
+    S.uplHealed=healPalette(raw);
+    $('uplThumb').src=url;
+    $('rawSwatches').innerHTML = raw.map(c=>`<span class="sw" style="background:${c}" title="${c}"></span>`).join('');
+    const hp=S.uplHealed;
+    $('healedSwatches').innerHTML = [hp.primary,hp.accent,hp.deep].map(c=>`<span class="sw big" style="background:${c}" title="${c}"></span>`).join('');
+    $('extractStrip').classList.add('show');
+    updateWizNav();
+    toast('חילצנו את הצבעים — אפשר להמשיך');
+  };
+  img.onerror=()=>toast('לא הצלחנו לקרוא את התמונה');
+  img.src=url;
+}
+
+/* דגימת פיקסלים + k-means קטן */
+function extractColors(img){
+  const cv=document.createElement('canvas'); const N=72;
+  const scale=Math.min(N/img.width, N/img.height, 1);
+  cv.width=Math.max(1,Math.round(img.width*scale)); cv.height=Math.max(1,Math.round(img.height*scale));
+  const cx=cv.getContext('2d',{willReadFrequently:true}); cx.drawImage(img,0,0,cv.width,cv.height);
+  const data=cx.getImageData(0,0,cv.width,cv.height).data;
+  const px=[];
+  for(let i=0;i<data.length;i+=4){
+    const a=data[i+3]; if(a<140) continue;
+    const r=data[i],g=data[i+1],b=data[i+2];
+    const [,s,l]=rgbToHsl(r,g,b);
+    if(l>0.96) continue;               // רקע לבן
+    px.push([r,g,b]);
+  }
+  if(!px.length) return ['#5FBFA4'];
+  // k-means k=6
+  let cents=[]; for(let k=0;k<6;k++) cents.push(px[Math.floor(px.length*(k+0.5)/6)].slice());
+  for(let it=0;it<9;it++){
+    const sums=cents.map(()=>[0,0,0,0]);
+    for(const p of px){
+      let bi=0,bd=1e9;
+      cents.forEach((c,ci)=>{ const d=(p[0]-c[0])**2+(p[1]-c[1])**2+(p[2]-c[2])**2; if(d<bd){bd=d;bi=ci;} });
+      sums[bi][0]+=p[0]; sums[bi][1]+=p[1]; sums[bi][2]+=p[2]; sums[bi][3]++;
+    }
+    cents=sums.map((s,ci)=> s[3]? [s[0]/s[3],s[1]/s[3],s[2]/s[3],s[3]] : [...cents[ci],0]);
+  }
+  const clusters=cents.filter(c=>c[3]>px.length*0.02).sort((a,b)=>b[3]-a[3]);
+  // סינון דומים
+  const out=[];
+  for(const c of clusters){
+    const hex=rgbToHex(c[0],c[1],c[2]);
+    const [h1,s1,l1]=rgbToHsl(c[0],c[1],c[2]);
+    if(out.some(o=>{ const [r,g,b]=hexToRgb(o); const [h2,s2,l2]=rgbToHsl(r,g,b);
+      return Math.min(Math.abs(h1-h2),360-Math.abs(h1-h2))<18 && Math.abs(l1-l2)<0.14; })) continue;
+    out.push(hex);
+    if(out.length===5) break;
+  }
+  return out;
+}
+
+/* "ריפוי": בחירת ראשי צבעוני, הדגשה מובחנת, ונגזרות */
+function healPalette(raw){
+  const info=raw.map(hex=>{ const [r,g,b]=hexToRgb(hex); const [h,s,l]=rgbToHsl(r,g,b); return {hex,h,s,l}; });
+  const colorful=info.filter(c=>c.s>0.18 && c.l>0.12 && c.l<0.85);
+  const primary=(colorful[0]||info[0]);
+  let accent=colorful.find(c=>c!==primary && Math.min(Math.abs(c.h-primary.h),360-Math.abs(c.h-primary.h))>35);
+  const accentHex = accent? accent.hex : hslToHex(primary.h+150, Math.max(.45,primary.s*.9), .58);
+  const pl=primary.l;
+  const primaryHex = pl>0.72? shift(primary.hex,-0.18,0.05) : pl<0.2? shift(primary.hex,0.1) : primary.hex;
+  const [pr,pg,pb]=hexToRgb(primaryHex); const [ph,ps]=rgbToHsl(pr,pg,pb);
+  // רקעים חייבים להישאר בהירים — גוון של הראשי, לא הכהיה שלו
+  return {
+    primary:primaryHex, accent:accentHex,
+    deep: shift(primaryHex, -Math.min(.3, Math.max(.1,(pl-0.14)*0.8)), 0.05),
+    soft: hslToHex(ph, Math.min(.45, ps*0.4), 0.93),
+    paper: hslToHex(ph, Math.min(.3, ps*0.15), 0.977),
+  };
+}
+
+function finishUpload(){
+  S.name=$('inpNameUpl').value.trim()||'בית הספר שלנו';
+  const hp=S.uplHealed;
+  // 3 כיוונים סביב הפלטה הנעולה: משתנים פונטים + מינון
+  const fontSets=[ {display:'Rubik',body:'Heebo'}, {display:'Frank Ruhl Libre',body:'Assistant'}, {display:'Secular One',body:'Heebo'} ];
+  // אם נבחרו ערכים — הכיוון השלישי לוקח פונטים מהכיוון המתאים בספרייה
+  if(S.values.length){
+    const best=LIB.filter(d=>d.tags.some(t=>S.values.includes(t)))[0];
+    if(best) fontSets[2]={...best.f};
+  }
+  const names=['הזהות שלכם','מרוככת','מוגברת'];
+  const stories=['הצבעים שחולצו מהלוגו, מסודרים ונקיים','אותה זהות — רכה ובהירה יותר','אותה זהות — עמוקה ונוכחת יותר'];
+  S.dirs=[
+    {id:'upl1',name:names[0],story:stories[0],lockedLogo:true, f:fontSets[0],
+     c:{...hp}},
+    {id:'upl2',name:names[1],story:stories[1],lockedLogo:true, f:fontSets[1],
+     c:{primary:shift(hp.primary,0.08,-0.05), accent:shift(hp.accent,0.06), deep:shift(hp.deep,0.06), soft:shift(hp.soft,0.03), paper:hp.paper}},
+    {id:'upl3',name:names[2],story:stories[2],lockedLogo:true, f:fontSets[2],
+     c:{primary:shift(hp.primary,-0.07,0.08), accent:shift(hp.accent,-0.04,0.06), deep:shift(hp.deep,-0.04), soft:hp.soft, paper:hp.paper}},
+  ];
+  S.active=0; renderResults();
+}
+
+/* ---------- results ---------- */
+function loadFonts(dirs){
+  const fams=new Set(); dirs.forEach(d=>{ fams.add(d.f.display); fams.add(d.f.body); });
+  const missing=[...fams].map(f=>GF_URLS[f]).filter(Boolean);
+  const href='https://fonts.googleapis.com/css2?'+missing.map(f=>'family='+f).join('&')+'&display=swap';
+  if(!document.querySelector(`link[href="${href}"]`)){
+    const l=document.createElement('link'); l.rel='stylesheet'; l.href=href; document.head.appendChild(l);
+  }
+}
+function applyDir(){
+  const d=S.dirs[S.active], r=document.documentElement.style;
+  r.setProperty('--k-primary',d.c.primary); r.setProperty('--k-deep',d.c.deep);
+  r.setProperty('--k-accent',d.c.accent); r.setProperty('--k-soft',d.c.soft); r.setProperty('--k-paper',d.c.paper);
+  r.setProperty('--k-display',`'${d.f.display}'`); r.setProperty('--k-body',`'${d.f.body}'`);
+  // tabs
+  document.querySelectorAll('.dir-tab').forEach((t,i)=>t.classList.toggle('on',i===S.active));
+  renderLogos(d); renderSpec(d);
+}
+function monogramSVG(d, size, shapeIdx){
+  const letter=(S.name||'א').trim()[0]||'א';
+  const shapes=[
+    `<circle cx="50" cy="50" r="46" fill="${d.c.primary}"/>`,
+    `<rect x="6" y="6" width="88" height="88" rx="26" fill="${d.c.primary}"/>`,
+    `<path d="M50 4 A46 46 0 0 1 96 50 L96 96 L4 96 L4 50 A46 46 0 0 1 50 4 Z" fill="${d.c.primary}"/>`,
+  ];
+  return `<svg width="${size}" height="${size}" viewBox="0 0 100 100">
+    ${shapes[shapeIdx%3]}
+    <circle cx="78" cy="24" r="9" fill="${d.c.accent}"/>
+    <text x="50" y="54" text-anchor="middle" dominant-baseline="central" fill="#FFFFFF"
+      font-family="${d.f.display}, Rubik" font-size="46" font-weight="800">${letter}</text></svg>`;
+}
+function renderLogos(d){
+  if(d.lockedLogo && S.uplLogo){
+    $('logoStage').innerHTML=`<div class="uploaded-logo-stage"><img src="${S.uplLogo}" alt="הלוגו שלכם"></div>`;
+    $('logoNote').textContent='הלוגו שלכם — נשאר נעול. הערכה כולה נבנתה סביבו.';
+    $('sigLogo').innerHTML=`<img src="${S.uplLogo}" style="width:52px;height:52px;object-fit:contain;border-radius:12px">`;
+    $('dashLogo').innerHTML=`<img src="${S.uplLogo}" style="width:26px;height:26px;object-fit:contain">`;
+  } else {
+    $('logoStage').innerHTML = monogramSVG(d,110,S.active);
+    $('logoNote').textContent='הצעת מונוגרמה — נקודת פתיחה למעצב, או לוגו זמני מכובד';
+    $('sigLogo').innerHTML = monogramSVG(d,52,S.active);
+    $('dashLogo').innerHTML = monogramSVG(d,26,S.active);
+  }
+  const letter=(S.name||'א').trim()[0]||'א';
+  $('certSeal').textContent=letter;
+}
+function renderSpec(d){
+  const items=[['ראשי',d.c.primary],['הדגשה',d.c.accent],['עמוק',d.c.deep],['רך',d.c.soft]];
+  $('specSwatches').innerHTML=items.map(([l,c])=>`<div class="spec-sw" style="background:${c}"><small>${l}</small><code>${c}</code></div>`).join('');
+  $('specFonts').innerHTML=`
+    <div class="f-row"><span class="f-demo" style="font-family:'${d.f.display}',Rubik;font-weight:800">אבגד הוז — כותרות</span><span class="f-label">${d.f.display}</span></div>
+    <div class="f-row"><span class="f-demo" style="font-family:'${d.f.body}',Heebo;font-size:16px">אבגד הוז חטי — טקסט רץ ומסמכים</span><span class="f-label">${d.f.body}</span></div>`;
+}
+function renderResults(){
+  loadFonts(S.dirs);
+  const schoolFull = 'בית ספר '+(S.name||'שלנו');
+  $('resTitle').textContent='הזהות של '+schoolFull;
+  $('resChip').textContent = S.dirs[0].lockedLogo? 'הלוגו שלכם + 3 מינונים' : '3 כיוונים מוצעים';
+  $('resSub').textContent = S.dirs[0].lockedLogo?
+    'שמרנו על הלוגו והצבעים שלכם — ובנינו סביבם ערכה מסודרת. בחרו מינון, והכל מתעדכן.' :
+    'בחרו כיוון — וכל התוצרים למטה מתעדכנים מיד. אפשר להתלבט, בשביל זה יש שלושה.';
+  $('sigSchool').textContent=schoolFull;
+  $('dashTitle').textContent='בוקר טוב, רות · '+schoolFull;
+  $('certSchool').textContent=schoolFull;
+  $('slTitle').textContent='פותחים שנה יחד';
+  const tabs=$('dirTabs'); tabs.innerHTML='';
+  S.dirs.forEach((d,i)=>{
+    const t=document.createElement('button'); t.className='dir-tab'+(i===S.active?' on':'');
+    t.innerHTML=`<span class="badge">נבחר</span><span class="dots">
+      <i style="background:${d.c.primary}"></i><i style="background:${d.c.accent}"></i><i style="background:${d.c.soft}"></i></span>
+      <b>${d.name}</b><small>${d.story}</small>`;
+    t.onclick=()=>{ S.active=i; applyDir(); };
+    tabs.appendChild(t);
+  });
+  show('screen-results');
+  applyDir();
+}
+
+/* ---------- exports ---------- */
+function signatureHTML(){
+  const d=S.dirs[S.active]; const school='בית ספר '+(S.name||'שלנו');
+  return `<table dir="rtl" cellpadding="0" cellspacing="0" style="font-family:'${d.f.body}',Arial,sans-serif;direction:rtl">
+<tr>
+<td style="padding-left:14px;vertical-align:middle">
+  <div style="width:52px;height:52px;border-radius:14px;background:${d.c.primary};color:#ffffff;font-weight:800;font-size:24px;text-align:center;line-height:52px;font-family:'${d.f.display}',Arial">${(S.name||'א').trim()[0]||'א'}</div>
+</td>
+<td style="border-right:3px solid ${d.c.accent};padding-right:14px">
+  <div style="font-size:16px;font-weight:800;color:${d.c.deep}">רות לוי</div>
+  <div style="font-size:13px;color:#557079">מנהלת בית הספר</div>
+  <div style="font-size:13.5px;font-weight:800;color:${d.c.primary};margin-top:4px">${school}</div>
+  <div style="font-size:12px;color:#557079;margin-top:2px">ruth@school.org.il · 04-6330000</div>
+</td>
+</tr></table>`;
+}
+async function copySignature(){
+  const html=signatureHTML();
+  try{
+    await navigator.clipboard.write([new ClipboardItem({
+      'text/html': new Blob([html],{type:'text/html'}),
+      'text/plain': new Blob([html],{type:'text/plain'})})]);
+  }catch(e){ try{ await navigator.clipboard.writeText(html); }catch(e2){ toast('ההעתקה נחסמה בדפדפן'); return; } }
+  toast('חתימת המייל הועתקה — הדביקו בהגדרות המייל');
+}
+function downloadTokens(){
+  const d=S.dirs[S.active]; const school='בית ספר '+(S.name||'שלנו');
+  const css=`/* ============================================
+   tokens.css — ערכת הזהות של ${school}
+   נוצר בסטודיו הזהות · IMPACT OS
+   כיוון: ${d.name} — ${d.story}
+   ============================================ */
+:root{
+  --school-primary: ${d.c.primary};   /* צבע ראשי — כפתורים, הדגשות, לוגו */
+  --school-accent:  ${d.c.accent};    /* צבע הדגשה — קישוטים, קווים, נקודות עניין */
+  --school-deep:    ${d.c.deep};      /* כהה — כותרות וטקסט חזק */
+  --school-soft:    ${d.c.soft};      /* רך — רקעי אזורים ותגיות */
+  --school-paper:   ${d.c.paper};     /* נייר — רקע מסמכים ושקפים */
+  --school-font-display: '${d.f.display}', sans-serif;  /* כותרות */
+  --school-font-body: '${d.f.body}', sans-serif;        /* טקסט רץ */
+}
+/* טעינת הפונטים:
+@import url('https://fonts.googleapis.com/css2?family=${GF_URLS[d.f.display]||d.f.display}&family=${GF_URLS[d.f.body]||d.f.body}&display=swap');
+*/`;
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([css],{type:'text/css'}));
+  a.download='school-identity-tokens.css'; a.click();
+  toast('tokens.css ירד — מוכן לחיבור לכל המערכות');
+}
+</script>
+</body>
+</html>
