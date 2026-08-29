@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>גְּרַנְטָה · לוח מצב העמותה</title>
+<meta name="description" content="לוח המצב השבועי של העמותה: ציון בריאות, אחוז ההקלקה מול הרף, ניצול המענק והתראות פתוחות.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&family=Rubik:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/tokens.css">
+<link rel="stylesheet" href="../assets/granta.css">
+<style>
+/* ==========================================================================
+   B1 · לוח מצב — סגנון מקומי למסך בלבד.
+   כל ערך כאן מגיע מ-tokens.css. אין צבע קשיח, אין תכונה פיזית (UX-4.0, UX-7.1).
+   אין הגדרת טוקן חדש כאן (UX-4.1) — רק שימוש.
+   ========================================================================== */
+
+/* --- באנר «נתוני הדגמה»: דבוק לראש המסך, לא נעלם בגלילה ---------------
+   הוא מחליף את הדביקות של פס הניווט כדי שלא יהיו שני אלמנטים דביקים. */
+.granta-topbar{position:static}
+
+.demo-flag{
+  position:sticky;inset-block-start:0;z-index:var(--z-nav);
+  background:var(--secondary);
+  border-block-end:1px solid var(--line);
+  color:var(--primary);
+}
+.demo-flag__inner{
+  max-inline-size:var(--page-max);margin-inline:auto;
+  padding-inline:var(--pad-page);padding-block:var(--s-2);
+  display:flex;align-items:center;gap:var(--s-2);
+  font-size:var(--fs-badge);font-family:var(--font-head);font-weight:var(--fw-bold);
+  line-height:var(--lh-tight);
+}
+.demo-flag__mark{
+  flex:none;display:inline-grid;place-items:center;
+  inline-size:20px;block-size:20px;
+  border:1px solid var(--primary);border-radius:var(--r-pill);
+}
+.demo-flag__note{font-family:var(--font-body);font-weight:var(--fw-regular);color:var(--ink-muted)}
+
+@media (min-width:640px){
+  .demo-flag__inner{padding-inline:var(--pad-page-lg)}
+}
+
+/* שורת התגים בכותרת מתמלאת רק אחרי הטעינה — לכן היא שומרת גובה מראש,
+   כדי שהכותרת לא תגדל והתוכן לא יקפוץ למטה (UX-1.3). */
+#hero-chips{min-block-size:var(--s-8)}
+
+/* --- פריסת המסך ------------------------------------------------------- */
+.b1-divider{border:0;border-block-start:1px solid var(--line);margin-block:var(--s-2)}
+
+/* --- גרף אחוז ההקלקה --------------------------------------------------
+   הזמן זורם מימין לשמאל, כמו כיוון הקריאה: מרץ בקצה ההתחלה, אוגוסט בסוף.
+   ה-SVG מכיל גרפיקה בלבד; כל טקסט הוא HTML אמיתי בגודל ≥12.8px (UX-3.2). */
+.chart{display:flex;flex-direction:column;gap:var(--s-2)}
+.chart__plot{
+  position:relative;
+  block-size:170px;
+  border-block-end:1px solid var(--line);
+}
+@media (min-width:640px){ .chart__plot{block-size:210px} }
+
+.chart__svg{position:absolute;inset:0;inline-size:100%;block-size:100%;display:block}
+.chart__area{fill:var(--secondary)}
+.chart__line{
+  fill:none;stroke:var(--primary);stroke-width:2.5;
+  stroke-linejoin:round;stroke-linecap:round;
+  vector-effect:non-scaling-stroke;
+}
+.chart__thresh{
+  stroke:var(--ink-muted);stroke-width:1.5;stroke-dasharray:5 4;
+  vector-effect:non-scaling-stroke;
+}
+
+.chart__grid{
+  position:absolute;inset:0;
+  display:grid;grid-template-columns:repeat(var(--cols),1fr);
+}
+.chart__cell{position:relative}
+.chart__dot{
+  position:absolute;
+  inset-inline-start:50%;
+  inline-size:11px;block-size:11px;border-radius:var(--r-pill);
+  background:var(--primary);
+  border:2px solid var(--surface);
+  transform:translate(50%,-50%);
+}
+/* נקודה שמתחת לרף — חלולה. ההבחנה היא צורה, לא צבע (UX-5.6). */
+.chart__dot--under{background:var(--surface);border:3px solid var(--primary)}
+
+.chart__threshlabel{
+  position:absolute;
+  inset-inline-start:var(--s-1);
+  transform:translateY(-100%);
+  font-size:var(--fs-badge);font-weight:var(--fw-medium);
+  color:var(--ink-muted);background:var(--surface);
+  padding-inline:var(--s-1);border-radius:var(--r-sm);
+  white-space:nowrap;
+}
+
+.chart__labels{
+  display:grid;grid-template-columns:repeat(var(--cols),1fr);
+  gap:var(--s-1);text-align:center;
+}
+.chart__month{
+  display:flex;flex-direction:column;gap:var(--s-1);
+  font-size:var(--fs-badge);color:var(--ink-muted);line-height:var(--lh-tight);
+}
+.chart__val{color:var(--ink);font-weight:var(--fw-bold);font-family:var(--font-head)}
+.chart__val--under{color:var(--ink-muted);font-weight:var(--fw-medium)}
+
+/* --- רשימת ההתראות ---------------------------------------------------- */
+.b1-alerts{display:flex;flex-direction:column;gap:var(--s-3)}
+.b1-alert-when{color:var(--ink-muted);font-size:var(--fs-badge)}
+
+/* --- כרטיסי המשך ------------------------------------------------------ */
+.b1-next{display:grid;gap:var(--s-4);grid-template-columns:repeat(auto-fill,minmax(var(--card-min),1fr))}
+.b1-next .granta-card{justify-content:space-between}
+
+/* --- שלד הטעינה: אותה פריסה כמו התוכן, כדי שלא תהיה קפיצה (UX-1.3) --- */
+.b1-skelgrid{display:grid;gap:var(--s-4);grid-template-columns:repeat(auto-fill,minmax(var(--card-min),1fr))}
+</style>
+</head>
+<body>
+
+<a class="granta-skip" href="#main">דילוג לתוכן</a>
+
+<!-- 🔴 באנר קבוע — המסך הזה הוא הדגמה. נשאר גלוי גם בגלילה, כדי שגם צילום מסך
+     שיישלח הלאה יגיע עם החותמת הזאת. -->
+<div class="demo-flag">
+  <div class="demo-flag__inner">
+    <span class="demo-flag__mark" aria-hidden="true">◆</span>
+    <span>נתוני הדגמה</span>
+    <span class="demo-flag__note">עמותה בדויה. המספרים אינם של לקוח אמיתי.</span>
+  </div>
+</div>
+
+<header class="granta-topbar">
+  <div class="granta-topbar__inner">
+    <a class="granta-brand" href="index.html">גְּרַנְטָה<span class="granta-brand__dot" aria-hidden="true">.</span></a>
+    <nav aria-label="פורטל העמותה">
+      <ul class="granta-nav">
+        <li><a class="granta-navlink" aria-current="page" href="dashboard.html">לוח מצב</a></li>
+        <li><a class="granta-navlink" href="approvals.html">אישורים</a></li>
+        <li><a class="granta-navlink" href="risk.html">סיכון והשעיות</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<section class="granta-hero">
+  <div class="granta-hero__inner">
+    <span class="granta-kicker">פורטל העמותה · לוח מצב</span>
+    <h1>מה מצב החשבון שלכם<span class="granta-hero__dot" aria-hidden="true">.</span></h1>
+    <p>שתי דקות, פעם בשבוע — כל מה שקורה בחשבון המענק שלכם במסך אחד.</p>
+    <div class="granta-chips" id="hero-chips"></div>
+  </div>
+</section>
+
+<main id="main" class="granta-page" tabindex="-1">
+
+  <!-- ================================================== מצב: טעינה -->
+  <div data-state="loading" aria-busy="true" aria-live="polite">
+    <div id="skel" hidden>
+      <div class="granta-skels" style="gap:var(--s-6)">
+        <div class="granta-card">
+          <div class="granta-skel granta-skel--title"></div>
+          <div class="granta-skel granta-skel--block"></div>
+          <div class="granta-skel granta-skel--short"></div>
+        </div>
+        <div class="granta-card">
+          <div class="granta-skel granta-skel--title"></div>
+          <div class="granta-skel granta-skel--block"></div>
+          <div class="granta-skel granta-skel--block"></div>
+          <div class="granta-skel granta-skel--short"></div>
+        </div>
+        <div class="b1-skelgrid">
+          <div class="granta-card"><div class="granta-skel granta-skel--short"></div><div class="granta-skel granta-skel--block"></div></div>
+          <div class="granta-card"><div class="granta-skel granta-skel--short"></div><div class="granta-skel granta-skel--block"></div></div>
+          <div class="granta-card"><div class="granta-skel granta-skel--short"></div><div class="granta-skel granta-skel--block"></div></div>
+        </div>
+        <div class="granta-card">
+          <div class="granta-skel granta-skel--title"></div>
+          <div class="granta-skel"></div>
+          <div class="granta-skel"></div>
+          <div class="granta-skel granta-skel--short"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================== מצב: ריק -->
+  <div data-state="empty" hidden>
+    <div class="granta-state granta-state--empty">
+      <h2>עדיין אין נתוני חשבון</h2>
+      <p>ברגע שנקלוט את הדוח הראשון מהחשבון שלכם — ציון הבריאות והמדדים יופיעו כאן.</p>
+      <a class="granta-btn" href="index.html">חיבור חשבון גוגל</a>
+    </div>
+  </div>
+
+  <!-- ================================================== מצב: שגיאה -->
+  <div data-state="error" hidden>
+    <div class="granta-state granta-state--error" role="alert" tabindex="-1" id="err-card">
+      <h2 id="err-title">לא הצלחנו לטעון את נתוני החשבון</h2>
+      <p id="err-msg">בדקו את החיבור לאינטרנט ונסו שוב.</p>
+      <p class="granta-help">אם זה חוזר — כתבו לנו וצרפו את קוד התקלה: <span class="granta-code" id="err-code">GR-NET-B1</span></p>
+      <button type="button" class="granta-btn" id="err-retry">ניסיון נוסף</button>
+    </div>
+  </div>
+
+  <!-- ================================================== מצב: מוכן -->
+  <div data-state="ready" hidden id="ready">
+
+    <!-- ---------- 1 · ציון בריאות ---------- -->
+    <section class="granta-section" aria-labelledby="h-health" style="padding-block-start:0">
+      <h2 id="h-health">ציון הבריאות של החשבון</h2>
+      <p class="granta-lede">ציון בריאות (Health score) — מצב החשבון במספר אחד, בין <span class="granta-num">0</span> ל-<span class="granta-num">100</span>. הוא מסכם ביצועים, מבנה, מילות מפתח, תקציב וזכאות.</p>
+
+      <div class="granta-card">
+        <div class="granta-health" id="health-wrap">
+          <div class="granta-health__ring" id="health-ring" role="img" aria-label="">
+            <span class="granta-health__num" id="health-num"></span>
+            <span class="granta-health__of granta-num">/100</span>
+          </div>
+          <p class="granta-health__note" id="health-note"></p>
+          <p class="granta-help"><span class="granta-trend" id="health-trend" aria-hidden="true"></span><span class="sr-only" id="health-trend-sr"></span> <span class="granta-num" id="health-trend-n"></span> נקודות ב-<span class="granta-num">30</span> הימים האחרונים.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- 2 · אחוז ההקלקה מול הרף ---------- -->
+    <section class="granta-section" aria-labelledby="h-ctr">
+      <h2 id="h-ctr">אחוז ההקלקה מול הרף של גוגל</h2>
+      <p class="granta-lede">אחוז ההקלקה (CTR) — מתוך כל <span class="granta-num">100</span> אנשים שראו את המודעה שלכם בגוגל, כמה מהם לחצו עליה. גוגל דורשת <span class="granta-num">5%</span> לפחות, בממוצע חודשי.</p>
+
+      <div class="granta-card">
+        <span class="granta-card__label">אחוז ההקלקה החודש</span>
+        <span class="granta-hero-num" id="ctr-now"></span>
+        <span class="granta-help" id="ctr-vs"></span>
+
+        <hr class="b1-divider">
+
+        <h3>שישה חודשים אחרונים</h3>
+        <div class="chart">
+          <div class="chart__plot">
+            <svg class="chart__svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+              <path class="chart__area" id="chart-area" d=""></path>
+              <line class="chart__thresh" id="chart-thresh" x1="0" x2="100" y1="0" y2="0"></line>
+              <polyline class="chart__line" id="chart-line" points=""></polyline>
+            </svg>
+            <div class="chart__grid" id="chart-dots"></div>
+            <span class="chart__threshlabel" id="chart-threshlabel"></span>
+          </div>
+          <div class="chart__labels" id="chart-labels"></div>
+        </div>
+
+        <table class="sr-only" id="chart-table">
+          <caption>אחוז ההקלקה לפי חודש, שישה חודשים אחרונים</caption>
+          <thead><tr><th scope="col">חודש</th><th scope="col">אחוז ההקלקה</th></tr></thead>
+          <tbody></tbody>
+        </table>
+
+        <!-- 🔴 UX-5.1 — האלמנט האדום היחיד במסך. הוא כאן כי ירידה מתחת לרף
+             היא הפרה שגוררת השעיית חשבון, לא סתם מדד שנחלש (UX-5.2).
+             הניסוח מכוון-פתרון (UX-5.9). -->
+        <div class="granta-alert granta-alert--critical" role="note" id="ctr-risk">
+          <span class="granta-alert__icon" aria-hidden="true">✖</span>
+          <div class="granta-alert__body">
+            <span class="granta-alert__title">נדרש תיקון עד סוף החודש</span>
+            <span id="ctr-risk-text"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- 3 · ניצול המענק ---------- -->
+    <section class="granta-section" aria-labelledby="h-budget">
+      <h2 id="h-budget">ניצול המענק החודשי</h2>
+      <p class="granta-lede">המענק החודשי (Ad Grants) — עד <span class="granta-num">10,000</span> דולר בחודש לפרסום בגוגל, בלי תשלום מכיסכם. מה שלא מנוצל אינו נצבר ואינו עובר לחודש הבא.</p>
+
+      <div class="granta-cards">
+        <article class="granta-card">
+          <span class="granta-card__label">ירד מהמענק החודש</span>
+          <span class="granta-hero-num" id="bud-spent"></span>
+          <span class="granta-help" id="bud-of"></span>
+          <div class="granta-progress" role="img" id="bud-bar" aria-label="">
+            <div class="granta-progress__fill" id="bud-fill" style="--score:0"></div>
+          </div>
+          <span class="granta-help" id="bud-daily"></span>
+        </article>
+
+        <article class="granta-card granta-card--accent">
+          <span class="granta-card__label">לא נוצל החודש</span>
+          <span class="granta-hero-num" id="bud-unused"></span>
+          <p class="granta-help" id="bud-note"></p>
+          <div class="granta-card__foot">
+            <span class="granta-sev granta-sev--medium"><span class="granta-sev__mark" aria-hidden="true">◆</span> כדאי לטפל</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ---------- 4 · תנועה ---------- -->
+    <section class="granta-section" aria-labelledby="h-traffic">
+      <h2 id="h-traffic">מה קרה בפועל החודש</h2>
+      <p class="granta-lede">שלושת המספרים שמתארים את המסע של אדם אחד: הוא ראה את המודעה, לחץ עליה, ואז פנה אליכם.</p>
+
+      <div class="granta-cards" id="traffic-cards"></div>
+    </section>
+
+    <!-- ---------- 5 · התראות פתוחות ---------- -->
+    <section class="granta-section" aria-labelledby="h-alerts">
+      <h2 id="h-alerts">התראות פתוחות</h2>
+      <p class="granta-lede" id="alerts-lede"></p>
+      <div class="b1-alerts" id="alerts-list"></div>
+    </section>
+
+    <!-- ---------- 6 · קמפיינים ---------- -->
+    <section class="granta-section" aria-labelledby="h-camp">
+      <h2 id="h-camp">הקמפיינים שרצים</h2>
+      <p class="granta-lede">קבוצת מודעות (Ad group) — אוסף מודעות שמכוונות לאותו נושא. הטבלה נגללת לצדדים; הדף עצמו לא.</p>
+
+      <div class="granta-tw" tabindex="0" role="region" aria-label="קמפיינים פעילים — טבלה נגללת">
+        <table class="granta-table">
+          <caption class="sr-only">קמפיינים פעילים: אחוז הקלקה, קליקים, עלות, פניות, קבוצות מודעות ונקודות פתוחות</caption>
+          <thead>
+            <tr>
+              <th scope="col">קמפיין</th>
+              <th scope="col">מול הרף</th>
+              <th scope="col">אחוז הקלקה</th>
+              <th scope="col">קליקים</th>
+              <th scope="col">עלות</th>
+              <th scope="col">פניות</th>
+              <th scope="col">קבוצות מודעות</th>
+              <th scope="col">נקודות פתוחות</th>
+            </tr>
+          </thead>
+          <tbody id="camp-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---------- 7 · המשך ---------- -->
+    <section class="granta-section" aria-labelledby="h-next">
+      <h2 id="h-next">מה מחכה לכם</h2>
+      <div class="b1-next">
+        <article class="granta-card granta-card--accent">
+          <h3>המלצות שממתינות לכם</h3>
+          <p class="granta-help" id="next-approvals"></p>
+          <div class="granta-card__foot">
+            <a class="granta-btn" href="approvals.html">מעבר לאישורים</a>
+          </div>
+        </article>
+
+        <article class="granta-card">
+          <h3>סיכון והשעיות</h3>
+          <p class="granta-help">צ׳קליסט כללי המענק של גוגל, שורה אחר שורה: מה עומד, מה דורש תיקון, ומה המשמעות של כל אחד.</p>
+          <div class="granta-card__foot">
+            <a class="granta-btn granta-btn--secondary" href="risk.html">פתיחת הצ׳קליסט</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+  </div><!-- /ready -->
+</main>
+
+<footer class="granta-footer">
+  <p>גְּרַנְטָה · לוח מצב העמותה. כל הנתונים במסך הזה הם נתוני הדגמה של עמותה בדויה.</p>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  var SRC = '_data/demo-account.json';
+  var TIMEOUT_MS = 10000;   /* UX-1.6 */
+  var SKEL_MS = 400;        /* UX-1.4 */
+
+  var main = document.getElementById('main');
+  var panels = {};
+  Array.prototype.forEach.call(document.querySelectorAll('[data-state]'), function (el) {
+    panels[el.getAttribute('data-state')] = el;
+  });
+
+  /* ---------- מצב יחיד גלוי בכל רגע (UX-1.2) ---------- */
+  function setState(name) {
+    Object.keys(panels).forEach(function (k) { panels[k].hidden = (k !== name); });
+    if (name === 'loading') { panels.loading.setAttribute('aria-busy', 'true'); }
+    else { panels.loading.setAttribute('aria-busy', 'false'); }
+  }
+
+  /* ---------- עזרי מספר. אין כאן חישוב שממציא ערך ---------- */
+  function num(n) { return Number(n).toLocaleString('he-IL'); }
+  function usd(n) { return num(n) + '$'; }
+  function pct(n) { return num(n) + '%'; }
+  function N(text) { return '<span class="granta-num">' + text + '</span>'; }
+  function esc(s) {
+    return String(s === null || s === undefined ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  var MONTHS_HE = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+  var MONTHS_HE_SHORT = ['ינו׳','פבר׳','מרץ','אפר׳','מאי','יוני','יולי','אוג׳','ספט׳','אוק׳','נוב׳','דצמ׳'];
+  function monthShort(iso) { return MONTHS_HE_SHORT[Number(String(iso).slice(5, 7)) - 1] || iso; }
+  function monthLong(iso)  { return MONTHS_HE[Number(String(iso).slice(5, 7)) - 1] || iso; }
+  function dayHe(iso) {
+    var p = String(iso).split('-');
+    return Number(p[2]) + '.' + Number(p[1]) + '.' + p[0];
+  }
+
+  /* ================================================================
+     ציור המסך — כל ערך מגיע מ-data. אין ברירת מחדל מומצאת.
+     ================================================================ */
+  function render(d) {
+
+    /* ---------- כותרת עליונה ----------
+       הפסקה בכותרת קבועה ואינה מתחלפת אחרי הטעינה — כך אין קפיצת פריסה
+       בין השלד לתוכן (UX-1.3). שורת התגים שומרת לעצמה גובה מראש. */
+    document.getElementById('hero-chips').innerHTML =
+      '<span class="granta-chip">' + esc(d.org.name) + '</span>' +
+      '<span class="granta-chip">' + esc(d.report.period_he) + '</span>';
+
+    /* ---------- 1 · ציון בריאות (UX-5.7) ---------- */
+    var score = d.health.score;
+    var band = score >= 75 ? 'high' : (score >= 50 ? 'mid' : 'low');
+    document.getElementById('health-wrap').className = 'granta-health granta-health--' + band;
+    var ring = document.getElementById('health-ring');
+    ring.style.setProperty('--score', score);
+    ring.setAttribute('aria-label', 'ציון בריאות ' + score + ' מתוך 100 — ' + d.health.band_he);
+    document.getElementById('health-num').textContent = score;
+    /* המשפט המילולי לצד הציון (UX-5.7). הכותרת עצמה מגיעה מהמאגר. */
+    document.getElementById('health-note').innerHTML =
+      'ציון ' + N(num(score)) + ' מתוך ' + N('100') + ' — <strong>' + esc(d.health.band_he) +
+      '</strong>. ' + esc(d.health.headline_he);
+
+    /* מגמה: חץ ומספר, בלי צבע (UX-5.5).
+       החץ יושב מחוץ לאי ה-LTR, אחרת הוא נודד לצד הלא נכון של המספר ב-RTL.
+       לצד החץ יש מילה נסתרת לקורא-מסך, כי חץ לבדו אינו טקסט (UX-5.6). */
+    var t = d.health.trend_30d;
+    document.getElementById('health-trend').textContent = t < 0 ? '↓' : (t > 0 ? '↑' : '=');
+    document.getElementById('health-trend-sr').textContent =
+      t < 0 ? 'ירידה של' : (t > 0 ? 'עלייה של' : 'ללא שינוי,');
+    document.getElementById('health-trend-n').textContent = num(Math.abs(t));
+
+    /* ---------- 2 · אחוז ההקלקה ---------- */
+    document.getElementById('ctr-now').textContent = pct(d.ctr.current_pct);
+    document.getElementById('ctr-vs').innerHTML =
+      'מתחת לרף ' + N(pct(d.ctr.threshold_pct)) + ' שגוגל דורשת. בסוף החודש הוא צפוי לעמוד על ' +
+      N(pct(d.ctr.projected_month_end_pct)) + ' — עדיין מתחת לרף.';
+    document.getElementById('ctr-risk-text').textContent = d.ctr.risk_he;
+
+    drawChart(d.ctr);
+
+    /* ---------- 3 · ניצול המענק ---------- */
+    var b = d.budget;
+    document.getElementById('bud-spent').textContent = usd(b.spent_month_usd);
+    document.getElementById('bud-of').innerHTML =
+      'מתוך ' + N(usd(b.grant_monthly_usd)) + ' שגוגל הקצתה לחודש ' + esc(d.report.period_he) + '.';
+    document.getElementById('bud-fill').style.setProperty('--score', b.utilization_pct);
+    document.getElementById('bud-bar').setAttribute('aria-label',
+      b.utilization_pct + ' אחוז מהמענק החודשי נוצלו');
+    document.getElementById('bud-daily').innerHTML =
+      N(pct(b.utilization_pct)) + ' מהמענק נוצלו. הוצאה יומית ממוצעת ' + N(usd(b.avg_daily_usd)) +
+      ' מתוך תקרה של ' + N(usd(b.daily_cap_usd)) + ', ועלות ממוצעת להקלקה ' + N(usd(d.traffic.avg_cpc_usd)) + '.';
+
+    document.getElementById('bud-unused').textContent = usd(b.unused_month_usd);
+    document.getElementById('bud-note').textContent = b.note_he;
+
+    /* ---------- 4 · תנועה ---------- */
+    var tr = d.traffic, prev = tr.prev_month;
+    var cards = [
+      {
+        label: 'חשיפות — כמה פעמים המודעה שלכם הוצגה בגוגל',
+        value: num(tr.impressions), prev: prev.impressions, now: tr.impressions,
+        help: ''
+      },
+      {
+        label: 'קליקים — כמה אנשים לחצו והגיעו לאתר שלכם',
+        value: num(tr.clicks), prev: prev.clicks, now: tr.clicks,
+        help: 'מהם נגזר אחוז ההקלקה מול הרף.'
+      },
+      {
+        label: 'פניות (Conversions) — הפעולה שרציתם שיעשו באתר: טופס, תרומה, הודעה',
+        value: num(tr.conversions), prev: prev.conversions, now: tr.conversions,
+        help: 'רובן הגיעו מ«' + tr.top_converting_he + '». שיעור ההמרה ' + pct(tr.conversion_rate_pct) + ' מהקליקים.'
+      }
+    ];
+    document.getElementById('traffic-cards').innerHTML = cards.map(function (c) {
+      var up = c.now > c.prev, same = c.now === c.prev;
+      var arrow = same ? '=' : (up ? '↑' : '↓');
+      var sr = same ? 'ללא שינוי.' : (up ? 'יותר מהחודש שעבר.' : 'פחות מהחודש שעבר.');
+      return '<article class="granta-card">' +
+        '<span class="granta-card__label">' + esc(c.label) + '</span>' +
+        '<span class="granta-hero-num">' + c.value + '</span>' +
+        '<span class="granta-help">' +
+          '<span class="granta-trend" aria-hidden="true">' + arrow + '</span>' +
+          '<span class="sr-only">' + sr + '</span>' +
+          ' בחודש שעבר ' + N(num(c.prev)) + '.' +
+          (c.help ? ' ' + esc(c.help) : '') +
+        '</span></article>';
+    }).join('');
+
+    /* ---------- 5 · התראות פתוחות ---------- */
+    var open = (d.alerts || []).filter(function (a) { return a.acked === false; });
+    var lede = document.getElementById('alerts-lede');
+    var list = document.getElementById('alerts-list');
+
+    if (!open.length) {
+      /* ריק-חיובי (UX-1.9) */
+      lede.textContent = '';
+      list.innerHTML = '<div class="granta-state granta-state--empty">' +
+        '<p>אין כרגע התראה פתוחה. עברנו על החשבון היום ולא מצאנו דבר שדורש את תשומת לבכם.</p></div>';
+    } else {
+      lede.innerHTML = N(num(open.length)) + ' התראות טרם נסגרו. הן נשארות כאן עד שהנושא מטופל.';
+      list.innerHTML = open.map(function (a) {
+        var kind = a.level === 'warn' ? 'warn' : 'info';
+        var mark = a.level === 'warn' ? '⚠' : 'ⓘ';
+        var title = a.level === 'warn' ? 'יש מה לעשות, ויש זמן' : 'לידיעתכם';
+        return '<div class="granta-alert granta-alert--' + kind + '" role="note">' +
+          '<span class="granta-alert__icon" aria-hidden="true">' + mark + '</span>' +
+          '<div class="granta-alert__body">' +
+            '<span class="granta-alert__title">' + title + '</span>' +
+            '<span>' + esc(a.text_he) + '</span>' +
+            '<span class="b1-alert-when">נפתחה ב-<span class="granta-num">' + dayHe(a.at) + '</span></span>' +
+          '</div></div>';
+      }).join('');
+    }
+
+    /* ---------- 6 · קמפיינים ---------- */
+    var thr = d.ctr.threshold_pct;
+    document.getElementById('camp-body').innerHTML = (d.campaigns || []).map(function (c) {
+      var pass = c.ctr_pct >= thr;
+      var sev = pass
+        ? '<span class="granta-sev granta-sev--ok"><span class="granta-sev__mark" aria-hidden="true">✔</span> עומד ברף</span>'
+        : '<span class="granta-sev granta-sev--high"><span class="granta-sev__mark" aria-hidden="true">⚠</span> מתחת לרף</span>';
+      return '<tr>' +
+        '<td>' + esc(c.name_he) + '</td>' +
+        '<td>' + sev + '</td>' +
+        '<td>' + N(pct(c.ctr_pct)) + '</td>' +
+        '<td>' + N(num(c.clicks)) + '</td>' +
+        '<td>' + N(usd(c.cost_usd)) + '</td>' +
+        '<td>' + N(num(c.conversions)) + '</td>' +
+        '<td>' + N(num(c.ad_groups)) + '</td>' +
+        '<td>' + N(num(c.issues)) + '</td>' +
+        '</tr>';
+    }).join('');
+
+    /* ---------- 7 · המשך ---------- */
+    var waiting = (d.actions || []).filter(function (a) { return a.state === 'awaiting_approval'; });
+    document.getElementById('next-approvals').innerHTML =
+      N(num(waiting.length)) + ' המלצות ממתינות לאישורכם. שום שינוי לא נכנס לחשבון לפני שאתם מאשרים אותו.';
+  }
+
+  /* ================================================================
+     גרף אחוז ההקלקה — שישה חודשים מול קו הרף.
+     הזמן זורם מקצה ההתחלה (ימין) לקצה הסיום (שמאל), כמו כיוון הקריאה.
+     ה-SVG מכיל גרפיקה בלבד; המספרים הם טקסט HTML (UX-7.15).
+     ================================================================ */
+  function drawChart(ctr) {
+    var pts = ctr.history, n = pts.length, thr = ctr.threshold_pct;
+    var vals = pts.map(function (p) { return p.pct; });
+    var lo = Math.min.apply(null, vals.concat([thr]));
+    var hi = Math.max.apply(null, vals.concat([thr]));
+    var pad = 0.5;                       /* שוליים לציור בלבד — לא מוצג */
+    var yMin = lo - pad, yMax = hi + pad;
+
+    function xCol(i) { return (i + 0.5) / n * 100; }   /* מרכז העמודה, מקצה ההתחלה */
+    function xSvg(i) { return 100 - xCol(i); }         /* ה-SVG הוא LTR, ולכן מהופך */
+    function yOf(v) { return (yMax - v) / (yMax - yMin) * 100; }
+
+    var poly = pts.map(function (p, i) { return xSvg(i).toFixed(2) + ',' + yOf(p.pct).toFixed(2); });
+    document.getElementById('chart-line').setAttribute('points', poly.join(' '));
+    document.getElementById('chart-area').setAttribute('d',
+      'M' + xSvg(0).toFixed(2) + ',100 L' + poly.join(' L') + ' L' + xSvg(n - 1).toFixed(2) + ',100 Z');
+
+    var yThr = yOf(thr);
+    var thrLine = document.getElementById('chart-thresh');
+    thrLine.setAttribute('y1', yThr.toFixed(2));
+    thrLine.setAttribute('y2', yThr.toFixed(2));
+
+    var thrLabel = document.getElementById('chart-threshlabel');
+    thrLabel.style.insetBlockStart = yThr.toFixed(2) + '%';
+    thrLabel.innerHTML = 'הרף שגוגל דורשת · ' + N(pct(thr));
+
+    var dots = document.getElementById('chart-dots');
+    var labels = document.getElementById('chart-labels');
+    dots.style.setProperty('--cols', n);
+    labels.style.setProperty('--cols', n);
+
+    dots.innerHTML = pts.map(function (p) {
+      var under = p.pct < thr;
+      return '<div class="chart__cell"><span class="chart__dot' + (under ? ' chart__dot--under' : '') +
+        '" style="inset-block-start:' + yOf(p.pct).toFixed(2) + '%"></span></div>';
+    }).join('');
+
+    labels.innerHTML = pts.map(function (p) {
+      var under = p.pct < thr;
+      return '<span class="chart__month">' +
+        '<span>' + monthShort(p.month) + '</span>' +
+        '<span class="granta-num chart__val' + (under ? ' chart__val--under' : '') + '">' + pct(p.pct) + '</span>' +
+        '</span>';
+    }).join('');
+
+    document.querySelector('#chart-table tbody').innerHTML = pts.map(function (p) {
+      return '<tr><td>' + monthLong(p.month) + ' ' + String(p.month).slice(0, 4) + '</td><td>' + pct(p.pct) + '</td></tr>';
+    }).join('');
+  }
+
+  /* ================================================================
+     טעינה · שגיאה · ניסיון נוסף (§1)
+     ================================================================ */
+  function showError(code, msg, raw, userInitiated) {
+    document.getElementById('err-code').textContent = code;
+    document.getElementById('err-msg').textContent = msg;
+    /* UX-1.12 — הטקסט הגולמי לא נכנס ל-DOM כלל. הוא הולך לקונסולה בלבד. */
+    if (raw) console.error('[granta·B1]', raw);
+    setState('error');
+    if (userInitiated) document.getElementById('err-card').focus();
+  }
+
+  function load(userInitiated) {
+    setState('loading');
+    var skel = document.getElementById('skel');
+    skel.hidden = true;
+    var skelTimer = setTimeout(function () { skel.hidden = false; }, SKEL_MS);
+
+    var done = false;
+    var timer = setTimeout(function () {
+      if (done) return;
+      done = true;
+      clearTimeout(skelTimer);
+      showError('GR-TIMEOUT-B1', 'זה לוקח יותר מדי זמן. נסו שוב בעוד רגע.', 'timeout', userInitiated);
+    }, TIMEOUT_MS);
+
+    fetch(SRC, { cache: 'no-store' })
+      .then(function (r) {
+        if (!r.ok) { var e = new Error('HTTP ' + r.status); e.status = r.status; throw e; }
+        return r.json();
+      })
+      .then(function (d) {
+        if (done) return;
+        done = true; clearTimeout(timer); clearTimeout(skelTimer);
+
+        if (!d || !d.health || !d.ctr || !d.budget) { setState('empty'); return; }
+
+        render(d);
+        setState('ready');
+      })
+      .catch(function (e) {
+        if (done) return;
+        done = true; clearTimeout(timer); clearTimeout(skelTimer);
+        var code = e && e.status ? 'GR-' + e.status + '-B1' : 'GR-NET-B1';
+        var msg = e && e.status
+          ? 'משהו אצלנו נתקע. הצוות קיבל התראה.'
+          : 'בדקו את החיבור לאינטרנט ונסו שוב.';
+        showError(code, msg, e, userInitiated);
+      });
+  }
+
+  document.getElementById('err-retry').addEventListener('click', function () { load(true); });
+
+  /* הדגמת מצבים לצורך אימות וצילום: ?state=loading|empty|error */
+  var forced = new URLSearchParams(location.search).get('state');
+  if (forced === 'loading') { setState('loading'); document.getElementById('skel').hidden = false; }
+  else if (forced === 'empty') { setState('empty'); }
+  else if (forced === 'error') { showError('GR-NET-B1', 'בדקו את החיבור לאינטרנט ונסו שוב.', null, false); }
+  else { load(false); }
+})();
+</script>
+
+</body>
+</html>

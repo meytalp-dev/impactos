@@ -1,0 +1,958 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>אישורים · גְּרַנְטָה · הדגמה</title>
+<meta name="description" content="מסך האישורים של גרנטה — כל שינוי בחשבון Google Ads עובר דרך אישור של העמותה. מסך הדגמה עם נתונים בדויים.">
+<meta name="robots" content="noindex, nofollow">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&family=Rubik:wght@400;500;700;800;900&display=swap">
+
+<link rel="stylesheet" href="../assets/tokens.css">
+<link rel="stylesheet" href="../assets/granta.css">
+
+<!--
+  B2 · מסך האישורים (הדגמה)
+  ==========================================================================
+  מממש את ההבטחה בדף הנחיתה: «שום דבר לא עולה בלי אישור שלכם»,
+  ואת סעיף 3.2 + סעיף 4 בייפוי-הכוח (granta/legal/mandate.md).
+
+  מקור הדאטה: _data/demo-account.json — מקור אמת יחיד. אין כאן מספר משלנו.
+  כל הצבעים, הפונטים והמרווחים מגיעים מ---tokens ב-../assets/tokens.css (UX-4.0).
+
+  לאימות ידני של ארבעת המצבים (UX-1.1):
+      ?state=loading   ·   ?state=error   ·   ?state=empty
+  בלי פרמטר — המסך טוען את הדאטה האמיתית ונכנס ל-ready.
+  ========================================================================== -->
+
+<style>
+/* ==========================================================================
+   CSS מקומי למסך הזה בלבד. אין כאן צבע קשיח ואין טוקן חדש (UX-4.0, UX-4.1).
+   אין תכונות פיזיות — הכול לוגי (UX-7.1).
+   ========================================================================== */
+
+/* --- באנר נתוני הדגמה — קבוע בראש המסך, בכל אחד מארבעת המצבים ----------- */
+.ap-demobar{
+  background:var(--surface-2);
+  border-block-end:1px solid var(--line);
+}
+.ap-demobar__inner{
+  max-inline-size:var(--page-max);margin-inline:auto;
+  padding-inline:var(--pad-page);padding-block:var(--s-3);
+}
+.ap-demobar .granta-alert{border:0;padding:0;background:none}
+
+/* --- מילון המסך ---------------------------------------------------------- */
+.ap-gloss{padding:var(--s-4)}
+.ap-gloss>summary{
+  display:flex;align-items:center;gap:var(--s-2);
+  min-block-size:var(--touch);
+  cursor:pointer;color:var(--primary);
+  list-style:none;
+}
+.ap-gloss>summary::-webkit-details-marker{display:none}
+.ap-gloss>summary::before{content:"▸";font-size:var(--fs-body);line-height:1}
+.ap-gloss[open]>summary::before{content:"▾"}
+.ap-gloss>summary h2{font-size:var(--fs-h3);color:var(--primary)}
+.ap-gloss__dl{
+  display:grid;gap:var(--s-3);
+  margin-block-start:var(--s-3);
+  padding-block-start:var(--s-3);
+  border-block-start:1px solid var(--line);
+  max-inline-size:var(--measure);
+}
+.ap-gloss__dl dt{
+  font-family:var(--font-head);font-size:var(--fs-body);font-weight:var(--fw-bold);
+  color:var(--ink);line-height:var(--lh-h3);
+}
+.ap-gloss__dl dd{
+  margin:0;font-size:var(--fs-help);line-height:var(--lh-help);color:var(--ink-muted);
+}
+
+/* --- כותרת מקטע עם מונה -------------------------------------------------- */
+.ap-sechead{display:flex;flex-direction:column;gap:var(--s-1)}
+
+/* --- רשימת ההמלצות ------------------------------------------------------- */
+.ap-list{display:flex;flex-direction:column;gap:var(--s-5)}
+.ap-card{gap:var(--s-4)}
+.ap-card__head{
+  display:flex;flex-wrap:wrap;align-items:flex-start;gap:var(--s-3);
+  justify-content:space-between;
+}
+.ap-card__head h3{max-inline-size:var(--measure)}
+.ap-card__meta{font-size:var(--fs-help);color:var(--ink-muted)}
+
+/* --- ארבעת החלקים: מה · למה · מה יקרה אם לא · ההשפעה --------------------- */
+.ap-parts{display:flex;flex-direction:column;gap:var(--s-4)}
+.ap-part{display:flex;flex-direction:column;gap:var(--s-1)}
+.ap-part__label{
+  font-family:var(--font-head);font-size:var(--fs-help);font-weight:var(--fw-bold);
+  color:var(--ink-muted);line-height:var(--lh-tight);
+}
+.ap-part p{margin:0;font-size:var(--fs-body);line-height:var(--lh-body);color:var(--ink)}
+
+/* «מה יקרה אם לא» — החלק שהופך את ההמלצה למובנת. כתום = יש מה לעשות ויש זמן
+   (UX-5.3). האדום נשמר למצב השגיאה בלבד (UX-5.1, UX-5.2). */
+.ap-part--risk{
+  background:var(--warn-bg);
+  border:1px solid var(--warn-line);
+  border-inline-start:4px solid var(--warn-ink);
+  border-radius:var(--r-sm);
+  padding:var(--s-3);
+}
+.ap-part--risk .ap-part__label,
+.ap-part--risk p{color:var(--warn-ink)}
+
+.ap-impact{
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--s-2);
+  background:var(--secondary);
+  border:1px solid var(--line);
+  border-radius:var(--r-sm);
+  padding:var(--s-3);
+}
+/* המחרוזת במאגר היא משפט עברי («CTR צפוי 4.2% ← 5.6%»), ולכן כיוון הבסיס
+   נשאר RTL. כפיית ltr כאן הפכה את סדר המילים. UX-3.6 חל על מספר בודד, לא
+   על משפט שלם — המספרים עצמם עטופים ב---granta-num במקומות שבהם אנחנו בונים
+   את הטקסט. */
+.ap-impact__val{
+  font-family:var(--font-head);font-size:var(--fs-h3);font-weight:var(--fw-bold);
+  color:var(--primary);
+}
+
+/* --- לפני / אחרי ---------------------------------------------------------
+   granta.css נותן ל---granta-table רוחב מינימלי של 520px — נכון לטבלת נתונים
+   רחבה, שגוי לטבלת ההשוואה הקטנה הזאת: ב-390 היא דחפה את עמודת «אחרי האישור»
+   אל מחוץ למסך, כלומר את הנתון הכי חשוב בכרטיס. כאן היא נכנסת במלואה. */
+.ap-ba{display:flex;flex-direction:column;gap:var(--s-2)}
+.ap-ba .granta-table{min-inline-size:0}
+.ap-ba .granta-table th,
+.ap-ba .granta-table td{padding-inline:var(--s-2);padding-block:var(--s-2)}
+.ap-ba .granta-table thead th{white-space:normal}
+.ap-ba .granta-table tbody th{
+  position:static;white-space:normal;
+  font-size:var(--fs-help);font-weight:var(--fw-medium);
+}
+.ap-ba .granta-table td{white-space:nowrap}
+@media (min-width:640px){
+  .ap-ba .granta-table th,
+  .ap-ba .granta-table td{padding-inline:var(--s-4);padding-block:var(--s-3)}
+}
+
+/* UX-6.9 — שני כפתורי ההחלטה בשורה אחת, מלוא הרוחב במובייל.
+   .granta-card__foot מוגדר ב-granta.css אחרי .granta-btnrow--split, ולכן
+   ה-flex שלו דרס את הגריד והכפתורים הצטמקו לרוחב הטקסט. כאן שומרים על הגריד. */
+.ap-actions{
+  display:grid;grid-template-columns:1fr 1fr;gap:var(--touch-gap);
+  margin-block-start:var(--s-2);
+}
+
+/* --- מה קרה אחרי ההחלטה --------------------------------------------------- */
+.ap-outcome{
+  display:flex;flex-direction:column;gap:var(--s-2);
+  border-radius:var(--r-sm);
+  padding:var(--s-4);
+  background:var(--surface-2);
+  border:1px solid var(--line);
+  border-inline-start:4px solid var(--primary);
+}
+.ap-outcome--ok{background:var(--ok-bg);border-color:var(--ok-line);border-inline-start-color:var(--ok-ink)}
+.ap-outcome__title{
+  font-family:var(--font-head);font-size:var(--fs-body);font-weight:var(--fw-bold);color:var(--ink);
+}
+.ap-outcome p{margin:0;font-size:var(--fs-help);line-height:var(--lh-help);color:var(--ink)}
+.ap-outcome:focus-visible{outline:var(--focus-width) solid var(--focus);outline-offset:var(--focus-offset)}
+.ap-quote{
+  font-size:var(--fs-help);line-height:var(--lh-help);color:var(--ink-muted);
+  border-inline-start:2px solid var(--line-strong);
+  padding-inline-start:var(--s-3);
+  margin:0;
+}
+
+/* --- שלד הטעינה — באותו גובה כמו הכרטיס הטעון (UX-1.3) ------------------- */
+.ap-skelcard{gap:var(--s-4)}
+
+/* [hidden] חייב לגבור על display של רכיב. granta.css מחזיק את הכלל הגלובלי,
+   אבל שני הרכיבים כאן פרוסים על כל המסך — מודל מוסתר שנשאר display:grid חוסם
+   את כל הלחיצות בדף. הגנה מקומית, שלא תלויה בסדר טעינת הקבצים. */
+.ap-modal[hidden],
+.ap-toastwrap[hidden]{display:none !important}
+
+/* --- מודל אישור-ביניים (UX-1.18, UX-7.11) -------------------------------- */
+.ap-modal{
+  position:fixed;inset:0;z-index:var(--z-modal);
+  display:grid;place-items:center;
+  padding:var(--pad-page);
+  background:var(--overlay);
+  opacity:0;
+  transition:opacity var(--dur-slow) var(--ease);
+}
+.ap-modal[data-open="1"]{opacity:1}
+.ap-modal__dialog{
+  inline-size:100%;max-inline-size:var(--state-max);
+  max-block-size:88vh;overflow-y:auto;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  box-shadow:var(--shadow-modal);
+  padding:var(--s-5);
+  display:flex;flex-direction:column;gap:var(--s-4);
+  transform:translateY(8px);
+  transition:transform var(--dur-slow) var(--ease);
+}
+.ap-modal[data-open="1"] .ap-modal__dialog{transform:translateY(0)}
+.ap-modal__body{display:flex;flex-direction:column;gap:var(--s-3)}
+.ap-modal__body p{margin:0;font-size:var(--fs-body);line-height:var(--lh-body)}
+
+/* --- toast (UX-1.16, UX-1.17) -------------------------------------------- */
+.ap-toastwrap{
+  position:fixed;z-index:var(--z-toast);
+  inset-block-end:var(--s-4);
+  inset-inline:var(--pad-page);
+  display:flex;justify-content:center;
+  pointer-events:none;
+}
+.ap-toastwrap .granta-toast{
+  pointer-events:auto;max-inline-size:var(--state-max);
+  opacity:0;transform:translateY(6px);
+  transition:opacity var(--dur-mid) var(--ease),transform var(--dur-mid) var(--ease);
+}
+.ap-toastwrap[data-open="1"] .granta-toast{opacity:1;transform:translateY(0)}
+
+/* --- כלי הדגמה ----------------------------------------------------------- */
+.ap-demotools{
+  display:flex;flex-wrap:wrap;align-items:center;gap:var(--touch-gap);
+  padding-block-start:var(--s-6);
+  border-block-start:1px solid var(--line);
+}
+.ap-demotools p{margin:0}
+
+/* --- קישורים למסכים אחרים ------------------------------------------------ */
+.ap-jump{display:flex;flex-wrap:wrap;gap:var(--touch-gap)}
+
+@media (min-width:640px){
+  .ap-gloss__dl{grid-template-columns:minmax(11rem,auto) 1fr;align-items:baseline;gap:var(--s-3) var(--s-5)}
+  .ap-gloss{padding:var(--s-5)}
+}
+
+/* --- UX-8.0 · תנועה מופחתת ---------------------------------------------- */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important; animation-iteration-count:1 !important;
+    transition-duration:.01ms !important; scroll-behavior:auto !important;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<a class="granta-skip" href="#main">דילוג לתוכן</a>
+
+<header class="granta-topbar">
+  <div class="granta-topbar__inner">
+    <a class="granta-brand" href="dashboard.html">גְּרַנְטָה<span class="granta-brand__dot" aria-hidden="true">.</span></a>
+    <nav aria-label="מסכי פורטל העמותה">
+      <ul class="granta-nav">
+        <li><a class="granta-navlink" href="dashboard.html">לוח מצב</a></li>
+        <li><a class="granta-navlink" href="approvals.html" aria-current="page">אישורים</a></li>
+        <li><a class="granta-navlink" href="risk.html">סיכון והשעיות</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<!-- באנר נתוני הדגמה — קבוע, מוצג בכל מצב של המסך -->
+<div class="ap-demobar">
+  <div class="ap-demobar__inner">
+    <div class="granta-alert granta-alert--info">
+      <span class="granta-alert__icon" aria-hidden="true">◆</span>
+      <div class="granta-alert__body">
+        <span class="granta-alert__title">נתוני הדגמה</span>
+        <span>המספרים והשמות כאן בדויים, ואף שינוי אמיתי לא מבוצע בשום חשבון.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="granta-hero">
+  <div class="granta-hero__inner">
+    <span class="granta-kicker">פורטל העמותה<span class="granta-hero__dot" aria-hidden="true"> ·</span> אישורים</span>
+    <h1>ההחלטות שלכם</h1>
+    <p>מצאנו בחשבון דברים שכדאי לשנות, והכנו לכל אחד הצעה מסודרת. אנחנו לא משנים כלום בחשבון עד שאתם מאשרים.</p>
+    <div class="granta-chips">
+      <span class="granta-chip" id="heroCount" aria-live="polite">טוענים את ההמלצות</span>
+    </div>
+  </div>
+</div>
+
+<main class="granta-page" id="main" tabindex="-1">
+
+  <!-- ===================== מצב · טעינה ===================== -->
+  <div data-state="loading" aria-busy="true" aria-live="polite" hidden>
+    <div class="granta-skels">
+      <div class="granta-skel granta-skel--title"></div>
+      <div class="granta-card ap-skelcard">
+        <div class="granta-skel granta-skel--short"></div>
+        <div class="granta-skel"></div>
+        <div class="granta-skel granta-skel--block"></div>
+        <div class="granta-skel granta-skel--block"></div>
+        <div class="granta-skel granta-skel--short"></div>
+      </div>
+      <div class="granta-card ap-skelcard">
+        <div class="granta-skel granta-skel--short"></div>
+        <div class="granta-skel"></div>
+        <div class="granta-skel granta-skel--block"></div>
+        <div class="granta-skel granta-skel--block"></div>
+        <div class="granta-skel granta-skel--short"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== מצב · שגיאה ===================== -->
+  <div data-state="error" hidden>
+    <div class="granta-state granta-state--error" role="alert" id="errBox" tabindex="-1">
+      <span class="granta-state__icon" aria-hidden="true">✖</span>
+      <p id="errWhat">לא הצלחנו לטעון את ההמלצות שממתינות לכם.</p>
+      <p id="errDo">בדקו את החיבור לאינטרנט ונסו שוב. אם זה חוזר — כתבו לנו ונבדוק.</p>
+      <p>קוד תקלה: <span class="granta-code" id="errCode">GR-000</span></p>
+      <button type="button" class="granta-btn granta-btn--secondary" id="errRetry">נסו שוב</button>
+      <small class="granta-state__detail" id="errDetail"></small>
+    </div>
+  </div>
+
+  <!-- ===================== מצב · ריק (אין פעולות כלל במאגר) ===================== -->
+  <div data-state="empty" hidden>
+    <div class="granta-state granta-state--empty">
+      <h2>אין כרגע מה לאשר</h2>
+      <p>עברנו על החשבון ולא מצאנו שינוי שדורש את ההחלטה שלכם. נעדכן אתכם כשיהיה.</p>
+      <a class="granta-btn granta-btn--secondary" href="dashboard.html">חזרה ללוח המצב</a>
+    </div>
+  </div>
+
+  <!-- ===================== מצב · מוכן ===================== -->
+  <div data-state="ready" hidden>
+
+    <details class="granta-card ap-gloss" open>
+      <summary><h2>המילים שחוזרות במסך הזה</h2></summary>
+      <dl class="ap-gloss__dl">
+        <dt>חשיפות</dt>
+        <dd>כמה פעמים המודעה שלכם הוצגה לאנשים בגוגל.</dd>
+
+        <dt>קליקים</dt>
+        <dd>כמה אנשים לחצו על המודעה והגיעו לאתר שלכם.</dd>
+
+        <dt>אחוז ההקלקה (CTR)</dt>
+        <dd>מתוך כל 100 אנשים שראו את המודעה — כמה מהם לחצו עליה. גוגל דורשת לפחות 5 מתוך 100.</dd>
+
+        <dt>מילת מפתח</dt>
+        <dd>מה שאדם מקליד בגוגל וגורם למודעה שלכם להופיע לו.</dd>
+
+        <dt>תקרת עלות להקלקה (Max CPC)</dt>
+        <dd>כמה מהמענק אתם מוכנים שירד על כל לחיצה אחת. נקראת גם «הצעת מחיר».</dd>
+
+        <dt>קישורי משנה</dt>
+        <dd>השורות הקטנות שמופיעות מתחת למודעה ומובילות ישר לעמודים באתר שלכם. במסך הזה הן נקראות גם «הרחבות קישור».</dd>
+
+        <dt>המענק החודשי</dt>
+        <dd>עד 10,000 דולר בחודש לפרסום בגוגל, בלי תשלום מכיסכם. מה שלא נוצל בחודש — לא נצבר לחודש הבא.</dd>
+
+        <dt>השעיית חשבון</dt>
+        <dd>גוגל מפסיק את המענק עד שהבעיה מתוקנת. המודעות שלכם יורדות מהאוויר בינתיים.</dd>
+      </dl>
+    </details>
+
+    <section class="granta-section" aria-labelledby="queueHead">
+      <div class="ap-sechead">
+        <h2 id="queueHead">המלצות שממתינות לכם</h2>
+        <p class="granta-help" id="queueSub">כל המלצה מפרטת מה נעשה, למה, ומה יקרה אם לא נעשה כלום. אתם מחליטים.</p>
+      </div>
+      <div class="ap-list" id="queue"></div>
+    </section>
+
+    <section class="granta-section" aria-labelledby="decidedHead" id="decidedSection" hidden>
+      <div class="ap-sechead">
+        <h2 id="decidedHead">ההחלטות שקיבלתם</h2>
+        <p class="granta-help">כל החלטה נרשמת ביומן הפעולות — גם אישור וגם דחייה.</p>
+      </div>
+      <div class="ap-list" id="decidedList"></div>
+    </section>
+
+    <section class="granta-section" aria-labelledby="doneHead">
+      <div class="ap-sechead">
+        <h2 id="doneHead">פעולה שכבר בוצעה בחשבון</h2>
+        <p class="granta-help">אישרתם, ביצענו. המצב שהיה לפני השינוי שמור אצלנו — אפשר לבקש לשחזר אותו בכל עת.</p>
+      </div>
+      <div class="ap-list" id="appliedList"></div>
+    </section>
+
+    <section class="granta-section" aria-labelledby="jumpHead">
+      <h2 id="jumpHead">להמשך</h2>
+      <div class="ap-jump">
+        <a class="granta-btn granta-btn--secondary" href="dashboard.html">לוח המצב של החשבון</a>
+        <a class="granta-btn granta-btn--secondary" href="risk.html">סיכון והשעיות</a>
+      </div>
+    </section>
+
+    <div class="ap-demotools">
+      <p class="granta-help">רוצים לראות את המסלול מהתחלה?</p>
+      <button type="button" class="granta-btn granta-btn--ghost granta-btn--sm" id="resetDemo">התחלה מחדש של ההדגמה</button>
+    </div>
+
+  </div>
+</main>
+
+<footer class="granta-footer">
+  <p>גְּרַנְטָה · מוצר של Impact OS — מסך הדגמה עם נתונים בדויים.</p>
+</footer>
+
+<!-- toast -->
+<div class="ap-toastwrap" id="toastWrap" data-open="0" hidden>
+  <div class="granta-toast" role="status" aria-live="polite">
+    <span id="toastText"></span>
+    <button type="button" class="granta-btn granta-btn--ghost granta-btn--sm" id="toastClose">סגירה</button>
+  </div>
+</div>
+
+<!-- מודל אישור-ביניים -->
+<div class="ap-modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" data-open="0" hidden>
+  <div class="ap-modal__dialog">
+    <h2 id="modalTitle"></h2>
+    <div class="ap-modal__body" id="modalBody"></div>
+    <div class="granta-btnrow granta-btnrow--split">
+      <button type="button" class="granta-btn" id="modalOk"></button>
+      <button type="button" class="granta-btn granta-btn--secondary" id="modalCancel">חזרה</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ======================================================================
+     0 · עזרים
+     ====================================================================== */
+  var $  = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+
+  var nf0 = new Intl.NumberFormat('he-IL', { maximumFractionDigits: 0 });
+  var nf2 = new Intl.NumberFormat('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  /* כל מספר ותאריך יוצא עטוף ב---granta-num: direction ltr + isolate (UX-3.6) */
+  function num(v)  { return '<span class="granta-num">' + nf0.format(v) + '</span>'; }
+  function usd0(v) { return '<span class="granta-num">' + nf0.format(v) + '$</span>'; }
+  function usd2(v) { return '<span class="granta-num">' + nf2.format(v) + '$</span>'; }
+  function pct(v)  { return '<span class="granta-num">' + v + '%</span>'; }
+
+  function dateHe(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    return '<span class="granta-num">' + d.getDate() + '.' + (d.getMonth() + 1) + '.' + d.getFullYear() + '</span>';
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  /* ======================================================================
+     1 · ארבעת מצבי המסך — מצב אחד גלוי בכל רגע (UX-1.1, UX-1.2)
+     ====================================================================== */
+  var STATES = $$('[data-state]');
+
+  function show(name) {
+    STATES.forEach(function (el) {
+      var on = el.getAttribute('data-state') === name;
+      el.hidden = !on;
+      if (el.getAttribute('data-state') === 'loading') el.setAttribute('aria-busy', on ? 'true' : 'false');
+    });
+  }
+
+  /* ======================================================================
+     2 · toast — 4 שניות, נסגר גם בלחיצה (UX-1.16, UX-1.17)
+     ====================================================================== */
+  var toastWrap = $('#toastWrap'), toastText = $('#toastText');
+  var toastTimer = null, toastHideTimer = null;
+
+  function closeToast() {
+    if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
+    toastWrap.setAttribute('data-open', '0');
+    if (toastHideTimer) clearTimeout(toastHideTimer);
+    toastHideTimer = setTimeout(function () { toastHideTimer = null; toastWrap.hidden = true; }, 220);
+  }
+
+  function toast(msg) {
+    if (toastTimer) clearTimeout(toastTimer);
+    if (toastHideTimer) { clearTimeout(toastHideTimer); toastHideTimer = null; }
+    toastText.textContent = msg;
+    toastWrap.hidden = false;
+    toastWrap.setAttribute('data-open', '0');
+    void toastWrap.offsetHeight;
+    toastWrap.setAttribute('data-open', '1');
+    toastTimer = setTimeout(closeToast, 4000);
+  }
+  $('#toastClose').addEventListener('click', closeToast);
+
+  /* ======================================================================
+     3 · מודל אישור-ביניים (UX-1.18, UX-7.11)
+     ====================================================================== */
+  var modal = $('#modal'), modalTitle = $('#modalTitle'), modalBody = $('#modalBody');
+  var modalOk = $('#modalOk'), modalCancel = $('#modalCancel');
+  var modalOpener = null, modalConfirm = null, modalHideTimer = null;
+
+  var FOCUSABLE = 'a[href],button:not([disabled]),textarea,input,select,[tabindex]:not([tabindex="-1"])';
+
+  function openModal(opts) {
+    /* ביטול הסתרה שממתינה מסגירה קודמת — אחרת היא תסתיר את המודל החדש */
+    if (modalHideTimer) { clearTimeout(modalHideTimer); modalHideTimer = null; }
+
+    modalOpener = document.activeElement;
+    modalConfirm = opts.onConfirm;
+    modalTitle.textContent = opts.title;
+    modalBody.innerHTML = opts.bodyHtml;
+    modalOk.textContent = opts.okLabel;
+    modal.hidden = false;
+    modal.setAttribute('data-open', '0');
+    void modal.offsetHeight;                 /* reflow — כדי שהמעבר ירוץ מ-0 ל-1 */
+    modal.setAttribute('data-open', '1');
+    (modal.querySelector('textarea') || modalOk).focus();
+  }
+
+  function closeModal(returnFocus) {
+    modal.setAttribute('data-open', '0');
+    modalConfirm = null;
+    if (modalHideTimer) clearTimeout(modalHideTimer);
+    modalHideTimer = setTimeout(function () {
+      modalHideTimer = null;
+      modal.hidden = true;
+      modalBody.innerHTML = '';
+      modalTitle.textContent = '';
+    }, 320);
+    if (returnFocus !== false && modalOpener && document.contains(modalOpener)) modalOpener.focus();
+  }
+
+  modalCancel.addEventListener('click', function () { closeModal(); });
+  modalOk.addEventListener('click', function () {
+    var fn = modalConfirm;
+    var reasonEl = modal.querySelector('#rejectReason');
+    var reason = reasonEl ? reasonEl.value.trim() : '';
+    closeModal(false);
+    if (fn) fn(reason);
+  });
+
+  modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+
+  document.addEventListener('keydown', function (e) {
+    if (modal.hidden) return;
+    if (e.key === 'Escape') { e.preventDefault(); closeModal(); return; }
+    if (e.key !== 'Tab') return;
+    var items = $$(FOCUSABLE, modal).filter(function (el) { return el.offsetParent !== null; });
+    if (!items.length) return;
+    var first = items[0], last = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
+
+  /* ======================================================================
+     4 · תרגום שדות «לפני/אחרי» לשפה של מנהלת עמותה
+        המפתחות במאגר טכניים. כאן, ורק כאן, הם מקבלים שם בעברית.
+     ====================================================================== */
+  var FIELD = {
+    keywords_active:     { label: 'מילות מפתח פעילות',   fmt: num  },
+    monthly_impressions: { label: 'חשיפות בחודש',        fmt: num  },
+    monthly_clicks:      { label: 'קליקים בחודש',        fmt: num  },
+    max_cpc_usd:         { label: 'תקרת עלות להקלקה',    fmt: usd2 },
+    daily_spend_usd:     { label: 'הוצאה יומית בקמפיין', fmt: usd0 },
+    sitelinks:           { label: 'קישורי משנה במודעה',  fmt: num  }
+  };
+
+  /* ======================================================================
+     5 · מצב ההדגמה
+     ====================================================================== */
+  var DATA = null;
+  var decisions = {};   /* actionId → {kind:'approved'|'rejected'|'restore', reason:string} */
+
+  function pending() {
+    if (!DATA) return [];
+    return DATA.actions.filter(function (a) {
+      return a.state === 'awaiting_approval' && !decisions[a.id];
+    });
+  }
+
+  function countText(n) {
+    if (n === 0) return 'אין המלצות שממתינות לכם';
+    if (n === 1) return 'המלצה אחת ממתינה להחלטה שלכם';
+    if (n === 2) return 'שתי המלצות ממתינות להחלטה שלכם';
+    return n + ' המלצות ממתינות להחלטה שלכם';
+  }
+
+  function updateCount() {
+    $('#heroCount').textContent = countText(pending().length);
+  }
+
+  /* ======================================================================
+     6 · בניית כרטיס
+     ====================================================================== */
+
+  /* שורת ההקשר מתחת לטבלה — נגזרת מהמאגר, לא ממציאה מספר (UX-2.4) */
+  function contextNote(a) {
+    if (a.id === 'a-001') {
+      return 'הרף של גוגל: אחוז הקלקה של ' + pct(DATA.ctr.threshold_pct) +
+             ' לפחות. החשבון עומד היום על ' + pct(DATA.ctr.current_pct) + '.';
+    }
+    if (a.id === 'a-002') {
+      return 'התקרה היומית של החשבון היא ' + usd0(DATA.budget.daily_cap_usd) +
+             '. בפועל יורדים היום ' + usd0(DATA.budget.avg_daily_usd) + ' ביום בממוצע.';
+    }
+    if (a.id === 'a-003') {
+      return 'הדרישה של גוגל: לפחות ' + num(2) + ' קישורי משנה בכל קמפיין.';
+    }
+    return '';
+  }
+
+  function beforeAfterHtml(a, applied) {
+    var keys = Object.keys(a.before || {});
+    if (!keys.length) return '';
+
+    var colWhat = applied ? 'מה השתנה' : 'מה ישתנה';
+    var colA    = applied ? 'לפני השינוי' : 'היום';
+    var colB    = applied ? 'עכשיו' : 'אחרי האישור';
+
+    var rows = keys.map(function (k) {
+      var meta = FIELD[k] || { label: k, fmt: num };
+      return '<tr><th scope="row">' + esc(meta.label) + '</th>' +
+             '<td>' + meta.fmt(a.before[k]) + '</td>' +
+             '<td>' + meta.fmt(a.after[k]) + '</td></tr>';
+    }).join('');
+
+    var note = contextNote(a);
+
+    return '' +
+      '<div class="ap-ba">' +
+        '<span class="ap-part__label">' + esc(applied ? 'מה השתנה בחשבון' : 'מה בדיוק ישתנה בחשבון') + '</span>' +
+        '<div class="granta-tw" tabindex="0" role="region" aria-label="טבלת לפני ואחרי עבור ' + esc(a.title_he) + '">' +
+          '<table class="granta-table">' +
+            '<caption class="sr-only">השוואה בין המצב הנוכחי למצב אחרי הפעולה «' + esc(a.title_he) + '»</caption>' +
+            '<thead><tr>' +
+              '<th scope="col">' + colWhat + '</th>' +
+              '<th scope="col">' + colA + '</th>' +
+              '<th scope="col">' + colB + '</th>' +
+            '</tr></thead>' +
+            '<tbody>' + rows + '</tbody>' +
+          '</table>' +
+        '</div>' +
+        (note ? '<p class="granta-help">' + note + '</p>' : '') +
+      '</div>';
+  }
+
+  function partsHtml(a) {
+    var h = '<div class="ap-parts">';
+
+    h += '<div class="ap-part">' +
+           '<span class="ap-part__label">מה נעשה</span>' +
+           '<p>' + esc(a.what_he) + '</p>' +
+         '</div>';
+
+    h += '<div class="ap-part">' +
+           '<span class="ap-part__label">למה זה חשוב</span>' +
+           '<p>' + esc(a.why_he) + '</p>' +
+         '</div>';
+
+    /* 🔴 החלק שהופך את ההמלצה למובנת. מוצג בכל פעולה שיש לה תוכן. */
+    if (a.if_not_he && a.if_not_he !== '—') {
+      h += '<div class="ap-part ap-part--risk">' +
+             '<span class="ap-part__label">מה יקרה אם לא נעשה כלום</span>' +
+             '<p>' + esc(a.if_not_he) + '</p>' +
+           '</div>';
+    }
+
+    h += '<div class="ap-part">' +
+           '<span class="ap-part__label">ההשפעה הצפויה</span>' +
+           '<div class="ap-impact"><span class="ap-impact__val">' + esc(a.impact_he) + '</span></div>' +
+         '</div>';
+
+    return h + '</div>';
+  }
+
+  function tagHtml(mark, text, mod) {
+    return '<span class="granta-sev granta-sev--' + mod + '">' +
+             '<span class="granta-sev__mark" aria-hidden="true">' + mark + '</span>' + esc(text) +
+           '</span>';
+  }
+
+  /* --- כרטיס המלצה שממתינה --- */
+  function pendingCardHtml(a) {
+    var d = decisions[a.id];
+    var tag = d
+      ? (d.kind === 'approved' ? tagHtml('✔', 'אושרה', 'ok') : tagHtml('✕', 'נדחתה', 'low'))
+      : tagHtml('●', 'ממתינה להחלטה שלכם', 'medium');
+
+    var foot;
+    if (!d) {
+      foot =
+        '<div class="ap-actions">' +
+          '<button type="button" class="granta-btn" data-act="approve" data-id="' + a.id + '">אישור</button>' +
+          '<button type="button" class="granta-btn granta-btn--secondary" data-act="reject" data-id="' + a.id + '">דחייה</button>' +
+        '</div>';
+    } else if (d.kind === 'approved') {
+      foot =
+        '<div class="ap-outcome ap-outcome--ok" tabindex="-1" data-outcome="' + a.id + '">' +
+          '<span class="ap-outcome__title">אישרתם את ההמלצה</span>' +
+          '<p>נעביר את השינוי לביצוע בחשבון ונעדכן אתכם ברגע שהוא עולה לאוויר. המצב שלפני השינוי נשמר, ותוכלו לבקש לשחזר אותו. האישור נרשם ביומן הפעולות.</p>' +
+        '</div>';
+    } else {
+      foot =
+        '<div class="ap-outcome" tabindex="-1" data-outcome="' + a.id + '">' +
+          '<span class="ap-outcome__title">דחיתם את ההמלצה</span>' +
+          '<p>ההמלצה לא תבוצע, ושום דבר בחשבון לא משתנה. הדחייה נרשמה ביומן הפעולות.</p>' +
+          (d.reason ? '<p class="ap-quote">הסיבה שרשמתם: ' + esc(d.reason) + '</p>' : '') +
+        '</div>';
+    }
+
+    return '' +
+      '<article class="granta-card ap-card' + (d ? '' : ' granta-card--accent') + '" data-card="' + a.id + '">' +
+        '<div class="ap-card__head">' +
+          '<h3>' + esc(a.title_he) + '</h3>' + tag +
+        '</div>' +
+        '<p class="ap-card__meta">הוצעה ב-' + dateHe(a.proposed_at) + '</p>' +
+        partsHtml(a) +
+        beforeAfterHtml(a, false) +
+        foot +
+      '</article>';
+  }
+
+  /* --- כרטיס פעולה שכבר הוחלה --- */
+  function appliedCardHtml(a) {
+    var d = decisions[a.id];
+    var tag = (d && d.kind === 'restore')
+      ? tagHtml('●', 'בקשת שחזור נשלחה', 'medium')
+      : tagHtml('✔', 'בוצע בחשבון', 'ok');
+
+    var foot;
+    if (d && d.kind === 'restore') {
+      foot =
+        '<div class="ap-outcome" tabindex="-1" data-outcome="' + a.id + '">' +
+          '<span class="ap-outcome__title">קיבלנו את בקשת השחזור</span>' +
+          '<p>נחזיר את המצב שהיה לפני השינוי ונעדכן אתכם. הבקשה נרשמה ביומן הפעולות.</p>' +
+        '</div>';
+    } else {
+      foot =
+        '<div class="granta-btnrow granta-card__foot">' +
+          '<button type="button" class="granta-btn granta-btn--secondary" data-act="restore" data-id="' + a.id + '">שחזור השינוי</button>' +
+        '</div>' +
+        '<p class="granta-help">שחזור מחזיר את החשבון למצב שהיה לפני השינוי. אפשר לבקש אותו בכל עת.</p>';
+    }
+
+    return '' +
+      '<article class="granta-card ap-card" data-card="' + a.id + '">' +
+        '<div class="ap-card__head">' +
+          '<h3>' + esc(a.title_he) + '</h3>' + tag +
+        '</div>' +
+        '<p class="ap-card__meta">' +
+          'אישרה: ' + esc(a.approved_by_he || '') + ' · ' +
+          'בוצע ב-' + dateHe(a.applied_at) +
+        '</p>' +
+        partsHtml(a) +
+        beforeAfterHtml(a, true) +
+        foot +
+      '</article>';
+  }
+
+  var QUEUE_EMPTY_HTML =
+    '<div class="granta-state granta-state--empty" data-empty-inline="1">' +
+      '<h3>אין כרגע מה לאשר</h3>' +
+      '<p>עברנו על החשבון ולא מצאנו שינוי שדורש את ההחלטה שלכם. נעדכן אתכם כשיהיה.</p>' +
+      '<a class="granta-btn granta-btn--secondary" href="dashboard.html">חזרה ללוח המצב</a>' +
+    '</div>';
+
+  /* ======================================================================
+     7 · ציור המסך
+     ====================================================================== */
+  function render() {
+    var waiting = DATA.actions.filter(function (a) { return a.state === 'awaiting_approval'; });
+    var applied = DATA.actions.filter(function (a) { return a.state === 'applied'; });
+
+    /* אין בכלל פעולות במאגר → מצב ריק של המסך כולו (UX-1.7) */
+    if (!waiting.length && !applied.length) { updateCount(); show('empty'); return; }
+
+    var open    = waiting.filter(function (a) { return !decisions[a.id]; });
+    var decided = waiting.filter(function (a) { return !!decisions[a.id]; });
+
+    /* התור — ההמלצות שעדיין פתוחות. כשכולן הוכרעו: כרטיס ריק במקומן.
+       הכרטיס הזה אינו נושא data-state, כדי ש-UX-1.2 יישאר תקף. */
+    $('#queue').innerHTML = open.length ? open.map(pendingCardHtml).join('') : QUEUE_EMPTY_HTML;
+    $('#queueSub').textContent = open.length
+      ? 'כל המלצה מפרטת מה נעשה, למה, ומה יקרה אם לא נעשה כלום. אתם מחליטים.'
+      : 'החלטתם על כל ההמלצות שהיו פתוחות. ההחלטות שקיבלתם מופיעות מתחת.';
+
+    /* ההחלטות שהתקבלו בהדגמה — נשארות על המסך, לא נעלמות */
+    $('#decidedSection').hidden = decided.length === 0;
+    $('#decidedList').innerHTML = decided.map(pendingCardHtml).join('');
+
+    $('#appliedList').innerHTML = applied.map(appliedCardHtml).join('');
+    updateCount();
+    show('ready');
+  }
+
+  function refocusOutcome(id) {
+    var el = $('[data-outcome="' + id + '"]');
+    if (el) el.focus();
+  }
+
+  /* ======================================================================
+     8 · אישור · דחייה · שחזור
+     ====================================================================== */
+  function findAction(id) {
+    for (var i = 0; i < DATA.actions.length; i++) if (DATA.actions[i].id === id) return DATA.actions[i];
+    return null;
+  }
+
+  function baSummary(a) {
+    var keys = Object.keys(a.before || {});
+    return keys.map(function (k) {
+      var meta = FIELD[k] || { label: k, fmt: num };
+      return meta.label + ': ' + meta.fmt(a.before[k]);
+    }).join(' · ');
+  }
+
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('button[data-act]') : null;
+    if (!btn) return;
+
+    var id = btn.getAttribute('data-id');
+    var a = findAction(id);
+    if (!a) return;
+
+    var act = btn.getAttribute('data-act');
+
+    if (act === 'approve') {
+      openModal({
+        title: 'לאשר את ההמלצה?',
+        okLabel: 'כן, אשרו',
+        bodyHtml:
+          '<p><strong>' + esc(a.title_he) + '</strong></p>' +
+          '<p>' + esc(a.what_he) + '</p>' +
+          '<p>אחרי האישור נעביר את השינוי לביצוע בחשבון שלכם. המצב שלפני השינוי נשמר אצלנו, ותוכלו לבקש לשחזר אותו בכל עת. האישור נרשם ביומן הפעולות.</p>',
+        onConfirm: function () {
+          decisions[id] = { kind: 'approved' };
+          render();
+          toast('ההמלצה אושרה. נעביר אותה לביצוע.');
+          refocusOutcome(id);
+        }
+      });
+      return;
+    }
+
+    if (act === 'reject') {
+      openModal({
+        title: 'לדחות את ההמלצה?',
+        okLabel: 'דחו את ההמלצה',
+        bodyHtml:
+          '<p><strong>' + esc(a.title_he) + '</strong></p>' +
+          '<p>ההמלצה לא תבוצע ושום דבר בחשבון לא ישתנה. אפשר לרשום למה — הסיבה נשמרת ביומן הפעולות.</p>' +
+          '<div class="granta-field">' +
+            '<label class="granta-label" for="rejectReason">הסיבה לדחייה</label>' +
+            '<textarea class="granta-textarea" id="rejectReason" rows="3" aria-describedby="rejectHint"></textarea>' +
+            '<span class="granta-hint" id="rejectHint">לא חובה. עוזר לנו להציע לכם דברים מדויקים יותר בפעם הבאה.</span>' +
+          '</div>',
+        onConfirm: function (reason) {
+          decisions[id] = { kind: 'rejected', reason: reason };
+          render();
+          toast('ההמלצה נדחתה. שום דבר בחשבון לא השתנה.');
+          refocusOutcome(id);
+        }
+      });
+      return;
+    }
+
+    if (act === 'restore') {
+      openModal({
+        title: 'לבקש שחזור של השינוי?',
+        okLabel: 'בקשו שחזור',
+        bodyHtml:
+          '<p><strong>' + esc(a.title_he) + '</strong></p>' +
+          '<p>השחזור מחזיר את החשבון למצב שהיה לפני השינוי: ' + baSummary(a) + '.</p>' +
+          '<p>הבקשה נרשמת ביומן הפעולות ומטופלת בהקדם. נעדכן אתכם כשהשחזור בוצע.</p>',
+        onConfirm: function () {
+          decisions[id] = { kind: 'restore' };
+          render();
+          toast('בקשת השחזור נשלחה.');
+          refocusOutcome(id);
+        }
+      });
+    }
+  });
+
+  $('#resetDemo').addEventListener('click', function () {
+    decisions = {};
+    render();
+    toast('ההדגמה אופסה. שתי ההמלצות פתוחות שוב.');
+    $('#main').focus();
+  });
+
+  /* ======================================================================
+     9 · טעינת הדאטה
+     ====================================================================== */
+  var params = new URLSearchParams(location.search);
+  var forced = params.get('state');           /* loading | error | empty — לאימות ידני */
+
+  function fail(code, whatText, detail) {
+    $('#errWhat').textContent = whatText;
+    $('#errCode').textContent = code;
+    /* UX-1.12 — הגולמי לקונסולה ולאלמנט מוסתר, לא לטקסט שהעמותה קוראת */
+    $('#errDetail').textContent = detail || '';
+    if (detail) console.error('[granta/demo/approvals]', detail);
+    show('error');
+    $('#errBox').focus();
+  }
+
+  var skeletonTimer = null, timeoutTimer = null;
+
+  function load() {
+    if (forced === 'loading') { show('loading'); return; }
+    if (forced === 'error')   { fail('GR-DEMO-1', 'לא הצלחנו לטעון את ההמלצות שממתינות לכם.', 'forced by ?state=error'); return; }
+
+    /* UX-1.4 — מתחת ל-400ms לא מהבהבים שלד */
+    clearTimeout(skeletonTimer);
+    skeletonTimer = setTimeout(function () { show('loading'); }, 400);
+
+    /* UX-1.6 — 10 שניות בלי תשובה → שגיאה, לא טעינה אינסופית */
+    clearTimeout(timeoutTimer);
+    timeoutTimer = setTimeout(function () {
+      clearTimeout(skeletonTimer);
+      fail('GR-408-DEMO', 'זה לוקח יותר מדי זמן.', 'timeout after 10s');
+    }, 10000);
+
+    fetch('_data/demo-account.json', { cache: 'no-store' })
+      .then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function (json) {
+        clearTimeout(skeletonTimer); clearTimeout(timeoutTimer);
+        if (!json || !Array.isArray(json.actions)) throw new Error('missing actions[]');
+        DATA = json;
+        decisions = {};
+        if (forced === 'empty') { DATA.actions = []; }
+        render();
+      })
+      .catch(function (err) {
+        clearTimeout(skeletonTimer); clearTimeout(timeoutTimer);
+        fail('GR-500-DEMO', 'לא הצלחנו לטעון את ההמלצות שממתינות לכם.', err && err.message);
+      });
+  }
+
+  /* UX-1.13 — «נסו שוב» באמת יורה את הבקשה מחדש */
+  $('#errRetry').addEventListener('click', function () { forced = null; load(); });
+
+  load();
+})();
+</script>
+
+</body>
+</html>

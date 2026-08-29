@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>דמו · פורטל העמותה — גְּרַנְטָה</title>
+<meta name="description" content="דמו של פורטל העמותה בגרנטה, על נתוני עמותה בדויה. עמותת אור לדרך אינה קיימת וכל המספרים מומצאים.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&family=Rubik:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/tokens.css">
+<link rel="stylesheet" href="../assets/granta.css">
+<style>
+/* ==========================================================================
+   D0 · שער הדמו — רכיבים מקומיים בלבד.
+   כולם נבנו מטוקנים של ../assets/tokens.css. אין כאן ערך צבע, אין תכונה
+   פיזית, ואין טוקן חדש.                        UX-4.0 · UX-4.1 · UX-7.1
+   ========================================================================== */
+
+/* --- ראש דביק: פס הניווט ובאנר הדמו נעים יחד וגלויים תמיד ---------------
+   הבאנר חייב להיות בלתי אפשרי לפספס — גם בצילום מסך של אמצע הדף.
+   הצבע כתום ולא אדום: אדום שמור להפרה שגוררת השעיה (UX-5.2).
+   הצורה (עיגול מלא + קו תחתון עבה) נושאת את המידע גם בגווני אפור (UX-5.6). */
+/* [hidden] חייב לגבור על display:grid/flex של .granta-cards ו-.granta-state,
+   אחרת שני מצבי מסך מוצגים יחד. UX-1.2 */
+[hidden]{display:none !important}
+
+.d0-top{position:sticky;inset-block-start:0;z-index:var(--z-nav)}
+.d0-top .granta-topbar{position:static}
+
+.d0-demobar{
+  background:var(--warn-bg);
+  color:var(--warn-ink);
+  border-block-end:2px solid var(--warn-ink);
+}
+.d0-demobar__inner{
+  max-inline-size:var(--page-max);margin-inline:auto;
+  padding-inline:var(--pad-page);padding-block:var(--s-3);
+  display:flex;align-items:flex-start;gap:var(--s-3);
+}
+.d0-demobar__mark{
+  flex:none;
+  inline-size:1.75rem;block-size:1.75rem;
+  display:grid;place-items:center;border-radius:var(--r-pill);
+  background:var(--warn-ink);color:var(--surface);
+  font-size:var(--fs-badge);line-height:1;
+}
+.d0-demobar__text{
+  font-size:var(--fs-body);line-height:var(--lh-tight);
+  font-weight:var(--fw-medium);max-inline-size:var(--measure);
+}
+.d0-demobar__text b{font-weight:var(--fw-bold)}
+
+/* --- תג "נתוני הדגמה" שחוזר על כל כרטיס כניסה --------------------------- */
+.d0-pill{
+  display:inline-flex;align-items:center;gap:var(--s-1);
+  background:var(--warn-bg);color:var(--warn-ink);border:1px solid var(--warn-line);
+  border-radius:var(--r-pill);padding-inline:var(--s-3);padding-block:var(--s-1);
+  font-family:var(--font-head);font-size:var(--fs-badge);font-weight:var(--fw-bold);
+  line-height:var(--lh-tight);white-space:nowrap;
+}
+
+/* --- כותרת עליונה: כפתור החזרה נשאר בקצה --------------------------------- */
+.d0-navwrap{margin-inline-start:auto;display:flex;align-items:center;gap:var(--touch-gap)}
+
+/* --- הירו ---------------------------------------------------------------- */
+.d0-heropad{margin-block-start:var(--s-2)}
+
+/* --- כרטיס מספר ---------------------------------------------------------- */
+.d0-stat__value{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--s-2)}
+.d0-stat__note{font-size:var(--fs-help);color:var(--ink-muted);line-height:var(--lh-help)}
+.d0-stat__note b{color:var(--ink);font-weight:var(--fw-bold)}
+.d0-stat__bar{margin-block-start:var(--s-1)}
+
+/* --- שלד הטעינה: מלבן בגובה המספר-על, כדי שלא תהיה קפיצת פריסה (UX-1.3) -- */
+.d0-skel-hero{block-size:2.2rem;inline-size:46%}
+.d0-skel-bar{block-size:10px}
+.d0-skel-card{gap:var(--s-3)}
+
+/* UX-1.4 — מתחת ל-400ms לא מהבהבים שלד. הוא נוכח בפריסה מהרגע הראשון
+   (ולכן אין קפיצת פריסה ואין רגע בלי מצב גלוי), אך נחשף רק אחרי 400ms. */
+.d0-delayed{opacity:0;animation:d0-appear var(--dur-fast) var(--ease) 400ms forwards}
+@keyframes d0-appear{to{opacity:1}}
+
+/* --- כרטיס כניסה למסך ---------------------------------------------------- */
+.d0-entry{gap:var(--s-3)}
+.d0-entry__head{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s-2)}
+.d0-entry__head h3{margin-inline-end:auto}
+.d0-entry__line{font-size:var(--fs-body);line-height:var(--lh-help);color:var(--ink)}
+.d0-entry__lead{
+  font-family:var(--font-head);font-size:var(--fs-badge);font-weight:var(--fw-bold);
+  color:var(--primary);display:block;
+}
+.d0-entry .granta-card__foot{margin-block-start:auto;padding-block-start:var(--s-2)}
+
+/* --- הסבר מונח במופע הראשון (UX-2.1) ------------------------------------- */
+.d0-gloss{border-block-end:1px dotted var(--line-strong);cursor:help}
+
+/* --- פוטר: כל קישור הוא יעד מגע מלא (UX-6.4, UX-6.5) --------------------- */
+.granta-footer p{margin-inline:auto}
+.d0-footnav{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:var(--touch-gap);margin-block:var(--s-3)}
+.d0-footlink{
+  display:inline-flex;align-items:center;min-block-size:var(--touch);
+  padding-inline:var(--s-3);border-radius:var(--r-pill);
+  color:var(--primary);text-decoration:none;font-weight:var(--fw-medium);
+  transition:background-color var(--dur-fast) var(--ease);
+}
+.d0-footlink:hover{background:var(--secondary);text-decoration:underline}
+
+@media (min-width:640px){
+  .d0-demobar__inner{padding-inline:var(--pad-page-lg)}
+}
+
+/* UX-8.0 — חובה בכל גיליון סגנון שיש בו transition או animation */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+    scroll-behavior:auto !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<a class="granta-skip" href="#main">דילוג לתוכן</a>
+
+<div class="d0-top">
+  <header class="granta-topbar">
+    <div class="granta-topbar__inner">
+      <a class="granta-brand" href="../index.html">גְּרַנְטָה<span class="granta-brand__dot" aria-hidden="true">.</span></a>
+      <div class="d0-navwrap">
+        <span class="d0-pill">דמו</span>
+        <a class="granta-btn granta-btn--sm granta-btn--secondary" href="../index.html">חזרה לדף הבית</a>
+      </div>
+    </div>
+  </header>
+
+  <aside class="d0-demobar" aria-label="הודעת נתוני הדגמה">
+    <div class="d0-demobar__inner">
+      <span class="d0-demobar__mark" aria-hidden="true">⚠</span>
+      <p class="d0-demobar__text"><b>נתוני הדגמה.</b> עמותת אור לדרך אינה קיימת, וכל המספרים מומצאים.</p>
+    </div>
+  </aside>
+</div>
+
+<!-- ====================================================== הירו -->
+<section class="granta-hero" aria-labelledby="h-hero">
+  <div class="granta-hero__inner">
+    <span class="granta-kicker">דמו · פורטל העמותה</span>
+    <h1 id="h-hero">ככה גרנטה נראית מבפנים<span class="granta-hero__dot" aria-hidden="true">.</span></h1>
+    <p>שלושה מסכים מתוך הפורטל, על חשבון של עמותה בדויה. אלה בדיוק המסכים שעמותה אמיתית רואה — רק שכל הנתונים שבהם הומצאו לצורך ההדגמה.</p>
+    <div class="granta-chips d0-heropad">
+      <span class="granta-chip">עמותת אור לדרך · בדויה</span>
+      <span class="granta-chip">אוגוסט <span class="granta-num">2026</span></span>
+      <span class="granta-chip">מסלול מנוהל</span>
+    </div>
+  </div>
+</section>
+
+<main id="main" class="granta-page" tabindex="-1">
+
+  <!-- ================================================== מה זה -->
+  <section class="granta-section" id="about" aria-labelledby="h-about">
+    <h2 id="h-about">מה אתם רואים כאן</h2>
+    <p class="granta-lede">זה הדמו של פורטל העמותה בגרנטה — המסכים שאליהם נכנסת מנהלת עמותה שגרנטה מנהלת עבורה את חשבון המענק. כדי שאפשר יהיה להראות אותם בלי לחשוף נתונים של עמותה אמיתית, בנינו עמותה בדויה: אור לדרך, שמלווה צעירים וצעירות בגיל <span class="granta-num">16–24</span> במעבר מהלימודים לעצמאות.</p>
+
+    <div class="granta-alert granta-alert--warn" role="note">
+      <span class="granta-alert__icon" aria-hidden="true">⚠</span>
+      <div class="granta-alert__body">
+        <span class="granta-alert__title">כל מה שמופיע בדמו הוא המצאה</span>
+        <span>עמותת אור לדרך אינה קיימת. השם, האתר, הקמפיינים, הסכומים ואחוזי ההקלקה — כולם נכתבו לצורך ההדגמה ואינם נתונים של אף עמותה. אם הגיע אליכם צילום מסך מהדמו, זה מה שהוא מראה.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== שלושה מספרים -->
+  <section class="granta-section" id="numbers" aria-labelledby="h-numbers">
+    <h2 id="h-numbers">שלושה מספרים שמסבירים למה גרנטה קיימת</h2>
+    <p class="granta-lede">החשבון של אור לדרך פעיל ומאושר, ובכל זאת שני דברים דורשים החלטה החודש: הוא עומד לרדת מתחת לרף שגוגל דורשת, ובמקביל מפסיד כסף שכבר הוקצה לו.</p>
+
+    <div id="d0-stats">
+
+      <!-- מצב: טעינה — §1.A -->
+      <div class="granta-cards" data-state="loading" aria-busy="true" aria-live="polite">
+        <div class="granta-card d0-skel-card d0-delayed" aria-hidden="true">
+          <span class="granta-skel granta-skel--short"></span>
+          <span class="granta-skel d0-skel-hero"></span>
+          <span class="granta-skel"></span>
+          <span class="granta-skel"></span>
+          <span class="granta-skel granta-skel--short"></span>
+        </div>
+        <div class="granta-card d0-skel-card d0-delayed" aria-hidden="true">
+          <span class="granta-skel granta-skel--short"></span>
+          <span class="granta-skel d0-skel-hero"></span>
+          <span class="granta-skel"></span>
+          <span class="granta-skel"></span>
+          <span class="granta-skel granta-skel--short"></span>
+        </div>
+        <div class="granta-card d0-skel-card d0-delayed" aria-hidden="true">
+          <span class="granta-skel granta-skel--short"></span>
+          <span class="granta-skel d0-skel-hero"></span>
+          <span class="granta-skel"></span>
+          <span class="granta-skel"></span>
+          <span class="granta-skel granta-skel--short"></span>
+          <span class="granta-skel d0-skel-bar"></span>
+        </div>
+        <p class="sr-only">טוען את נתוני הדמו.</p>
+      </div>
+
+      <!-- מצב: ריק — UX-1.7, UX-1.8 -->
+      <div class="granta-state granta-state--empty" data-state="empty" hidden>
+        <h3>מאגר הדמו נטען, אבל אין בו נתונים להצגה.</h3>
+        <p>הקובץ שמזין את מסכי הדמו הגיע ריק. רעננו את הדף — ואם זה חוזר, כתבו לנו ונחזיר אותו למקומו.</p>
+        <a class="granta-btn granta-btn--secondary" href="../index.html">חזרה לדף הבית</a>
+      </div>
+
+      <!-- מצב: שגיאה — UX-1.11, UX-1.13, UX-1.14 -->
+      <div class="granta-state granta-state--error" data-state="error" role="alert" tabindex="-1" hidden>
+        <span class="granta-state__icon" aria-hidden="true">✖</span>
+        <p id="d0-err-text">לא הצלחנו לטעון את נתוני הדמו.</p>
+        <p class="granta-help">מה לעשות עכשיו: נסו שוב. אם זה חוזר — חזרו לדף הבית וכתבו לנו את קוד התקלה.</p>
+        <p class="granta-help">קוד תקלה: <span class="granta-code" id="d0-err-code">GR-DEMO-0000</span></p>
+        <div class="granta-btnrow">
+          <button class="granta-btn" type="button" id="d0-retry">נסו שוב</button>
+          <a class="granta-btn granta-btn--secondary" href="../index.html">חזרה לדף הבית</a>
+        </div>
+        <small class="granta-state__detail" id="d0-err-raw"></small>
+      </div>
+
+      <!-- מצב: מוכן -->
+      <div class="granta-cards" data-state="ready" hidden>
+
+        <article class="granta-card">
+          <span class="granta-card__label"><span class="d0-gloss" aria-describedby="g-health" title="ציון בריאות (0–100) — מצב החשבון במספר אחד">ציון בריאות</span> החשבון</span>
+          <span class="d0-stat__value">
+            <span class="granta-hero-num" id="d0-health-num">—</span>
+            <span class="d0-stat__note">מתוך <span class="granta-num">100</span></span>
+          </span>
+          <span class="d0-stat__note">המצב: <b id="d0-health-band">—</b>. החשבון פעיל, אבל שני דברים דורשים החלטה החודש.</span>
+          <span class="d0-stat__note"><span class="sr-only" id="d0-health-dir"></span><span class="granta-trend" id="d0-health-arrow" aria-hidden="true">—</span> <span class="granta-trend" id="d0-health-trend">—</span> נקודות ב-<span class="granta-num">30</span> הימים האחרונים</span>
+        </article>
+
+        <article class="granta-card">
+          <span class="granta-card__label"><span class="d0-gloss" aria-describedby="g-ctr" title="אחוז ההקלקה (CTR) — מתוך כל 100 אנשים שראו את המודעה, כמה לחצו עליה">אחוז ההקלקה</span> החודשי</span>
+          <span class="d0-stat__value">
+            <span class="granta-hero-num" id="d0-ctr-num">—</span>
+            <span class="d0-stat__note">מכל <span class="granta-num">100</span> שראו את המודעה</span>
+          </span>
+          <span class="d0-stat__note">הרף שגוגל דורשת: <b><span class="granta-num" id="d0-ctr-threshold">—</span></b>. חודשיים רצופים מתחת לרף מסכנים את החשבון.</span>
+          <span class="d0-stat__note">נותרו <span class="granta-num" id="d0-ctr-days">—</span> ימים לסוף החודש.</span>
+        </article>
+
+        <article class="granta-card">
+          <span class="granta-card__label">מ<span class="d0-gloss" aria-describedby="g-grant" title="המענק החודשי — עד 10,000 דולר בחודש לפרסום בגוגל, בלי תשלום מכיסכם">המענק החודשי</span> לא נוצלו</span>
+          <span class="d0-stat__value">
+            <span class="granta-hero-num" id="d0-unused-num">—</span>
+            <span class="d0-stat__note">החודש</span>
+          </span>
+          <span class="d0-stat__note">נוצלו <span class="granta-num" id="d0-spent">—</span> מתוך <span class="granta-num" id="d0-grant">—</span> שגוגל מקצה. מה שלא יורד אינו נצבר ואינו עובר לחודש הבא.</span>
+          <div class="granta-progress d0-stat__bar" aria-hidden="true"><div class="granta-progress__fill" id="d0-util-bar"></div></div>
+          <span class="d0-stat__note">ניצול: <span class="granta-num" id="d0-util">—</span> מהמענק</span>
+        </article>
+
+      </div>
+    </div>
+
+    <span id="g-health" class="sr-only">ציון בריאות (0–100) — מצב החשבון במספר אחד.</span>
+    <span id="g-ctr" class="sr-only">אחוז ההקלקה (CTR) — מתוך כל 100 אנשים שראו את המודעה, כמה לחצו עליה.</span>
+    <span id="g-grant" class="sr-only">המענק החודשי — עד 10,000 דולר בחודש לפרסום בגוגל, בלי תשלום מכיסכם.</span>
+  </section>
+
+  <!-- ================================================== שלושת המסכים -->
+  <section class="granta-section" id="screens" aria-labelledby="h-screens">
+    <h2 id="h-screens">שלושת המסכים בדמו</h2>
+    <p class="granta-lede">כל מסך נפתח על אותו חשבון בדוי ומראה אותו מזווית אחרת: מה המצב, מה מחכה להחלטה שלכם, ומה עלול לסכן את המענק.</p>
+
+    <div class="granta-cards">
+
+      <article class="granta-card d0-entry">
+        <div class="d0-entry__head">
+          <h3>לוח מצב</h3>
+          <span class="d0-pill">נתוני הדגמה</span>
+        </div>
+        <p class="d0-entry__line"><span class="d0-entry__lead">מה רואים שם</span>ציון הבריאות, אחוז ההקלקה מול הרף שגוגל דורשת, כמה מהמענק ירד לשימוש, וההתראות שעדיין פתוחות — הכול במסך אחד.</p>
+        <p class="d0-entry__line"><span class="d0-entry__lead">מה זה אומר לעמותה</span>אפשר לדעת תוך חצי דקה אם החשבון במקום טוב או דורש החלטה החודש, בלי להיכנס ל-Google Ads אפילו פעם אחת.</p>
+        <div class="granta-card__foot">
+          <a class="granta-btn granta-btn--block" href="dashboard.html">כניסה ללוח המצב <span aria-hidden="true">←</span></a>
+        </div>
+      </article>
+
+      <article class="granta-card d0-entry">
+        <div class="d0-entry__head">
+          <h3>אישורים</h3>
+          <span class="d0-pill">נתוני הדגמה</span>
+        </div>
+        <p class="d0-entry__line"><span class="d0-entry__lead">מה רואים שם</span>ההמלצות שממתינות להחלטה שלכם, וכל אחת מהן עם מה בדיוק נשנה, למה זה מומלץ, ומה יקרה אם לא נעשה כלום.</p>
+        <p class="d0-entry__line"><span class="d0-entry__lead">מה זה אומר לעמותה</span>כאן ההבטחה ששום דבר לא עולה בלי אישורכם הופכת לפעולה: אתם מאשרים או דוחים, וכל שינוי שבוצע ניתן לשחזור.</p>
+        <div class="granta-card__foot">
+          <a class="granta-btn granta-btn--block" href="approvals.html">כניסה לאישורים <span aria-hidden="true">←</span></a>
+        </div>
+      </article>
+
+      <article class="granta-card d0-entry">
+        <div class="d0-entry__head">
+          <h3>סיכון והשעיות</h3>
+          <span class="d0-pill">נתוני הדגמה</span>
+        </div>
+        <p class="d0-entry__line"><span class="d0-entry__lead">מה רואים שם</span>כל כללי המענק כרשימת בדיקה: מה עומד בדרישה, מה בסיכון, ומה כבר מפר אותה — עם משפט הסבר לכל שורה.</p>
+        <p class="d0-entry__line"><span class="d0-entry__lead">מה זה אומר לעמותה</span>רואים מראש מה עלול להוביל להשעיית החשבון, בזמן שעוד אפשר לתקן — במקום לגלות את זה ממכתב של גוגל.</p>
+        <div class="granta-card__foot">
+          <a class="granta-btn granta-btn--block" href="risk.html">כניסה לסיכון והשעיות <span aria-hidden="true">←</span></a>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ================================================== חזרה -->
+  <section class="granta-section" id="back" aria-labelledby="h-back">
+    <div class="granta-card granta-card--accent">
+      <h2 id="h-back">רוצים לראות את זה על החשבון שלכם</h2>
+      <p class="granta-lede">הדמו רץ על עמותה בדויה. בדיקת הזכאות רצה על העמותה שלכם, והיא חינם.</p>
+      <div class="granta-card__foot">
+        <a class="granta-btn" href="../index.html">חזרה לדף הבית <span aria-hidden="true">←</span></a>
+        <a class="granta-btn granta-btn--secondary" href="../check.html">בדיקת זכאות חינם</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="granta-footer">
+  <p><b>נתוני הדגמה.</b> עמותת אור לדרך אינה קיימת, וכל המספרים מומצאים.</p>
+  <nav class="d0-footnav" aria-label="קישורים">
+    <a class="d0-footlink" href="../index.html">דף הבית</a>
+    <a class="d0-footlink" href="../legal/privacy.md">פרטיות</a>
+    <a class="d0-footlink" href="../legal/terms.md">תנאים</a>
+  </nav>
+  <p><span class="granta-num">© 2026 Granta</span> · מבית Impact OS</p>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  var DATA_URL = '_data/demo-account.json';
+  var TIMEOUT_MS = 10000;               /* UX-1.6 */
+
+  var wrap    = document.getElementById('d0-stats');
+  var errText = document.getElementById('d0-err-text');
+  var errCode = document.getElementById('d0-err-code');
+  var errRaw  = document.getElementById('d0-err-raw');
+  var retry   = document.getElementById('d0-retry');
+
+  /* UX-1.2 — מצב אחד גלוי בכל רגע */
+  function show(name) {
+    var nodes = wrap.querySelectorAll('[data-state]');
+    for (var i = 0; i < nodes.length; i++) {
+      var state = nodes[i].getAttribute('data-state');
+      var on = (state === name);
+      nodes[i].hidden = !on;
+      if (state === 'loading') {
+        nodes[i].setAttribute('aria-busy', on ? 'true' : 'false');   /* UX-1.5 */
+      }
+    }
+  }
+
+  function num(v) { return Number(v).toLocaleString('en-US'); }
+  function text(id, value) { document.getElementById(id).textContent = value; }
+
+  function render(d) {
+    var h = d.health, c = d.ctr, b = d.budget;
+
+    text('d0-health-num', num(h.score));
+    text('d0-health-band', h.band_he);
+    var t = Number(h.trend_30d);
+    /* UX-5.5 · UX-7.2 — חץ ומספר, כל אחד בבידוד משלו, כדי שסדר הקריאה
+       ב-RTL יישאר חץ ואז מספר. המילה בעברית נשארת מחוץ לבידוד. */
+    text('d0-health-arrow', t < 0 ? '↓' : '↑');
+    text('d0-health-dir', t < 0 ? 'ירידה של' : 'עלייה של');
+    text('d0-health-trend', num(Math.abs(t)));
+
+    text('d0-ctr-num', c.current_pct + '%');
+    text('d0-ctr-threshold', String(c.threshold_pct).replace(/\.0$/, '') + '%');
+    text('d0-ctr-days', num(c.days_to_risk));
+
+    text('d0-unused-num', num(b.unused_month_usd) + '$');
+    text('d0-spent', num(b.spent_month_usd) + '$');
+    text('d0-grant', num(b.grant_monthly_usd) + '$');
+    text('d0-util', b.utilization_pct + '%');
+    document.getElementById('d0-util-bar').style.setProperty('--score', b.utilization_pct);
+  }
+
+  function fail(message, code, raw) {
+    /* UX-1.12 — הטקסט הגולמי לקונסולה בלבד, לא לעיני הלקוחה */
+    if (raw) { console.error('[granta-demo]', raw); }
+    errText.textContent = message;
+    errCode.textContent = code;
+    errRaw.textContent = raw ? String(raw) : '';
+    show('error');
+  }
+
+  function load(userInitiated) {
+    show('loading');
+
+    var timedOut = false;
+    var ctrl = (typeof AbortController === 'function') ? new AbortController() : null;
+    var timer = window.setTimeout(function () {
+      timedOut = true;
+      if (ctrl) { ctrl.abort(); }
+    }, TIMEOUT_MS);
+
+    var opts = { cache: 'no-store' };
+    if (ctrl) { opts.signal = ctrl.signal; }
+
+    fetch(DATA_URL, opts).then(function (res) {
+      if (!res.ok) {
+        var e = new Error('HTTP ' + res.status);
+        e.grantaCode = 'GR-' + res.status + '-DEMO';
+        throw e;
+      }
+      return res.json();
+    }).then(function (data) {
+      window.clearTimeout(timer);
+      if (!data || !data.health || !data.ctr || !data.budget) {
+        show('empty');                                   /* UX-1.7 — ריק אינו שגיאה */
+        return;
+      }
+      render(data);
+      show('ready');
+    }).catch(function (err) {
+      window.clearTimeout(timer);
+      if (timedOut) {
+        fail('זה לוקח יותר מדי זמן. נסו שוב בעוד רגע.', 'GR-TIMEOUT-DEMO', err);
+      } else if (err && err.grantaCode) {
+        fail('לא הצלחנו לטעון את נתוני הדמו.', err.grantaCode, err);
+      } else {
+        fail('לא הצלחנו להתחבר. בדקו את החיבור לאינטרנט ונסו שוב.', 'GR-NET-DEMO', err);
+      }
+      if (userInitiated) {
+        wrap.querySelector('[data-state="error"]').focus();   /* UX-1.14 */
+      }
+    });
+  }
+
+  retry.addEventListener('click', function () { load(true); });   /* UX-1.13 */
+  load(false);
+})();
+</script>
+
+</body>
+</html>

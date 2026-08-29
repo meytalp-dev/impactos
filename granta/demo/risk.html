@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>גְּרַנְטָה · סיכון והשעיות — נתוני הדגמה</title>
+<meta name="description" content="מסך B4 בדמו של גרנטה: האם חשבון המענק בסכנת השעיה, ולמה. צ'קליסט מדיניות מלא עם הסבר לכל שורה.">
+<meta name="robots" content="noindex">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&family=Rubik:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/tokens.css">
+<link rel="stylesheet" href="../assets/granta.css">
+
+<style>
+/* ==========================================================================
+   B4 · סיכון והשעיות — CSS מקומי בלבד
+   כל מה שיש לו רכיב ב-granta.css נלקח משם (כרטיס, תג, מצבי מסך, באנר).
+   כאן יושבות רק ההתאמות שאין להן רכיב קיים.
+   UX-4.0 — אין כאן צבע קשיח.   UX-4.1 — אין כאן טוקן חדש.
+   UX-7.1 — אין כאן תכונה פיזית (left/right).
+   🔴 UX-5.1 — תקציב אדום אחד למסך: .risk-alarm בלבד נושא --danger-bg.
+      שורות ההפרה בצ'קליסט מסומנות בגבול, בסימן-צורה ובמילה — לא ברקע אדום.
+   ========================================================================== */
+
+/* פאנל מוסתר: .granta-card ו-.granta-state הם display:flex, וזה גובר על
+   ברירת המחדל של [hidden]. UX-1.2 */
+[hidden]{display:none !important}
+
+/* --- כותרת הסיכון — האלמנט האדום היחיד במסך (UX-5.1, UX-5.2) ------------ */
+.risk-alarm{
+  display:flex;flex-direction:column;gap:var(--s-3);
+  background:var(--danger-bg);
+  border:1px solid var(--danger-line);
+  border-inline-start:5px solid var(--danger-ink);
+  border-radius:var(--r);
+  padding:var(--s-5);
+}
+.risk-alarm h2{color:var(--danger-ink)}
+.risk-alarm__days{display:flex;align-items:baseline;flex-wrap:wrap;gap:var(--s-2)}
+.risk-alarm__num{color:var(--danger-ink)}
+.risk-alarm__unit{font-family:var(--font-head);font-size:var(--fs-h2);font-weight:var(--fw-bold);color:var(--danger-ink)}
+.risk-alarm__facts{
+  list-style:none;display:flex;flex-direction:column;gap:var(--s-2);
+  padding-block-start:var(--s-3);
+  border-block-start:1px solid var(--danger-line);
+}
+.risk-alarm__facts li{display:flex;flex-wrap:wrap;gap:var(--s-2);align-items:baseline;font-size:var(--fs-help);line-height:var(--lh-help)}
+.risk-alarm__k{font-weight:var(--fw-medium);color:var(--ink)}
+.risk-alarm__v{color:var(--ink)}
+
+/* --- גרף המגמה (UX-7.15: כל ערך קיים גם כטקסט) ------------------------- */
+.risk-figure{display:flex;flex-direction:column;gap:var(--s-3)}
+.risk-plot{
+  position:relative;block-size:120px;
+  display:flex;align-items:flex-end;gap:var(--s-2);
+  border-block-end:1px solid var(--line-strong);
+}
+.risk-plot__thr{
+  position:absolute;inset-inline:0;inset-block-end:calc(var(--t) * 1%);
+  block-size:0;border-block-start:2px dashed var(--line-strong);
+}
+.risk-bar{flex:1 1 0;min-inline-size:0;display:flex;align-items:flex-end;block-size:100%}
+.risk-bar__fill{
+  inline-size:100%;block-size:calc(var(--h) * 1%);
+  background:var(--line-strong);
+  border-start-start-radius:var(--r-sm);border-start-end-radius:var(--r-sm);
+}
+.risk-bar--now .risk-bar__fill{background:var(--primary)}
+.risk-xaxis{list-style:none;display:flex;gap:var(--s-2)}
+.risk-xaxis li{
+  flex:1 1 0;min-inline-size:0;
+  display:flex;flex-direction:column;align-items:center;gap:var(--s-1);
+  font-size:var(--fs-badge);color:var(--ink-muted);
+}
+.risk-xaxis .risk-xaxis__v{color:var(--ink);font-weight:var(--fw-medium)}
+.risk-xaxis li.is-now .risk-xaxis__m,
+.risk-xaxis li.is-now .risk-xaxis__v{color:var(--primary);font-weight:var(--fw-bold)}
+
+/* --- הצ'קליסט ----------------------------------------------------------- */
+.risk-list{list-style:none;display:flex;flex-direction:column;gap:var(--s-3)}
+.risk-item{
+  display:flex;flex-direction:column;gap:var(--s-2);
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  padding:var(--s-4);
+}
+/* שלוש צורות-גבול מובחנות גם בגווני אפור: עבה-רציף · עבה-מקווקו · דק */
+.risk-item--fail{border-color:var(--danger-line);border-inline-start:5px solid var(--danger-ink)}
+.risk-item--warn{border-color:var(--warn-line);border-inline-start:5px dashed var(--warn-ink)}
+.risk-item--pass{border-color:var(--line)}
+.risk-item__head{display:flex;flex-wrap:wrap;gap:var(--s-2);align-items:center}
+.risk-item__name{font-family:var(--font-head);font-size:var(--fs-h3);font-weight:var(--fw-bold);line-height:var(--lh-h3)}
+.risk-item--fail .risk-item__name{color:var(--danger-ink)}
+.risk-item__note{font-size:var(--fs-help);color:var(--ink-muted);line-height:var(--lh-help)}
+.risk-code{
+  font-family:var(--font-mono);font-size:var(--fs-code);
+  direction:ltr;unicode-bidi:isolate;color:var(--ink-muted);
+  margin-inline-start:auto;
+}
+/* תג הפרה — סימן-צורה, מילה, גבול וטקסט אדומים. בלי רקע אדום (UX-5.1) */
+.risk-sev--fail{background:var(--surface);color:var(--danger-ink);border-color:var(--danger-ink)}
+
+.risk-gloss{display:block;font-size:var(--fs-help);color:var(--ink-muted);line-height:var(--lh-help)}
+.risk-groups{display:flex;flex-direction:column;gap:var(--s-6)}
+.risk-group{display:flex;flex-direction:column;gap:var(--s-3)}
+.risk-group__h{display:flex;flex-wrap:wrap;gap:var(--s-2);align-items:baseline}
+.risk-group__count{font-size:var(--fs-help);color:var(--ink-muted)}
+
+/* --- מה זה אומר בפועל --------------------------------------------------- */
+.risk-mean{display:flex;flex-direction:column;gap:var(--s-3)}
+.risk-mean__ev{
+  font-size:var(--fs-help);color:var(--ink);line-height:var(--lh-help);
+  background:var(--surface-2);border-radius:var(--r-sm);padding:var(--s-3);
+}
+.risk-mean__ifnot{
+  display:flex;gap:var(--s-2);align-items:flex-start;
+  font-size:var(--fs-help);line-height:var(--lh-help);color:var(--warn-ink);
+  background:var(--warn-bg);border:1px solid var(--warn-line);
+  border-radius:var(--r-sm);padding:var(--s-3);
+}
+
+/* --- מה כבר טופל -------------------------------------------------------- */
+.risk-log{list-style:none;display:flex;flex-direction:column;gap:var(--s-3)}
+.risk-log li{
+  display:flex;flex-direction:column;gap:var(--s-1);
+  padding-inline-start:var(--s-4);
+  border-inline-start:2px solid var(--line);
+}
+.risk-log__top{display:flex;flex-wrap:wrap;gap:var(--s-2);align-items:baseline}
+.risk-log__act{font-weight:var(--fw-medium);color:var(--ink)}
+.risk-log__who{font-size:var(--fs-help);color:var(--ink-muted)}
+.risk-log__when{font-size:var(--fs-badge);color:var(--ink-muted);direction:ltr;unicode-bidi:isolate}
+/* השפעה צפויה — טקסט עברי מעורב במספרים, ולכן RTL. הבידוד יושב על המספר עצמו. */
+.risk-impact{font-size:var(--fs-help);font-weight:var(--fw-medium);color:var(--ink)}
+.risk-log__detail{font-size:var(--fs-help);color:var(--ink-muted);line-height:var(--lh-help)}
+
+/* --- שלד הטעינה: לא מהבהב מתחת ל-400ms (UX-1.4) ------------------------- */
+.risk-skels{opacity:0;animation:risk-skel-in var(--dur-fast) var(--ease) 400ms forwards}
+@keyframes risk-skel-in{to{opacity:1}}
+
+/* --- כללי --------------------------------------------------------------- */
+.risk-banner{max-inline-size:var(--page-max);margin-inline:auto}
+.risk-bannerwrap{padding-inline:var(--pad-page);padding-block:var(--s-3)}
+.risk-nextrow{display:flex;flex-direction:column;gap:var(--s-2)}
+
+@media (min-width:640px){
+  .risk-bannerwrap{padding-inline:var(--pad-page-lg)}
+  .risk-nextrow{flex-direction:row;flex-wrap:wrap;align-items:center;gap:var(--touch-gap)}
+}
+
+/* UX-8.0 — הבלוק חוזר גם כאן, כי בקובץ הזה יש animation משלו */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important; animation-iteration-count:1 !important;
+    transition-duration:.01ms !important; scroll-behavior:auto !important;
+  }
+  .risk-skels{opacity:1}
+}
+</style>
+</head>
+<body>
+
+<a class="granta-skip" href="#main">דילוג לתוכן</a>
+
+<header class="granta-topbar">
+  <div class="granta-topbar__inner">
+    <a class="granta-brand" href="index.html">גְּרַנְטָה<span class="granta-brand__dot" aria-hidden="true">.</span></a>
+    <nav aria-label="פורטל העמותה">
+      <ul class="granta-nav">
+        <li><a class="granta-navlink" href="dashboard.html">לוח מצב</a></li>
+        <li><a class="granta-navlink" href="approvals.html">אישורים</a></li>
+        <li><a class="granta-navlink" href="risk.html" aria-current="page">סיכון והשעיות</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<!-- 🔴 באנר נתוני הדגמה — קבוע בראש המסך, מחוץ למצבי המסך.
+     נשאר גלוי גם בטעינה וגם בשגיאה. -->
+<div class="risk-bannerwrap">
+  <div class="granta-alert granta-alert--info risk-banner">
+    <span class="granta-alert__icon" aria-hidden="true">◆</span>
+    <div class="granta-alert__body">
+      <span class="granta-alert__title">נתוני הדגמה</span>
+      <p>המסך מציג עמותה בדויה בשם «עמותת אור לדרך». כל המספרים כאן הם דוגמה בלבד — לא נתונים של עמותה אמיתית.</p>
+    </div>
+  </div>
+</div>
+
+<section class="granta-hero">
+  <div class="granta-hero__inner">
+    <span class="granta-kicker">פורטל העמותה · מסך הסיכון</span>
+    <h1>סיכון והשעיות<span class="granta-hero__dot" aria-hidden="true">.</span></h1>
+    <p>המסך הזה עונה על שאלה אחת: האם החשבון שלכם בסכנה, ולמה. <strong>השעיה</strong> (account suspension) פירושה שגוגל מפסיקה את <strong>המענק</strong> — עד 10,000 דולר בחודש לפרסום בגוגל, בלי תשלום מכיסכם — עד שהתקלה מתוקנת.</p>
+  </div>
+</section>
+
+<main id="main" class="granta-page" tabindex="-1">
+
+  <!-- ======================================================================
+       מיכל המצבים. בכל רגע בדיוק פאנל אחד גלוי (UX-1.2):
+         document.querySelectorAll('#screen > [data-state]:not([hidden])').length === 1
+       ====================================================================== -->
+  <div id="screen" data-phase="loading">
+
+    <!-- ============================================================ טעינה -->
+    <div data-state="loading" id="st-loading" aria-busy="true" aria-live="polite">
+      <div class="granta-skels risk-skels">
+        <span class="granta-skel granta-skel--title"></span>
+        <span class="granta-skel granta-skel--block"></span>
+        <span class="granta-skel granta-skel--short"></span>
+        <span class="granta-skel granta-skel--block"></span>
+        <span class="granta-skel"></span>
+        <span class="granta-skel"></span>
+        <span class="granta-skel"></span>
+      </div>
+    </div>
+
+    <!-- =============================================================== ריק -->
+    <div data-state="empty" class="granta-state granta-state--empty" hidden>
+      <h2>כל הבדיקות עברו</h2>
+      <p>לא נמצאה הפרה של כללי המענק. הבדיקה רצה כל יום, ואם משהו ישתנה — תראו זאת כאן.</p>
+      <a class="granta-btn granta-btn--secondary" href="dashboard.html">חזרה ללוח המצב</a>
+    </div>
+
+    <!-- ============================================================= שגיאה -->
+    <div data-state="error" class="granta-state granta-state--error" role="alert" tabindex="-1" hidden>
+      <span class="granta-state__icon" aria-hidden="true">✖</span>
+      <p id="err-what">לא הצלחנו לטעון את נתוני החשבון.</p>
+      <p class="granta-help">בדקו את החיבור לאינטרנט ונסו שוב. אם זה חוזר — כתבו לנו וצרפו את קוד התקלה.</p>
+      <p class="granta-help">קוד תקלה: <span class="granta-code" id="err-code">GR-DEMO-000</span></p>
+      <button type="button" class="granta-btn granta-btn--secondary" id="err-retry">נסו שוב</button>
+      <small class="granta-state__detail" id="err-raw"></small>
+    </div>
+
+    <!-- ============================================================== מוכן -->
+    <div data-state="ready" hidden>
+
+      <!-- 1 · כותרת הסיכון — האלמנט האדום היחיד -->
+      <section class="risk-alarm" aria-labelledby="h-alarm">
+        <div class="granta-btnrow">
+          <span class="granta-sev risk-sev--fail"><span class="granta-sev__mark" aria-hidden="true">✖</span>הפרה פתוחה</span>
+          <span class="risk-code" id="alarm-code"></span>
+        </div>
+        <h2 id="h-alarm">נדרש תיקון עד סוף החודש</h2>
+        <p class="risk-alarm__days">
+          <span class="granta-hero-num risk-alarm__num" id="alarm-days"></span>
+          <span class="risk-alarm__unit">ימים נותרו עד סגירת החודש</span>
+        </p>
+        <p id="alarm-why"></p>
+        <ul class="risk-alarm__facts">
+          <li><span class="risk-alarm__k">אחוז ההקלקה החודש</span><span class="risk-alarm__v" id="alarm-ctr"></span></li>
+          <li><span class="risk-alarm__k">צפי לסוף החודש</span><span class="risk-alarm__v" id="alarm-proj"></span></li>
+          <li><span class="risk-alarm__k">חודשים רצופים מתחת לרף</span><span class="risk-alarm__v" id="alarm-months"></span></li>
+        </ul>
+        <p class="granta-help"><strong>אחוז ההקלקה (CTR)</strong> — מתוך כל 100 אנשים שראו את המודעה שלכם בגוגל, כמה מהם לחצו עליה. גוגל דורשת לפחות 5 מכל 100.</p>
+      </section>
+
+      <!-- 2 · מגמה -->
+      <section class="granta-section" aria-labelledby="h-trend">
+        <h2 id="h-trend">איך הגענו לכאן</h2>
+        <div class="granta-card">
+          <figure class="risk-figure">
+            <div class="risk-plot" id="trend-plot" aria-hidden="true"></div>
+            <ul class="risk-xaxis" id="trend-axis" aria-hidden="true"></ul>
+            <figcaption class="granta-help" id="trend-cap"></figcaption>
+            <p class="sr-only" id="trend-sr"></p>
+          </figure>
+        </div>
+      </section>
+
+      <!-- 3 · הצ'קליסט -->
+      <section class="granta-section" aria-labelledby="h-check">
+        <h2 id="h-check">צ'קליסט המדיניות</h2>
+        <p class="granta-lede" id="check-lede"></p>
+        <div class="risk-groups" id="check-groups"></div>
+      </section>
+
+      <!-- 4 · מה זה אומר בפועל -->
+      <section class="granta-section" aria-labelledby="h-mean">
+        <h2 id="h-mean">מה זה אומר בפועל</h2>
+        <p class="granta-lede">שתי השורות שלא עומדות בכללים, ומה קורה אם לא מטפלים בהן.</p>
+        <div class="granta-cards" id="mean-cards"></div>
+      </section>
+
+      <!-- 5 · מה כבר טופל -->
+      <section class="granta-section" aria-labelledby="h-done">
+        <h2 id="h-done">מה כבר טופל</h2>
+        <p class="granta-lede" id="done-lede"></p>
+        <div class="granta-card">
+          <ul class="risk-log" id="done-log"></ul>
+        </div>
+      </section>
+
+      <!-- 6 · לאן ממשיכים -->
+      <section class="granta-section" aria-labelledby="h-next">
+        <h2 id="h-next">מה עושים עכשיו</h2>
+        <div class="granta-card granta-card--accent">
+          <h3 id="next-title">שתי ההמלצות שיתקנו את זה</h3>
+          <ul class="risk-log" id="next-list"></ul>
+          <div class="risk-nextrow granta-card__foot">
+            <a class="granta-btn granta-btn--primary" href="approvals.html">למסך האישורים</a>
+            <a class="granta-btn granta-btn--secondary" href="dashboard.html">ללוח המצב</a>
+          </div>
+          <p class="granta-help">שום שינוי לא מבוצע בחשבון בלי אישור שלכם. האישור הסופי בידי Google בלבד.</p>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</main>
+
+<footer class="granta-footer">
+  <p>גְּרַנְטָה · מסך הדגמה B4. הנתונים מומצאים; «עמותת אור לדרך» אינה קיימת.</p>
+</footer>
+
+<script>
+(function(){
+  'use strict';
+
+  var DATA_URL = '_data/demo-account.json';
+  var SKEL_MS = 400;      /* UX-1.4 */
+  var TIMEOUT_MS = 10000; /* UX-1.6 */
+
+  var screenEl = document.getElementById('screen');
+  var panels = screenEl.querySelectorAll(':scope > [data-state]');
+  var retryBtn = document.getElementById('err-retry');
+  var timeoutId = null;
+  var userInitiated = false;
+
+  /* ---------- כלי עזר ---------- */
+  function $(id){ return document.getElementById(id); }
+  function esc(s){
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  /* UX-3.6 — כל מספר בבידוד דו-כיווני */
+  function num(v){ return '<span class="granta-num">' + esc(v) + '</span>'; }
+  function isoDate(s){
+    var m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (!m) return esc(s);
+    return num(Number(m[3]) + '.' + Number(m[2]) + '.' + m[1]);
+  }
+  function stamp(s){
+    var m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}:\d{2})/);
+    if (!m) return esc(s);
+    return esc(Number(m[3]) + '.' + Number(m[2]) + '.' + m[1] + ' · ' + m[4]);
+  }
+  var MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+  var MONTHS_SHORT = ['ינו','פבר','מרץ','אפר','מאי','יונ','יול','אוג','ספט','אוק','נוב','דצמ'];
+  function monthName(ym, short){
+    var m = String(ym || '').match(/^(\d{4})-(\d{2})$/);
+    if (!m) return esc(ym);
+    var i = Number(m[2]) - 1;
+    return (short ? MONTHS_SHORT[i] : MONTHS[i]) || esc(ym);
+  }
+
+  /* מצב יחיד גלוי — UX-1.2 */
+  function setPhase(p){
+    screenEl.dataset.phase = p;
+    for (var i = 0; i < panels.length; i++){
+      panels[i].hidden = (panels[i].dataset.state !== p);
+    }
+    var load = $('st-loading');
+    if (load) load.setAttribute('aria-busy', p === 'loading' ? 'true' : 'false');
+  }
+
+  function showError(what, code, raw){
+    if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
+    $('err-what').textContent = what;
+    $('err-code').textContent = code;
+    /* UX-1.12 — הגולמי לקונסולה ולאלמנט מוסתר, לא ללקוחה */
+    $('err-raw').textContent = raw ? String(raw) : '';
+    if (raw) { try { console.error('[granta:B4]', raw); } catch (e) {} }
+    setPhase('error');
+    if (userInitiated){
+      var box = screenEl.querySelector('[data-state="error"]');
+      if (box) box.focus();
+    }
+  }
+
+  /* ================================================================ טעינה */
+  function load(){
+    setPhase('loading');
+    if (timeoutId) clearTimeout(timeoutId);
+    var done = false;
+    timeoutId = setTimeout(function(){
+      if (done) return;
+      done = true;
+      showError('זה לוקח יותר מדי זמן.', 'GR-DEMO-TIMEOUT', 'fetch timeout after ' + TIMEOUT_MS + 'ms');
+    }, TIMEOUT_MS);
+
+    fetch(DATA_URL, { cache: 'no-store' })
+      .then(function(res){
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function(data){
+        if (done) return;
+        done = true;
+        clearTimeout(timeoutId); timeoutId = null;
+        if (!data || !data.ctr || !Array.isArray(data.compliance)){
+          showError('הנתונים שהתקבלו אינם שלמים.', 'GR-DEMO-DATA', 'missing ctr/compliance');
+          return;
+        }
+        if (data.compliance.length === 0){ setPhase('empty'); return; }
+        try {
+          render(data);
+          setPhase('ready');
+        } catch (e){
+          showError('משהו אצלנו נתקע בהצגת הנתונים.', 'GR-DEMO-RENDER', e && e.message);
+        }
+      })
+      .catch(function(e){
+        if (done) return;
+        done = true;
+        clearTimeout(timeoutId); timeoutId = null;
+        showError('לא הצלחנו להתחבר לנתוני החשבון.', 'GR-DEMO-FETCH', e && e.message);
+      });
+  }
+
+  /* UX-1.13 — "נסו שוב" יורה את הבקשה מחדש בפועל */
+  retryBtn.addEventListener('click', function(){ userInitiated = true; load(); });
+
+  /* ================================================================ תצוגה */
+
+  /* קוד כלל → קטגוריית ממצא, כדי לחבר שורת צ'קליסט לממצא המתאים */
+  var CODE_CAT = { ELIG:'ELIG', PERF:'PERF', STR:'STRUCT', KW:'KEYWORD', BUD:'BUDGET', UPK:'UPKEEP' };
+  function catOf(code){
+    var seg = String(code || '').split('-')[1];
+    return CODE_CAT[seg] || null;
+  }
+  function findingFor(code, findings){
+    var i, cat = catOf(code);
+    for (i = 0; i < findings.length; i++) if (findings[i].rule_code === code) return findings[i];
+    for (i = 0; i < findings.length; i++) if (cat && findings[i].category === cat) return findings[i];
+    return null;
+  }
+  function actionFor(findingId, actions){
+    for (var i = 0; i < actions.length; i++) if (actions[i].finding_id === findingId) return actions[i];
+    return null;
+  }
+
+  /* UX-2.1 — הסבר למונח במופע הראשון שלו במסך.
+     השעיה והמענק מוסברים בכותרת העליונה; אחוז ההקלקה בכרטיס האדום;
+     שאר המונחים מוסברים בשורה שבה הם מופיעים לראשונה. */
+  var GLOSS = {
+    'GG-KW-02':  '<strong>ציון איכות (1–10)</strong> — הציון שגוגל נותנת לכל מילה: כמה המודעה שלכם מתאימה למה שהאדם באמת חיפש. 1–2 הוא הציון הנמוך ביותר.',
+    'GG-KW-01':  '<strong>מילת מפתח</strong> — מה שאדם מקליד בגוגל וגורם למודעה שלכם להופיע.',
+    'GG-STR-01': '<strong>קבוצת מודעות</strong> — אוסף מודעות שמכוונות לאותו נושא.',
+    'GG-STR-03': '<strong>הרחבות קישור</strong> (sitelinks) — הקישורים הנוספים שמופיעים מתחת למודעה ומובילים לעמודים פנימיים באתר.',
+    'GG-PERF-02':'<strong>מעקב המרות</strong> — הקוד באתר שמאפשר לראות מי באמת השאיר פרטים או תרם, ולא רק מי נכנס.',
+    'GG-ELIG-05':'<strong>SSL</strong> — התעודה שמאפשרת לאתר לעבוד בכתובת מאובטחת (https). בלעדיה גוגל פוסלת את החשבון.'
+  };
+
+  var STATE_UI = {
+    fail: { mark:'✖', word:'הפרה',  sev:'risk-sev--fail',    item:'risk-item--fail', pre:'מה מצאנו: ',
+            title:'לא עומדות בכללים', lede:'כאן צריך לטפל.' },
+    warn: { mark:'⚠', word:'סיכון', sev:'granta-sev--high',  item:'risk-item--warn', pre:'מה מצאנו: ',
+            title:'לבדיקה',           lede:'עוד לא הפרה, אבל כדאי לטפל לפני שזה הופך לאחת.' },
+    pass: { mark:'✔', word:'עומד',  sev:'granta-sev--ok',    item:'risk-item--pass', pre:'נבדק: ',
+            title:'עומדות בכללים',    lede:'נבדקו ועברו.' }
+  };
+
+  /* UX-2.4 — שורה שההערה בה היא מספר בלבד מקבלת את ההשוואה מהמאגר עצמו.
+     מתמלא ב-render(); אין כאן מספר שלא הגיע מ-demo-account.json. */
+  var CONTEXT = {};
+  var ORDER = { fail:0, warn:1, pass:2 };
+
+  function render(d){
+    CONTEXT = {};
+    if (d.budget && d.budget.note_he) CONTEXT['GG-BUD-01'] = d.budget.note_he;
+    renderAlarm(d);
+    renderTrend(d.ctr);
+    renderChecklist(d.compliance);
+    renderMeaning(d.compliance, d.findings || [], d.actions || []);
+    renderAudit(d.audit || []);
+    renderNext(d.actions || []);
+  }
+
+  /* --- 1 · כותרת הסיכון --- */
+  function renderAlarm(d){
+    var c = d.ctr;
+    var perf = null, i;
+    for (i = 0; i < d.compliance.length; i++){
+      if (d.compliance[i].state === 'fail' && catOf(d.compliance[i].code) === 'PERF'){ perf = d.compliance[i]; break; }
+    }
+    $('alarm-code').textContent = perf ? perf.code : 'GG-PERF-01';
+    $('alarm-days').textContent = c.days_to_risk;
+    $('alarm-why').innerHTML = esc(c.risk_he);
+    $('alarm-ctr').innerHTML = num(c.current_pct + '%') + ' — מתחת לרף ' + num(c.threshold_pct + '%') + ' שגוגל דורשת';
+    $('alarm-proj').innerHTML = num(c.projected_month_end_pct + '%') + ' — עדיין מתחת לרף';
+    $('alarm-months').innerHTML = num(c.consecutive_months_below) +
+      (c.consecutive_months_below === 1
+        ? ' — החודש הראשון. חודש שני רצוף הוא זה שמסכן את החשבון.'
+        : ' מתוך 2 שמסכנים את החשבון.');
+  }
+
+  /* --- 2 · מגמה --- */
+  function renderTrend(c){
+    var hist = Array.isArray(c.history) ? c.history : [];
+    if (!hist.length) return;
+    var vals = hist.map(function(h){ return Number(h.pct); });
+    var top = Math.max.apply(null, vals.concat([Number(c.threshold_pct)])) * 1.2;
+    var plot = [], axis = [], sr = [];
+    hist.forEach(function(h, i){
+      var isNow = (i === hist.length - 1);
+      plot.push('<span class="risk-bar' + (isNow ? ' risk-bar--now' : '') + '">' +
+                '<span class="risk-bar__fill" style="--h:' + (Number(h.pct) / top * 100).toFixed(1) + '"></span></span>');
+      axis.push('<li' + (isNow ? ' class="is-now"' : '') + '>' +
+                '<span class="risk-xaxis__v granta-num">' + esc(h.pct) + '%</span>' +
+                '<span class="risk-xaxis__m">' + monthName(h.month, true) + '</span></li>');
+      sr.push(monthName(h.month, false) + ' ' + h.pct + '%');
+    });
+    plot.push('<span class="risk-plot__thr" style="--t:' + (Number(c.threshold_pct) / top * 100).toFixed(1) + '"></span>');
+    $('trend-plot').innerHTML = plot.join('');
+    $('trend-axis').innerHTML = axis.join('');
+
+    var first = Number(hist[0].pct), last = Number(hist[hist.length - 1].pct);
+    var diff = Math.abs(first - last).toFixed(1);
+    var arrow = last < first ? '↓' : '↑';
+    /* UX-5.5 — מגמה בחץ ובמספר, לא בצבע */
+    $('trend-cap').innerHTML =
+      'אחוז ההקלקה יורד חודש אחרי חודש: <span class="granta-trend">' + arrow + ' ' + esc(diff) + '</span> נקודות מאז ' +
+      monthName(hist[0].month, false) + '. הקו המקווקו הוא הרף של ' + num(c.threshold_pct + '%') + ' שגוגל דורשת.';
+    $('trend-sr').textContent = 'אחוז ההקלקה בשישה החודשים האחרונים, מול רף של ' + c.threshold_pct + ' אחוזים: ' + sr.join(', ') + '.';
+  }
+
+  /* --- 3 · הצ'קליסט --- */
+  function renderChecklist(rows){
+    var sorted = rows.slice().sort(function(a, b){
+      return (ORDER[a.state] === undefined ? 9 : ORDER[a.state]) - (ORDER[b.state] === undefined ? 9 : ORDER[b.state]);
+    });
+    var counts = { fail:0, warn:0, pass:0 };
+    sorted.forEach(function(r){ if (counts[r.state] !== undefined) counts[r.state]++; });
+
+    $('check-lede').innerHTML =
+      'עברנו על ' + num(rows.length) + ' כללי מדיניות של גוגל. ' +
+      num(counts.fail) + ' לא עומדים בכללים, ' + num(counts.warn) + ' לבדיקה, ' +
+      num(counts.pass) + ' תקינים. מה ששבור מופיע ראשון.';
+
+    var html = '';
+    ['fail','warn','pass'].forEach(function(state){
+      var group = sorted.filter(function(r){ return r.state === state; });
+      if (!group.length) return;
+      var ui = STATE_UI[state];
+      html += '<section class="risk-group" aria-labelledby="grp-' + state + '">' +
+              '<div class="risk-group__h">' +
+              '<h3 id="grp-' + state + '">' + esc(ui.title) + '</h3>' +
+              '<span class="risk-group__count">' + num(group.length) + ' מתוך ' + num(rows.length) + ' · ' + esc(ui.lede) + '</span>' +
+              '</div><ul class="risk-list">';
+      group.forEach(function(r){
+        html += '<li class="risk-item ' + ui.item + '">' +
+                '<div class="risk-item__head">' +
+                '<span class="granta-sev ' + ui.sev + '">' +
+                '<span class="granta-sev__mark" aria-hidden="true">' + ui.mark + '</span>' + esc(ui.word) + '</span>' +
+                '<span class="risk-item__name">' + esc(r.label_he) + '</span>' +
+                '<span class="risk-code">' + esc(r.code) + '</span>' +
+                '</div>' +
+                '<p class="risk-item__note">' + esc(ui.pre) + esc(r.note_he) +
+                (CONTEXT[r.code] ? ' · ' + esc(CONTEXT[r.code]) : '') + '</p>' +
+                (GLOSS[r.code] ? '<span class="risk-gloss">' + GLOSS[r.code] + '</span>' : '') +
+                '</li>';
+      });
+      html += '</ul></section>';
+    });
+    $('check-groups').innerHTML = html;
+  }
+
+  /* --- 4 · מה זה אומר בפועל --- */
+  function renderMeaning(rows, findings, actions){
+    var fails = rows.filter(function(r){ return r.state === 'fail'; });
+    var html = '';
+    fails.forEach(function(r){
+      var f = findingFor(r.code, findings);
+      if (!f) return;
+      var a = actionFor(f.id, actions);
+      html += '<article class="granta-card risk-mean">' +
+              '<span class="granta-card__label">' + esc(r.label_he) + ' · <span class="risk-code">' + esc(r.code) + '</span></span>' +
+              '<h3>' + esc(f.title_he) + '</h3>' +
+              '<p>' + esc(f.explain_he) + '</p>' +
+              (f.evidence_he ? '<p class="risk-mean__ev">מה ראינו בחשבון: ' + esc(f.evidence_he) + '</p>' : '') +
+              (a && a.if_not_he && a.if_not_he !== '—'
+                ? '<p class="risk-mean__ifnot"><span aria-hidden="true">⚠</span><span>אם לא נטפל: ' + esc(a.if_not_he) + '</span></p>'
+                : '') +
+              '<p class="granta-help">נמצא בסריקה של ' + isoDate(f.detected_at) + '.</p>' +
+              '</article>';
+    });
+    /* חשיפות וקליקים מופיעים כאן לראשונה במסך — UX-2.1 */
+    html += '<p class="granta-help"><strong>חשיפות</strong> — כמה פעמים המודעה הוצגה בגוגל. <strong>קליקים</strong> — כמה אנשים לחצו עליה והגיעו לאתר שלכם. אחוז ההקלקה הוא היחס ביניהם.</p>';
+    $('mean-cards').innerHTML = html;
+  }
+
+  /* --- 5 · מה כבר טופל --- */
+  function renderAudit(log){
+    $('done-lede').innerHTML =
+      'המערכת לא רק מתריעה. כל שינוי בחשבון נרשם — מי, מה ומתי. אלה ' + num(log.length) + ' הפעולות האחרונות.';
+    $('done-log').innerHTML = log.map(function(e){
+      return '<li>' +
+             '<div class="risk-log__top">' +
+             '<span class="risk-log__act">' + esc(e.action_he) + '</span>' +
+             '<span class="risk-log__who">' + esc(e.actor_he) + '</span>' +
+             '<span class="risk-log__when">' + stamp(e.at) + '</span>' +
+             '</div>' +
+             '<p class="risk-log__detail">' + esc(e.detail_he) + '</p>' +
+             '</li>';
+    }).join('');
+  }
+
+  /* --- 6 · לאן ממשיכים --- */
+  function renderNext(actions){
+    var open = actions.filter(function(a){ return a.state === 'awaiting_approval'; });
+    $('next-title').textContent = open.length === 2
+      ? 'שתי ההמלצות שיתקנו את זה'
+      : 'ההמלצות שממתינות לכם';
+    $('next-list').innerHTML = open.map(function(a){
+      return '<li>' +
+             '<div class="risk-log__top"><span class="risk-log__act">' + esc(a.title_he) + '</span>' +
+             '<span class="risk-impact">' + esc(a.impact_he) + '</span></div>' +
+             '<p class="risk-log__detail">' + esc(a.why_he) + '</p>' +
+             '</li>';
+    }).join('');
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>
