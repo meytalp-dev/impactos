@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>גְּרַנְטָה · חדר הבקרה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&family=Rubik:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#6B22B5; --glow:#FF56D3; --coral:#FB55B1;
+  --ink:#1C152F; --muted:#655D82;
+  --sec:#FFEEFF; --acc:#FFE5FD; --soft:#FDF1FC;
+  --line:#E7D8EB; --ok:#28BC5E; --bad:#FF3131; --warn:#E8890C;
+  --paper:#fff; --bg:#FBF8FC; --r:14px;
+  --l-arch:#6B22B5; --l-data:#0E7490; --l-fn:#B45309;
+  --l-ui:#FF56D3; --l-ux:#DB2777; --l-content:#15803D; --l-ops:#475569;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:Heebo,system-ui,sans-serif;line-height:1.6;font-size:15px}
+button{font-family:inherit;cursor:pointer}
+code{font-family:ui-monospace,Consolas,monospace;font-size:.85em;background:var(--soft);border:1px solid var(--line);border-radius:5px;padding:0 5px;color:var(--primary);direction:ltr;display:inline-block}
+
+/* ── top ── */
+.top{background:linear-gradient(135deg,var(--primary),#9B2FC4 60%,var(--glow));color:#fff;padding:22px 26px}
+.top .in{max-width:1280px;margin:0 auto;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.top h1{font-family:Rubik;font-size:1.5rem;font-weight:900;line-height:1.2}
+.top h1 small{display:block;font-size:.72rem;font-weight:500;opacity:.8;letter-spacing:.1em;text-transform:uppercase}
+.kpis{display:flex;gap:8px;margin-inline-start:auto;flex-wrap:wrap}
+.kpi{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.26);border-radius:11px;padding:6px 14px;text-align:center;min-width:66px}
+.kpi b{display:block;font-family:Rubik;font-size:1.25rem;font-weight:900;line-height:1.1}
+.kpi span{font-size:.7rem;opacity:.85}
+
+/* ── tabs ── */
+.tabs{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30}
+.tabs .in{max-width:1280px;margin:0 auto;padding:0 26px;display:flex;gap:2px;flex-wrap:wrap}
+.tab{background:none;border:none;padding:13px 15px;font-size:.9rem;font-weight:600;color:var(--muted);border-bottom:3px solid transparent}
+.tab:hover{color:var(--primary)}
+.tab.on{color:var(--primary);border-bottom-color:var(--glow)}
+
+.wrap{max-width:1280px;margin:0 auto;padding:24px 26px 90px}
+.pane{display:none}.pane.on{display:block}
+
+h2{font-family:Rubik;font-size:1.2rem;font-weight:800;margin:0 0 4px}
+.sub{color:var(--muted);font-size:.9rem;margin-bottom:16px;max-width:74ch}
+h3{font-family:Rubik;font-size:1rem;font-weight:700;color:var(--primary);margin:24px 0 8px}
+
+/* ── controls ── */
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin-bottom:18px}
+.bar label{font-size:.85rem;font-weight:600;color:var(--muted)}
+select,input[type=text]{font-family:inherit;font-size:.86rem;border:1px solid var(--line);border-radius:9px;padding:6px 10px;background:#fff;color:var(--ink)}
+.btn{background:var(--primary);color:#fff;border:none;border-radius:9px;padding:7px 15px;font-size:.85rem;font-weight:700}
+.btn:hover{background:#571a94}
+.btn.ghost{background:#fff;color:var(--primary);border:1px solid var(--line)}
+.btn.ghost:hover{background:var(--sec)}
+.btn.sm{padding:4px 11px;font-size:.78rem;border-radius:7px}
+
+/* ── wave ── */
+.wave{background:var(--paper);border:2px solid var(--glow);border-radius:var(--r);padding:18px 20px;margin-bottom:18px;box-shadow:0 6px 26px -14px rgba(255,86,211,.6)}
+.wave h3{margin:0 0 3px;color:var(--ink);font-size:1.1rem}
+.wave .hint{font-size:.85rem;color:var(--muted);margin-bottom:14px}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.slot{border:1px solid var(--line);border-radius:12px;padding:13px 15px;background:linear-gradient(160deg,#fff,var(--soft))}
+.slot .ln{display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap}
+.slot h4{font-family:Rubik;font-size:.95rem;font-weight:800;margin:0}
+.slot p{font-size:.83rem;color:var(--muted);margin:5px 0 9px}
+.slot .own{font-size:.75rem;color:var(--muted);margin-bottom:9px}
+.slot .own b{color:var(--ink)}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+
+.tag{font-size:.68rem;font-weight:800;font-family:Rubik;border-radius:5px;padding:1px 7px;color:#fff;letter-spacing:.03em}
+.pill{font-size:.72rem;font-weight:700;border-radius:999px;padding:1px 9px;background:var(--sec);color:var(--primary);border:1px solid var(--line)}
+
+/* ── board ── */
+.cols{display:grid;grid-template-columns:repeat(5,minmax(200px,1fr));gap:12px;align-items:start}
+@media(max-width:1100px){.cols{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.cols{grid-template-columns:1fr}}
+.col{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:11px}
+.col>h4{font-family:Rubik;font-size:.85rem;font-weight:800;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center;color:var(--muted)}
+.col>h4 em{font-style:normal;background:var(--sec);color:var(--primary);border-radius:999px;padding:0 8px;font-size:.75rem}
+.card{border:1px solid var(--line);border-radius:10px;padding:10px 11px;background:#fff;margin-bottom:8px;border-inline-start:4px solid var(--line)}
+.card:hover{box-shadow:0 3px 12px -6px rgba(107,34,181,.4)}
+.card .id{font-family:Rubik;font-size:.7rem;font-weight:900;color:var(--muted)}
+.card h5{font-size:.87rem;font-weight:700;margin:2px 0 6px;line-height:1.4}
+.card .meta{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.card .blk{font-size:.72rem;color:#B01212;background:#FFEBEB;border-radius:5px;padding:2px 7px;margin-top:6px;display:block}
+
+/* ── table ── */
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:#fff}
+table{border-collapse:collapse;width:100%;font-size:.86rem;min-width:560px}
+th{background:var(--soft);text-align:right;font-family:Rubik;font-weight:700;font-size:.78rem;color:var(--primary);padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid #F4EDF5;vertical-align:top}
+tr:last-child td{border-bottom:none}
+
+.note{border-radius:var(--r);padding:14px 16px;margin:14px 0;border:1px solid;font-size:.9rem}
+.note b{display:block;font-family:Rubik;margin-bottom:3px}
+.note.warn{background:#FFF7EC;border-color:#F5D9AE;color:#6B4A12}
+.note.stop{background:#FFF0F0;border-color:#FFC9C9;color:#8A1F1F}
+.note.tip{background:var(--sec);border-color:var(--line);color:var(--primary)}
+.note.ok{background:#EFFAF2;border-color:#BCE8CC;color:#146B33}
+
+/* ── charter ── */
+.laws{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.law{border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;background:#fff;position:relative;padding-inline-start:52px}
+.law::before{content:attr(data-n);position:absolute;inset-inline-start:14px;top:14px;width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--primary),var(--glow));color:#fff;display:grid;place-items:center;font-family:Rubik;font-weight:900;font-size:.8rem}
+.law h4{font-family:Rubik;font-size:.92rem;font-weight:800;margin-bottom:3px}
+.law p{font-size:.84rem;color:var(--muted)}
+
+/* ── modal ── */
+.mask{position:fixed;inset:0;background:rgba(28,21,47,.55);display:none;z-index:100;padding:24px;overflow-y:auto}
+.mask.on{display:block}
+.modal{max-width:860px;margin:0 auto;background:#fff;border-radius:18px;padding:24px 26px}
+.modal h3{margin:0 0 3px;font-size:1.15rem;color:var(--ink)}
+.modal .x{position:sticky;top:0;float:left;background:none;border:none;font-size:1.5rem;color:var(--muted);line-height:1}
+textarea{width:100%;font-family:ui-monospace,Consolas,monospace;font-size:.78rem;line-height:1.6;border:1px solid var(--line);border-radius:10px;padding:13px;background:#FCFAFD;color:var(--ink);direction:ltr;text-align:left;resize:vertical}
+.copied{color:var(--ok);font-weight:700;font-size:.82rem}
+footer{text-align:center;color:var(--muted);font-size:.82rem;padding:26px;border-top:1px solid var(--line);margin-top:40px}
+</style>
+</head>
+<body>
+
+<div class="top"><div class="in">
+  <h1><small>Impact OS · Orchestration</small>גְּרַנְטָה · חדר הבקרה</h1>
+  <div class="kpis" id="kpis"></div>
+</div></div>
+
+<div class="tabs"><div class="in">
+  <button class="tab on" data-p="wave">🎛️ גל שיגור</button>
+  <button class="tab" data-p="board">📋 לוח משימות</button>
+  <button class="tab" data-p="own">🗂️ מפת בעלות</button>
+  <button class="tab" data-p="law">⚖️ חוקת התזמורת</button>
+  <button class="tab" data-p="rep">📨 דיווחים וסיכום</button>
+</div></div>
+
+<div class="wrap">
+
+<!-- ══ WAVE ══ -->
+<div class="pane on" id="p-wave">
+  <h2>גל השיגור</h2>
+  <p class="sub">התזמורת מחשבת מי יכול לרוץ <strong>עכשיו ובמקביל</strong> בלי להתנגש: תלויות מסופקות + בעלות על קבצים זרה לחלוטין. כל משימה בגל = VS Code נפרד.</p>
+
+  <div class="bar">
+    <label>שער שלב</label>
+    <select id="gate">
+      <option value="0">שלב 0 · משפך</option>
+      <option value="1">שלב 1 · המנוע</option>
+      <option value="all">בלי שער — הכול</option>
+    </select>
+    <label>רוחב גל</label>
+    <select id="width"><option>2</option><option selected>3</option><option>4</option><option>6</option></select>
+    <button class="btn" id="dispatch">שגר את הגל</button>
+    <button class="btn ghost" id="allboot">העתק את כל ה-bootstraps</button>
+    <span style="margin-inline-start:auto"></span>
+    <button class="btn ghost sm" id="exp">ייצוא מצב</button>
+    <button class="btn ghost sm" id="imp">ייבוא</button>
+    <button class="btn ghost sm" id="rst">איפוס</button>
+  </div>
+
+  <div id="conflictBox"></div>
+  <div class="wave"><h3 id="waveTitle"></h3><div class="hint" id="waveHint"></div><div class="slots" id="slots"></div></div>
+
+  <h3>ממתינות — ולמה עוד לא</h3>
+  <div class="tw"><table>
+    <thead><tr><th>#</th><th>משימה</th><th>נתיב</th><th>חסום ב</th></tr></thead>
+    <tbody id="blocked"></tbody>
+  </table></div>
+</div>
+
+<!-- ══ BOARD ══ -->
+<div class="pane" id="p-board">
+  <h2>לוח משימות</h2>
+  <p class="sub">30 משימות, שני שלבים. לחצי כרטיס לפתיחת ה-bootstrap ולשינוי סטטוס.</p>
+  <div class="bar">
+    <label>נתיב</label>
+    <select id="flane"><option value="">הכול</option></select>
+    <label>שלב</label>
+    <select id="fphase"><option value="">הכול</option><option value="0">0 · משפך</option><option value="1">1 · המנוע</option></select>
+    <input type="text" id="fq" placeholder="חיפוש…" style="min-width:180px">
+  </div>
+  <div class="cols" id="board"></div>
+</div>
+
+<!-- ══ OWNERSHIP ══ -->
+<div class="pane" id="p-own">
+  <h2>מפת בעלות</h2>
+  <p class="sub">כל קובץ שייך למשימה אחת בדיוק. זו הטבלה שמונעת התנגשויות — וממנה נגזרת רשימת ה"אסור לגעת" של כל סוכן.</p>
+  <div id="ownConflict"></div>
+  <div class="tw"><table>
+    <thead><tr><th>נתיב בקוד</th><th>בעלים</th><th>נתיב</th><th>שלב</th><th>סטטוס</th></tr></thead>
+    <tbody id="ownTable"></tbody>
+  </table></div>
+  <h3>עץ הקבצים המתוכנן</h3>
+  <div class="tw" style="padding:16px 18px"><pre id="tree" style="direction:ltr;text-align:left;font-family:ui-monospace,Consolas,monospace;font-size:.8rem;line-height:1.75;margin:0"></pre></div>
+</div>
+
+<!-- ══ CHARTER ══ -->
+<div class="pane" id="p-law">
+  <h2>חוקת התזמורת</h2>
+  <p class="sub">לא הומצאה כאן — זו החוקה שכבר עובדת אצלך באבני יסוד ובפִּיצִיק, מותאמת לגרנטה. כל bootstrap נבנה ממנה אוטומטית.</p>
+  <div class="laws" id="laws"></div>
+  <h3>מחזור החיים של משימה</h3>
+  <div class="tw" style="padding:18px"><pre style="direction:ltr;text-align:left;font-family:ui-monospace,Consolas,monospace;font-size:.82rem;line-height:1.9;margin:0">
+<span style="color:#655D82">תזמורת</span>  computeWave()  →  בוחרת משימות: deps מסופקות + owns זרים
+   │
+   ├─→ <span style="color:#6B22B5">bootstrap</span>  משימה · בעלות בלעדית · אסור-לגעת · קריאה-בלבד · פורמט דיווח
+   │
+   ▼
+<span style="color:#655D82">סוכן</span>      עובד <span style="color:#B01212">רק</span> בקבצים שבבעלותו  ·  <span style="color:#B01212">בלי</span> git commit/push
+   │
+   ▼      דיווח JSON חזרה לתזמורת
+<span style="color:#655D82">תזמורת</span>  ✅ אימות עצמאי (Chrome headless 390×844 + צילום)
+   │      ❌ לא סומכת על "סיימתי" של הסוכן
+   ▼
+        commit סלקטיבי (<span style="color:#B01212">לא</span> git add .)  →  push  →  status=done
+   │
+   ▼
+        גל הבא
+</pre></div>
+</div>
+
+<!-- ══ REPORTS ══ -->
+<div class="pane" id="p-rep">
+  <h2>דיווחים וסיכום</h2>
+  <p class="sub">כל סוכן מסיים בדיווח JSON. הדביקי אותו כאן, והתזמורת תרכיב את הסיכום המאוחד.</p>
+  <div class="bar">
+    <label>הדבקת דיווח</label>
+    <button class="btn" id="addRep">קליטת דיווח</button>
+    <button class="btn ghost" id="mkSum">הרכב סיכום מאוחד</button>
+    <span style="margin-inline-start:auto"></span>
+    <span class="pill" id="repCount"></span>
+  </div>
+  <textarea id="repIn" rows="6" placeholder='{"task":"G-01","status":"done","files":["granta/assets/granta.js"],"did":["..."],"open":[],"risks":[],"verify":"..."}'></textarea>
+  <div id="repList"></div>
+  <h3>סיכום מאוחד</h3>
+  <textarea id="sumOut" rows="18" placeholder="לחצי «הרכב סיכום מאוחד»"></textarea>
+  <div class="acts" style="margin-top:8px"><button class="btn ghost sm" onclick="cp($('#sumOut').value,this)">העתק סיכום</button></div>
+</div>
+
+</div>
+
+<div class="mask" id="mask"><div class="modal" id="modal"></div></div>
+<footer>גְּרַנְטָה · חדר הבקרה · מבית Impact OS — המצב נשמר מקומית בדפדפן. ייצאי כדי לקבע אותו בריפו.</footer>
+
+<script>
+const $  = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+const LANES = {
+  ARCH:   {he:'ארכיטקטורה', c:'var(--l-arch)'},
+  DATA:   {he:'נתונים',      c:'var(--l-data)'},
+  FN:     {he:'פונקציות',    c:'var(--l-fn)'},
+  UI:     {he:'ממשק',        c:'var(--l-ui)'},
+  UX:     {he:'חוויה',       c:'var(--l-ux)'},
+  CONTENT:{he:'תוכן',        c:'var(--l-content)'},
+  OPS:    {he:'תפעול',       c:'var(--l-ops)'}
+};
+const STATUS = {
+  todo:   {he:'ממתין',  c:'#94A3B8'},
+  running:{he:'בריצה',  c:'#E8890C'},
+  review: {he:'באימות', c:'#6B22B5'},
+  done:   {he:'הושלם',  c:'#28BC5E'},
+  blocked:{he:'חסום',   c:'#FF3131'}
+};
+
+/* ══════════ TASKS — מקור האמת ══════════ */
+const TASKS = [
+/* ---------- שלב 0 · משפך ---------- */
+{id:'G-01',phase:0,lane:'ARCH',agent:'claude',est:'M',title:'שלד granta/ + חוזה לקוח משותף',
+ desc:'יצירת עץ התיקיות של granta/ ו-granta.js המשותף: אתחול Supabase client, פורמטים (מטבע, אחוז, תאריך עברי), guards להרשאות, ניווט, ותשתית audit-log בצד לקוח. זה החוזה שכל מסך יישען עליו — אין קוד Supabase מפוזר במסכים.',
+ owns:['granta/assets/granta.js'],reads:['granta/SPEC.md'],deps:[],verify:'טעינה ב-Chrome ללא שגיאות console + בדיקת ייצוא כל הפונקציות'},
+
+{id:'G-02',phase:0,lane:'UX',agent:'claude',est:'M',title:'סטנדרט UX + נגישות (מקור אמת)',
+ desc:'מסמך שקובע לכל המסכים: ארבעת מצבי המסך (טעינה/ריק/שגיאה/הצלחה), היררכיית טיפוגרפיה, שפת הפנייה לעמותה (לא ז\'רגון קמפיינים), RTL, יעדי מגע 44px, ניגודיות AA, מובייל-ראשון 390×844. כל משימת UI חייבת לצטט ממנו. מקביל ל-PITZIK-UX-POLISH-STANDARD.',
+ owns:['granta/_handoff/GRANTA-UX-STANDARD.md'],reads:['granta/SPEC.md'],deps:[],verify:'סקירה ידנית — מיטל מאשרת לפני שמשימות UI יוצאות'},
+
+{id:'G-03',phase:0,lane:'DATA',agent:'claude',est:'L',title:'מיגרציה 0100 · ליבה + RLS',
+ desc:'granta_orgs · granta_users · granta_leads · granta_eligibility_checks · granta_audit_log. RLS: עמותה רואה רק את התיק שלה, אופרייטור רואה הכול דרך claim ב-JWT. audit_log = append-only (בלי UPDATE/DELETE גם ל-service role).',
+ owns:['supabase/migrations/0100_granta_core.sql'],reads:['granta/SPEC.md'],deps:[],verify:'הרצה על סביבת בדיקה + ניסיון קריאה חוצה-עמותות שנכשל'},
+
+{id:'G-04',phase:0,lane:'CONTENT',agent:'claude',est:'M',title:'קטלוג כללי ELIG + נוסחי הסבר',
+ desc:'כללי הזכאות כ-JSON: סוג ישות · ניהול תקין · בעלות על האתר · SSL · תוכן מסחרי/אפיליאייט · הפניה לצד-ג\'. לכל כלל: code, severity, explain_he בשפת מנהלת עמותה, doc_url למקור רשמי, weight.',
+ owns:['granta/_data/rules-elig.json'],reads:['granta/SPEC.md'],deps:[],verify:'ולידציית סכימה + קריאת כל explain_he בקול'},
+
+{id:'G-30',phase:0,lane:'OPS',agent:'claude',est:'M',title:'מסמכי חובה: פרטיות · תנאים · ייפוי-כוח',
+ desc:'שלושת המסמכים שחוסמים לקוח משלם ראשון. מדיניות פרטיות ותנאי שימוש (מחליפים את הקישורים המתים בפוטר) + מסמך ייפוי-כוח לניהול חשבון Google Ads. 🔴 טיוטה בלבד — דורש עין משפטית לפני פרסום.',
+ owns:['granta/legal/'],reads:['granta/SPEC.md'],deps:[],verify:'מיטל קוראת ומאשרת · לא עולה לאוויר בלי סקירה משפטית'},
+
+{id:'G-33',phase:1,lane:'OPS',agent:'orchestra',est:'M',title:'🔴 הצלבת ייפוי-הכוח מול שער האישורים',
+ desc:'נחשף על ידי G-30: ייפוי-הכוח §3.2 מונה במפורש כל פעולה שדורשת אישור עמותה — קמפיין, קבוצה, מודעה, מילת מפתח, תקציב, הצעת מחיר, מיקוד, הרחבות, מעקב המרות, הגדרות חשבון, פנייה לגוגל בשם העמותה. המסמך המשפטי מחייב עכשיו את הקוד: כל פעולה ברשימה חייבת needs_approval=true בקטלוג. פעולה אחת שתחמוק = המערכת סותרת מסמך שהעמותה חתמה עליו. הצלבה פריט-פריט, ותיקון הצד שטועה.',
+ owns:['granta/_orchestra/mandate-vs-approval-gate.md'],reads:['granta/legal/mandate.md','granta/_data/rules-core.json'],deps:['G-16','G-30'],verify:'טבלת הצלבה: כל פריט ב-§3.2 → הכלל שמייצר אותו → needs_approval בפועל. אפס פערים, אחרת חוסם.'},
+
+{id:'G-31',phase:0,lane:'ARCH',agent:'claude',est:'S',title:'קובץ קונפיג + היגיינת סודות',
+ desc:'נחשף על ידי G-01: granta.js קורא מ-window.GRANTA_CONFIG, וקובץ הקונפיג לא קיים — בלעדיו כל מסך נופל. יצירת granta/assets/granta-config.js (URL + anon key בלבד), granta-config.example.js לריפו, והחלטה מפורשת אם הקובץ החי נכנס ל-git. 🔴 anon key בלבד. service-role לעולם לא בצד לקוח.',
+ owns:['granta/assets/granta-config.example.js'],reads:['granta/assets/granta.js'],deps:['G-01'],verify:'טעינת granta.js עם הקונפיג → configState.ok === true · בדיקה שאין service-role key בשום קובץ בריפו'},
+
+{id:'G-32',phase:0,lane:'UI',agent:'codex',est:'M',title:'מסך התחברות לאופרייטור',
+ desc:'נחשף על ידי G-01: ה-guards מפנים ל-app/login.html שלא קיים — משתמש לא מורשה מגיע ל-404 במקום למסך התחברות. מסך התחברות במייל (magic link) + מצבי שגיאה + חזרה ל-next. משרת את קונסולת האופרייטור בשלב 0; המשפך הציבורי נשאר בלי התחברות.',
+ owns:['granta/app/login.html'],reads:['granta/assets/granta.js','granta/assets/tokens.css'],deps:['G-01','G-05'],verify:'ניסיון כניסה לקונסולה בלי סשן → נחיתה במסך ההתחברות, לא ב-404'},
+
+{id:'G-05',phase:0,lane:'UI',agent:'codex',est:'L',title:'מערכת עיצוב: tokens + רכיבים',
+ desc:'tokens.css (פלטת גרנטה מדף הנחיתה) + granta.css: כפתור, כרטיס, טבלה, תג-חומרה, מד-ציון-בריאות, מצב-ריק, שלד-טעינה, באנר-התראה. מובייל-ראשון. אסור צבע קשיח מחוץ ל-tokens.',
+ owns:['granta/assets/tokens.css','granta/assets/granta.css'],reads:['granta/_handoff/GRANTA-UX-STANDARD.md','granta/spec.html'],deps:['G-02'],verify:'עמוד גלריית-רכיבים + צילום headless 390×844'},
+
+{id:'G-06',phase:0,lane:'FN',agent:'claude',est:'L',title:'Edge Function · סורק אתר',
+ desc:'granta-scan-website: HTTPS ותוקף תעודה, זמינות, שפה, זיהוי עמודי אודות/קשר/פרטיות, sitemap ומספר עמודים, נוכחות תגי gtag/GA4/Ads, ודגלים אדומים (מודעות צד-ג\', אפיליאייט, חנות). מחזיר JSON מובנה ל-granta_eligibility_checks.',
+ owns:['supabase/functions/granta-scan-website/'],reads:['granta/SPEC.md'],deps:['G-03'],verify:'הרצה מול hopa.org.il — חייב להחזיר את מה שכבר אימתנו ידנית'},
+
+{id:'G-07',phase:0,lane:'FN',agent:'claude',est:'M',title:'מנוע זכאות · ציון ופסיקה',
+ desc:'טוען rules-elig.json, מריץ מול תוצאת הסורק, מחשב ציון 0–100 משוקלל ופסיקה (כנראה זכאית / דורש בדיקה / כנראה לא זכאית) + רשימת חסמים מנומקת בעברית. 🔴 חייב לכלול את הסייג "האישור בידי Google בלבד".',
+ owns:['supabase/functions/granta-eligibility/'],reads:['granta/_data/rules-elig.json'],deps:['G-03','G-04','G-06'],verify:'מקרה-מבחן הופה = «כנראה זכאית» · מקרה שלילי מלאכותי = חסמים נכונים'},
+
+{id:'G-08',phase:0,lane:'UI',agent:'codex',est:'M',title:'A0 · דף הנחיתה בריפו',
+ desc:'המרת דף ה-Lovable ל-HTML סטטי: הירו, 4 העמודות (מגישה/בונה/מנטרת/מצילה), המציאות, הפתרון, מחירים, שליטה מלאה, CTA כפול. אותם ניסוחים בדיוק — הדף הוא חוזה המוצר.',
+ owns:['granta/index.html'],reads:['granta/assets/tokens.css','granta/spec.html'],deps:['G-05'],verify:'השוואת צילום מול הדף החי · 390 + 1280'},
+
+{id:'G-09',phase:0,lane:'UI',agent:'codex',est:'M',title:'A1 · טופס בדיקת זכאות',
+ desc:'4 השדות מהדף החי + ולידציה, מצב שליחה, שגיאת רשת, הצלחה. כותב ל-granta_leads דרך granta.js. בלי כרטיס אשראי, בלי שדות מיותרים — ההבטחה היא «דקה, 3 שדות».',
+ owns:['granta/check.html'],reads:['granta/assets/granta.js','granta/assets/tokens.css'],deps:['G-01','G-03','G-05'],verify:'שליחה אמיתית לסביבת בדיקה + בדיקת ארבעת מצבי המסך'},
+
+{id:'G-10',phase:0,lane:'UI',agent:'codex',est:'M',title:'A2 · דף תוצאת זכאות',
+ desc:'המסך שלא קיים בדף הנחיתה. ציון בריאות-זכאות, מה חוסם ולמה, מה השלב הבא, CTA למסלול הנכון (MANAGED מול FROM ZERO לפי has_grants). 🔴 בלי צבעי-סטטוס מבהילים — זו עמותה שמקבלת חדשות.',
+ owns:['granta/result.html'],reads:['granta/assets/granta.js','granta/assets/tokens.css'],deps:['G-01','G-05','G-07'],verify:'שלוש הפסיקות מוצגות נכון + צילום 390'},
+
+{id:'G-11',phase:0,lane:'UI',agent:'codex',est:'M',title:'C2 · קונסולת לידים + שעון SLA',
+ desc:'תיבת נכנס מ-/check: ליד, ציון, פסיקת המנוע, שעון 24 שעות עם צבע מתקרב-לפג, כפתור «אשר ושלח דוח». ממוין לפי דחיפות SLA, לא לפי תאריך.',
+ owns:['granta/ops/leads.html'],reads:['granta/assets/granta.js','granta/assets/tokens.css'],deps:['G-01','G-03','G-05'],verify:'הזרקת 5 לידים בגילאים שונים · השעון צובע נכון'},
+
+{id:'G-12',phase:0,lane:'UX',agent:'orchestra',est:'M',title:'פוליש ואימות-צילום של המשפך',
+ desc:'🎛️ התזמורת בעצמה. מעבר על A0→A1→A2→C2 כרצף אחד: יציבות פריסה, טקסט נחתך, מרכוז, ניסוחים, מובייל. צילום headless 390×844 לכל מסך. מתקנת מה שהסוכנים פספסו. אסור «מוכן» בלי צילום.',
+ owns:['granta/_handoff/UX-VERIFY-funnel.md'],reads:['granta/index.html','granta/check.html','granta/result.html','granta/ops/leads.html','granta/app/login.html'],deps:['G-08','G-09','G-10','G-11','G-32'],verify:'5 צילומים בתיקיית האימות + רשימת תיקונים שבוצעו'},
+
+{id:'G-13',phase:0,lane:'OPS',agent:'orchestra',est:'S',title:'פריסה · שלב 0 לאוויר',
+ desc:'נתיבים, בדיקת חי, וידוא ששום מפתח סודי לא בצד לקוח (רק anon key), בדיקת RLS מהדפדפן, ואימות שהטופס באמת כותב. commit סלקטיבי + push.',
+ owns:['granta/_ops/deploy-notes.md'],reads:['granta/'],deps:['G-12','G-31'],verify:'בדיקה חיה מהאתר, לא מקומית — לפי כלל «דמו מקומית ≠ מהאתר»'},
+
+/* ---------- שלב 1 · המנוע ---------- */
+{id:'G-14',phase:1,lane:'DATA',agent:'claude',est:'L',title:'מיגרציה 0101 · snapshots וישויות',
+ desc:'granta_snapshots + granta_campaigns/adgroups/ads/keywords. שדה source ∈ (api|csv|manual) מהיום הראשון — זה מה שמאפשר להחליף מקור בלי לגעת במנוע.',
+ owns:['supabase/migrations/0101_granta_snapshots.sql'],reads:['granta/SPEC.md'],deps:['G-03'],verify:'טעינת snapshot לדוגמה + שאילתות CTR חודשי'},
+
+{id:'G-15',phase:1,lane:'DATA',agent:'claude',est:'L',title:'מיגרציה 0102 · מנוע ופעולות',
+ desc:'granta_policy_rules · granta_findings · granta_actions · granta_alerts · granta_reports. 🔴 actions חייבת payload_before ו-payload_after כשדות NOT NULL — בלעדיהם אין Rollback, וזו הבטחה בדף.',
+ owns:['supabase/migrations/0102_granta_engine.sql'],reads:['granta/SPEC.md'],deps:['G-03'],verify:'מעבר מלא על מחזור החיים draft→applied→rolled_back'},
+
+{id:'G-16',phase:1,lane:'CONTENT',agent:'claude',est:'L',title:'קטלוג מדיניות מלא · 6 קטגוריות',
+ desc:'STRUCT · PERF · KEYWORD · BUDGET · RISK · UPKEEP. לכל כלל: זיהוי, explain_he, fix_template, needs_approval, weight, doc_url. הכלל הקריטי GG-CTR-01 (5% חודשי) — הוא זה שמשעה חשבונות.',
+ owns:['granta/_data/rules-core.json'],reads:['granta/_data/rules-elig.json'],deps:['G-04'],verify:'ולידציית סכימה + כל כלל עם doc_url אמיתי'},
+
+{id:'G-29',phase:1,lane:'CONTENT',agent:'orchestra',est:'M',title:'🔴 אימות הקטלוג מול תיעוד גוגל',
+ desc:'חוסם עלייה לאוויר. כל מספר בקטלוג (5% CTR, תקרת CPC, מספר sitelinks, דרישות מבנה) מאומת מול התיעוד הרשמי העדכני של Google Ad Grants, עם קישור. המספרים באפיון נכתבו מהיכרות — הם לא מקור אמת.',
+ owns:['granta/_data/rules-verification.md'],reads:['granta/_data/rules-core.json'],deps:['G-16'],verify:'כל שורה בקטלוג מסומנת מאומת/לא-מאומת עם תאריך ומקור'},
+
+{id:'G-17',phase:1,lane:'ARCH',agent:'claude',est:'M',title:'חוזה AccountSnapshotSource',
+ desc:'ההפשטה שמצילה את הפרויקט. ממשק אחד לקליטת נתוני חשבון, שני מימושים (CSV היום, API מחר). המנוע מדבר רק עם הממשק. 🔴 אם החוזה לא נכון — כל שלב 2 נכתב מחדש.',
+ owns:['granta/_handoff/SNAPSHOT-SOURCE-CONTRACT.md'],reads:['supabase/migrations/0101_granta_snapshots.sql'],deps:['G-14'],verify:'מעבר על שדות Google Ads API GAQL מול עמודות ה-CSV — חייבים למפות לאותו מבנה'},
+
+{id:'G-18',phase:1,lane:'FN',agent:'claude',est:'L',title:'פרסר CSV של Google Ads',
+ desc:'granta-import-csv: קליטת דוחות Campaigns/AdGroups/Ads/Keywords/SearchTerms/Conversions, נרמול לפי החוזה, טיפול בקידוד ובפורמט מספרים ישראלי, כתיבה ל-snapshot אטומית.',
+ owns:['supabase/functions/granta-import-csv/'],reads:['granta/_handoff/SNAPSHOT-SOURCE-CONTRACT.md'],deps:['G-14','G-17'],verify:'ייבוא דוח אמיתי + השוואת סכומים מול המקור'},
+
+{id:'G-19',phase:1,lane:'FN',agent:'claude',est:'L',title:'granta-run-rules · ממצאים וציון בריאות',
+ desc:'מריץ את הקטלוג מעל snapshot → granta_findings עם evidence מלא (איזו מילה, איזה קמפיין, איזה מספר) → ציון בריאות 0–100 משוקלל. ממצא בלי evidence הוא באג, לא ממצא.',
+ owns:['supabase/functions/granta-run-rules/'],reads:['granta/_data/rules-core.json'],deps:['G-15','G-16'],verify:'חשבון-בדיקה עם הפרות מוכרות מראש → כל אחת נתפסת'},
+
+{id:'G-20',phase:1,lane:'FN',agent:'claude',est:'M',title:'granta-build-report · נרטיב עברי',
+ desc:'דוח חודשי: מדדים, השוואה לחודש קודם, מה תוקן, מה פתוח, ציון. הנרטיב נכתב אוטומטית מה-findings בשפה של מנהלת עמותה — לא טבלה יבשה ולא ז\'רגון.',
+ owns:['supabase/functions/granta-build-report/'],reads:['supabase/functions/granta-run-rules/'],deps:['G-19'],verify:'קריאת הדוח בקול — אם צריך להסביר מונח, הניסוח נכשל'},
+
+{id:'G-21',phase:1,lane:'FN',agent:'claude',est:'M',title:'התראות + תזמון יומי',
+ desc:'granta-send-alerts + pg_cron. 🔴 הלב: התראה מקדימה כשה-CTR החודשי המצטבר צפוי לרדת מ-5% — לפני סוף החודש. התראה אחרי ההשעיה היא כישלון מוצר.',
+ owns:['supabase/functions/granta-send-alerts/'],reads:['supabase/functions/granta-run-rules/'],deps:['G-19'],verify:'סימולציית חודש חלקי — ההתראה יוצאת ביום ה-18, לא ה-30'},
+
+{id:'G-22',phase:1,lane:'UI',agent:'codex',est:'L',title:'B1 · לוח מצב העמותה',
+ desc:'ציון בריאות כמספר הראשי, CTR מול קו ה-5% כגרף, ניצול מתוך $10,000, סטטוס חשבון, התראות פתוחות. המסך שנפתח פעם בשבוע ל-20 שניות — חייב לענות «הכול בסדר?» מיד.',
+ owns:['granta/app/dashboard.html'],reads:['granta/assets/tokens.css','granta/assets/granta.js'],deps:['G-05','G-19'],verify:'צילום 390 + 1280 · מבחן 20 שניות על מישהו שלא ראה את המערכת'},
+
+{id:'G-23',phase:1,lane:'UI',agent:'codex',est:'L',title:'B2 · מסך האישורים',
+ desc:'ההבטחה «שום דבר לא עולה בלי אישור שלכם» מתממשת כאן. כל המלצה: מה · למה · מה יקרה אם לא · אישור/דחייה. 🔴 בשפה של מנהלת עמותה. אם מופיע «Quality Score» בלי הסבר — נכשל.',
+ owns:['granta/app/approvals.html'],reads:['granta/assets/tokens.css','granta/assets/granta.js'],deps:['G-05','G-15'],verify:'5 סוגי המלצות שונים · כל אחד מובן בלי ידע קודם'},
+
+{id:'G-24',phase:1,lane:'UI',agent:'codex',est:'M',title:'B4 · סיכון והשעיות',
+ desc:'צ\'קליסט מדיניות: ✔ עומד / ✖ הפרה / ⚠ סיכון, עם הסבר לכל שורה ו«ימים לסכנה». זה המסך שמצדיק את המנוי.',
+ owns:['granta/app/risk.html'],reads:['granta/assets/tokens.css','granta/assets/granta.js'],deps:['G-05','G-19'],verify:'שלושת המצבים מוצגים · צילום 390'},
+
+{id:'G-25',phase:1,lane:'UI',agent:'codex',est:'M',title:'B6 · יומן פעולות + שחזור',
+ desc:'Audit log קריא לעמותה: מי, מה, מתי, ומה השתנה. כפתור שחזור לכל פעולה שהוחלה. זה מסמך האמון — אם הוא לא קריא, אין אמון.',
+ owns:['granta/app/audit.html'],reads:['granta/assets/tokens.css','granta/assets/granta.js'],deps:['G-03','G-05'],verify:'הצגת diff לפני/אחרי בצורה שמובנת בלי ידע טכני'},
+
+{id:'G-26',phase:1,lane:'UI',agent:'codex',est:'L',title:'C1 + C4 · כל העמותות ותור המנוע',
+ desc:'קונסולת האופרייטור: טבלת כל התיקים ממוינת לפי סיכון (לא לפי א״ב), ותור כל ההצעות בכל התיקים. המסך שמיטל פותחת בבוקר.',
+ owns:['granta/ops/orgs.html','granta/ops/queue.html'],reads:['granta/assets/tokens.css','granta/assets/granta.js'],deps:['G-05','G-19'],verify:'20 תיקים מדומים · המסוכן ביותר ראשון'},
+
+{id:'G-27',phase:1,lane:'UI',agent:'codex',est:'M',title:'C6 · ייבוא CSV',
+ desc:'העלאת דוחות Google Ads עם תצוגה מקדימה לפני קליטה, זיהוי סוג הדוח אוטומטית, ודוח שגיאות ברור. 🔴 בלי «נכשל» סתמי — לומר איזו שורה ולמה.',
+ owns:['granta/ops/import.html'],reads:['granta/assets/tokens.css','granta/assets/granta.js'],deps:['G-05','G-18'],verify:'העלאת קובץ פגום → הודעת שגיאה שאומרת בדיוק מה לתקן'},
+
+{id:'G-28',phase:1,lane:'UX',agent:'orchestra',est:'L',title:'פוליש ואימות-צילום · פורטל וקונסולה',
+ desc:'🎛️ התזמורת בעצמה. מעבר על B1/B2/B4/B6 ו-C1/C4/C6 כמערכת אחת: עקביות רכיבים, מצבי ריק, ניסוחים, מובייל. צילום headless לכל מסך. 🔴 אימות עצמאי — לא לסמוך על «סיימתי» של הסוכן.',
+ owns:['granta/_handoff/UX-VERIFY-app.md'],reads:['granta/app/','granta/ops/'],deps:['G-22','G-23','G-24','G-25','G-26','G-27'],verify:'7 צילומים + רשימת תיקונים שהתזמורת ביצעה בעצמה'}
+];
+
+/* ══════════ CHARTER ══════════ */
+const LAWS = [
+ {h:'בעלות יחידה',p:'משימה אחת = סוכן אחד = קבוצת קבצים בבעלות בלעדית. שני סוכנים על אותה משימה זה בזבוז גם כשאין קונפליקט — הראשון שמסיים זוכה.'},
+ {h:'רשימת אסור-לגעת',p:'כל bootstrap כולל רשימה מפורשת של הקבצים שסוכנים אחרים עליהם עכשיו. הדף מחשב אותה אוטומטית מהגל — לא «אל תיגע בכלום» גנרי.'},
+ {h:'התזמורת דוחפת',p:'אף סוכן לא מריץ git commit או push. התזמורת אוספת, מבצעת commit סלקטיבי לפי נתיב, ודוחפת. לעולם לא git add . או git add -A.'},
+ {h:'VS Code נפרד לכל סוכן',p:'working tree נפרד לכל סוכן בגל — כך git status של אחד לא מבלבל את השני.'},
+ {h:'מנות קטנות',p:'משימה חזותית אחת בכל פעם. קודקס קופא על משימות ארוכות; זה גם משחק לחוזק שלו — קראפט עיצובי ממוקד.'},
+ {h:'אימות עצמאי לפני done',p:'התזמורת מאמתת בעצמה בצילום Chrome headless 390×844. «סיימתי» של סוכן הוא לא ראיה — כך נתפסו באגים ששני סוכנים פספסו.'},
+ {h:'טעינת צרכן וספק יחד',p:'באג אינטגרציה לא נתפס כשכל צד נבדק במבודד. תמיד לבדוק שהנתון עובר מקצה לקצה.'},
+ {h:'עוצרים לאישור מיטל',p:'שינוי ב-SPEC.md · מחיקות · קטלוג המדיניות · המסמכים המשפטיים · כל החלטת UX שיש לה שתי אפשרויות סבירות.'},
+ {h:'חי, לא מקומי',p:'«עובד אצלי» לא נחשב. אימות סופי מהאתר החי אחרי push — לפי הכלל שדמו מקומית לא מעיד על האתר.'}
+];
+
+/* ══════════ STATE ══════════ */
+const KEY='granta.orchestra.v1';
+let ST = load();
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {tasks:{},reports:[]}; }catch(e){ return {tasks:{},reports:[]}; } }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(ST)); }catch(e){} }
+const stat = id => (ST.tasks[id] && ST.tasks[id].status) || 'todo';
+const setStat = (id,s) => { ST.tasks[id]={...(ST.tasks[id]||{}),status:s}; save(); render(); };
+
+/* ══════════ CONFLICT LOGIC ══════════ */
+// שני נתיבים מתנגשים אם הם זהים או אם אחד מכיל את השני
+function clash(a,b){
+  const na = a.endsWith('/') ? a : a+' ', nb = b.endsWith('/') ? b : b+' ';
+  return a===b || a.startsWith(b) || b.startsWith(a) || na.startsWith(nb) || nb.startsWith(na);
+}
+const anyClash = (paths,taken) => paths.some(p => taken.some(t => clash(p,t)));
+
+// כמה משימות כל משימה משחררת (טרנזיטיבי) — לתעדוף נתיב קריטי
+const DEPENDENTS = (()=>{
+  const m={}; TASKS.forEach(t=>m[t.id]=new Set());
+  TASKS.forEach(t=>t.deps.forEach(d=>{ if(m[d]) m[d].add(t.id); }));
+  const deep=id=>{ const seen=new Set(); const walk=x=>m[x].forEach(y=>{ if(!seen.has(y)){seen.add(y);walk(y);} }); walk(id); return seen.size; };
+  const out={}; TASKS.forEach(t=>out[t.id]=deep(t.id)); return out;
+})();
+
+function computeWave(){
+  const gate = $('#gate').value, width = +$('#width').value;
+  const isDone = id => stat(id)==='done';
+  const running = TASKS.filter(t=>['running','review'].includes(stat(t.id)));
+  const taken = running.flatMap(t=>t.owns);
+
+  const cand = TASKS.filter(t=>{
+    if(stat(t.id)!=='todo') return false;
+    if(gate!=='all' && t.phase!==+gate) return false;
+    return t.deps.every(isDone);
+  }).sort((a,b)=> (DEPENDENTS[b]-DEPENDENTS[a]) || (a.phase-b.phase) || a.id.localeCompare(b.id));
+
+  const wave=[]; const held=[...taken];
+  for(const t of cand){
+    if(wave.length>=width) break;
+    if(anyClash(t.owns,held)) continue;
+    wave.push(t); held.push(...t.owns);
+  }
+
+  const phaseOf = id => (TASKS.find(x=>x.id===id)||{}).phase;
+  let crossPhase = 0;   // כמה משימות חסומות בגלל שלב מוקדם יותר שלא נסגר
+
+  const blocked = TASKS.filter(t=>{
+    if(stat(t.id)!=='todo') return false;
+    if(gate!=='all' && t.phase!==+gate) return false;
+    return !wave.includes(t);
+  }).map(t=>{
+    const missing = t.deps.filter(d=>!isDone(d));
+    const earlier = missing.filter(d=>phaseOf(d) < t.phase);
+    if(earlier.length) crossPhase++;
+    let why;
+    if(missing.length){
+      why = 'ממתין ל־' + missing.map(d=>phaseOf(d)!==t.phase ? `${d} (שלב ${phaseOf(d)})` : d).join(' · ');
+    }
+    else if(anyClash(t.owns,taken)) why = 'קובץ תפוס בידי סוכן פעיל';
+    else why = 'מעבר לרוחב הגל — בגל הבא';
+    return {t,why};
+  });
+  return {wave,running,blocked,crossPhase,gate};
+}
+
+/* ══════════ BOOTSTRAP ══════════ */
+function bootstrap(t, waveIds){
+  const others = TASKS.filter(x=>waveIds.includes(x.id) && x.id!==t.id);
+  const forbid = others.flatMap(x=>x.owns.map(p=>`- ${p}   ← ${x.id}`));
+  const L = [];
+  L.push(`# סוכן ${t.id} · ${t.title}`);
+  L.push(``,`שלב ${t.phase} · נתיב ${LANES[t.lane].he} · היקף ${t.est}`);
+  L.push(``,`## המשימה`,t.desc);
+  L.push(``,`## בעלות בלעדית — רק אלה`,...t.owns.map(p=>`- ${p}`));
+  L.push(``,`## קריאה בלבד — אל תערוך`,...(t.reads.length?t.reads:['granta/SPEC.md']).map(p=>`- ${p}`));
+  if(forbid.length) L.push(``,`## 🔴 אסור לגעת — סוכנים אחרים עליהם עכשיו`,...forbid);
+  else L.push(``,`## 🔴 אסור לגעת`,`- אין סוכנים מקבילים בגל הזה. עדיין: רק הקבצים שבבעלותך.`);
+  L.push(``,`## כללי ברזל`);
+  L.push(`- אסור git commit ואסור git push — התזמורת אוספת ודוחפת.`);
+  L.push(`- אסור לערוך granta/SPEC.md — זה מסמך אם. הצע שינוי בדיווח במקום.`);
+  L.push(`- אסור למחוק קבצים. מחיקה דורשת אישור מיטל.`);
+  L.push(`- RTL, Heebo/Rubik, צבעים מ-tokens.css בלבד — בלי צבע קשיח.`);
+  L.push(`- מובייל-ראשון 390×844.`);
+  L.push(`- מנה אחת ממוקדת. אם המשימה מתפצלת — דווח ועצור, אל תרחיב לבד.`);
+  L.push(``,`## אימות לפני שאתה מדווח done`,`${t.verify}`);
+  L.push(``,`## פורמט הדיווח לתזמורת — חובה, אל תסגור בלעדיו`);
+  L.push('```json');
+  L.push(JSON.stringify({task:t.id,status:'done',files:t.owns,did:['מה נעשה בפועל'],open:['מה נשאר פתוח'],risks:['מה עלול להישבר'],verify:'איך אימתת'},null,2));
+  L.push('```');
+  return L.join('\n');
+}
+
+/* ══════════ RENDER ══════════ */
+function render(){
+  const c = {todo:0,running:0,review:0,done:0,blocked:0};
+  TASKS.forEach(t=>c[stat(t.id)]++);
+  const {wave,running,blocked,crossPhase,gate} = computeWave();
+
+  $('#kpis').innerHTML = [
+    ['סה״כ',TASKS.length],['הושלמו',c.done],['בריצה',c.running+c.review],
+    ['בגל',wave.length],['ממתינות',c.todo]
+  ].map(([k,v])=>`<div class="kpi"><b>${v}</b><span>${k}</span></div>`).join('');
+
+  // ── global ownership conflicts (spec-level error)
+  const cf=[];
+  for(let i=0;i<TASKS.length;i++) for(let j=i+1;j<TASKS.length;j++)
+    TASKS[i].owns.forEach(a=>TASKS[j].owns.forEach(b=>{ if(clash(a,b)) cf.push(`${TASKS[i].id} ↔ ${TASKS[j].id} · ${a}`); }));
+  const cfHtml = cf.length
+    ? `<div class="note stop"><b>🔴 התנגשות בעלות בהגדרת המשימות</b>${cf.map(esc).join('<br>')}</div>`
+    : `<div class="note ok"><b>✅ מפת הבעלות נקייה</b>אין שני נתיבים שחולקים קובץ. הגלים בטוחים לשיגור.</div>`;
+  $('#conflictBox').innerHTML = cfHtml;
+  $('#ownConflict').innerHTML = cfHtml;
+
+  // ── wave
+  const waveIds = wave.map(t=>t.id);
+  $('#waveTitle').textContent = wave.length ? `מוכנות לשיגור עכשיו — ${wave.length} במקביל` : 'אין מה לשגר';
+  let hint;
+  if(wave.length){
+    hint = 'כל אחת ב-VS Code נפרד. ה-bootstrap כולל את רשימת האסור-לגעת המחושבת.';
+    if(running.length) hint = `<span class="pill">${running.length} כבר בריצה</span> הקבצים שלהן נעולים ולא ייכנסו לגל. ` + hint;
+  } else if(crossPhase && gate!=='all'){
+    hint = `<strong>שלב ${gate} תלוי בשלב מוקדם יותר שעדיין לא נסגר.</strong> ${crossPhase} משימות ממתינות לתלויות מחוץ לשער. סגרי את השלב הקודם, או בחרי «בלי שער» כדי לשגר לפי תלויות בלבד.`;
+  } else if(running.length){
+    hint = `<span class="pill">${running.length} בריצה</span> כל השאר ממתין להן. סיימי אותן או שחררי אחת חזרה ל«ממתין».`;
+  } else {
+    hint = 'אין משימות פנויות בשער הזה. נסי «בלי שער».';
+  }
+  $('#waveHint').innerHTML = hint;
+  $('#slots').innerHTML = wave.map(t=>`
+    <div class="slot">
+      <div class="ln"><span class="tag" style="background:${LANES[t.lane].c}">${LANES[t.lane].he}</span>
+        <span class="pill">${t.id}</span><span class="pill">${t.agent}</span><span class="pill">${t.est}</span></div>
+      <h4>${esc(t.title)}</h4><p>${esc(t.desc.slice(0,150))}${t.desc.length>150?'…':''}</p>
+      <div class="own"><b>בעלות:</b> ${t.owns.map(o=>`<code>${esc(o)}</code>`).join(' ')}</div>
+      <div class="acts">
+        <button class="btn sm" onclick="openBoot('${t.id}',${JSON.stringify(waveIds).replace(/"/g,'&quot;')})">bootstrap</button>
+        <button class="btn ghost sm" onclick="setStat('${t.id}','running')">סמן בריצה</button>
+      </div>
+    </div>`).join('') || `<p style="color:var(--muted)">—</p>`;
+
+  $('#blocked').innerHTML = blocked.map(({t,why})=>`<tr>
+    <td><code>${t.id}</code></td><td>${esc(t.title)}</td>
+    <td><span class="tag" style="background:${LANES[t.lane].c}">${LANES[t.lane].he}</span></td>
+    <td style="color:var(--muted)">${esc(why)}</td></tr>`).join('') || `<tr><td colspan="4" style="color:var(--muted)">אין ממתינות בשלב הזה</td></tr>`;
+
+  // ── board
+  const lane=$('#flane').value, ph=$('#fphase').value, q=$('#fq').value.trim();
+  const vis = TASKS.filter(t=>(!lane||t.lane===lane)&&(!ph||t.phase===+ph)&&(!q||(t.title+t.desc+t.id).includes(q)));
+  $('#board').innerHTML = Object.entries(STATUS).map(([k,v])=>{
+    const list = vis.filter(t=>stat(t.id)===k);
+    return `<div class="col"><h4>${v.he}<em>${list.length}</em></h4>${list.map(t=>`
+      <div class="card" style="border-inline-start-color:${LANES[t.lane].c}" onclick="openBoot('${t.id}',null)">
+        <div class="id">${t.id} · שלב ${t.phase}</div><h5>${esc(t.title)}</h5>
+        <div class="meta"><span class="tag" style="background:${LANES[t.lane].c}">${LANES[t.lane].he}</span>
+          <span class="pill">${t.agent}</span><span class="pill">${t.est}</span></div>
+        ${t.deps.length?`<span class="blk" style="background:var(--soft);color:var(--muted)">אחרי ${t.deps.join(' · ')}</span>`:''}
+      </div>`).join('')}</div>`;
+  }).join('');
+
+  // ── ownership
+  const rows=[]; TASKS.forEach(t=>t.owns.forEach(p=>rows.push({p,t})));
+  rows.sort((a,b)=>a.p.localeCompare(b.p));
+  $('#ownTable').innerHTML = rows.map(({p,t})=>`<tr>
+    <td><code>${esc(p)}</code></td><td>${t.id} · ${esc(t.title)}</td>
+    <td><span class="tag" style="background:${LANES[t.lane].c}">${LANES[t.lane].he}</span></td>
+    <td>${t.phase}</td>
+    <td><span class="pill" style="background:${STATUS[stat(t.id)].c}22;color:${STATUS[stat(t.id)].c};border-color:transparent">${STATUS[stat(t.id)].he}</span></td></tr>`).join('');
+  $('#tree').textContent = buildTree(rows.map(r=>r.p));
+
+  $('#repCount').textContent = `${ST.reports.length} דיווחים`;
+  $('#repList').innerHTML = ST.reports.length ? `<div class="tw" style="margin-top:12px"><table>
+    <thead><tr><th>#</th><th>סטטוס</th><th>קבצים</th><th>פתוח</th><th></th></tr></thead><tbody>${
+    ST.reports.map((r,i)=>`<tr><td><code>${esc(r.task||'?')}</code></td>
+      <td>${esc(r.status||'?')}</td><td style="font-size:.78rem">${(r.files||[]).map(f=>esc(f)).join('<br>')}</td>
+      <td style="font-size:.8rem;color:var(--muted)">${(r.open||[]).map(esc).join(' · ')||'—'}</td>
+      <td><button class="btn ghost sm" onclick="delRep(${i})">הסר</button></td></tr>`).join('')}</tbody></table></div>` : '';
+}
+
+function buildTree(paths){
+  const root={};
+  paths.forEach(p=>{ let n=root; p.split('/').filter(Boolean).forEach(s=>{ n[s]=n[s]||{}; n=n[s]; }); });
+  const walk=(n,pad)=>Object.keys(n).sort().map((k,i,a)=>{
+    const last=i===a.length-1, br=last?'└─ ':'├─ ';
+    return pad+br+k+'\n'+walk(n[k],pad+(last?'   ':'│  '));
+  }).join('');
+  return walk(root,'');
+}
+
+/* ══════════ MODAL ══════════ */
+function openBoot(id, waveIds){
+  const t = TASKS.find(x=>x.id===id);
+  const ids = waveIds || computeWave().wave.map(w=>w.id);
+  const boot = bootstrap(t, ids.includes(id)?ids:[...ids,id]);
+  $('#modal').innerHTML = `
+    <button class="x" onclick="$('#mask').classList.remove('on')">×</button>
+    <h3>${t.id} · ${esc(t.title)}</h3>
+    <p style="color:var(--muted);font-size:.86rem;margin-bottom:12px">
+      <span class="tag" style="background:${LANES[t.lane].c}">${LANES[t.lane].he}</span>
+      <span class="pill">שלב ${t.phase}</span> <span class="pill">${t.agent}</span> <span class="pill">${t.est}</span></p>
+    <p style="font-size:.9rem;margin-bottom:14px">${esc(t.desc)}</p>
+    <div class="bar" style="margin-bottom:12px"><label>סטטוס</label>
+      ${Object.entries(STATUS).map(([k,v])=>`<button class="btn ${stat(id)===k?'':'ghost'} sm" onclick="setStat('${id}','${k}');openBoot('${id}',null)">${v.he}</button>`).join('')}</div>
+    <h3 style="margin-top:4px">Bootstrap לסוכן</h3>
+    <textarea rows="22" id="bootTa">${esc(boot)}</textarea>
+    <div class="acts" style="margin-top:9px">
+      <button class="btn" onclick="cp($('#bootTa').value,this)">העתק bootstrap</button>
+      <button class="btn ghost" onclick="$('#mask').classList.remove('on')">סגור</button>
+    </div>`;
+  $('#mask').classList.add('on');
+}
+function cp(txt,btn){ navigator.clipboard.writeText(txt).then(()=>{ const o=btn.textContent; btn.textContent='✓ הועתק'; btn.classList.add('copied'); setTimeout(()=>{btn.textContent=o;btn.classList.remove('copied');},1400); }); }
+
+/* ══════════ SUMMARY ══════════ */
+function summary(){
+  const done = TASKS.filter(t=>stat(t.id)==='done');
+  const run  = TASKS.filter(t=>['running','review'].includes(stat(t.id)));
+  const rest = TASKS.filter(t=>stat(t.id)==='todo');
+  const R = ST.reports;
+  const L = [];
+  L.push('# סיכום תזמורת · גרנטה','');
+  L.push(`הושלמו ${done.length} מתוך ${TASKS.length} · ${run.length} בריצה · ${rest.length} ממתינות · ${R.length} דיווחי סוכנים.`,'');
+  L.push('## מה נעשה');
+  if(!done.length) L.push('- עדיין כלום.');
+  done.forEach(t=>{
+    const r = R.find(x=>x.task===t.id);
+    L.push(`### ${t.id} · ${t.title}`);
+    L.push(`נתיב ${LANES[t.lane].he} · שלב ${t.phase} · קבצים: ${t.owns.join(' · ')}`);
+    (r&&r.did||[]).forEach(d=>L.push(`- ${d}`));
+    if(r&&r.verify) L.push(`אימות: ${r.verify}`);
+    L.push('');
+  });
+  const open = R.flatMap(r=>(r.open||[]).map(o=>`${r.task}: ${o}`));
+  const risk = R.flatMap(r=>(r.risks||[]).map(o=>`${r.task}: ${o}`));
+  L.push('## נשאר פתוח'); open.length?open.forEach(o=>L.push(`- ${o}`)):L.push('- אין.');
+  L.push('','## סיכונים שדווחו'); risk.length?risk.forEach(o=>L.push(`- ${o}`)):L.push('- אין.');
+  L.push('','## בריצה עכשיו'); run.length?run.forEach(t=>L.push(`- ${t.id} · ${t.title} — ${t.owns.join(' · ')}`)):L.push('- אין.');
+  const {wave} = computeWave();
+  L.push('','## הגל הבא'); wave.length?wave.forEach(t=>L.push(`- ${t.id} · ${t.title}`)):L.push('- אין מה לשגר.');
+  L.push('','## דורש החלטה של מיטל');
+  const gates = TASKS.filter(t=>/🔴/.test(t.desc) && stat(t.id)!=='done').map(t=>`- ${t.id} · ${t.title}`);
+  gates.length?gates.forEach(g=>L.push(g)):L.push('- אין.');
+  return L.join('\n');
+}
+
+/* ══════════ WIRE ══════════ */
+$$('.tab').forEach(b=>b.onclick=()=>{ $$('.tab').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  $$('.pane').forEach(p=>p.classList.remove('on')); $('#p-'+b.dataset.p).classList.add('on'); });
+['gate','width','flane','fphase'].forEach(id=>$('#'+id).onchange=render);
+$('#fq').oninput=render;
+$('#mask').onclick=e=>{ if(e.target.id==='mask') $('#mask').classList.remove('on'); };
+
+$('#dispatch').onclick=()=>{ const {wave}=computeWave(); if(!wave.length) return alert('אין מה לשגר.');
+  wave.forEach(t=>ST.tasks[t.id]={...(ST.tasks[t.id]||{}),status:'running'}); save(); render();
+  alert(`שוגרו ${wave.length}: ${wave.map(t=>t.id).join(' · ')}\n\nפתחי VS Code נפרד לכל אחת והדביקי את ה-bootstrap שלה.`); };
+
+$('#allboot').onclick=function(){ const {wave}=computeWave(); if(!wave.length) return alert('אין מה לשגר.');
+  const ids=wave.map(t=>t.id);
+  cp(wave.map(t=>bootstrap(t,ids)).join('\n\n'+'═'.repeat(60)+'\n\n'), this); };
+
+$('#exp').onclick=function(){ cp(JSON.stringify(ST,null,2), this); };
+$('#imp').onclick=()=>{ const s=prompt('הדביקי JSON של מצב:'); if(!s) return;
+  try{ ST=JSON.parse(s); save(); render(); }catch(e){ alert('JSON לא תקין'); } };
+$('#rst').onclick=()=>{ if(confirm('לאפס את כל הסטטוסים והדיווחים?')){ ST={tasks:{},reports:[]}; save(); render(); } };
+
+$('#addRep').onclick=()=>{ const raw=$('#repIn').value.trim(); if(!raw) return;
+  try{ const r=JSON.parse(raw); ST.reports.push(r);
+    if(r.task && r.status==='done') ST.tasks[r.task]={...(ST.tasks[r.task]||{}),status:'review'};
+    save(); $('#repIn').value=''; render();
+    alert(`נקלט דיווח ${r.task}. הסטטוס עבר ל«באימות» — התזמורת מאמתת בעצמה לפני «הושלם».`);
+  }catch(e){ alert('JSON לא תקין'); } };
+window.delRep = i => { ST.reports.splice(i,1); save(); render(); };
+$('#mkSum').onclick=()=>{ $('#sumOut').value = summary(); };
+
+$('#flane').innerHTML = '<option value="">כל הנתיבים</option>' +
+  Object.entries(LANES).map(([k,v])=>`<option value="${k}">${v.he}</option>`).join('');
+$('#laws').innerHTML = LAWS.map((l,i)=>`<div class="law" data-n="${i+1}"><h4>${l.h}</h4><p>${l.p}</p></div>`).join('');
+
+render();
+</script>
+</body>
+</html>

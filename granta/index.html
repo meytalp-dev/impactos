@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>גְּרַנְטָה — המאמא של Google Grants לעמותות</title>
+<meta name="description" content="Google Grants בלי איש קמפיינים. עד 10,000 דולר בחודש מגוגל — מנוהלים אוטומטית לעמותה שלכם.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&family=Rubik:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/granta.css">
+<style>
+/* ==========================================================================
+   A0 · דף הנחיתה — רכיבים מקומיים בלבד.
+   כולם נבנו מטוקנים של assets/tokens.css. אין כאן ערך צבע, אין תכונה
+   פיזית, ואין טוקן חדש. רכיב שיחזור על עצמו במסך נוסף יעלה ל-granta.css
+   במשימה ייעודית, לא כאן.                     UX-4.0 · UX-4.1 · UX-7.1
+   ========================================================================== */
+
+/* --- פס ניווט: במובייל נשארים המותג וכפתור ההמרה בלבד (UX-6.7) --------- */
+.a0-navwrap{margin-inline-start:auto;display:flex;align-items:center;gap:var(--touch-gap)}
+.a0-nav{display:none}
+/* granta.css נותן ל---granta-nav מרווח של s-1 (4px) בין שני יעדי מגע.
+   UX-6.5 דורש 8px. עוקפים כאן מקומית ומדווחים — התיקון עצמו שייך
+   ל-granta.css, שאסור לי לגעת בו. */
+.a0-nav .granta-nav{gap:var(--touch-gap)}
+
+/* --- כפתור על הגרדיאנט: לבן מלא, טקסט primary. 8.33:1 — UX-4.6 --------- */
+.a0-btn-invert{background:var(--surface);color:var(--primary);border-color:var(--surface)}
+.a0-btn-invert:hover{background:var(--accent);color:var(--primary-deep);box-shadow:none}
+.a0-herocta{margin-block-start:var(--s-2)}
+
+/* --- גריד כללי: auto-fit, בלי מספר עמודות קשיח (UX-6.8) ---------------- */
+.a0-grid{display:grid;gap:var(--s-4);grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))}
+.a0-grid--pains{gap:var(--s-3);grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.a0-grid li{list-style:none}
+
+.a0-band{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);padding:var(--s-5)}
+
+/* --- פריט "מה גרנטה עושה" ---------------------------------------------- */
+.a0-item{display:flex;align-items:flex-start;gap:var(--s-3)}
+.a0-item__mark{
+  flex:none;inline-size:1.75rem;block-size:1.75rem;
+  display:grid;place-items:center;border-radius:var(--r-pill);
+  background:var(--secondary);color:var(--primary);
+  font-family:var(--font-head);font-size:var(--fs-badge);font-weight:var(--fw-bold);line-height:1;
+}
+.a0-item__body{display:flex;flex-direction:column;gap:var(--s-1);min-inline-size:0}
+.a0-item__title{font-family:var(--font-head);font-size:var(--fs-h3);font-weight:var(--fw-bold);line-height:var(--lh-h3);color:var(--ink)}
+
+/* --- פריט "המציאות": ניטרלי בכוונה. אלה כאבים, לא סטטוס מערכת (UX-5.0) - */
+.a0-pain{
+  display:flex;align-items:flex-start;gap:var(--s-2);
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);
+  padding:var(--s-3);
+  font-size:var(--fs-help);line-height:var(--lh-help);color:var(--ink);
+}
+.a0-pain__mark{flex:none;color:var(--ink-muted);font-size:var(--fs-badge);line-height:var(--lh-help)}
+
+/* --- כרטיס מסלול -------------------------------------------------------- */
+.a0-planhead{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s-2)}
+.a0-tag{
+  display:inline-flex;align-items:center;
+  background:var(--secondary);color:var(--primary);border:1px solid var(--primary);
+  border-radius:var(--r-pill);padding-inline:var(--s-3);padding-block:var(--s-1);
+  font-family:var(--font-head);font-size:var(--fs-badge);font-weight:var(--fw-bold);line-height:var(--lh-tight);
+}
+.a0-price{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--s-2)}
+.a0-feats{list-style:none;display:flex;flex-direction:column;gap:var(--s-2);margin-block-start:var(--s-2)}
+.a0-feat{display:flex;align-items:flex-start;gap:var(--s-2);font-size:var(--fs-help);line-height:var(--lh-help);color:var(--ink)}
+/* הסימון בסגול המותג ולא בירוק — ירוק שמור לתנאי שנבדק ועבר (UX-5.4) */
+.a0-feat__mark{flex:none;color:var(--primary);font-size:var(--fs-badge);line-height:var(--lh-help)}
+.a0-plan .granta-card__foot{margin-block-start:auto;padding-block-start:var(--s-3)}
+
+/* --- זוג ה-CTA הסוגר: נערם במובייל, זה לצד זה מ-640 ------------------- */
+.a0-splitcta{display:grid;gap:var(--touch-gap);grid-template-columns:1fr}
+
+/* --- הסבר מונח במופע הראשון (UX-2.1) ----------------------------------- */
+.a0-gloss{border-block-end:1px dotted var(--line-strong);cursor:help}
+
+/* --- פוטר: כל קישור הוא יעד מגע מלא (UX-6.4, UX-6.5) ------------------- */
+.granta-footer p{margin-inline:auto}
+.a0-footnav{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:var(--touch-gap);margin-block:var(--s-3)}
+.a0-footlink{
+  display:inline-flex;align-items:center;min-block-size:var(--touch);
+  padding-inline:var(--s-3);border-radius:var(--r-pill);
+  color:var(--primary);text-decoration:none;font-weight:var(--fw-medium);
+  transition:background-color var(--dur-fast) var(--ease);
+}
+.a0-footlink:hover{background:var(--secondary);text-decoration:underline}
+
+@media (min-width:640px){
+  .a0-nav{display:block}
+  .a0-band{padding:var(--s-6)}
+  .a0-splitcta{grid-template-columns:1fr 1fr}
+}
+
+/* UX-8.0 — חובה בכל גיליון סגנון שיש בו transition */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+    scroll-behavior:auto !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<a class="granta-skip" href="#main">דילוג לתוכן</a>
+
+<header class="granta-topbar">
+  <div class="granta-topbar__inner">
+    <a class="granta-brand" href="#main">גְּרַנְטָה<span class="granta-brand__dot" aria-hidden="true">.</span></a>
+    <div class="a0-navwrap">
+      <nav class="a0-nav" aria-label="ניווט הדף">
+        <ul class="granta-nav">
+          <li><a class="granta-navlink" href="#what">מה גרנטה עושה</a></li>
+          <li><a class="granta-navlink" href="#reality">המציאות</a></li>
+          <li><a class="granta-navlink" href="#pricing">מחירים</a></li>
+          <li><a class="granta-navlink" href="#control">שליטה מלאה</a></li>
+        </ul>
+      </nav>
+      <a class="granta-btn granta-btn--sm granta-btn--secondary" href="check.html">בדיקת זכאות חינם</a>
+    </div>
+  </div>
+</header>
+
+<!-- ====================================================== הירו -->
+<section class="granta-hero" aria-labelledby="h-hero">
+  <div class="granta-hero__inner">
+    <span class="granta-kicker">גְּרַנְטָה — המאמא של Google Grants לעמותות</span>
+    <h1 id="h-hero">Google Grants בלי איש קמפיינים<span class="granta-hero__dot" aria-hidden="true">.</span></h1>
+    <p><span class="granta-num">$10,000</span> בחודש מגוגל — מנוהלים אוטומטית לעמותה שלכם. בלי לרדוף אחרי גוגל. בלי לשלם אלפי שקלים בחודש.</p>
+    <div class="granta-btnrow a0-herocta">
+      <a class="granta-btn a0-btn-invert" href="#pricing">בחרו מסלול</a>
+    </div>
+  </div>
+</section>
+
+<main id="main" class="granta-page" tabindex="-1">
+
+  <!-- ================================================== מה גרנטה עושה -->
+  <section class="granta-section" id="what" aria-labelledby="h-what">
+    <h2 id="h-what">מנהלת את כל ה-Google Ads לבד.</h2>
+    <p class="granta-lede">הגשה, בנייה, אופטימיזציה, מעקב <span class="a0-gloss" aria-describedby="g-ctr" title="אחוז ההקלקה (CTR) — מתוך כל 100 אנשים שראו את המודעה, כמה לחצו עליה">CTR</span> וטיפול בהשעיות — בלי שתצטרכו להיכנס ל-Google Ads אפילו פעם אחת.</p>
+    <span id="g-ctr" class="sr-only">אחוז ההקלקה (CTR) — מתוך כל 100 אנשים שראו את המודעה, כמה לחצו עליה.</span>
+
+    <div class="a0-grid">
+      <article class="granta-card">
+        <div class="a0-item">
+          <span class="a0-item__mark" aria-hidden="true">1</span>
+          <div class="a0-item__body">
+            <span class="a0-item__title">מגישה</span>
+            <span class="granta-help">טפסים, אימותים ומסמכים</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="granta-card">
+        <div class="a0-item">
+          <span class="a0-item__mark" aria-hidden="true">2</span>
+          <div class="a0-item__body">
+            <span class="a0-item__title">בונה ומתקנת</span>
+            <span class="granta-help">קמפיינים, מילים, מודעות</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="granta-card">
+        <div class="a0-item">
+          <span class="a0-item__mark" aria-hidden="true">3</span>
+          <div class="a0-item__body">
+            <span class="a0-item__title">מנטרת CTR</span>
+            <span class="granta-help"><span class="granta-num">24/7</span>, אוטומטית</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="granta-card">
+        <div class="a0-item">
+          <span class="a0-item__mark" aria-hidden="true">4</span>
+          <div class="a0-item__body">
+            <span class="a0-item__title">מצילה מהשעיות</span>
+            <span class="granta-help">מתקנת לפני ש-Google כועס</span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================== המציאות -->
+  <section class="granta-section" id="reality" aria-labelledby="h-reality">
+    <h2 id="h-reality"><span class="granta-num">$10,000</span> בחודש מגוגל. רוב העמותות לא מנצלות אותם.</h2>
+    <p class="granta-lede">או שהעמותה לא מנצלת את המענק — או שהיא משלמת הון לאיש קמפיינים שיעשה את זה.</p>
+
+    <div class="a0-band">
+      <ul class="a0-grid a0-grid--pains">
+        <li class="a0-pain"><span class="a0-pain__mark" aria-hidden="true">✖</span><span>החשבון מושעה</span></li>
+        <li class="a0-pain"><span class="a0-pain__mark" aria-hidden="true">✖</span><span>CTR מתחת לסף</span></li>
+        <li class="a0-pain"><span class="a0-pain__mark" aria-hidden="true">✖</span><span>אין Tracking</span></li>
+        <li class="a0-pain"><span class="a0-pain__mark" aria-hidden="true">✖</span><span>אין Conversions</span></li>
+        <li class="a0-pain"><span class="a0-pain__mark" aria-hidden="true">✖</span><span>אין זמן להתעסק</span></li>
+        <li class="a0-pain"><span class="a0-pain__mark" aria-hidden="true">✖</span><span>אלפי ₪/חודש לאיש קמפיינים</span></li>
+        <li class="a0-pain"><span class="a0-pain__mark" aria-hidden="true">✖</span><span>האתר לא מוכן ל-Google</span></li>
+        <li class="a0-pain"><span class="a0-pain__mark" aria-hidden="true">✖</span><span>אף אחד לא יודע מה לתקן</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================================================== הפתרון -->
+  <section class="granta-section" id="solution" aria-labelledby="h-solution">
+    <div class="granta-card granta-card--accent">
+      <h2 id="h-solution">גְּרַנְטָה פותרת את כל זה. לבד.</h2>
+      <p class="granta-lede">מערכת אחת. מחברים פעם אחת. עובדת <span class="granta-num">24/7</span>.</p>
+      <div class="granta-card__foot">
+        <a class="granta-btn" href="check.html">בדיקת זכאות חינם</a>
+      </div>
+      <p class="granta-help">דקה. <span class="granta-num">3</span> שדות. בלי כרטיס אשראי.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== מחירים -->
+  <section class="granta-section" id="pricing" aria-labelledby="h-pricing">
+    <h2 id="h-pricing">מסלול לכל עמותה.</h2>
+    <p class="granta-lede">בלי התחייבות לשנה. בלי איש קמפיינים. בלי הפתעות.</p>
+
+    <div class="a0-grid">
+
+      <article class="granta-card a0-plan granta-card--accent" aria-labelledby="h-managed">
+        <div class="a0-planhead">
+          <span class="a0-tag">הכי פופולרי</span>
+          <span class="granta-card__label">יש לכם אישור Google Grants</span>
+        </div>
+        <h3 id="h-managed">גְּרַנְטָה MANAGED</h3>
+        <p class="a0-price"><span class="granta-hero-num">₪790</span> <span class="granta-help">לחודש</span></p>
+        <p class="granta-help">לעמותה שכבר קיבלה אישור מגוגל. אנחנו מחברים את החשבון, סורקים, מתקנים ומנהלים — הכול אוטומטית.</p>
+        <ul class="a0-feats">
+          <li class="a0-feat"><span class="a0-feat__mark" aria-hidden="true">✔</span><span>ניהול קמפיינים מלא</span></li>
+          <li class="a0-feat"><span class="a0-feat__mark" aria-hidden="true">✔</span><span>אופטימיזציה אוטומטית</span></li>
+          <li class="a0-feat"><span class="a0-feat__mark" aria-hidden="true">✔</span><span>ניטור <span class="granta-num">24/7</span> והתראות</span></li>
+          <li class="a0-feat"><span class="a0-feat__mark" aria-hidden="true">✔</span><span>טיפול בהשעיות ובעיות</span></li>
+          <li class="a0-feat"><span class="a0-feat__mark" aria-hidden="true">✔</span><span>דוחות חודשיים וניתוחים</span></li>
+          <li class="a0-feat"><span class="a0-feat__mark" aria-hidden="true">✔</span><span>ליווי דוא״ל ושיחה</span></li>
+        </ul>
+        <div class="granta-card__foot">
+          <a class="granta-btn granta-btn--block" href="check.html?track=managed">להתחיל</a>
+        </div>
+      </article>
+
+      <article class="granta-card a0-plan" aria-labelledby="h-fromzero">
+        <div class="a0-planhead">
+          <span class="granta-card__label">אין לכם עדיין אישור מגוגל</span>
+        </div>
+        <h3 id="h-fromzero">גְּרַנְטָה FROM ZERO</h3>
+        <p class="a0-price"><span class="granta-hero-num">₪1,200</span> <span class="granta-help">לחודש · <span class="granta-num">3</span> חודשים ראשונים</span></p>
+        <p class="granta-help">מאפס ועד הגשה — ליווי זכאות, מסמכים, אתר והגשה ל-Google. אחרי אישור עוברים ל-<span class="granta-num">₪790</span> לחודש. *האישור בידי Google בלבד.</p>
+        <ul class="a0-feats">
+          <li class="a0-feat"><span class="a0-feat__mark" aria-hidden="true">✔</span><span>ליווי תהליך הזכאות</span></li>
+          <li class="a0-feat"><span class="a0-feat__mark" aria-hidden="true">✔</span><span>סיוע במסמכים ובאתר</span></li>
+          <li class="a0-feat"><span class="a0-feat__mark" aria-hidden="true">✔</span><span>הגשה ל-Google</span></li>
+          <li class="a0-feat"><span class="a0-feat__mark" aria-hidden="true">✔</span><span>הקמת קמפיינים אחרי אישור</span></li>
+          <li class="a0-feat"><span class="a0-feat__mark" aria-hidden="true">✔</span><span>מעבר ל-MANAGED אוטומטי</span></li>
+          <li class="a0-feat"><span class="a0-feat__mark" aria-hidden="true">✔</span><span>ליווי צמוד לאורך כל הדרך</span></li>
+        </ul>
+        <div class="granta-card__foot">
+          <a class="granta-btn granta-btn--block granta-btn--secondary" href="check.html?track=from_zero">מתחילים מאפס</a>
+        </div>
+      </article>
+
+    </div>
+
+    <p class="granta-help">* כל המחירים בתוספת מע״מ. ניתן לבטל בכל עת.</p>
+  </section>
+
+  <!-- ================================================== שליטה מלאה -->
+  <section class="granta-section" id="control" aria-labelledby="h-control">
+    <h2 id="h-control">אתם נותנים גישה. גְּרַנְטָה לא מחליטה לבד.</h2>
+
+    <div class="granta-card">
+      <ul class="a0-feats">
+        <li class="a0-feat"><span class="a0-feat__mark" aria-hidden="true">✔</span><span>שום דבר לא עולה בלי אישור שלכם</span></li>
+        <li class="a0-feat"><span class="a0-feat__mark" aria-hidden="true">✔</span><span><span class="a0-gloss" aria-describedby="g-rollback" title="שחזור — ביטול השינוי והחזרת המצב הקודם">Rollback</span> לכל שינוי</span></li>
+        <li class="a0-feat"><span class="a0-feat__mark" aria-hidden="true">✔</span><span>כל פעולה מתועדת ב-<span class="a0-gloss" aria-describedby="g-audit" title="יומן פעולות — רישום של כל שינוי: מי, מה, מתי">Audit Log</span></span></li>
+        <li class="a0-feat"><span class="a0-feat__mark" aria-hidden="true">✔</span><span>התראות לפני השעיה אפשרית</span></li>
+        <li class="a0-feat"><span class="a0-feat__mark" aria-hidden="true">✔</span><span>חיבור מאובטח רשמי ל-Google</span></li>
+      </ul>
+      <span id="g-rollback" class="sr-only">שחזור — ביטול השינוי והחזרת המצב הקודם.</span>
+      <span id="g-audit" class="sr-only">יומן פעולות — רישום של כל שינוי: מי, מה, מתי.</span>
+    </div>
+  </section>
+
+  <!-- ================================================== סיום -->
+  <section class="granta-section" id="start" aria-labelledby="h-start">
+    <div class="granta-card granta-card--accent">
+      <h2 id="h-start">חברו את העמותה. גְּרַנְטָה תעשה את השאר.</h2>
+      <p class="granta-lede">בחירת מסלול לפי סטטוס העמותה:</p>
+      <div class="a0-splitcta">
+        <a class="granta-btn" href="check.html?track=managed">יש לי Google Grants <span aria-hidden="true">←</span></a>
+        <a class="granta-btn granta-btn--secondary" href="check.html?track=from_zero">אין לי Google Grants <span aria-hidden="true">←</span></a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="granta-footer">
+  <p>גְּרַנְטָה — המאמא של Google Grants</p>
+  <nav class="a0-footnav" aria-label="קישורים משפטיים">
+    <a class="a0-footlink" href="legal/privacy.md">פרטיות</a>
+    <a class="a0-footlink" href="legal/terms.md">תנאים</a>
+  </nav>
+  <p><span class="granta-num">© 2026 Granta</span> · מבית Impact OS</p>
+</footer>
+
+</body>
+</html>

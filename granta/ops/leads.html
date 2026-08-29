@@ -1,0 +1,910 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>גְּרַנְטָה · תיבת הלידים (C2)</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="description" content="קונסולת האופרייטור — תיבת הלידים מטופס בדיקת הזכאות, ממוינת לפי דחיפות שעון ה-SLA.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&family=Rubik:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/tokens.css">
+<link rel="stylesheet" href="../assets/granta.css">
+
+<style>
+/* ==========================================================================
+   C2 · תיבת הלידים — סגנון מקומי למסך הזה בלבד.
+   כל ערך כאן הוא var() מ-tokens.css. אין סולמית, אין rgba, אין תכונה
+   פיזית (left/right).                                     UX-4.0 · UX-4.1 · UX-7.1
+   ========================================================================== */
+
+/* 🔴 כל display מפורש (flex/grid) גובר על [hidden] של הדפדפן, ו-granta.css
+   נותנת display:flex ל-.granta-section — כלומר בלי השורה הזאת ארבעת מצבי
+   המסך היו מוצגים בו-זמנית, ובדיקת UX-1.2 הייתה עוברת בשקר (התכונה קיימת,
+   האלמנט נראה). זו השורה שמחזיקה את "מצב אחד גלוי בכל רגע".        UX-1.2 */
+[hidden]{display:none !important}
+
+/* --- פס עליון: מי מחובר + יציאה --------------------------------------- */
+.leads-who{
+  margin-inline-start:auto;
+  display:inline-flex;align-items:center;gap:var(--s-2);
+  font-size:var(--fs-help);color:var(--ink-muted);
+}
+.leads-who__mail{direction:ltr;unicode-bidi:isolate;font-family:var(--font-mono);font-size:var(--fs-code)}
+.leads-signout{flex:none}
+
+/* --- מסננים ------------------------------------------------------------ */
+.leads-filters{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));   /* UX-6.8 */
+  gap:var(--s-4);align-items:end;
+}
+.leads-filters__actions{display:flex;align-items:flex-end}
+
+/* --- סרגל סיכום -------------------------------------------------------- */
+.leads-summary{
+  display:flex;flex-wrap:wrap;gap:var(--s-2) var(--s-5);
+  align-items:baseline;
+  max-inline-size:none;                 /* לא שורת קריאה — לא כפוף ל---measure */
+  font-size:var(--fs-help);color:var(--ink-muted);
+}
+.leads-summary__item{display:inline-flex;align-items:baseline;gap:var(--s-1)}
+.leads-summary__num{
+  font-family:var(--font-head);font-weight:var(--fw-heavy);font-size:var(--fs-h3);
+  color:var(--ink);direction:ltr;unicode-bidi:isolate;
+}
+
+/* --- הטבלה ------------------------------------------------------------- */
+/* תשע עמודות. במובייל היא לא נדחסת — היא נגללת בתוך .granta-tw בלבד.
+   הדף עצמו לעולם לא נגלל אופקית.                              UX-6.1 · UX-6.2 */
+.leads-table{min-inline-size:900px}
+.leads-table td{vertical-align:middle}
+.leads-table .leads-col-org{min-inline-size:9rem}
+.leads-table .leads-col-act{inline-size:1%;white-space:nowrap}
+/* הכותרת הזאת היא הארוכה בטבלה. granta.css נותנת ל-th nowrap; כאן, ורק
+   כאן, מרשים לה לשבור לשתי שורות כדי לא לנפח את רוחב הטבלה. */
+.leads-table .leads-col-grants{white-space:normal;min-inline-size:6rem}
+
+.leads-org{font-weight:var(--fw-medium);color:var(--ink)}
+/* דומיין ואימייל הם אסימון אחד. שבירה באמצע מילה הופכת אותם לבלתי קריאים
+   וגם מוחצת את רוחב העמודה — הם נשארים בשורה אחת, והעטיפה נגללת. */
+.leads-ltr{direction:ltr;unicode-bidi:isolate;display:inline-block;white-space:nowrap}
+/* קישור טקסט בתוך תא צפוף הוא עדיין יעד מגע. מגדילים דרך גובה מינימלי,
+   לא דרך הגדלת הגופן.                                               UX-6.4 */
+a.leads-ltr{display:inline-flex;align-items:center;min-block-size:var(--touch)}
+.leads-muted{color:var(--ink-muted)}
+.leads-nowrap{white-space:nowrap}
+.leads-score{display:inline-flex;align-items:baseline;gap:var(--s-1)}
+.leads-score__of{font-size:var(--fs-badge);color:var(--ink-muted)}
+
+/* --- שעון ה-SLA -------------------------------------------------------- */
+/* שלוש מדרגות + מדרגה רביעית לליד שכבר נענה (השעון נעצר).
+   🔴 תקציב האדום של המסך (UX-5.1) מוצא על באנר החריגה היחיד שמעל הטבלה.
+      לכן מדרגת "חריגה" בתוך הטבלה אינה נושאת --danger-bg אלא מסגרת
+      --danger-ink בעובי כפול על משטח לבן: 7.14:1 לטקסט, 7.14:1 לגבול,
+      ועדיין נבדלת מכל שאר המדרגות גם בצילום בגווני אפור (UX-5.6).       */
+.leads-sla{
+  display:inline-flex;align-items:center;gap:var(--s-1);
+  border:1px solid;border-radius:var(--r-pill);
+  padding-inline:var(--s-3);padding-block:var(--s-1);
+  font-family:var(--font-head);font-size:var(--fs-badge);font-weight:var(--fw-bold);
+  line-height:var(--lh-tight);white-space:nowrap;
+}
+.leads-sla__num{direction:ltr;unicode-bidi:isolate;font-variant-numeric:tabular-nums}
+.leads-sla--overdue{background:var(--surface);color:var(--danger-ink);border-color:var(--danger-ink);border-width:2px}
+.leads-sla--soon{background:var(--warn-bg);color:var(--warn-ink);border-color:var(--warn-line)}
+.leads-sla--ok{background:var(--ok-bg);color:var(--ok-ink);border-color:var(--ok-line)}
+.leads-sla--done{background:var(--surface-2);color:var(--ink-muted);border-color:var(--line-strong)}
+.leads-sla--none{background:var(--surface-2);color:var(--ink-muted);border-color:var(--line-strong)}
+
+/* --- שלד טעינה בצורת השורה האמיתית — בלי קפיצת פריסה (UX-1.3) ----------
+   .granta-skel יושבת כאן על <span>, ועל אלמנט inline הגובה לא חל בכלל —
+   בלי display:block השלד היה מתמוטט ל-25px מול שורה אמיתית של 69px.
+   העמודה האחרונה מקבלת את גובה הכפתור (44px), שהוא מה שקובע את גובה
+   השורה האמיתית — וכך שתי הפריסות יוצאות באותו גובה. */
+.leads-table .granta-skel{display:block}
+.leads-skel--act{block-size:var(--touch)}
+
+/* --- toast ------------------------------------------------------------- */
+.leads-toastwrap{
+  position:fixed;inset-block-end:var(--s-6);inset-inline:var(--s-4);
+  z-index:var(--z-toast);
+  display:flex;justify-content:center;
+  pointer-events:none;
+}
+.leads-toastwrap .granta-toast{pointer-events:auto;max-inline-size:var(--state-max)}
+/* 🔴 display מפורש גובר על [hidden] של הדפדפן. בלי השורה הזאת המודל
+   וה-toast היו נראים תמיד, גם כשהתכונה hidden מונחת עליהם. */
+.leads-toastwrap[hidden]{display:none}
+
+/* --- מודל אישור (UX-1.18 · UX-7.11) ------------------------------------ */
+.leads-modal{
+  position:fixed;inset:0;z-index:var(--z-modal);
+  display:grid;place-items:center;
+  padding:var(--s-4);
+  background:var(--overlay);
+}
+.leads-modal[hidden]{display:none}
+.leads-modal__card{
+  inline-size:100%;max-inline-size:var(--state-max);
+  display:flex;flex-direction:column;gap:var(--s-4);
+  background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow-modal);
+  padding:var(--s-6);
+  max-block-size:calc(100vh - var(--s-8));overflow-y:auto;
+}
+.leads-modal__card p{font-size:var(--fs-body);line-height:var(--lh-body);color:var(--ink)}
+
+/* --- כרטיס מצב: הכותרת מעל משפט ההסבר (§1.B) --------------------------- */
+.granta-state h3{margin-block-end:0}
+
+/* --- תנועה מופחתת — חובה בכל CSS שיש בו transition/animation (UX-8.0) --- */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+    scroll-behavior:auto !important;
+  }
+}
+
+/* --- נקודות שבירה מותרות בלבד: 640 · 960 (UX-6.7) ---------------------- */
+@media (min-width:640px){
+  .leads-filters{align-items:end}
+}
+</style>
+</head>
+
+<!-- data-granta-debug — granta.css חושפת את .granta-state__detail (הטקסט
+     הטכני הגולמי) רק תחת הדגל הזה, ורק בקונסולת האופרייטור. בפורטל העמותה
+     הוא נשאר מוסתר.                                       UX-1.12 · granta.css §9 -->
+<body data-granta-debug>
+
+<a class="granta-skip" href="#main">דילוג לתוכן</a>
+
+<header class="granta-topbar">
+  <div class="granta-topbar__inner">
+    <a class="granta-brand" href="#main">גְּרַנְטָה<span class="granta-brand__dot" aria-hidden="true">.</span></a>
+    <span class="leads-who" id="who" hidden>
+      <span class="sr-only">מחוברת כאופרייטור:</span>
+      <span class="leads-who__mail" id="who-mail"></span>
+    </span>
+    <button type="button" class="granta-btn granta-btn--ghost granta-btn--sm leads-signout" id="signout" hidden>יציאה</button>
+  </div>
+</header>
+
+<section class="granta-hero">
+  <div class="granta-hero__inner">
+    <span class="granta-kicker">קונסולת האופרייטור · C2</span>
+    <h1>תיבת הלידים<span class="granta-hero__dot" aria-hidden="true">.</span></h1>
+    <p>כל מי שמילא את טופס בדיקת הזכאות נוחת כאן, עם הציון והפסיקה שהמנוע נתן. הרשימה ממוינת לפי דחיפות שעון ה-SLA — הליד שעומד לפוג ראשון נמצא למעלה, ולא הוותיק ביותר.</p>
+    <div class="granta-chips">
+      <span class="granta-chip">התחייבות תשובה <span class="granta-num">24</span> שעות</span>
+      <span class="granta-chip">מיון לפי דחיפות, לא לפי תאריך</span>
+    </div>
+  </div>
+</section>
+
+<main id="main" class="granta-page" tabindex="-1">
+
+  <!-- ============================================================ מסננים -->
+  <form class="granta-section" id="filters" hidden aria-labelledby="h-filters">
+    <h2 id="h-filters" class="sr-only">סינון הרשימה</h2>
+    <div class="leads-filters">
+      <div class="granta-field">
+        <label class="granta-label" for="f-status">סטטוס טיפול</label>
+        <select class="granta-select" id="f-status">
+          <option value="">כל הסטטוסים</option>
+          <option value="new">חדש</option>
+          <option value="in_review">בבדיקה</option>
+          <option value="report_sent">דוח נשלח</option>
+          <option value="converted">הומר לתיק עמותה</option>
+          <option value="rejected">נדחה</option>
+          <option value="spam">ספאם</option>
+        </select>
+      </div>
+      <div class="granta-field">
+        <label class="granta-label" for="f-q">חיפוש בשם עמותה</label>
+        <input class="granta-input" id="f-q" type="search" autocomplete="off" spellcheck="false" placeholder="חלק מהשם מספיק">
+        <span class="granta-hint" id="f-q-hint">החיפוש רץ על שם העמותה בלבד, לא על האימייל.</span>
+      </div>
+      <div class="leads-filters__actions">
+        <button type="button" class="granta-btn granta-btn--secondary" id="f-clear">ניקוי המסננים</button>
+      </div>
+    </div>
+  </form>
+
+  <!-- ======================================================= מצב · טעינה -->
+  <section class="granta-section" data-state="loading" aria-busy="true" aria-live="polite" aria-labelledby="h-loading">
+    <h2 id="h-loading" class="sr-only">טוען את תיבת הלידים</h2>
+    <div class="granta-tw" role="region" aria-label="שלד טעינה של טבלת הלידים">
+      <table class="granta-table leads-table">
+        <caption class="sr-only">טעינת רשימת הלידים</caption>
+        <thead>
+          <tr>
+            <th scope="col">שם עמותה</th><th scope="col">אתר</th><th scope="col">אימייל</th>
+            <th scope="col" class="leads-col-grants">יש כבר מענק <span class="leads-ltr">(Ad Grants)</span></th><th scope="col">ציון</th><th scope="col">פסיקת המנוע</th>
+            <th scope="col">שעון SLA</th><th scope="col">סטטוס</th><th scope="col">פעולה</th>
+          </tr>
+        </thead>
+        <tbody id="skel-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ========================================================== מצב · ריק -->
+  <section class="granta-section" data-state="empty" hidden aria-labelledby="h-empty">
+    <h2 id="h-empty" class="sr-only">אין לידים להצגה</h2>
+    <div class="granta-state granta-state--empty" id="empty-card"></div>
+  </section>
+
+  <!-- ======================================================= מצב · שגיאה -->
+  <section class="granta-section" data-state="error" hidden aria-labelledby="h-error">
+    <h2 id="h-error" class="sr-only">שגיאה בטעינת תיבת הלידים</h2>
+    <div id="error-card"></div>
+  </section>
+
+  <!-- ======================================================== מצב · מוכן -->
+  <section class="granta-section" data-state="ready" hidden aria-labelledby="h-ready">
+    <h2 id="h-ready">הלידים שמחכים לך</h2>
+    <p class="granta-lede">שעון ה-SLA סופר את <span class="granta-num">24</span> השעות שהתחייבנו להשיב בהן מרגע מילוי הטופס. מדרגה כתומה נפתחת כשנותרו פחות מ-<span class="granta-num">6</span> שעות. ליד שנשלח אליו דוח — השעון שלו נעצר.</p>
+
+    <!-- הסיכום הוא אזור החי היחיד במסך. שעוני השורות מתעדכנים בשקט
+         כדי לא להציף את קורא המסך בכל דקה.                    UX-7.10 -->
+    <p class="leads-summary" id="summary" aria-live="polite"></p>
+
+    <!-- 🔴 האלמנט היחיד ב---danger-bg במסך הזה (UX-5.1). נוצר רק כשיש חריגה. -->
+    <div id="overdue-banner"></div>
+
+    <div class="granta-tw" id="tw" role="region" tabindex="0" aria-label="טבלת הלידים — נגללת אופקית">
+      <table class="granta-table leads-table">
+        <caption class="sr-only">לידים מטופס בדיקת הזכאות, ממוינים לפי דחיפות שעון ה-SLA</caption>
+        <thead>
+          <tr>
+            <th scope="col" class="leads-col-org">שם עמותה</th>
+            <th scope="col">אתר</th>
+            <th scope="col">אימייל</th>
+            <th scope="col" class="leads-col-grants">יש כבר מענק <span class="leads-ltr">(Ad Grants)</span></th>
+            <th scope="col">ציון</th>
+            <th scope="col">פסיקת המנוע</th>
+            <th scope="col">שעון SLA</th>
+            <th scope="col">סטטוס</th>
+            <th scope="col" class="leads-col-act">פעולה</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <p class="granta-help">הפסיקה היא הערכה של המנוע בלבד. האישור הסופי בידי Google בלבד.</p>
+  </section>
+
+</main>
+
+<footer class="granta-footer">
+  גְּרַנְטָה · קונסולת האופרייטור. כל פעולה במסך הזה נרשמת ביומן הפעולות ואי אפשר למחוק את הרישום.
+</footer>
+
+<!-- toast (UX-1.16, UX-1.17) -->
+<div class="leads-toastwrap" id="toastwrap" hidden></div>
+
+<!-- מודל אישור לפעולה בלתי-הפיכה (UX-1.18, UX-7.11) -->
+<div class="leads-modal" id="modal" hidden>
+  <div class="leads-modal__card" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-desc">
+    <h2 id="modal-title">לאשר ולשלוח דוח זכאות?</h2>
+    <p id="modal-desc"></p>
+    <p class="granta-help">הליד יסומן כ"דוח נשלח" ותיחתם שעת התשובה. את המייל עצמו שולחים ידנית — בשלב הזה המערכת לא שולחת מייל בעצמה. הפעולה נרשמת ביומן הפעולות.</p>
+    <div class="granta-btnrow--split">
+      <button type="button" class="granta-btn" id="modal-ok">אישור ושליחה</button>
+      <button type="button" class="granta-btn granta-btn--secondary" id="modal-cancel">ביטול</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================================================
+     רשת ביטחון לאתחול. granta.js הוא מודול שמייבא את supabase-js מ-CDN.
+     אם ה-config חסר, אם המודול לא נטען, או אם ה-CDN חסום — המודול לעולם לא
+     רץ, ובלי השומר הזה המסך היה נתקע בשלד טעינה לנצח (UX-1.6).
+     סקריפט קלאסי, בלי import, ולכן תמיד רץ.
+     ========================================================================== -->
+<script>
+(function bootWatchdog(){
+  window.__leadsBooted = false;
+  setTimeout(function(){
+    if (window.__leadsBooted) return;
+    var wrap = document.getElementById('error-card');
+    if (!wrap) return;
+    wrap.innerHTML =
+      '<div class="granta-state granta-state--error" role="alert" tabindex="-1">' +
+        '<span class="granta-state__icon" aria-hidden="true">✖</span>' +
+        '<p>המסך לא נטען.</p>' +
+        '<p>קוד המסך לא רץ. שתי סיבות אפשריות: הקובץ <span class="granta-code">assets/granta.js</span> חסר, או שהחיבור ל-CDN של supabase-js חסום. רעננו את הדף; אם זה חוזר, בדקו את הרשת ואת הפריסה.</p>' +
+        '<p>קוד תקלה: <span class="granta-code">GR-BOOT-001</span></p>' +
+        '<button type="button" class="granta-btn" onclick="location.reload()">נסו שוב</button>' +
+      '</div>';
+    document.querySelectorAll('[data-state]').forEach(function(el){
+      el.hidden = el.getAttribute('data-state') !== 'error';
+    });
+    var f = document.getElementById('filters'); if (f) f.hidden = true;
+  }, 6000);
+})();
+</script>
+
+<!-- 🔴 granta-config.js אינו בריפו (סודות לא נשמרים ב-git). בפיתוח הקובץ
+     חסר, ה-404 הזה צפוי, ו-granta.js מדווח configState.ok === false —
+     והמסך נופל למצב שגיאה מכובד במקום להתרסק. -->
+<script src="../assets/granta-config.js"></script>
+
+<script type="module">
+window.__leadsBooted = true;
+
+import {
+  configState, requireOperator, auth, leads, fmt, nav,
+} from '../assets/granta.js';
+
+/* ------------------------------------------------------------------ *
+ * 0. עזרים
+ * ------------------------------------------------------------------ */
+
+const $ = (sel, root = document) => root.querySelector(sel);
+
+function esc(s) {
+  return String(s === null || s === undefined ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+/** מצב יחיד גלוי בכל רגע. בדיקה: [data-state]:not([hidden]) === 1  (UX-1.2) */
+function setState(name) {
+  document.querySelectorAll('[data-state]').forEach((el) => {
+    el.hidden = el.dataset.state !== name;
+  });
+  const loading = document.querySelector('[data-state="loading"]');
+  if (loading) loading.setAttribute('aria-busy', String(name === 'loading'));
+}
+
+/** UX-1.6 — אין טעינה אינסופית. */
+function withTimeout(promise, ms = 10000) {
+  let t;
+  const timer = new Promise((_, reject) => {
+    t = setTimeout(() => {
+      const e = new Error('request timed out after ' + ms + 'ms');
+      e.grantaCode = 'GR-TIMEOUT';
+      reject(e);
+    }, ms);
+  });
+  return Promise.race([promise, timer]).finally(() => clearTimeout(t));
+}
+
+/* ------------------------------------------------------------------ *
+ * 1. מילון התצוגה
+ * ------------------------------------------------------------------ */
+
+/** הסטטוסים שהשעון עדיין רץ עליהם. אלה בלבד נכנסים לחישוב הדחיפות. */
+const OPEN_STATUSES = new Set(['new', 'in_review']);
+
+const STATUS_HE = {
+  new:         { label: 'חדש',            cls: 'granta-sev--medium', mark: '●' },
+  in_review:   { label: 'בבדיקה',          cls: 'granta-sev--high',   mark: '◐' },
+  report_sent: { label: 'דוח נשלח',        cls: 'granta-sev--ok',     mark: '✔' },
+  converted:   { label: 'הומר לתיק עמותה', cls: 'granta-sev--ok',     mark: '★' },
+  rejected:    { label: 'נדחה',            cls: 'granta-sev--low',    mark: '✖' },
+  spam:        { label: 'ספאם',            cls: 'granta-sev--low',    mark: '✖' },
+};
+
+/* פסיקת המנוע. 🔴 "כנראה לא זכאית" אינה מקבלת אדום: אדום שמור להפרה
+   שגוררת השעיה או לשגיאת מערכת (UX-5.2). פסיקה שלילית היא מידע. */
+const VERDICT_HE = {
+  likely_eligible:   { label: 'כנראה זכאית',     cls: 'granta-sev--ok',     mark: '✔' },
+  needs_review:      { label: 'דורש בדיקה',      cls: 'granta-sev--high',   mark: '⚠' },
+  likely_ineligible: { label: 'כנראה לא זכאית',  cls: 'granta-sev--low',    mark: '✖' },
+};
+
+const SOON_MS = 6 * 3600 * 1000;   /* מדרגת "מתקרב" — פחות משש שעות */
+
+/* ------------------------------------------------------------------ *
+ * 2. שעון ה-SLA
+ * ------------------------------------------------------------------ */
+
+/**
+ * מצב השעון של ליד.
+ * sla_due_at הוא חותמת מוכנה מהסכימה (now()+24h), ולכן נמסר ל-fmt.slaLeft
+ * עם 0 שעות תוספת. אם היא חסרה — נופלים לחישוב 24 שעות מ-created_at.
+ */
+function slaOf(lead) {
+  return lead.sla_due_at
+    ? fmt.slaLeft(lead.sla_due_at, 0)
+    : fmt.slaLeft(lead.created_at, 24);
+}
+
+/** המדרגה: done (השעון נעצר) · overdue · soon · ok · none (אין חותמת). */
+function slaTier(lead) {
+  if (!OPEN_STATUSES.has(lead.status)) return 'done';
+  const s = slaOf(lead);
+  if (s.msLeft === null || s.msLeft === undefined) return 'none';
+  if (s.msLeft < 0) return 'overdue';
+  if (s.msLeft < SOON_MS) return 'soon';
+  return 'ok';
+}
+
+/** מפתח המיון: מתי השעון פג. ליד בלי חותמת יורד לסוף הקבוצה. */
+function dueMs(lead) {
+  const s = slaOf(lead);
+  if (s.dueAt) return s.dueAt.getTime();
+  return Number.POSITIVE_INFINITY;
+}
+
+/** משך אנושי מתוך מילישניות: "42 דק׳" · "3:20 שע׳" · "2 ימים". */
+function durParts(ms) {
+  const abs = Math.abs(ms);
+  const minutes = Math.floor(abs / 60000);
+  if (minutes < 1) return { n: '<1', u: 'דקה' };
+  if (minutes < 60) return { n: String(minutes), u: 'דק׳' };
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) {
+    const rem = minutes % 60;
+    return { n: rem ? hours + ':' + String(rem).padStart(2, '0') : String(hours), u: 'שע׳' };
+  }
+  const days = Math.floor(hours / 24);
+  return { n: String(days), u: days === 1 ? 'יום' : 'ימים' };
+}
+
+/** תא השעון. כל מדרגה נושאת סימן-צורה ומילה, לא רק גוון (UX-5.6). */
+function slaCellHtml(lead) {
+  const tier = slaTier(lead);
+
+  if (tier === 'done') {
+    const when = lead.responded_at ? fmt.date(lead.responded_at, 'datetime') : null;
+    return '<span class="leads-sla leads-sla--done"' +
+      (when ? ' title="נענה ב-' + esc(when) + '"' : '') + '>' +
+      '<span aria-hidden="true">✔</span><span>השעון נעצר</span></span>';
+  }
+  if (tier === 'none') {
+    return '<span class="leads-sla leads-sla--none"><span aria-hidden="true">–</span><span>אין חותמת</span></span>';
+  }
+
+  const s = slaOf(lead);
+  const p = durParts(s.msLeft);
+  const due = s.dueAt ? fmt.date(s.dueAt, 'datetime') : '';
+  const cfg = tier === 'overdue'
+    ? { cls: 'leads-sla--overdue', mark: '✖', word: 'חריגה' }
+    : tier === 'soon'
+      ? { cls: 'leads-sla--soon', mark: '⚠', word: 'נותרו' }
+      : { cls: 'leads-sla--ok', mark: '✔', word: 'נותרו' };
+
+  return '<span class="leads-sla ' + cfg.cls + '"' +
+    (due ? ' title="מועד היעד: ' + esc(due) + '"' : '') + '>' +
+    '<span aria-hidden="true">' + cfg.mark + '</span>' +
+    '<span>' + cfg.word + '</span>' +
+    '<span class="leads-sla__num">' + esc(p.n) + '</span>' +
+    '<span>' + esc(p.u) + '</span>' +
+    '</span>';
+}
+
+/* ------------------------------------------------------------------ *
+ * 3. תאים
+ * ------------------------------------------------------------------ */
+
+/** מציג את הדומיין, מקשר רק ל-http/https. כתובת אחרת מוצגת כטקסט. */
+function siteCellHtml(url) {
+  if (!url) return '<span class="leads-muted">—</span>';
+  const raw = String(url).trim();
+  const withScheme = /^https?:\/\//i.test(raw) ? raw : 'https://' + raw;
+  let host;
+  try { host = new URL(withScheme).host; } catch (_) { return '<span class="leads-ltr">' + esc(raw) + '</span>'; }
+  return '<a class="leads-ltr" href="' + esc(withScheme) + '" target="_blank" rel="noopener noreferrer">' +
+    esc(host) + '</a>';
+}
+
+function mailCellHtml(email) {
+  if (!email) return '<span class="leads-muted">—</span>';
+  return '<a class="leads-ltr" href="mailto:' + esc(email) + '">' + esc(email) + '</a>';
+}
+
+function hasGrantsCellHtml(v) {
+  if (v === true)  return '<span class="leads-nowrap">כן</span>';
+  if (v === false) return '<span class="leads-nowrap">לא</span>';
+  return '<span class="leads-muted leads-nowrap">לא צוין</span>';
+}
+
+/** מספר לעולם לא עירום — הציון מוצג תמיד מול הסולם שלו (UX-2.4, UX-3.7). */
+function scoreCellHtml(score) {
+  if (score === null || score === undefined || score === '') {
+    return '<span class="leads-muted leads-nowrap">טרם נבדק</span>';
+  }
+  return '<span class="leads-score">' +
+    '<span class="granta-num">' + esc(fmt.number(score)) + '</span>' +
+    '<span class="leads-score__of">מתוך 100</span></span>';
+}
+
+function badgeHtml(cfg, fallback) {
+  if (!cfg) return '<span class="granta-sev granta-sev--low"><span class="granta-sev__mark" aria-hidden="true">–</span>' + esc(fallback || 'לא ידוע') + '</span>';
+  return '<span class="granta-sev ' + cfg.cls + '">' +
+    '<span class="granta-sev__mark" aria-hidden="true">' + cfg.mark + '</span>' + esc(cfg.label) + '</span>';
+}
+
+function actionCellHtml(lead) {
+  if (OPEN_STATUSES.has(lead.status)) {
+    return '<button type="button" class="granta-btn granta-btn--sm" data-send="' + esc(lead.id) + '">אשר ושלח דוח</button>';
+  }
+  if (lead.responded_at) {
+    return '<span class="leads-muted leads-nowrap">נענה ' + esc(fmt.date(lead.responded_at, 'short')) + '</span>';
+  }
+  return '<span class="leads-muted">—</span>';
+}
+
+function rowHtml(lead) {
+  return '<tr data-id="' + esc(lead.id) + '">' +
+    '<td class="leads-col-org"><span class="leads-org">' + esc(lead.org_name || 'ללא שם') + '</span></td>' +
+    '<td>' + siteCellHtml(lead.website) + '</td>' +
+    '<td>' + mailCellHtml(lead.email) + '</td>' +
+    '<td>' + hasGrantsCellHtml(lead.has_grants) + '</td>' +
+    '<td>' + scoreCellHtml(lead.eligibility_score) + '</td>' +
+    '<td>' + badgeHtml(VERDICT_HE[lead.verdict], 'טרם נפסק') + '</td>' +
+    '<td data-sla="' + esc(lead.id) + '">' + slaCellHtml(lead) + '</td>' +
+    '<td>' + badgeHtml(STATUS_HE[lead.status], lead.status) + '</td>' +
+    '<td class="leads-col-act">' + actionCellHtml(lead) + '</td>' +
+    '</tr>';
+}
+
+/* ------------------------------------------------------------------ *
+ * 4. מיון — 🔴 לפי דחיפות SLA, לא לפי תאריך
+ * ------------------------------------------------------------------ */
+
+/**
+ * קודם הלידים שהשעון שלהם עדיין רץ, מהפג-ראשון לפג-אחרון (חריגות בראש,
+ * כי ה-msLeft שלהן שלילי). אחריהם הלידים הסגורים, מהתשובה האחרונה לאחור.
+ */
+function sortByUrgency(rows) {
+  const open = [];
+  const closed = [];
+  rows.forEach((r) => (OPEN_STATUSES.has(r.status) ? open : closed).push(r));
+  open.sort((a, b) => dueMs(a) - dueMs(b));
+  closed.sort((a, b) => {
+    const ta = new Date(b.responded_at || b.updated_at || b.created_at).getTime() || 0;
+    const tb = new Date(a.responded_at || a.updated_at || a.created_at).getTime() || 0;
+    return ta - tb;
+  });
+  return open.concat(closed);
+}
+
+/* ------------------------------------------------------------------ *
+ * 5. מצבי המסך
+ * ------------------------------------------------------------------ */
+
+/**
+ * כרטיס שגיאה — שלושת החלקים שהתקן דורש: מה קרה · מה עושים · קוד תקלה,
+ * ופעולה שבאמת יורה את הבקשה מחדש (UX-1.11, UX-1.13, UX-1.14).
+ * הפירוט הטכני הגולמי יושב ב-.granta-state__detail, שנגלה רק תחת
+ * data-granta-debug — כלומר בקונסולת האופרייטור בלבד.
+ */
+function showError({ what, todo, code, detail, retry }) {
+  const card = $('#error-card');
+  card.innerHTML =
+    '<div class="granta-state granta-state--error" role="alert" tabindex="-1">' +
+      '<span class="granta-state__icon" aria-hidden="true">✖</span>' +
+      '<p>' + esc(what) + '</p>' +
+      '<p>' + todo + '</p>' +
+      '<p>קוד תקלה: <span class="granta-code">' + esc(code) + '</span></p>' +
+      '<button type="button" class="granta-btn" id="err-retry">נסו שוב</button>' +
+      (detail ? '<small class="granta-state__detail">' + esc(detail) + '</small>' : '') +
+    '</div>';
+  const btn = $('#err-retry');
+  if (btn) btn.addEventListener('click', typeof retry === 'function' ? retry : () => location.reload());
+  setState('error');
+  const box = card.firstElementChild;
+  if (box) box.focus();
+}
+
+/** מצב ריק אמיתי — לא "טבלה ריקה". סיבה + מה ימלא אותו (UX-1.7, UX-1.8). */
+function showEmpty(filtered) {
+  const card = $('#empty-card');
+  card.innerHTML = filtered
+    ? '<h3>אין ליד שעונה על המסננים.</h3>' +
+      '<p>שינוי הסטטוס או מחיקת מילת החיפוש יחזירו את הרשימה המלאה.</p>' +
+      '<button type="button" class="granta-btn" id="empty-clear">ניקוי המסננים</button>'
+    : '<h3>אין לידים חדשים.</h3>' +
+      '<p>תיבת הלידים ריקה. כל פנייה מטופס הזכאות תופיע כאן עם שעון SLA של 24 שעות, והדחוף ביותר יעמוד בראש.</p>';
+  const btn = $('#empty-clear');
+  if (btn) btn.addEventListener('click', clearFilters);
+  setState('empty');
+}
+
+/* שלד הטעינה — אותו מבנה שורה, כדי שהמעבר לא יקפיץ את הפריסה (UX-1.3). */
+(function buildSkeleton() {
+  const body = $('#skel-body');
+  let html = '';
+  for (let r = 0; r < 5; r++) {
+    html += '<tr>';
+    for (let c = 0; c < 9; c++) {
+      html += '<td><span class="granta-skel' + (c === 8 ? ' leads-skel--act' : '') + '"></span></td>';
+    }
+    html += '</tr>';
+  }
+  body.innerHTML = html;
+})();
+
+/* ------------------------------------------------------------------ *
+ * 6. toast
+ * ------------------------------------------------------------------ */
+
+let toastTimer = null;
+
+function toast(message) {
+  const wrap = $('#toastwrap');
+  wrap.innerHTML =
+    '<div class="granta-toast" role="status" aria-live="polite">' +
+      '<span>' + esc(message) + '</span>' +
+      '<button type="button" class="granta-btn granta-btn--ghost granta-btn--sm" id="toast-x" aria-label="סגירת ההודעה">✕</button>' +
+    '</div>';
+  wrap.hidden = false;
+  $('#toast-x').addEventListener('click', hideToast);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, 4000);
+}
+
+function hideToast() {
+  clearTimeout(toastTimer);
+  const wrap = $('#toastwrap');
+  wrap.hidden = true;
+  wrap.innerHTML = '';
+}
+
+/* ------------------------------------------------------------------ *
+ * 7. מודל אישור
+ * ------------------------------------------------------------------ */
+
+let modalResolve = null;
+let modalOpener = null;
+
+function openModal(lead) {
+  return new Promise((resolve) => {
+    modalResolve = resolve;
+    modalOpener = document.activeElement;
+    $('#modal-desc').textContent =
+      'הליד "' + (lead.org_name || 'ללא שם') + '" (' + (lead.email || 'ללא אימייל') + ') יסומן כליד שנשלח אליו דוח זכאות.';
+    $('#modal').hidden = false;
+    $('#modal-ok').focus();
+  });
+}
+
+function closeModal(answer) {
+  $('#modal').hidden = true;
+  const done = modalResolve;
+  modalResolve = null;
+  if (modalOpener && document.contains(modalOpener)) modalOpener.focus();
+  modalOpener = null;
+  if (done) done(answer);
+}
+
+$('#modal-ok').addEventListener('click', () => closeModal(true));
+$('#modal-cancel').addEventListener('click', () => closeModal(false));
+$('#modal').addEventListener('click', (e) => { if (e.target === $('#modal')) closeModal(false); });
+
+/* Esc סוגר · Tab לכוד בתוך המודל (UX-7.11). */
+document.addEventListener('keydown', (e) => {
+  if ($('#modal').hidden) return;
+  if (e.key === 'Escape') { e.preventDefault(); closeModal(false); return; }
+  if (e.key !== 'Tab') return;
+  const focusables = $('#modal').querySelectorAll('button:not([disabled])');
+  if (!focusables.length) return;
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+});
+
+/* ------------------------------------------------------------------ *
+ * 8. טעינה ורינדור
+ * ------------------------------------------------------------------ */
+
+let current = [];          /* השורות שמוצגות כרגע, כבר ממוינות */
+let searchTimer = null;
+let loadToken = 0;         /* מבטל תשובה של בקשה שהמסננים כבר עקפו */
+
+function filterValues() {
+  return {
+    status: $('#f-status').value || '',
+    search: $('#f-q').value.trim(),
+  };
+}
+
+function clearFilters() {
+  $('#f-status').value = '';
+  $('#f-q').value = '';
+  load();
+}
+
+function renderSummary() {
+  const open = current.filter((l) => OPEN_STATUSES.has(l.status));
+  const overdue = open.filter((l) => slaTier(l) === 'overdue').length;
+  const soon = open.filter((l) => slaTier(l) === 'soon').length;
+
+  /* התאמת מין ומספר: "1 ליד ברשימה", לא "1 לידים ברשימה". */
+  const item = (n, one, many) =>
+    '<span class="leads-summary__item"><span class="leads-summary__num">' + esc(fmt.number(n)) +
+    '</span><span>' + esc(n === 1 ? one : many) + '</span></span>';
+
+  $('#summary').innerHTML =
+    item(current.length, 'ליד ברשימה', 'לידים ברשימה') +
+    item(open.length, 'ממתין לתשובה', 'ממתינים לתשובה') +
+    item(overdue, 'חרג מהתחייבות 24 השעות', 'חרגו מהתחייבות 24 השעות') +
+    item(soon, 'ייחרג בתוך פחות משש שעות', 'ייחרגו בתוך פחות משש שעות');
+
+  const banner = $('#overdue-banner');
+  banner.innerHTML = overdue
+    ? '<div class="granta-alert granta-alert--critical">' +
+        '<span class="granta-alert__icon" aria-hidden="true">✖</span>' +
+        '<div class="granta-alert__body">' +
+          '<span class="granta-alert__title">חרגנו מהתחייבות התשובה ' +
+            (overdue === 1 ? 'בליד אחד' : 'ב-' + esc(fmt.number(overdue)) + ' לידים') + '</span>' +
+          '<span>' + (overdue === 1
+            ? 'עברו יותר מ-24 שעות מאז שמילאו את הטופס ועדיין לא נשלח דוח זכאות. הליד עומד בראש הרשימה — שלחו לו דוח היום.'
+            : 'עברו יותר מ-24 שעות מאז שמילאו את הטופס ועדיין לא נשלח דוח זכאות. הם עומדים בראש הרשימה — שלחו להם דוח היום.') + '</span>' +
+        '</div>' +
+      '</div>'
+    : '';
+}
+
+function renderRows() {
+  $('#rows').innerHTML = current.map(rowHtml).join('');
+}
+
+async function load() {
+  const token = ++loadToken;
+  const f = filterValues();
+  setState('loading');
+  $('#filters').hidden = false;
+
+  try {
+    const rows = await withTimeout(leads.list({ status: f.status || undefined, search: f.search || undefined, limit: 200 }));
+    if (token !== loadToken) return;                 /* תשובה מיושנת — מתעלמים */
+
+    current = sortByUrgency(Array.isArray(rows) ? rows : []);
+    if (!current.length) { showEmpty(Boolean(f.status || f.search)); return; }
+
+    renderRows();
+    renderSummary();
+    setState('ready');
+  } catch (err) {
+    if (token !== loadToken) return;
+    const timedOut = err && err.grantaCode === 'GR-TIMEOUT';
+    showError({
+      what: timedOut ? 'טעינת הלידים לוקחת יותר מדי זמן.' : 'לא הצלחנו לטעון את תיבת הלידים.',
+      todo: timedOut
+        ? 'נסו שוב בעוד רגע. אם זה חוזר — כנראה ש-Supabase לא מגיב.'
+        : 'בדקו את החיבור לאינטרנט ונסו שוב. אם השגיאה חוזרת, ודאו שההרשאה <span class="granta-code">granta_role=operator</span> עדיין קיימת במשתמש.',
+      code: timedOut ? 'GR-TIMEOUT' : 'GR-LEADS-LIST',
+      detail: err && err.message,
+      retry: load,
+    });
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * 9. "אשר ושלח דוח"
+ * ------------------------------------------------------------------ */
+
+async function sendReport(id, btn) {
+  const lead = current.find((l) => l.id === id);
+  if (!lead) return;
+
+  const ok = await openModal(lead);
+  if (!ok) return;
+
+  btn.disabled = true;
+  const original = btn.textContent;
+  btn.textContent = 'שולח…';
+
+  try {
+    /* leads.update כותב ל-granta_audit_log בעצמו (action: lead.update) עם
+       ה-diff המלא — לפני ואחרי. אין צורך ברישום כפול, ואין לנו שכבת גישה
+       משלנו: granta.js הוא נקודת הגישה היחידה. */
+    await withTimeout(leads.update(id, {
+      status: 'report_sent',
+      responded_at: new Date().toISOString(),
+    }));
+
+    /* UX-1.16 — toast לבדו אינו אישור. המסך עצמו מתעדכן. */
+    toast('הליד סומן כליד שנשלח אליו דוח. הפעולה נרשמה ביומן.');
+    await load();
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = original;
+    console.error('[C2] שליחת דוח נכשלה:', err);
+    toast('העדכון לא נשמר. נסו שוב בעוד רגע.');
+  }
+}
+
+$('#rows').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-send]');
+  if (btn) sendReport(btn.getAttribute('data-send'), btn);
+});
+
+/* ------------------------------------------------------------------ *
+ * 10. פעימת השעון
+ *     מרעננת טקסט וגוון בתוך התאים הקיימים בלבד. אין מיון מחדש תוך כדי
+ *     קריאה — תזוזת שורות מתחת ליד של האופרייטור אסורה (UX-8.6). הסדר
+ *     מתעדכן בטעינה ואחרי כל פעולה.
+ * ------------------------------------------------------------------ */
+
+setInterval(() => {
+  const ready = document.querySelector('[data-state="ready"]');
+  if (!ready || ready.hidden || !current.length) return;
+  current.forEach((lead) => {
+    const cell = document.querySelector('[data-sla="' + (window.CSS && CSS.escape ? CSS.escape(lead.id) : lead.id) + '"]');
+    if (cell) cell.innerHTML = slaCellHtml(lead);
+  });
+  renderSummary();
+}, 30000);
+
+/* ------------------------------------------------------------------ *
+ * 11. מסננים
+ * ------------------------------------------------------------------ */
+
+$('#filters').addEventListener('submit', (e) => { e.preventDefault(); clearTimeout(searchTimer); load(); });
+$('#f-status').addEventListener('change', load);
+$('#f-clear').addEventListener('click', clearFilters);
+$('#f-q').addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(load, 350);
+});
+
+/* ------------------------------------------------------------------ *
+ * 12. אתחול — קונפיג, ואז הרשאת אופרייטור, ואז דאטה
+ * ------------------------------------------------------------------ */
+
+async function start() {
+  /* 🔴 קודם כול הקונפיג. בלעדיו auth.whoami מחזיר null, ו-requireOperator
+     היה מעיף את האופרייטור להתחברות בלי לספר לו שהתקלה היא בפריסה. */
+  if (!configState.ok) {
+    showError({
+      what: 'המסך לא מחובר לשרת.',
+      todo: 'קובץ ההגדרות <span class="granta-code">assets/granta-config.js</span> לא נטען. ' +
+            'בפיתוח: העתיקו את <span class="granta-code">assets/granta-config.example.js</span> ומלאו את כתובת הפרויקט ואת מפתח ה-anon. ' +
+            'בייצור: הקובץ נוצר בזמן הפריסה — בדקו את שלב הבנייה.',
+      code: 'GR-CFG-001',
+      detail: configState.reason,
+      retry: () => location.reload(),
+    });
+    return;
+  }
+
+  /* 🔴 גישה למסך הזה דורשת granta_role=operator ב-app_metadata של המשתמש
+     ב-Supabase Auth. זו פעולת אדמין ידנית — לא משהו שנקבע ב-SQL או בטבלה.
+     משתמש בלי ה-claim מופנה החוצה על ידי requireOperator עצמו. */
+  let me;
+  try {
+    me = await withTimeout(requireOperator(), 10000);
+  } catch (err) {
+    showError({
+      what: 'לא הצלחנו לאמת את ההרשאה שלך.',
+      todo: 'רעננו את הדף. אם זה חוזר — התנתקו והתחברו מחדש דרך מסך ההתחברות.',
+      code: 'GR-AUTH-001',
+      detail: err && err.message,
+      retry: () => location.reload(),
+    });
+    return;
+  }
+  if (!me) return;   /* requireOperator כבר מפנה להתחברות או החוצה */
+
+  const mail = (me.user && me.user.email) || '';
+  if (mail) { $('#who-mail').textContent = mail; $('#who').hidden = false; }
+  const out = $('#signout');
+  out.hidden = false;
+  out.addEventListener('click', async () => {
+    await auth.signOut();
+    nav.go('app/login.html');
+  });
+
+  await load();
+}
+
+start();
+</script>
+
+</body>
+</html>

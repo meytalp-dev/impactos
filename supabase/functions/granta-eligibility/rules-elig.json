@@ -1,0 +1,541 @@
+{
+  "_meta": {
+    "file": "granta/_data/rules-elig.json",
+    "title_he": "קטלוג כללי זכאות · Google Ad Grants",
+    "category": "ELIG",
+    "version": "1.0.0-draft",
+    "created": "2026-08-29",
+    "author": "G-04",
+    "spec_ref": "granta/SPEC.md §2 · M1 (משפך זכאות) + M3 (מנוע הכללים)",
+    "warning_he": "🔴 אזהרה מפורשת: כל הכללים, הספים והמספרים בקובץ הזה הם טיוטה. אסור להעלות את הקטלוג לאוויר לפני שכל כלל אומת אחד-לאחד מול תיעוד Google for Nonprofits ו-Google Ad Grants העדכני. מדיניות גוגל משתנה, וההחרגות (גופים ממשלתיים, בתי חולים וארגוני בריאות, מוסדות חינוך ואקדמיה) מנוסחות אחרת בין מדינות. עד לאימות — התוצאה שהמערכת מציגה היא הערכה בלבד, והנוסח 'האישור בידי Google בלבד' חייב להופיע בכל מסך תוצאה.",
+    "verification_owner": "G-29 — אימות הקטלוג מול תיעוד גוגל",
+    "doc_url_policy_he": "כל doc_url בקובץ הזה הוא null במכוון. לא הומצאה אף כתובת. G-29 ימלא כתובות מאומתות בלבד. ראו _todo לרשימת המסמכים שצריך למצוא לכל כלל.",
+    "detect_semantics_he": "detect מתאר את ההפרה, לא את העמידה. detect שמחזיר true = נוצר ממצא (finding) והמשקל יורד מהציון.",
+    "unknown_semantics_he": "ערך null בשדה, או המחרוזת 'unknown', פירושו 'לא נקבע'. במקרה כזה לא מריצים את detect אלא פועלים לפי on_unknown של הכלל.",
+    "ops": {
+      "eq": "שווה לערך",
+      "neq": "שונה מהערך",
+      "in": "נמצא ברשימת הערכים",
+      "not_in": "לא נמצא ברשימת הערכים",
+      "is_true": "בוליאני אמת",
+      "is_false": "בוליאני שקר",
+      "lt": "קטן מ",
+      "lte": "קטן או שווה ל",
+      "gt": "גדול מ",
+      "gte": "גדול או שווה ל"
+    },
+    "on_unknown_values": {
+      "needs_review": "לא נחשב הפרה ולא מוריד ניקוד — אבל מוריד את הפסיקה ל'דורש בדיקה'",
+      "skip": "מתעלמים מהכלל לגמרי (למשל כלל תוקף-תעודה כשה-SSL ממילא שבור)",
+      "violation": "חוסר מידע נחשב הפרה מלאה"
+    },
+    "scoring": {
+      "formula_he": "score = 100 פחות סכום המשקלים של כל הכללים ש-detect שלהם החזיר true",
+      "weights_sum": 100,
+      "verdicts": {
+        "כנראה זכאית": "אין אף כלל blocker שנדלק, אין אף כלל במצב needs_review, וה-score גבוה או שווה ל-85",
+        "דורש בדיקה": "אין blocker שנדלק, אבל יש לפחות כלל אחד ב-needs_review, או ש-score בין 60 ל-84",
+        "כנראה לא זכאית": "נדלק לפחות כלל אחד בחומרת blocker, או ש-score נמוך מ-60"
+      },
+      "note_he": "כלל blocker אחד שנדלק מספיק כדי לפסול — גם אם הציון המספרי גבוה. הציון הוא כלי תקשורת מול העמותה; הפסיקה נקבעת קודם כל לפי חסמים."
+    }
+  },
+
+  "_fields": {
+    "_note_he": "כל השדות האלה הם הפלט המצופה של סורק האתר (M1) בתוספת שדות שהעמותה מצהירה עליהם בטופס /check ובאיסוף המסמכים. שם השדה הוא מפתח יציב — אסור לשנות אותו בלי לעדכן את הכללים.",
+    "entity_type": {
+      "type": "enum",
+      "source": "declared|operator",
+      "values": ["nonprofit_amuta", "public_benefit_company", "government", "hospital_or_health", "school_or_academic", "for_profit", "other", "unknown"],
+      "desc_he": "סוג הישות המשפטית. nonprofit_amuta = עמותה רשומה, public_benefit_company = חברה לתועלת הציבור (חל\"צ)."
+    },
+    "org_registration_number": {
+      "type": "string|null",
+      "source": "declared",
+      "desc_he": "מספר עמותה או ח\"פ. לא מפעיל כלל בפני עצמו — משמש לאימות ידני של entity_type ושל אישור ניהול תקין."
+    },
+    "nihul_takin_status": {
+      "type": "enum",
+      "source": "declared|operator",
+      "values": ["valid", "expired", "missing", "unknown"],
+      "desc_he": "מצב אישור ניהול תקין מרשם העמותות."
+    },
+    "nihul_takin_expiry": {
+      "type": "date|null",
+      "source": "declared|operator",
+      "desc_he": "תאריך פקיעת אישור ניהול תקין בפורמט YYYY-MM-DD."
+    },
+    "site_url": {
+      "type": "string",
+      "source": "declared",
+      "desc_he": "כתובת האתר כפי שהוזנה בטופס /check."
+    },
+    "site_domain": {
+      "type": "string",
+      "source": "scanner",
+      "desc_he": "הדומיין שאליו הבקשה נחתה בפועל, אחרי הפניות."
+    },
+    "domain_owned_by_org": {
+      "type": "boolean|null",
+      "source": "scanner|operator",
+      "desc_he": "האם הדומיין הוא של העמותה עצמה, ולא עמוד על פלטפורמה חיצונית או דומיין של גוף אחר. null = לא הוכרע אוטומטית."
+    },
+    "site_reachable": {
+      "type": "boolean|null",
+      "source": "scanner",
+      "desc_he": "האתר החזיר תשובה תקינה (HTTP 200) בסריקה."
+    },
+    "ssl_valid": {
+      "type": "boolean|null",
+      "source": "scanner",
+      "desc_he": "תעודת HTTPS תקפה, תואמת לדומיין וחתומה על ידי גורם מוכר."
+    },
+    "ssl_expires_in_days": {
+      "type": "integer|null",
+      "source": "scanner",
+      "desc_he": "כמה ימים נשארו לתעודה. מספר שלילי = התעודה כבר פגה."
+    },
+    "https_redirect": {
+      "type": "boolean|null",
+      "source": "scanner",
+      "desc_he": "פנייה ל-http מופנית אוטומטית ל-https."
+    },
+    "sitemap_pages": {
+      "type": "integer|null",
+      "source": "scanner",
+      "desc_he": "מספר העמודים שנספרו ב-sitemap.xml, ובהיעדרו — מספר העמודים הפנימיים הייחודיים שנמצאו בזחילה רדודה."
+    },
+    "has_about_page": {
+      "type": "boolean|null",
+      "source": "scanner",
+      "desc_he": "נמצא עמוד 'אודות' / 'מי אנחנו' / about."
+    },
+    "has_contact_page": {
+      "type": "boolean|null",
+      "source": "scanner",
+      "desc_he": "נמצא עמוד 'צור קשר' / contact עם דרך התקשרות בפועל."
+    },
+    "has_privacy_policy": {
+      "type": "boolean|null",
+      "source": "scanner",
+      "desc_he": "נמצא עמוד מדיניות פרטיות שנגיש מתוך האתר."
+    },
+    "third_party_ads": {
+      "type": "boolean|null",
+      "source": "scanner",
+      "desc_he": "זוהו מודעות של צד שלישי באתר — AdSense, רשתות באנרים, או תוכן ממומן של גוף אחר."
+    },
+    "affiliate_links": {
+      "type": "boolean|null",
+      "source": "scanner",
+      "desc_he": "זוהו קישורי שותפים או אפיליאייט — קישורים החוצה עם פרמטרים מזהי-עמלה."
+    },
+    "ecommerce_store": {
+      "type": "boolean|null",
+      "source": "scanner",
+      "desc_he": "זוהתה חנות מסחרית באתר — עגלת קניות, קופה או קטלוג מוצרים."
+    },
+    "redirects_to_third_party": {
+      "type": "boolean|null",
+      "source": "scanner",
+      "desc_he": "כתובת האתר שנמסרה מפנה בפועל לאתר של גוף אחר ולא לדומיין של העמותה."
+    }
+  },
+
+  "rules": [
+    {
+      "code": "GG-ELIG-01",
+      "category": "ELIG",
+      "severity": "blocker",
+      "title_he": "סוג הארגון נמצא ברשימת ההחרגות של Google for Nonprofits",
+      "detect": { "field": "entity_type", "op": "in", "value": ["government", "hospital_or_health", "school_or_academic"] },
+      "on_unknown": "needs_review",
+      "evidence_fields": ["entity_type", "org_registration_number"],
+      "explain_he": "גוגל לא מקבלת לתוכנית גופים ממשלתיים, בתי חולים וארגוני בריאות, ומוסדות חינוך ואקדמיה — גם אם הם רשומים כעמותה ופועלים למטרה חברתית לגמרי. זו הסיבה הנפוצה ביותר לדחייה.",
+      "fix_kind": "info",
+      "fix_template": "אין מה לתקן באתר — זו החרגה על סוג הארגון. אם הארגון פועל בתוך בתי ספר או בשיתוף משרד ממשלתי אבל אינו בית ספר ואינו גוף ממשלתי בעצמו, נציין זאת במפורש בהגשה ונצרף אסמכתה לרישום כעמותה עצמאית. אם הארגון אכן נכנס להחרגה — נאמר את זה מראש ולא ניקח כסף על הגשה שתידחה.",
+      "needs_approval": false,
+      "doc_url": null,
+      "weight": 18
+    },
+    {
+      "code": "GG-ELIG-02",
+      "category": "ELIG",
+      "severity": "blocker",
+      "title_he": "הארגון אינו עמותה רשומה או חברה לתועלת הציבור",
+      "detect": { "field": "entity_type", "op": "in", "value": ["for_profit", "other"] },
+      "on_unknown": "needs_review",
+      "evidence_fields": ["entity_type", "org_registration_number"],
+      "explain_he": "התוכנית פתוחה רק לארגונים ללא כוונת רווח שרשומים רשמית — אצלנו עמותה או חל\"צ. עסק, יוזמה פרטית או קבוצה לא רשומה לא יכולים להיכנס, גם אם הפעילות חברתית לחלוטין.",
+      "fix_kind": "manual_task",
+      "fix_template": "נבקש את תעודת הרישום ואת מספר העמותה או הח\"פ ונוודא מול הרשם. אם הפעילות מתנהלת כרגע בלי ישות רשומה — נסמן את זה כשלב מקדים במסלול ההגשה, לפני כל עבודה על החשבון.",
+      "needs_approval": false,
+      "doc_url": null,
+      "weight": 12
+    },
+    {
+      "code": "GG-ELIG-03",
+      "category": "ELIG",
+      "severity": "blocker",
+      "title_he": "אין אישור ניהול תקין בתוקף",
+      "detect": { "field": "nihul_takin_status", "op": "in", "value": ["expired", "missing"] },
+      "on_unknown": "needs_review",
+      "evidence_fields": ["nihul_takin_status", "nihul_takin_expiry"],
+      "explain_he": "כדי לאמת את העמותה מול גוגל צריך אישור ניהול תקין בתוקף מרשם העמותות. אישור שפג, או שלא הונפק, עוצר את ההגשה כבר בשלב האימות — לפני שמגיעים בכלל לחשבון הפרסום.",
+      "fix_kind": "manual_task",
+      "fix_template": "נבקש מהעמותה את האישור העדכני. אם הוא פג — הוצאת אישור מחודש מרשם העמותות היא המשימה הראשונה בצינור ההגשה, וגרנטה תחזיק עליה תזכורת עד שהמסמך יעלה לתיק.",
+      "needs_approval": false,
+      "doc_url": null,
+      "weight": 12
+    },
+    {
+      "code": "GG-ELIG-04",
+      "category": "ELIG",
+      "severity": "high",
+      "title_he": "האתר אינו על דומיין בבעלות העמותה",
+      "detect": { "field": "domain_owned_by_org", "op": "is_false" },
+      "on_unknown": "needs_review",
+      "evidence_fields": ["site_url", "site_domain", "domain_owned_by_org"],
+      "explain_he": "צריך אתר משלכם, על כתובת שהעמותה מחזיקה — לא עמוד פייסבוק, לא דף בתוך אתר של גוף אחר, ולא כתובת חינמית של פלטפורמה. גוגל צריכה לראות שהאתר שאליו המודעות שולחות אנשים הוא שלכם.",
+      "fix_kind": "manual_task",
+      "fix_template": "נסייע ברכישת דומיין על שם העמותה ובהעברת האתר אליו. אם כבר יש דומיין אבל הוא רשום על שם אדם פרטי או על שם ספק — נעדכן את פרטי הבעלות לשם העמותה.",
+      "needs_approval": false,
+      "doc_url": null,
+      "weight": 8
+    },
+    {
+      "code": "GG-ELIG-05",
+      "category": "ELIG",
+      "severity": "blocker",
+      "title_he": "אין HTTPS תקין באתר",
+      "detect": { "field": "ssl_valid", "op": "is_false" },
+      "on_unknown": "needs_review",
+      "evidence_fields": ["site_domain", "ssl_valid", "https_redirect"],
+      "explain_he": "האתר חייב להיפתח בחיבור מאובטח — זה שהדפדפן מציג לידו מנעול ולא אזהרה אדומה. בלי זה גוגל לא תאשר את האתר, וגם המבקרים בורחים לפני שהם קוראים מילה.",
+      "fix_kind": "manual_task",
+      "fix_template": "נתקין תעודת אבטחה — ברוב שירותי האחסון זה חינם ולוקח דקות — ונוודא שכל האתר נטען דרך הכתובת המאובטחת.",
+      "needs_approval": false,
+      "doc_url": null,
+      "weight": 9
+    },
+    {
+      "code": "GG-ELIG-06",
+      "category": "ELIG",
+      "severity": "low",
+      "title_he": "תעודת האבטחה של האתר עומדת לפוג",
+      "detect": { "field": "ssl_expires_in_days", "op": "lt", "value": 30 },
+      "on_unknown": "skip",
+      "evidence_fields": ["site_domain", "ssl_expires_in_days"],
+      "explain_he": "התעודה שמאבטחת את האתר תפוג בקרוב. אם היא תפוג בלי שמישהו יחדש אותה, האתר יתחיל להציג אזהרת אבטחה למבקרים והמודעות עלולות להיעצר.",
+      "fix_kind": "manual_task",
+      "fix_template": "נוודא מול מי שמתחזק את האתר שהחידוש האוטומטי של התעודה פעיל, ונחזיק תזכורת עד שהתאריך מתרחק.",
+      "needs_approval": false,
+      "doc_url": null,
+      "weight": 2
+    },
+    {
+      "code": "GG-ELIG-07",
+      "category": "ELIG",
+      "severity": "blocker",
+      "title_he": "האתר לא נטען",
+      "detect": { "field": "site_reachable", "op": "is_false" },
+      "on_unknown": "needs_review",
+      "evidence_fields": ["site_url", "site_domain", "site_reachable"],
+      "explain_he": "בסריקה האתר לא ענה. אתר שלא נטען לא יעבור אישור, ומודעה ששולחת אנשים לעמוד שבור נעצרת מיד.",
+      "fix_kind": "manual_task",
+      "fix_template": "נבדוק מול ספק האחסון מה מפיל את האתר, ונריץ את בדיקת הזכאות מחדש ברגע שהוא חוזר לאוויר.",
+      "needs_approval": false,
+      "doc_url": null,
+      "weight": 5
+    },
+    {
+      "code": "GG-ELIG-08",
+      "category": "ELIG",
+      "severity": "high",
+      "title_he": "האתר דל בתוכן — פחות מחמישה עמודים",
+      "detect": { "field": "sitemap_pages", "op": "lt", "value": 5 },
+      "on_unknown": "needs_review",
+      "evidence_fields": ["sitemap_pages", "site_domain"],
+      "explain_he": "גוגל מצפה לאתר עם תוכן אמיתי שמסביר מה הארגון עושה — לא לעמוד תדמית בודד. אתר של עמוד אחד נראה כמו ברושור, ואין לאן לשלוח את מי שלוחץ על המודעה.",
+      "fix_kind": "proposal",
+      "fix_template": "נציע תוכנית תוכן קצרה: עמוד לכל תוכנית או שירות מרכזי, עמוד אודות, עמוד צור קשר ועמוד תרומה. זו גם בדיוק העבודה שתשפר אחר כך את אחוז ההקלקה על המודעות.",
+      "needs_approval": true,
+      "doc_url": null,
+      "weight": 8
+    },
+    {
+      "code": "GG-ELIG-09",
+      "category": "ELIG",
+      "severity": "medium",
+      "title_he": "חסר עמוד 'אודות' באתר",
+      "detect": { "field": "has_about_page", "op": "is_false" },
+      "on_unknown": "needs_review",
+      "evidence_fields": ["has_about_page", "site_domain"],
+      "explain_he": "צריך עמוד שמסביר מי אתם, מה המטרה ומי עומד מאחורי הארגון. זה מה שגוגל בודקת כדי לוודא שמדובר בארגון אמיתי, וזה גם מה שתורם רוצה לראות לפני שהוא נותן.",
+      "fix_kind": "proposal",
+      "fix_template": "נכין טיוטת עמוד 'אודות' על בסיס החומרים הקיימים של העמותה — מטרה, פעילות, הנהלה — ונשלח לאישור לפני העלאה.",
+      "needs_approval": true,
+      "doc_url": null,
+      "weight": 4
+    },
+    {
+      "code": "GG-ELIG-10",
+      "category": "ELIG",
+      "severity": "medium",
+      "title_he": "חסר עמוד 'צור קשר' באתר",
+      "detect": { "field": "has_contact_page", "op": "is_false" },
+      "on_unknown": "needs_review",
+      "evidence_fields": ["has_contact_page", "site_domain"],
+      "explain_he": "צריכה להיות באתר דרך ברורה ליצור אתכם קשר — טלפון, מייל או טופס. בלי זה האתר נראה כאילו אין מאחוריו אף אחד.",
+      "fix_kind": "proposal",
+      "fix_template": "נכין עמוד 'צור קשר' עם פרטי ההתקשרות של העמותה וטופס פנייה, ובהמשך נחבר את הפנייה כהמרה נמדדת.",
+      "needs_approval": true,
+      "doc_url": null,
+      "weight": 4
+    },
+    {
+      "code": "GG-ELIG-11",
+      "category": "ELIG",
+      "severity": "blocker",
+      "title_he": "יש מודעות של צד שלישי באתר",
+      "detect": { "field": "third_party_ads", "op": "is_true" },
+      "on_unknown": "needs_review",
+      "evidence_fields": ["third_party_ads", "site_domain"],
+      "explain_he": "אסור שבאתר יופיעו מודעות של גורמים אחרים. אתר שמוכר שטח פרסום נראה לגוגל כמו אתר שמרוויח מהתנועה, ולא כמו אתר של עמותה.",
+      "fix_kind": "manual_task",
+      "fix_template": "נסיר את כל רכיבי הפרסום מהאתר — כולל קוד מודעות ישן שנשאר ולא מציג כלום — ונריץ סריקה חוזרת לאישור.",
+      "needs_approval": false,
+      "doc_url": null,
+      "weight": 6
+    },
+    {
+      "code": "GG-ELIG-12",
+      "category": "ELIG",
+      "severity": "high",
+      "title_he": "יש באתר קישורי שותפים (אפיליאייט)",
+      "detect": { "field": "affiliate_links", "op": "is_true" },
+      "on_unknown": "needs_review",
+      "evidence_fields": ["affiliate_links", "site_domain"],
+      "explain_he": "קישור שמזכה אתכם בעמלה על רכישה באתר אחר נחשב פעילות מסחרית ופוסל את האתר. גם קישור בודד וישן, בפוסט מלפני שנתיים, נספר.",
+      "fix_kind": "manual_task",
+      "fix_template": "נאתר את כל קישורי השותפים באתר ונחליף אותם בקישור רגיל בלי קוד עמלה, או נסיר אותם.",
+      "needs_approval": false,
+      "doc_url": null,
+      "weight": 4
+    },
+    {
+      "code": "GG-ELIG-13",
+      "category": "ELIG",
+      "severity": "high",
+      "title_he": "יש באתר חנות מסחרית שאינה לטובת המטרה",
+      "detect": { "field": "ecommerce_store", "op": "is_true" },
+      "on_unknown": "needs_review",
+      "evidence_fields": ["ecommerce_store", "site_domain"],
+      "explain_he": "מכירה של מוצרים או שירותים באתר, כשהיא לא חלק ברור מהמטרה של העמותה, מכניסה את האתר לקטגוריה של פעילות מסחרית. מכירת פריטים שכל ההכנסה מהם הולכת לפעילות היא סיפור אחר — רק צריך שזה ייראה ברור באתר.",
+      "fix_kind": "manual_task",
+      "fix_template": "נעבור על החנות. אם המכירה משרתת את המטרה — נוסיף הסבר גלוי לאן ההכנסה הולכת. אם לא — נמליץ להוציא אותה מהדומיין של העמותה.",
+      "needs_approval": false,
+      "doc_url": null,
+      "weight": 3
+    },
+    {
+      "code": "GG-ELIG-14",
+      "category": "ELIG",
+      "severity": "blocker",
+      "title_he": "כתובת האתר מפנה לאתר של גוף אחר",
+      "detect": { "field": "redirects_to_third_party", "op": "is_true" },
+      "on_unknown": "needs_review",
+      "evidence_fields": ["site_url", "site_domain", "redirects_to_third_party"],
+      "explain_he": "הכתובת שמסרתם לא מובילה לאתר שלכם אלא לאתר אחר. גוגל דורשת שהמודעות ישלחו אנשים לאתר של העמותה עצמה — לא לעמוד באתר חיצוני ולא לפלטפורמת תרומות של גוף אחר.",
+      "fix_kind": "manual_task",
+      "fix_template": "נחבר את הדומיין של העמותה לאתר שלה במקום להפנות החוצה. אם התרומות נאספות בפלטפורמה חיצונית — היא תישאר יעד של כפתור בתוך האתר, לא יעד של הדומיין כולו.",
+      "needs_approval": false,
+      "doc_url": null,
+      "weight": 3
+    },
+    {
+      "code": "GG-ELIG-15",
+      "category": "ELIG",
+      "severity": "medium",
+      "title_he": "אין מדיניות פרטיות נגישה באתר",
+      "detect": { "field": "has_privacy_policy", "op": "is_false" },
+      "on_unknown": "needs_review",
+      "evidence_fields": ["has_privacy_policy", "site_domain"],
+      "explain_he": "אתר שאוסף פרטים — אפילו רק טופס יצירת קשר או הרשמה לניוזלטר — צריך עמוד שמסביר איזה מידע נאסף ומה עושים איתו, עם קישור גלוי מכל עמוד.",
+      "fix_kind": "proposal",
+      "fix_template": "נכין טיוטת מדיניות פרטיות מותאמת לאתר של העמותה מתוך התבנית המשפטית המוכנה, נשלח לאישור, ונוסיף קישור אליה בתחתית כל עמוד.",
+      "needs_approval": true,
+      "doc_url": null,
+      "weight": 2
+    }
+  ],
+
+  "_todo": [
+    {
+      "id": "TODO-DOCS-ALL",
+      "owner": "G-29",
+      "note_he": "כל 15 הכללים בקובץ נכתבו עם doc_url = null במכוון. אף כתובת לא הומצאה. לכל כלל צריך למצוא ולצרף קישור רשמי מאומת, ולתקן את הניסוח אם התיעוד סותר אותו."
+    },
+    {
+      "id": "TODO-GG-ELIG-01",
+      "codes": ["GG-ELIG-01"],
+      "source_to_find_he": "עמוד דרישות הזכאות של Google for Nonprofits — הפירוט המדויק של ההחרגות (גופים ממשלתיים, בתי חולים וארגוני בריאות, בתי ספר ומוסדות אקדמיים), כולל הנוסח הספציפי לישראל ומיהו הגורם המאמת המקומי.",
+      "open_question_he": "האם ההחרגה חלה גם על עמותה שפועלת בתוך בתי ספר אך אינה מוסד חינוכי בעצמה? זה בדיוק המקרה של הופה, ולכן קריטי לפיילוט."
+    },
+    {
+      "id": "TODO-GG-ELIG-02",
+      "codes": ["GG-ELIG-02"],
+      "source_to_find_he": "הגדרת סוגי הישויות המוכרים של Google for Nonprofits בישראל — לוודא שחל\"צ אכן מוכרת ולא רק עמותה, ומהו המסמך שמוכיח כל אחת."
+    },
+    {
+      "id": "TODO-GG-ELIG-03",
+      "codes": ["GG-ELIG-03"],
+      "source_to_find_he": "מה בדיוק הגורם המאמת בישראל דורש כאסמכתה — אישור ניהול תקין, תעודת רישום, או שניהם. לאמת גם עד כמה אחורה אישור עדיין נחשב 'בתוקף'."
+    },
+    {
+      "id": "TODO-GG-ELIG-05",
+      "codes": ["GG-ELIG-05", "GG-ELIG-06"],
+      "source_to_find_he": "לאמת שדרישת ה-HTTPS היא דרישת סף לזכאות ולא רק המלצה, ובאיזה שלב היא נבדקת — באימות Google for Nonprofits או באישור חשבון Ad Grants."
+    },
+    {
+      "id": "TODO-GG-ELIG-06-THRESHOLD",
+      "codes": ["GG-ELIG-06"],
+      "source_to_find_he": "הסף של 30 ימים לפקיעת תעודה הוא החלטה תפעולית שלנו ולא דרישה של גוגל. לתעד אותו ככזה בממשק ולא להציג אותו כמדיניות."
+    },
+    {
+      "id": "TODO-GG-ELIG-08",
+      "codes": ["GG-ELIG-08"],
+      "source_to_find_he": "🔴 הסף של חמישה עמודים הוא הערכה שלנו ולא מספר רשמי. גוגל מדברת על תוכן משמעותי ואיננו מכירים מספר עמודים מחייב. צריך למצוא מספר רשמי, או לשנות את הכלל לקריטריון איכותי ולהוריד את החומרה.",
+      "risk_he": "זה המספר היחיד בקטלוג שנקבע על ידינו כסף מספרי. אסור להציג אותו לעמותה כדרישה של גוגל לפני אימות."
+    },
+    {
+      "id": "TODO-GG-ELIG-13",
+      "codes": ["GG-ELIG-13"],
+      "source_to_find_he": "הגבול המדויק בין 'מכירה לטובת המטרה' (מותר) לבין 'פעילות מסחרית' (אסור) — צריך ציטוט רשמי, כי הניסוח הנוכחי הוא פרשנות."
+    },
+    {
+      "id": "TODO-GG-ELIG-15",
+      "codes": ["GG-ELIG-15"],
+      "source_to_find_he": "לאמת אם מדיניות פרטיות היא דרישת זכאות של Ad Grants או דרישה כללית של Google Ads. אם אינה דרישת זכאות — להעביר את הכלל לקטגוריה אחרת ולהוריד משקל.",
+      "note_he": "התבנית המשפטית עצמה בבעלות G-30 (granta/legal/). הקובץ הזה רק מפנה אליה בניסוח ואינו מגדיר אותה."
+    },
+    {
+      "id": "TODO-SCANNER-CONTRACT",
+      "owner": "סוכן הסורק (M1)",
+      "note_he": "הסורק חייב להחזיר בדיוק את מפתחות _fields. שדה שהסורק לא הצליח להכריע יחזיר null — לא false. ההבדל בין null ל-false הוא ההבדל בין 'דורש בדיקה' ל'כנראה לא זכאית', וזו טעות שתעלה לנו באמינות מול עמותה."
+    },
+    {
+      "id": "TODO-VERDICT-COPY",
+      "owner": "מסך A2",
+      "note_he": "בכל מסך תוצאה חייב להופיע: 'זו הערכה של גרנטה. האישור בידי Google בלבד.' — כפי שכבר מופיע בדף הנחיתה. הקטלוג הזה אינו מחליף פסיקה של גוגל."
+    }
+  ],
+
+  "_testcases": [
+    {
+      "id": "TC-01-hopa-positive",
+      "title_he": "עמותת הופה — מקרה חיובי אמיתי",
+      "source_he": "granta/SPEC.md §10 — נבדק מול hopa.org.il ב-29.8.2026",
+      "input": {
+        "entity_type": "nonprofit_amuta",
+        "org_registration_number": null,
+        "nihul_takin_status": "valid",
+        "nihul_takin_expiry": null,
+        "site_url": "https://hopa.org.il",
+        "site_domain": "hopa.org.il",
+        "domain_owned_by_org": true,
+        "site_reachable": true,
+        "ssl_valid": true,
+        "ssl_expires_in_days": 68,
+        "https_redirect": true,
+        "sitemap_pages": 43,
+        "has_about_page": true,
+        "has_contact_page": true,
+        "has_privacy_policy": true,
+        "third_party_ads": false,
+        "affiliate_links": false,
+        "ecommerce_store": false,
+        "redirects_to_third_party": false
+      },
+      "expected": {
+        "triggered": [],
+        "skipped": [],
+        "needs_review": [],
+        "triggered_weight_sum": 0,
+        "score": 100,
+        "verdict": "כנראה זכאית"
+      },
+      "note_he": "🔴 nihul_takin_status = valid הוא הנחה של מקרה המבחן, לא ממצא. §10 מציין במפורש שאישור ניהול תקין של הופה טרם אומת מול לירון. אם בפועל הוא unknown — הפסיקה יורדת ל'דורש בדיקה' כמו ב-TC-03, וזו התנהגות נכונה ולא באג. גם ssl_expires_in_days = 68 הוא ערך הדגמה; התעודה אומתה כתקפה, מספר הימים המדויק לא נמדד."
+    },
+    {
+      "id": "TC-02-artificial-negative",
+      "title_he": "מקרה שלילי מלאכותי — חסמים ברורים",
+      "source_he": "מקרה בדוי לצורך בדיקה. אין ארגון אמיתי בשם הזה ואין אתר בכתובת הזו.",
+      "input": {
+        "entity_type": "school_or_academic",
+        "org_registration_number": null,
+        "nihul_takin_status": "missing",
+        "nihul_takin_expiry": null,
+        "site_url": "http://bdika-shlili.example",
+        "site_domain": "bdika-shlili.example",
+        "domain_owned_by_org": false,
+        "site_reachable": true,
+        "ssl_valid": false,
+        "ssl_expires_in_days": null,
+        "https_redirect": false,
+        "sitemap_pages": 1,
+        "has_about_page": false,
+        "has_contact_page": false,
+        "has_privacy_policy": false,
+        "third_party_ads": true,
+        "affiliate_links": true,
+        "ecommerce_store": true,
+        "redirects_to_third_party": true
+      },
+      "expected": {
+        "triggered": ["GG-ELIG-01", "GG-ELIG-03", "GG-ELIG-04", "GG-ELIG-05", "GG-ELIG-08", "GG-ELIG-09", "GG-ELIG-10", "GG-ELIG-11", "GG-ELIG-12", "GG-ELIG-13", "GG-ELIG-14", "GG-ELIG-15"],
+        "skipped": ["GG-ELIG-06"],
+        "needs_review": [],
+        "triggered_weight_sum": 81,
+        "score": 19,
+        "verdict": "כנראה לא זכאית"
+      },
+      "note_he": "GG-ELIG-02 לא נדלק בכוונה: מוסד חינוכי נתפס על ידי כלל ההחרגות (01) ולא על ידי כלל 'לא עמותה' (02) — שני הכללים לא חופפים, ולכן אין הורדת ניקוד כפולה על אותה עובדה. GG-ELIG-06 מדולג כי כש-ssl_valid הוא false אין טעם לבדוק את תוקף התעודה."
+    },
+    {
+      "id": "TC-03-unknowns-needs-review",
+      "title_he": "מקרה ביניים — אין הפרות, אבל חסר מידע",
+      "source_he": "מקרה בדוי לצורך בדיקת מסלול 'דורש בדיקה'.",
+      "input": {
+        "entity_type": "nonprofit_amuta",
+        "org_registration_number": null,
+        "nihul_takin_status": "unknown",
+        "nihul_takin_expiry": null,
+        "site_url": "https://bdika-benayim.example",
+        "site_domain": "bdika-benayim.example",
+        "domain_owned_by_org": null,
+        "site_reachable": true,
+        "ssl_valid": true,
+        "ssl_expires_in_days": 210,
+        "https_redirect": true,
+        "sitemap_pages": 7,
+        "has_about_page": true,
+        "has_contact_page": true,
+        "has_privacy_policy": true,
+        "third_party_ads": false,
+        "affiliate_links": false,
+        "ecommerce_store": false,
+        "redirects_to_third_party": false
+      },
+      "expected": {
+        "triggered": [],
+        "skipped": [],
+        "needs_review": ["GG-ELIG-03", "GG-ELIG-04"],
+        "triggered_weight_sum": 0,
+        "score": 100,
+        "verdict": "דורש בדיקה"
+      },
+      "note_he": "הציון 100 אבל הפסיקה אינה 'כנראה זכאית' — חוסר מידע על חסם מוריד את הפסיקה לבדיקה אנושית. זה בדיוק המקום שבו האופרייטור נכנס תוך 24 שעות לפי SPEC §2 M1."
+    }
+  ]
+}
