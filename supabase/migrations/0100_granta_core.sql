@@ -62,38 +62,11 @@ COMMENT ON FUNCTION public.granta_is_operator() IS
   'TRUE אם ב-JWT יש granta_role=operator (top-level או app_metadata). לא נוגע בטבלאות.';
 
 -- ---------------------------------------------------------------------------
--- 1.2 — כל התיקים שהמשתמש.ת המחובר.ת משויכת אליהם
+-- 🔴 1.2 ו-1.3 הועברו לסעיף 2.6, אחרי יצירת הטבלאות.
+--    Postgres מאמת גוף של פונקציית LANGUAGE sql בזמן היצירה, ולכן פונקציה
+--    שקוראת מ-granta_users חייבת להיווצר *אחרי* שהטבלה קיימת.
+--    (נתפס בהרצה אמיתית: ERROR 42P01 relation "public.granta_users" does not exist)
 -- ---------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.granta_my_org_ids()
-RETURNS SETOF UUID
-LANGUAGE sql SECURITY DEFINER STABLE
-SET search_path = public
-AS $$
-  SELECT gu.org_id
-  FROM public.granta_users gu
-  WHERE gu.user_id = auth.uid()
-    AND gu.org_id IS NOT NULL;
-$$;
-COMMENT ON FUNCTION public.granta_my_org_ids() IS
-  'org_id-ים של המשתמש.ת המחובר.ת. SECURITY DEFINER — עוקף RLS כדי למנוע רקורסיה ב-policies.';
-
--- ---------------------------------------------------------------------------
--- 1.3 — האם המשתמש.ת היא org_admin של תיק מסוים? (org_viewer = קריאה בלבד)
--- ---------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.granta_is_org_admin(p_org_id UUID)
-RETURNS BOOLEAN
-LANGUAGE sql SECURITY DEFINER STABLE
-SET search_path = public
-AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM public.granta_users gu
-    WHERE gu.user_id = auth.uid()
-      AND gu.org_id  = p_org_id
-      AND gu.role    = 'org_admin'
-  );
-$$;
-COMMENT ON FUNCTION public.granta_is_org_admin(UUID) IS
-  'TRUE אם המשתמש.ת המחובר.ת היא org_admin של התיק. org_viewer מקבל FALSE.';
 
 -- ---------------------------------------------------------------------------
 -- 1.4 — טריגר משותף ל-updated_at (קונבנציית 0004)
@@ -339,6 +312,48 @@ DROP TRIGGER IF EXISTS trg_granta_audit_log_append_only ON public.granta_audit_l
 CREATE TRIGGER trg_granta_audit_log_append_only
   BEFORE UPDATE OR DELETE ON public.granta_audit_log
   FOR EACH ROW EXECUTE FUNCTION public.granta_audit_log_is_append_only();
+
+
+-- ============================================================================
+-- 2.6 · פונקציות עזר שתלויות בטבלאות
+-- ============================================================================
+-- חייבות להיווצר כאן ולא בסעיף 1: הגוף שלהן קורא מ-granta_users,
+-- ו-Postgres מאמת אותו כבר ב-CREATE FUNCTION.
+
+-- ---------------------------------------------------------------------------
+-- 1.2 — כל התיקים שהמשתמש.ת המחובר.ת משויכת אליהם
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.granta_my_org_ids()
+RETURNS SETOF UUID
+LANGUAGE sql SECURITY DEFINER STABLE
+SET search_path = public
+AS $$
+  SELECT gu.org_id
+  FROM public.granta_users gu
+  WHERE gu.user_id = auth.uid()
+    AND gu.org_id IS NOT NULL;
+$$;
+COMMENT ON FUNCTION public.granta_my_org_ids() IS
+  'org_id-ים של המשתמש.ת המחובר.ת. SECURITY DEFINER — עוקף RLS כדי למנוע רקורסיה ב-policies.';
+
+-- ---------------------------------------------------------------------------
+-- 1.3 — האם המשתמש.ת היא org_admin של תיק מסוים? (org_viewer = קריאה בלבד)
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.granta_is_org_admin(p_org_id UUID)
+RETURNS BOOLEAN
+LANGUAGE sql SECURITY DEFINER STABLE
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.granta_users gu
+    WHERE gu.user_id = auth.uid()
+      AND gu.org_id  = p_org_id
+      AND gu.role    = 'org_admin'
+  );
+$$;
+COMMENT ON FUNCTION public.granta_is_org_admin(UUID) IS
+  'TRUE אם המשתמש.ת המחובר.ת היא org_admin של התיק. org_viewer מקבל FALSE.';
+
 
 
 -- ============================================================================
