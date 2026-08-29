@@ -340,14 +340,19 @@ export const leads = {
       utm_content:  utm.utm_content  || null,
       referrer:     utm.referrer     || null,
     };
-    // status לא נשלח במכוון: ברירת המחדל בעמודה היא 'new', היא כבר מספקת את
-    // ה-WITH CHECK, והעמודה אינה ב-GRANT של anon.
-    // 🔴 בלי .select() — לטופס הציבורי אין הרשאת SELECT על granta_leads (0100: קריאה
-    // לאופרייטור בלבד). בקשת ייצוג-חוזר הייתה מפילה הגשה תקינה. returning: 'minimal'.
-    const { error } = await client()
-      .from(TABLES.leads)
-      .insert(row, { returning: 'minimal' });
+    // status לא נשלח במכוון: ברירת המחדל בעמודה היא 'new'.
+    //
+    // 🔴 ההגשה עוברת דרך Edge Function ולא ב-insert ישיר.
+    // האפיון (§2 M1) מבטיח בדיקה אוטומטית תוך שניות, ואי אפשר לתת לדפדפן
+    // להפעיל את מנוע הזכאות: המנוע רץ ב-service_role, עוקף RLS, וכתיבת פסיקה
+    // לליד מוגבלת בכוונה לקורא מורשה. הדפדפן לעולם לא יהיה כזה.
+    // לכן: הדפדפן מדבר עם granta-submit-lead בלבד, והיא מכניסה את הליד
+    // ומפעילה את המנוע בצד שרת. שום סוד לא עובר כאן.
+    const { data, error } = await client().functions.invoke('granta-submit-lead', { body: row });
     if (error) throw new Error('[granta] יצירת ליד: ' + error.message);
+    if (data && data.ok === false) {
+      throw new Error('[granta] יצירת ליד נדחתה: ' + (data.error || 'unknown'));
+    }
 
     // תיעוד — SPEC §M8. מדלג בשקט כשהמגיש אנונימי (audit.log מחזיר null),
     // כי לאנונימי אין הרשאת כתיבה ליומן. התיעוד הציבורי נעשה בצד שרת.
