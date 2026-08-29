@@ -62,6 +62,37 @@ const UUID_RE =
 // 🔴 אם הסורק לא ענה — לא מחזירים false על אף שדה. כל השדות נשארים null,
 //    כל הכללים יורדים ל-needs_review, והפסיקה יוצאת "דורש בדיקה".
 
+/**
+ * האם הקורא רשאי לכתוב לליד?
+ *
+ * מותר רק ל: service_role (המפתח הסודי של הפרויקט, או JWT עם role=service_role)
+ * ולאופרייטור (JWT עם granta_role=operator ב-app_metadata — לא ב-user_metadata,
+ * שהמשתמש עורך בעצמו).
+ *
+ * המפתח הפומבי (anon / sb_publishable_) לעולם לא מספיק.
+ */
+function callerMayPersist(req: Request): boolean {
+  const bearer = (req.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "").trim();
+  const apikey = (req.headers.get("apikey") ?? "").trim();
+  const service = (Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "").trim();
+
+  // המפתח הסודי עצמו — הפורמט הישן (JWT) והחדש (sb_secret_) כאחד.
+  if (service && (bearer === service || apikey === service)) return true;
+
+  // JWT של משתמש מחובר.
+  try {
+    const part = bearer.split(".")[1];
+    if (!part) return false;
+    const pad = part.length % 4 ? "=".repeat(4 - (part.length % 4)) : "";
+    const claims = JSON.parse(atob(part.replace(/-/g, "+").replace(/_/g, "/") + pad));
+    if (claims?.role === "service_role") return true;
+    // 🔴 app_metadata בלבד. user_metadata ניתן לעריכה על ידי המשתמש עצמו.
+    if (claims?.app_metadata?.granta_role === "operator") return true;
+  } catch (_) { /* לא JWT — לא מורשה */ }
+
+  return false;
+}
+
 function scannerEndpoint(): string | null {
   const override = Deno.env.get("GRANTA_SCANNER_URL");
   if (override) return override;
@@ -366,12 +397,29 @@ export async function handle(req: Request): Promise<Response> {
   const integrity = await rulesIntegrity();
 
   // ---- שמירה ----
+  //
+  // 🔴 אבטחה — כתיבה לליד דורשת הרשאה מפורשת.
+  // הפונקציה רצה ב-service_role ולכן ה-RLS לא חל עליה: המיגרציה 0100 חוסמת
+  // מ-anon לכתוב eligibility_score/verdict ברמת העמודה, והפונקציה עוקפת את
+  // החסימה הזו לגמרי. בלי הבדיקה כאן, כל מי שמחזיק במפתח הפומבי — שנמצא
+  // בקוד המקור של כל דף — יכול לקבוע פסיקה לליד. נתפס בבדיקה חיה 29.8.2026.
+  //
+  // הערכה בלי lead_id נשארת פתוחה: היא לא כותבת כלום ומשרתת את המשפך.
   let persisted = { check_inserted: false, lead_updated: false };
+  let persistDenied = false;
+
   if (leadId) {
-    const website = typeof result.fields.site_url === "string" && result.fields.site_url
-      ? result.fields.site_url
-      : (url || null);
-    persisted = await persist(leadId, result, scanPayload, website, result.warnings);
+    if (!callerMayPersist(req)) {
+      persistDenied = true;
+      result.warnings.push(
+        "התוצאה לא נשמרה: כתיבה לליד מחייבת הרשאת שירות. ההערכה מוחזרת בלבד.",
+      );
+    } else {
+      const website = typeof result.fields.site_url === "string" && result.fields.site_url
+        ? result.fields.site_url
+        : (url || null);
+      persisted = await persist(leadId, result, scanPayload, website, result.warnings);
+    }
   }
 
   return json({
