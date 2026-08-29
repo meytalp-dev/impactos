@@ -1,0 +1,568 @@
+/* ==========================================================================
+   גְּרַנְטָה · granta.css — רכיבי הממשק
+   נבנה כולו מטוקנים מתוך assets/tokens.css. אין כאן צבע קשיח, ואין
+   תכונה פיזית (left/right). טעינה: tokens.css קודם, granta.css אחריו.
+
+   מקור מחייב: granta/_handoff/GRANTA-UX-STANDARD.md
+   §1 מצבי מסך · §3 טיפוגרפיה · §4 טוקנים · §5 צבע כמשמעות ·
+   §6 מובייל · §7 נגישות · §8 תנועה
+   ========================================================================== */
+
+/* ==========================================================================
+   1 · איפוס מינימלי + גוף המסמך
+   ========================================================================== */
+
+*,*::before,*::after{box-sizing:border-box}
+*{margin:0;padding:0}
+
+html{
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%;
+  scroll-behavior:smooth;               /* UX-8.7 — מבוטל תחת reduced-motion */
+}
+
+body{
+  background:var(--surface);
+  color:var(--ink);
+  font-family:var(--font-body);
+  font-size:var(--fs-body);
+  font-weight:var(--fw-regular);
+  line-height:var(--lh-body);
+  text-align:start;
+  overflow-x:hidden;                    /* UX-6.1 — הדף לעולם לא גולל אופקית */
+}
+
+img,svg,video{max-inline-size:100%;height:auto}
+
+/* --- טיפוגרפיה (§3) --------------------------------------------------- */
+
+h1,.granta-h1{font-family:var(--font-head);font-size:var(--fs-h1);font-weight:var(--fw-heavy);line-height:var(--lh-h1)}
+h2,.granta-h2{font-family:var(--font-head);font-size:var(--fs-h2);font-weight:var(--fw-bold);line-height:var(--lh-h2)}
+h3,.granta-h3{font-family:var(--font-head);font-size:var(--fs-h3);font-weight:var(--fw-bold);line-height:var(--lh-h3)}
+
+p{max-inline-size:var(--measure)}       /* UX-3.5 */
+
+.granta-lede{color:var(--ink-muted);font-size:var(--fs-body);max-inline-size:var(--measure)}
+.granta-help{color:var(--ink-muted);font-size:var(--fs-help);line-height:var(--lh-help)}
+.granta-kicker{font-family:var(--font-head);font-size:var(--fs-badge);font-weight:var(--fw-bold);letter-spacing:var(--tracking-kicker)}
+
+/* מספר-על + כל מספר/תאריך — UX-3.6 */
+.granta-num,
+.granta-hero-num{direction:ltr;unicode-bidi:isolate;font-variant-numeric:tabular-nums;display:inline-block}
+.granta-hero-num{font-family:var(--font-head);font-size:var(--fs-hero);font-weight:var(--fw-black);line-height:var(--lh-hero);color:var(--ink)}
+
+/* מגמה — חץ ומספר, בלי צבע (UX-5.5) */
+.granta-trend{color:var(--ink);font-size:var(--fs-help);font-weight:var(--fw-medium);direction:ltr;unicode-bidi:isolate;display:inline-block}
+
+.granta-code{
+  font-family:var(--font-mono);font-size:var(--fs-code);line-height:var(--lh-tight);
+  direction:ltr;unicode-bidi:isolate;display:inline-block;
+  background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);
+  padding-inline:var(--s-2);color:var(--primary);
+}
+
+.sr-only{
+  position:absolute;inline-size:1px;block-size:1px;
+  padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;
+}
+
+/* ==========================================================================
+   2 · פוקוס נראה — UX-7.4
+   טבעת הפוקוס משתמשת ב---focus (‎= --primary, 8.33:1).
+   על משטח מגוון או כהה עוברים ל---focus-strong (--line-strong, 4.71:1).
+   ========================================================================== */
+
+:where(a,button,input,select,textarea,summary,[tabindex]):focus-visible{
+  outline:var(--focus-width) solid var(--focus);
+  outline-offset:var(--focus-offset);
+  border-radius:inherit;
+}
+
+.granta-hero :where(a,button):focus-visible,
+.granta-btn:focus-visible{
+  outline-color:var(--focus-strong);
+  box-shadow:0 0 0 var(--focus-width) var(--surface);
+}
+
+/* ==========================================================================
+   3 · שלד העמוד · פס ניווט עליון · פוטר
+   ========================================================================== */
+
+.granta-skip{
+  position:absolute;z-index:var(--z-skip);
+  inset-inline-start:var(--s-4);
+  inset-block-start:calc(var(--s-12) * -1);
+  display:inline-flex;align-items:center;min-block-size:var(--touch);
+  padding-inline:var(--s-4);
+  background:var(--primary);color:var(--ink-invert);
+  border-radius:var(--r-sm);text-decoration:none;font-weight:var(--fw-bold);
+}
+.granta-skip:focus{inset-block-start:var(--s-2)}
+
+.granta-topbar{
+  position:sticky;inset-block-start:0;z-index:var(--z-nav);
+  background:var(--nav-veil);
+  backdrop-filter:blur(10px);
+  border-block-end:1px solid var(--line);
+}
+.granta-topbar__inner{
+  max-inline-size:var(--page-max);margin-inline:auto;
+  padding-inline:var(--pad-page);padding-block:var(--s-2);
+  display:flex;align-items:center;flex-wrap:wrap;gap:var(--touch-gap);
+}
+.granta-brand{
+  display:inline-flex;align-items:center;min-block-size:var(--touch);
+  font-family:var(--font-head);font-size:var(--fs-h3);font-weight:var(--fw-black);
+  color:var(--primary);text-decoration:none;
+}
+.granta-brand__dot{color:var(--primary-glow)}   /* קישוט בלבד — לא נושא מידע */
+
+.granta-nav{display:flex;flex-wrap:wrap;gap:var(--s-1);margin-inline-start:auto;list-style:none}
+.granta-navlink{
+  display:inline-flex;align-items:center;min-block-size:var(--touch);
+  padding-inline:var(--s-3);border-radius:var(--r-pill);
+  color:var(--ink-muted);text-decoration:none;
+  font-size:var(--fs-help);font-weight:var(--fw-medium);
+  transition:background-color var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease);
+}
+.granta-navlink:hover{background:var(--secondary);color:var(--primary)}
+.granta-navlink[aria-current="page"]{background:var(--secondary);color:var(--primary);font-weight:var(--fw-bold)}
+
+/* כותרת עליונה עם גרדיאנט — אחד משלושת המקומות המותרים (UX-4.5).
+   הגרדיאנט נעצר ב---primary-mid כדי שטקסט לבן יישאר מעל 4.5:1 (UX-4.6).
+   הוורוד מופיע רק בפס הדקורטיבי שמתחת, שאין מעליו טקסט. */
+.granta-hero{
+  position:relative;
+  background:var(--grad-header);color:var(--ink-invert);
+  padding-inline:var(--pad-page);padding-block:var(--s-10);
+}
+.granta-hero::after{
+  content:"";position:absolute;inset-inline:0;inset-block-end:0;
+  block-size:4px;background:var(--grad-decor);
+}
+.granta-hero__inner{max-inline-size:var(--page-max);margin-inline:auto;display:flex;flex-direction:column;gap:var(--s-3)}
+.granta-hero .granta-kicker{opacity:.85}
+.granta-hero p{opacity:.95}
+.granta-hero__dot{color:var(--primary-glow)}
+.granta-chip{
+  display:inline-flex;align-items:center;gap:var(--s-1);
+  background:var(--on-brand-soft);border:1px solid var(--on-brand-line);
+  border-radius:var(--r-pill);padding-inline:var(--s-3);padding-block:var(--s-1);
+  font-size:var(--fs-help);font-weight:var(--fw-medium);
+}
+.granta-chips{display:flex;flex-wrap:wrap;gap:var(--s-2)}
+
+.granta-page{
+  max-inline-size:var(--page-max);margin-inline:auto;
+  padding-inline:var(--pad-page);
+  padding-block:var(--s-8) var(--s-12);
+}
+.granta-section{display:flex;flex-direction:column;gap:var(--s-4);padding-block-start:var(--s-8)}
+
+.granta-footer{
+  border-block-start:1px solid var(--line);
+  margin-block-start:var(--s-12);
+  padding-inline:var(--pad-page);padding-block:var(--s-8);
+  color:var(--ink-muted);font-size:var(--fs-help);text-align:center;
+}
+.granta-footer a{color:var(--primary)}
+
+/* ==========================================================================
+   4 · כפתורים — יעד מגע ≥44px תמיד (UX-6.4), גם ב"קטן"
+   .granta-btn לבדו = ראשי. זה ה-class ש-granta.js פולט במצב ריק.
+   ========================================================================== */
+
+.granta-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:var(--s-2);
+  min-block-size:var(--touch);min-inline-size:var(--touch);
+  padding-inline:var(--s-5);padding-block:var(--s-2);
+  font-family:var(--font-head);font-size:var(--fs-body);font-weight:var(--fw-bold);
+  line-height:var(--lh-tight);
+  color:var(--ink-invert);background:var(--grad-action);
+  border:1px solid transparent;border-radius:var(--r);
+  text-decoration:none;cursor:pointer;
+  transition:background-color var(--dur-fast) var(--ease),
+             color var(--dur-fast) var(--ease),
+             border-color var(--dur-fast) var(--ease),
+             opacity var(--dur-fast) var(--ease),
+             transform var(--dur-fast) var(--ease);
+}
+.granta-btn--primary{color:var(--ink-invert);background:var(--grad-action)}
+.granta-btn:hover,
+.granta-btn--primary:hover{background:var(--primary-deep);box-shadow:var(--shadow-2)}
+.granta-btn:active{transform:translateY(1px)}
+
+.granta-btn--secondary{
+  background:var(--secondary);color:var(--primary);
+  border-color:var(--line-strong);box-shadow:none;
+}
+.granta-btn--secondary:hover{background:var(--accent);color:var(--primary);border-color:var(--primary);box-shadow:none}
+
+.granta-btn--ghost{
+  background:transparent;color:var(--primary);border-color:transparent;box-shadow:none;
+}
+.granta-btn--ghost:hover{background:var(--secondary);color:var(--primary);box-shadow:none}
+
+/* הרסני — רקע רך, טקסט --danger-ink (7.14:1). לעולם לא --danger כטקסט. */
+.granta-btn--danger{
+  background:var(--danger-bg);color:var(--danger-ink);
+  border-color:var(--danger-ink);box-shadow:none;
+}
+.granta-btn--danger:hover{background:var(--danger-line);color:var(--danger-ink);box-shadow:none}
+
+/* קטן = טיפוגרפיה וריפוד קטנים. יעד המגע נשאר 44px. */
+.granta-btn--sm{
+  padding-inline:var(--s-3);
+  font-size:var(--fs-help);
+}
+
+.granta-btn--block{inline-size:100%}
+
+.granta-btn:disabled,
+.granta-btn[aria-disabled="true"]{
+  background:var(--surface-2);color:var(--ink-muted);
+  border-color:var(--line);box-shadow:none;
+  cursor:not-allowed;transform:none;
+}
+
+.granta-btnrow{display:flex;flex-wrap:wrap;gap:var(--touch-gap);align-items:center}
+/* UX-6.9 — שני כפתורי אישור בשורה אחת, מלוא הרוחב במובייל */
+.granta-btnrow--split{display:grid;grid-template-columns:1fr 1fr;gap:var(--touch-gap)}
+
+/* ==========================================================================
+   5 · כרטיס
+   ========================================================================== */
+
+.granta-card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  padding:var(--s-5);
+  box-shadow:var(--shadow-1);
+  display:flex;flex-direction:column;gap:var(--s-2);
+}
+.granta-card__label{font-size:var(--fs-help);color:var(--ink-muted)}  /* UX-3.4 */
+.granta-card__foot{margin-block-start:var(--s-2);display:flex;flex-wrap:wrap;gap:var(--touch-gap)}
+.granta-card--accent{border-inline-start:4px solid var(--primary)}
+
+.granta-cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(var(--card-min),1fr));  /* UX-6.8 */
+  gap:var(--s-4);
+}
+
+/* ==========================================================================
+   6 · טבלה — הגלילה בתוך העטיפה בלבד (UX-6.2, UX-6.3)
+   ========================================================================== */
+
+.granta-tw{
+  overflow-x:auto;
+  max-inline-size:100%;
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:var(--surface);
+  -webkit-overflow-scrolling:touch;
+}
+.granta-tw:focus-visible{outline:var(--focus-width) solid var(--focus);outline-offset:var(--focus-offset)}
+
+.granta-table{border-collapse:collapse;inline-size:100%;min-inline-size:520px;font-size:var(--fs-help)}
+.granta-table caption{
+  text-align:start;padding:var(--s-3) var(--s-4);
+  font-family:var(--font-head);font-weight:var(--fw-bold);font-size:var(--fs-h3);color:var(--ink);
+}
+.granta-table th{
+  position:sticky;inset-block-start:0;z-index:var(--z-sticky);
+  background:var(--surface-2);color:var(--primary);
+  font-family:var(--font-head);font-weight:var(--fw-bold);font-size:var(--fs-badge);
+  text-align:start;white-space:nowrap;
+  padding:var(--s-3) var(--s-4);
+  border-block-end:1px solid var(--line);
+}
+.granta-table td{
+  padding:var(--s-3) var(--s-4);
+  border-block-end:1px solid var(--line-soft);
+  vertical-align:top;color:var(--ink);
+}
+.granta-table tbody tr:last-child td{border-block-end:none}
+/* UX-5.8 — אסור לצבוע שורה שלמה בצבע סמנטי. גוון ה-hover ניטרלי. */
+.granta-table tbody tr:hover{background:var(--surface-2)}
+
+/* ==========================================================================
+   7 · תג חומרה — UX-5.2 עד UX-5.6
+   אדום שמור לחוסם בלבד. כל תג נושא גם סימן-צורה בטקסט, לא רק צבע.
+   ========================================================================== */
+
+.granta-sev{
+  display:inline-flex;align-items:center;gap:var(--s-1);
+  border:1px solid;border-radius:var(--r-pill);
+  padding-inline:var(--s-3);padding-block:var(--s-1);
+  font-family:var(--font-head);font-size:var(--fs-badge);font-weight:var(--fw-bold);
+  line-height:var(--lh-tight);white-space:nowrap;
+}
+.granta-sev__mark{font-size:var(--fs-badge);line-height:1}
+
+.granta-sev--blocker{background:var(--danger-bg);color:var(--danger-ink);border-color:var(--danger-line)}
+.granta-sev--high{background:var(--warn-bg);color:var(--warn-ink);border-color:var(--warn-line)}
+.granta-sev--medium{background:var(--secondary);color:var(--primary);border-color:var(--line-strong)}
+.granta-sev--low{background:var(--surface-2);color:var(--ink-muted);border-color:var(--line-strong)}
+/* ירוק = תנאי שנבדק ועבר בלבד (UX-5.4). לא דרגת חומרה. */
+.granta-sev--ok{background:var(--ok-bg);color:var(--ok-ink);border-color:var(--ok-line)}
+
+/* ==========================================================================
+   8 · מד ציון בריאות 0–100 — UX-5.7, UX-7.15
+   המספר תמיד ב---ink. הצבע יושב על הטבעת בלבד, ולצידו משפט מילולי.
+   שימוש:  <div class="granta-health granta-health--mid">
+             <div class="granta-health__ring" style="--score:68"> …
+   ========================================================================== */
+
+.granta-health{display:flex;flex-direction:column;align-items:center;gap:var(--s-3);text-align:center}
+
+.granta-health__ring{
+  --score:0;
+  --ring:var(--ok);
+  position:relative;
+  inline-size:140px;block-size:140px;
+  border-radius:var(--r-pill);
+  background:conic-gradient(var(--ring) calc(var(--score) * 3.6deg),var(--line) 0);
+  display:grid;place-items:center;
+}
+.granta-health__ring::after{
+  content:"";position:absolute;inset:14px;
+  border-radius:var(--r-pill);background:var(--surface);
+}
+.granta-health__num{
+  position:relative;z-index:var(--z-raised);
+  font-family:var(--font-head);font-size:var(--fs-hero);font-weight:var(--fw-black);
+  line-height:var(--lh-hero);color:var(--ink);
+  direction:ltr;unicode-bidi:isolate;
+}
+.granta-health__of{
+  position:relative;z-index:var(--z-raised);
+  font-size:var(--fs-help);color:var(--ink-muted);
+  direction:ltr;unicode-bidi:isolate;
+}
+.granta-health__note{font-size:var(--fs-help);color:var(--ink-muted);max-inline-size:var(--state-max);line-height:var(--lh-help)}
+
+.granta-health--low  .granta-health__ring{--ring:var(--danger)}   /*  0–49 */
+.granta-health--mid  .granta-health__ring{--ring:var(--warn)}     /* 50–74 */
+.granta-health--high .granta-health__ring{--ring:var(--ok)}       /* 75–100 */
+
+/* סרגל התקדמות — המקום השלישי והאחרון שבו מותר גרדיאנט (UX-4.5) */
+.granta-progress{
+  block-size:10px;inline-size:100%;
+  background:var(--line);border-radius:var(--r-pill);overflow:hidden;
+}
+.granta-progress__fill{
+  --score:0;
+  block-size:100%;inline-size:calc(var(--score) * 1%);
+  background:var(--grad-progress);border-radius:var(--r-pill);
+}
+
+/* ==========================================================================
+   9 · ארבעת מצבי המסך — §1
+   ה-class hooks כאן זהים בדיוק למה ש-assets/granta.js פולט:
+     ui.loading → .granta-state.granta-state--loading > .granta-spinner + p
+     ui.empty   → .granta-state.granta-state--empty   > p + button.granta-btn
+     ui.error   → .granta-state.granta-state--error   > p + small.granta-state__detail
+   ========================================================================== */
+
+.granta-state{
+  max-inline-size:var(--state-max);margin-inline:auto;
+  display:flex;flex-direction:column;align-items:center;gap:var(--s-3);
+  text-align:center;
+  padding:var(--s-6);
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+}
+.granta-state p{color:var(--ink);font-size:var(--fs-body);line-height:var(--lh-body);max-inline-size:var(--measure)}
+.granta-state h3{color:var(--ink)}
+.granta-state .granta-btn{margin-block-start:var(--s-1)}
+
+/* --- טעינה: ספינר עדין. השלד (.granta-skel) הוא ברירת המחדל המועדפת --- */
+.granta-state--loading{
+  flex-direction:row;justify-content:center;
+  background:var(--surface-2);border-color:var(--line);
+  padding:var(--s-5);
+}
+.granta-state--loading p{color:var(--ink-muted);font-size:var(--fs-help)}
+.granta-spinner{
+  flex:none;inline-size:20px;block-size:20px;
+  border:2px solid var(--line);
+  border-block-start-color:var(--primary);
+  border-radius:var(--r-pill);
+  animation:granta-spin var(--dur-spin) linear infinite;
+}
+@keyframes granta-spin{to{transform:rotate(360deg)}}
+
+/* שלד טעינה — מלבנים בצורת התוכן העתידי (UX-1.A, UX-8.5) */
+.granta-skel{
+  background:var(--surface-2);border-radius:var(--r-sm);
+  block-size:1.15rem;inline-size:100%;
+  animation:granta-pulse var(--dur-shimmer) var(--ease) infinite;
+}
+.granta-skel--title{block-size:1.6rem;inline-size:52%}
+.granta-skel--short{inline-size:38%}
+.granta-skel--block{block-size:5.5rem;border-radius:var(--r)}
+.granta-skels{display:flex;flex-direction:column;gap:var(--s-3)}
+@keyframes granta-pulse{0%,100%{opacity:1}50%{opacity:.55}}
+
+/* --- ריק: הצלחה שהחזירה 0 פריטים. אסור נוסח שגיאה (UX-1.7) --- */
+.granta-state--empty{background:var(--surface);border-color:var(--line)}
+.granta-state--empty p{color:var(--ink-muted)}
+
+/* --- שגיאה: כרטיס רך, לא באנר אדום על כל המסך (§1.C) --- */
+.granta-state--error{
+  background:var(--danger-bg);
+  border-color:var(--danger-line);
+  border-inline-start:4px solid var(--danger-ink);
+  text-align:start;align-items:flex-start;
+}
+.granta-state--error p{color:var(--danger-ink);font-weight:var(--fw-medium)}
+.granta-state__icon{
+  flex:none;inline-size:20px;block-size:20px;
+  display:grid;place-items:center;
+  color:var(--danger-ink);font-size:var(--fs-badge);
+}
+/* UX-1.12 — טקסט שגיאה גולמי לא מוצג ללקוחה.
+   granta.js מזריק אותו ל-DOM; כאן הוא מוסתר. נחשף רק בקונסולת האופרייטור,
+   שמסמנת data-granta-debug על אב כלשהו. */
+.granta-state__detail{display:none}
+[data-granta-debug] .granta-state__detail{
+  display:block;
+  font-family:var(--font-mono);font-size:var(--fs-code);
+  direction:ltr;unicode-bidi:isolate;text-align:start;
+  color:var(--ink-muted);
+}
+
+/* ==========================================================================
+   10 · באנר התראה — מידע / אזהרה / קריטי
+   פס הצבע בקצה ההתחלה נותן צורה, לא רק גוון (UX-5.6).
+   ========================================================================== */
+
+.granta-alert{
+  display:flex;align-items:flex-start;gap:var(--s-3);
+  border:1px solid;border-radius:var(--r);
+  padding:var(--s-4);
+  font-size:var(--fs-help);line-height:var(--lh-help);
+}
+.granta-alert__icon{flex:none;inline-size:20px;block-size:20px;display:grid;place-items:center;font-size:var(--fs-badge)}
+.granta-alert__body{display:flex;flex-direction:column;gap:var(--s-1);max-inline-size:var(--measure)}
+.granta-alert__title{font-family:var(--font-head);font-size:var(--fs-body);font-weight:var(--fw-bold)}
+
+.granta-alert--info{
+  background:var(--info-bg);color:var(--info-ink);
+  border-color:var(--line);border-inline-start:4px solid var(--primary);
+}
+.granta-alert--warn{
+  background:var(--warn-bg);color:var(--warn-ink);
+  border-color:var(--warn-line);border-inline-start:4px solid var(--warn-ink);
+}
+/* UX-5.1 — תקציב אדום אחד למסך. יותר מבאנר קריטי אחד = לבחור את החמור. */
+.granta-alert--critical{
+  background:var(--danger-bg);color:var(--danger-ink);
+  border-color:var(--danger-line);border-inline-start:4px solid var(--danger-ink);
+}
+
+/* toast — אישור פעולה, נסגר גם בלחיצה (UX-1.16, UX-1.17) */
+.granta-toast{
+  display:inline-flex;align-items:center;gap:var(--s-3);
+  background:var(--ink);color:var(--ink-invert);
+  border-radius:var(--r);padding-inline:var(--s-4);padding-block:var(--s-3);
+  box-shadow:var(--shadow-modal);font-size:var(--fs-help);
+}
+.granta-toast .granta-btn{min-block-size:var(--touch);color:var(--ink-invert)}
+
+/* ==========================================================================
+   11 · שדות טופס — UX-7.8, UX-7.9, UX-6.10
+   גודל הקלט 16px כדי ש-Safari לא יזום בפוקוס.
+   מסגרת השדה נושאת משמעות, ולכן --line-strong ולא --line (UX-4.4).
+   ========================================================================== */
+
+.granta-form{display:flex;flex-direction:column;gap:var(--s-5);max-inline-size:var(--measure)}
+.granta-field{display:flex;flex-direction:column;gap:var(--s-2)}
+
+.granta-label{
+  font-family:var(--font-body);font-size:var(--fs-label);font-weight:var(--fw-medium);
+  color:var(--ink);line-height:var(--lh-tight);
+}
+.granta-label__req{color:var(--danger-ink);font-weight:var(--fw-bold)}
+
+.granta-input,
+.granta-select,
+.granta-textarea{
+  inline-size:100%;
+  min-block-size:var(--touch);
+  padding-inline:var(--s-3);padding-block:var(--s-2);
+  font-family:var(--font-body);font-size:var(--fs-body);
+  color:var(--ink);background:var(--surface);
+  border:1px solid var(--line-strong);
+  border-radius:var(--r-sm);
+  transition:border-color var(--dur-fast) var(--ease),background-color var(--dur-fast) var(--ease);
+}
+.granta-textarea{min-block-size:calc(var(--touch) * 2);line-height:var(--lh-body);resize:vertical}
+.granta-input::placeholder,
+.granta-textarea::placeholder{color:var(--ink-muted);opacity:1}
+
+.granta-input:hover,
+.granta-select:hover,
+.granta-textarea:hover{border-color:var(--primary)}
+
+.granta-input:focus,
+.granta-select:focus,
+.granta-textarea:focus{border-color:var(--primary)}
+
+.granta-input:disabled,
+.granta-select:disabled,
+.granta-textarea:disabled{background:var(--surface-2);color:var(--ink-muted);border-color:var(--line);cursor:not-allowed}
+
+.granta-input[aria-invalid="true"],
+.granta-select[aria-invalid="true"],
+.granta-textarea[aria-invalid="true"]{border-color:var(--danger-ink);background:var(--danger-bg)}
+
+.granta-hint{font-size:var(--fs-help);color:var(--ink-muted);line-height:var(--lh-help)}
+.granta-fielderr{
+  display:flex;align-items:center;gap:var(--s-1);
+  font-size:var(--fs-help);font-weight:var(--fw-medium);color:var(--danger-ink);
+}
+
+/* רדיו — כל אפשרות היא יעד מגע מלא */
+.granta-radios{display:flex;flex-direction:column;gap:var(--touch-gap)}
+.granta-radio{
+  display:flex;align-items:center;gap:var(--s-3);
+  min-block-size:var(--touch);
+  padding-inline:var(--s-3);padding-block:var(--s-2);
+  border:1px solid var(--line-strong);border-radius:var(--r-sm);
+  background:var(--surface);color:var(--ink);cursor:pointer;
+  transition:background-color var(--dur-fast) var(--ease),border-color var(--dur-fast) var(--ease);
+}
+.granta-radio input{flex:none;inline-size:20px;block-size:20px;accent-color:var(--primary);cursor:pointer}
+.granta-radio:hover{background:var(--surface-2)}
+.granta-radio:has(input:checked){background:var(--secondary);border-color:var(--primary)}
+.granta-radio:has(input:disabled){background:var(--surface-2);color:var(--ink-muted);cursor:not-allowed}
+.granta-radio__text{display:flex;flex-direction:column;gap:var(--s-1)}
+
+/* ==========================================================================
+   12 · נקודות שבירה — 640px · 960px בלבד (UX-6.7)
+   ========================================================================== */
+
+@media (min-width:640px){
+  .granta-page,
+  .granta-topbar__inner,
+  .granta-hero,
+  .granta-footer{padding-inline:var(--pad-page-lg)}
+  .granta-card{padding:var(--s-6)}
+}
+
+/* ==========================================================================
+   13 · תנועה מופחתת — UX-8.0
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+    scroll-behavior:auto !important;
+  }
+}

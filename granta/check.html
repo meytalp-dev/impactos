@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>גְּרַנְטָה · בדיקת זכאות ל-Google Ad Grants</title>
+<meta name="description" content="דקה, שלושה שדות, ותדעו אם העמותה שלכם זכאית למענק הפרסום החודשי של גוגל. בלי התחייבות ובלי כרטיס אשראי.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&family=Rubik:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/granta.css">
+
+<style>
+/* ==========================================================================
+   A1 · בדיקת זכאות — CSS מקומי בלבד
+   כל מה שאפשר לקחת מ-granta.css נלקח משם. כאן יושבות רק ההתאמות
+   שאין להן רכיב קיים: הסתרת פאנל, ובידוד LTR לטקסט לא-מספרי (אימייל, URL).
+   UX-4.0 — אין כאן צבע קשיח. UX-4.1 — אין כאן טוקן חדש.
+   UX-7.1 — אין כאן תכונה פיזית (left/right).
+   ========================================================================== */
+
+/* פאנל מוסתר חייב display:none מפורש — .granta-card הוא display:flex,
+   וזה גובר על ברירת המחדל של [hidden] בדפדפן. UX-1.2 */
+[hidden]{display:none !important}
+
+/* UX-3.6 / UX-7.2 — בידוד דו-כיווני לטקסט לטיני בתוך משפט עברי
+   (כתובת אימייל, כתובת אתר). מקבילה לא-מספרית ל-.granta-num. */
+.check-ltr{direction:ltr;unicode-bidi:isolate;display:inline-block}
+
+/* רשימות סמנטיות שנראות כרכיב קיים — התבליט מיותר בשתיהן */
+.granta-chips,
+.check-errlist{list-style:none}
+.check-errlist{display:flex;flex-direction:column;gap:var(--s-1)}
+
+/* fieldset נושא גבול ברירת-מחדל של הדפדפן — בצבע שאינו מהטוקנים (UX-4.0),
+   וגם min-inline-size אינטרינזי שמסוגל לשבור פריסה צרה (UX-6.1). שניהם מאופסים. */
+.granta-field:is(fieldset){border:0;min-inline-size:0}
+
+/* שורת הגשה: הכפתור וההערה שמתחתיו נשארים צמודים */
+.check-submit{display:flex;flex-direction:column;gap:var(--s-3)}
+</style>
+</head>
+<body>
+
+<a class="granta-skip" href="#main">דילוג לתוכן</a>
+
+<header class="granta-topbar">
+  <div class="granta-topbar__inner">
+    <a class="granta-brand" href="index.html">גְּרַנְטָה<span class="granta-brand__dot" aria-hidden="true">.</span></a>
+  </div>
+</header>
+
+<section class="granta-hero">
+  <div class="granta-hero__inner">
+    <span class="granta-kicker">בדיקת זכאות · חינם</span>
+    <h1>דקה. <span class="granta-num">3</span> שדות. ותדעו אם מגיעים לכם <span class="granta-num">$10,000</span> בחודש מגוגל.</h1>
+    <p>ממלאים פרטים בסיסיים — גְּרַנְטָה בודקת זכאות, סורקת את האתר ומחזירה תשובה תוך <span class="granta-num">24</span> שעות. בלי התחייבות, בלי כרטיס אשראי.</p>
+    <ul class="granta-chips">
+      <li class="granta-chip"><span aria-hidden="true">✔</span> ההרשמה: פחות מדקה</li>
+      <li class="granta-chip"><span aria-hidden="true">✔</span> בדיקה אוטומטית — בלי שיחות מכירה</li>
+      <li class="granta-chip"><span aria-hidden="true">✔</span> אם זכאים — אנחנו מקימים הכל</li>
+    </ul>
+  </div>
+</section>
+
+<main id="main" class="granta-page" tabindex="-1">
+
+  <!-- ======================================================================
+       מיכל הזרימה. data-phase מחזיק את מצב המסך היחיד:
+         rest        · מנוחה — הטופס פתוח לעריכה
+         sending     · שולח — הבקשה בדרך, השדות נעולים
+         error       · שגיאת רשת/שרת — הטופס נשאר, באנר מעליו
+         unavailable · אין חיבור לשירות (granta-config.js חסר) — הכפתור מושבת
+         success     · הצלחה — כרטיס "מה קורה עכשיו"
+       ארבעת הראשונים חיים בתוך פאנל הטופס; success הוא פאנל נפרד.
+       UX-1.2 — בכל רגע בדיוק פאנל אחד גלוי:
+         document.querySelectorAll('[data-state]:not([hidden])').length === 1
+       ====================================================================== -->
+  <div id="flow" data-phase="rest">
+
+    <!-- ============================================ מנוחה / שולח / שגיאה -->
+    <section data-state="form" class="granta-card" aria-labelledby="h-form">
+      <h2 id="h-form">בדיקת הזכאות</h2>
+
+      <form id="check-form" class="granta-form" novalidate>
+
+        <!-- סיכום שגיאות ולידציה. נפרד לחלוטין מבאנר שגיאת הרשת. UX-7.9 -->
+        <div id="valsum" class="granta-alert granta-alert--warn" role="alert" tabindex="-1" hidden>
+          <span class="granta-alert__icon" aria-hidden="true">⚠</span>
+          <div class="granta-alert__body">
+            <span class="granta-alert__title">חסרים פרטים כדי להתחיל את הבדיקה</span>
+            <ul id="valsum-list" class="check-errlist"></ul>
+          </div>
+        </div>
+
+        <div class="granta-field">
+          <label class="granta-label" for="f-org">שם העמותה <span class="granta-label__req">(חובה)</span></label>
+          <input class="granta-input" id="f-org" name="org_name" type="text"
+                 autocomplete="organization" maxlength="200"
+                 aria-describedby="f-org-hint">
+          <span class="granta-hint" id="f-org-hint">כפי שהוא רשום ברשם העמותות.</span>
+        </div>
+
+        <div class="granta-field">
+          <label class="granta-label" for="f-site">כתובת אתר <span class="granta-label__req">(חובה)</span></label>
+          <input class="granta-input check-ltr" id="f-site" name="website" type="text"
+                 inputmode="url" autocomplete="url" maxlength="500"
+                 placeholder="example.org.il"
+                 aria-describedby="f-site-hint">
+          <span class="granta-hint" id="f-site-hint">אפשר להדביק בלי <span class="granta-code">https://</span> — נשלים לבד.</span>
+        </div>
+
+        <div class="granta-field">
+          <label class="granta-label" for="f-email">אימייל ליצירת קשר <span class="granta-label__req">(חובה)</span></label>
+          <input class="granta-input check-ltr" id="f-email" name="email" type="email"
+                 inputmode="email" autocomplete="email" maxlength="320"
+                 aria-describedby="f-email-hint">
+          <span class="granta-hint" id="f-email-hint">לכתובת הזו תגיע תוצאת הבדיקה.</span>
+        </div>
+
+        <fieldset class="granta-field" id="f-grants-field" aria-describedby="f-grants-hint">
+          <legend class="granta-label">יש לעמותה כבר Google Grants? <span class="granta-label__req">(חובה)</span></legend>
+          <!-- UX-2.1 — הסבר במופע הראשון של המונח במסך -->
+          <span class="granta-hint" id="f-grants-hint">
+            המענק החודשי (Google Ad Grants) — עד <span class="granta-num">10,000</span> דולר בחודש
+            לפרסום בגוגל, בלי תשלום מכיסכם.
+          </span>
+          <div class="granta-radios" id="f-grants">
+            <label class="granta-radio">
+              <input type="radio" name="has_grants" value="yes">
+              <span class="granta-radio__text"><span>כן</span></span>
+            </label>
+            <label class="granta-radio">
+              <input type="radio" name="has_grants" value="no">
+              <span class="granta-radio__text"><span>עדיין לא</span></span>
+            </label>
+          </div>
+        </fieldset>
+
+        <!-- ---------------------------------------- באנר שגיאת רשת/שרת
+             UX-1.11 — מה קרה · מה לעשות עכשיו · קוד תקלה.
+             UX-1.12 — הטקסט הגולמי הולך ל-console בלבד.
+             UX-5.1 — זה האלמנט האדום היחיד במסך, והוא לעולם לא מוצג
+                      יחד עם סיכום הוולידציה (שהוא כתום).            -->
+        <div id="neterr" class="granta-alert granta-alert--critical" role="alert" tabindex="-1" hidden>
+          <span class="granta-alert__icon" aria-hidden="true">✖</span>
+          <div class="granta-alert__body">
+            <span class="granta-alert__title" id="neterr-title">לא הצלחנו לשלוח את הבדיקה.</span>
+            <span id="neterr-what">בדקו את החיבור לאינטרנט ונסו שוב. הפרטים שמילאתם נשמרו כאן.</span>
+            <span>קוד תקלה: <span class="granta-code" id="neterr-code">GR-000-0000</span></span>
+            <div class="granta-btnrow">
+              <button type="button" class="granta-btn granta-btn--sm granta-btn--secondary" id="retry">נסו שוב</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---------------------------------------- אין חיבור לשירות
+             granta-config.js לא נוצר / esm.sh לא נטען.
+             מצב מכובד: הטופס נשאר קריא, הכפתור מושבת עם הסבר. -->
+        <div id="cfgerr" class="granta-alert granta-alert--critical" role="alert" hidden>
+          <span class="granta-alert__icon" aria-hidden="true">✖</span>
+          <div class="granta-alert__body">
+            <span class="granta-alert__title">הבדיקה לא זמינה כרגע.</span>
+            <span>לא הצלחנו להתחבר לשירות, ולכן אי אפשר לקלוט את הפרטים בבטחה. נסו שוב בעוד כמה דקות — ואם זה חוזר, כתבו לנו ונחזור אליכם ידנית.</span>
+            <span>קוד תקלה: <span class="granta-code">GR-CFG-0001</span></span>
+          </div>
+        </div>
+
+        <div class="check-submit">
+          <div class="granta-btnrow">
+            <button type="submit" class="granta-btn granta-btn--block" id="submit"
+                    aria-describedby="submit-note">
+              <span class="granta-spinner" id="submit-spin" aria-hidden="true" hidden></span>
+              <span id="submit-label">בדיקת זכאות חינם</span>
+            </button>
+          </div>
+          <p class="granta-help" id="submit-note">בלחיצה על הכפתור אתם מסכימים לקבל מייל עם תוצאות הבדיקה. בלי ספאם.</p>
+        </div>
+
+        <!-- דיווח מצב לקורא-מסך בלי לגנוב פוקוס. UX-7.10 -->
+        <p class="sr-only" id="live" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <!-- ================================================ הצלחה -->
+    <!-- UX-1.16 — האישור מחליף את המסך עצמו, לא toast יבש.
+         role="status" כדי שקורא-מסך יקריא מה קורה עכשיו. UX-7.10 -->
+    <section data-state="success" class="granta-card" role="status" tabindex="-1" hidden
+             aria-labelledby="h-ok" id="panel-success">
+      <span class="granta-sev granta-sev--ok">
+        <span class="granta-sev__mark" aria-hidden="true">✔</span> הפרטים התקבלו
+      </span>
+      <h2 id="h-ok">קיבלנו. הבדיקה יצאה לדרך.</h2>
+      <p>
+        גְּרַנְטָה סורקת עכשיו את האתר שלכם ובודקת אותו מול תנאי הזכאות של גוגל.
+        התשובה תגיע אל <span class="check-ltr" id="ok-email"></span>
+        תוך <span class="granta-num">24</span> שעות — גם אם המסקנה היא שעדיין אין זכאות,
+        ואז נכתוב לכם מה חסר כדי להגיע אליה.
+      </p>
+      <p class="granta-help">
+        אין מה לעשות עכשיו, ואף אחד לא יתקשר למכור לכם משהו.
+        אם המייל לא הגיע תוך <span class="granta-num">24</span> שעות — כדאי להציץ בתיקיית הספאם.
+      </p>
+      <p class="granta-help">האישור הסופי בידי Google בלבד.</p>
+    </section>
+
+  </div>
+</main>
+
+<footer class="granta-footer">
+  <p>גְּרַנְטָה · בדיקת הזכאות היא הערכה מקדימה על סמך האתר והפרטים שמסרתם. האישור הסופי בידי Google בלבד.</p>
+</footer>
+
+<script src="assets/granta-config.js"></script>
+<script type="module">
+/* ==========================================================================
+   A1 · בדיקת זכאות — לוגיקת המסך
+   כל גישה ל-Supabase עוברת דרך assets/granta.js. אין כאן קוד Supabase.
+   ========================================================================== */
+
+/* ---- 0 · טעינת המודול. אם esm.sh לא נטען או שה-config חסר — לא נופלים ---- */
+const PREVIEW = new URLSearchParams(location.search).get('preview');
+
+const modPromise = import('./assets/granta.js')
+  .then((m) => ({ ok: true, m }))
+  .catch((err) => { console.error('[check] טעינת granta.js נכשלה:', err); return { ok: false, err }; });
+
+/* ---- 1 · אלמנטים ---- */
+const $ = (id) => document.getElementById(id);
+
+const flow     = $('flow');
+const form     = $('check-form');
+const panelOk  = $('panel-success');
+const valsum   = $('valsum');
+const valList  = $('valsum-list');
+const netErr   = $('neterr');
+const cfgErr   = $('cfgerr');
+const submit   = $('submit');
+const spinner  = $('submit-spin');
+const btnLabel = $('submit-label');
+const live     = $('live');
+
+const FIELDS = {
+  org_name:   { el: $('f-org'),   hint: 'f-org-hint',    label: 'שם העמותה' },
+  website:    { el: $('f-site'),  hint: 'f-site-hint',   label: 'כתובת אתר' },
+  email:      { el: $('f-email'), hint: 'f-email-hint',  label: 'אימייל ליצירת קשר' },
+};
+const GRANTS_FIELD = $('f-grants-field');
+
+const SEND_LABEL = 'בדיקת זכאות חינם';
+const TIMEOUT_MS = 10000;   /* UX-1.6 — אין טעינה אינסופית */
+
+/* ---- 2 · מצב המסך. בכל רגע פאנל אחד גלוי בלבד (UX-1.2) ---- */
+function setPhase(phase) {
+  flow.dataset.phase = phase;
+  const sending = phase === 'sending';
+  const done    = phase === 'success';
+
+  document.querySelector('[data-state="form"]').hidden = done;
+  panelOk.hidden = !done;
+
+  /* השדות ננעלים רק בזמן שליחה — לא במצב שגיאה, כדי שאפשר יהיה לתקן */
+  Object.values(FIELDS).forEach((f) => { f.el.disabled = sending; });
+  form.querySelectorAll('input[name="has_grants"]').forEach((r) => { r.disabled = sending; });
+
+  form.setAttribute('aria-busy', sending ? 'true' : 'false');
+  spinner.hidden = !sending;
+  btnLabel.textContent = sending ? 'שולחים…' : SEND_LABEL;
+
+  const blocked = sending || phase === 'unavailable';
+  submit.disabled = blocked;
+  cfgErr.hidden = phase !== 'unavailable';
+  if (phase === 'unavailable') {
+    submit.setAttribute('aria-describedby', 'cfgerr submit-note');
+  } else {
+    submit.setAttribute('aria-describedby', 'submit-note');
+  }
+  if (phase !== 'error') netErr.hidden = true;
+}
+
+function announce(text) { live.textContent = text; }
+
+/* ---- 3 · ולידציה ---- */
+
+/* אתר: משלימים https:// אם חסר, ומוודאים מארח עם נקודה. */
+function normalizeWebsite(raw) {
+  let v = String(raw || '').trim();
+  if (!v) return null;
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(v)) {
+    if (!/^https?:\/\//i.test(v)) return null;   /* ftp:// וכדומה — לא */
+  } else {
+    v = 'https://' + v;
+  }
+  let u;
+  try { u = new URL(v); } catch (_) { return null; }
+  if (u.protocol !== 'http:' && u.protocol !== 'https:') return null;
+  if (!/^[^\s.]+(\.[^\s.]+)+$/.test(u.hostname)) return null;
+  if (u.href.length > 500) return null;
+  return u.href;
+}
+
+/* אותה בדיקה שאוכפת מדיניות ה-INSERT ב-0100_granta_core.sql */
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+function markField(key, message) {
+  const f = FIELDS[key];
+  if (!f) return;
+  const errId = 'err-' + key;
+  let node = document.getElementById(errId);
+  if (message) {
+    if (!node) {
+      node = document.createElement('span');
+      node.className = 'granta-fielderr';
+      node.id = errId;
+      node.innerHTML = '<span aria-hidden="true">✖</span> ';
+      node.appendChild(document.createTextNode(''));
+      f.el.parentNode.appendChild(node);
+    }
+    node.lastChild.nodeValue = message;
+    node.hidden = false;
+    f.el.setAttribute('aria-invalid', 'true');
+    f.el.setAttribute('aria-describedby', f.hint + ' ' + errId);
+  } else if (node) {
+    node.hidden = true;
+    f.el.removeAttribute('aria-invalid');
+    f.el.setAttribute('aria-describedby', f.hint);
+  } else {
+    f.el.removeAttribute('aria-invalid');
+    f.el.setAttribute('aria-describedby', f.hint);
+  }
+}
+
+function clearValidation() {
+  Object.keys(FIELDS).forEach((k) => markField(k, null));
+  GRANTS_FIELD.removeAttribute('aria-invalid');
+  const gErr = document.getElementById('err-has_grants');
+  if (gErr) gErr.hidden = true;
+  valsum.hidden = true;
+  valList.textContent = '';
+}
+
+function markGrants(message) {
+  let node = document.getElementById('err-has_grants');
+  if (message) {
+    if (!node) {
+      node = document.createElement('span');
+      node.className = 'granta-fielderr';
+      node.id = 'err-has_grants';
+      node.innerHTML = '<span aria-hidden="true">✖</span> ';
+      node.appendChild(document.createTextNode(''));
+      GRANTS_FIELD.appendChild(node);
+    }
+    node.lastChild.nodeValue = message;
+    node.hidden = false;
+    GRANTS_FIELD.setAttribute('aria-invalid', 'true');
+  } else if (node) {
+    node.hidden = true;
+    GRANTS_FIELD.removeAttribute('aria-invalid');
+  }
+}
+
+/**
+ * @returns {{values:object|null, errors:Array<{key:string,msg:string,focus:HTMLElement}>}}
+ */
+function validate() {
+  clearValidation();
+  const errors = [];
+
+  const org = FIELDS.org_name.el.value.trim();
+  if (org.length < 2) {
+    errors.push({ key: 'org_name', msg: 'כתבו את שם העמותה — לפחות שני תווים.', focus: FIELDS.org_name.el });
+  }
+
+  const siteRaw = FIELDS.website.el.value.trim();
+  const site = normalizeWebsite(siteRaw);
+  if (!siteRaw) {
+    errors.push({ key: 'website', msg: 'כתבו את כתובת האתר של העמותה.', focus: FIELDS.website.el });
+  } else if (!site) {
+    errors.push({ key: 'website', msg: 'הכתובת לא נראית תקינה. לדוגמה: example.org.il', focus: FIELDS.website.el });
+  }
+
+  const email = FIELDS.email.el.value.trim();
+  if (!email) {
+    errors.push({ key: 'email', msg: 'כתבו אימייל שאליו נשלח את התשובה.', focus: FIELDS.email.el });
+  } else if (!EMAIL_RE.test(email) || email.length > 320) {
+    errors.push({ key: 'email', msg: 'האימייל לא נראה תקין. לדוגמה: name@example.org.il', focus: FIELDS.email.el });
+  }
+
+  const picked = form.querySelector('input[name="has_grants"]:checked');
+  if (!picked) {
+    errors.push({
+      key: 'has_grants',
+      msg: 'בחרו אם לעמותה כבר יש מענק פרסום מגוגל.',
+      focus: form.querySelector('input[name="has_grants"]'),
+    });
+  }
+
+  errors.forEach((e) => (e.key === 'has_grants' ? markGrants(e.msg) : markField(e.key, e.msg)));
+
+  if (errors.length) {
+    valList.textContent = '';
+    errors.forEach((e) => {
+      const li = document.createElement('li');
+      li.textContent = e.msg;
+      valList.appendChild(li);
+    });
+    valsum.hidden = false;
+    return { values: null, errors };
+  }
+
+  return {
+    values: { org_name: org, website: site, email: email, has_grants: picked.value },
+    errors: [],
+  };
+}
+
+/* ---- 4 · שגיאות שליחה. UX-1.12 — הגולמי לקונסולה בלבד ---- */
+function errCode(prefix) {
+  return 'GR-' + prefix + '-' + Math.random().toString(16).slice(2, 6).toUpperCase();
+}
+
+/** @param {'network'|'timeout'|'server'} kind */
+function showSendError(kind, rawError) {
+  const copy = {
+    network: {
+      title: 'לא הצלחנו להתחבר.',
+      what:  'בדקו את החיבור לאינטרנט ונסו שוב. הפרטים שמילאתם נשמרו כאן.',
+      code:  errCode('NET'),
+    },
+    timeout: {
+      title: 'זה לוקח יותר מדי זמן.',
+      what:  'נסו שוב בעוד רגע. הפרטים שמילאתם נשמרו כאן.',
+      code:  errCode('TMO'),
+    },
+    server: {
+      title: 'משהו אצלנו נתקע.',
+      what:  'הצוות קיבל התראה. נסו שוב בעוד רגע — ואם זה חוזר, שמרו את קוד התקלה וכתבו לנו אותו.',
+      code:  errCode('500'),
+    },
+  }[kind];
+
+  $('neterr-title').textContent = copy.title;
+  $('neterr-what').textContent  = copy.what;
+  $('neterr-code').textContent  = copy.code;
+
+  setPhase('error');
+  netErr.hidden = false;
+  netErr.focus();                                   /* UX-1.14 */
+  announce(copy.title + ' ' + copy.what);
+
+  /* 🔴 UX-1.12 — הפירוט הטכני לא נכנס ל-DOM. רק לכאן. */
+  console.error('[check] ' + copy.code, rawError);
+}
+
+function classifyError(err) {
+  if (err && err.__timeout) return 'timeout';
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return 'network';
+  const msg = String((err && err.message) || '');
+  if (err instanceof TypeError || /fetch|network|Failed to fetch|NetworkError/i.test(msg)) return 'network';
+  return 'server';
+}
+
+/* ---- 5 · שליחה ---- */
+let inFlight = false;
+
+async function send() {
+  if (inFlight) return;
+
+  const { values, errors } = validate();
+  if (errors.length) {
+    setPhase('rest');
+    if (errors[0].focus) errors[0].focus.focus();    /* UX-7.9 — פוקוס לשגיאה הראשונה */
+    announce('הטופס לא נשלח. ' + errors.length + ' שדות דורשים תיקון.');
+    return;
+  }
+
+  /* הצגת הכתובת המנורמלת — המשתמשת רואה בדיוק מה נשלח */
+  FIELDS.website.el.value = values.website;
+
+  const mod = await modPromise;
+  if (!mod.ok || !mod.m.configState.ok) {
+    setPhase('unavailable');
+    announce('הבדיקה לא זמינה כרגע.');
+    console.error('[check] GR-CFG-0001',
+      mod.ok ? mod.m.configState.reason : (mod.err && mod.err.message));
+    return;
+  }
+
+  inFlight = true;
+  setPhase('sending');
+  announce('שולחים את הפרטים לבדיקה.');
+
+  let timer = null;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => {
+      const e = new Error('timeout');
+      e.__timeout = true;
+      reject(e);
+    }, TIMEOUT_MS);
+  });
+
+  try {
+    await Promise.race([
+      mod.m.leads.create({
+        org_name:   values.org_name,
+        website:    values.website,
+        email:      values.email,
+        has_grants: values.has_grants,
+        source:     'check',                         /* UTM נאסף ב-granta.js */
+      }),
+      timeout,
+    ]);
+
+    /* leads.create מחזיר { ok:true } בלבד — לטופס הציבורי אין SELECT
+       על granta_leads (0100 §4.3). אין id, ואין למה לחכות. */
+    announce('הפרטים התקבלו. התשובה תגיע במייל תוך 24 שעות.');
+    $('ok-email').textContent = values.email;
+    setPhase('success');
+    panelOk.focus();
+    form.reset();
+  } catch (err) {
+    showSendError(classifyError(err), err);
+  } finally {
+    clearTimeout(timer);
+    inFlight = false;
+  }
+}
+
+/* ---- 6 · חיווט ---- */
+form.addEventListener('submit', (e) => { e.preventDefault(); send(); });
+$('retry').addEventListener('click', () => { send(); });      /* UX-1.13 — יורה מחדש */
+
+/* ניקוי סימון שגיאה ברגע שהמשתמשת מתקנת */
+Object.keys(FIELDS).forEach((k) => {
+  FIELDS[k].el.addEventListener('input', () => {
+    if (FIELDS[k].el.getAttribute('aria-invalid') === 'true') markField(k, null);
+  });
+});
+form.querySelectorAll('input[name="has_grants"]').forEach((r) => {
+  r.addEventListener('change', () => markGrants(null));
+});
+
+/* השלמת https:// כשעוזבים את שדה האתר — כדי שיהיה ברור מה נשלח */
+FIELDS.website.el.addEventListener('blur', () => {
+  const norm = normalizeWebsite(FIELDS.website.el.value);
+  if (norm) FIELDS.website.el.value = norm;
+});
+
+/* ---- 7 · ?track= מדף הנחיתה — ברירת מחדל בלבד, ניתנת לשינוי ---- */
+(function applyTrack() {
+  const track = new URLSearchParams(location.search).get('track');
+  const value = track === 'managed' ? 'yes' : (track === 'from_zero' ? 'no' : null);
+  if (!value) return;
+  const radio = form.querySelector('input[name="has_grants"][value="' + value + '"]');
+  if (radio) radio.checked = true;
+})();
+
+/* ---- 8 · מצב פתיחה: אם אין חיבור — הכפתור מושבת עם הסבר, הדף לא נופל ---- */
+setPhase('rest');
+modPromise.then((mod) => {
+  if (PREVIEW) return;
+  if (!mod.ok || !mod.m.configState.ok) {
+    setPhase('unavailable');
+    console.error('[check] GR-CFG-0001',
+      mod.ok ? mod.m.configState.reason : (mod.err && mod.err.message));
+  }
+});
+
+/* ---- 9 · תצוגה מקדימה של מצבי המסך לצורך אימות/צילום ----
+   ?preview=sending|success|error|unavailable — משנה תצוגה בלבד, לא שולח כלום. */
+(function preview() {
+  const p = PREVIEW;
+  if (!p) return;
+  if (p === 'error')      { showSendError('network', new Error('preview')); return; }
+  if (p === 'success')    { $('ok-email').textContent = 'noa@example.org.il'; setPhase('success'); return; }
+  if (p === 'sending' || p === 'unavailable') setPhase(p);
+})();
+</script>
+
+</body>
+</html>

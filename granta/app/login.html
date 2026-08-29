@@ -1,0 +1,701 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>גְּרַנְטָה · כניסה</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&family=Rubik:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="../assets/tokens.css">
+<link rel="stylesheet" href="../assets/granta.css">
+
+<style>
+/* ==========================================================================
+   מסך הכניסה — פריסה בלבד. כל צבע, מרווח, רדיוס ומשך מגיעים מ-tokens.css.
+   UX-4.0 אין צבע קשיח · UX-4.1 אין טוקן חדש · UX-7.1 תכונות לוגיות בלבד.
+   ========================================================================== */
+
+.auth{
+  max-inline-size:var(--state-max);
+  margin-inline:auto;
+}
+
+/* כל מצב הוא פאנל אחד. בכל רגע גלוי בדיוק אחד — UX-1.2 */
+.auth__panel{
+  display:flex;flex-direction:column;gap:var(--s-4);
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  padding:var(--s-5);
+}
+/* granta.css נותן display:flex/inline-flex לרכיבים האלה, ולכן התכונה hidden
+   לבדה לא מסתירה אותם. בלי השורה הזאת "מצב אחד גלוי" נשבר. */
+.auth__panel[hidden],
+.granta-alert[hidden],
+.granta-fielderr[hidden],
+.granta-btn[hidden]{display:none}
+
+.auth__panel:focus{outline:none}
+.auth__panel:focus-visible{
+  outline:var(--focus-width) solid var(--focus);
+  outline-offset:var(--focus-offset);
+}
+
+/* מצב שגיאה — כרטיס רך עם פס בקצה ההתחלה, לא באנר על כל המסך (§1.C) */
+.auth__panel--error{
+  background:var(--danger-bg);
+  border-color:var(--danger-line);
+  border-inline-start:4px solid var(--danger-ink);
+}
+.auth__panel--error h2,
+.auth__panel--error p{color:var(--danger-ink)}
+
+.auth__head{display:flex;flex-direction:column;gap:var(--s-2)}
+.auth__form{display:flex;flex-direction:column;gap:var(--s-5)}
+.auth__rule{border:0;border-block-start:1px solid var(--line);margin:0}
+
+/* רשימת "הקישור לא הגיע" — נקודות, לא פסקאות */
+.auth__list{
+  margin:0;padding-inline-start:var(--s-5);
+  display:flex;flex-direction:column;gap:var(--s-2);
+  color:var(--ink-muted);font-size:var(--fs-help);line-height:var(--lh-help);
+}
+
+/* כתובת המייל שאליה נשלח — LTR מבודד (UX-3.6 / UX-7.2) */
+.auth__mail{
+  display:inline-block;direction:ltr;unicode-bidi:isolate;
+  font-weight:var(--fw-bold);color:var(--ink);
+}
+.auth__panel--error .auth__mail{color:var(--danger-ink)}
+
+/* שדה אימייל — קלט תמיד LTR, גם בעמוד RTL */
+.auth__input{direction:ltr;unicode-bidi:isolate;text-align:start}
+
+.auth__foot{
+  display:flex;flex-direction:column;gap:var(--s-2);
+  color:var(--ink-muted);font-size:var(--fs-help);line-height:var(--lh-help);
+}
+.auth__foot a{color:var(--primary)}
+
+/* שלד הטעינה — בגובה הטופס האמיתי, כדי שלא תהיה קפיצת פריסה (UX-1.3) */
+.auth__skel-input{block-size:var(--touch);border-radius:var(--r-sm)}
+.auth__skel-btn{block-size:var(--touch);border-radius:var(--r)}
+/* שורת שלד שעומדת מול טקסט-עזר אמיתי — הגובה נגזר מהטוקנים של אותו טקסט,
+   כדי שהשלד והתוכן יהיו באותו גובה בדיוק. */
+.auth__skel-line{block-size:calc(var(--fs-help) * var(--lh-help))}
+
+@media (min-width:640px){
+  .auth__panel{padding:var(--s-6)}
+}
+</style>
+</head>
+<body>
+
+<a class="granta-skip" href="#main">דילוג לתוכן</a>
+
+<header class="granta-topbar">
+  <div class="granta-topbar__inner">
+    <a class="granta-brand" href="../index.html">גְּרַנְטָה<span class="granta-brand__dot" aria-hidden="true">.</span></a>
+  </div>
+</header>
+
+<section class="granta-hero">
+  <div class="granta-hero__inner">
+    <span class="granta-kicker">Impact OS</span>
+    <h1>כניסה<span class="granta-hero__dot" aria-hidden="true">.</span></h1>
+    <p>אין סיסמה לזכור. משאירים כתובת מייל, ומקבלים אליה קישור כניסה חד-פעמי.</p>
+  </div>
+</section>
+
+<main id="main" class="granta-page" tabindex="-1">
+
+  <noscript>
+    <div class="granta-alert granta-alert--warn" role="note">
+      <span class="granta-alert__icon" aria-hidden="true">⚠</span>
+      <div class="granta-alert__body">
+        <span class="granta-alert__title">נדרש JavaScript</span>
+        <span>הכניסה לגרנטה עובדת בדפדפן עם JavaScript פעיל. הפעילו אותו ורעננו את הדף.</span>
+      </div>
+    </div>
+  </noscript>
+
+  <div class="auth" id="auth">
+
+    <!-- ============================================ 1 · טעינה (UX-1.A) -->
+    <section class="auth__panel" data-state="loading" tabindex="-1"
+             aria-busy="true" aria-live="polite" aria-label="בודקים אם אתם כבר מחוברים">
+      <!-- השלד בנוי בדיוק כמו טופס הכניסה: כותרת, שדה, כפתור, כותרת תחתונה.
+           הגובה נמדד מול המצב הטעון ונשאר בטווח ±8px — בלי קפיצת פריסה (UX-1.3). -->
+      <div class="auth__head">
+        <span class="granta-skel granta-skel--title" aria-hidden="true"></span>
+        <span class="granta-skel" aria-hidden="true"></span>
+        <span class="granta-skel granta-skel--short" aria-hidden="true"></span>
+      </div>
+      <div class="auth__form">
+        <div class="granta-field">
+          <span class="granta-skel granta-skel--short auth__skel-line" aria-hidden="true"></span>
+          <span class="granta-skel auth__skel-input" aria-hidden="true"></span>
+          <span class="granta-skel granta-skel--short auth__skel-line" aria-hidden="true"></span>
+        </div>
+        <span class="granta-skel auth__skel-btn" aria-hidden="true"></span>
+      </div>
+      <hr class="auth__rule">
+      <div class="auth__foot">
+        <span class="granta-skel granta-skel--short auth__skel-line" aria-hidden="true"></span>
+        <span class="granta-skel auth__skel-btn" aria-hidden="true"></span>
+      </div>
+    </section>
+
+    <!-- ============ 2 · אין סשן = ה"ריק" של המסך הזה: טופס הכניסה (UX-1.B) -->
+    <section class="auth__panel" data-state="empty" tabindex="-1" hidden
+             aria-labelledby="h-signin">
+
+      <!-- הודעת הפניה מ-guard (?err=…) נכנסת לכאן -->
+      <div class="granta-alert granta-alert--info" role="note" id="notice" hidden>
+        <span class="granta-alert__icon" aria-hidden="true">ⓘ</span>
+        <div class="granta-alert__body">
+          <span class="granta-alert__title" id="notice-title"></span>
+          <span id="notice-text"></span>
+        </div>
+      </div>
+
+      <div class="auth__head">
+        <h2 id="h-signin">כניסה עם קישור למייל</h2>
+        <p class="granta-help">נשלח לכם הודעה עם קישור אחד. לחיצה עליו מכניסה אתכם — בלי סיסמה ובלי קוד להקליד.</p>
+      </div>
+
+      <form class="auth__form" id="form" novalidate>
+        <div class="granta-field">
+          <label class="granta-label" for="email">כתובת המייל שלכם <span class="granta-label__req">(חובה)</span></label>
+          <input class="granta-input auth__input" id="email" name="email" type="email"
+                 dir="ltr" inputmode="email" autocomplete="email" spellcheck="false"
+                 placeholder="name@example.org" aria-describedby="email-hint" required>
+          <span class="granta-hint" id="email-hint">הכתובת שאיתה נפתח החשבון שלכם בגרנטה.</span>
+          <span class="granta-fielderr" id="email-err" hidden>
+            <span aria-hidden="true">✖</span><span id="email-err-text"></span>
+          </span>
+        </div>
+
+        <button type="submit" class="granta-btn granta-btn--block" id="submit">שליחת קישור כניסה</button>
+      </form>
+
+      <hr class="auth__rule">
+      <div class="auth__foot">
+        <p class="granta-help">עוד אין לכם חשבון בגרנטה?</p>
+        <!-- קישור עצמאי ולא בתוך משפט — כדי שיעד המגע יהיה 44px מלאים (UX-6.4) -->
+        <a class="granta-btn granta-btn--ghost granta-btn--block" href="../check.html">בדיקת זכאות למענק</a>
+      </div>
+    </section>
+
+    <!-- ============================ 3 · נשלח — "בדקו את המייל" (מסך מלא) -->
+    <section class="auth__panel" data-state="sent" tabindex="-1" hidden
+             role="status" aria-labelledby="h-sent">
+      <div class="auth__head">
+        <h2 id="h-sent">בדקו את המייל</h2>
+        <p>שלחנו קישור כניסה אל <span class="auth__mail" id="sent-mail"></span>. פתחו את ההודעה ולחצו על הקישור — הוא יחזיר אתכם לכאן ויכניס אתכם פנימה.</p>
+        <p class="granta-help">אפשר להשאיר את החלון הזה פתוח. הקישור תקף לזמן מוגבל ולשימוש אחד.</p>
+      </div>
+
+      <hr class="auth__rule">
+
+      <div class="auth__head">
+        <h3>ההודעה לא הגיעה?</h3>
+        <ul class="auth__list">
+          <li>חפשו בתיקיית הדואר הזבל, ובגוגל גם בלשונית "קידומי מכירות".</li>
+          <li>ודאו שהכתובת נכתבה נכון — אות אחת שגויה שולחת את ההודעה למקום אחר.</li>
+          <li>המתינו כדקה. לפעמים שרת המייל מעכב את ההודעה הראשונה.</li>
+        </ul>
+      </div>
+
+      <div class="granta-btnrow--split">
+        <button type="button" class="granta-btn" id="resend">שליחה חוזרת</button>
+        <button type="button" class="granta-btn granta-btn--secondary" id="other-mail">כתובת אחרת</button>
+      </div>
+    </section>
+
+    <!-- ================= 4 · יש סשן = "מוכן": מעבירים אתכם הלאה (UX-1.D) -->
+    <section class="auth__panel" data-state="ready" tabindex="-1" hidden
+             role="status" aria-labelledby="h-ready">
+      <div class="auth__head">
+        <h2 id="h-ready">נכנסתם</h2>
+        <p>מזוהים כ-<span class="auth__mail" id="ready-mail"></span>. מעבירים אתכם למסך שביקשתם.</p>
+      </div>
+      <a class="granta-btn granta-btn--block" id="ready-go" href="index.html">המשך ידנית</a>
+    </section>
+
+    <!-- ============ 5 · מחוברים אך אין גישה — ?err=not-operator / no-org -->
+    <section class="auth__panel" data-state="denied" tabindex="-1" hidden
+             aria-labelledby="h-denied">
+      <div class="granta-alert granta-alert--info" role="note">
+        <span class="granta-alert__icon" aria-hidden="true">ⓘ</span>
+        <div class="granta-alert__body">
+          <span class="granta-alert__title">החיבור הצליח</span>
+          <span>הזיהוי שלכם תקין. מה שחסר הוא הרשאה למסך הזה, לא סיסמה.</span>
+        </div>
+      </div>
+
+      <div class="auth__head">
+        <h2 id="h-denied">הכניסה לקונסולה מוגבלת לצוות גרנטה</h2>
+        <p>נכנסתם בהצלחה כ-<span class="auth__mail" id="denied-mail"></span>, אבל המסך שביקשתם הוא כלי הניהול הפנימי של הצוות. פורטל העמותה פתוח לכם כרגיל.</p>
+        <p class="granta-help" id="denied-note">אם אתם אמורים להיות בצוות ואינכם רואים את הקונסולה — כתבו לנו ונסדר את זה. ההרשאה ניתנת אצלנו, ידנית.</p>
+      </div>
+
+      <div class="granta-btnrow--split">
+        <a class="granta-btn" href="index.html">לפורטל העמותה</a>
+        <button type="button" class="granta-btn granta-btn--secondary" id="denied-out">התנתקות</button>
+      </div>
+    </section>
+
+    <!-- ================================================ 6 · שגיאה (§1.C) -->
+    <section class="auth__panel auth__panel--error" data-state="error" tabindex="-1" hidden
+             role="alert" aria-labelledby="h-error">
+      <div class="auth__head">
+        <h2 id="h-error"><span aria-hidden="true">✖</span> <span id="error-what"></span></h2>
+        <p id="error-do"></p>
+        <p class="granta-help">קוד תקלה: <span class="granta-code" id="error-code"></span></p>
+      </div>
+      <div class="granta-btnrow--split">
+        <button type="button" class="granta-btn" id="error-retry">נסו שוב</button>
+        <button type="button" class="granta-btn granta-btn--secondary" id="error-back">חזרה לטופס</button>
+      </div>
+    </section>
+
+    <!-- ====================== 7 · חסר קונפיג — המסך אינו מחובר לשרת עדיין -->
+    <section class="auth__panel" data-state="config" tabindex="-1" hidden
+             aria-labelledby="h-config">
+      <div class="granta-alert granta-alert--warn" role="note">
+        <span class="granta-alert__icon" aria-hidden="true">⚠</span>
+        <div class="granta-alert__body">
+          <span class="granta-alert__title">הכניסה מושבתת כרגע</span>
+          <span>העותק הזה של גרנטה עדיין לא חובר לשרת, ולכן אי אפשר לשלוח קישור כניסה. זו תקלה אצלנו, לא אצלכם.</span>
+        </div>
+      </div>
+
+      <div class="auth__head">
+        <h2 id="h-config">כניסה עם קישור למייל</h2>
+        <p class="granta-help">ברגע שהחיבור יושלם, השדה כאן ייפתח והכניסה תעבוד כרגיל.</p>
+      </div>
+
+      <div class="granta-field">
+        <label class="granta-label" for="email-off">כתובת המייל שלכם</label>
+        <input class="granta-input auth__input" id="email-off" type="email" dir="ltr"
+               placeholder="name@example.org" aria-describedby="config-why" disabled>
+      </div>
+
+      <button type="button" class="granta-btn granta-btn--block" id="config-btn"
+              disabled aria-describedby="config-why">שליחת קישור כניסה</button>
+      <p class="granta-help" id="config-why">הכפתור מושבת כי המסך אינו מחובר לשרת. הצוות מטפל בזה.</p>
+    </section>
+
+  </div>
+</main>
+
+<footer class="granta-footer">
+  <p>גְּרַנְטָה · Impact OS. הכניסה מוגנת בקישור חד-פעמי לכתובת המייל שלכם.</p>
+</footer>
+
+<!-- הקונפיג נטען לפני granta.js. אם הקובץ חסר (פיתוח) — 404 בקונסולה,
+     והמסך נופל בכבוד למצב "config". ראו assets/granta-config.example.js -->
+<script src="../assets/granta-config.js" onerror="window.__grantaConfigMissing=true"></script>
+
+<script type="module">
+/* ==========================================================================
+   מסך הכניסה · לוגיקה
+   מקור מחייב: granta/_handoff/GRANTA-UX-STANDARD.md §1, §7
+   כללים שנאכפים כאן במפורש:
+     UX-1.2   מצב אחד גלוי בכל רגע
+     UX-1.6   10 שניות בלי תשובה → מצב שגיאה
+     UX-1.11  שגיאה = מה קרה · מה לעשות · קוד תקלה
+     UX-1.12  אסור error.message גולמי ב-DOM. הגולמי הולך ל-console בלבד
+     UX-1.13  "נסו שוב" יורה את הבקשה מחדש בפועל
+     UX-1.14  מיכל השגיאה role="alert", והפוקוס עובר אליו
+   ========================================================================== */
+
+const PANELS = Array.from(document.querySelectorAll('[data-state]'));
+const $ = (id) => document.getElementById(id);
+
+/* ------------------------------------------------------------------ *
+ * מצבי המסך — בדיוק אחד גלוי (UX-1.2)
+ * ------------------------------------------------------------------ */
+function show(state, opts) {
+  const focus = !!(opts && opts.focus);
+  PANELS.forEach((p) => {
+    const on = p.getAttribute('data-state') === state;
+    p.hidden = !on;
+    if (p.getAttribute('data-state') === 'loading') {
+      p.setAttribute('aria-busy', on ? 'true' : 'false');
+    }
+  });
+  const el = PANELS.find((p) => p.getAttribute('data-state') === state);
+  if (el && focus) el.focus();
+}
+
+/* ------------------------------------------------------------------ *
+ * שגיאות — הודעה אנושית למשתמשת, הגולמי לקונסולה בלבד (UX-1.12)
+ * ------------------------------------------------------------------ */
+function code(tag) {
+  const n = Math.floor(Math.random() * 0xffff).toString(16).padStart(4, '0');
+  return 'GR-' + tag + '-' + n;
+}
+
+function classify(err) {
+  const status = Number((err && err.cause && err.cause.status) || (err && err.status) || 0);
+
+  if (err && err.grantaTimeout) {
+    return { what: 'זה לוקח יותר מדי זמן', do: 'נסו שוב בעוד רגע.', code: code('TIMEOUT') };
+  }
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    return { what: 'לא הצלחנו להתחבר', do: 'בדקו את החיבור לאינטרנט ונסו שוב.', code: code('NET') };
+  }
+  if (status === 429) {
+    return {
+      what: 'שלחנו כבר קישור לכתובת הזאת',
+      do: 'המתינו כדקה, בדקו את תיבת המייל, ואם לא הגיע — נסו שוב.',
+      code: code('RATE'),
+    };
+  }
+  if (status === 400 || status === 422) {
+    return {
+      what: 'לא הצלחנו לשלוח לכתובת הזאת',
+      do: 'בדקו שהכתובת נכתבה נכון ונסו שוב. אם היא נכונה — כתבו לנו.',
+      code: code('MAIL'),
+    };
+  }
+  if (status === 0) {
+    return { what: 'לא הצלחנו להתחבר', do: 'בדקו את החיבור לאינטרנט ונסו שוב.', code: code('NET') };
+  }
+  return {
+    what: 'משהו אצלנו נתקע',
+    do: 'הצוות קיבל התראה. נסו שוב בעוד רגע, ואם זה חוזר — כתבו לנו עם הקוד שלמטה.',
+    code: code('500'),
+  };
+}
+
+let lastRetry = null;
+
+/** מציג שגיאה. הטקסט הגולמי לעולם לא נכנס ל-DOM — רק לקונסולה (UX-1.12). */
+function fail(raw, retry) {
+  console.error('[granta] login:', raw);
+  const m = classify(raw);
+  $('error-what').textContent = m.what;
+  $('error-do').textContent = m.do;
+  $('error-code').textContent = m.code;
+  lastRetry = typeof retry === 'function' ? retry : null;
+  $('error-retry').hidden = !lastRetry;
+  show('error', { focus: true });                   // UX-1.14
+}
+
+function withTimeout(promise, ms) {                 // UX-1.6
+  let t;
+  const guard = new Promise((_, reject) => {
+    t = setTimeout(() => {
+      const e = new Error('granta-timeout');
+      e.grantaTimeout = true;
+      reject(e);
+    }, ms);
+  });
+  return Promise.race([promise, guard]).finally(() => clearTimeout(t));
+}
+
+/* ------------------------------------------------------------------ *
+ * פרמטרים · יעד ההפניה
+ * ------------------------------------------------------------------ */
+const params = new URLSearchParams(location.search);
+const errParam = params.get('err');
+const previewParam = params.get('preview');   // QA בלבד — מצייר מצב, לא מעניק גישה
+
+/** hash של Supabase בחזרה מהקישור: #access_token=… או #error=…&error_code=… */
+function hashParams() {
+  const h = (location.hash || '').replace(/^#/, '');
+  return h ? new URLSearchParams(h) : new URLSearchParams();
+}
+
+let grantaRoot = '/';
+
+/**
+ * ?next= מגיע מה-guards כ-`location.pathname + location.search`.
+ * מקבלים אך ורק נתיב מוחלט שיושב בתוך שורש גרנטה — אחרת הפרמטר הופך
+ * ל-open redirect שאפשר לשלוח בו אנשים לאתר זר אחרי כניסה מוצלחת.
+ */
+function safeNext(raw) {
+  if (!raw) return null;
+  let v = raw;
+  try { v = decodeURIComponent(raw); } catch (e) { return null; }
+  v = v.trim();
+  if (!v.startsWith('/')) return null;      // בלי סכימה, בלי דומיין חיצוני
+  if (v.startsWith('//')) return null;      // בלי protocol-relative
+  if (v.indexOf('\\') >= 0) return null;
+  if (/[\u0000-\u001f]/.test(v)) return null;   // בלי תווי בקרה
+  if (v.indexOf('..') >= 0) return null;
+  if (!v.startsWith(grantaRoot)) return null;
+  return v;
+}
+
+/* ------------------------------------------------------------------ *
+ * הטופס
+ * ------------------------------------------------------------------ */
+const form = $('form');
+const emailInput = $('email');
+const submitBtn = $('submit');
+const SUBMIT_LABEL = submitBtn.textContent;
+
+function setBusy(on) {
+  submitBtn.disabled = on;
+  submitBtn.textContent = on ? 'שולחים קישור…' : SUBMIT_LABEL;
+  emailInput.readOnly = on;
+  form.setAttribute('aria-busy', on ? 'true' : 'false');
+}
+
+function fieldError(msg) {
+  if (!msg) {
+    emailInput.removeAttribute('aria-invalid');
+    emailInput.setAttribute('aria-describedby', 'email-hint');
+    $('email-err').hidden = true;
+    return;
+  }
+  emailInput.setAttribute('aria-invalid', 'true');                 // UX-7.9
+  emailInput.setAttribute('aria-describedby', 'email-hint email-err');
+  $('email-err-text').textContent = ' ' + msg;
+  $('email-err').hidden = false;
+  emailInput.focus();
+}
+
+function validEmail(v) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+}
+
+/* ------------------------------------------------------------------ *
+ * טעינת המודול. כשל טעינה או קונפיג חסר = מצב "config", לא מסך לבן.
+ * ------------------------------------------------------------------ */
+let G = null;
+let pendingEmail = '';
+
+async function boot() {
+  // QA: ?preview=<state> מצייר מצב לצילום. לא נוגע ברשת, לא בסשן,
+  // ולא מעניק גישה לשום דבר — הוא רק בוחר איזה פאנל גלוי.
+  if (previewParam) {
+    const known = PANELS.some((p) => p.getAttribute('data-state') === previewParam);
+    if (known || previewParam === 'sending') {
+      $('sent-mail').textContent = 'name@example.org';
+      $('ready-mail').textContent = 'name@example.org';
+      $('denied-mail').textContent = 'name@example.org';
+      if (previewParam === 'error') {
+        $('error-what').textContent = 'לא הצלחנו לשלוח את הקישור';
+        $('error-do').textContent = 'בדקו את החיבור לאינטרנט ונסו שוב.';
+        $('error-code').textContent = 'GR-NET-4f21';
+      }
+      if (previewParam === 'sending') {
+        emailInput.value = 'name@example.org';
+        show('empty');
+        setBusy(true);
+        return;
+      }
+      if (previewParam === 'denied') { denied({ email: 'name@example.org' }); return; }
+      if (previewParam === 'empty') notice(errParam);
+      show(previewParam);
+      return;
+    }
+  }
+
+  if (window.__grantaConfigMissing) { show('config'); return; }
+
+  try {
+    G = await import('../assets/granta.js');
+  } catch (e) {
+    console.error('[granta] login: טעינת granta.js נכשלה', e);
+    show('config');
+    return;
+  }
+
+  if (!G.configState || !G.configState.ok) {
+    console.error('[granta] login: קונפיג חסר —', (G.configState && G.configState.reason) || 'לא ידוע');
+    show('config');
+    return;
+  }
+
+  grantaRoot = G.nav.root();
+  const next = safeNext(params.get('next'));
+  if (next) $('ready-go').setAttribute('href', next);
+
+  // חזרה מהקישור עם כשל — Supabase מחזיר את זה ב-hash, לא כתשובת HTTP.
+  const hp = hashParams();
+  if (hp.get('error') || hp.get('error_code')) {
+    const kind = hp.get('error_code') || hp.get('error') || '';
+    console.error('[granta] login: הקישור חזר עם שגיאה —', kind, hp.get('error_description') || '');
+    history.replaceState(null, '', location.pathname + location.search);
+    $('error-what').textContent = /expired|otp/i.test(kind)
+      ? 'הקישור כבר לא תקף'
+      : 'לא הצלחנו להשלים את הכניסה';
+    $('error-do').textContent = 'קישורי הכניסה תקפים לזמן מוגבל ולשימוש אחד. בקשו קישור חדש ולחצו עליו מיד.';
+    $('error-code').textContent = code('LINK');
+    lastRetry = null;
+    $('error-retry').hidden = true;
+    show('error', { focus: true });
+    return;
+  }
+
+  // מאזין לסשן — כאן נתפסת החזרה מהקישור (UX-1.D)
+  G.auth.onChange((event, session) => {
+    if (session && session.user) {
+      if (errParam === 'not-operator' || errParam === 'no-org') { denied(session.user); return; }
+      arrive(session.user, next);
+    }
+  });
+
+  const returning = !!hashParams().get('access_token');
+  try {
+    const session = await withTimeout(G.auth.getSession(), returning ? 12000 : 10000);
+    if (session && session.user) {
+      if (errParam === 'not-operator' || errParam === 'no-org') { denied(session.user); return; }
+      arrive(session.user, next);
+      return;
+    }
+    if (returning) return;   // ה-hash עוד בעיבוד; onChange יטפל, ושעון UX-1.6 רץ
+    notice(errParam);
+    show('empty');
+  } catch (e) {
+    if (returning) { fail(e, null); return; }
+    // כשל בקריאת הסשן אינו חוסם כניסה חדשה — מציגים את הטופס.
+    console.warn('[granta] login: קריאת סשן נכשלה, ממשיכים לטופס', e);
+    notice(errParam);
+    show('empty');
+  }
+}
+
+/** יש סשן ואין חסימה — מעבירים הלאה. */
+function arrive(user, next) {
+  $('ready-mail').textContent = (user && user.email) || 'החשבון שלכם';
+  const target = next || (grantaRoot + 'app/index.html');
+  $('ready-go').setAttribute('href', target);
+  show('ready');
+  setTimeout(function () { location.replace(target); }, 400);
+}
+
+/**
+ * מחוברים, אבל המסך שביקשו סגור בפניהם.
+ * 🔴 בכוונה אין כאן שום הסבר איך משיגים את ההרשאה. היא ניתנת ידנית
+ *    על ידי הצוות, בצד השרת. מסך לקוח לא מלמד איך להעניק אותה לעצמך.
+ */
+function denied(user) {
+  $('denied-mail').textContent = (user && user.email) ? user.email : 'החשבון שלכם';
+  const noOrg = errParam === 'no-org';
+  $('h-denied').textContent = noOrg
+    ? 'החשבון עדיין לא משויך לעמותה'
+    : 'הכניסה לקונסולה מוגבלת לצוות גרנטה';
+  $('denied-note').textContent = noOrg
+    ? 'החשבון הזה עדיין לא משויך לעמותה. כתבו לנו ונשייך אותו לתיק הנכון.'
+    : 'אם אתם אמורים להיות בצוות ואינכם רואים את הקונסולה — כתבו לנו ונסדר את זה. ההרשאה ניתנת אצלנו, ידנית.';
+  show('denied', { focus: true });
+}
+
+/** הודעת הפניה מעל הטופס, כשאין סשן בכלל. */
+function notice(kind) {
+  if (!kind) return;
+  const map = {
+    'not-operator': ['נדרשת כניסה מחדש', 'המסך שביקשתם הוא כלי הניהול הפנימי של צוות גרנטה. היכנסו עם חשבון הצוות שלכם.'],
+    'no-org':       ['נדרשת כניסה מחדש', 'לא הצלחנו לזהות לאיזו עמותה החשבון שייך. היכנסו שוב, ואם זה חוזר — כתבו לנו.'],
+    'expired':      ['הסשן הסתיים', 'לא נכנסתם זמן מה, ולכן ניתקנו אתכם. שלחו לעצמכם קישור חדש.'],
+  };
+  const m = map[kind];
+  if (!m) return;
+  $('notice-title').textContent = m[0];
+  $('notice-text').textContent = m[1];
+  $('notice').hidden = false;
+}
+
+async function sendLink(email) {
+  if (!G) { show('config'); return; }
+  setBusy(true);
+  fieldError(null);
+
+  // הקישור מחזיר לכאן, עם ה-next שנשמר.
+  const back = new URL(location.pathname, location.origin);
+  const next = safeNext(params.get('next'));
+  if (next) back.search = 'next=' + encodeURIComponent(next);
+
+  try {
+    await withTimeout(G.auth.signInWithOtp(email, back.href), 10000);
+    pendingEmail = email;
+    $('sent-mail').textContent = email;
+    startCooldown();
+    show('sent', { focus: true });
+  } catch (e) {
+    fail(e, function () { sendLink(email); });                      // UX-1.13
+  } finally {
+    setBusy(false);
+  }
+}
+
+form.addEventListener('submit', (ev) => {
+  ev.preventDefault();                                              // Enter שולח
+  const email = emailInput.value.trim();
+  if (!email) { fieldError('צריך כתובת מייל כדי לשלוח את הקישור.'); return; }
+  if (!validEmail(email)) { fieldError('הכתובת לא נראית תקינה. היא צריכה להיראות כמו name@example.org.'); return; }
+  sendLink(email);
+});
+
+emailInput.addEventListener('input', () => {
+  if (emailInput.getAttribute('aria-invalid') === 'true') fieldError(null);
+});
+
+/* --- שליחה חוזרת עם המתנה, כדי לא להיחסם על ידי מגבלת הקצב --- */
+const resendBtn = $('resend');
+const RESEND_LABEL = resendBtn.textContent;
+let cooldown = 0;
+let cooldownTimer = null;
+
+function startCooldown(seconds) {
+  cooldown = seconds || 30;
+  resendBtn.disabled = true;
+  resendBtn.textContent = RESEND_LABEL + ' (' + cooldown + ')';
+  clearInterval(cooldownTimer);
+  cooldownTimer = setInterval(() => {
+    cooldown -= 1;
+    if (cooldown <= 0) {
+      clearInterval(cooldownTimer);
+      resendBtn.disabled = false;
+      resendBtn.textContent = RESEND_LABEL;
+    } else {
+      resendBtn.textContent = RESEND_LABEL + ' (' + cooldown + ')';
+    }
+  }, 1000);
+}
+
+resendBtn.addEventListener('click', () => {
+  if (!pendingEmail) { show('empty', { focus: true }); return; }
+  startCooldown();
+  sendLink(pendingEmail);
+});
+
+$('other-mail').addEventListener('click', () => {
+  clearInterval(cooldownTimer);
+  show('empty');
+  emailInput.focus();
+  emailInput.select();
+});
+
+/* --- מצב שגיאה --- */
+$('error-retry').addEventListener('click', () => {
+  if (lastRetry) lastRetry();                                       // UX-1.13
+  else show('empty', { focus: true });
+});
+$('error-back').addEventListener('click', () => {
+  show('empty');
+  emailInput.focus();
+});
+
+/* --- התנתקות מהמצב החסום --- */
+$('denied-out').addEventListener('click', async () => {
+  try { if (G) await G.auth.signOut(); } catch (e) { console.error('[granta] login: התנתקות', e); }
+  location.replace(location.pathname);
+});
+
+boot();
+</script>
+
+</body>
+</html>
